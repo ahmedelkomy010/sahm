@@ -12,7 +12,7 @@ return new class extends Migration
         
         Schema::create('licenses', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('work_order_id')->constrained()->onDelete('cascade');
+            $table->unsignedBigInteger('work_order_id');
             
             // شهادات التنسيق
             $table->string('coordination_certificate_path')->nullable();

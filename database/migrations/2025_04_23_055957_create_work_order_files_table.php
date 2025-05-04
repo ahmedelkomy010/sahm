@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('work_order_files', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('work_order_id')->constrained()->onDelete('cascade');
+            $table->unsignedBigInteger('work_order_id');
             $table->string('filename');
             $table->string('original_filename');
             $table->string('file_path');

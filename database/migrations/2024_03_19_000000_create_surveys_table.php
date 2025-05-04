@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('surveys', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('work_order_id')->constrained()->onDelete('cascade');
+            $table->unsignedBigInteger('work_order_id');
             $table->string('start_coordinates')->nullable();
             $table->string('end_coordinates')->nullable();
             $table->boolean('has_obstacles')->default(false);
