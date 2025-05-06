@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\WorkOrderController;
+use App\Http\Controllers\MaterialsController;
 use Illuminate\Support\Facades\Gate;
 
 
@@ -65,7 +66,9 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::post('/settings', [App\Http\Controllers\Admin\SettingsController::class, 'update'])->name('settings.update');
     
     // Work Orders
-    Route::resource('work-orders', App\Http\Controllers\WorkOrderController::class);
+    Route::resource('work-orders', App\Http\Controllers\WorkOrderController::class)->parameters([
+        'work-orders' => 'workOrder'
+    ]);
     Route::delete('work-orders/files/{id}', [App\Http\Controllers\WorkOrderController::class, 'deleteFile'])->name('work-orders.files.delete');
     Route::get('work-orders/descriptions/{workType}', [App\Http\Controllers\WorkOrderController::class, 'getWorkDescription'])->name('work-orders.descriptions');
 });
@@ -125,7 +128,9 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::middleware(['auth'])->group(function () {
-    // Work Orders Routes
+    // Work Orders Routes - These routes are already defined by the resource route above
+    // Commenting out to avoid route conflicts
+    /*
     Route::get('/admin/work-orders', [WorkOrderController::class, 'index'])->name('admin.work-orders.index');
     Route::get('/admin/work-orders/create', [WorkOrderController::class, 'create'])->name('admin.work-orders.create');
     Route::post('/admin/work-orders', [WorkOrderController::class, 'store'])->name('admin.work-orders.store');
@@ -133,6 +138,12 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/admin/work-orders/{workOrder}/edit', [WorkOrderController::class, 'edit'])->name('admin.work-orders.edit');
     Route::put('/admin/work-orders/{workOrder}', [WorkOrderController::class, 'update'])->name('admin.work-orders.update');
     Route::delete('/admin/work-orders/{workOrder}', [WorkOrderController::class, 'destroy'])->name('admin.work-orders.destroy');
+    */
+    
+    // Materials Route (Direct Access)
+    Route::get('/materials', [MaterialsController::class, 'index'])->name('materials.index'); 
+    Route::resource('materials', MaterialsController::class)->except(['index']);
+    Route::get('/materials/descriptions/{code}', [MaterialsController::class, 'getMaterialDescription'])->name('materials.description');
     
     // Survey Routes
     Route::get('/admin/work-orders/{workOrder}/survey', [WorkOrderController::class, 'survey'])->name('admin.work-orders.survey');
@@ -141,7 +152,14 @@ Route::middleware(['auth'])->group(function () {
     
     // Work Order Sections Routes
     Route::get('/admin/work-orders/materials', [WorkOrderController::class, 'materials'])->name('admin.work-orders.materials');
+    Route::post('/admin/work-orders/materials', [WorkOrderController::class, 'storeMaterial'])->name('admin.work-orders.materials.store');
+    Route::get('/admin/work-orders/materials/{material}/edit', [WorkOrderController::class, 'editMaterial'])->name('admin.work-orders.materials.edit');
+    Route::put('/admin/work-orders/materials/{material}', [WorkOrderController::class, 'updateMaterial'])->name('admin.work-orders.materials.update');
+    Route::delete('/admin/work-orders/materials/{material}', [WorkOrderController::class, 'destroyMaterial'])->name('admin.work-orders.materials.destroy');
+    
     Route::get('/admin/work-orders/licenses', [WorkOrderController::class, 'licenses'])->name('admin.work-orders.licenses');
+    
+    // Work Order Execution Routes
     Route::get('/admin/work-orders/execution', [WorkOrderController::class, 'execution'])->name('admin.work-orders.execution');
     Route::get('/admin/work-orders/post-execution', [WorkOrderController::class, 'postExecution'])->name('admin.work-orders.post-execution');
     

@@ -8,7 +8,7 @@
                 <div class="card-header bg-primary text-white py-3 d-flex justify-content-between align-items-center">
                     <h3 class="mb-0 fs-4">تفاصيل أمر العمل</h3>
                     <div class="d-flex gap-2">
-                        <a href="{{ route('admin.work-orders.materials', $workOrder) }}" class="btn btn-light btn-sm px-3" style="min-width: 100px;">
+                        <a href="{{ route('materials.index') }}" class="btn btn-light btn-sm px-3" style="min-width: 100px;">
                             <i class="fas fa-boxes me-1"></i> المواد
                         </a>
                         <a href="{{ route('admin.work-orders.survey', $workOrder) }}" class="btn btn-light btn-sm px-3" style="min-width: 100px;">
@@ -178,7 +178,7 @@
                                         <td>{{ $workOrder->procedure_211_date ? $workOrder->procedure_211_date->format('Y-m-d') : 'غير متوفر' }}</td>
                                     </tr>
                                     <tr>
-                                        <th>حذف جزئي</th>
+                                        <th>صرف جزئي</th>
                                         <td>{{ $workOrder->partial_deletion ? 'نعم' : 'لا' }}</td>
                                     </tr>
                                     <tr>

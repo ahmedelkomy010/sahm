@@ -1054,249 +1054,161 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Sección de encuestas -->
+            <div class="card license-form mt-4">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h3 class="mb-0">المسوحات</h3>
+                        <a href="{{ route('admin.work-orders.survey', $workOrder) }}" class="btn btn-info btn-sm">
+                            <i class="fas fa-plus-circle"></i> إضافة مسح جديد
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body p-4">
+                    @if($workOrder->surveys->count() > 0)
+                        <div class="accordion" id="surveysAccordion">
+                            @foreach($workOrder->surveys as $index => $survey)
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="surveyHeading{{ $survey->id }}">
+                                        <button class="accordion-button {{ $index > 0 ? 'collapsed' : '' }}" type="button" data-bs-toggle="collapse" data-bs-target="#surveyCollapse{{ $survey->id }}" aria-expanded="{{ $index === 0 ? 'true' : 'false' }}" aria-controls="surveyCollapse{{ $survey->id }}">
+                                            <div class="d-flex align-items-center justify-content-between w-100">
+                                                <span>مسح #{{ $index + 1 }}</span>
+                                                <span class="badge bg-primary ms-2">{{ $survey->created_at->format('Y-m-d H:i') }}</span>
+                                            </div>
+                                        </button>
+                                    </h2>
+                                    <div id="surveyCollapse{{ $survey->id }}" class="accordion-collapse collapse {{ $index === 0 ? 'show' : '' }}" aria-labelledby="surveyHeading{{ $survey->id }}" data-bs-parent="#surveysAccordion">
+                                        <div class="accordion-body">
+                                            <div class="row mb-4">
+                                                <div class="col-md-6">
+                                                    <h5 class="mb-3 section-title">تفاصيل المسح</h5>
+                                                    <table class="table table-bordered">
+                                                        <tbody>
+                                                            <tr>
+                                                                <th style="width: 40%">إحداثيات البداية</th>
+                                                                <td>
+                                                                    @if($survey->start_coordinates)
+                                                                        <div class="d-flex align-items-center">
+                                                                            <a href="{{ $survey->start_coordinates }}" target="_blank" class="text-primary me-2">
+                                                                                <i class="fas fa-map-marker-alt"></i> عرض الإحداثيات
+                                                                            </a>
+                                                                            <button class="btn btn-sm btn-outline-secondary" onclick="copyCoordinates('{{ $survey->start_coordinates }}')">
+                                                                                <i class="fas fa-copy"></i>
+                                                                            </button>
+                                                                        </div>
+                                                                    @else
+                                                                        <span class="text-muted">غير متوفر</span>
+                                                                    @endif
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <th>إحداثيات النهاية</th>
+                                                                <td>
+                                                                    @if($survey->end_coordinates)
+                                                                        <div class="d-flex align-items-center">
+                                                                            <a href="{{ $survey->end_coordinates }}" target="_blank" class="text-primary me-2">
+                                                                                <i class="fas fa-map-marker-alt"></i> عرض الإحداثيات
+                                                                            </a>
+                                                                            <button class="btn btn-sm btn-outline-secondary" onclick="copyCoordinates('{{ $survey->end_coordinates }}')">
+                                                                                <i class="fas fa-copy"></i>
+                                                                            </button>
+                                                                        </div>
+                                                                    @else
+                                                                        <span class="text-muted">غير متوفر</span>
+                                                                    @endif
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <th>المعوقات</th>
+                                                                <td>
+                                                                    @if($survey->has_obstacles)
+                                                                        <span class="badge bg-danger">نعم</span>
+                                                                    @else
+                                                                        <span class="badge bg-success">لا</span>
+                                                                    @endif
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <th>ملاحظات</th>
+                                                                <td>{{ $survey->obstacles_notes ?? 'لا توجد ملاحظات' }}</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <th>تاريخ المسح</th>
+                                                                <td>{{ $survey->created_at->format('Y-m-d H:i') }}</td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <h5 class="mb-3 section-title">صور المسح</h5>
+                                                    @if($survey->files->count() > 0)
+                                                        <div class="row g-3">
+                                                            @foreach($survey->files as $file)
+                                                                <div class="col-md-4">
+                                                                    <div class="card h-100">
+                                                                        <a href="{{ asset('storage/' . $file->file_path) }}" target="_blank" data-lightbox="survey-{{ $survey->id }}" data-title="{{ $file->original_filename }}">
+                                                                            <img src="{{ asset('storage/' . $file->file_path) }}" class="card-img-top img-thumbnail" alt="{{ $file->original_filename }}" style="height: 150px; object-fit: cover;">
+                                                                        </a>
+                                                                        <div class="card-footer p-2">
+                                                                            <a href="{{ asset('storage/' . $file->file_path) }}" class="btn btn-sm btn-primary w-100" download>
+                                                                                <i class="fas fa-download"></i> تحميل
+                                                                            </a>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            @endforeach
+                                                        </div>
+                                                    @else
+                                                        <div class="alert alert-info">
+                                                            لا توجد صور مرفقة لهذا المسح
+                                                        </div>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                            <div class="d-flex justify-content-end">
+                                                <a href="{{ route('admin.work-orders.survey', $workOrder) }}" class="btn btn-primary">
+                                                    <i class="fas fa-edit"></i> تعديل المسح
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <div class="alert alert-info">
+                            لا توجد مسوحات مسجلة لهذا الأمر
+                            <a href="{{ route('admin.work-orders.survey', $workOrder) }}" class="btn btn-primary btn-sm ms-3">
+                                <i class="fas fa-plus-circle"></i> إضافة مسح جديد
+                            </a>
+                        </div>
+                    @endif
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
-@push('scripts')
 <script>
+function copyCoordinates(coordinates) {
+    navigator.clipboard.writeText(coordinates).then(() => {
+        alert('تم نسخ الإحداثيات بنجاح');
+    }).catch(err => {
+        console.error('فشل نسخ الإحداثيات:', err);
+    });
+}
+
+// Mostrar/ocultar sección de restricción según selección
 document.addEventListener('DOMContentLoaded', function() {
-    // Handle restriction details visibility
-    document.querySelectorAll('input[name="has_restriction"]').forEach(function(radio) {
+    const restrictionRadios = document.querySelectorAll('input[name="has_restriction"]');
+    const restrictionDetails = document.querySelector('.restriction-details');
+    
+    restrictionRadios.forEach(radio => {
         radio.addEventListener('change', function() {
-            const detailsGroup = this.closest('.compact-section').querySelector('.restriction-details');
-            detailsGroup.style.display = this.value === '1' ? 'block' : 'none';
+            restrictionDetails.style.display = this.value === '1' ? 'block' : 'none';
         });
     });
-
-    // اختبار العمق
-    document.querySelectorAll('input[name="has_depth_test"]').forEach(radio => {
-        radio.addEventListener('change', function() {
-            document.getElementById('depth_test_date_container').style.display = this.value === '1' ? 'block' : 'none';
-        });
-    });
-
-    // اختبار دك التربة
-    document.querySelectorAll('input[name="has_soil_compaction_test"]').forEach(radio => {
-        radio.addEventListener('change', function() {
-            document.getElementById('soil_compaction_test_date_container').style.display = this.value === '1' ? 'block' : 'none';
-        });
-    });
-
-    // اختبار RC1-MC1
-    document.querySelectorAll('input[name="has_rc1_mc1_test"]').forEach(radio => {
-        radio.addEventListener('change', function() {
-            document.getElementById('rc1_mc1_test_date_container').style.display = this.value === '1' ? 'block' : 'none';
-        });
-    });
-
-    // اختبار الأسفلت
-    document.querySelectorAll('input[name="has_asphalt_test"]').forEach(radio => {
-        radio.addEventListener('change', function() {
-            document.getElementById('asphalt_test_date_container').style.display = this.value === '1' ? 'block' : 'none';
-        });
-    });
-
-    // اختبار التربة
-    document.querySelectorAll('input[name="has_soil_test"]').forEach(radio => {
-        radio.addEventListener('change', function() {
-            document.getElementById('soil_test_date_container').style.display = this.value === '1' ? 'block' : 'none';
-        });
-    });
-
-    // اختبار البلاط والانترلوك
-    document.querySelectorAll('input[name="has_interlock_test"]').forEach(radio => {
-        radio.addEventListener('change', function() {
-            document.getElementById('interlock_test_date_container').style.display = this.value === '1' ? 'block' : 'none';
-        });
-    });
-
-    // تحديث حالة التنبيه عند تغيير التواريخ
-    const startDateInput = document.getElementById('license_start_date');
-    const endDateInput = document.getElementById('license_end_date');
-    const alertDaysInput = document.getElementById('license_alert_days');
-
-    function validateDates() {
-        const startDate = new Date(startDateInput.value);
-        const endDate = new Date(endDateInput.value);
-        
-        if (startDate > endDate) {
-            alert('تاريخ البداية يجب أن يكون قبل تاريخ النهاية');
-            endDateInput.value = '';
-            return false;
-        }
-        return true;
-    }
-
-    function updateAlertStatus() {
-        if (!startDateInput.value || !endDateInput.value) return;
-        
-        const startDate = new Date(startDateInput.value);
-        const endDate = new Date(endDateInput.value);
-        const alertDays = parseInt(alertDaysInput.value);
-        const today = new Date();
-        const daysUntilExpiry = Math.ceil((endDate - today) / (1000 * 60 * 60 * 24));
-        const totalDuration = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
-
-        let alertDiv = document.querySelector('.alert');
-        if (!alertDiv) {
-            alertDiv = document.createElement('div');
-            alertDiv.className = 'alert mt-2';
-            endDateInput.parentElement.appendChild(alertDiv);
-        }
-
-        if (daysUntilExpiry < 0) {
-            alertDiv.className = 'alert alert-danger mt-2';
-            alertDiv.innerHTML = `<i class="fas fa-exclamation-triangle"></i> الرخصة منتهية منذ ${Math.abs(daysUntilExpiry)} يوم`;
-        } else if (daysUntilExpiry <= alertDays) {
-            alertDiv.className = 'alert alert-warning mt-2';
-            alertDiv.innerHTML = `<i class="fas fa-clock"></i> الرخصة ستنتهي خلال ${daysUntilExpiry} يوم`;
-        } else {
-            alertDiv.className = 'alert alert-success mt-2';
-            alertDiv.innerHTML = `<i class="fas fa-check-circle"></i> الرخصة صالحة لمدة ${daysUntilExpiry} يوم`;
-        }
-
-        // إضافة معلومات مدة الرخصة
-        let durationDiv = document.querySelector('.alert-info');
-        if (!durationDiv) {
-            durationDiv = document.createElement('div');
-            durationDiv.className = 'alert alert-info mt-2';
-            alertDiv.parentElement.appendChild(durationDiv);
-        }
-        durationDiv.innerHTML = `<i class="fas fa-calendar-alt"></i> مدة الرخصة: ${totalDuration} يوم`;
-    }
-
-    startDateInput.addEventListener('change', function() {
-        if (validateDates()) {
-            updateAlertStatus();
-        }
-    });
-
-    endDateInput.addEventListener('change', function() {
-        if (validateDates()) {
-            updateAlertStatus();
-        }
-    });
-
-    alertDaysInput.addEventListener('change', updateAlertStatus);
-
-    // تحديث حالة تنبيه تمديد الرخصة
-    const licenseExtensionStartDate = document.getElementById('license_extension_start_date');
-    const licenseExtensionEndDate = document.getElementById('license_extension_end_date');
-    const licenseExtensionAlertDays = document.getElementById('license_extension_alert_days');
-
-    function validateLicenseExtensionDates() {
-        const startDate = new Date(licenseExtensionStartDate.value);
-        const endDate = new Date(licenseExtensionEndDate.value);
-        
-        if (startDate > endDate) {
-            alert('تاريخ بداية التمديد يجب أن يكون قبل تاريخ نهاية التمديد');
-            licenseExtensionEndDate.value = '';
-            return false;
-        }
-        return true;
-    }
-
-    function updateLicenseExtensionAlert() {
-        if (!licenseExtensionEndDate.value) return;
-        
-        const endDate = new Date(licenseExtensionEndDate.value);
-        const alertDays = parseInt(licenseExtensionAlertDays.value);
-        const today = new Date();
-        const daysUntilExpiry = Math.ceil((endDate - today) / (1000 * 60 * 60 * 24));
-
-        let alertDiv = document.querySelector('.form-section:nth-of-type(1) .alert');
-        if (!alertDiv) {
-            alertDiv = document.createElement('div');
-            alertDiv.className = 'alert mt-2';
-            licenseExtensionEndDate.parentElement.parentElement.parentElement.appendChild(alertDiv);
-        }
-
-        if (daysUntilExpiry < 0) {
-            alertDiv.className = 'alert alert-danger mt-2';
-            alertDiv.innerHTML = `<i class="fas fa-exclamation-triangle"></i> تمديد الرخصة منتهي منذ ${Math.abs(daysUntilExpiry)} يوم`;
-        } else if (daysUntilExpiry <= alertDays) {
-            alertDiv.className = 'alert alert-warning mt-2';
-            alertDiv.innerHTML = `<i class="fas fa-clock"></i> تمديد الرخصة سينتهي خلال ${daysUntilExpiry} يوم`;
-        } else {
-            alertDiv.className = 'alert alert-success mt-2';
-            alertDiv.innerHTML = `<i class="fas fa-check-circle"></i> تمديد الرخصة صالح لمدة ${daysUntilExpiry} يوم`;
-        }
-    }
-
-    // تحديث حالة تنبيه تمديد الفاتورة
-    const invoiceExtensionStartDate = document.getElementById('invoice_extension_start_date');
-    const invoiceExtensionEndDate = document.getElementById('invoice_extension_end_date');
-    const invoiceExtensionAlertDays = document.getElementById('invoice_extension_alert_days');
-
-    function validateInvoiceExtensionDates() {
-        const startDate = new Date(invoiceExtensionStartDate.value);
-        const endDate = new Date(invoiceExtensionEndDate.value);
-        
-        if (startDate > endDate) {
-            alert('تاريخ بداية التمديد يجب أن يكون قبل تاريخ نهاية التمديد');
-            invoiceExtensionEndDate.value = '';
-            return false;
-        }
-        return true;
-    }
-
-    function updateInvoiceExtensionAlert() {
-        if (!invoiceExtensionEndDate.value) return;
-        
-        const endDate = new Date(invoiceExtensionEndDate.value);
-        const alertDays = parseInt(invoiceExtensionAlertDays.value);
-        const today = new Date();
-        const daysUntilExpiry = Math.ceil((endDate - today) / (1000 * 60 * 60 * 24));
-
-        let alertDiv = document.querySelector('.form-section:nth-of-type(2) .alert');
-        if (!alertDiv) {
-            alertDiv = document.createElement('div');
-            alertDiv.className = 'alert mt-2';
-            invoiceExtensionEndDate.parentElement.parentElement.parentElement.appendChild(alertDiv);
-        }
-
-        if (daysUntilExpiry < 0) {
-            alertDiv.className = 'alert alert-danger mt-2';
-            alertDiv.innerHTML = `<i class="fas fa-exclamation-triangle"></i> تمديد الفاتورة منتهي منذ ${Math.abs(daysUntilExpiry)} يوم`;
-        } else if (daysUntilExpiry <= alertDays) {
-            alertDiv.className = 'alert alert-warning mt-2';
-            alertDiv.innerHTML = `<i class="fas fa-clock"></i> تمديد الفاتورة سينتهي خلال ${daysUntilExpiry} يوم`;
-        } else {
-            alertDiv.className = 'alert alert-success mt-2';
-            alertDiv.innerHTML = `<i class="fas fa-check-circle"></i> تمديد الفاتورة صالح لمدة ${daysUntilExpiry} يوم`;
-        }
-    }
-
-    // إضافة مستمعي الأحداث
-    licenseExtensionStartDate.addEventListener('change', function() {
-        if (validateLicenseExtensionDates()) {
-            updateLicenseExtensionAlert();
-        }
-    });
-
-    licenseExtensionEndDate.addEventListener('change', function() {
-        if (validateLicenseExtensionDates()) {
-            updateLicenseExtensionAlert();
-        }
-    });
-
-    licenseExtensionAlertDays.addEventListener('change', updateLicenseExtensionAlert);
-
-    invoiceExtensionStartDate.addEventListener('change', function() {
-        if (validateInvoiceExtensionDates()) {
-            updateInvoiceExtensionAlert();
-        }
-    });
-
-    invoiceExtensionEndDate.addEventListener('change', function() {
-        if (validateInvoiceExtensionDates()) {
-            updateInvoiceExtensionAlert();
-        }
-    });
-
-    invoiceExtensionAlertDays.addEventListener('change', updateInvoiceExtensionAlert);
 });
 </script>
-@endpush
 @endsection 

@@ -78,6 +78,14 @@ class WorkOrder extends Model
         return $this->hasMany(License::class);
     }
 
+    /**
+     * Get the materials for the work order.
+     */
+    public function materials()
+    {
+        return $this->hasMany(Material::class);
+    }
+
     // Scopes
     public function scopeActive($query)
     {

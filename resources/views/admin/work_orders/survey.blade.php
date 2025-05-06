@@ -26,7 +26,7 @@
                     @endif
 
                     <div class="d-flex justify-content-end mb-4">
-                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createSurveyModal">
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createSurveyModal" onclick="resetSurveyForm()">
                             <i class="fas fa-plus me-1"></i> إنشاء مسح جديد
                         </button>
                     </div>
@@ -276,6 +276,18 @@ function copyCoordinates(coordinates) {
     }).catch(err => {
         console.error('فشل نسخ الإحداثيات:', err);
     });
+}
+
+// Function to reset survey form
+function resetSurveyForm() {
+    // Reset form fields
+    document.getElementById('surveyForm').reset();
+    // Clear survey_id to ensure we're creating a new record, not updating
+    document.getElementById('survey_id').value = '';
+    // Hide existing images section
+    document.getElementById('existingImages').style.display = 'none';
+    // Update modal title
+    document.getElementById('createSurveyModalLabel').textContent = 'إنشاء مسح جديد';
 }
 
 function editSurvey(surveyId) {

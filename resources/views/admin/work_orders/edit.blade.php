@@ -19,6 +19,17 @@
                         @csrf
                         @method('PUT')
 
+                        <!-- Display any general errors -->
+                        @if ($errors->any())
+                            <div class="alert alert-danger mb-4">
+                                <ul class="mb-0">
+                                    @foreach ($errors->all() as $error)
+                                        <li>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @endif
+
                         <div class="row mb-4">
                             <div class="col-md-6">
                                 <div class="form-section mb-4">
@@ -720,6 +731,25 @@ document.addEventListener('DOMContentLoaded', function() {
     const workTypeSelect = document.getElementById('work_type');
     const workTypeNumber = document.getElementById('work_type_number');
     const workDescriptionInput = document.getElementById('work_description');
+    
+    // Form submission debugging
+    const form = document.querySelector('form.custom-form');
+    form.addEventListener('submit', function(e) {
+        console.log('Form submission initiated');
+        
+        // Prevent submission errors from being silent
+        try {
+            // Log form data
+            const formData = new FormData(form);
+            const formDataObj = {};
+            for (let [key, value] of formData.entries()) {
+                formDataObj[key] = value;
+            }
+            console.log('Form data:', formDataObj);
+        } catch (error) {
+            console.error('Form submission error:', error);
+        }
+    });
     
     // Function to load the description based on the work type
     function loadWorkDescription(workType) {

@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use App\Models\License;
+use App\Models\Material;
 
 class WorkOrderController extends Controller
 {
@@ -117,6 +118,9 @@ class WorkOrderController extends Controller
     public function show(WorkOrder $workOrder)
     {
         $workOrder->load('files');
+        $workOrder->load(['surveys' => function($query) {
+            $query->latest();
+        }, 'surveys.files']);
         return view('admin.work_orders.show', compact('workOrder'));
     }
 
@@ -134,6 +138,26 @@ class WorkOrderController extends Controller
      */
     public function update(Request $request, WorkOrder $workOrder)
     {
+        // Debug logging to check if the request is reaching the controller
+        \Illuminate\Support\Facades\Log::info('Work order update request received', [
+            'request_data' => $request->all(),
+            'work_order_id' => $workOrder->id,
+            'method' => $request->method(),
+            'url' => $request->url()
+        ]);
+        
+        // Convert string dates to proper date objects if needed
+        if ($request->has('extract_date') && $request->input('extract_date')) {
+            try {
+                // Ensure the date is properly formatted
+                $extractDate = \Carbon\Carbon::parse($request->input('extract_date'))->format('Y-m-d');
+                $request->merge(['extract_date' => $extractDate]);
+            } catch (\Exception $e) {
+                // Log the error but continue
+                \Illuminate\Support\Facades\Log::error('Date parsing error: ' . $e->getMessage());
+            }
+        }
+        
         $validated = $request->validate([
             'order_number' => 'required|string|max:255|unique:work_orders,order_number,' . $workOrder->id,
             'work_type' => 'required|string|max:999',
@@ -157,37 +181,47 @@ class WorkOrderController extends Controller
             'files.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx,xls,xlsx|max:10240', // Max 10MB per file
         ]);
 
-        $workOrder->update($validated);
-
-        // Handle file uploads
-        if ($request->hasFile('files')) {
-            foreach ($request->file('files') as $file) {
-                $originalName = $file->getClientOriginalName();
-                $extension = $file->getClientOriginalExtension();
-                $filename = time() . '_' . uniqid() . '.' . $extension;
-                
-                // Crear el directorio si no existe
-                $path = 'work_orders/' . $workOrder->id;
-                if (!Storage::disk('public')->exists($path)) {
-                    Storage::disk('public')->makeDirectory($path);
+        try {
+            // Update the work order
+            $workOrder->update($validated);
+            
+            // Handle file uploads
+            if ($request->hasFile('files')) {
+                foreach ($request->file('files') as $file) {
+                    $originalName = $file->getClientOriginalName();
+                    $extension = $file->getClientOriginalExtension();
+                    $filename = time() . '_' . uniqid() . '.' . $extension;
+                    
+                    // Create directory if it doesn't exist
+                    $path = 'work_orders/' . $workOrder->id;
+                    if (!Storage::disk('public')->exists($path)) {
+                        Storage::disk('public')->makeDirectory($path);
+                    }
+                    
+                    // Save the file
+                    $filePath = $file->storeAs($path, $filename, 'public');
+                    
+                    WorkOrderFile::create([
+                        'work_order_id' => $workOrder->id,
+                        'filename' => $filename,
+                        'original_filename' => $originalName,
+                        'file_path' => $filePath,
+                        'file_type' => $file->getClientMimeType(),
+                        'file_size' => $file->getSize(),
+                    ]);
                 }
-                
-                // Guardar el archivo
-                $filePath = $file->storeAs($path, $filename, 'public');
-                
-                WorkOrderFile::create([
-                    'work_order_id' => $workOrder->id,
-                    'filename' => $filename,
-                    'original_filename' => $originalName,
-                    'file_path' => $filePath,
-                    'file_type' => $file->getClientMimeType(),
-                    'file_size' => $file->getSize(),
-                ]);
             }
+            
+            return redirect()->route('admin.work-orders.index')
+                ->with('success', 'تم تحديث أمر العمل بنجاح');
+        } catch (\Exception $e) {
+            // Log the error
+            \Illuminate\Support\Facades\Log::error('Work order update error: ' . $e->getMessage());
+            
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['error' => 'حدث خطأ أثناء تحديث أمر العمل: ' . $e->getMessage()]);
         }
-
-        return redirect()->route('admin.work-orders.index')
-            ->with('success', 'تم تحديث أمر العمل بنجاح');
     }
 
     /**
@@ -270,8 +304,211 @@ class WorkOrderController extends Controller
      */
     public function materials()
     {
-        $workOrders = WorkOrder::where('execution_status', '!=', '5')->paginate(10);
-        return view('admin.work_orders.materials', compact('workOrders'));
+        \Log::info('Materials page is being accessed');
+        try {
+            $workOrders = WorkOrder::where('execution_status', '!=', '5')->with('materials')->paginate(10);
+            $materials = Material::with('workOrder')->latest()->paginate(20);
+            return view('admin.work_orders.materials', compact('workOrders', 'materials'));
+        } catch (\Exception $e) {
+            \Log::error('Error in materials page: ' . $e->getMessage());
+            \Log::error('Error stack trace: ' . $e->getTraceAsString());
+            abort(500, 'خطأ في تحميل صفحة المواد');
+        }
+    }
+
+    /**
+     * Store a new material.
+     */
+    public function storeMaterial(Request $request)
+    {
+        \Log::info('storeMaterial method called with data: ', $request->all());
+        
+        $validated = $request->validate([
+            'work_order_id' => 'required|exists:work_orders,id',
+            'code' => 'required|string|max:255',
+            'description' => 'required|string',
+            'planned_quantity' => 'required|numeric|min:0',
+            'unit' => 'required|string|max:255',
+            'line' => 'nullable|string|max:255',
+            'check_in_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
+            'check_out_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
+            'date_gatepass' => 'nullable|date',
+            'stock_in' => 'nullable|numeric|min:0',
+            'stock_in_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
+            'stock_out' => 'nullable|numeric|min:0',
+            'stock_out_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
+            'actual_quantity' => 'nullable|numeric|min:0',
+        ]);
+
+        \Log::info('Validation passed');
+        
+        // التعامل مع ملفات check_in و check_out وملفات المخزون
+        $data = $request->except(['check_in_file', 'check_out_file', 'stock_in_file', 'stock_out_file']);
+        
+        // تأكد من وضع قيم افتراضية للحقول الرقمية الفارغة
+        $data['stock_in'] = $data['stock_in'] ?? 0;
+        $data['stock_out'] = $data['stock_out'] ?? 0;
+        $data['actual_quantity'] = $data['actual_quantity'] ?? 0;
+        
+        // تحميل ملف check_in إذا وجد
+        if ($request->hasFile('check_in_file')) {
+            $file = $request->file('check_in_file');
+            $path = $file->store('materials/check_in', 'public');
+            $data['check_in_file'] = $path;
+        }
+        
+        // تحميل ملف check_out إذا وجد
+        if ($request->hasFile('check_out_file')) {
+            $file = $request->file('check_out_file');
+            $path = $file->store('materials/check_out', 'public');
+            $data['check_out_file'] = $path;
+        }
+
+        // تحميل ملف stock_in إذا وجد
+        if ($request->hasFile('stock_in_file')) {
+            $file = $request->file('stock_in_file');
+            $path = $file->store('materials/stock_in', 'public');
+            $data['stock_in_file'] = $path;
+        }
+        
+        // تحميل ملف stock_out إذا وجد
+        if ($request->hasFile('stock_out_file')) {
+            $file = $request->file('stock_out_file');
+            $path = $file->store('materials/stock_out', 'public');
+            $data['stock_out_file'] = $path;
+        }
+
+        // Calculate the difference
+        $planned = $data['planned_quantity'] ?? 0;
+        $actual = $data['actual_quantity'] ?? 0;
+        $data['difference'] = $planned - $actual;
+
+        $material = Material::create($data);
+        
+        \Log::info('Material created successfully with ID: ' . $material->id);
+
+        return redirect()->route('admin.work-orders.materials')
+            ->with('success', 'تم إضافة المادة بنجاح');
+    }
+
+    /**
+     * Display the form for editing a material.
+     */
+    public function editMaterial(Material $material)
+    {
+        $workOrders = WorkOrder::where('execution_status', '!=', '5')->get();
+        return view('admin.work_orders.edit_material', compact('material', 'workOrders'));
+    }
+
+    /**
+     * Update the specified material.
+     */
+    public function updateMaterial(Request $request, Material $material)
+    {
+        $validated = $request->validate([
+            'code' => 'required|string|max:255',
+            'description' => 'required|string',
+            'planned_quantity' => 'required|numeric|min:0',
+            'unit' => 'required|string|max:255',
+            'line' => 'nullable|string|max:255',
+            'check_in_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
+            'check_out_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
+            'date_gatepass' => 'nullable|date',
+            'stock_in' => 'nullable|numeric|min:0',
+            'stock_in_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
+            'stock_out' => 'nullable|numeric|min:0',
+            'stock_out_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
+            'actual_quantity' => 'nullable|numeric|min:0',
+        ]);
+
+        // التعامل مع ملفات check_in و check_out وملفات المخزون
+        $data = $request->except(['check_in_file', 'check_out_file', 'stock_in_file', 'stock_out_file']);
+        
+        // تحميل ملف check_in إذا وجد
+        if ($request->hasFile('check_in_file')) {
+            // حذف الملف القديم إذا وجد
+            if ($material->check_in_file) {
+                Storage::disk('public')->delete($material->check_in_file);
+            }
+            
+            $file = $request->file('check_in_file');
+            $path = $file->store('materials/check_in', 'public');
+            $data['check_in_file'] = $path;
+        }
+        
+        // تحميل ملف check_out إذا وجد
+        if ($request->hasFile('check_out_file')) {
+            // حذف الملف القديم إذا وجد
+            if ($material->check_out_file) {
+                Storage::disk('public')->delete($material->check_out_file);
+            }
+            
+            $file = $request->file('check_out_file');
+            $path = $file->store('materials/check_out', 'public');
+            $data['check_out_file'] = $path;
+        }
+
+        // تحميل ملف stock_in إذا وجد
+        if ($request->hasFile('stock_in_file')) {
+            // حذف الملف القديم إذا وجد
+            if ($material->stock_in_file) {
+                Storage::disk('public')->delete($material->stock_in_file);
+            }
+            
+            $file = $request->file('stock_in_file');
+            $path = $file->store('materials/stock_in', 'public');
+            $data['stock_in_file'] = $path;
+        }
+        
+        // تحميل ملف stock_out إذا وجد
+        if ($request->hasFile('stock_out_file')) {
+            // حذف الملف القديم إذا وجد
+            if ($material->stock_out_file) {
+                Storage::disk('public')->delete($material->stock_out_file);
+            }
+            
+            $file = $request->file('stock_out_file');
+            $path = $file->store('materials/stock_out', 'public');
+            $data['stock_out_file'] = $path;
+        }
+
+        // Calculate the difference
+        $planned = $data['planned_quantity'] ?? 0;
+        $actual = $data['actual_quantity'] ?? 0;
+        $data['difference'] = $planned - $actual;
+
+        $material->update($data);
+
+        return redirect()->route('admin.work-orders.materials')
+            ->with('success', 'تم تحديث المادة بنجاح');
+    }
+
+    /**
+     * Remove the specified material.
+     */
+    public function destroyMaterial(Material $material)
+    {
+        // حذف الملفات المرفقة
+        if ($material->check_in_file) {
+            Storage::disk('public')->delete($material->check_in_file);
+        }
+        
+        if ($material->check_out_file) {
+            Storage::disk('public')->delete($material->check_out_file);
+        }
+        
+        if ($material->stock_in_file) {
+            Storage::disk('public')->delete($material->stock_in_file);
+        }
+        
+        if ($material->stock_out_file) {
+            Storage::disk('public')->delete($material->stock_out_file);
+        }
+        
+        $material->delete();
+
+        return redirect()->route('admin.work-orders.materials')
+            ->with('success', 'تم حذف المادة بنجاح');
     }
 
     /**
@@ -289,6 +526,7 @@ class WorkOrderController extends Controller
     {
         try {
             $validated = $request->validate([
+                'survey_id' => 'nullable|exists:surveys,id',
                 'start_coordinates' => 'required|string|max:255',
                 'end_coordinates' => 'required|string|max:255',
                 'has_obstacles' => 'required|boolean',
@@ -296,13 +534,31 @@ class WorkOrderController extends Controller
                 'site_images.*' => 'nullable|image|max:30720', // 30MB max per image
             ]);
 
-            // Create new survey record
-            $survey = $workOrder->surveys()->create([
-                'start_coordinates' => $validated['start_coordinates'],
-                'end_coordinates' => $validated['end_coordinates'],
-                'has_obstacles' => $validated['has_obstacles'],
-                'obstacles_notes' => $validated['obstacles_notes'] ?? null,
-            ]);
+            // Check if we're updating an existing survey or creating a new one
+            if ($request->filled('survey_id')) {
+                // Update existing survey
+                $survey = Survey::findOrFail($request->survey_id);
+                
+                // Make sure the survey belongs to this work order
+                if ($survey->work_order_id != $workOrder->id) {
+                    throw new \Exception('هذا المسح لا ينتمي إلى أمر العمل الحالي');
+                }
+                
+                $survey->update([
+                    'start_coordinates' => $validated['start_coordinates'],
+                    'end_coordinates' => $validated['end_coordinates'],
+                    'has_obstacles' => $validated['has_obstacles'],
+                    'obstacles_notes' => $validated['obstacles_notes'] ?? null,
+                ]);
+            } else {
+                // Create new survey record
+                $survey = $workOrder->surveys()->create([
+                    'start_coordinates' => $validated['start_coordinates'],
+                    'end_coordinates' => $validated['end_coordinates'],
+                    'has_obstacles' => $validated['has_obstacles'],
+                    'obstacles_notes' => $validated['obstacles_notes'] ?? null,
+                ]);
+            }
 
             // Handle file uploads
             if ($request->hasFile('site_images')) {
@@ -315,6 +571,7 @@ class WorkOrderController extends Controller
                     // Create file record
                     WorkOrderFile::create([
                         'work_order_id' => $workOrder->id,
+                        'survey_id' => $survey->id,
                         'filename' => $fileName,
                         'original_filename' => $image->getClientOriginalName(),
                         'file_path' => $path,
@@ -327,7 +584,7 @@ class WorkOrderController extends Controller
             if ($request->wantsJson()) {
                 return response()->json([
                     'success' => true,
-                    'message' => 'تم حفظ المسح بنجاح',
+                    'message' => $request->filled('survey_id') ? 'تم تحديث المسح بنجاح' : 'تم حفظ المسح بنجاح',
                     'survey' => [
                         'id' => $survey->id,
                         'start_coordinates' => $survey->start_coordinates,
@@ -340,7 +597,7 @@ class WorkOrderController extends Controller
                 ]);
             }
 
-            return redirect()->back()->with('success', 'تم حفظ المسح بنجاح');
+            return redirect()->back()->with('success', $request->filled('survey_id') ? 'تم تحديث المسح بنجاح' : 'تم حفظ المسح بنجاح');
         } catch (\Exception $e) {
             \Log::error('Survey store error: ' . $e->getMessage());
             
@@ -369,6 +626,9 @@ class WorkOrderController extends Controller
     public function license(WorkOrder $workOrder)
     {
         $workOrder->load(['license', 'files']);
+        $workOrder->load(['surveys' => function($query) {
+            $query->latest();
+        }, 'surveys.files']);
         return view('admin.work_orders.license', compact('workOrder'));
     }
 

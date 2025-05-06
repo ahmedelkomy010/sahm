@@ -28,7 +28,7 @@ class Survey extends Model
 
     public function files()
     {
-        return $this->hasMany(WorkOrderFile::class, 'work_order_id', 'work_order_id')
+        return $this->hasMany(WorkOrderFile::class, 'survey_id')
             ->where('file_type', 'like', 'image/%');
     }
 } 

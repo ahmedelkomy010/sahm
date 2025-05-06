@@ -11,6 +11,7 @@ class WorkOrderFile extends Model
 
     protected $fillable = [
         'work_order_id',
+        'survey_id',
         'filename',
         'original_filename',
         'file_path',
@@ -21,5 +22,10 @@ class WorkOrderFile extends Model
     public function workOrder()
     {
         return $this->belongsTo(WorkOrder::class);
+    }
+
+    public function survey()
+    {
+        return $this->belongsTo(Survey::class);
     }
 } 

@@ -31,9 +31,16 @@ class RegisteredUserController extends Controller
     {
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
+            'email' => ['required', 'string', 'lowercase', 'email', 'max:255'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
+
+        $existingUser = User::where('email', $request->email)->first();
+        if ($existingUser) {
+            return back()->withErrors([
+                'email' => 'البريد الإلكتروني مستخدم بالفعل.'
+            ])->withInput();
+        }
 
         $user = User::create([
             'name' => $request->name,
