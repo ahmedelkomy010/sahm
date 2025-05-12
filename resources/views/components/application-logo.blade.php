@@ -1,18 +1,8 @@
-<img src="{{ asset('img/logoSahm2.png') }}" alt="My Logo" class="h-12 w-auto">
-
-
-
+<!-- تم حذف الشعار بناءً على طلب المستخدم -->
+<span class="text-2xl font-bold text-gray-800">سهم بلدي</span>
 
 <style>
     body{
-        background-color:#000;
+        background-color: white;
     }
-
-.text {
-    font-size:30px;
-    font-family:'poppins', sans-serif;
-
-
-}
-
 </style>

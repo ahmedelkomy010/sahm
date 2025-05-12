@@ -48,17 +48,15 @@ class MaterialsController extends Controller
             'unit' => 'required|string|max:255',
             'line' => 'nullable|string|max:255',
             'check_in_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
-            'check_out_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
             'date_gatepass' => 'nullable|date',
-            'stock_in' => 'nullable|numeric|min:0',
-            'stock_in_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
-            'stock_out' => 'nullable|numeric|min:0',
-            'stock_out_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
+            'gate_pass_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
+            'store_in_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
+            'store_out_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
             'actual_quantity' => 'nullable|numeric|min:0',
         ]);
 
-        // التعامل مع ملفات check_in و check_out وملفات المخزون
-        $data = $request->except(['check_in_file', 'check_out_file', 'stock_in_file', 'stock_out_file']);
+        // التعامل مع الملفات
+        $data = $request->except(['check_in_file', 'gate_pass_file', 'store_in_file', 'store_out_file']);
         
         // تحميل ملف check_in إذا وجد
         if ($request->hasFile('check_in_file')) {
@@ -67,25 +65,25 @@ class MaterialsController extends Controller
             $data['check_in_file'] = $path;
         }
         
-        // تحميل ملف check_out إذا وجد
-        if ($request->hasFile('check_out_file')) {
-            $file = $request->file('check_out_file');
-            $path = $file->store('materials/check_out', 'public');
-            $data['check_out_file'] = $path;
+        // تحميل ملف gate_pass إذا وجد
+        if ($request->hasFile('gate_pass_file')) {
+            $file = $request->file('gate_pass_file');
+            $path = $file->store('materials/gate_pass', 'public');
+            $data['gate_pass_file'] = $path;
         }
 
-        // تحميل ملف stock_in إذا وجد
-        if ($request->hasFile('stock_in_file')) {
-            $file = $request->file('stock_in_file');
-            $path = $file->store('materials/stock_in', 'public');
-            $data['stock_in_file'] = $path;
+        // تحميل ملف store_in إذا وجد
+        if ($request->hasFile('store_in_file')) {
+            $file = $request->file('store_in_file');
+            $path = $file->store('materials/store_in', 'public');
+            $data['store_in_file'] = $path;
         }
         
-        // تحميل ملف stock_out إذا وجد
-        if ($request->hasFile('stock_out_file')) {
-            $file = $request->file('stock_out_file');
-            $path = $file->store('materials/stock_out', 'public');
-            $data['stock_out_file'] = $path;
+        // تحميل ملف store_out إذا وجد
+        if ($request->hasFile('store_out_file')) {
+            $file = $request->file('store_out_file');
+            $path = $file->store('materials/store_out', 'public');
+            $data['store_out_file'] = $path;
         }
 
         // حساب الفرق بين الكمية المخططة والكمية الفعلية
@@ -129,17 +127,15 @@ class MaterialsController extends Controller
             'unit' => 'required|string|max:255',
             'line' => 'nullable|string|max:255',
             'check_in_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
-            'check_out_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
             'date_gatepass' => 'nullable|date',
-            'stock_in' => 'nullable|numeric|min:0',
-            'stock_in_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
-            'stock_out' => 'nullable|numeric|min:0',
-            'stock_out_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
+            'gate_pass_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
+            'store_in_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
+            'store_out_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
             'actual_quantity' => 'nullable|numeric|min:0',
         ]);
 
-        // التعامل مع ملفات check_in و check_out وملفات المخزون
-        $data = $request->except(['check_in_file', 'check_out_file', 'stock_in_file', 'stock_out_file']);
+        // التعامل مع الملفات
+        $data = $request->except(['check_in_file', 'gate_pass_file', 'store_in_file', 'store_out_file']);
         
         // تحميل ملف check_in إذا وجد
         if ($request->hasFile('check_in_file')) {
@@ -153,40 +149,40 @@ class MaterialsController extends Controller
             $data['check_in_file'] = $path;
         }
         
-        // تحميل ملف check_out إذا وجد
-        if ($request->hasFile('check_out_file')) {
+        // تحميل ملف gate_pass إذا وجد
+        if ($request->hasFile('gate_pass_file')) {
             // حذف الملف القديم إذا وجد
-            if ($material->check_out_file) {
-                Storage::disk('public')->delete($material->check_out_file);
+            if ($material->gate_pass_file) {
+                Storage::disk('public')->delete($material->gate_pass_file);
             }
             
-            $file = $request->file('check_out_file');
-            $path = $file->store('materials/check_out', 'public');
-            $data['check_out_file'] = $path;
+            $file = $request->file('gate_pass_file');
+            $path = $file->store('materials/gate_pass', 'public');
+            $data['gate_pass_file'] = $path;
         }
 
-        // تحميل ملف stock_in إذا وجد
-        if ($request->hasFile('stock_in_file')) {
+        // تحميل ملف store_in إذا وجد
+        if ($request->hasFile('store_in_file')) {
             // حذف الملف القديم إذا وجد
-            if ($material->stock_in_file) {
-                Storage::disk('public')->delete($material->stock_in_file);
+            if ($material->store_in_file) {
+                Storage::disk('public')->delete($material->store_in_file);
             }
             
-            $file = $request->file('stock_in_file');
-            $path = $file->store('materials/stock_in', 'public');
-            $data['stock_in_file'] = $path;
+            $file = $request->file('store_in_file');
+            $path = $file->store('materials/store_in', 'public');
+            $data['store_in_file'] = $path;
         }
         
-        // تحميل ملف stock_out إذا وجد
-        if ($request->hasFile('stock_out_file')) {
+        // تحميل ملف store_out إذا وجد
+        if ($request->hasFile('store_out_file')) {
             // حذف الملف القديم إذا وجد
-            if ($material->stock_out_file) {
-                Storage::disk('public')->delete($material->stock_out_file);
+            if ($material->store_out_file) {
+                Storage::disk('public')->delete($material->store_out_file);
             }
             
-            $file = $request->file('stock_out_file');
-            $path = $file->store('materials/stock_out', 'public');
-            $data['stock_out_file'] = $path;
+            $file = $request->file('store_out_file');
+            $path = $file->store('materials/store_out', 'public');
+            $data['store_out_file'] = $path;
         }
 
         // حساب الفرق بين الكمية المخططة والكمية الفعلية
@@ -210,16 +206,16 @@ class MaterialsController extends Controller
             Storage::disk('public')->delete($material->check_in_file);
         }
         
-        if ($material->check_out_file) {
-            Storage::disk('public')->delete($material->check_out_file);
+        if ($material->gate_pass_file) {
+            Storage::disk('public')->delete($material->gate_pass_file);
         }
         
-        if ($material->stock_in_file) {
-            Storage::disk('public')->delete($material->stock_in_file);
+        if ($material->store_in_file) {
+            Storage::disk('public')->delete($material->store_in_file);
         }
         
-        if ($material->stock_out_file) {
-            Storage::disk('public')->delete($material->stock_out_file);
+        if ($material->store_out_file) {
+            Storage::disk('public')->delete($material->store_out_file);
         }
         
         $material->delete();

@@ -8,20 +8,20 @@
                 <div class="card-header bg-primary text-white py-3 d-flex justify-content-between align-items-center">
                     <h3 class="mb-0 fs-4">تفاصيل أمر العمل</h3>
                     <div class="d-flex gap-2">
-                        <a href="{{ route('materials.index') }}" class="btn btn-light btn-sm px-3" style="min-width: 100px;">
+                        <a href="{{ route('admin.work-orders.materials') }}" class="btn btn-light btn-sm px-3" style="min-width: 100px;">
                             <i class="fas fa-boxes me-1"></i> المواد
                         </a>
                         <a href="{{ route('admin.work-orders.survey', $workOrder) }}" class="btn btn-light btn-sm px-3" style="min-width: 100px;">
                             <i class="fas fa-map-marked-alt me-1"></i> المسح
                         </a>
                         <a href="{{ route('admin.work-orders.license', $workOrder) }}" class="btn btn-light btn-sm px-3" style="min-width: 100px;">
-                            <i class="fas fa-file-alt me-1"></i> رخص
+                            <i class="fas fa-file-alt me-1"></i> رخصة العمل
                         </a>
                         <a href="{{ route('admin.work-orders.execution', $workOrder) }}" class="btn btn-light btn-sm px-3" style="min-width: 100px;">
                             <i class="fas fa-tools me-1"></i> تنفيذ
                         </a>
-                        <a href="{{ route('admin.work-orders.post-execution', $workOrder) }}" class="btn btn-light btn-sm px-3" style="min-width: 120px;">
-                            <i class="fas fa-clipboard-check me-1"></i> إجراءات ما بعد التنفيذ
+                        <a href="{{ route('admin.work-orders.actions-execution', $workOrder) }}" class="btn btn-light btn-sm px-3" style="min-width: 120px;">
+                            <i class="fas fa-cogs me-1"></i> إجراءات ما بعد التنفيذ
                         </a>
                         <a href="{{ route('admin.work-orders.edit', $workOrder) }}" class="btn btn-light btn-sm">
                             <i class="fas fa-edit"></i> تعديل
@@ -266,6 +266,18 @@
                                 </tbody>
                             </table>
                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-4">
+                <div class="card-header bg-info text-white">
+                    <h4 class="mb-0">الإجراءات والتنفيذ</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info text-center">
+                        <h5>مرحباً بك في قسم الإجراءات والتنفيذ لهذا الأمر.</h5>
+                        <p>يمكنك تطوير هذا القسم لاحقاً لإضافة تفاصيل أو نماذج خاصة بالإجراءات والتنفيذ.</p>
                     </div>
                 </div>
             </div>

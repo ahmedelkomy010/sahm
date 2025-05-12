@@ -24,13 +24,20 @@ class WorkOrder extends Model
         'actual_execution_value',
         'procedure_155_delivery_date',
         'procedure_211_date',
+        'partial_deletion',
+        'partial_payment_value',
         'office',
         'extract_number',
         'extract_date',
         'extract_value',
+        'invoice_number',
+        'purchase_order_number',
+        'tax_value',
         'notes',
         'project',
-        'user_id'
+        'user_id',
+        'execution_file',
+        'execution_notes'
     ];
 
     protected $casts = [
@@ -38,6 +45,7 @@ class WorkOrder extends Model
         'procedure_155_delivery_date' => 'date',
         'procedure_211_date' => 'date',
         'extract_date' => 'date',
+        'partial_deletion' => 'boolean',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];

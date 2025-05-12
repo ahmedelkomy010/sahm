@@ -173,10 +173,15 @@ class WorkOrderController extends Controller
             'actual_execution_value' => 'nullable|numeric|min:0',
             'procedure_155_delivery_date' => 'nullable|date',
             'procedure_211_date' => 'nullable|date',
+            'partial_deletion' => 'nullable|boolean',
+            'partial_payment_value' => 'nullable|numeric|min:0',
             'office' => 'nullable|string|max:255',
             'extract_number' => 'nullable|string|max:255',
             'extract_date' => 'nullable|date',
             'extract_value' => 'nullable|numeric|min:0',
+            'invoice_number' => 'nullable|string|max:255',
+            'purchase_order_number' => 'nullable|string|max:255',
+            'tax_value' => 'nullable|numeric|min:0',
             'notes' => 'nullable|string',
             'files.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx,xls,xlsx|max:10240', // Max 10MB per file
         ]);
@@ -304,13 +309,21 @@ class WorkOrderController extends Controller
      */
     public function materials()
     {
-        \Log::info('Materials page is being accessed');
+        \Log::info('Materials page is being accessed from WorkOrderController');
         try {
+            // تسجيل مع تحديد المتحكم بوضوح
+            \Log::info('Loading data for materials page from WorkOrderController');
+            
             $workOrders = WorkOrder::where('execution_status', '!=', '5')->with('materials')->paginate(10);
             $materials = Material::with('workOrder')->latest()->paginate(20);
+            
+            // تسجيل بيانات التصحيح
+            \Log::info('Work Orders count: ' . $workOrders->count());
+            \Log::info('Materials count: ' . $materials->count());
+            
             return view('admin.work_orders.materials', compact('workOrders', 'materials'));
         } catch (\Exception $e) {
-            \Log::error('Error in materials page: ' . $e->getMessage());
+            \Log::error('Error in materials page (WorkOrderController): ' . $e->getMessage());
             \Log::error('Error stack trace: ' . $e->getTraceAsString());
             abort(500, 'خطأ في تحميل صفحة المواد');
         }
@@ -331,23 +344,19 @@ class WorkOrderController extends Controller
             'unit' => 'required|string|max:255',
             'line' => 'nullable|string|max:255',
             'check_in_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
-            'check_out_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
             'date_gatepass' => 'nullable|date',
-            'stock_in' => 'nullable|numeric|min:0',
-            'stock_in_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
-            'stock_out' => 'nullable|numeric|min:0',
-            'stock_out_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
+            'gate_pass_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
+            'store_in_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
+            'store_out_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
             'actual_quantity' => 'nullable|numeric|min:0',
         ]);
 
         \Log::info('Validation passed');
         
-        // التعامل مع ملفات check_in و check_out وملفات المخزون
-        $data = $request->except(['check_in_file', 'check_out_file', 'stock_in_file', 'stock_out_file']);
+        // التعامل مع الملفات
+        $data = $request->except(['check_in_file', 'gate_pass_file', 'store_in_file', 'store_out_file']);
         
         // تأكد من وضع قيم افتراضية للحقول الرقمية الفارغة
-        $data['stock_in'] = $data['stock_in'] ?? 0;
-        $data['stock_out'] = $data['stock_out'] ?? 0;
         $data['actual_quantity'] = $data['actual_quantity'] ?? 0;
         
         // تحميل ملف check_in إذا وجد
@@ -357,25 +366,25 @@ class WorkOrderController extends Controller
             $data['check_in_file'] = $path;
         }
         
-        // تحميل ملف check_out إذا وجد
-        if ($request->hasFile('check_out_file')) {
-            $file = $request->file('check_out_file');
-            $path = $file->store('materials/check_out', 'public');
-            $data['check_out_file'] = $path;
+        // تحميل ملف gate_pass إذا وجد
+        if ($request->hasFile('gate_pass_file')) {
+            $file = $request->file('gate_pass_file');
+            $path = $file->store('materials/gate_pass', 'public');
+            $data['gate_pass_file'] = $path;
         }
 
-        // تحميل ملف stock_in إذا وجد
-        if ($request->hasFile('stock_in_file')) {
-            $file = $request->file('stock_in_file');
-            $path = $file->store('materials/stock_in', 'public');
-            $data['stock_in_file'] = $path;
+        // تحميل ملف store_in إذا وجد
+        if ($request->hasFile('store_in_file')) {
+            $file = $request->file('store_in_file');
+            $path = $file->store('materials/store_in', 'public');
+            $data['store_in_file'] = $path;
         }
         
-        // تحميل ملف stock_out إذا وجد
-        if ($request->hasFile('stock_out_file')) {
-            $file = $request->file('stock_out_file');
-            $path = $file->store('materials/stock_out', 'public');
-            $data['stock_out_file'] = $path;
+        // تحميل ملف store_out إذا وجد
+        if ($request->hasFile('store_out_file')) {
+            $file = $request->file('store_out_file');
+            $path = $file->store('materials/store_out', 'public');
+            $data['store_out_file'] = $path;
         }
 
         // Calculate the difference
@@ -412,17 +421,15 @@ class WorkOrderController extends Controller
             'unit' => 'required|string|max:255',
             'line' => 'nullable|string|max:255',
             'check_in_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
-            'check_out_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
             'date_gatepass' => 'nullable|date',
-            'stock_in' => 'nullable|numeric|min:0',
-            'stock_in_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
-            'stock_out' => 'nullable|numeric|min:0',
-            'stock_out_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
+            'gate_pass_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
+            'store_in_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
+            'store_out_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
             'actual_quantity' => 'nullable|numeric|min:0',
         ]);
 
-        // التعامل مع ملفات check_in و check_out وملفات المخزون
-        $data = $request->except(['check_in_file', 'check_out_file', 'stock_in_file', 'stock_out_file']);
+        // التعامل مع الملفات
+        $data = $request->except(['check_in_file', 'gate_pass_file', 'store_in_file', 'store_out_file']);
         
         // تحميل ملف check_in إذا وجد
         if ($request->hasFile('check_in_file')) {
@@ -436,40 +443,40 @@ class WorkOrderController extends Controller
             $data['check_in_file'] = $path;
         }
         
-        // تحميل ملف check_out إذا وجد
-        if ($request->hasFile('check_out_file')) {
+        // تحميل ملف gate_pass إذا وجد
+        if ($request->hasFile('gate_pass_file')) {
             // حذف الملف القديم إذا وجد
-            if ($material->check_out_file) {
-                Storage::disk('public')->delete($material->check_out_file);
+            if ($material->gate_pass_file) {
+                Storage::disk('public')->delete($material->gate_pass_file);
             }
             
-            $file = $request->file('check_out_file');
-            $path = $file->store('materials/check_out', 'public');
-            $data['check_out_file'] = $path;
+            $file = $request->file('gate_pass_file');
+            $path = $file->store('materials/gate_pass', 'public');
+            $data['gate_pass_file'] = $path;
         }
 
-        // تحميل ملف stock_in إذا وجد
-        if ($request->hasFile('stock_in_file')) {
+        // تحميل ملف store_in إذا وجد
+        if ($request->hasFile('store_in_file')) {
             // حذف الملف القديم إذا وجد
-            if ($material->stock_in_file) {
-                Storage::disk('public')->delete($material->stock_in_file);
+            if ($material->store_in_file) {
+                Storage::disk('public')->delete($material->store_in_file);
             }
             
-            $file = $request->file('stock_in_file');
-            $path = $file->store('materials/stock_in', 'public');
-            $data['stock_in_file'] = $path;
+            $file = $request->file('store_in_file');
+            $path = $file->store('materials/store_in', 'public');
+            $data['store_in_file'] = $path;
         }
         
-        // تحميل ملف stock_out إذا وجد
-        if ($request->hasFile('stock_out_file')) {
+        // تحميل ملف store_out إذا وجد
+        if ($request->hasFile('store_out_file')) {
             // حذف الملف القديم إذا وجد
-            if ($material->stock_out_file) {
-                Storage::disk('public')->delete($material->stock_out_file);
+            if ($material->store_out_file) {
+                Storage::disk('public')->delete($material->store_out_file);
             }
             
-            $file = $request->file('stock_out_file');
-            $path = $file->store('materials/stock_out', 'public');
-            $data['stock_out_file'] = $path;
+            $file = $request->file('store_out_file');
+            $path = $file->store('materials/store_out', 'public');
+            $data['store_out_file'] = $path;
         }
 
         // Calculate the difference
@@ -493,16 +500,16 @@ class WorkOrderController extends Controller
             Storage::disk('public')->delete($material->check_in_file);
         }
         
-        if ($material->check_out_file) {
-            Storage::disk('public')->delete($material->check_out_file);
+        if ($material->gate_pass_file) {
+            Storage::disk('public')->delete($material->gate_pass_file);
         }
         
-        if ($material->stock_in_file) {
-            Storage::disk('public')->delete($material->stock_in_file);
+        if ($material->store_in_file) {
+            Storage::disk('public')->delete($material->store_in_file);
         }
         
-        if ($material->stock_out_file) {
-            Storage::disk('public')->delete($material->stock_out_file);
+        if ($material->store_out_file) {
+            Storage::disk('public')->delete($material->store_out_file);
         }
         
         $material->delete();
@@ -619,8 +626,16 @@ class WorkOrderController extends Controller
      */
     public function licenses()
     {
-        $workOrders = WorkOrder::with(['license', 'files'])->get();
-        return view('admin.work_orders.licenses', compact('workOrders'));
+        // بدلاً من عرض صفحة الرخص، سنقوم بإعادة التوجيه إلى صفحة رخصة أمر العمل الأول
+        $firstWorkOrder = WorkOrder::first();
+        
+        if ($firstWorkOrder) {
+            return redirect()->route('admin.work-orders.license', $firstWorkOrder);
+        }
+        
+        // في حالة عدم وجود أوامر عمل، نعرض رسالة
+        return redirect()->route('admin.work-orders.index')
+            ->with('warning', 'لا توجد أوامر عمل لعرض الرخص');
     }
 
     public function license(WorkOrder $workOrder)
@@ -744,19 +759,116 @@ class WorkOrderController extends Controller
     /**
      * Display the execution section.
      */
-    public function execution()
+    public function execution(WorkOrder $workOrder)
     {
-        $workOrders = WorkOrder::where('execution_status', '!=', '5')->paginate(10);
-        return view('admin.work_orders.execution', compact('workOrders'));
+        return view('admin.work_orders.execution', compact('workOrder'));
     }
 
     /**
-     * Display the post-execution section.
+     * Update execution information.
      */
-    public function postExecution()
+    public function updateExecution(Request $request, WorkOrder $workOrder)
     {
+        $validated = $request->validate([
+            'execution_status' => 'required|in:1,2,3,4,5,6',
+            'actual_execution_value' => 'nullable|numeric|min:0',
+            'execution_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx,xls,xlsx|max:10240',
+            'execution_notes' => 'nullable|string',
+        ]);
+
+        // Handle file upload
+        if ($request->hasFile('execution_file')) {
+            // Delete old file if exists
+            if ($workOrder->execution_file) {
+                Storage::disk('public')->delete($workOrder->execution_file);
+            }
+
+            $file = $request->file('execution_file');
+            $path = $file->store('work_orders/' . $workOrder->id . '/execution', 'public');
+            $validated['execution_file'] = $path;
+        }
+
+        $workOrder->update($validated);
+
+        return redirect()->back()->with('success', 'تم تحديث معلومات التنفيذ بنجاح');
+    }
+
+    /**
+     * Delete execution file.
+     */
+    public function deleteExecutionFile(WorkOrder $workOrder)
+    {
+        if ($workOrder->execution_file) {
+            Storage::disk('public')->delete($workOrder->execution_file);
+            $workOrder->update(['execution_file' => null]);
+        }
+
+        return redirect()->back()->with('success', 'تم حذف ملف التنفيذ بنجاح');
+    }
+
+    /**
+     * Display the post-execution list or individual work order.
+     */
+    public function postExecution(Request $request)
+    {
+        $workOrderId = $request->query('id');
+        
+        if ($workOrderId) {
+            $workOrder = WorkOrder::findOrFail($workOrderId);
+            return view('admin.work_orders.post-execution', compact('workOrder'));
+        }
+        
         $workOrders = WorkOrder::where('execution_status', '!=', '5')->paginate(10);
-        return view('admin.work_orders.post-execution', compact('workOrders'));
+        return view('admin.work_orders.post-execution-list', compact('workOrders'));
+    }
+
+    /**
+     * Update post-execution information.
+     */
+    public function updatePostExecution(Request $request)
+    {
+        $workOrder = WorkOrder::findOrFail($request->input('work_order_id'));
+        
+        $validated = $request->validate([
+            'work_order_id' => 'required|exists:work_orders,id',
+            'post_execution_status' => 'required|in:1,2,3,4',
+            'post_execution_value' => 'nullable|numeric|min:0',
+            'post_execution_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx,xls,xlsx|max:10240',
+            'post_execution_notes' => 'nullable|string',
+        ]);
+
+        // Handle file upload
+        if ($request->hasFile('post_execution_file')) {
+            // Delete old file if exists
+            if ($workOrder->post_execution_file) {
+                Storage::disk('public')->delete($workOrder->post_execution_file);
+            }
+
+            $file = $request->file('post_execution_file');
+            $path = $file->store('work_orders/' . $workOrder->id . '/post_execution', 'public');
+            $validated['post_execution_file'] = $path;
+        }
+
+        $workOrder->update($validated);
+
+        return redirect()->route('admin.work-orders.post-execution', ['id' => $workOrder->id])
+            ->with('success', 'تم تحديث معلومات ما بعد التنفيذ بنجاح');
+    }
+
+    /**
+     * Delete post-execution file.
+     */
+    public function deletePostExecutionFile(Request $request)
+    {
+        $workOrder = WorkOrder::findOrFail($request->input('work_order_id'));
+        
+        if ($workOrder->post_execution_file) {
+            Storage::disk('public')->delete($workOrder->post_execution_file);
+            $workOrder->update(['post_execution_file' => null]);
+        }
+
+        return redirect()->route('admin.work-orders.post-execution', ['id' => $workOrder->id])
+            ->with('success', 'تم حذف ملف ما بعد التنفيذ بنجاح');
     }
 
     /**
@@ -804,5 +916,13 @@ class WorkOrderController extends Controller
                 'message' => 'حدث خطأ أثناء تحميل بيانات المسح: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * عرض صفحة الإجراءات والتنفيذ.
+     */
+    public function actionsExecution(WorkOrder $workOrder)
+    {
+        return view('admin.work_orders.actions-execution', compact('workOrder'));
     }
 }

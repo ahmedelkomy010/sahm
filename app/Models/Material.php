@@ -17,12 +17,10 @@ class Material extends Model
         'unit',
         'line',
         'check_in_file',
-        'check_out_file',
         'date_gatepass',
-        'stock_in',
-        'stock_in_file',
-        'stock_out',
-        'stock_out_file',
+        'gate_pass_file',
+        'store_in_file',
+        'store_out_file',
         'actual_quantity',
         'difference'
     ];
@@ -30,8 +28,6 @@ class Material extends Model
     protected $casts = [
         'date_gatepass' => 'date',
         'planned_quantity' => 'decimal:2',
-        'stock_in' => 'decimal:2',
-        'stock_out' => 'decimal:2',
         'actual_quantity' => 'decimal:2',
         'difference' => 'decimal:2',
     ];

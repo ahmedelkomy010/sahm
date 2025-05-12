@@ -65,12 +65,39 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::get('/settings', [App\Http\Controllers\Admin\SettingsController::class, 'index'])->name('settings');
     Route::post('/settings', [App\Http\Controllers\Admin\SettingsController::class, 'update'])->name('settings.update');
     
-    // Work Orders
-    Route::resource('work-orders', App\Http\Controllers\WorkOrderController::class)->parameters([
+    // وحدات التحكم في أوامر العمل والمواد
+    // صفحة المواد ووظائفها (سنضعها قبل resource لأهميتها)
+    Route::get('work-orders/materials', [WorkOrderController::class, 'materials'])->name('work-orders.materials');
+    Route::post('work-orders/materials', [WorkOrderController::class, 'storeMaterial'])->name('work-orders.materials.store');
+    Route::get('work-orders/materials/{material}/edit', [WorkOrderController::class, 'editMaterial'])->name('work-orders.materials.edit');
+    Route::put('work-orders/materials/{material}', [WorkOrderController::class, 'updateMaterial'])->name('work-orders.materials.update');
+    Route::delete('work-orders/materials/{material}', [WorkOrderController::class, 'destroyMaterial'])->name('work-orders.materials.destroy');
+    
+    // وظائف أوامر العمل الأخرى
+    Route::delete('work-orders/files/{id}', [WorkOrderController::class, 'deleteFile'])->name('work-orders.files.delete');
+    Route::get('work-orders/descriptions/{workType}', [WorkOrderController::class, 'getWorkDescription'])->name('work-orders.descriptions');
+    
+    // تسجيل Resource بعد تسجيل المسارات المخصصة
+    Route::resource('work-orders', WorkOrderController::class)->parameters([
         'work-orders' => 'workOrder'
     ]);
-    Route::delete('work-orders/files/{id}', [App\Http\Controllers\WorkOrderController::class, 'deleteFile'])->name('work-orders.files.delete');
-    Route::get('work-orders/descriptions/{workType}', [App\Http\Controllers\WorkOrderController::class, 'getWorkDescription'])->name('work-orders.descriptions');
+    
+    // صفحات المسح (Survey)
+    Route::get('work-orders/{workOrder}/survey', [WorkOrderController::class, 'survey'])->name('work-orders.survey');
+    Route::post('work-orders/{workOrder}/survey', [WorkOrderController::class, 'storeSurvey'])->name('work-orders.survey.store');
+    Route::get('work-orders/survey/{survey}/edit', [WorkOrderController::class, 'editSurvey'])->name('work-orders.survey.edit');
+    
+    // صفحات الرخص والتنفيذ
+    Route::get('work-orders/licenses', [WorkOrderController::class, 'licenses'])->name('work-orders.licenses');
+    Route::get('work-orders/licenses/data', [\App\Http\Controllers\Admin\LicenseController::class, 'display'])->name('work-orders.licenses.data');
+    Route::get('work-orders/{workOrder}/execution', [WorkOrderController::class, 'execution'])->name('work-orders.execution');
+    Route::put('work-orders/{workOrder}/execution', [WorkOrderController::class, 'updateExecution'])->name('work-orders.update-execution');
+    Route::delete('work-orders/{workOrder}/execution-file', [WorkOrderController::class, 'deleteExecutionFile'])->name('work-orders.delete-execution-file');
+    
+    Route::get('work-orders/{workOrder}/license', [WorkOrderController::class, 'license'])->name('work-orders.license');
+    Route::put('work-orders/{workOrder}/license', [WorkOrderController::class, 'updateLicense'])->name('work-orders.update-license');
+
+    Route::get('work-orders/{workOrder}/actions-execution', [WorkOrderController::class, 'actionsExecution'])->name('work-orders.actions-execution');
 });
 
 // Project Selection Route
@@ -128,42 +155,9 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::middleware(['auth'])->group(function () {
-    // Work Orders Routes - These routes are already defined by the resource route above
-    // Commenting out to avoid route conflicts
-    /*
-    Route::get('/admin/work-orders', [WorkOrderController::class, 'index'])->name('admin.work-orders.index');
-    Route::get('/admin/work-orders/create', [WorkOrderController::class, 'create'])->name('admin.work-orders.create');
-    Route::post('/admin/work-orders', [WorkOrderController::class, 'store'])->name('admin.work-orders.store');
-    Route::get('/admin/work-orders/{workOrder}', [WorkOrderController::class, 'show'])->name('admin.work-orders.show');
-    Route::get('/admin/work-orders/{workOrder}/edit', [WorkOrderController::class, 'edit'])->name('admin.work-orders.edit');
-    Route::put('/admin/work-orders/{workOrder}', [WorkOrderController::class, 'update'])->name('admin.work-orders.update');
-    Route::delete('/admin/work-orders/{workOrder}', [WorkOrderController::class, 'destroy'])->name('admin.work-orders.destroy');
-    */
+    // المسارات المتعلقة بالملف الشخصي ومسارات أخرى...
     
-    // Materials Route (Direct Access)
-    Route::get('/materials', [MaterialsController::class, 'index'])->name('materials.index'); 
-    Route::resource('materials', MaterialsController::class)->except(['index']);
+    // نحذف مسارات المواد القديمة التي قد تتداخل مع المسارات الجديدة
+    // ونبقي فقط على مسار وصف المواد الذي لا يتعارض
     Route::get('/materials/descriptions/{code}', [MaterialsController::class, 'getMaterialDescription'])->name('materials.description');
-    
-    // Survey Routes
-    Route::get('/admin/work-orders/{workOrder}/survey', [WorkOrderController::class, 'survey'])->name('admin.work-orders.survey');
-    Route::post('/admin/work-orders/{workOrder}/survey', [WorkOrderController::class, 'storeSurvey'])->name('admin.work-orders.survey.store');
-    Route::get('/admin/work-orders/survey/{survey}/edit', [WorkOrderController::class, 'editSurvey'])->name('admin.work-orders.survey.edit');
-    
-    // Work Order Sections Routes
-    Route::get('/admin/work-orders/materials', [WorkOrderController::class, 'materials'])->name('admin.work-orders.materials');
-    Route::post('/admin/work-orders/materials', [WorkOrderController::class, 'storeMaterial'])->name('admin.work-orders.materials.store');
-    Route::get('/admin/work-orders/materials/{material}/edit', [WorkOrderController::class, 'editMaterial'])->name('admin.work-orders.materials.edit');
-    Route::put('/admin/work-orders/materials/{material}', [WorkOrderController::class, 'updateMaterial'])->name('admin.work-orders.materials.update');
-    Route::delete('/admin/work-orders/materials/{material}', [WorkOrderController::class, 'destroyMaterial'])->name('admin.work-orders.materials.destroy');
-    
-    Route::get('/admin/work-orders/licenses', [WorkOrderController::class, 'licenses'])->name('admin.work-orders.licenses');
-    
-    // Work Order Execution Routes
-    Route::get('/admin/work-orders/execution', [WorkOrderController::class, 'execution'])->name('admin.work-orders.execution');
-    Route::get('/admin/work-orders/post-execution', [WorkOrderController::class, 'postExecution'])->name('admin.work-orders.post-execution');
-    
-    // License Routes
-    Route::get('/admin/work-orders/{workOrder}/license', [WorkOrderController::class, 'license'])->name('admin.work-orders.license');
-    Route::put('/admin/work-orders/{workOrder}/license', [WorkOrderController::class, 'updateLicense'])->name('admin.work-orders.update-license');
 });

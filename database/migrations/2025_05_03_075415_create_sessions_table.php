@@ -13,6 +13,11 @@ return new class extends Migration
     {
         Schema::create('sessions', function (Blueprint $table) {
             $table->id();
+            $table->integer('last_activity');
+            $table->string('ip_address', 45)->nullable();
+            $table->text('user_agent')->nullable();
+            $table->text('payload')->nullable();
+            $table->string('user_id', 255)->nullable();
             $table->timestamps();
         });
     }

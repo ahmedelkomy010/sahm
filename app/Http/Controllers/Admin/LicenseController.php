@@ -16,6 +16,15 @@ class LicenseController extends Controller
         return view('admin.work_orders.licenses', compact('workOrders'));
     }
 
+    /**
+     * Display all licenses data in a dedicated view
+     */
+    public function display()
+    {
+        $licenses = License::with('workOrder')->get();
+        return view('admin.licenses.display', compact('licenses'));
+    }
+
     public function update(Request $request, $id)
     {
         $request->validate([

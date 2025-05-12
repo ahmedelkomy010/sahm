@@ -83,7 +83,7 @@
                 
                 <div class="row">
                     <div class="col-md-4 mb-3">
-                        <label for="check_in_file" class="form-label">CHECK IN</label>
+                        <label for="check_in_file" class="form-label">CHECK LIST</label>
                         @if($material->check_in_file)
                             <div class="mb-2">
                                 <a href="{{ asset('storage/' . $material->check_in_file) }}" target="_blank" class="btn btn-sm btn-info">
@@ -96,66 +96,54 @@
                     </div>
                     
                     <div class="col-md-4 mb-3">
-                        <label for="check_out_file" class="form-label">CHECK OUT</label>
-                        @if($material->check_out_file)
+                        <label for="date_gatepass" class="form-label">DATE GATEPASS</label>
+                        <input type="date" class="form-control" id="date_gatepass" name="date_gatepass" value="{{ $material->date_gatepass ? $material->date_gatepass->format('Y-m-d') : '' }}">
+                    </div>
+                    
+                    <div class="col-md-4 mb-3">
+                        <label for="gate_pass_file" class="form-label">GATE PASS</label>
+                        @if($material->gate_pass_file)
                             <div class="mb-2">
-                                <a href="{{ asset('storage/' . $material->check_out_file) }}" target="_blank" class="btn btn-sm btn-info">
+                                <a href="{{ asset('storage/' . $material->gate_pass_file) }}" target="_blank" class="btn btn-sm btn-info">
                                     <i class="fas fa-file"></i> عرض الملف الحالي
                                 </a>
                             </div>
                         @endif
-                        <input type="file" class="form-control" id="check_out_file" name="check_out_file">
+                        <input type="file" class="form-control" id="gate_pass_file" name="gate_pass_file">
                         <small class="form-text text-muted">اختياري: تحميل ملف جديد سيستبدل الملف الحالي</small>
-                    </div>
-                    
-                    <div class="col-md-4 mb-3">
-                        <label for="date_gatepass" class="form-label">DATE GATEPASS</label>
-                        <input type="date" class="form-control" id="date_gatepass" name="date_gatepass" value="{{ $material->date_gatepass ? $material->date_gatepass->format('Y-m-d') : '' }}">
                     </div>
                 </div>
                 
                 <div class="row">
                     <div class="col-md-4 mb-3">
-                        <label for="stock_in" class="form-label">STOCK IN</label>
-                        <input type="number" step="0.01" class="form-control" id="stock_in" name="stock_in" value="{{ $material->stock_in }}">
+                        <label for="store_in_file" class="form-label">STORE IN</label>
+                        @if($material->store_in_file)
+                            <div class="mb-2">
+                                <a href="{{ asset('storage/' . $material->store_in_file) }}" target="_blank" class="btn btn-sm btn-info">
+                                    <i class="fas fa-file"></i> عرض الملف الحالي
+                                </a>
+                            </div>
+                        @endif
+                        <input type="file" class="form-control" id="store_in_file" name="store_in_file">
+                        <small class="form-text text-muted">اختياري: تحميل ملف جديد سيستبدل الملف الحالي</small>
                     </div>
                     
                     <div class="col-md-4 mb-3">
-                        <label for="stock_out" class="form-label">STOCK OUT</label>
-                        <input type="number" step="0.01" class="form-control" id="stock_out" name="stock_out" value="{{ $material->stock_out }}">
+                        <label for="store_out_file" class="form-label">STORE OUT</label>
+                        @if($material->store_out_file)
+                            <div class="mb-2">
+                                <a href="{{ asset('storage/' . $material->store_out_file) }}" target="_blank" class="btn btn-sm btn-info">
+                                    <i class="fas fa-file"></i> عرض الملف الحالي
+                                </a>
+                            </div>
+                        @endif
+                        <input type="file" class="form-control" id="store_out_file" name="store_out_file">
+                        <small class="form-text text-muted">اختياري: تحميل ملف جديد سيستبدل الملف الحالي</small>
                     </div>
                     
                     <div class="col-md-4 mb-3">
                         <label for="actual_quantity" class="form-label">الكمية المنفذة الفعلية</label>
                         <input type="number" step="0.01" class="form-control" id="actual_quantity" name="actual_quantity" value="{{ $material->actual_quantity }}">
-                    </div>
-                </div>
-                
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label for="stock_in_file" class="form-label">ملف STOCK IN</label>
-                        @if($material->stock_in_file)
-                            <div class="mb-2">
-                                <a href="{{ asset('storage/' . $material->stock_in_file) }}" target="_blank" class="btn btn-sm btn-info">
-                                    <i class="fas fa-file"></i> عرض الملف الحالي
-                                </a>
-                            </div>
-                        @endif
-                        <input type="file" class="form-control" id="stock_in_file" name="stock_in_file">
-                        <small class="form-text text-muted">اختياري: تحميل ملف جديد سيستبدل الملف الحالي</small>
-                    </div>
-                    
-                    <div class="col-md-6 mb-3">
-                        <label for="stock_out_file" class="form-label">ملف STOCK OUT</label>
-                        @if($material->stock_out_file)
-                            <div class="mb-2">
-                                <a href="{{ asset('storage/' . $material->stock_out_file) }}" target="_blank" class="btn btn-sm btn-info">
-                                    <i class="fas fa-file"></i> عرض الملف الحالي
-                                </a>
-                            </div>
-                        @endif
-                        <input type="file" class="form-control" id="stock_out_file" name="stock_out_file">
-                        <small class="form-text text-muted">اختياري: تحميل ملف جديد سيستبدل الملف الحالي</small>
                     </div>
                 </div>
                 

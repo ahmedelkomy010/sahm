@@ -29,7 +29,7 @@
             <h2 class="h4 m-0">إضافة مادة جديدة</h2>
         </div>
         <div class="card-body">
-            <form action="{{ url('admin/work-orders/materials') }}" method="POST" enctype="multipart/form-data">
+            <form action="{{ route('admin.work-orders.materials.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <div class="row">
                     <div class="col-md-6 mb-3">
@@ -79,47 +79,35 @@
                 
                 <div class="row">
                     <div class="col-md-4 mb-3">
-                        <label for="check_in_file" class="form-label">CHECK IN</label>
+                        <label for="check_in_file" class="form-label">CHECK LIST</label>
                         <input type="file" class="form-control" id="check_in_file" name="check_in_file">
-                    </div>
-                    
-                    <div class="col-md-4 mb-3">
-                        <label for="check_out_file" class="form-label">CHECK OUT</label>
-                        <input type="file" class="form-control" id="check_out_file" name="check_out_file">
                     </div>
                     
                     <div class="col-md-4 mb-3">
                         <label for="date_gatepass" class="form-label">DATE GATEPASS</label>
                         <input type="date" class="form-control" id="date_gatepass" name="date_gatepass">
                     </div>
+                    
+                    <div class="col-md-4 mb-3">
+                        <label for="gate_pass_file" class="form-label">GATE PASS</label>
+                        <input type="file" class="form-control" id="gate_pass_file" name="gate_pass_file">
+                    </div>
                 </div>
                 
                 <div class="row">
                     <div class="col-md-4 mb-3">
-                        <label for="stock_in" class="form-label">STOCK IN</label>
-                        <input type="number" step="0.01" class="form-control" id="stock_in" name="stock_in">
+                        <label for="store_in_file" class="form-label">STORE IN</label>
+                        <input type="file" class="form-control" id="store_in_file" name="store_in_file">
                     </div>
                     
                     <div class="col-md-4 mb-3">
-                        <label for="stock_out" class="form-label">STOCK OUT</label>
-                        <input type="number" step="0.01" class="form-control" id="stock_out" name="stock_out">
+                        <label for="store_out_file" class="form-label">STORE OUT</label>
+                        <input type="file" class="form-control" id="store_out_file" name="store_out_file">
                     </div>
                     
                     <div class="col-md-4 mb-3">
                         <label for="actual_quantity" class="form-label">الكمية المنفذة الفعلية</label>
                         <input type="number" step="0.01" class="form-control" id="actual_quantity" name="actual_quantity">
-                    </div>
-                </div>
-                
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label for="stock_in_file" class="form-label">ملف STOCK IN</label>
-                        <input type="file" class="form-control" id="stock_in_file" name="stock_in_file">
-                    </div>
-                    
-                    <div class="col-md-6 mb-3">
-                        <label for="stock_out_file" class="form-label">ملف STOCK OUT</label>
-                        <input type="file" class="form-control" id="stock_out_file" name="stock_out_file">
                     </div>
                 </div>
                 
@@ -139,16 +127,16 @@
                 <table class="table table-bordered table-striped">
                     <thead class="table-light">
                         <tr>
-                            <th>كد المادة</th>
+                            <th>كود المادة</th>
                             <th>وصف المادة</th>
                             <th>الكمية المخططة</th>
                             <th>الوحدة</th>
                             <th>السطر</th>
-                            <th>CHECK IN</th>
-                            <th>CHECK OUT</th>
+                            <th>CHECK LIST</th>
                             <th>DATE GATEPASS</th>
-                            <th>STOCK IN</th>
-                            <th>STOCK OUT</th>
+                            <th>GATE PASS</th>
+                            <th>STORE IN</th>
+                            <th>STORE OUT</th>
                             <th>الكمية المنفذة الفعلية</th>
                             <th>الفرق</th>
                             <th>الإجراءات</th>
@@ -172,30 +160,32 @@
                                             <span class="badge bg-light text-dark">لا يوجد</span>
                                         @endif
                                     </td>
+                                    <td>{{ $material->date_gatepass ? $material->date_gatepass->format('Y-m-d') : '-' }}</td>
                                     <td>
-                                        @if($material->check_out_file)
-                                            <a href="{{ asset('storage/' . $material->check_out_file) }}" target="_blank" class="btn btn-sm btn-success">
+                                        @if($material->gate_pass_file)
+                                            <a href="{{ asset('storage/' . $material->gate_pass_file) }}" target="_blank" class="btn btn-sm btn-success">
                                                 <i class="fas fa-file-download"></i>
                                             </a>
                                         @else
                                             <span class="badge bg-light text-dark">لا يوجد</span>
                                         @endif
                                     </td>
-                                    <td>{{ $material->date_gatepass ? $material->date_gatepass->format('Y-m-d') : '-' }}</td>
                                     <td>
-                                        {{ $material->stock_in }}
-                                        @if($material->stock_in_file)
-                                            <a href="{{ asset('storage/' . $material->stock_in_file) }}" target="_blank" class="ms-1 btn btn-sm btn-info">
+                                        @if($material->store_in_file)
+                                            <a href="{{ asset('storage/' . $material->store_in_file) }}" target="_blank" class="btn btn-sm btn-success">
                                                 <i class="fas fa-file-download"></i>
                                             </a>
+                                        @else
+                                            <span class="badge bg-light text-dark">لا يوجد</span>
                                         @endif
                                     </td>
                                     <td>
-                                        {{ $material->stock_out }}
-                                        @if($material->stock_out_file)
-                                            <a href="{{ asset('storage/' . $material->stock_out_file) }}" target="_blank" class="ms-1 btn btn-sm btn-info">
+                                        @if($material->store_out_file)
+                                            <a href="{{ asset('storage/' . $material->store_out_file) }}" target="_blank" class="btn btn-sm btn-success">
                                                 <i class="fas fa-file-download"></i>
                                             </a>
+                                        @else
+                                            <span class="badge bg-light text-dark">لا يوجد</span>
                                         @endif
                                     </td>
                                     <td>{{ $material->actual_quantity }}</td>
@@ -306,12 +296,20 @@
                                 </div>
                                 <div class="card-body">
                                     <div class="mb-3">
-                                        <strong>CHECK IN:</strong>
+                                        <strong>CHECK LIST:</strong>
                                         <div id="modal-check-in-file" class="d-block mt-1"></div>
                                     </div>
                                     <div class="mb-3">
-                                        <strong>CHECK OUT:</strong>
-                                        <div id="modal-check-out-file" class="d-block mt-1"></div>
+                                        <strong>GATE PASS:</strong>
+                                        <div id="modal-gate-pass-file" class="d-block mt-1"></div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <strong>STORE IN:</strong>
+                                        <div id="modal-store-in-file" class="d-block mt-1"></div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <strong>STORE OUT:</strong>
+                                        <div id="modal-store-out-file" class="d-block mt-1"></div>
                                     </div>
                                 </div>
                             </div>
@@ -322,16 +320,6 @@
                                     <h6 class="m-0">معلومات المخزون</h6>
                                 </div>
                                 <div class="card-body">
-                                    <div class="mb-3">
-                                        <strong>STOCK IN:</strong>
-                                        <span id="modal-stock-in" class="d-block mt-1 p-2 bg-light rounded"></span>
-                                        <div id="modal-stock-in-file" class="d-block mt-1"></div>
-                                    </div>
-                                    <div class="mb-3">
-                                        <strong>STOCK OUT:</strong>
-                                        <span id="modal-stock-out" class="d-block mt-1 p-2 bg-light rounded"></span>
-                                        <div id="modal-stock-out-file" class="d-block mt-1"></div>
-                                    </div>
                                     <div class="mb-3">
                                         <strong>DATE GATEPASS:</strong>
                                         <span id="modal-date-gatepass" class="d-block mt-1 p-2 bg-light rounded"></span>
@@ -357,7 +345,7 @@
 // تعريف مسار التخزين للاستخدام في JavaScript
 const storageUrl = "{{ asset('storage') }}";
 // تعريف مسار تعديل المواد
-const editMaterialUrl = "{{ url('admin/work-orders/materials') }}";
+const editMaterialUrl = "{{ route('admin.work-orders.materials.edit', '') }}";
 
 // قاعدة بيانات مؤقتة لأكواد المواد والأوصاف - يمكن استبدالها بطلب AJAX للحصول على البيانات من السيرفر
 const materialsData = {
@@ -394,8 +382,6 @@ document.querySelectorAll('.view-material').forEach(button => {
         document.getElementById('modal-unit').textContent = materialData.unit;
         document.getElementById('modal-actual-quantity').textContent = materialData.actual_quantity || '-';
         document.getElementById('modal-difference').textContent = materialData.difference || '-';
-        document.getElementById('modal-stock-in').textContent = materialData.stock_in || '-';
-        document.getElementById('modal-stock-out').textContent = materialData.stock_out || '-';
         document.getElementById('modal-date-gatepass').textContent = materialData.date_gatepass || '-';
         
         // معالجة ملفات CHECK IN/OUT
@@ -410,42 +396,44 @@ document.querySelectorAll('.view-material').forEach(button => {
             checkInFileElement.innerHTML = '<span class="badge bg-light text-dark mt-2">لا يوجد ملف</span>';
         }
         
-        const checkOutFileElement = document.getElementById('modal-check-out-file');
-        checkOutFileElement.innerHTML = '';
-        if (materialData.check_out_file) {
-            checkOutFileElement.innerHTML = `
-                <a href="${storageUrl}/${materialData.check_out_file}" target="_blank" class="btn btn-sm btn-success mt-2">
+        // معالجة ملف GATE PASS
+        const gatePassFileElement = document.getElementById('modal-gate-pass-file');
+        gatePassFileElement.innerHTML = '';
+        if (materialData.gate_pass_file) {
+            gatePassFileElement.innerHTML = `
+                <a href="${storageUrl}/${materialData.gate_pass_file}" target="_blank" class="btn btn-sm btn-success mt-2">
                     <i class="fas fa-file-download"></i> تحميل الملف
                 </a>`;
         } else {
-            checkOutFileElement.innerHTML = '<span class="badge bg-light text-dark mt-2">لا يوجد ملف</span>';
+            gatePassFileElement.innerHTML = '<span class="badge bg-light text-dark mt-2">لا يوجد ملف</span>';
         }
         
-        // معالجة ملفات STOCK IN/OUT
-        const stockInFileElement = document.getElementById('modal-stock-in-file');
-        stockInFileElement.innerHTML = '';
-        if (materialData.stock_in_file) {
-            stockInFileElement.innerHTML = `
-                <a href="${storageUrl}/${materialData.stock_in_file}" target="_blank" class="btn btn-sm btn-info mt-2">
+        // معالجة ملف STORE IN
+        const storeInFileElement = document.getElementById('modal-store-in-file');
+        storeInFileElement.innerHTML = '';
+        if (materialData.store_in_file) {
+            storeInFileElement.innerHTML = `
+                <a href="${storageUrl}/${materialData.store_in_file}" target="_blank" class="btn btn-sm btn-success mt-2">
                     <i class="fas fa-file-download"></i> تحميل الملف
                 </a>`;
         } else {
-            stockInFileElement.innerHTML = '<span class="badge bg-light text-dark mt-2">لا يوجد ملف</span>';
+            storeInFileElement.innerHTML = '<span class="badge bg-light text-dark mt-2">لا يوجد ملف</span>';
         }
         
-        const stockOutFileElement = document.getElementById('modal-stock-out-file');
-        stockOutFileElement.innerHTML = '';
-        if (materialData.stock_out_file) {
-            stockOutFileElement.innerHTML = `
-                <a href="${storageUrl}/${materialData.stock_out_file}" target="_blank" class="btn btn-sm btn-info mt-2">
+        // معالجة ملف STORE OUT
+        const storeOutFileElement = document.getElementById('modal-store-out-file');
+        storeOutFileElement.innerHTML = '';
+        if (materialData.store_out_file) {
+            storeOutFileElement.innerHTML = `
+                <a href="${storageUrl}/${materialData.store_out_file}" target="_blank" class="btn btn-sm btn-success mt-2">
                     <i class="fas fa-file-download"></i> تحميل الملف
                 </a>`;
         } else {
-            stockOutFileElement.innerHTML = '<span class="badge bg-light text-dark mt-2">لا يوجد ملف</span>';
+            storeOutFileElement.innerHTML = '<span class="badge bg-light text-dark mt-2">لا يوجد ملف</span>';
         }
         
         // تعيين رابط التعديل
-        document.getElementById('modal-edit-link').href = `${editMaterialUrl}/${materialData.id}/edit`;
+        document.getElementById('modal-edit-link').href = "{{ route('admin.work-orders.materials.edit', '') }}/" + materialData.id;
         
         // عرض النافذة المنبثقة
         const modal = new bootstrap.Modal(document.getElementById('materialDetailsModal'));
