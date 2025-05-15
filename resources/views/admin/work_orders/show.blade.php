@@ -11,11 +11,11 @@
                         <a href="{{ route('admin.work-orders.materials') }}" class="btn btn-light btn-sm px-3" style="min-width: 100px;">
                             <i class="fas fa-boxes me-1"></i> المواد
                         </a>
-                        <a href="{{ route('admin.work-orders.survey', $workOrder) }}" class="btn btn-light btn-sm px-3" style="min-width: 100px;">
-                            <i class="fas fa-map-marked-alt me-1"></i> المسح
-                        </a>
                         <a href="{{ route('admin.work-orders.license', $workOrder) }}" class="btn btn-light btn-sm px-3" style="min-width: 100px;">
                             <i class="fas fa-file-alt me-1"></i> رخصة العمل
+                        </a>
+                        <a href="{{ route('admin.work-orders.survey', $workOrder) }}" class="btn btn-light btn-sm px-3" style="min-width: 100px;">
+                            <i class="fas fa-map-marked-alt me-1"></i> المسح
                         </a>
                         <a href="{{ route('admin.work-orders.execution', $workOrder) }}" class="btn btn-light btn-sm px-3" style="min-width: 100px;">
                             <i class="fas fa-tools me-1"></i> تنفيذ
@@ -266,18 +266,6 @@
                                 </tbody>
                             </table>
                         </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card mt-4">
-                <div class="card-header bg-info text-white">
-                    <h4 class="mb-0">الإجراءات والتنفيذ</h4>
-                </div>
-                <div class="card-body">
-                    <div class="alert alert-info text-center">
-                        <h5>مرحباً بك في قسم الإجراءات والتنفيذ لهذا الأمر.</h5>
-                        <p>يمكنك تطوير هذا القسم لاحقاً لإضافة تفاصيل أو نماذج خاصة بالإجراءات والتنفيذ.</p>
                     </div>
                 </div>
             </div>

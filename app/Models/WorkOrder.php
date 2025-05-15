@@ -37,7 +37,14 @@ class WorkOrder extends Model
         'project',
         'user_id',
         'execution_file',
-        'execution_notes'
+        'execution_notes',
+        'single_meter_installation',
+        'double_meter_installation',
+        'excavation_unsurfaced_soil',
+        'excavation_surfaced_soil',
+        'excavation_unsurfaced_rock',
+        'excavation_surfaced_rock',
+        'excavation_precise'
     ];
 
     protected $casts = [
@@ -48,12 +55,34 @@ class WorkOrder extends Model
         'partial_deletion' => 'boolean',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
+        'single_meter_installation' => 'string',
+        'double_meter_installation' => 'string',
+        'excavation_unsurfaced_soil' => 'array',
+        'excavation_surfaced_soil' => 'array',
+        'excavation_unsurfaced_rock' => 'array',
+        'excavation_surfaced_rock' => 'array',
+        'excavation_precise' => 'array'
     ];
 
     // Relationships
     public function files()
     {
         return $this->hasMany(WorkOrderFile::class);
+    }
+
+    public function civilWorksFiles()
+    {
+        return $this->hasMany(WorkOrderFile::class)->where('file_category', 'civil_works');
+    }
+
+    public function installationsFiles()
+    {
+        return $this->hasMany(WorkOrderFile::class)->where('file_category', 'installations');
+    }
+
+    public function electricalWorksFiles()
+    {
+        return $this->hasMany(WorkOrderFile::class)->where('file_category', 'electrical_works');
     }
 
     public function assignedTo()

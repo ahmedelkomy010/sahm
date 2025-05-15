@@ -85,6 +85,7 @@ use Illuminate\Support\Facades\Route;
     </head>
     <body class="font-sans antialiased">
         <!-- Main Header with Navigation -->
+        @if (!isset($hideNavbar) || !$hideNavbar)
         <header class="main-header">
             <div class="max-w-7xl mx-auto">
                 <div class="flex justify-between items-center px-4 sm:px-6 lg:px-8 py-2">
@@ -179,6 +180,7 @@ use Illuminate\Support\Facades\Route;
                 </div>
             </div>
         </header>
+        @endif
         
         <div class="min-h-screen bg-gray-100">
             <!-- Project Context Info (optional) -->

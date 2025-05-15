@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\Gate;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect()->route('login');
 });
 
 // Use Laravel Breeze Routes
@@ -98,6 +98,24 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::put('work-orders/{workOrder}/license', [WorkOrderController::class, 'updateLicense'])->name('work-orders.update-license');
 
     Route::get('work-orders/{workOrder}/actions-execution', [WorkOrderController::class, 'actionsExecution'])->name('work-orders.actions-execution');
+
+    // Civil Works Routes
+    Route::get('work-orders/{workOrder}/civil-works', [WorkOrderController::class, 'civilWorks'])->name('work-orders.civil-works');
+    Route::put('work-orders/{workOrder}/civil-works', [WorkOrderController::class, 'storeCivilWorks'])->name('work-orders.civil-works.store');
+    Route::delete('work-orders/{workOrder}/civil-works/{file}', [WorkOrderController::class, 'deleteCivilWorksFile'])->name('work-orders.civil-works.delete-file');
+
+    // Installations Routes
+    Route::get('work-orders/{workOrder}/installations', [WorkOrderController::class, 'installations'])->name('work-orders.installations');
+    Route::put('work-orders/{workOrder}/installations', [WorkOrderController::class, 'storeInstallations'])->name('work-orders.installations.store');
+    Route::delete('work-orders/{workOrder}/installations/{file}', [WorkOrderController::class, 'deleteInstallationsFile'])->name('work-orders.installations.delete-file');
+
+    // Electrical Works Routes
+    Route::get('work-orders/{workOrder}/electrical-works', [WorkOrderController::class, 'electricalWorks'])->name('work-orders.electrical-works');
+    Route::put('work-orders/{workOrder}/electrical-works', [WorkOrderController::class, 'storeElectricalWorks'])->name('work-orders.electrical-works.store');
+    Route::delete('work-orders/{workOrder}/electrical-works/{file}', [WorkOrderController::class, 'deleteElectricalWorksFile'])->name('work-orders.electrical-works.delete-file');
+
+    // حذف سجل العمليات المدخلة
+    Route::delete('work-orders/logs/{log}', [\App\Http\Controllers\WorkOrderController::class, 'deleteLog'])->name('work-orders.delete-log');
 });
 
 // Project Selection Route

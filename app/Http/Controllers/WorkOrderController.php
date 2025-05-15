@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use App\Models\License;
 use App\Models\Material;
+use Illuminate\Support\Facades\DB;
 
 class WorkOrderController extends Controller
 {
@@ -761,7 +762,12 @@ class WorkOrderController extends Controller
      */
     public function execution(WorkOrder $workOrder)
     {
-        return view('admin.work_orders.execution', compact('workOrder'));
+        // جلب السجلات من جدول work_order_logs
+        $logs = DB::table('work_order_logs')
+            ->where('work_order_id', $workOrder->id)
+            ->orderByDesc('created_at')
+            ->get();
+        return view('admin.work_orders.execution', compact('workOrder', 'logs'));
     }
 
     /**
@@ -774,6 +780,8 @@ class WorkOrderController extends Controller
             'actual_execution_value' => 'nullable|numeric|min:0',
             'execution_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx,xls,xlsx|max:10240',
             'execution_notes' => 'nullable|string',
+            'single_meter_installation' => 'required|in:yes,no,na',
+            'double_meter_installation' => 'required|in:yes,no,na',
         ]);
 
         // Handle file upload
@@ -924,5 +932,267 @@ class WorkOrderController extends Controller
     public function actionsExecution(WorkOrder $workOrder)
     {
         return view('admin.work_orders.actions-execution', compact('workOrder'));
+    }
+
+    /**
+     * Display the civil works page for a work order.
+     */
+    public function civilWorks(WorkOrder $workOrder)
+    {
+        $workOrder->load('civilWorksFiles');
+        return view('admin.work_orders.civil_works', compact('workOrder'));
+    }
+
+    /**
+     * Store civil works files and excavation data for a work order.
+     */
+    public function storeCivilWorks(Request $request, WorkOrder $workOrder)
+    {
+        $request->validate([
+            'civil_works_files.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:30720', // Max 30MB per file
+            'excavation_unsurfaced_soil.*' => 'nullable|numeric|min:0',
+            'excavation_surfaced_soil.*' => 'nullable|numeric|min:0',
+            'excavation_unsurfaced_rock.*' => 'nullable|numeric|min:0',
+            'excavation_surfaced_rock.*' => 'nullable|numeric|min:0',
+            'excavation_precise.*' => 'nullable|numeric|min:0',
+        ]);
+
+        // Handle file uploads
+        if ($request->hasFile('civil_works_files')) {
+            foreach ($request->file('civil_works_files') as $file) {
+                $originalName = $file->getClientOriginalName();
+                $extension = $file->getClientOriginalExtension();
+                $filename = time() . '_' . uniqid() . '.' . $extension;
+                
+                $path = 'work_orders/' . $workOrder->id . '/civil_works';
+                if (!Storage::disk('public')->exists($path)) {
+                    Storage::disk('public')->makeDirectory($path);
+                }
+                
+                $filePath = $file->storeAs($path, $filename, 'public');
+                
+                WorkOrderFile::create([
+                    'work_order_id' => $workOrder->id,
+                    'filename' => $filename,
+                    'original_filename' => $originalName,
+                    'file_path' => $filePath,
+                    'file_type' => $file->getClientMimeType(),
+                    'file_size' => $file->getSize(),
+                    'file_category' => 'civil_works'
+                ]);
+            }
+        }
+
+        // Handle excavation data
+        $excavationData = [
+            'excavation_unsurfaced_soil' => $request->input('excavation_unsurfaced_soil'),
+            'excavation_surfaced_soil' => $request->input('excavation_surfaced_soil'),
+            'excavation_unsurfaced_rock' => $request->input('excavation_unsurfaced_rock'),
+            'excavation_surfaced_rock' => $request->input('excavation_surfaced_rock'),
+            'excavation_precise' => $request->input('excavation_precise'),
+        ];
+
+        // Update work order with excavation data
+        $workOrder->update($excavationData);
+
+        // حفظ في جدول work_order_logs
+        DB::table('work_order_logs')->insert([
+            'work_order_id' => $workOrder->id,
+            'section' => 'civil',
+            'data' => json_encode($request->all(), JSON_UNESCAPED_UNICODE),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        return redirect()->route('admin.work-orders.civil-works', $workOrder)
+            ->with('success', 'تم حفظ بيانات الأعمال المدنية بنجاح');
+    }
+
+    /**
+     * Delete a civil works file.
+     */
+    public function deleteCivilWorksFile(WorkOrder $workOrder, WorkOrderFile $file)
+    {
+        if ($file->work_order_id !== $workOrder->id || $file->file_category !== 'civil_works') {
+            return redirect()->back()->with('error', 'غير مصرح بحذف هذا الملف');
+        }
+
+        Storage::disk('public')->delete($file->file_path);
+        $file->delete();
+
+        return redirect()->route('admin.work-orders.civil-works', $workOrder)
+            ->with('success', 'تم حذف الملف بنجاح');
+    }
+
+    /**
+     * Display the installations page for a work order.
+     */
+    public function installations(WorkOrder $workOrder)
+    {
+        $workOrder->load('installationsFiles');
+        $installations = [
+            'single_meter_box' => 'تركيب صندوق ومفرد بعداد واحد',
+            'double_meter_box_single' => 'تركيب صندوق مزدوج بعداد واحد',
+            'double_meter_box_double' => 'تركيب صندوق مزدوج بعدادين',
+            'quad_meter_box_triple' => 'تركيب صندوق رباعي بثلاث عدادات',
+            'quad_meter_box_quad' => 'تركيب صندوق رباعي 4 عدادات',
+            'ct_meter_box' => 'تركيب صندوق بعداد CT',
+            'mini_pillar_base' => 'تركيب قاعدة ميني بلر فقط',
+            'mini_pillar_head' => 'تركيب راسي ميني بلر فقط',
+            'mini_pillar_ml' => 'تركيب ميني بلر ML',
+            'ring_base_triple' => 'تركيب قاعدة رنج ثلاثي',
+            'ring_base_quad' => 'تركيب قاعدة رنج رباعي',
+            'cole_base_500' => 'تركيب قاعدة كول 500',
+            'cole_base_1000' => 'تركيب قاعدة كول 1000',
+            'cole_base_1500' => 'تركيب قاعدة كول 1500',
+            'pole_10m' => 'تركيب عمود 10 متر',
+            'pole_13m' => 'تركيب عمود 13 متر',
+            'pole_14m' => 'تركيب عمود 14 متر'
+        ];
+        return view('admin.work_orders.installations', compact('workOrder', 'installations'));
+    }
+
+    /**
+     * Store installations files for a work order.
+     */
+    public function storeInstallations(Request $request, WorkOrder $workOrder)
+    {
+        $request->validate([
+            'installations_files.*' => 'required|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:30720', // Max 30MB per file
+        ]);
+
+        if ($request->hasFile('installations_files')) {
+            foreach ($request->file('installations_files') as $file) {
+                $originalName = $file->getClientOriginalName();
+                $extension = $file->getClientOriginalExtension();
+                $filename = time() . '_' . uniqid() . '.' . $extension;
+                
+                $path = 'work_orders/' . $workOrder->id . '/installations';
+                if (!Storage::disk('public')->exists($path)) {
+                    Storage::disk('public')->makeDirectory($path);
+                }
+                
+                $filePath = $file->storeAs($path, $filename, 'public');
+                
+                WorkOrderFile::create([
+                    'work_order_id' => $workOrder->id,
+                    'filename' => $filename,
+                    'original_filename' => $originalName,
+                    'file_path' => $filePath,
+                    'file_type' => $file->getClientMimeType(),
+                    'file_size' => $file->getSize(),
+                    'file_category' => 'installations'
+                ]);
+            }
+        }
+
+        // حفظ في جدول work_order_logs
+        DB::table('work_order_logs')->insert([
+            'work_order_id' => $workOrder->id,
+            'section' => 'installations',
+            'data' => json_encode($request->all(), JSON_UNESCAPED_UNICODE),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        return redirect()->route('admin.work-orders.installations', $workOrder)
+            ->with('success', 'تم حفظ ملفات التركيبات بنجاح');
+    }
+
+    /**
+     * Delete an installations file.
+     */
+    public function deleteInstallationsFile(WorkOrder $workOrder, WorkOrderFile $file)
+    {
+        if ($file->work_order_id !== $workOrder->id || $file->file_category !== 'installations') {
+            return redirect()->back()->with('error', 'غير مصرح بحذف هذا الملف');
+        }
+
+        Storage::disk('public')->delete($file->file_path);
+        $file->delete();
+
+        return redirect()->route('admin.work-orders.installations', $workOrder)
+            ->with('success', 'تم حذف الملف بنجاح');
+    }
+
+    /**
+     * Display the electrical works page for a work order.
+     */
+    public function electricalWorks(WorkOrder $workOrder)
+    {
+        $workOrder->load('electricalWorksFiles');
+        return view('admin.work_orders.electrical_works', compact('workOrder'));
+    }
+
+    /**
+     * Store electrical works files for a work order.
+     */
+    public function storeElectricalWorks(Request $request, WorkOrder $workOrder)
+    {
+        $request->validate([
+            'electrical_works_files.*' => 'required|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:30720', // Max 30MB per file
+        ]);
+
+        if ($request->hasFile('electrical_works_files')) {
+            foreach ($request->file('electrical_works_files') as $file) {
+                $originalName = $file->getClientOriginalName();
+                $extension = $file->getClientOriginalExtension();
+                $filename = time() . '_' . uniqid() . '.' . $extension;
+                
+                $path = 'work_orders/' . $workOrder->id . '/electrical_works';
+                if (!Storage::disk('public')->exists($path)) {
+                    Storage::disk('public')->makeDirectory($path);
+                }
+                
+                $filePath = $file->storeAs($path, $filename, 'public');
+                
+                WorkOrderFile::create([
+                    'work_order_id' => $workOrder->id,
+                    'filename' => $filename,
+                    'original_filename' => $originalName,
+                    'file_path' => $filePath,
+                    'file_type' => $file->getClientMimeType(),
+                    'file_size' => $file->getSize(),
+                    'file_category' => 'electrical_works'
+                ]);
+            }
+        }
+
+        // حفظ في جدول work_order_logs
+        DB::table('work_order_logs')->insert([
+            'work_order_id' => $workOrder->id,
+            'section' => 'electrical',
+            'data' => json_encode($request->all(), JSON_UNESCAPED_UNICODE),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        return redirect()->route('admin.work-orders.electrical-works', $workOrder)
+            ->with('success', 'تم حفظ ملفات أعمال التمديد والكهرباء بنجاح');
+    }
+
+    /**
+     * Delete an electrical works file.
+     */
+    public function deleteElectricalWorksFile(WorkOrder $workOrder, WorkOrderFile $file)
+    {
+        if ($file->work_order_id !== $workOrder->id || $file->file_category !== 'electrical_works') {
+            return redirect()->back()->with('error', 'غير مصرح بحذف هذا الملف');
+        }
+
+        Storage::disk('public')->delete($file->file_path);
+        $file->delete();
+
+        return redirect()->route('admin.work-orders.electrical-works', $workOrder)
+            ->with('success', 'تم حذف الملف بنجاح');
+    }
+
+    /**
+     * حذف سجل من جدول work_order_logs
+     */
+    public function deleteLog($logId)
+    {
+        \DB::table('work_order_logs')->where('id', $logId)->delete();
+        return redirect()->back()->with('success', 'تم حذف السجل بنجاح');
     }
 }
