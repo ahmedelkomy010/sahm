@@ -1273,10 +1273,34 @@ class WorkOrderController extends Controller
                     'updated_at' => now(),
                 ]);
                 
+                // إذا كان الطلب Ajax، نقوم بإرجاع استجابة JSON
+                if ($request->ajax() || $request->expectsJson() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
+                    return response()->json([
+                        'success' => true,
+                        'message' => 'تم رفع الملف بنجاح',
+                        'file_path' => Storage::url($filePath),
+                        'file_name' => $originalName
+                    ]);
+                }
+                
                 return redirect()->back()->with('success', 'تم رفع الملف بنجاح');
             }
             
+            if ($request->ajax() || $request->expectsJson() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'نوع الملف غير صالح'
+                ], 400);
+            }
+            
             return redirect()->back()->with('error', 'نوع الملف غير صالح');
+        }
+        
+        if ($request->ajax() || $request->expectsJson() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء رفع الملف'
+            ], 400);
         }
         
         return redirect()->back()->with('error', 'حدث خطأ أثناء رفع الملف');

@@ -392,7 +392,7 @@
 <div class="modal fade" id="fileModal" tabindex="-1" aria-labelledby="fileModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form action="{{ route('admin.work-orders.upload-post-execution-file', $workOrder->id) }}" method="POST" enctype="multipart/form-data">
+            <form action="{{ route('admin.work-orders.upload-post-execution-file', $workOrder->id) }}" method="POST" enctype="multipart/form-data" id="uploadFileForm">
                 @csrf
                 <div class="modal-header">
                     <h5 class="modal-title" id="fileModalLabel">رفع ملف</h5>
@@ -409,10 +409,11 @@
                         <div class="form-text">الملفات المدعومة: PDF, DOC, DOCX, XLS, XLSX, JPG, PNG</div>
                     </div>
                     <input type="hidden" name="file_type" id="fileTypeInput">
+                    <input type="hidden" name="section_id" id="sectionId" value="">
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-                    <button type="submit" class="btn btn-primary">حفظ</button>
+                    <button type="submit" class="btn btn-primary" id="saveFileBtn">حفظ</button>
                 </div>
             </form>
         </div>
@@ -470,14 +471,111 @@
     font-size: 0.85rem;
     padding: 0.4em 0.7em;
 }
+
+/* منع تمرير الصفحة عند فتح المودال */
+body.modal-open {
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+}
 </style>
 
 @section('scripts')
 <script>
-    function setupFileUpload(title, fileType) {
-        document.getElementById('fileType').value = title;
-        document.getElementById('fileTypeInput').value = fileType;
-        document.getElementById('fileModalLabel').innerText = 'رفع ملف: ' + title;
-    }
+    document.addEventListener('DOMContentLoaded', function() {
+        // الحفاظ على موضع التمرير الحالي عند تحميل الصفحة
+        let lastScrollPosition = 0;
+
+        // إضافة معرف فريد للقسم المحدد عند فتح المودال
+        function setupFileUpload(title, fileType) {
+            document.getElementById('fileType').value = title;
+            document.getElementById('fileTypeInput').value = fileType;
+            document.getElementById('fileModalLabel').innerText = 'رفع ملف: ' + title;
+            
+            // تخزين موضع التمرير الحالي
+            lastScrollPosition = window.scrollY;
+            
+            // تخزين معرف القسم في النموذج
+            let currentSectionId = 'section_' + Math.random().toString(36).substr(2, 9);
+            document.getElementById('sectionId').value = currentSectionId;
+        }
+
+        // تعيين الوظيفة للاستخدام العام
+        window.setupFileUpload = setupFileUpload;
+
+        // منع سلوك التقديم الافتراضي ومعالجة النموذج باستخدام Fetch API
+        document.getElementById('uploadFileForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            let form = this;
+            let formData = new FormData(form);
+            let submitBtn = document.getElementById('saveFileBtn');
+            
+            // تعطيل زر الحفظ أثناء المعالجة
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> جاري الحفظ...';
+            
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('فشلت عملية رفع الملف');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // إغلاق المودال
+                let modal = bootstrap.Modal.getInstance(document.getElementById('fileModal'));
+                modal.hide();
+                
+                // إعادة تحميل الصفحة مع الحفاظ على موضع التمرير
+                window.location.href = window.location.href.split('#')[0] + '?success=true#' + formData.get('section_id');
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('حدث خطأ أثناء رفع الملف. الرجاء المحاولة مرة أخرى.');
+            })
+            .finally(() => {
+                // إعادة تفعيل زر الحفظ
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = 'حفظ';
+            });
+        });
+
+        // استعادة موضع التمرير بعد إعادة تحميل الصفحة
+        if (window.location.hash) {
+            setTimeout(function() {
+                const section = document.getElementById(window.location.hash.substring(1));
+                if (section) {
+                    section.scrollIntoView();
+                } else if (lastScrollPosition > 0) {
+                    window.scrollTo(0, lastScrollPosition);
+                }
+
+                // عرض رسالة نجاح إذا كانت هناك
+                if (new URLSearchParams(window.location.search).get('success') === 'true') {
+                    const successAlert = document.createElement('div');
+                    successAlert.className = 'alert alert-success alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3';
+                    successAlert.setAttribute('style', 'z-index: 1050;');
+                    successAlert.innerHTML = `
+                        <strong>تم!</strong> تم رفع الملف بنجاح.
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    `;
+                    document.body.appendChild(successAlert);
+
+                    // إخفاء الرسالة بعد 3 ثوان
+                    setTimeout(() => {
+                        successAlert.remove();
+                    }, 3000);
+                }
+            }, 300);
+        }
+    });
 </script>
 @endsection 
