@@ -1192,7 +1192,93 @@ class WorkOrderController extends Controller
      */
     public function deleteLog($logId)
     {
-        \DB::table('work_order_logs')->where('id', $logId)->delete();
+        $log = DB::table('work_order_logs')->where('id', $logId)->first();
+        
+        if (!$log) {
+            return redirect()->back()->with('error', 'لم يتم العثور على السجل');
+        }
+        
+        DB::table('work_order_logs')->where('id', $logId)->delete();
+        
         return redirect()->back()->with('success', 'تم حذف السجل بنجاح');
+    }
+    
+    /**
+     * رفع ملف مرتبط بإجراءات ما بعد التنفيذ
+     */
+    public function uploadPostExecutionFile(Request $request, $workOrderId)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png|max:30720', // 30MB max
+            'file_type' => 'required|string'
+        ]);
+        
+        $workOrder = WorkOrder::findOrFail($workOrderId);
+        
+        if ($request->hasFile('file')) {
+            $file = $request->file('file');
+            $originalName = $file->getClientOriginalName();
+            $extension = $file->getClientOriginalExtension();
+            $filename = time() . '_' . uniqid() . '.' . $extension;
+            
+            $path = 'work_orders/' . $workOrder->id . '/post_execution';
+            if (!Storage::disk('public')->exists($path)) {
+                Storage::disk('public')->makeDirectory($path);
+            }
+            
+            $filePath = $file->storeAs($path, $filename, 'public');
+            
+            // التعامل مع أنواع الملفات المختلفة
+            $fileType = $request->input('file_type');
+            $existingFile = null;
+            
+            // تحديد اسم عمود قاعدة البيانات بناءً على نوع الملف
+            $columnMapping = [
+                'quantities_statement' => 'quantities_statement_file',
+                'final_materials' => 'final_materials_file',
+                'final_measurement' => 'final_measurement_file',
+                'soil_tests' => 'soil_tests_file',
+                'site_drawing' => 'site_drawing_file',
+                'modified_estimate' => 'modified_estimate_file',
+                'completion_certificate' => 'completion_certificate_file',
+                'form_200' => 'form_200_file',
+                'form_190' => 'form_190_file',
+                'pre_operation_tests' => 'pre_operation_tests_file',
+                'extract_number' => 'extract_number_file'
+            ];
+            
+            // التأكد من أن النوع موجود في المصفوفة
+            if (isset($columnMapping[$fileType])) {
+                $column = $columnMapping[$fileType];
+                
+                // حذف الملف القديم إذا كان موجوداً
+                if ($workOrder->$column) {
+                    Storage::disk('public')->delete($workOrder->$column);
+                }
+                
+                // تحديث قاعدة البيانات بمسار الملف الجديد
+                $workOrder->$column = $filePath;
+                $workOrder->save();
+                
+                // إضافة سجل للعملية
+                DB::table('work_order_logs')->insert([
+                    'work_order_id' => $workOrder->id,
+                    'section' => 'post_execution',
+                    'data' => json_encode([
+                        'file_type' => $fileType,
+                        'file_path' => $filePath,
+                        'original_filename' => $originalName
+                    ], JSON_UNESCAPED_UNICODE),
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+                
+                return redirect()->back()->with('success', 'تم رفع الملف بنجاح');
+            }
+            
+            return redirect()->back()->with('error', 'نوع الملف غير صالح');
+        }
+        
+        return redirect()->back()->with('error', 'حدث خطأ أثناء رفع الملف');
     }
 }
