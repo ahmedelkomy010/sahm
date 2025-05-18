@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Database\Seeder;
 use Database\Seeders\WorkOrderSeeder;
 use Database\Seeders\AdminSeeder;
+use Database\Seeders\ReferenceMaterialsSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -26,5 +27,8 @@ class DatabaseSeeder extends Seeder
             AdminSeeder::class,
             WorkOrderSeeder::class,
         ]);
+
+        // استدعاء Seeder المواد المرجعية
+        $this->call(ReferenceMaterialsSeeder::class);
     }
 }

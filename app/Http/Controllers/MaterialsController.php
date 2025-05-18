@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Material;
 use App\Models\WorkOrder;
+use App\Models\ReferenceMaterial;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -41,11 +42,11 @@ class MaterialsController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'work_order_id' => 'required|exists:work_orders,id',
+            'work_order_id' => 'nullable|exists:work_orders,id',
             'code' => 'required|string|max:255',
             'description' => 'required|string',
-            'planned_quantity' => 'required|numeric|min:0',
-            'unit' => 'required|string|max:255',
+            'planned_quantity' => 'nullable|numeric|min:0',
+            'unit' => 'nullable|string|max:255',
             'line' => 'nullable|string|max:255',
             'check_in_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
             'date_gatepass' => 'nullable|date',
@@ -57,6 +58,18 @@ class MaterialsController extends Controller
 
         // التعامل مع الملفات
         $data = $request->except(['check_in_file', 'gate_pass_file', 'store_in_file', 'store_out_file']);
+        
+        // إذا كان الوصف فارغًا، نحاول جلب الوصف من جدول المواد المرجعية
+        if (empty($data['description'])) {
+            $referenceMaterial = ReferenceMaterial::where('code', $data['code'])->first();
+            if ($referenceMaterial) {
+                $data['description'] = $referenceMaterial->description;
+            } else {
+                return redirect()->back()
+                    ->withInput()
+                    ->withErrors(['description' => 'يرجى إدخال وصف المادة أو التأكد من وجود الكود في جدول المواد المرجعية']);
+            }
+        }
         
         // تحميل ملف check_in إذا وجد
         if ($request->hasFile('check_in_file')) {
@@ -93,8 +106,14 @@ class MaterialsController extends Controller
 
         $material = Material::create($data);
 
-        return redirect()->route('admin.work-orders.materials')
-            ->with('success', 'تم إضافة المادة بنجاح');
+        if ($request->has('save_and_continue')) {
+            // إعادة المستخدم لنفس صفحة المواد مع رسالة نجاح
+            return redirect()->back()->with('success', 'تم إضافة المادة بنجاح، يمكنك إضافة مادة أخرى.');
+        } else {
+            // إعادة المستخدم لجدول المواد
+            return redirect()->route('admin.work-orders.materials')
+                ->with('success', 'تم إضافة المادة بنجاح');
+        }
     }
 
     /**
@@ -120,11 +139,11 @@ class MaterialsController extends Controller
     public function update(Request $request, Material $material)
     {
         $validated = $request->validate([
-            'work_order_id' => 'required|exists:work_orders,id',
+            'work_order_id' => 'nullable|exists:work_orders,id',
             'code' => 'required|string|max:255',
-            'description' => 'required|string',
-            'planned_quantity' => 'required|numeric|min:0',
-            'unit' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'planned_quantity' => 'nullable|numeric|min:0',
+            'unit' => 'nullable|string|max:255',
             'line' => 'nullable|string|max:255',
             'check_in_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
             'date_gatepass' => 'nullable|date',
@@ -246,5 +265,14 @@ class MaterialsController extends Controller
             'description' => $description,
             'success' => !empty($description)
         ]);
+    }
+
+    public function getDescriptionByCode($code)
+    {
+        $material = ReferenceMaterial::where('code', $code)->first();
+        if ($material) {
+            return response()->json(['description' => $material->description]);
+        }
+        return response()->json(['description' => ''], 404);
     }
 }

@@ -11,6 +11,9 @@ class Survey extends Model
 
     protected $fillable = [
         'work_order_id',
+        'survey_date',
+        'survey_type',
+        'notes',
         'start_coordinates',
         'end_coordinates',
         'has_obstacles',
@@ -19,6 +22,7 @@ class Survey extends Model
 
     protected $casts = [
         'has_obstacles' => 'boolean',
+        'survey_date' => 'date',
     ];
 
     public function workOrder()

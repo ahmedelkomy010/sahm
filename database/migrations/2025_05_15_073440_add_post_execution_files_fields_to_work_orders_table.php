@@ -12,10 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('work_orders', function (Blueprint $table) {
-            $table->string('post_execution_status')->nullable();
-            $table->decimal('post_execution_value', 10, 2)->nullable();
-            $table->string('post_execution_file')->nullable();
-            $table->text('post_execution_notes')->nullable();
+            //
         });
     }
 
@@ -25,12 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('work_orders', function (Blueprint $table) {
-            $table->dropColumn([
-                'post_execution_status',
-                'post_execution_value',
-                'post_execution_file',
-                'post_execution_notes'
-            ]);
+            //
         });
     }
-}; 
+};

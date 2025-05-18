@@ -6,24 +6,17 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::table('work_orders', function (Blueprint $table) {
-            $table->string('execution_file')->nullable();
-            $table->text('execution_notes')->nullable();
+            $table->dropColumn('purchase_order_number_2');
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::table('work_orders', function (Blueprint $table) {
-            $table->dropColumn(['execution_file', 'execution_notes']);
+            $table->string('purchase_order_number_2')->nullable();
         });
     }
 }; 

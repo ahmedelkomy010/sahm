@@ -12,8 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('work_orders', function (Blueprint $table) {
-            $table->enum('single_meter_installation', ['yes', 'no', 'na'])->nullable();
-            $table->enum('double_meter_installation', ['yes', 'no', 'na'])->nullable()->after('single_meter_installation');
+            $table->string('municipality')->nullable()->after('district');
         });
     }
 
@@ -23,7 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('work_orders', function (Blueprint $table) {
-            $table->dropColumn(['single_meter_installation', 'double_meter_installation']);
+            $table->dropColumn('municipality');
         });
     }
 }; 

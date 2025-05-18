@@ -104,6 +104,15 @@
                                         </span>
                                     @enderror
                                 </div>
+                                <div class="form-group mb-3">
+                                    <label for="municipality" class="form-label fw-bold">البلدية</label>
+                                    <input id="municipality" type="text" class="form-control @error('municipality') is-invalid @enderror" name="municipality" value="{{ old('municipality') }}">
+                                    @error('municipality')
+                                        <span class="invalid-feedback" role="alert">
+                                            <strong>{{ $message }}</strong>
+                                        </span>
+                                    @enderror
+                                </div>
 
                                 <div class="form-group mb-3">
                                     <label for="station_number" class="form-label fw-bold">رقم المحطة</label>
@@ -147,7 +156,7 @@
                                 <div class="row">
                                     <div class="col-md-6">
                                         <div class="form-group mb-3">
-                                            <label for="order_value_with_consultant" class="form-label fw-bold">قيمة أمر العمل شامل الاستشاري</label>
+                                            <label for="order_value_with_consultant" class="form-label fw-bold">قيمة أمر العمل المبدئية شامل الاستشاري</label>
                                             <div class="input-group">
                                                 <span class="input-group-text">₪</span>
                                                 <input id="order_value_with_consultant" type="number" step="0.01" class="form-control @error('order_value_with_consultant') is-invalid @enderror" name="order_value_with_consultant" value="{{ old('order_value_with_consultant') }}">
@@ -161,7 +170,7 @@
                                     </div>
                                     <div class="col-md-6">
                                         <div class="form-group mb-3">
-                                            <label for="order_value_without_consultant" class="form-label fw-bold">قيمة أمر العمل بدون استشاري</label>
+                                            <label for="order_value_without_consultant" class="form-label fw-bold">قيمة أمر العمل المبدئية بدون استشاري</label>
                                             <div class="input-group">
                                                 <span class="input-group-text">₪</span>
                                                 <input id="order_value_without_consultant" type="number" step="0.01" class="form-control @error('order_value_without_consultant') is-invalid @enderror" name="order_value_without_consultant" value="{{ old('order_value_without_consultant') }}">
@@ -178,7 +187,6 @@
                                 <div class="form-group mb-3">
                                     <label for="execution_status" class="form-label fw-bold">حالة تنفيذ أمر العمل</label>
                                     <select id="execution_status" class="form-select @error('execution_status') is-invalid @enderror" name="execution_status">
-                                        
                                         <option value="2" {{ old('execution_status') == '' ? 'selected' : '' }}>تم تسليم المقاول ولم يتم الاستلام</option>
                                         <option value="1" {{ old('execution_status') == '2' ? 'selected' : '' }}>تم الاستلام من المقاول ولم تصدر شهادة الانجاز</option>
                                         <option value="3" {{ old('execution_status') == '3' ? 'selected' : '' }}>دخلت مستخلص ولم تصرف</option>
@@ -193,194 +201,20 @@
                                     @enderror
                                 </div>
 
-                                <div class="form-group mb-3">
-                                    <label for="actual_execution_value" class="form-label fw-bold">قيمة التنفيذ الفعلي لأمر العمل</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text">₪</span>
-                                        <input id="actual_execution_value" type="number" step="0.01" class="form-control @error('actual_execution_value') is-invalid @enderror" name="actual_execution_value" value="{{ old('actual_execution_value') }}">
-                                    </div>
-                                    @error('actual_execution_value')
-                                        <span class="invalid-feedback" role="alert">
-                                            <strong>{{ $message }}</strong>
-                                        </span>
-                                    @enderror
-                                </div>
-
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="form-group mb-3">
-                                            <label for="procedure_155_delivery_date" class="form-label fw-bold">تاريخ تسليم إجراء 155</label>
-                                            <input id="procedure_155_delivery_date" type="date" class="form-control @error('procedure_155_delivery_date') is-invalid @enderror" name="procedure_155_delivery_date" value="{{ old('procedure_155_delivery_date') }}">
-                                            @error('procedure_155_delivery_date')
-                                                <span class="invalid-feedback" role="alert">
-                                                    <strong>{{ $message }}</strong>
-                                                </span>
-                                            @enderror
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="form-group mb-3">
-                                            <label for="procedure_211_date" class="form-label fw-bold">تاريخ إجراء 211</label>
-                                            <input id="procedure_211_date" type="date" class="form-control @error('procedure_211_date') is-invalid @enderror" name="procedure_211_date" value="{{ old('procedure_211_date') }}">
-                                            @error('procedure_211_date')
-                                                <span class="invalid-feedback" role="alert">
-                                                    <strong>{{ $message }}</strong>
-                                                </span>
-                                            @enderror
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="form-group mb-3">
-                                    <div class="form-check form-switch">
-                                        <input class="form-check-input" type="checkbox" id="partial_deletion" name="partial_deletion" value="1" {{ old('partial_deletion') ? 'checked' : '' }}>
-                                        <label class="form-check-label" for="partial_deletion">صرف جزئي</label>
-                                    </div>
-                                    @error('partial_deletion')
-                                        <span class="invalid-feedback d-block" role="alert">
-                                            <strong>{{ $message }}</strong>
-                                        </span>
-                                    @enderror
-                                </div>
-
-                                <div class="form-group mb-3">
-                                    <label for="partial_payment_value" class="form-label fw-bold">قيمة الصرف الجزئي</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text">₪</span>
-                                        <input id="partial_payment_value" type="number" step="0.01" class="form-control @error('partial_payment_value') is-invalid @enderror" name="partial_payment_value" value="{{ old('partial_payment_value') }}">
-                                    </div>
-                                    @error('partial_payment_value')
-                                        <span class="invalid-feedback" role="alert">
-                                            <strong>{{ $message }}</strong>
-                                        </span>
-                                    @enderror
-                                </div>
-
-                                <div class="form-section mb-4">
-                                    <h4 class="section-title mb-3">معلومات المستخلص</h4>
-                                    <div class="row">
-                                        <div class="col-md-4">
-                                            <div class="form-group mb-3">
-                                                <label for="extract_number" class="form-label fw-bold">رقم المستخلص</label>
-                                                <input id="extract_number" type="text" class="form-control @error('extract_number') is-invalid @enderror" name="extract_number" value="{{ old('extract_number') }}">
-                                                @error('extract_number')
-                                                    <span class="invalid-feedback" role="alert">
-                                                        <strong>{{ $message }}</strong>
-                                                    </span>
-                                                @enderror
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <div class="form-group mb-3">
-                                                <label for="extract_date" class="form-label fw-bold">تاريخ المستخلص</label>
-                                                <input id="extract_date" type="date" class="form-control @error('extract_date') is-invalid @enderror" name="extract_date" value="{{ old('extract_date') }}">
-                                                @error('extract_date')
-                                                    <span class="invalid-feedback" role="alert">
-                                                        <strong>{{ $message }}</strong>
-                                                    </span>
-                                                @enderror
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <div class="form-group mb-3">
-                                                <label for="extract_value" class="form-label fw-bold">قيمة المستخلص</label>
-                                                <div class="input-group">
-                                                    <span class="input-group-text">₪</span>
-                                                    <input id="extract_value" type="number" step="0.01" class="form-control @error('extract_value') is-invalid @enderror" name="extract_value" value="{{ old('extract_value') }}">
-                                                </div>
-                                                @error('extract_value')
-                                                    <span class="invalid-feedback" role="alert">
-                                                        <strong>{{ $message }}</strong>
-                                                    </span>
-                                                @enderror
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="form-section mb-4">
-                                    <h4 class="section-title mb-3">معلومات الفاتورة والشراء</h4>
-                                    <div class="row">
-                                        <div class="col-md-4">
-                                            <div class="form-group mb-3">
-                                                <label for="invoice_number" class="form-label fw-bold">رقم الفاتورة</label>
-                                                <input id="invoice_number" type="text" class="form-control @error('invoice_number') is-invalid @enderror" name="invoice_number" value="{{ old('invoice_number') }}">
-                                                @error('invoice_number')
-                                                    <span class="invalid-feedback" role="alert">
-                                                        <strong>{{ $message }}</strong>
-                                                    </span>
-                                                @enderror
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <div class="form-group mb-3">
-                                                <label for="purchase_order_number" class="form-label fw-bold">رقم أمر الشراء</label>
-                                                <input id="purchase_order_number" type="text" class="form-control @error('purchase_order_number') is-invalid @enderror" name="purchase_order_number" value="{{ old('purchase_order_number') }}">
-                                                @error('purchase_order_number')
-                                                    <span class="invalid-feedback" role="alert">
-                                                        <strong>{{ $message }}</strong>
-                                                    </span>
-                                                @enderror
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <div class="form-group mb-3">
-                                                <label for="tax_value" class="form-label fw-bold">قيمة الضريبة</label>
-                                                <div class="input-group">
-                                                    <span class="input-group-text">₪</span>
-                                                    <input id="tax_value" type="number" step="0.01" class="form-control @error('tax_value') is-invalid @enderror" name="tax_value" value="{{ old('tax_value') }}">
-                                                </div>
-                                                @error('tax_value')
-                                                    <span class="invalid-feedback" role="alert">
-                                                        <strong>{{ $message }}</strong>
-                                                    </span>
-                                                @enderror
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
                                 <div class="form-section mb-4">
                                     <h4 class="section-title mb-3">المرفقات</h4>
                                     <div class="row">
                                         <div class="col-md-6 mb-3">
-                                            <label class="form-label">استلام من الكهرباء</label>
-                                            <input type="file" class="form-control @error('files.electricity_receipt') is-invalid @enderror" name="files[electricity_receipt]">
-                                            @error('files.electricity_receipt')
+                                            <label class="form-label">مقايسة الأعمال</label>
+                                            <input type="file" class="form-control @error('files.license_estimate') is-invalid @enderror" name="files[license_estimate]">
+                                            @error('files.license_estimate')
                                                 <span class="invalid-feedback" role="alert">
                                                     <strong>{{ $message }}</strong>
                                                 </span>
                                             @enderror
                                         </div>
                                         <div class="col-md-6 mb-3">
-                                            <label class="form-label">صرف المواد من الكهرباء</label>
-                                            <input type="file" class="form-control @error('files.materials_receipt') is-invalid @enderror" name="files[materials_receipt]">
-                                            @error('files.materials_receipt')
-                                                <span class="invalid-feedback" role="alert">
-                                                    <strong>{{ $message }}</strong>
-                                                </span>
-                                            @enderror
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label">رفع الرخصة</label>
-                                            <input type="file" class="form-control @error('files.license') is-invalid @enderror" name="files[license]">
-                                            @error('files.license')
-                                                <span class="invalid-feedback" role="alert">
-                                                    <strong>{{ $message }}</strong>
-                                                </span>
-                                            @enderror
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label">برنامج تنفيذ يومي</label>
-                                            <input type="file" class="form-control @error('files.daily_program') is-invalid @enderror" name="files[daily_program]">
-                                            @error('files.daily_program')
-                                                <span class="invalid-feedback" role="alert">
-                                                    <strong>{{ $message }}</strong>
-                                                </span>
-                                            @enderror
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label">ورقة قياس الاعمال اليومية</label>
+                                            <label class="form-label"> مقايسة المواد
                                             <input type="file" class="form-control @error('files.daily_measurement') is-invalid @enderror" name="files[daily_measurement]">
                                             @error('files.daily_measurement')
                                                 <span class="invalid-feedback" role="alert">
@@ -389,81 +223,9 @@
                                             @enderror
                                         </div>
                                         <div class="col-md-6 mb-3">
-                                            <label class="form-label">الرسم الهندسي</label>
-                                            <input type="file" class="form-control @error('files.engineering_drawing') is-invalid @enderror" name="files[engineering_drawing]">
-                                            @error('files.engineering_drawing')
-                                                <span class="invalid-feedback" role="alert">
-                                                    <strong>{{ $message }}</strong>
-                                                </span>
-                                            @enderror
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label">اختيار الكابلات</label>
-                                            <input type="file" class="form-control @error('files.cable_selection') is-invalid @enderror" name="files[cable_selection]">
-                                            @error('files.cable_selection')
-                                                <span class="invalid-feedback" role="alert">
-                                                    <strong>{{ $message }}</strong>
-                                                </span>
-                                            @enderror
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label">155</label>
-                                            <input type="file" class="form-control @error('files.procedure_155') is-invalid @enderror" name="files[procedure_155]">
-                                            @error('files.procedure_155')
-                                                <span class="invalid-feedback" role="alert">
-                                                    <strong>{{ $message }}</strong>
-                                                </span>
-                                            @enderror
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label">صرف دفعة جزئية 50%</label>
-                                            <input type="file" class="form-control @error('files.partial_payment') is-invalid @enderror" name="files[partial_payment]">
-                                            @error('files.partial_payment')
-                                                <span class="invalid-feedback" role="alert">
-                                                    <strong>{{ $message }}</strong>
-                                                </span>
-                                            @enderror
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label">صرف وارجاع</label>
-                                            <input type="file" class="form-control @error('files.payment_return') is-invalid @enderror" name="files[payment_return]">
-                                            @error('files.payment_return')
-                                                <span class="invalid-feedback" role="alert">
-                                                    <strong>{{ $message }}</strong>
-                                                </span>
-                                            @enderror
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label">صرف دفعة نهائية 50%</label>
-                                            <input type="file" class="form-control @error('files.final_payment') is-invalid @enderror" name="files[final_payment]">
-                                            @error('files.final_payment')
-                                                <span class="invalid-feedback" role="alert">
-                                                    <strong>{{ $message }}</strong>
-                                                </span>
-                                            @enderror
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label">مرفق احتياطي 1</label>
+                                            <label class="form-label">مرفق احتياطي
                                             <input type="file" class="form-control @error('files.backup_1') is-invalid @enderror" name="files[backup_1]">
                                             @error('files.backup_1')
-                                                <span class="invalid-feedback" role="alert">
-                                                    <strong>{{ $message }}</strong>
-                                                </span>
-                                            @enderror
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label">مرفق احتياطي 2</label>
-                                            <input type="file" class="form-control @error('files.backup_2') is-invalid @enderror" name="files[backup_2]">
-                                            @error('files.backup_2')
-                                                <span class="invalid-feedback" role="alert">
-                                                    <strong>{{ $message }}</strong>
-                                                </span>
-                                            @enderror
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label">مرفق احتياطي 3</label>
-                                            <input type="file" class="form-control @error('files.backup_3') is-invalid @enderror" name="files[backup_3]">
-                                            @error('files.backup_3')
                                                 <span class="invalid-feedback" role="alert">
                                                     <strong>{{ $message }}</strong>
                                                 </span>
@@ -605,17 +367,50 @@ document.addEventListener('DOMContentLoaded', function() {
     const workTypeNumber = document.getElementById('work_type_number');
     const workDescriptionInput = document.getElementById('work_description');
     
-    // Function to load the description based on the work type
-    function loadWorkDescription(workType) {
+    // Function to get work type description
+    function getWorkTypeDescription(workType) {
+        const descriptions = {
+            '409': 'ازالة-نقل شبكة على المشترك',
+            '408': 'ازاله عداد على المشترك',
+            '460': 'استبدال شبكات',
+            '901': 'اضافة عداد طاقة شمسية',
+            '440': 'الرفع المساحي',
+            '410': 'انشاء محطة/محول لمشترك/مشتركين',
+            '801': 'تركيب عداد ايصال سريع',
+            '804': 'تركيب محطة ش ارضية VM ايصال سريع',
+            '805': 'تركيب محطة ش هوائية VM ايصال سريع',
+            '480': '(تسليم مفتاح) تمويل خارجي',
+            '441': 'تعزيز شبكة أرضية ومحطات',
+            '442': 'تعزيز شبكة هوائية ومحطات',
+            '802': 'شبكة ارضية VL ايصال سريع',
+            '803': 'شبكة هوائية VL ايصال سريع',
+            '402': 'توصيل عداد بحفرية شبكة ارضيه',
+            '401': '(عداد بدون حفرية) أرضي/هوائي',
+            '404': 'عداد بمحطة شبكة ارضية VM',
+            '405': 'توصيل عداد بمحطة شبكة هوائية VM',
+            '430': 'مخططات منح وزارة البلدية',
+            '450': 'مشاريع ربط محطات التحويل',
+            '403': 'توصيل عداد شبكة هوائية VL'
+        };
+        return descriptions[workType] || '';
+    }
+    
+    // Function to update work description
+    function updateWorkDescription(workType) {
         if (workType) {
-            fetch(`{{ url('admin/work-orders/descriptions') }}/${workType}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success && data.description) {
-                        workDescriptionInput.value = data.description;
+            const description = getWorkTypeDescription(workType);
+            if (description) {
+                // إذا كان حقل الوصف فارغاً، قم بتعبئته بنوع العمل
+                if (!workDescriptionInput.value.trim()) {
+                    workDescriptionInput.value = description;
+                } else {
+                    // إذا كان الحقل يحتوي على نص، أضف نوع العمل في بداية النص
+                    const currentValue = workDescriptionInput.value.trim();
+                    if (!currentValue.startsWith(description)) {
+                        workDescriptionInput.value = description + '\n' + currentValue;
                     }
-                })
-                .catch(error => console.error('Error:', error));
+                }
+            }
         }
     }
     
@@ -625,8 +420,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if (workType) {
             // Update the number field
             workTypeNumber.value = workType;
-            // Load the description
-            loadWorkDescription(workType);
+            // Update the description
+            updateWorkDescription(workType);
         }
     });
     
@@ -644,14 +439,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
             
-            // Load the description regardless of match
-            loadWorkDescription(workType);
+            // Update the description regardless of match
+            updateWorkDescription(workType);
         }
     });
     
-    // Load the description with the initial value (if it exists)
+    // Update description with initial value if it exists
     if (workTypeSelect.value) {
-        loadWorkDescription(workTypeSelect.value);
+        updateWorkDescription(workTypeSelect.value);
     }
 });
 </script>

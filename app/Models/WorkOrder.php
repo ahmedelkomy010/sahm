@@ -20,6 +20,7 @@ class WorkOrder extends Model
         'consultant_name',
         'order_value_with_consultant',
         'order_value_without_consultant',
+        'final_total_value',
         'execution_status',
         'actual_execution_value',
         'procedure_155_delivery_date',
@@ -44,7 +45,13 @@ class WorkOrder extends Model
         'excavation_surfaced_soil',
         'excavation_unsurfaced_rock',
         'excavation_surfaced_rock',
-        'excavation_precise'
+        'excavation_precise',
+        'entry_sheet',
+        'actual_execution_value_consultant',
+        'actual_execution_value_without_consultant',
+        'first_partial_payment_without_tax',
+        'second_partial_payment_with_tax',
+        'municipality',
     ];
 
     protected $casts = [
@@ -61,7 +68,8 @@ class WorkOrder extends Model
         'excavation_surfaced_soil' => 'array',
         'excavation_unsurfaced_rock' => 'array',
         'excavation_surfaced_rock' => 'array',
-        'excavation_precise' => 'array'
+        'excavation_precise' => 'array',
+        'invoice_images' => 'array',
     ];
 
     // Relationships
@@ -121,6 +129,11 @@ class WorkOrder extends Model
     public function materials()
     {
         return $this->hasMany(Material::class);
+    }
+
+    public function invoiceAttachments()
+    {
+        return $this->hasMany(InvoiceAttachment::class);
     }
 
     // Scopes

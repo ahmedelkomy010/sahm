@@ -6,24 +6,17 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::table('work_orders', function (Blueprint $table) {
-            $table->enum('single_meter_installation', ['yes', 'no', 'na'])->nullable();
-            $table->enum('double_meter_installation', ['yes', 'no', 'na'])->nullable()->after('single_meter_installation');
+            $table->string('purchase_order_number_2')->nullable()->after('purchase_order_number');
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::table('work_orders', function (Blueprint $table) {
-            $table->dropColumn(['single_meter_installation', 'double_meter_installation']);
+            $table->dropColumn('purchase_order_number_2');
         });
     }
 }; 
