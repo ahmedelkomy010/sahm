@@ -7,17 +7,17 @@
             <div class="card shadow-lg border-0 rounded-lg">
                 <div class="card-header bg-gradient-primary text-white py-3">
                     <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
-                        <h3 class="mb-0 fs-4 text-center text-md-start">رخصة العمل</h3>
+                        <h3 class="mb-0 fs-4 text-center text-md-start"> الجودة</h3>
                         <div class="d-flex flex-wrap justify-content-center gap-2">
                             <a href="{{ route('admin.work-orders.show', $workOrder) }}" class="btn btn-back btn-sm">
-                                <i class="fas fa-arrow-right"></i> عودة للتفاصيل
+                                <i class="fas fa-arrow-right"></i>  عودة لتفاصيل العمل 
                             </a>
                             <a href="{{ route('admin.work-orders.licenses.data') }}" class="btn btn-primary btn-sm">
-                                <i class="fas fa-list"></i> بيانات الرخص
+                                <i class="fas fa-list"></i> بيانات الجودة
                             </a>
                             @if(isset($license) && $license->id)
                                 <a href="{{ route('admin.licenses.show', $license->id) }}" class="btn btn-info btn-sm">
-                                    <i class="fas fa-eye"></i> عرض تفاصيل الرخصة
+                                    <i class="fas fa-eye"></i> عرض تفاصيل الجودة
                                 </a>
                             @endif
                         </div>
@@ -28,7 +28,93 @@
                     <form action="{{ route('admin.work-orders.upload-license', $workOrder) }}" method="POST" enctype="multipart/form-data" id="licenseForm">
                         @csrf
                         <div class="row g-4">
-                            <!-- معلومات الرخصة الأساسية -->
+                            
+
+                            <!-- المرفقات -->
+                            <div class="col-12">
+                                <div class="card border-0 shadow-sm">
+                                    <div class="card-header bg-light">
+                                        <h4 class="mb-0 fs-5">
+                                            <i class="fas fa-paperclip text-primary me-2"></i>
+                                            التنسيق والخطابات 
+                                        </h4>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row g-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label">شهادات التنسيق</label>
+                                                <input type="file" class="form-control" name="coordination_certificates[]" multiple>
+                                                <!-- حقل نصي تحت شهادة التنسيق -->
+                                                <textarea class="form-control mt-2" name="coordination_certificates_note" rows="2" placeholder="  رقم شهادة التنسيق"></textarea>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">الخطابات والتعهدات</label>
+                                                <input type="file" class="form-control" name="letters_undertakings[]" multiple>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- معلومات إضافية -->
+                            <div class="col-12">
+                                <div class="card border-0 shadow-sm">
+                                    <div class="card-header bg-light">
+                                        <h4 class="mb-0 fs-5">
+                                            <i class="fas fa-info-circle text-primary me-2"></i>
+                                            معلومات إضافية
+                                        </h4>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row g-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label">يوجد حظر؟</label>
+                                                <select class="form-select" name="has_restriction" id="has_restriction">
+                                                    <option value="0">لا</option>
+                                                    <option value="1">نعم</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-12">
+                                                <label class="form-label">ملاحظات</label>
+                                                <textarea class="form-control @error('notes') is-invalid @enderror" 
+                                                          id="notes" name="notes" rows="3">{{ old('notes', $license->notes ?? '') }}</textarea>
+                                                @error('notes')
+                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- تبويبات إضافية -->
+                            <div class="col-12 mt-4">
+                                <div class="card border-0 shadow-sm">
+                                    <div class="card-header bg-light">
+                                        <ul class="nav nav-tabs card-header-tabs" id="licenseTabs" role="tablist">
+                                            <li class="nav-item" role="presentation">
+                                                <button class="nav-link active" id="dig-license-tab" data-bs-toggle="tab" data-bs-target="#dig-license" type="button" role="tab" aria-controls="dig-license" aria-selected="true">رخص حفر</button>
+                                            </li>
+                                            <li class="nav-item" role="presentation">
+                                                <button class="nav-link" id="lab-tab" data-bs-toggle="tab" data-bs-target="#lab" type="button" role="tab" aria-controls="lab" aria-selected="false">المختبر</button>
+                                            </li>
+                                            <li class="nav-item" role="presentation">
+                                                <button class="nav-link" id="evacuations-tab" data-bs-toggle="tab" data-bs-target="#evacuations" type="button" role="tab" aria-controls="evacuations" aria-selected="false">الإخلاءات</button>
+                                            </li>
+                                            <li class="nav-item" role="presentation">
+                                                <button class="nav-link" id="violations-tab" data-bs-toggle="tab" data-bs-target="#violations" type="button" role="tab" aria-controls="violations" aria-selected="false">المخالفات</button>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="tab-content" id="licenseTabsContent">
+                                            <!-- رخص حفر -->
+                                            <div class="tab-pane fade show active" id="dig-license" role="tabpanel" aria-labelledby="dig-license-tab">
+                                                <div class="mb-3">
+                                                    <label class="form-label">مرفق رخص الحفر</label>
+                                                    <input type="file" class="form-control" name="dig_license_files[]" multiple accept=".pdf,.jpg,.jpeg,.png">
+                                                </div>
+                                                <!-- معلومات الرخصة الأساسية -->
                             <div class="col-12">
                                 <div class="card border-0 shadow-sm">
                                     <div class="card-header bg-light">
@@ -126,7 +212,6 @@
                                     </div>
                                 </div>
                             </div>
-
                             <!-- المرفقات -->
                             <div class="col-12">
                                 <div class="card border-0 shadow-sm">
@@ -138,14 +223,6 @@
                                     </div>
                                     <div class="card-body">
                                         <div class="row g-3">
-                                            <div class="col-md-6">
-                                                <label class="form-label">شهادات التنسيق</label>
-                                                <input type="file" class="form-control" name="coordination_certificates[]" multiple>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <label class="form-label">الخطابات والتعهدات</label>
-                                                <input type="file" class="form-control" name="letters_undertakings[]" multiple>
-                                            </div>
                                             <div class="col-md-6">
                                                 <label class="form-label">فواتير السداد</label>
                                                 <input type="file" class="form-control" name="payment_invoices[]" multiple>
@@ -166,44 +243,10 @@
                                     </div>
                                 </div>
                             </div>
-
-                            <!-- معلومات إضافية -->
-                            <div class="col-12">
-                                <div class="card border-0 shadow-sm">
-                                    <div class="card-header bg-light">
-                                        <h4 class="mb-0 fs-5">
-                                            <i class="fas fa-info-circle text-primary me-2"></i>
-                                            معلومات إضافية
-                                        </h4>
-                                    </div>
-                                    <div class="card-body">
-                                        <div class="row g-3">
-                                            <div class="col-md-6">
-                                                <label class="form-label">يوجد حظر؟</label>
-                                                <select class="form-select" name="has_restriction" id="has_restriction">
-                                                    <option value="0">لا</option>
-                                                    <option value="1">نعم</option>
-                                                </select>
                                             </div>
-                                            <div class="col-md-6" id="restriction_agency_container" style="display:none;">
-                                                <label class="form-label">جهة الحظر</label>
-                                                <input type="text" class="form-control" name="restriction_agency">
-                                            </div>
+                                            <!-- المختبر -->
+                                            <div class="tab-pane fade" id="lab" role="tabpanel" aria-labelledby="lab-tab">
                                             <div class="col-12">
-                                                <label class="form-label">ملاحظات</label>
-                                                <textarea class="form-control @error('notes') is-invalid @enderror" 
-                                                          id="notes" name="notes" rows="3">{{ old('notes', $license->notes ?? '') }}</textarea>
-                                                @error('notes')
-                                                    <div class="invalid-feedback">{{ $message }}</div>
-                                                @enderror
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- قسم الاختبارات -->
-                            <div class="col-12">
                                 <div class="card border-0 shadow-sm">
                                     <div class="card-header bg-light">
                                         <h4 class="mb-0 fs-5">
@@ -350,7 +393,85 @@
                                     </div>
                                 </div>
                             </div>
+                            <!-- هنا الجدول مباشرة بعد آخر اختبار -->
+                            <div class="table-container mt-4">
+                                <lab-license-table></lab-license-table>
+                            </div>
+                                            </div>
+                                            <!-- الإخلاءات -->
+                                            <div class="tab-pane fade" id="evacuations" role="tabpanel" aria-labelledby="evacuations-tab">
+                                              
+                                                <div class="row g-3">
+                                                    <div class="col-md-6">
+                                                        <label class="form-label">رقم الرخصة التي عليها مخالفات</label>
+                                                        <input type="text" class="form-control" name="evac_license_number_with_violations">
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label class="form-label"> رقم الرخصه</label>
+                                                        <input type="number" step="0.01" class="form-control" name="evac_license_value">
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label class="form-label">رقم سداد الرخصة</label>
+                                                        <input type="text" class="form-control" name="evac_violation_number">
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label class="form-label"> تاريخ الاخلاء</label>
+                                                        <input type="date" class="form-control" name="evac_license_date">
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label class="form-label">مبلغ الاخلاء </label>
+                                                        <input type="text" class="form-control" name="evac_violation_number">
+                                                    </div>
+                                                    <div class="mb-3">
+                                                    <label class="form-label">مرفق الإخلاءات</label>
+                                                    <input type="file" class="form-control" name="evacuations_files[]" multiple accept=".pdf,.jpg,.jpeg,.png">
+                                                </div>
+                                                </div>
+                                            </div>
+                                            <!-- المخالفات -->
+                                            <div class="tab-pane fade" id="violations" role="tabpanel" aria-labelledby="violations-tab">
+                                            <div class="row g-3">
+                                                    <div class="col-md-6">
+                                                        <label class="form-label">رقم الرخصة التي عليها مخالفات</label>
+                                                        <input type="text" class="form-control" name="evac_license_number_with_violations">
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label class="form-label">قيمة الرخصة</label>
+                                                        <input type="number" step="0.01" class="form-control" name="evac_license_value">
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label class="form-label">تاريخ الرخصة</label>
+                                                        <input type="date" class="form-control" name="evac_license_date">
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label class="form-label">آخر موعد سداد للمخالفة</label>
+                                                        <input type="date" class="form-control" name="evac_violation_due_date">
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label class="form-label">رقم المخالفة</label>
+                                                        <input type="text" class="form-control" name="evac_violation_number">
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label class="form-label">رقم سداد المخالفة</label>
+                                                        <input type="text" class="form-control" name="evac_violation_payment_number">
+                                                    </div>
+                                                    <div class="col-md-12">
+                                                        <label class="form-label">المسبب</label>
+                                                        <input type="text" class="form-control" name="evac_cause">
+                                                    </div>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label">مرفق المخالفات</label>
+                                                    <input type="file" class="form-control" name="violations_files[]" multiple accept=".pdf,.jpg,.jpeg,.png">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
 
+                            <!-- قسم الاختبارات -->
+                            
                             <!-- زر الحفظ -->
                             <div class="col-12 text-center">
                                 <button type="submit" class="btn btn-primary btn-lg">

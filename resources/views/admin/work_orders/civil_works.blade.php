@@ -70,7 +70,7 @@
         text-align: center;
         vertical-align: middle;
         padding: 0.5rem;
-        border: 1px solid #dee2e6;
+        border: 2px solid #dee2e6;
         font-size: 0.85rem;
     }
 
@@ -249,8 +249,8 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            @foreach(['1 كابل منخفض', '2 كابل منخفض', '3 كابل منخفض', '4 كابل منخفض', '1 كابل متوسط', '3 كابل متوسط', '4 كابل متوسط'] as $cable)
-                                            <tr>
+                                        @foreach([ 'كابل منخفض', '2 كابل منخفض', '3 كابل منخفض', '4 كابل منخفض', '1 كابل متوسط', '2 كابل متوسط', '3 كابل متوسط', '4 كابل متوسط', 'حفر مفتوح اكبر من 4 كابلات'] as $cable)
+                                        <tr>
                                                 <td class="align-middle">{{ $cable }}</td>
                                                 <td>
                                                     <div class="input-group input-group-sm">
@@ -279,8 +279,8 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            @foreach(['1 كابل منخفض', '2 كابل منخفض', '3 كابل منخفض', '4 كابل منخفض', '1 كابل متوسط', '3 كابل متوسط', '4 كابل متوسط'] as $cable)
-                                            <tr>
+                                        @foreach([ 'كابل منخفض', '2 كابل منخفض', '3 كابل منخفض', '4 كابل منخفض', '1 كابل متوسط', '2 كابل متوسط', '3 كابل متوسط', '4 كابل متوسط', 'حفر مفتوح اكبر من 4 كابلات'] as $cable)
+
                                                 <td class="align-middle">{{ $cable }}</td>
                                                 <td>
                                                     <div class="input-group input-group-sm">
@@ -309,8 +309,8 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            @foreach(['1 كابل منخفض', '2 كابل منخفض', '3 كابل منخفض', '4 كابل منخفض', '1 كابل متوسط', '3 كابل متوسط', '4 كابل متوسط'] as $cable)
-                                            <tr>
+                                        @foreach([ 'كابل منخفض', '2 كابل منخفض', '3 كابل منخفض', '4 كابل منخفض', '1 كابل متوسط', '2 كابل متوسط', '3 كابل متوسط', '4 كابل متوسط', 'حفر مفتوح اكبر من 4 كابلات'] as $cable)
+
                                                 <td class="align-middle">{{ $cable }}</td>
                                                 <td>
                                                     <div class="input-group input-group-sm">
@@ -345,7 +345,7 @@
                 <!-- القسم الثاني: الحفر المفتوح -->
                 <div class="col-md-6">
                     <div class="card shadow-sm mb-4">
-                        <div class="card-header bg-success text-white">الحفر المفتوح بالمتر المكعب</div>
+                        <div class="card-header bg-success text-white">الحفر المفتوح </div>
                         <div class="card-body">
                             <div class="table-responsive">
                                 <table class="table table-bordered table-sm align-middle">
@@ -359,300 +359,8 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr>
-                                            <td class="align-middle">حفر متوسط</td>
-                                            <td>
-                                                <div class="input-group input-group-sm">
-                                                    <input type="number" step="0.01" class="form-control dimension-input calculate-total" 
-                                                           name="open_excavation[medium][length]" 
-                                                           data-row="medium"
-                                                           value="{{ old('open_excavation.medium.length') }}"
-                                                           placeholder="0.00">
-                                                    <span class="input-group-text">م</span>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div class="input-group input-group-sm">
-                                                    <input type="number" step="0.01" class="form-control dimension-input calculate-total" 
-                                                           name="open_excavation[medium][width]" 
-                                                           data-row="medium"
-                                                           value="{{ old('open_excavation.medium.width') }}"
-                                                           placeholder="0.00">
-                                                    <span class="input-group-text">م</span>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div class="input-group input-group-sm">
-                                                    <input type="number" step="0.01" class="form-control dimension-input calculate-total" 
-                                                           name="open_excavation[medium][depth]" 
-                                                           data-row="medium"
-                                                           value="{{ old('open_excavation.medium.depth') }}"
-                                                           placeholder="0.00">
-                                                    <span class="input-group-text">م</span>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div class="input-group input-group-sm">
-                                                    <input type="text" class="form-control total-input" 
-                                                           id="total-medium" 
-                                                           readonly 
-                                                           value="0.00">
-                                                    <span class="input-group-text">م³</span>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td class="align-middle">حفر منخفض</td>
-                                            <td>
-                                                <div class="input-group input-group-sm">
-                                                    <input type="number" step="0.01" class="form-control dimension-input calculate-total" 
-                                                           name="open_excavation[low][length]" 
-                                                           data-row="low"
-                                                           value="{{ old('open_excavation.low.length') }}"
-                                                           placeholder="0.00">
-                                                    <span class="input-group-text">م</span>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div class="input-group input-group-sm">
-                                                    <input type="number" step="0.01" class="form-control dimension-input calculate-total" 
-                                                           name="open_excavation[low][width]" 
-                                                           data-row="low"
-                                                           value="{{ old('open_excavation.low.width') }}"
-                                                           placeholder="0.00">
-                                                    <span class="input-group-text">م</span>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div class="input-group input-group-sm">
-                                                    <input type="number" step="0.01" class="form-control dimension-input calculate-total" 
-                                                           name="open_excavation[low][depth]" 
-                                                           data-row="low"
-                                                           value="{{ old('open_excavation.low.depth') }}"
-                                                           placeholder="0.00">
-                                                    <span class="input-group-text">م</span>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div class="input-group input-group-sm">
-                                                    <input type="text" class="form-control total-input" 
-                                                           id="total-low" 
-                                                           readonly 
-                                                           value="0.00">
-                                                    <span class="input-group-text">م³</span>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td class="align-middle">توريد وتنفيذ طبقة رمل تحت الكابلات</td>
-                                            <td>
-                                                <div class="input-group input-group-sm">
-                                                    <input type="number" step="0.01" class="form-control dimension-input calculate-total" 
-                                                           name="open_excavation[sand_under][length]" 
-                                                           data-row="sand_under"
-                                                           value="{{ old('open_excavation.sand_under.length') }}"
-                                                           placeholder="0.00">
-                                                    <span class="input-group-text">م</span>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div class="input-group input-group-sm">
-                                                    <input type="number" step="0.01" class="form-control dimension-input calculate-total" 
-                                                           name="open_excavation[sand_under][width]" 
-                                                           data-row="sand_under"
-                                                           value="{{ old('open_excavation.sand_under.width') }}"
-                                                           placeholder="0.00">
-                                                    <span class="input-group-text">م</span>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div class="input-group input-group-sm">
-                                                    <input type="number" step="0.01" class="form-control dimension-input calculate-total" 
-                                                           name="open_excavation[sand_under][depth]" 
-                                                           data-row="sand_under"
-                                                           value="{{ old('open_excavation.sand_under.depth') }}"
-                                                           placeholder="0.00">
-                                                    <span class="input-group-text">م</span>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div class="input-group input-group-sm">
-                                                    <input type="text" class="form-control total-input" 
-                                                           id="total-sand_under" 
-                                                           readonly 
-                                                           value="0.00">
-                                                    <span class="input-group-text">م³</span>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td class="align-middle">توريد وتنفيذ طبقة رمل فوق الكابلات</td>
-                                            <td>
-                                                <div class="input-group input-group-sm">
-                                                    <input type="number" step="0.01" class="form-control dimension-input calculate-total" 
-                                                           name="open_excavation[sand_over][length]" 
-                                                           data-row="sand_over"
-                                                           value="{{ old('open_excavation.sand_over.length') }}"
-                                                           placeholder="0.00">
-                                                    <span class="input-group-text">م</span>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div class="input-group input-group-sm">
-                                                    <input type="number" step="0.01" class="form-control dimension-input calculate-total" 
-                                                           name="open_excavation[sand_over][width]" 
-                                                           data-row="sand_over"
-                                                           value="{{ old('open_excavation.sand_over.width') }}"
-                                                           placeholder="0.00">
-                                                    <span class="input-group-text">م</span>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div class="input-group input-group-sm">
-                                                    <input type="number" step="0.01" class="form-control dimension-input calculate-total" 
-                                                           name="open_excavation[sand_over][depth]" 
-                                                           data-row="sand_over"
-                                                           value="{{ old('open_excavation.sand_over.depth') }}"
-                                                           placeholder="0.00">
-                                                    <span class="input-group-text">م</span>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div class="input-group input-group-sm">
-                                                    <input type="text" class="form-control total-input" 
-                                                           id="total-sand_over" 
-                                                           readonly 
-                                                           value="0.00">
-                                                    <span class="input-group-text">م³</span>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td class="align-middle">توريد وتنفيذ طبقة أولى صيبز</td>
-                                            <td>
-                                                <div class="input-group input-group-sm">
-                                                    <input type="number" step="0.01" class="form-control dimension-input calculate-total" 
-                                                           name="open_excavation[first_sibz][length]" 
-                                                           data-row="first_sibz"
-                                                           value="{{ old('open_excavation.first_sibz.length') }}"
-                                                           placeholder="0.00">
-                                                    <span class="input-group-text">م</span>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div class="input-group input-group-sm">
-                                                    <input type="number" step="0.01" class="form-control dimension-input calculate-total" 
-                                                           name="open_excavation[first_sibz][width]" 
-                                                           data-row="first_sibz"
-                                                           value="{{ old('open_excavation.first_sibz.width') }}"
-                                                           placeholder="0.00">
-                                                    <span class="input-group-text">م</span>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div class="input-group input-group-sm">
-                                                    <input type="number" step="0.01" class="form-control dimension-input calculate-total" 
-                                                           name="open_excavation[first_sibz][depth]" 
-                                                           data-row="first_sibz"
-                                                           value="{{ old('open_excavation.first_sibz.depth') }}"
-                                                           placeholder="0.00">
-                                                    <span class="input-group-text">م</span>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div class="input-group input-group-sm">
-                                                    <input type="text" class="form-control total-input" 
-                                                           id="total-first_sibz" 
-                                                           readonly 
-                                                           value="0.00">
-                                                    <span class="input-group-text">م³</span>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td class="align-middle">توريد وتنفيذ طبقة ثانية صيبز</td>
-                                            <td>
-                                                <div class="input-group input-group-sm">
-                                                    <input type="number" step="0.01" class="form-control dimension-input calculate-total" 
-                                                           name="open_excavation[second_sibz][length]" 
-                                                           data-row="second_sibz"
-                                                           value="{{ old('open_excavation.second_sibz.length') }}"
-                                                           placeholder="0.00">
-                                                    <span class="input-group-text">م</span>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div class="input-group input-group-sm">
-                                                    <input type="number" step="0.01" class="form-control dimension-input calculate-total" 
-                                                           name="open_excavation[second_sibz][width]" 
-                                                           data-row="second_sibz"
-                                                           value="{{ old('open_excavation.second_sibz.width') }}"
-                                                           placeholder="0.00">
-                                                    <span class="input-group-text">م</span>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div class="input-group input-group-sm">
-                                                    <input type="number" step="0.01" class="form-control dimension-input calculate-total" 
-                                                           name="open_excavation[second_sibz][depth]" 
-                                                           data-row="second_sibz"
-                                                           value="{{ old('open_excavation.second_sibz.depth') }}"
-                                                           placeholder="0.00">
-                                                    <span class="input-group-text">م</span>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div class="input-group input-group-sm">
-                                                    <input type="text" class="form-control total-input" 
-                                                           id="total-second_sibz" 
-                                                           readonly 
-                                                           value="0.00">
-                                                    <span class="input-group-text">م³</span>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td class="align-middle">توريد وتنفيذ طبقة خرسانية</td>
-                                            <td>
-                                                <div class="input-group input-group-sm">
-                                                    <input type="number" step="0.01" class="form-control dimension-input calculate-total" 
-                                                           name="open_excavation[concrete][length]" 
-                                                           data-row="concrete"
-                                                           value="{{ old('open_excavation.concrete.length') }}"
-                                                           placeholder="0.00">
-                                                    <span class="input-group-text">م</span>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div class="input-group input-group-sm">
-                                                    <input type="number" step="0.01" class="form-control dimension-input calculate-total" 
-                                                           name="open_excavation[concrete][width]" 
-                                                           data-row="concrete"
-                                                           value="{{ old('open_excavation.concrete.width') }}"
-                                                           placeholder="0.00">
-                                                    <span class="input-group-text">م</span>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div class="input-group input-group-sm">
-                                                    <input type="number" step="0.01" class="form-control dimension-input calculate-total" 
-                                                           name="open_excavation[concrete][depth]" 
-                                                           data-row="concrete"
-                                                           value="{{ old('open_excavation.concrete.depth') }}"
-                                                           placeholder="0.00">
-                                                    <span class="input-group-text">م</span>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div class="input-group input-group-sm">
-                                                    <input type="text" class="form-control total-input" 
-                                                           id="total-concrete" 
-                                                           readonly 
-                                                           value="0.00">
-                                                    <span class="input-group-text">م³</span>
-                                                </div>
-                                            </td>
-                                        </tr>
+                                        
+                                        
                                         <tr>
                                             <td class="align-middle">أسفلت طبقة أولى</td>
                                             <td>
@@ -731,54 +439,9 @@
                                         </tr>
                                         <tr>
                                             <td colspan="5"><hr class='my-2'></td>
-                                        </tr>
-                                        <tr>
-                                            <th style="width: 35%">العنصر</th>
-                                            <th style="width: 15%">العدد</th>
-                                            <th style="width: 15%">الطول (متر)</th>
-                                        </tr>
-                                        <tr>
-                                            <td class="align-middle">توريد وتركيب شريط كزيري</td>
-                                            <td>
-                                                <div class="input-group input-group-sm">
-                                                    <input type="number" step="1" class="form-control dimension-input" 
-                                                           name="open_excavation[kerb_strip][quantity]" 
-                                                           value="{{ old('open_excavation.kerb_strip.quantity') }}"
-                                                           placeholder="0">
-                                                    <span class="input-group-text">قطعة</span>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div class="input-group input-group-sm">
-                                                    <input type="number" step="0.01" class="form-control dimension-input" 
-                                                           name="open_excavation[kerb_strip][length]" 
-                                                           value="{{ old('open_excavation.kerb_strip.length') }}"
-                                                           placeholder="0.00">
-                                                    <span class="input-group-text">م</span>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td class="align-middle">توريد وتركيب بلاط حماية</td>
-                                            <td>
-                                                <div class="input-group input-group-sm">
-                                                    <input type="number" step="1" class="form-control dimension-input" 
-                                                           name="open_excavation[protection_tile][quantity]" 
-                                                           value="{{ old('open_excavation.protection_tile.quantity') }}"
-                                                           placeholder="0">
-                                                    <span class="input-group-text">قطعة</span>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div class="input-group input-group-sm">
-                                                    <input type="number" step="0.01" class="form-control dimension-input" 
-                                                           name="open_excavation[protection_tile][length]" 
-                                                           value="{{ old('open_excavation.protection_tile.length') }}"
-                                                           placeholder="0.00">
-                                                    <span class="input-group-text">م</span>
-                                                </div>
-                                            </td>
-                                        </tr>
+                                    
+                                    
+                                        
                                     </tbody>
                                 </table>
                             </div>
@@ -793,8 +456,8 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            @foreach(['1 كابل منخفض', '2 كابل منخفض', '3 كابل منخفض', '4 كابل منخفض', '1 كابل متوسط', '3 كابل متوسط', '4 كابل متوسط'] as $cable)
-                                            <tr>
+                                        @foreach([ 'كابل منخفض', '2 كابل منخفض', '3 كابل منخفض', '4 كابل منخفض', '1 كابل متوسط', '2 كابل متوسط', '3 كابل متوسط', '4 كابل متوسط', 'حفر مفتوح اكبر من 4 كابلات'] as $cable)
+
                                                 <td class="align-middle">{{ $cable }}</td>
                                                 <td>
                                                     <div class="input-group input-group-sm">

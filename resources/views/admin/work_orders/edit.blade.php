@@ -192,12 +192,13 @@
                                 <div class="form-group mb-3">
                                     <label for="execution_status" class="form-label fw-bold">حالة تنفيذ أمر العمل</label>
                                     <select id="execution_status" class="form-select @error('execution_status') is-invalid @enderror" name="execution_status">
-                                        <option value="2" {{ old('execution_status', $workOrder->execution_status) == '2' ? 'selected' : '' }}>تم تسليم المقاول ولم يتم الاستلام</option>
-                                        <option value="1" {{ old('execution_status', $workOrder->execution_status) == '1' ? 'selected' : '' }}>تم الاستلام من المقاول ولم تصدر شهادة الانجاز</option>
-                                        <option value="3" {{ old('execution_status', $workOrder->execution_status) == '3' ? 'selected' : '' }}>دخلت مستخلص ولم تصرف</option>
-                                        <option value="4" {{ old('execution_status', $workOrder->execution_status) == '4' ? 'selected' : '' }}>صدرت شهادة الانجاز ولم تعتمد</option>
-                                        <option value="5" {{ old('execution_status', $workOrder->execution_status) == '5' ? 'selected' : '' }}>منتهي</option>
-                                        <option value="6" {{ old('execution_status', $workOrder->execution_status) == '6' ? 'selected' : '' }}>مؤكد ولم تدخل مستخلص</option>
+                                        <option value="2" {{ old('execution_status', $workOrder->execution_status) == '2' ? 'selected' : '' }}>جاري العمل ...</option>
+                                        <option value="1" {{ old('execution_status', $workOrder->execution_status) == '1' ? 'selected' : '' }}> تم تسليم 155 ولم تصدر شهادة انجاز </option>
+                                        <option value="3" {{ old('execution_status', $workOrder->execution_status) == '3' ? 'selected' : '' }}> صدرت شهادة ولم تعتمد</option>
+                                        <option value="4" {{ old('execution_status', $workOrder->execution_status) == '4' ? 'selected' : '' }}> تم اعتماد شهادة الانجاز</option>
+                                        <option value="5" {{ old('execution_status', $workOrder->execution_status) == '5' ? 'selected' : '' }}>مؤكد ولم تدخل مستخلص </option>
+                                        <option value="6" {{ old('execution_status', $workOrder->execution_status) == '6' ? 'selected' : '' }}> دخلت مستخلص ولم تصرف </option>
+                                        <option value="7" {{ old('execution_status', $workOrder->execution_status) == '7' ? 'selected' : '' }}> منتهي تم الصرف </option>
                                     </select>
                                     @error('execution_status')
                                         <span class="invalid-feedback" role="alert">
