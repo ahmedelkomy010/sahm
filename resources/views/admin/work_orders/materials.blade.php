@@ -35,7 +35,7 @@
                                 <div class="form-group mb-3">
                                     <label for="work_order_id" class="form-label fw-bold">أمر العمل</label>
                                     <select name="work_order_id" id="work_order_id" class="form-select form-select-lg">
-                                        <option value="">اختر أمر العمل</option>
+                                        <option value=""> أمر العمل</option>
                                         @foreach($workOrders as $workOrder)
                                             <option value="{{ $workOrder->id }}">{{ $workOrder->order_number }} - {{ $workOrder->subscriber_name }}</option>
                                         @endforeach
@@ -73,7 +73,7 @@
                                 </div>
 
                                 <div class="form-group mb-3">
-                                    <label for="description" class="form-label fw-bold">وصف المادة</label>
+                                    <label for="description" class="form-label fw-bold"> المادة</label>
                                     <div class="input-group">
                                         <span class="input-group-text"><i class="fas fa-align-right"></i></span>
                                         <textarea class="form-control" id="description" name="description" rows="3"></textarea>
@@ -97,6 +97,12 @@
                                             <span class="input-group-text"><i class="fas fa-calculator"></i></span>
                                             <input type="number" step="0.01" class="form-control" id="planned_quantity" name="planned_quantity">
                                         </div>
+                                        <label for="line" class="form-label fw-bold">الكمية المصروفة</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fas fa-hashtag"></i></span>
+                                            <input type="text" class="form-control" id="line" name="line">
+                                        </div>
+                                    </div>
                                         <div class="invalid-feedback">يرجى إدخال الكمية المخططة</div>
                                     </div>
                                     
@@ -173,6 +179,13 @@
                                             <input type="file" class="form-control" id="store_out_file" name="store_out_file">
                                         </div>
                                     </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label for="store_out_file" class="form-label fw-bold">DDO</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fas fa-file-export"></i></span>
+                                            <input type="file" class="form-control" id="store_out_file" name="store_out_file">
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -231,6 +244,7 @@
                                     <th>السطر</th>
                                     <th>الكمية المخططة</th>
                                     <th>الكمية المنفذة</th>
+                                    <th>الكمية المصروفة</th>
                                     <th>الفرق</th>
                                     <th>الوحدة</th>
                                     <th>تاريخ الإضافة</th>
@@ -360,6 +374,10 @@
                                     </div>
                                     <div class="mb-3">
                                         <strong>السطر:</strong>
+                                        <span id="modal-line" class="d-block mt-1 p-2 bg-light rounded"></span>
+                                    </div>
+                                    <div class="mb-3">
+                                        <strong>الكمية المصروفة:</strong>
                                         <span id="modal-line" class="d-block mt-1 p-2 bg-light rounded"></span>
                                     </div>
                                 </div>

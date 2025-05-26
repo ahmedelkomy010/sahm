@@ -166,15 +166,28 @@ class WorkOrderController extends Controller
             'ct_meter_box' => 'تركيب صندوق بعداد CT',
             'mini_pillar_base' => 'تركيب قاعدة ميني بلر فقط',
             'mini_pillar_head' => 'تركيب راسي ميني بلر فقط',
-            'mini_pillar_ml' => 'تركيب ميني بلر ML',
+            'mini_pillar_ml' => 'تركيب ميني بلر كامل',
             'ring_base_triple' => 'تركيب قاعدة رنج ثلاثي',
             'ring_base_quad' => 'تركيب قاعدة رنج رباعي',
-            'cole_base_500' => 'تركيب قاعدة كول 500',
-            'cole_base_1000' => 'تركيب قاعدة كول 1000',
-            'cole_base_1500' => 'تركيب قاعدة كول 1500',
+            'cole_khar_500' => 'تركيب قاعدة خرسان محول 500',
+            'cole_base_500' => 'تركيب محول 500',
+            'cole_base_1000' => 'تركيب قاعدة خرسانة محول 1000',
+            'cole_1000' => 'تركيب محول 1000',
+            'cole_base_1500' => 'تركيب قاعدة خرسانة محول 1500',
+            'cole_khara_1500' => 'تركيب محول 1500',
             'pole_10m' => 'تركيب عمود 10 متر',
             'pole_13m' => 'تركيب عمود 13 متر',
-            'pole_14m' => 'تركيب عمود 14 متر'
+            'pole_14m' => 'تركيب عمود 14 متر',
+            'Installing_antenna_100' => ' تركيب هوائي 100',
+            'Installing_antenna_200' => ' تركيب هوائي 200',
+            'Installing_antenna_300' => ' تركيب هوائي 300',
+            'Installing_knife' => ' تركيب سكينة LBS',
+            'Class_teacher' => ' تركيب معيد الفصل ',
+            'Split_installation' => ' تركيب مجزئ',
+            'Low_plate_1600' => ' تركيب لوحة منخفض 1600',
+            'Low_plate_3000' => ' تركيب لوحة منخفض 3000'
+            
+            
         ];
 
         // Get all installation images

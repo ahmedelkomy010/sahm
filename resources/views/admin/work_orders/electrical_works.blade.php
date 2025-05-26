@@ -6,7 +6,7 @@
         <div class="col-md-12">
             <div class="card shadow-lg border-0">
                 <div class="card-header bg-primary text-white py-3 d-flex justify-content-between align-items-center">
-                    <h3 class="mb-0 fs-4">أعمال التمديد والكهرباء</h3>
+                    <h3 class="mb-0 fs-4">أعمال الكهرباء</h3>
                     <a href="{{ route('admin.work-orders.execution', $workOrder) }}" class="btn btn-light btn-sm">
                         <i class="fas fa-arrow-right"></i> عودة
                     </a>
@@ -31,19 +31,19 @@
                         @csrf
 
                         <div class="row g-4">
-                            <!-- عناصر التمديد والكهرباء المطلوبة -->
+                            <!-- بنود الكهرباء المطلوبة -->
                             <div class="col-md-12">
                                 <div class="card border-0 shadow-sm">
                                     <div class="card-body p-4">
                                         <h4 class="card-title mb-4">
                                             <i class="fas fa-bolt ml-2 text-primary"></i>
-                                            عناصر التمديد والكهرباء
+                                            بنود الكهرباء
                                         </h4>
                                         <div class="table-responsive">
                                             <table class="table table-bordered table-sm mb-0">
                                                 <thead>
                                                     <tr>
-                                                        <th style="width: 40%">العنصر</th>
+                                                        <th style="width: 40%">البند</th>
                                                         <th style="width: 30%">الحالة</th>
                                                         <th style="width: 30%">العدد</th>
                                                     </tr>
@@ -239,7 +239,7 @@
                                                         </td>
                                                     </tr>
                                                     <tr>
-                                                        <td class="align-middle">لفزات 4x70 ألمونيوم 1 kv</td>
+                                                        <td class="align-middle">لقزات 4x70 ألمونيوم 1 kv</td>
                                                         <td>
                                                             <div class="btn-group btn-group-sm w-100" role="group">
                                                                 <input type="radio" class="btn-check" name="electrical_items[lugs_4x70_1kv][status]" id="lugs_4x70_1kv_yes" value="yes" {{ old('electrical_items.lugs_4x70_1kv.status') == 'yes' ? 'checked' : '' }}>
@@ -302,7 +302,7 @@
                                                         </td>
                                                     </tr>
                                                     <tr>
-                                                        <td class="align-middle">تأريفي عداد</td>
+                                                        <td class="align-middle">تأريض عداد</td>
                                                         <td>
                                                             <div class="btn-group btn-group-sm w-100" role="group">
                                                                 <input type="radio" class="btn-check" name="electrical_items[tariff_meter][status]" id="tariff_meter_yes" value="yes" {{ old('electrical_items.tariff_meter.status') == 'yes' ? 'checked' : '' }}>
@@ -323,7 +323,7 @@
                                                         </td>
                                                     </tr>
                                                     <tr>
-                                                        <td class="align-middle">تأريفي ميني بلر</td>
+                                                        <td class="align-middle">تأريض ميني بلر</td>
                                                         <td>
                                                             <div class="btn-group btn-group-sm w-100" role="group">
                                                                 <input type="radio" class="btn-check" name="electrical_items[tariff_minipillar][status]" id="tariff_minipillar_yes" value="yes" {{ old('electrical_items.tariff_minipillar.status') == 'yes' ? 'checked' : '' }}>
@@ -344,7 +344,28 @@
                                                         </td>
                                                     </tr>
                                                     <tr>
-                                                        <td class="align-middle">تأريفي رنج</td>
+                                                        <td class="align-middle">تأريض  معدة</td>
+                                                        <td>
+                                                            <div class="btn-group btn-group-sm w-100" role="group">
+                                                                <input type="radio" class="btn-check" name="electrical_items[tariff_minipillar][status]" id="tariff_minipillar_yes" value="yes" {{ old('electrical_items.tariff_minipillar.status') == 'yes' ? 'checked' : '' }}>
+                                                                <label class="btn btn-outline-success" for="tariff_minipillar_yes">نعم</label>
+                                                                <input type="radio" class="btn-check" name="electrical_items[tariff_minipillar][status]" id="tariff_minipillar_no" value="no" {{ old('electrical_items.tariff_minipillar.status') == 'no' ? 'checked' : '' }}>
+                                                                <label class="btn btn-outline-danger" for="tariff_minipillar_no">لا</label>
+                                                                <input type="radio" class="btn-check" name="electrical_items[tariff_minipillar][status]" id="tariff_minipillar_na" value="na" {{ old('electrical_items.tariff_minipillar.status') == 'na' ? 'checked' : '' }}>
+                                                                <label class="btn btn-outline-secondary" for="tariff_minipillar_na">لا ينطبق</label>
+                                                            </div>
+                                                        </td>
+                                                        <td>
+                                                            <div class="input-group input-group-sm">
+                                                                <input type="number" step="1" min="0" class="form-control" name="electrical_items[tariff_minipillar][quantity]" value="{{ old('electrical_items.tariff_minipillar.quantity', '0') }}" placeholder="0">
+                                                                <div class="input-group-append">
+                                                                    <span class="input-group-text">عدد</span>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="align-middle">تأريض رنج</td>
                                                         <td>
                                                             <div class="btn-group btn-group-sm w-100" role="group">
                                                                 <input type="radio" class="btn-check" name="electrical_items[tariff_ring][status]" id="tariff_ring_yes" value="yes" {{ old('electrical_items.tariff_ring.status') == 'yes' ? 'checked' : '' }}>
@@ -365,7 +386,7 @@
                                                         </td>
                                                     </tr>
                                                     <tr>
-                                                        <td class="align-middle">تأريفي محول</td>
+                                                        <td class="align-middle">تأريض محول</td>
                                                         <td>
                                                             <div class="btn-group btn-group-sm w-100" role="group">
                                                                 <input type="radio" class="btn-check" name="electrical_items[tariff_transformer][status]" id="tariff_transformer_yes" value="yes" {{ old('electrical_items.tariff_transformer.status') == 'yes' ? 'checked' : '' }}>
@@ -429,61 +450,7 @@
                                                             </div>
                                                         </td>
                                                     </tr>
-                                                    <tr>
-                                                        <td class="align-middle">تمديد كيبل 4x70 منخفض</td>
-                                                        <td colspan="2">
-                                                            <div class="input-group input-group-sm">
-                                                                <input type="number" step="0.01" min="0" class="form-control" name="electrical_items[cable_4x70_low][meters]" value="{{ old('electrical_items.cable_4x70_low.meters', '0') }}" placeholder="0.00">
-                                                                <div class="input-group-append">
-                                                                    <span class="input-group-text">متر</span>
-                                                                </div>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td class="align-middle">تمديد كيبل 4x185 منخفض</td>
-                                                        <td colspan="2">
-                                                            <div class="input-group input-group-sm">
-                                                                <input type="number" step="0.01" min="0" class="form-control" name="electrical_items[cable_4x185_low][meters]" value="{{ old('electrical_items.cable_4x185_low.meters', '0') }}" placeholder="0.00">
-                                                                <div class="input-group-append">
-                                                                    <span class="input-group-text">متر</span>
-                                                                </div>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td class="align-middle">تمديد كيبل 4x300 منخفض</td>
-                                                        <td colspan="2">
-                                                            <div class="input-group input-group-sm">
-                                                                <input type="number" step="0.01" min="0" class="form-control" name="electrical_items[cable_4x300_low][meters]" value="{{ old('electrical_items.cable_4x300_low.meters', '0') }}" placeholder="0.00">
-                                                                <div class="input-group-append">
-                                                                    <span class="input-group-text">متر</span>
-                                                                </div>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td class="align-middle">تمديد كيبل 3x500 متوسط</td>
-                                                        <td colspan="2">
-                                                            <div class="input-group input-group-sm">
-                                                                <input type="number" step="0.01" min="0" class="form-control" name="electrical_items[cable_3x500_med][meters]" value="{{ old('electrical_items.cable_3x500_med.meters', '0') }}" placeholder="0.00">
-                                                                <div class="input-group-append">
-                                                                    <span class="input-group-text">متر</span>
-                                                                </div>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td class="align-middle">تمديد كيبل 3x400 متوسط</td>
-                                                        <td colspan="2">
-                                                            <div class="input-group input-group-sm">
-                                                                <input type="number" step="0.01" min="0" class="form-control" name="electrical_items[cable_3x400_med][meters]" value="{{ old('electrical_items.cable_3x400_med.meters', '0') }}" placeholder="0.00">
-                                                                <div class="input-group-append">
-                                                                    <span class="input-group-text">متر</span>
-                                                                </div>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
+                                                    
                                                 </tbody>
                                             </table>
                                         </div>

@@ -514,6 +514,61 @@
                                                     </div>
                                                 </td>
                                             </tr>
+                                            <tr>
+                                                        <td class="align-middle">تمديد كيبل 4x70 منخفض</td>
+                                                        <td colspan="2">
+                                                            <div class="input-group input-group-sm">
+                                                                <input type="number" step="0.01" min="0" class="form-control" name="electrical_items[cable_4x70_low][meters]" value="{{ old('electrical_items.cable_4x70_low.meters', '0') }}" placeholder="0.00">
+                                                                <div class="input-group-append">
+                                                                    <span class="input-group-text">متر</span>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="align-middle">تمديد كيبل 4x185 منخفض</td>
+                                                        <td colspan="2">
+                                                            <div class="input-group input-group-sm">
+                                                                <input type="number" step="0.01" min="0" class="form-control" name="electrical_items[cable_4x185_low][meters]" value="{{ old('electrical_items.cable_4x185_low.meters', '0') }}" placeholder="0.00">
+                                                                <div class="input-group-append">
+                                                                    <span class="input-group-text">متر</span>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="align-middle">تمديد كيبل 4x300 منخفض</td>
+                                                        <td colspan="2">
+                                                            <div class="input-group input-group-sm">
+                                                                <input type="number" step="0.01" min="0" class="form-control" name="electrical_items[cable_4x300_low][meters]" value="{{ old('electrical_items.cable_4x300_low.meters', '0') }}" placeholder="0.00">
+                                                                <div class="input-group-append">
+                                                                    <span class="input-group-text">متر</span>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="align-middle">تمديد كيبل 3x500 متوسط</td>
+                                                        <td colspan="2">
+                                                            <div class="input-group input-group-sm">
+                                                                <input type="number" step="0.01" min="0" class="form-control" name="electrical_items[cable_3x500_med][meters]" value="{{ old('electrical_items.cable_3x500_med.meters', '0') }}" placeholder="0.00">
+                                                                <div class="input-group-append">
+                                                                    <span class="input-group-text">متر</span>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="align-middle">تمديد كيبل 3x400 متوسط</td>
+                                                        <td colspan="2">
+                                                            <div class="input-group input-group-sm">
+                                                                <input type="number" step="0.01" min="0" class="form-control" name="electrical_items[cable_3x400_med][meters]" value="{{ old('electrical_items.cable_3x400_med.meters', '0') }}" placeholder="0.00">
+                                                                <div class="input-group-append">
+                                                                    <span class="input-group-text">متر</span>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
                                         </tbody>
                                     </table>
                                 </div>

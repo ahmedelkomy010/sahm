@@ -84,6 +84,18 @@
                                         </span>
                                     @enderror
                                 </div>
+                                <div class="form-group mb-3">
+                                    <label for="approval_date" class="form-label fw-bold">تاريخ الاعتماد</label>
+                                    <input id="approval_date" type="date" class="form-control @error('approval_date') is-invalid @enderror" name="approval_date" value="{{ old('approval_date') }}">
+                                    @error('approval_date')
+                                        <span class="invalid-feedback" role="alert">
+                                            <strong>{{ $message }}</strong>
+                                        </span>
+                                    @enderror
+
+                                    {{-- عنصر عرض العداد --}}
+                                    <div id="daysCounter" class="mt-2 fw-bold text-primary"></div>
+                                </div>
 
                                 <div class="form-group mb-3">
                                     <label for="subscriber_name" class="form-label fw-bold">اسم المشترك</label>
@@ -106,7 +118,7 @@
                                 </div>
                                 <div class="form-group mb-3">
                                     <label for="municipality" class="form-label fw-bold">البلدية</label>
-                                    <input id="municipality" type="text" class="form-control @error('municipality') is-invalid @enderror" name="municipality" value="{{ old('municipality') }}">
+                                    <input id="municipality" type="text" class="form-control @error('municipality') is-invalid @enderror" name="municipality" value="{{ old('municipality') }}"required>
                                     @error('municipality')
                                         <span class="invalid-feedback" role="alert">
                                             <strong>{{ $message }}</strong>
@@ -116,7 +128,7 @@
 
                                 <div class="form-group mb-3">
                                     <label for="station_number" class="form-label fw-bold">رقم المحطة</label>
-                                    <input id="station_number" type="text" class="form-control @error('station_number') is-invalid @enderror" name="station_number" value="{{ old('station_number') }}">
+                                    <input id="station_number" type="text" class="form-control @error('station_number') is-invalid @enderror" name="station_number" value="{{ old('station_number') }}"required>
                                     @error('station_number')
                                         <span class="invalid-feedback" role="alert">
                                             <strong>{{ $message }}</strong>
@@ -126,7 +138,7 @@
 
                                 <div class="form-group mb-3">
                                     <label for="consultant_name" class="form-label fw-bold">اسم الاستشاري</label>
-                                    <input id="consultant_name" type="text" class="form-control @error('consultant_name') is-invalid @enderror" name="consultant_name" value="{{ old('consultant_name') }}">
+                                    <input id="consultant_name" type="text" class="form-control @error('consultant_name') is-invalid @enderror" name="consultant_name" value="{{ old('consultant_name') }}"required>
                                     @error('consultant_name')
                                         <span class="invalid-feedback" role="alert">
                                             <strong>{{ $message }}</strong>
@@ -136,7 +148,7 @@
 
                                 <div class="form-group mb-3">
                                     <label for="office" class="form-label fw-bold">المكتب</label>
-                                    <select id="office" class="form-select @error('office') is-invalid @enderror" name="office">
+                                    <select id="office" class="form-select @error('office') is-invalid @enderror" name="office"required>
                                         <option value="">اختر المكتب</option>
                                         <option value="خريص" {{ old('office') == 'خريص' ? 'selected' : '' }}>خريص</option>
                                         <option value="الشرق" {{ old('office') == 'الشرق' ? 'selected' : '' }}>الشرق</option>

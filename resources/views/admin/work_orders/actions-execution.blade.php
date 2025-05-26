@@ -69,6 +69,23 @@
                     <label class="form-label">القيمة الكلية النهائية:</label>
                     <input type="number" step="0.01" name="final_total_value" class="form-control" value="{{ old('final_total_value', $workOrder->final_total_value) }}">
                 </div>
+                <div class="form-group mb-3">
+                                    <label for="execution_status" class="form-label fw-bold">حالة تنفيذ أمر العمل</label>
+                                    <select id="execution_status" class="form-select @error('execution_status') is-invalid @enderror" name="execution_status">
+                                        <option value="2" {{ old('execution_status', $workOrder->execution_status) == '2' ? 'selected' : '' }}>جاري العمل ...</option>
+                                        <option value="1" {{ old('execution_status', $workOrder->execution_status) == '1' ? 'selected' : '' }}> تم تسليم 155 ولم تصدر شهادة انجاز </option>
+                                        <option value="3" {{ old('execution_status', $workOrder->execution_status) == '3' ? 'selected' : '' }}> صدرت شهادة ولم تعتمد</option>
+                                        <option value="4" {{ old('execution_status', $workOrder->execution_status) == '4' ? 'selected' : '' }}> تم اعتماد شهادة الانجاز</option>
+                                        <option value="5" {{ old('execution_status', $workOrder->execution_status) == '5' ? 'selected' : '' }}>مؤكد ولم تدخل مستخلص </option>
+                                        <option value="6" {{ old('execution_status', $workOrder->execution_status) == '6' ? 'selected' : '' }}> دخلت مستخلص ولم تصرف </option>
+                                        <option value="7" {{ old('execution_status', $workOrder->execution_status) == '7' ? 'selected' : '' }}> منتهي تم الصرف </option>
+                                    </select>
+                                    @error('execution_status')
+                                        <span class="invalid-feedback" role="alert">
+                                            <strong>{{ $message }}</strong>
+                                        </span>
+                                    @enderror
+                                </div>
                 <div class="col-12 text-center mt-3">
                     <button type="submit" class="btn btn-primary px-4">حفظ البيانات</button>
                 </div>
