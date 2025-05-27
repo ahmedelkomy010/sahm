@@ -85,19 +85,6 @@
                                     @enderror
                                 </div>
                                 <div class="form-group mb-3">
-                                    <label for="approval_date" class="form-label fw-bold">تاريخ الاعتماد</label>
-                                    <input id="approval_date" type="date" class="form-control @error('approval_date') is-invalid @enderror" name="approval_date" value="{{ old('approval_date') }}">
-                                    @error('approval_date')
-                                        <span class="invalid-feedback" role="alert">
-                                            <strong>{{ $message }}</strong>
-                                        </span>
-                                    @enderror
-
-                                    {{-- عنصر عرض العداد --}}
-                                    <div id="daysCounter" class="mt-2 fw-bold text-primary"></div>
-                                </div>
-
-                                <div class="form-group mb-3">
                                     <label for="subscriber_name" class="form-label fw-bold">اسم المشترك</label>
                                     <input id="subscriber_name" type="text" class="form-control @error('subscriber_name') is-invalid @enderror" name="subscriber_name" value="{{ old('subscriber_name') }}">
                                     @error('subscriber_name')
