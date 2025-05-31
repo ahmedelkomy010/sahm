@@ -527,106 +527,108 @@
                                                 <option value="908121158" {{ old('work_type') == '908121158' ? 'selected' : '' }}>-JOINT KIT,TRANS,PM,15KV,500-300/35MM2,AL</option>
                                                 <option value="908121173" {{ old('work_type') == '908121173' ? 'selected' : '' }}>-JOINT KIT,C/R,15KV,3CX300-500,AL ARM</option>
                                                 <!-- 450 -->
-                                                <option value="" {{ old('work_type') == '408' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '804' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '408' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '804' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '408' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '804' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '408' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '804' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '408' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '804' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '408' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '408' ? 'selected' : '' }}>-</option> 
-                                                <option value="" {{ old('work_type') == '804' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '408' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '804' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '408' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '804' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '408' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '408' ? 'selected' : '' }}>-</option> 
-                                                <option value="" {{ old('work_type') == '804' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '408' ? 'selected' : '' }}>-</option>  
-                                                <option value="" {{ old('work_type') == '804' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '408' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '408' ? 'selected' : '' }}>-</option> 
-                                                <option value="" {{ old('work_type') == '804' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '408' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '804' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '408' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '804' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '408' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '804' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '408' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '804' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '408' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '804' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '408' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '804' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '408' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '408' ? 'selected' : '' }}>-</option> 
-                                                <option value="" {{ old('work_type') == '804' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '408' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '804' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '408' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '804' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '408' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '408' ? 'selected' : '' }}>-</option> 
-                                                <option value="" {{ old('work_type') == '804' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '408' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '804' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '408' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '804' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '408' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '408' ? 'selected' : '' }}>-</option> 
-                                                <option value="" {{ old('work_type') == '804' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '408' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '804' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '408' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '804' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '408' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '804' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '408' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '804' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '408' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '804' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '408' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '804' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '408' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '408' ? 'selected' : '' }}>-</option> 
-                                                <option value="" {{ old('work_type') == '804' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '408' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '804' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '408' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '804' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '408' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '408' ? 'selected' : '' }}>-</option> 
-                                                <option value="" {{ old('work_type') == '804' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '408' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '804' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '408' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '804' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '408' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '408' ? 'selected' : '' }}>-</option> 
-                                                <option value="" {{ old('work_type') == '804' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '408' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '804' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '408' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '804' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '408' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '804' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '408' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '408' ? 'selected' : '' }}>-</option> 
-                                                <option value="" {{ old('work_type') == '804' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '408' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '804' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '408' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '804' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '408' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '408' ? 'selected' : '' }}>-</option> 
-                                                <option value="" {{ old('work_type') == '804' ? 'selected' : '' }}>-</option>
-                                                <option value="" {{ old('work_type') == '408' ? 'selected' : '' }}>-</option>
+                                                <option value="908122001" {{ old('work_type') == '908122001' ? 'selected' : '' }}>-CONNECTOR,LUG,16MM2 CU,(1)M10 BLT HL</option>
+                                                <option value="908122004" {{ old('work_type') == '908122004' ? 'selected' : '' }}>-CONNECTOR,LUG,185SQMM CU,(1)M12 BLT HL</option>
+                                                <option value="908122011" {{ old('work_type') == '908122011' ? 'selected' : '' }}>-CONNECTOR,LUG,300MM2 AL,(1)M10 BLT HL</option>
+                                                <option value="908122013" {{ old('work_type') == '908122013' ? 'selected' : '' }}>-CONNECTOR,SLV,35MM2 AL,TIN PLT AL</option>
+                                                <option value="908122016" {{ old('work_type') == '908122016' ? 'selected' : '' }}>-CONNECTOR,SLV,300MM2 AL,TIN PLT AL</option>
+                                                <option value="908122018" {{ old('work_type') == '908122018' ? 'selected' : '' }}>-CONNECTOR,SLV,185MM2 CU,TIN PLT CU</option>
+                                                <option value="908122019" {{ old('work_type') == '908122019' ? 'selected' : '' }}>-CONNECTOR,SLV,300MM2 AL,TIN PLT CU</option>
+                                                <option value="908122020" {{ old('work_type') == '908122020' ? 'selected' : '' }}>-CONNECTOR,SLV,95-70MM2 AL,TIN PLT AL</option>
+                                                <option value="908122021" {{ old('work_type') == '908122021' ? 'selected' : '' }}>-CONNECTOR,SLV,185-95MM2 AL,TIN PLT AL</option>
+                                                <option value="908122024" {{ old('work_type') == '908122024' ? 'selected' : '' }}>-CONNECTOR,SLV,AL,500-300MM2</option>
+                                                <option value="908122028" {{ old('work_type') == '908122028' ? 'selected' : '' }}>-CONNECTOR,SLV,95MM2 AL-70MM2 CU,BIMTLC</option>
+                                                <option value="908122030" {{ old('work_type') == '908122030' ? 'selected' : '' }}>-CONNECTOR,SLV,150MM2 AL-95MM2 CU,BIMTLC</option> 
+                                                <option value="908122031" {{ old('work_type') == '908122031' ? 'selected' : '' }}>-CONNECTOR,SLV,185MM2 AL-120MM2 CU,BIMTLC</option>
+                                                <option value="908122032" {{ old('work_type') == '908122032' ? 'selected' : '' }}>-CONNECTOR,SLV,300MM2 AL-120MM2 CU,BIMTLC</option>
+                                                <option value="908122038" {{ old('work_type') == '908122038' ? 'selected' : '' }}>-CONNECTOR,LUG,500SQMM CU,17MMDIA,108MMLG</option>
+                                                <option value="908122040" {{ old('work_type') == '908122040' ? 'selected' : '' }}>-CONNECTOR,SLV,15KV,500MM2,AL,TIN PLT AL</option>
+                                                <option value="908122042" {{ old('work_type') == '908122042' ? 'selected' : '' }}>-CONNECTOR,LUG,BM,15KV,500MM2,M16,COMP</option>
+                                                <option value="908122044" {{ old('work_type') == '908122044' ? 'selected' : '' }}>-CONNECTOR,SLV,BM,500-300MM2</option>
+                                                <option value="908122048" {{ old('work_type') == '908122048' ? 'selected' : '' }}>-CONN,ELEC,TERM,36KV,185SQM,CU,2HPAD</option> 
+                                                <option value="908151002" {{ old('work_type') == '908151002' ? 'selected' : '' }}>-INSULATOR,POST,PORC,13.8KV,152MM D,552MM</option>
+                                                <option value="908152001" {{ old('work_type') == '908152001' ? 'selected' : '' }}>-INSULATOR,POST,FRP,13.8KV,200MM DIA</option>  
+                                                <option value="908152005" {{ old('work_type') == '908152005' ? 'selected' : '' }}>-SPACER,CNDTR,13.8KV,552MMX10MMDIA,CLAMP</option>
+                                                <option value="908152007" {{ old('work_type') == '908152007' ? 'selected' : '' }}>-SPACER,CNDTR,33KV,1320MMX10MMDIA,CLAMP</option>
+                                                <option value="908201004" {{ old('work_type') == '908201004' ? 'selected' : '' }}>-POLE,PWR,DIST,OC14S,STL,14M LG</option> 
+                                                <option value="908201005" {{ old('work_type') == '908201005' ? 'selected' : '' }}>-POLE,PWR,DIST,OC14D,STL,14M LG</option>
+                                                <option value="908202002" {{ old('work_type') == '908202002' ? 'selected' : '' }}>-BAND,STRAPPING,SSTL,20MM WD X 0.70MM TH</option>
+                                                <option value="908202010" {{ old('work_type') == '908202010' ? 'selected' : '' }}>-BOLT,MACH,GS,16MM DIA,275MM LG,HEX</option>
+                                                <option value="908202013" {{ old('work_type') == '908202013' ? 'selected' : '' }}>-BOLT,MACH,GS,20MM DIA,170MM LG,HEX</option>
+                                                <option value="908202014" {{ old('work_type') == '908202014' ? 'selected' : '' }}>-BOLT,MACH,GS,20MM DIA,225MM LG,HEX</option>
+                                                <option value="908202015" {{ old('work_type') == '908202015' ? 'selected' : '' }}>-BOLT,MACH,GS,20MM DIA,265MM LG,HEX HD</option>
+                                                <option value="908202019" {{ old('work_type') == '908202019' ? 'selected' : '' }}>-BOLT,MACH,GS,20MM DIA,310MM LG,HEX</option>
+                                                <option value="908202020" {{ old('work_type') == '908202020' ? 'selected' : '' }}>-BOLT,MACH,GS,20MM DIA,325MM LG,HEX</option>
+                                                <option value="908202023" {{ old('work_type') == '908202023' ? 'selected' : '' }}>-BOLT,MACH,GS,20MM DIA,365MM LG,HEX</option>
+                                                <option value="908202024" {{ old('work_type') == '908202024' ? 'selected' : '' }}>-BOLT,MACH,GS,20MM DIA,380MM LG,HEX</option>
+                                                <option value="908202026" {{ old('work_type') == '908202026' ? 'selected' : '' }}>-BRACKET,PHASE PLATE MTG,GS,40X20X30MM</option>
+                                                <option value="908202027" {{ old('work_type') == '908202027' ? 'selected' : '' }}>-BUCKLE,STRAP,CRIMP,SSTL,20MM WD</option>
+                                                <option value="908202030" {{ old('work_type') == '908202030' ? 'selected' : '' }}>-CONNECTOR,LUG,35SQMM CU,1-13.2MM DIA HL</option>
+                                                <option value="908202031" {{ old('work_type') == '908202031' ? 'selected' : '' }}>-CONNECTOR,ELEC,TERM,LUG,CU,50SQMM CNDCTR</option>
+                                                <option value="908202033" {{ old('work_type') == '908202033' ? 'selected' : '' }}>-SLEEVE,STRAPPING BAND,PVC,24X4.6MM</option> 
+                                                <option value="908202035" {{ old('work_type') == '908202035' ? 'selected' : '' }}>-CONNECTOR,TERM,PLUG,AL,67.44SQMM ACSR/AW</option>
+                                                <option value="908202044" {{ old('work_type') == '908202044' ? 'selected' : '' }}>-SUPPORT,EARTHWIRE,HDGS,L120/120X10X150MM</option>
+                                                <option value="908202045" {{ old('work_type') == '908202045' ? 'selected' : '' }}>-PLATE,PHASE,AL,80MM DIA X 1.5MM TH</option>
+                                                <option value="908202050" {{ old('work_type') == '908202050' ? 'selected' : '' }}>-ROD,ARMOR,AA,170.5SQMM ACSR/AW,5.18MMDIA</option>
+                                                <option value="908202051" {{ old('work_type') == '908202051' ? 'selected' : '' }}>-ROD,ARMOR,AA,67.44SQMM ACSR/AW,4.24MMDIA</option>
+                                                <option value="908202054" {{ old('work_type') == '908202054' ? 'selected' : '' }}>-ROD,GRD,CUWLD STL,16MM DIA,2400MM LG</option>
+                                                <option value="908202056" {{ old('work_type') == '908202056' ? 'selected' : '' }}>-SIGN,ELEC SFTY,DANGER HV,150X150X1.5MMTH</option> 
+                                                <option value="908202057" {{ old('work_type') == '908202057' ? 'selected' : '' }}>-SLEEVE,REPAIR,67.4SQMMACSR/AW,AL,255MMLG</option>
+                                                <option value="908202058" {{ old('work_type') == '908202058' ? 'selected' : '' }}>-SLEEVE,REPAIR,170SQMM ACSR,AL,295MM LG</option>
+                                                <option value="908202061" {{ old('work_type') == '908202061' ? 'selected' : '' }}>-CONNECTOR,SLV,67.4 SQMM/AW,AL,36KN</option>
+                                                <option value="908202067" {{ old('work_type') == '908202067' ? 'selected' : '' }}>-SUPPORT,WIRE SUSP,GS,L-120X120X10X150MM</option>
+                                                <!-- 500 -->
+                                                <option value="908202069" {{ old('work_type') == '908202069' ? 'selected' : '' }}>-THIMBLE,GUY,GS,50X22X80X3MM,8MM RAD</option>
+                                                <option value="908202071" {{ old('work_type') == '908202071' ? 'selected' : '' }}>-TIE,INSUL,PREF SIDE,MERLIN,73MM THR DIA</option>
+                                                <option value="908202072" {{ old('work_type') == '908202072' ? 'selected' : '' }}>-TIE,INSUL,PREF TOP,MERLIN,ARM,73MM THR</option> 
+                                                <option value="908202073" {{ old('work_type') == '908202073' ? 'selected' : '' }}>-TIE,INSUL,PREF SIDE,QUAIL,73MM THR DIA</option>
+                                                <option value="908202074" {{ old('work_type') == '908202074' ? 'selected' : '' }}>-TIE,INSUL,PREF SIDE,QUAIL,ARM,73MM THR</option>
+                                                <option value="908202075" {{ old('work_type') == '908202075' ? 'selected' : '' }}>-TIE,INSUL,PREF TOP,QUAIL,ARM,73MM THR</option>
+                                                <option value="908202076" {{ old('work_type') == '908202076' ? 'selected' : '' }}>-TIE,INSUL,PREF TOP,QUAIL,73MM THR DIA</option>
+                                                <option value="908202077" {{ old('work_type') == '908202077' ? 'selected' : '' }}>-TIE,INSUL,ALCSTL,POST,MERLIN,730MM LG</option>
+                                                <option value="908202078" {{ old('work_type') == '908202078' ? 'selected' : '' }}>-TIE,INSUL,PREF SIDE,MERLIN,ARM,73MM THR</option>
+                                                <option value="908202084" {{ old('work_type') == '908202084' ? 'selected' : '' }}>-BRACKET,INSUL,PSD,HOR,100X9X265MM</option>
+                                                <option value="908202088" {{ old('work_type') == '908202088' ? 'selected' : '' }}>-BAND,POLE,100WDX12TH,210MMDIA A/F,HDGS</option>
+                                                <option value="908202089" {{ old('work_type') == '908202089' ? 'selected' : '' }}>-WIRE,BARBED,GCSTL,2.5+/-0.1MM STR DIA</option>
+                                                <option value="908202095" {{ old('work_type') == '908202095' ? 'selected' : '' }}>-CLAMP,STRAIN,AA,17.35MM DIA,45KN MIN UTS</option>
+                                                <option value="908202099" {{ old('work_type') == '908202099' ? 'selected' : '' }}>-BRACKET,DANGER SIGN MTG,GS,40X5X120MM</option>
+                                                <option value="908202104" {{ old('work_type') == '908202104' ? 'selected' : '' }}>-CONDUIT,PVC,70MM ODX1110MM LG,W/CPLG</option>
+                                                <option value="908202105" {{ old('work_type') == '908202105' ? 'selected' : '' }}>-HOLDER,POLE NUM TAG,AL,50X40X1X400MM</option>
+                                                <option value="908202144" {{ old('work_type') == '908202144' ? 'selected' : '' }}>-HOLDER,EQUIPMENT NUM TAG,AL,98X1X400MM</option>
+                                                <option value="908202183" {{ old('work_type') == '908202183' ? 'selected' : '' }}>-CONNECTOR,PG,AL,MERLIN ACSR/AW,COMP</option> 
+                                                <option value="908202185" {{ old('work_type') == '908202185' ? 'selected' : '' }}>-CONNECTOR,PG,AL,MERLIN/AW,QUAIL/AW,COMP</option>
+                                                <option value="908202187" {{ old('work_type') == '908202187' ? 'selected' : '' }}>-CONNECTOR,PG,AL,QUAIL ACSR/AW,COMP</option>
+                                                <option value="908202188" {{ old('work_type') == '908202188' ? 'selected' : '' }}>-GRIP,GUY,PREF,GS,940MM LG,101 KN,RED</option>
+                                                <option value="908202195" {{ old('work_type') == '908202195' ? 'selected' : '' }}>-WIRE,GUY,STL,12MM DIA,7/4MM,101KN,LH</option>
+                                                <option value="908202202" {{ old('work_type') == '908202202' ? 'selected' : '' }}>-GRIP,GUY,PREF,GS,840MM LG,65 KN,YELLOW</option>
+                                                <option value="908202204" {{ old('work_type') == '908202204' ? 'selected' : '' }}>-PLATE,ANCHOR,GS,450X450X10MM,26MM HOLE</option> 
+                                                <option value="908202203" {{ old('work_type') == '908202203' ? 'selected' : '' }}>-ROD,ANCHOR,GS,24MM,2500MM,TWIN,ADJ</option> 
+                                                <option value="908202205" {{ old('work_type') == '908202205' ? 'selected' : '' }}>-PLATE,ANCHOR,GS,450X450X6MM,18MM HOLE</option>
+                                                <option value="908202208" {{ old('work_type') == '908202208' ? 'selected' : '' }}>-WIRE,GUY,STL,9.8MM DIA,7/3.25MM,65KN,LH</option>
+                                                <option value="908202212" {{ old('work_type') == '908202212' ? 'selected' : '' }}>-CABLE,ARRESTER-EARTH,CU,35SQMMX500MM</option>
+                                                <option value="908202215" {{ old('work_type') == '908202215' ? 'selected' : '' }}>-ROD,ANCHOR,GS,19MM,2500MM,ADJ</option>
+                                                <option value="908202216" {{ old('work_type') == '908202216' ? 'selected' : '' }}>-ROD,ANCHOR,GS,19MM,2500MM,TWIN,ADJ</option>
+                                                <option value="908202217" {{ old('work_type') == '908202217' ? 'selected' : '' }}>-BOLT,MACH,GS,16MM DIA,165MM LG,HEX</option>
+                                                <option value="908202218" {{ old('work_type') == '908202218' ? 'selected' : '' }}>-BOLT,MACH,GS,16MM DIA,300MM LG,HEX</option> 
+                                                <option value="908202229" {{ old('work_type') == '908202229' ? 'selected' : '' }}>-PIPE,SERVICE DROP,GS,70MMIDX76MMODX3MLG</option>
+                                                <option value="908202231" {{ old('work_type') == '908202231' ? 'selected' : '' }}>-CONDUIT:FLEXIBLE NONMETALLIC,76 MM OD,1</option>
+                                                <option value="908202232" {{ old('work_type') == '908202232' ? 'selected' : '' }}>-CONDUIT:FLEXIBLE NONMETALLIC,76 MM ID,4</option>
+                                                <option value="908202233" {{ old('work_type') == '908202233' ? 'selected' : '' }}>-CONDUIT:FLEXIBLE NONMETALLIC,76 MM ID,2</option>
+                                                <option value="908202234" {{ old('work_type') == '908202234' ? 'selected' : '' }}>-CONDUIT,PVC,76MM ODX2500MM LG,W/CPLG NUT</option>
+                                                <option value="908301004" {{ old('work_type') == '908301004' ? 'selected' : '' }}>-SWITCH,DISC,OVRHD,3,60HZ FREQ,400A</option>
+                                                <option value="908302009" {{ old('work_type') == '908302009' ? 'selected' : '' }}>-SWITCH,OHD,DISC, 33 KV,600 A,825 MM</option>       
+                                                <option value="908311011" {{ old('work_type') == '908311011' ? 'selected' : '' }}>-PANEL,DIST,OUTDOOR,4000A,14-400A CB</option>
+                                                <option value="908311109" {{ old('work_type') == '908311109' ? 'selected' : '' }}>-PANEL,DIST,INDOOR,3000A,12-400A CB</option> 
+                                                <option value="908311111" {{ old('work_type') == '908311111' ? 'selected' : '' }}>-PANEL,DIST,INDOOR,4000A,14-400A CB</option> 
+                                                <option value="908313004" {{ old('work_type') == '908313004' ? 'selected' : '' }}>-CABINET,LV,400A,FOR PMT,2 MCB OF 200A</option>
+                                                <option value="908314005" {{ old('work_type') == '908314005' ? 'selected' : '' }}>-PANEL,DIST,4000A W/2.5X0.65X1.9M</option>
+                                                <option value="908315001" {{ old('work_type') == '908315001' ? 'selected' : '' }}>-PANEL,ELEC PWR,DIST,OD,1600A,400/230V</option>
+                                                <option value="908315002" {{ old('work_type') == '908315002' ? 'selected' : '' }}>-PANEL,ELEC PWR,DIST,OD,3000A,400/230V</option>
+                                                <option value="908315003" {{ old('work_type') == '908315003' ? 'selected' : '' }}>-PANEL,ELEC PWR,DIST,ID,1600A,400/230V</option>
+                                                <option value="908315004" {{ old('work_type') == '908315004' ? 'selected' : '' }}>-PANEL,ELEC PWR,DIST,ID,3000A,400/230V</option> 
+                                                <option value="908316002" {{ old('work_type') == '908316002' ? 'selected' : '' }}>-PANEL,ELEC PWR,DIST,OD,3000A,400/230V CB</option>
+                                                <option value="908317115" {{ old('work_type') == '908317115' ? 'selected' : '' }}>-PANEL,DIST,ID,AL,400/230V,1600A,6CB</option>
+                                                <!-- 550 -->
                                                 <option value="" {{ old('work_type') == '804' ? 'selected' : '' }}>-</option>
                                                 <option value="" {{ old('work_type') == '408' ? 'selected' : '' }}>-</option>
                                                 <option value="" {{ old('work_type') == '804' ? 'selected' : '' }}>-</option>
@@ -1221,7 +1223,95 @@
                                             "908121148": "-TERM KIT,STR,HS,15KV,3X500/35MM2,AL,I/D",
                                             "908121157": "-JOINT KIT,TRANS,HS,15KV,500-300/35MM2,AL",
                                             "908121158": "-JOINT KIT,TRANS,PM,15KV,500-300/35MM2,AL",
-                                            "908121173": "-JOINT KIT,C/R,15KV,3CX300-500,AL ARM"
+                                            "908121173": "-JOINT KIT,C/R,15KV,3CX300-500,AL ARM",
+                                            "908122001": "-CONNECTOR,LUG,16MM2 CU,(1)M10 BLT HL",
+                                            "908122004": "-CONNECTOR,LUG,185SQMM CU,(1)M12 BLT HL",
+                                            "908122011": "-CONNECTOR,LUG,300MM2 AL,(1)M10 BLT HL",
+                                            "908122013": "-CONNECTOR,SLV,35MM2 AL,TIN PLT AL",
+                                            "908122016": "-CONNECTOR,SLV,300MM2 AL,TIN PLT AL",
+                                            "908122018": "-CONNECTOR,SLV,185MM2 CU,TIN PLT CU",
+                                            "908122019": "-CONNECTOR,SLV,300MM2 AL,TIN PLT CU",
+                                            "908122020": "-CONNECTOR,SLV,95-70MM2 AL,TIN PLT AL",
+                                            "908122021": "-CONNECTOR,SLV,185-95MM2 AL,TIN PLT AL",
+                                            "908122024": "-CONNECTOR,SLV,AL,500-300MM2",
+                                            "908122028": "-CONNECTOR,SLV,95MM2 AL-70MM2 CU,BIMTLC",
+                                            "908122030": "-CONNECTOR,SLV,150MM2 AL-95MM2 CU,BIMTLC",
+                                            "908122031": "-CONNECTOR,SLV,185MM2 AL-120MM2 CU,BIMTLC",
+                                            "908122032": "-CONNECTOR,SLV,300MM2 AL-120MM2 CU,BIMTLC",
+                                            "908122038": "-CONNECTOR,LUG,500SQMM CU,17MMDIA,108MMLG",
+                                            "908122040": "-CONNECTOR,SLV,15KV,500MM2,AL,TIN PLT AL",
+                                            "908122042": "-CONNECTOR,LUG,BM,15KV,500MM2,M16,COMP",
+                                            "908122044": "-CONNECTOR,SLV,BM,500-300MM2",
+                                            "908122048": "-CONN,ELEC,TERM,36KV,185SQM,CU,2HPAD",
+                                            "908151002": "-INSULATOR,POST,PORC,13.8KV,152MM D,552MM",
+                                            "908152001": "-INSULATOR,POST,FRP,13.8KV,200MM DIA",
+                                            "908152005": "-SPACER,CNDTR,13.8KV,552MMX10MMDIA,CLAMP",
+                                            "908152007": "-SPACER,CNDTR,33KV,1320MMX10MMDIA,CLAMP",
+                                            "908201004": "-POLE,PWR,DIST,OC14S,STL,14M LG",
+                                            "908201005": "-POLE,PWR,DIST,OC14D,STL,14M LG",
+                                            "908202002": "-BAND,STRAPPING,SSTL,20MM WD X 0.70MM TH",
+                                            "908202010": "-BOLT,MACH,GS,16MM DIA,275MM LG,HEX",
+                                            "908202013": "-BOLT,MACH,GS,20MM DIA,170MM LG,HEX",
+                                            "908202014": "-BOLT,MACH,GS,20MM DIA,225MM LG,HEX",
+                                            "908202015": "-BOLT,MACH,GS,20MM DIA,265MM LG,HEX HD",
+                                            "908202019": "-BOLT,MACH,GS,20MM DIA,310MM LG,HEX",
+                                            "908202020": "-BOLT,MACH,GS,20MM DIA,325MM LG,HEX",
+                                            "908202023": "-BOLT,MACH,GS,20MM DIA,365MM LG,HEX",
+                                            "908202024": "-BOLT,MACH,GS,20MM DIA,380MM LG,HEX",
+                                            "908202026": "-BRACKET,PHASE PLATE MTG,GS,40X20X30MM",
+                                            "908202027": "-BUCKLE,STRAP,CRIMP,SSTL,20MM WD",
+                                            "908202030": "-CONNECTOR,LUG,35SQMM CU,1-13.2MM DIA HL",
+                                            "908202031": "-CONNECTOR,ELEC,TERM,LUG,CU,50SQMM CNDCTR",
+                                            "908202033": "-SLEEVE,STRAPPING BAND,PVC,24X4.6MM",
+                                            "908202035": "-CONNECTOR,TERM,PLUG,AL,67.44SQMM ACSR/AW",
+                                            "908202044": "-SUPPORT,EARTHWIRE,HDGS,L120/120X10X150MM",
+                                            "908202045": "-PLATE,PHASE,AL,80MM DIA X 1.5MM TH",
+                                            "908202050": "-ROD,ARMOR,AA,170.5SQMM ACSR/AW,5.18MMDIA",
+                                            "908202051": "-ROD,ARMOR,AA,67.44SQMM ACSR/AW,4.24MMDIA",
+                                            "908202054": "-ROD,GRD,CUWLD STL,16MM DIA,2400MM LG",
+                                            "908202056": "-SIGN,ELEC SFTY,DANGER HV,150X150X1.5MMTH",
+                                            "908202057": "-SLEEVE,REPAIR,67.4SQMMACSR/AW,AL,255MMLG",
+                                            "908202058": "-SLEEVE,REPAIR,170SQMM ACSR,AL,295MM LG",
+                                            "908202061": "-CONNECTOR,SLV,67.4 SQMM/AW,AL,36KN",
+                                            "908202067": "-SUPPORT,WIRE SUSP,GS,L-120X120X10X150MM",
+                                            "908202095": "-CLAMP,STRAIN,AA,17.35MM DIA,45KN MIN UTS",
+                                            "908202099": "-BRACKET,DANGER SIGN MTG,GS,40X5X120MM",
+                                            "908202104": "-CONDUIT,PVC,70MM ODX1110MM LG,W/CPLG",
+                                            "908202105": "-HOLDER,POLE NUM TAG,AL,50X40X1X400MM",
+                                            "908202144": "-HOLDER,EQUIPMENT NUM TAG,AL,98X1X400MM",
+                                            "908202183": "-CONNECTOR,PG,AL,MERLIN ACSR/AW,COMP",
+                                            "908202185": "-CONNECTOR,PG,AL,MERLIN/AW,QUAIL/AW,COMP",
+                                            "908202187": "-CONNECTOR,PG,AL,QUAIL ACSR/AW,COMP",
+                                            "908202188": "-GRIP,GUY,PREF,GS,940MM LG,101 KN,RED",
+                                            "908202195": "-WIRE,GUY,STL,12MM DIA,7/4MM,101KN,LH",
+                                            "908202202": "-GRIP,GUY,PREF,GS,840MM LG,65 KN,YELLOW",
+                                            "908202204": "-PLATE,ANCHOR,GS,450X450X10MM,26MM HOLE",
+                                            "908202203": "-ROD,ANCHOR,GS,24MM,2500MM,TWIN,ADJ",
+                                            "908202205": "-PLATE,ANCHOR,GS,450X450X6MM,18MM HOLE",
+                                            "908202208": "-WIRE,GUY,STL,9.8MM DIA,7/3.25MM,65KN,LH",
+                                            "908202212": "-CABLE,ARRESTER-EARTH,CU,35SQMMX500MM",
+                                            "908202215": "-ROD,ANCHOR,GS,19MM,2500MM,ADJ",
+                                            "908202216": "-ROD,ANCHOR,GS,19MM,2500MM,TWIN,ADJ",
+                                            "908202217": "-BOLT,MACH,GS,16MM DIA,165MM LG,HEX",
+                                            "908202218": "-BOLT,MACH,GS,16MM DIA,300MM LG,HEX",
+                                            "908202229": "-PIPE,SERVICE DROP,GS,70MMIDX76MMODX3MLG",
+                                            "908202231": "-CONDUIT:FLEXIBLE NONMETALLIC,76 MM OD,1",
+                                            "908202232": "-CONDUIT:FLEXIBLE NONMETALLIC,76 MM ID,4",
+                                            "908202233": "-CONDUIT:FLEXIBLE NONMETALLIC,76 MM ID,2",
+                                            "908202234": "-CONDUIT,PVC,76MM ODX2500MM LG,W/CPLG NUT",
+                                            "908301004": "-SWITCH,DISC,OVRHD,3,60HZ FREQ,400A",
+                                            "908302009": "-SWITCH,OHD,DISC, 33 KV,600 A,825 MM",
+                                            "908311011": "-PANEL,DIST,OUTDOOR,4000A,14-400A CB",
+                                            "908311109": "-PANEL,DIST,INDOOR,3000A,12-400A CB",
+                                            "908311111": "-PANEL,DIST,INDOOR,4000A,14-400A CB",
+                                            "908313004": "-CABINET,LV,400A,FOR PMT,2 MCB OF 200A",
+                                            "908314005": "-PANEL,DIST,4000A W/2.5X0.65X1.9M",
+                                            "908315001": "-PANEL,ELEC PWR,DIST,OD,1600A,400/230V",
+                                            "908315002": "-PANEL,ELEC PWR,DIST,OD,3000A,400/230V",
+                                            "908315003": "-PANEL,ELEC PWR,DIST,ID,1600A,400/230V",
+                                            "908315004": "-PANEL,ELEC PWR,DIST,ID,3000A,400/230V",
+                                            "908316002": "-PANEL,ELEC PWR,DIST,OD,3000A,400/230V CB",
+                                            "908317115": "-PANEL,DIST,ID,AL,400/230V,1600A,6CB",
                                         };
 
                                         // عند كتابة رقم المادة
@@ -1409,10 +1499,6 @@
                                     <th>الفرق</th>
                                     <th>الوحدة</th>
                                     <th>تاريخ الإضافة</th>
-                                    <th>CHECK LIST</th>
-                                    <th>GATE PASS</th>
-                                    <th>STORE IN</th>
-                                    <th>STORE OUT</th>
                                     <th>الإجراءات</th>
                                 </tr>
                             </thead>

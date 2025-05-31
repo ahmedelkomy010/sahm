@@ -23,6 +23,7 @@ use Illuminate\Support\Facades\Route;
 
         <!-- Additional Styles -->
         @stack('styles')
+        @yield('styles')
 
         <!-- Lightbox -->
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/css/lightbox.min.css">
@@ -84,146 +85,148 @@ use Illuminate\Support\Facades\Route;
         </style>
     </head>
     <body class="font-sans antialiased">
-        <!-- Main Header with Navigation -->
-        @if (!isset($hideNavbar) || !$hideNavbar)
-        <header class="main-header">
-            <div class="max-w-7xl mx-auto">
-                <div class="flex justify-between items-center px-4 sm:px-6 lg:px-8 py-2">
-                    <!-- Logo and App Name -->
-                    <div class="flex items-center">
-                        <a href="{{ route('dashboard') }}" class="flex items-center">
-                            <span class="text-xl font-bold text-white">سهم بلدي</span>
-                        </a>
-                    </div>
-                    
-                    <!-- Main Navigation -->
-                    <div class="hidden md:flex items-center space-x-4">
-                        <a href="{{ route('dashboard') }}" class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
-                            الرئيسية
-                        </a>
+        <div id="app">
+            <!-- Main Header with Navigation -->
+            @if (!isset($hideNavbar) || !$hideNavbar)
+            <header class="main-header">
+                <div class="max-w-7xl mx-auto">
+                    <div class="flex justify-between items-center px-4 sm:px-6 lg:px-8 py-2">
+                        <!-- Logo and App Name -->
+                        <div class="flex items-center">
+                            <a href="{{ route('dashboard') }}" class="flex items-center">
+                                <span class="text-xl font-bold text-white">سهم بلدي</span>
+                            </a>
+                        </div>
                         
-                        @if(request()->routeIs('admin.work-orders.*') || session('project'))
-                        <a href="{{ route('admin.work-orders.index') }}" class="nav-item {{ request()->routeIs('admin.work-orders.*') ? 'active' : '' }}">
-                            أوامر العمل
-                        </a>
-                        @endif
-                        
-                        @can('admin')
-                        <a href="{{ route('admin.users.index') }}" class="nav-item {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
-                            إدارة المستخدمين
-                        </a>
-                        <a href="{{ route('admin.settings') }}" class="nav-item {{ request()->routeIs('admin.settings') ? 'active' : '' }}">
-                            الإعدادات
-                        </a>
-                        @endcan
-                    </div>
-                    
-                    <!-- User Menu -->
-                    @auth
-                    <div class="flex items-center">
-                        <div class="relative" x-data="{ open: false }">
-                            <div class="user-menu" @click="open = !open">
-                                <span><i class="fas fa-user-circle mr-1"></i>{{ Auth::user()->name }}</span>
-                                <i class="fas fa-chevron-down text-xs"></i>
-                            </div>
+                        <!-- Main Navigation -->
+                        <div class="hidden md:flex items-center space-x-4">
+                            <a href="{{ route('dashboard') }}" class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
+                                الرئيسية
+                            </a>
                             
-                            <div x-show="open" 
-                                 @click.away="open = false"
-                                 class="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10"
-                                 x-transition:enter="transition ease-out duration-100"
-                                 x-transition:enter-start="transform opacity-0 scale-95"
-                                 x-transition:enter-end="transform opacity-100 scale-100"
-                                 x-transition:leave="transition ease-in duration-75"
-                                 x-transition:leave-start="transform opacity-100 scale-100"
-                                 x-transition:leave-end="transform opacity-0 scale-95"
-                                 style="display: none;">
+                            @if(request()->routeIs('admin.work-orders.*') || session('project'))
+                            <a href="{{ route('admin.work-orders.index') }}" class="nav-item {{ request()->routeIs('admin.work-orders.*') ? 'active' : '' }}">
+                                أوامر العمل
+                            </a>
+                            @endif
+                            
+                            @can('admin')
+                            <a href="{{ route('admin.users.index') }}" class="nav-item {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
+                                إدارة المستخدمين
+                            </a>
+                            <a href="{{ route('admin.settings') }}" class="nav-item {{ request()->routeIs('admin.settings') ? 'active' : '' }}">
+                                الإعدادات
+                            </a>
+                            @endcan
+                        </div>
+                        
+                        <!-- User Menu -->
+                        @auth
+                        <div class="flex items-center">
+                            <div class="relative" x-data="{ open: false }">
+                                <div class="user-menu" @click="open = !open">
+                                    <span><i class="fas fa-user-circle mr-1"></i>{{ Auth::user()->name }}</span>
+                                    <i class="fas fa-chevron-down text-xs"></i>
+                                </div>
                                 
-                                <a href="{{ route('profile.edit') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                    حسابي
-                                </a>
-                                
-                                <form method="POST" action="{{ route('logout') }}">
-                                    @csrf
-                                    <button type="submit" class="block w-full text-right px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                        تسجيل الخروج
-                                    </button>
-                                </form>
+                                <div x-show="open" 
+                                     @click.away="open = false"
+                                     class="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10"
+                                     x-transition:enter="transition ease-out duration-100"
+                                     x-transition:enter-start="transform opacity-0 scale-95"
+                                     x-transition:enter-end="transform opacity-100 scale-100"
+                                     x-transition:leave="transition ease-in duration-75"
+                                     x-transition:leave-start="transform opacity-100 scale-100"
+                                     x-transition:leave-end="transform opacity-0 scale-95"
+                                     style="display: none;">
+                                    
+                                    <a href="{{ route('profile.edit') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                        حسابي
+                                    </a>
+                                    
+                                    <form method="POST" action="{{ route('logout') }}">
+                                        @csrf
+                                        <button type="submit" class="block w-full text-right px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                            تسجيل الخروج
+                                        </button>
+                                    </form>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    @endauth
-                    
-                    <!-- Mobile menu button -->
-                    <div class="md:hidden flex items-center">
-                        <button 
-                            x-data="{ open: false }"
-                            @click="open = !open"
-                            class="text-white hover:text-gray-300 focus:outline-none">
-                            <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
-                                <path 
-                                    :class="{'hidden': open, 'inline-flex': !open}" 
-                                    class="inline-flex" 
-                                    stroke-linecap="round" 
-                                    stroke-linejoin="round" 
-                                    stroke-width="2" 
-                                    d="M4 6h16M4 12h16M4 18h16" />
-                                <path 
-                                    :class="{'hidden': !open, 'inline-flex': open}" 
-                                    class="hidden" 
-                                    stroke-linecap="round" 
-                                    stroke-linejoin="round" 
-                                    stroke-width="2" 
-                                    d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </header>
-        @endif
-        
-        <div class="min-h-screen bg-gray-100">
-            <!-- Project Context Info (optional) -->
-            @if(session('project'))
-            <div class="bg-blue-50 p-2 border-b border-blue-100">
-                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div class="flex items-center text-sm text-blue-700">
-                        <i class="fas fa-info-circle ml-2"></i>
-                        <span>أنت تعمل حاليًا على: <strong>مشروع {{ session('project') == 'riyadh' ? 'الرياض' : 'المدينة المنورة' }}</strong></span>
-                        <a href="{{ route('project.selection') }}" class="mr-auto text-blue-600 hover:text-blue-800 font-medium">
-                            <i class="fas fa-exchange-alt ml-1"></i>
-                            تغيير المشروع
-                        </a>
+                        @endauth
+                        
+                        <!-- Mobile menu button -->
+                        <div class="md:hidden flex items-center">
+                            <button 
+                                x-data="{ open: false }"
+                                @click="open = !open"
+                                class="text-white hover:text-gray-300 focus:outline-none">
+                                <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+                                    <path 
+                                        :class="{'hidden': open, 'inline-flex': !open}" 
+                                        class="inline-flex" 
+                                        stroke-linecap="round" 
+                                        stroke-linejoin="round" 
+                                        stroke-width="2" 
+                                        d="M4 6h16M4 12h16M4 18h16" />
+                                    <path 
+                                        :class="{'hidden': !open, 'inline-flex': open}" 
+                                        class="hidden" 
+                                        stroke-linecap="round" 
+                                        stroke-linejoin="round" 
+                                        stroke-width="2" 
+                                        d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </header>
             @endif
-
-            <!-- Page Heading -->
-            @isset($header)
-                <header class="page-header">
-                    <div class="max-w-7xl mx-auto py-3 px-4 sm:px-6 lg:px-8">
-                        <h2 class="text-xl header-title">
-                            {{ $header }}
-                        </h2>
+            
+            <div class="min-h-screen bg-gray-100">
+                <!-- Project Context Info (optional) -->
+                @if(session('project'))
+                <div class="bg-blue-50 p-2 border-b border-blue-100">
+                    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div class="flex items-center text-sm text-blue-700">
+                            <i class="fas fa-info-circle ml-2"></i>
+                            <span>أنت تعمل حاليًا على: <strong>مشروع {{ session('project') == 'riyadh' ? 'الرياض' : 'المدينة المنورة' }}</strong></span>
+                            <a href="{{ route('project.selection') }}" class="mr-auto text-blue-600 hover:text-blue-800 font-medium">
+                                <i class="fas fa-exchange-alt ml-1"></i>
+                                تغيير المشروع
+                            </a>
+                        </div>
                     </div>
-                </header>
-            @else
-                @if(Route::currentRouteName() == 'project.selection')
-                <header class="page-header">
-                    <div class="max-w-7xl mx-auto py-3 px-4 sm:px-6 lg:px-8">
-                        <h2 class="text-xl header-title">
-                            {{ __('العقد الموحد - اختيار المشروع') }}
-                        </h2>
-                    </div>
-                </header>
+                </div>
                 @endif
-            @endisset
 
-            <!-- Page Content -->
-            <main>
-                @yield('content')
-            </main>
+                <!-- Page Heading -->
+                @isset($header)
+                    <header class="page-header">
+                        <div class="max-w-7xl mx-auto py-3 px-4 sm:px-6 lg:px-8">
+                            <h2 class="text-xl header-title">
+                                {{ $header }}
+                            </h2>
+                        </div>
+                    </header>
+                @else
+                    @if(Route::currentRouteName() == 'project.selection')
+                    <header class="page-header">
+                        <div class="max-w-7xl mx-auto py-3 px-4 sm:px-6 lg:px-8">
+                            <h2 class="text-xl header-title">
+                                {{ __('العقد الموحد - اختيار المشروع') }}
+                            </h2>
+                        </div>
+                    </header>
+                    @endif
+                @endisset
+
+                <!-- Page Content -->
+                <main>
+                    @yield('content')
+                </main>
+            </div>
         </div>
         
         <!-- Bootstrap JS Bundle with Popper -->
@@ -249,12 +252,12 @@ use Illuminate\Support\Facades\Route;
         </script>
 
         <script>
-        // Add CSRF token to all AJAX requests
-        $.ajaxSetup({
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            }
-        });
+            // Add CSRF token to all AJAX requests
+            $.ajaxSetup({
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                }
+            });
         </script>
     </body>
 </html>

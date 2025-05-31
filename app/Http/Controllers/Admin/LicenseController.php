@@ -79,6 +79,8 @@ class LicenseController extends Controller
             'restriction_authority' => 'required_if:has_restriction,1|nullable|string|max:255',
             'restriction_reason' => 'nullable|string',
             'license_length' => 'nullable|numeric|min:0',
+            'license_value' => 'nullable|numeric|min:0',
+            'extension_value' => 'nullable|numeric|min:0',
             'license_start_date' => 'nullable|date',
             'license_end_date' => 'nullable|date|after_or_equal:license_start_date',
             'license_extension_start_date' => 'nullable|date',
@@ -119,6 +121,8 @@ class LicenseController extends Controller
         $license->restriction_authority = $request->restriction_authority;
         $license->restriction_reason = $request->restriction_reason;
         $license->license_length = $request->license_length;
+        $license->license_value = $request->license_value;
+        $license->extension_value = $request->extension_value;
         $license->license_start_date = $request->license_start_date;
         $license->license_end_date = $request->license_end_date;
         $license->license_extension_start_date = $request->license_extension_start_date;

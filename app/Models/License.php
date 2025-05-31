@@ -14,6 +14,8 @@ class License extends Model
         'license_number',
         'license_date',
         'license_type',
+        'license_value',
+        'extension_value',
         'notes',
         'coordination_certificate_path',
         'has_restriction',
