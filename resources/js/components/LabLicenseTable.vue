@@ -4,18 +4,15 @@
       <table class="table table-bordered">
         <thead class="bg-primary text-white">
           <tr>
-            <th rowspan="2" class="align-middle">الاستشاري</th>
-            <th rowspan="2" class="align-middle">URS</th>
-            <th rowspan="2" class="align-middle">كشف فسوحات المقاول<br>شركة سهم بلدي</th>
-            <th rowspan="2" class="align-middle">التاريخ</th>
             <th colspan="2" class="text-center border-start">الفسح</th>
             <th colspan="3" class="text-center border-start">نوع الشارع</th>
+            <th colspan="2" class="text-center border-start"> الطول</th>
             <th rowspan="2" class="align-middle">تدقيق المختبر</th>
             <th rowspan="2" class="align-middle">السنة</th>
             <th rowspan="2" class="align-middle">نوع العمل</th>
             <th rowspan="2" class="align-middle">عمق</th>
             <th rowspan="2" class="align-middle">دك التربة</th>
-            <th rowspan="2" class="align-middle">MC1RC2<br>دك أسفلت وترابي</th>
+            <th rowspan="2" class="align-middle">MC1-RC2<br>دك أسفلت</th>
             <th rowspan="2" class="align-middle">الكثافة القصوى<br>لأسفلت</th>
             <th rowspan="2" class="align-middle">نسبة الأسفلت</th>
             <th rowspan="2" class="align-middle">التدرج الحبيبي</th>
@@ -33,16 +30,16 @@
             <th class="border-start">ترابي</th>
             <th>أسفلت</th>
             <th>بلاط</th>
+            <th class="border-start"> الفسح</th>
+            <th> المختبر</th>
           </tr>
         </thead>
         <tbody>
           <tr v-for="(row, idx) in rows" :key="row.id || idx" class="align-middle">
-            <td><input class="form-control form-control-sm" v-model="row.consultant" placeholder="الاستشاري" /></td>
-            <td><input class="form-control form-control-sm" v-model="row.urs" placeholder="URS" /></td>
             <td><input class="form-control form-control-sm" v-model="row.contractor" placeholder="المقاول" /></td>
             <td><input class="form-control form-control-sm" type="date" v-model="row.date" /></td>
             <td class="border-start"><input class="form-control form-control-sm" v-model="row.permit_no" placeholder="رقم الفسح" /></td>
-            <td><input class="form-control form-control-sm" type="date" v-model="row.permit_date" /></td>
+            <td><input class="form-control form-control-sm" type="text" v-model="row.permit_date" /></td>
             <td class="text-center border-start">
               <div class="form-check d-flex justify-content-center">
                 <input type="checkbox" class="form-check-input" v-model="row.street_type_terabi" />
@@ -63,7 +60,7 @@
             <td><input class="form-control form-control-sm" v-model="row.work_type" placeholder="نوع العمل" /></td>
             <td><input class="form-control form-control-sm" v-model="row.depth" type="number" placeholder="عمق" /></td>
             <td><input class="form-control form-control-sm" v-model="row.soil_compaction" placeholder="دك التربة" /></td>
-            <td><input class="form-control form-control-sm" v-model="row.mc1rc2" placeholder="MC1RC2" /></td>
+            <td><input class="form-control form-control-sm" v-model="row.mc1rc2" placeholder="MC1-RC2" /></td>
             <td><input class="form-control form-control-sm" v-model="row.max_density" placeholder="الكثافة القصوى" /></td>
             <td><input class="form-control form-control-sm" v-model="row.asphalt_percent" placeholder="نسبة الأسفلت" /></td>
             <td><input class="form-control form-control-sm" v-model="row.gradation" placeholder="التدرج الحبيبي" /></td>
@@ -100,12 +97,28 @@ import axios from 'axios'
 const rows = ref([])
 
 onMounted(async () => {
+  console.log('LabLicenseTable component mounted');
   try {
-    const { data } = await axios.get('/api/lab-licenses')
-    rows.value = data
+    console.log('Attempting to fetch lab licenses from /lab-licenses');
+    const { data } = await axios.get('/lab-licenses', {
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    });
+    console.log('Successfully fetched lab licenses:', data);
+    rows.value = data;
   } catch (error) {
-    console.error('Error fetching lab licenses:', error)
-    alert('حدث خطأ أثناء تحميل البيانات')
+    console.error('Error fetching lab licenses:', error);
+    console.error('Error details:', {
+      message: error.message,
+      response: error.response,
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data
+    });
+    alert('حدث خطأ أثناء تحميل البيانات: ' + (error.response?.statusText || error.message));
   }
 })
 
@@ -142,9 +155,21 @@ async function saveRows() {
   try {
     for (const row of rows.value) {
       if (row.id) {
-        await axios.put(`/api/lab-licenses/${row.id}`, row)
+        await axios.put(`/lab-licenses/${row.id}`, row, {
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+          }
+        })
       } else {
-        const { data } = await axios.post('/api/lab-licenses', row)
+        const { data } = await axios.post('/lab-licenses', row, {
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+          }
+        })
         row.id = data.id
       }
     }
@@ -158,7 +183,15 @@ async function saveRows() {
 async function removeRow(idx, id) {
   if (confirm('هل أنت متأكد من حذف هذا السجل؟')) {
     try {
-      if (id) await axios.delete(`/api/lab-licenses/${id}`)
+      if (id) {
+        await axios.delete(`/lab-licenses/${id}`, {
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+          }
+        })
+      }
       rows.value.splice(idx, 1)
     } catch (error) {
       console.error('Error removing lab license:', error)

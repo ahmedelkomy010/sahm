@@ -136,6 +136,32 @@ class WorkOrder extends Model
         return $this->hasMany(InvoiceAttachment::class);
     }
 
+    /**
+     * Get the work items for this work order.
+     */
+    public function workItems()
+    {
+        return $this->belongsToMany(WorkItem::class, 'work_order_items')
+                    ->withPivot('planned_quantity', 'actual_quantity', 'notes')
+                    ->withTimestamps();
+    }
+
+    /**
+     * Get the work order items for this work order.
+     */
+    public function workOrderItems()
+    {
+        return $this->hasMany(WorkOrderItem::class);
+    }
+
+    /**
+     * Get the materials for this work order (new system).
+     */
+    public function workOrderMaterials()
+    {
+        return $this->hasMany(WorkOrderMaterial::class);
+    }
+
     // Scopes
     public function scopeActive($query)
     {

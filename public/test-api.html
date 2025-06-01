@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Test</title>
+</head>
+<body>
+    <h1>API Test</h1>
+    <button onclick="testAPI()">Test API</button>
+    <div id="result"></div>
+
+    <script>
+        async function testAPI() {
+            try {
+                const response = await fetch('http://127.0.0.1:8000/api/test');
+                const data = await response.json();
+                document.getElementById('result').innerHTML = JSON.stringify(data);
+                console.log('API Test Success:', data);
+                
+                // Now test lab licenses
+                const labResponse = await fetch('http://127.0.0.1:8000/api/lab-licenses');
+                const labData = await labResponse.json();
+                document.getElementById('result').innerHTML += '<br>Lab Licenses: ' + JSON.stringify(labData);
+                console.log('Lab Licenses Success:', labData);
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('result').innerHTML = 'Error: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html> 

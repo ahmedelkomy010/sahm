@@ -3,11 +3,6 @@ import laravel from 'laravel-vite-plugin';
 import vue from '@vitejs/plugin-vue';
 
 export default defineConfig({
-    server: {
-        hmr: {
-            host: 'localhost',
-        },
-    },
     plugins: [
         laravel({
             input: ['resources/css/app.css', 'resources/js/app.js'],
@@ -22,6 +17,14 @@ export default defineConfig({
             },
         }),
     ],
+    server: {
+        proxy: {
+            '/api': {
+                target: 'http://localhost:8000',
+                changeOrigin: true,
+            },
+        },
+    },
     resolve: {
         alias: {
             vue: 'vue/dist/vue.esm-bundler.js',

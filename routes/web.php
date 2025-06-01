@@ -6,6 +6,7 @@ use App\Http\Controllers\WorkOrderController;
 use App\Http\Controllers\MaterialsController;
 use Illuminate\Support\Facades\Gate;
 use App\Http\Controllers\OrderEntryController;
+use App\Http\Controllers\LabLicenseWebController;
 
 
 /*
@@ -73,6 +74,8 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::get('work-orders/materials/{material}/edit', [MaterialsController::class, 'edit'])->name('work-orders.materials.edit');
     Route::put('work-orders/materials/{material}', [MaterialsController::class, 'update'])->name('work-orders.materials.update');
     Route::delete('work-orders/materials/{material}', [MaterialsController::class, 'destroy'])->name('work-orders.materials.destroy');
+    Route::get('work-orders/materials/export/excel', [MaterialsController::class, 'exportExcel'])->name('work-orders.materials.export.excel');
+    Route::get('materials/description/{code}', [MaterialsController::class, 'getDescriptionByCode'])->name('materials.description');
     
     // وظائف أوامر العمل الأخرى
     Route::delete('work-orders/files/{id}', [WorkOrderController::class, 'deleteFile'])->name('work-orders.files.delete');
@@ -128,6 +131,12 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     // مسار جلب وصف المادة
     Route::get('work-orders/materials/get-description/{code}', [MaterialsController::class, 'getDescriptionByCode'])
         ->name('work-orders.materials.get-description');
+    
+    // مسارات Excel لبنود العمل
+    Route::post('work-orders/import-work-items', [WorkOrderController::class, 'importWorkItems'])
+        ->name('work-orders.import-work-items');
+    Route::get('work-orders/work-items', [WorkOrderController::class, 'getWorkItems'])
+        ->name('work-orders.work-items');
 });
 
 // Project Selection Route
@@ -194,6 +203,7 @@ Route::middleware(['auth'])->group(function () {
 
 // مسارات إدارة الرخص
 Route::get('admin/work-orders/licenses/data', [\App\Http\Controllers\Admin\LicenseController::class, 'display'])->name('admin.work-orders.licenses.data');
+Route::get('admin/licenses/data', [\App\Http\Controllers\Admin\LicenseController::class, 'data'])->name('admin.licenses.data');
 Route::get('admin/work-orders/{workOrder}/license', [WorkOrderController::class, 'license'])->name('admin.work-orders.license');
 Route::put('admin/work-orders/{workOrder}/update-license', [WorkOrderController::class, 'updateLicense'])->name('admin.work-orders.update-license');
 Route::get('admin/licenses/{license}/edit', [\App\Http\Controllers\Admin\LicenseController::class, 'edit'])->name('admin.licenses.edit');
@@ -213,3 +223,9 @@ Route::delete('admin/work-orders/invoice-attachments/{invoiceAttachment}', [\App
     ->name('admin.work-orders.invoice-attachments.destroy');
 
 Route::get('materials/description/{code}', [App\Http\Controllers\MaterialsController::class, 'getDescriptionByCode']);
+
+// Lab Licenses Web Routes
+Route::get('/lab-licenses', [LabLicenseWebController::class, 'index'])->name('lab-licenses.index');
+Route::post('/lab-licenses', [LabLicenseWebController::class, 'store'])->name('lab-licenses.store');
+Route::put('/lab-licenses/{id}', [LabLicenseWebController::class, 'update'])->name('lab-licenses.update');
+Route::delete('/lab-licenses/{id}', [LabLicenseWebController::class, 'destroy'])->name('lab-licenses.destroy');

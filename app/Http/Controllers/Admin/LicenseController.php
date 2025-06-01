@@ -66,74 +66,148 @@ class LicenseController extends Controller
 
     public function update(Request $request, $id)
     {
-        $request->validate([
-            'coordination_certificate' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
-            'letters_and_commitments' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
-            'license_1' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
-            'license_extension_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
-            'invoice_extension_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
-            'test_results_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
-            'final_inspection_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
-            'license_closure_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
-            'has_restriction' => 'required|boolean',
-            'restriction_authority' => 'required_if:has_restriction,1|nullable|string|max:255',
-            'restriction_reason' => 'nullable|string',
-            'license_length' => 'nullable|numeric|min:0',
-            'license_value' => 'nullable|numeric|min:0',
-            'extension_value' => 'nullable|numeric|min:0',
-            'license_start_date' => 'nullable|date',
-            'license_end_date' => 'nullable|date|after_or_equal:license_start_date',
-            'license_extension_start_date' => 'nullable|date',
-            'license_extension_end_date' => 'nullable|date|after_or_equal:license_extension_start_date',
-            'invoice_extension_start_date' => 'nullable|date',
-            'invoice_extension_end_date' => 'nullable|date|after_or_equal:invoice_extension_start_date',
-        ]);
+        try {
+            $request->validate([
+                'license_number' => 'nullable|string|max:255',
+                'license_date' => 'nullable|date',
+                'license_type' => 'nullable|string|max:255',
+                'license_value' => 'nullable|numeric|min:0',
+                'extension_value' => 'nullable|numeric|min:0',
+                'notes' => 'nullable|string',
+                'has_restriction' => 'boolean',
+                'restriction_authority' => 'nullable|string|max:255',
+                'restriction_reason' => 'nullable|string|max:255',
+                'restriction_notes' => 'nullable|string',
+                'coordination_certificate_notes' => 'nullable|string',
+                'license_start_date' => 'nullable|date',
+                'license_end_date' => 'nullable|date',
+                'license_alert_days' => 'nullable|integer|min:0',
+                'license_length' => 'nullable|numeric|min:0',
+                'has_depth_test' => 'boolean',
+                'has_soil_compaction_test' => 'boolean',
+                'has_rc1_mc1_test' => 'boolean',
+                'has_asphalt_test' => 'boolean',
+                'has_soil_test' => 'boolean',
+                'has_interlock_test' => 'boolean',
+                'lab_table1' => 'nullable|array',
+                'lab_table2' => 'nullable|array',
+                'is_evacuated' => 'boolean',
+                'evac_license_number' => 'nullable|string|max:255',
+                'evac_license_value' => 'nullable|numeric|min:0',
+                'evac_payment_number' => 'nullable|string|max:255',
+                'evac_date' => 'nullable|date',
+                'evac_amount' => 'nullable|numeric|min:0',
+                'violation_license_number' => 'nullable|string|max:255',
+                'violation_license_value' => 'nullable|numeric|min:0',
+                'violation_license_date' => 'nullable|date',
+                'violation_due_date' => 'nullable|date',
+                'violation_number' => 'nullable|string|max:255',
+                'violation_payment_number' => 'nullable|string|max:255',
+                'violation_cause' => 'nullable|string|max:255',
+                // ملفات
+                'coordination_certificate_path' => 'nullable|file|max:5120', // 5MB
+                'letters_commitments_files.*' => 'nullable|file|max:5120',
+                'evacuations_files.*' => 'nullable|file|max:5120',
+                'violations_files.*' => 'nullable|file|max:5120',
+            ]);
 
-        $license = License::findOrFail($id);
+            $license = License::findOrFail($id);
+            
+            // تحديث البيانات الأساسية
+            $licenseData = $request->only([
+                'license_number', 'license_date', 'license_type', 'license_value', 
+                'extension_value', 'notes', 'has_restriction', 'restriction_authority',
+                'restriction_reason', 'restriction_notes', 'coordination_certificate_notes',
+                'license_start_date', 'license_end_date', 'license_alert_days', 
+                'license_length', 'has_depth_test', 'has_soil_compaction_test',
+                'has_rc1_mc1_test', 'has_asphalt_test', 'has_soil_test', 
+                'has_interlock_test', 'is_evacuated', 'evac_license_number',
+                'evac_license_value', 'evac_payment_number', 'evac_date', 
+                'evac_amount', 'violation_license_number', 'violation_license_value',
+                'violation_license_date', 'violation_due_date', 'violation_number',
+                'violation_payment_number', 'violation_cause'
+            ]);
 
-        // Handle file uploads
-        $fileFields = [
-            'coordination_certificate' => 'coordination_certificate_path',
-            'letters_and_commitments' => 'letters_and_commitments_path',
-            'license_1' => 'license_1_path',
-            'license_extension_file' => 'license_extension_file_path',
-            'invoice_extension_file' => 'invoice_extension_file_path',
-            'test_results_file' => 'test_results_file_path',
-            'final_inspection_file' => 'final_inspection_file_path',
-            'license_closure_file' => 'license_closure_file_path',
-        ];
+            // معالجة جداول المختبر
+            if ($request->has('lab_table1')) {
+                $licenseData['lab_table1_data'] = $this->processTableData($request->lab_table1);
+            }
+            
+            if ($request->has('lab_table2')) {
+                $licenseData['lab_table2_data'] = $this->processTableData($request->lab_table2);
+            }
 
-        foreach ($fileFields as $inputName => $dbField) {
-            if ($request->hasFile($inputName)) {
-                // Delete old file if exists
-                if ($license->$dbField) {
-                    Storage::delete($license->$dbField);
+            // معالجة الملفات
+            $fileFields = [
+                'coordination_certificate_path' => 'coordination_certificate_path',
+                'letters_commitments_files' => 'letters_commitments_file_path',
+                'evacuations_files' => 'evac_files_path',
+                'violations_files' => 'violation_files_path'
+            ];
+
+            foreach ($fileFields as $requestField => $dbField) {
+                if ($request->hasFile($requestField)) {
+                    $files = $request->file($requestField);
+                    
+                    if (!is_array($files)) {
+                        $files = [$files];
+                    }
+                    
+                    $filePaths = [];
+                    foreach ($files as $file) {
+                        if ($file && $file->isValid()) {
+                            $filename = time() . '_' . $file->getClientOriginalName();
+                            $path = $file->storeAs('licenses', $filename, 'public');
+                            $filePaths[] = $path;
+                        }
+                    }
+                    
+                    if (!empty($filePaths)) {
+                        $licenseData[$dbField] = json_encode($filePaths);
+                    }
                 }
+            }
 
-                // Store new file
-                $path = $request->file($inputName)->store('licenses/' . $license->id, 'public');
-                $license->$dbField = $path;
+            $license->update($licenseData);
+
+            // تحديد المكان المناسب للعودة
+            if ($license->workOrder) {
+                return redirect()
+                    ->route('admin.work-orders.license', $license->workOrder)
+                    ->with('success', 'تم تحديث بيانات الرخصة بنجاح');
+            } else {
+                return redirect()
+                    ->route('admin.licenses.data')
+                    ->with('success', 'تم تحديث بيانات الرخصة بنجاح');
+            }
+
+        } catch (\Exception $e) {
+            \Log::error('Error updating license: ' . $e->getMessage());
+            return back()
+                ->withInput()
+                ->with('error', 'حدث خطأ أثناء تحديث بيانات الرخصة: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * معالجة بيانات الجداول
+     */
+    private function processTableData($tableData)
+    {
+        $processedData = [];
+        
+        foreach ($tableData as $rowData) {
+            // تنظيف البيانات وإزالة الصفوف الفارغة
+            $cleanRow = array_filter($rowData, function($value) {
+                return !empty(trim($value));
+            });
+            
+            if (!empty($cleanRow)) {
+                $processedData[] = $rowData;
             }
         }
-
-        // Update other fields
-        $license->has_restriction = $request->has_restriction;
-        $license->restriction_authority = $request->restriction_authority;
-        $license->restriction_reason = $request->restriction_reason;
-        $license->license_length = $request->license_length;
-        $license->license_value = $request->license_value;
-        $license->extension_value = $request->extension_value;
-        $license->license_start_date = $request->license_start_date;
-        $license->license_end_date = $request->license_end_date;
-        $license->license_extension_start_date = $request->license_extension_start_date;
-        $license->license_extension_end_date = $request->license_extension_end_date;
-        $license->invoice_extension_start_date = $request->invoice_extension_start_date;
-        $license->invoice_extension_end_date = $request->invoice_extension_end_date;
-
-        $license->save();
-
-        return redirect()->route('admin.licenses.show', $license->id)
-            ->with('success', 'تم تحديث معلومات الترخيص بنجاح');
+        
+        return $processedData;
     }
 
     public function show($id)
@@ -144,8 +218,17 @@ class LicenseController extends Controller
 
     public function edit($id)
     {
-        $license = \App\Models\License::findOrFail($id);
+        $license = License::with('workOrder')->findOrFail($id);
         $workOrder = $license->workOrder;
         return view('admin.licenses.edit', compact('license', 'workOrder'));
+    }
+
+    /**
+     * عرض صفحة بيانات الجودة والرخص
+     */
+    public function data()
+    {
+        $licenses = License::with('workOrder')->get();
+        return view('admin.licenses.data', compact('licenses'));
     }
 } 

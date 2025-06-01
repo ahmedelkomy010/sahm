@@ -186,13 +186,13 @@
                                 <div class="form-group mb-3">
                                     <label for="execution_status" class="form-label fw-bold">حالة تنفيذ أمر العمل</label>
                                     <select id="execution_status" class="form-select @error('execution_status') is-invalid @enderror" name="execution_status">
-                                        <option value="2" {{ old('execution_status') == '' ? 'selected' : '' }}> جاري العمل ...</option>
-                                        <option value="1" {{ old('execution_status') == '2' ? 'selected' : '' }}>تم تسليم 155 ولم تصدر شهادة انجاز </option>
-                                        <option value="3" {{ old('execution_status') == '3' ? 'selected' : '' }}> صدرت شهادة ولم تعتمد</option>
-                                        <option value="4" {{ old('execution_status') == '4' ? 'selected' : '' }}> تم اعتماد شهادة الانجاز </option>
+                                        <option value="1" {{ old('execution_status', '1') == '1' ? 'selected' : '' }}>تم تسليم 155 ولم تصدر شهادة انجاز</option>
+                                        <option value="2" {{ old('execution_status') == '2' ? 'selected' : '' }}>جاري العمل ...</option>
+                                        <option value="3" {{ old('execution_status') == '3' ? 'selected' : '' }}>صدرت شهادة ولم تعتمد</option>
+                                        <option value="4" {{ old('execution_status') == '4' ? 'selected' : '' }}>تم اعتماد شهادة الانجاز</option>
                                         <option value="5" {{ old('execution_status') == '5' ? 'selected' : '' }}>مؤكد ولم تدخل مستخلص</option>
-                                        <option value="6" {{ old('execution_status') == '6' ? 'selected' : '' }}>  دخلت مستخلص ولم تصرف </option>
-                                        <option value="7" {{ old('execution_status') == '7' ? 'selected' : '' }}>منتهي وتم الصرف</option>
+                                        <option value="6" {{ old('execution_status') == '6' ? 'selected' : '' }}>دخلت مستخلص ولم تصرف</option>
+                                        <option value="7" {{ old('execution_status') == '7' ? 'selected' : '' }}>منتهي تم الصرف</option>
                                     </select>
                                     @error('execution_status')
                                         <span class="invalid-feedback" role="alert">
@@ -238,6 +238,75 @@
                                     </div>
                                 </div>
 
+                                <!-- قسم مقايسة الأعمال -->
+                                <div class="form-section mb-4">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h4 class="section-title mb-0">
+                                            <i class="fas fa-tasks me-2 text-primary"></i>
+                                            مقايسة الأعمال
+                                        </h4>
+                                        <div class="btn-group">
+                                            <button type="button" class="btn btn-outline-success btn-sm me-2" onclick="showExcelImportModal()">
+                                                <i class="fas fa-file-excel"></i> رفع ملف Excel
+                                            </button>
+                                            <button type="button" class="btn btn-outline-info btn-sm me-2" onclick="showWorkItemsSearch()">
+                                                <i class="fas fa-search"></i> البحث في البنود
+                                            </button>
+                                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="addWorkItem()">
+                                                <i class="fas fa-plus"></i> إضافة بند عمل
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- جدول بنود العمل -->
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered" id="workItemsTable">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th style="width: 40%">بند العقد</th>
+                                                    <th style="width: 25%">الكمية المخططة</th>
+                                                    <th style="width: 15%">الوحدة</th>
+                                                    <th style="width: 15%">ملاحظات</th>
+                                                    <th style="width: 5%">حذف</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="workItemsBody">
+                                                <!-- سيتم إضافة الصفوف هنا ديناميكياً -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <!-- قسم مقايسة المواد -->
+                                <div class="form-section mb-4">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h4 class="section-title mb-0">
+                                            <i class="fas fa-boxes me-2 text-success"></i>
+                                            مقايسة المواد
+                                        </h4>
+                                        <button type="button" class="btn btn-outline-success btn-sm" onclick="addMaterial()">
+                                            <i class="fas fa-plus"></i> إضافة مادة
+                                        </button>
+                                    </div>
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered" id="materialsTable">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th style="width: 20%">كود المادة</th>
+                                                    <th style="width: 35%">وصف المادة</th>
+                                                    <th style="width: 15%">الكمية المخططة</th>
+                                                    <th style="width: 10%">الوحدة</th>
+                                                    <th style="width: 15%">ملاحظات</th>
+                                                    <th style="width: 5%">حذف</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="materialsBody">
+                                                <!-- سيتم إضافة الصفوف هنا ديناميكياً -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
                                 <div class="form-group d-flex justify-content-end gap-2 mt-4">
                                     <a href="{{ route('admin.work-orders.index') }}" class="btn btn-secondary px-4">
                                         <i class="fas fa-times me-2"></i> إلغاء
@@ -250,6 +319,111 @@
                         </div>
                     </form>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal رفع ملف Excel -->
+<div class="modal fade" id="excelImportModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-file-excel text-success me-2"></i>
+                    رفع ملف Excel لبنود العمل
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>تنسيق الملف المطلوب:</strong>
+                    <br>
+                    الأعمدة: البند، الوصف الكامل، الوحدة، سعر الوحدة
+                    <br>
+                    أو: code، description، unit، unit_price
+                </div>
+                
+                <form id="excelImportForm" enctype="multipart/form-data">
+                    @csrf
+                    <div class="mb-3">
+                        <label for="excel_file" class="form-label">اختر ملف Excel</label>
+                        <input type="file" class="form-control" id="excel_file" name="excel_file" 
+                               accept=".xlsx,.xls,.csv" required>
+                        <div class="form-text">
+                            الأنواع المدعومة: Excel (.xlsx, .xls) أو CSV (.csv) - الحد الأقصى 10 ميجابايت
+                        </div>
+                    </div>
+                </form>
+                
+                <div id="importProgress" class="d-none">
+                    <div class="d-flex align-items-center">
+                        <div class="spinner-border spinner-border-sm text-primary me-2" role="status">
+                            <span class="visually-hidden">جارٍ المعالجة...</span>
+                        </div>
+                        <span>جارٍ معالجة الملف...</span>
+                    </div>
+                </div>
+                
+                <div id="importResults" class="mt-3"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-success" onclick="importExcelFile()">
+                    <i class="fas fa-upload me-1"></i>رفع ومعالجة
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal البحث في البنود -->
+<div class="modal fade" id="workItemsSearchModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-search text-info me-2"></i>
+                    البحث في بنود العمل
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row mb-3">
+                    <div class="col-md-8">
+                        <input type="text" class="form-control" id="searchWorkItems" 
+                               placeholder="ابحث في الكود، الوصف، الوحدة، أو الملاحظات...">
+                    </div>
+                    <div class="col-md-4">
+                        <button type="button" class="btn btn-info w-100" onclick="searchWorkItems()">
+                            <i class="fas fa-search me-1"></i>بحث
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>الكود</th>
+                                <th>الوصف</th>
+                                <th>الوحدة</th>
+                                <th>سعر الوحدة</th>
+                                <th>إضافة</th>
+                            </tr>
+                        </thead>
+                        <tbody id="workItemsSearchResults">
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-4">
+                                    ابدأ بالبحث لعرض النتائج
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div id="searchPagination" class="d-flex justify-content-center mt-3"></div>
             </div>
         </div>
     </div>
@@ -359,6 +533,48 @@
         border-color: #90caf9;
         color: #0d47a1;
     }
+    
+    /* تنسيق أقسام المقايسة */
+    .form-section {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 20px;
+        border: 1px solid #e9ecef;
+    }
+    
+    .section-title {
+        color: #495057;
+        font-weight: 600;
+    }
+    
+    .table-responsive {
+        border-radius: 6px;
+        overflow: hidden;
+    }
+    
+    .table th {
+        background-color: #e9ecef;
+        font-weight: 600;
+        font-size: 0.9rem;
+        padding: 12px 8px;
+        border: 1px solid #dee2e6;
+    }
+    
+    .table td {
+        padding: 8px;
+        vertical-align: middle;
+        border: 1px solid #dee2e6;
+    }
+    
+    .form-control-sm, .form-select-sm {
+        font-size: 0.875rem;
+        padding: 0.4rem 0.6rem;
+    }
+    
+    .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+    }
 </style>
 
 <script>
@@ -447,6 +663,329 @@ document.addEventListener('DOMContentLoaded', function() {
     // Update description with initial value if it exists
     if (workTypeSelect.value) {
         updateWorkDescription(workTypeSelect.value);
+    }
+});
+
+// بيانات بنود العمل - من قاعدة البيانات
+const workItems = @json($workItems ?? []);
+
+// بيانات المواد المرجعية - من قاعدة البيانات  
+const referenceMaterials = @json($referenceMaterials ?? []);
+
+let workItemRowIndex = 0;
+let materialRowIndex = 0;
+
+// إضافة بند عمل جديد
+function addWorkItem() {
+    const tbody = document.getElementById('workItemsBody');
+    const row = document.createElement('tr');
+    row.innerHTML = `
+        <td>
+            <select name="work_items[${workItemRowIndex}][work_item_id]" class="form-select form-select-sm" onchange="updateWorkItemUnit(this, ${workItemRowIndex})" required>
+                <option value="">اختر بند العمل</option>
+                ${workItems.map(item => `<option value="${item.id}" data-unit="${item.unit}">${item.code} - ${item.description}</option>`).join('')}
+            </select>
+        </td>
+        <td>
+            <input type="number" name="work_items[${workItemRowIndex}][planned_quantity]" class="form-control form-control-sm" step="0.01" min="0" placeholder="الكمية" required>
+        </td>
+        <td>
+            <span id="workItemUnit_${workItemRowIndex}" class="text-muted">-</span>
+        </td>
+        <td>
+            <input type="text" name="work_items[${workItemRowIndex}][notes]" class="form-control form-control-sm" placeholder="ملاحظات">
+        </td>
+        <td>
+            <button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">
+                <i class="fas fa-trash"></i>
+            </button>
+        </td>
+    `;
+    tbody.appendChild(row);
+    workItemRowIndex++;
+}
+
+// تحديث وحدة بند العمل
+function updateWorkItemUnit(select, index) {
+    const selectedOption = select.options[select.selectedIndex];
+    const unit = selectedOption.getAttribute('data-unit');
+    document.getElementById(`workItemUnit_${index}`).textContent = unit || '-';
+}
+
+// إضافة مادة جديدة
+function addMaterial() {
+    const tbody = document.getElementById('materialsBody');
+    const row = document.createElement('tr');
+    row.innerHTML = `
+        <td>
+            <input type="text" name="materials[${materialRowIndex}][material_code]" 
+                   class="form-control form-control-sm" 
+                   placeholder="كود المادة" 
+                   onchange="updateMaterialDescription(this, ${materialRowIndex})"
+                   list="materialCodes_${materialRowIndex}" required>
+            <datalist id="materialCodes_${materialRowIndex}">
+                ${referenceMaterials.map(material => `<option value="${material.code}">${material.description}</option>`).join('')}
+            </datalist>
+        </td>
+        <td>
+            <input type="text" name="materials[${materialRowIndex}][material_description]" 
+                   class="form-control form-control-sm" 
+                   placeholder="وصف المادة" required>
+        </td>
+        <td>
+            <input type="number" name="materials[${materialRowIndex}][planned_quantity]" 
+                   class="form-control form-control-sm" 
+                   step="0.01" min="0" placeholder="الكمية" required>
+        </td>
+        <td>
+            <select name="materials[${materialRowIndex}][unit]" class="form-select form-select-sm" required>
+                <option value="عدد">عدد</option>
+                <option value="متر">متر</option>
+                <option value="متر مربع">متر مربع</option>
+                <option value="متر مكعب">متر مكعب</option>
+                <option value="كيلو جرام">كيلو جرام</option>
+                <option value="طن">طن</option>
+                <option value="لتر">لتر</option>
+            </select>
+        </td>
+        <td>
+            <input type="text" name="materials[${materialRowIndex}][notes]" 
+                   class="form-control form-control-sm" placeholder="ملاحظات">
+        </td>
+        <td>
+            <button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">
+                <i class="fas fa-trash"></i>
+            </button>
+        </td>
+    `;
+    tbody.appendChild(row);
+    materialRowIndex++;
+}
+
+// تحديث وصف المادة تلقائياً عند اختيار الكود
+function updateMaterialDescription(input, index) {
+    const code = input.value;
+    const material = referenceMaterials.find(m => m.code === code);
+    if (material) {
+        const descriptionInput = input.closest('tr').querySelector('input[name*="[material_description]"]');
+        descriptionInput.value = material.description;
+    }
+}
+
+// حذف صف
+function removeRow(button) {
+    button.closest('tr').remove();
+}
+
+// إضافة صف افتراضي عند تحميل الصفحة
+document.addEventListener('DOMContentLoaded', function() {
+    // إضافة بند عمل افتراضي
+    addWorkItem();
+    // إضافة مادة افتراضية  
+    addMaterial();
+});
+
+// وظائف رفع ملف Excel
+function showExcelImportModal() {
+    const modal = new bootstrap.Modal(document.getElementById('excelImportModal'));
+    modal.show();
+}
+
+function importExcelFile() {
+    const fileInput = document.getElementById('excel_file');
+    const file = fileInput.files[0];
+    
+    if (!file) {
+        alert('الرجاء اختيار ملف Excel أولاً');
+        return;
+    }
+    
+    const formData = new FormData();
+    formData.append('excel_file', file);
+    formData.append('_token', document.querySelector('input[name="_token"]').value);
+    
+    // إظهار شريط التقدم
+    document.getElementById('importProgress').classList.remove('d-none');
+    document.getElementById('importResults').innerHTML = '';
+    
+    fetch('{{ route("admin.work-orders.import-work-items") }}', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('importProgress').classList.add('d-none');
+        
+        if (data.success) {
+            document.getElementById('importResults').innerHTML = `
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle me-2"></i>
+                    ${data.message}
+                    <br><small>تم استيراد ${data.imported_count} عنصر</small>
+                </div>
+            `;
+            
+            // تحديث قائمة بنود العمل في النموذج
+            refreshWorkItemsDropdowns(data.imported_items);
+            
+        } else {
+            document.getElementById('importResults').innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    ${data.message}
+                </div>
+            `;
+        }
+    })
+    .catch(error => {
+        document.getElementById('importProgress').classList.add('d-none');
+        document.getElementById('importResults').innerHTML = `
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                حدث خطأ أثناء رفع الملف
+            </div>
+        `;
+        console.error('Error:', error);
+    });
+}
+
+// وظائف البحث في البنود
+function showWorkItemsSearch() {
+    const modal = new bootstrap.Modal(document.getElementById('workItemsSearchModal'));
+    modal.show();
+    
+    // البحث التلقائي عند فتح النافذة
+    searchWorkItems();
+}
+
+function searchWorkItems() {
+    const searchTerm = document.getElementById('searchWorkItems').value;
+    
+    fetch(`{{ route("admin.work-orders.work-items") }}?search=${encodeURIComponent(searchTerm)}`, {
+        method: 'GET',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            displaySearchResults(data.data);
+            displayPagination(data.pagination);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        document.getElementById('workItemsSearchResults').innerHTML = `
+            <tr>
+                <td colspan="5" class="text-center text-danger py-4">
+                    حدث خطأ أثناء البحث
+                </td>
+            </tr>
+        `;
+    });
+}
+
+function displaySearchResults(items) {
+    const tbody = document.getElementById('workItemsSearchResults');
+    
+    if (items.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="5" class="text-center text-muted py-4">
+                    لا توجد نتائج للبحث
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    tbody.innerHTML = items.map(item => `
+        <tr>
+            <td>${item.code}</td>
+            <td>${item.description}</td>
+            <td>${item.unit}</td>
+            <td>${item.unit_price ? parseFloat(item.unit_price).toFixed(2) + ' ريال' : '-'}</td>
+            <td>
+                <button type="button" class="btn btn-sm btn-primary" 
+                        onclick="addWorkItemFromSearch('${item.id}', '${item.code}', '${item.description}', '${item.unit}', '${item.unit_price || 0}')">
+                    <i class="fas fa-plus"></i> إضافة
+                </button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function displayPagination(pagination) {
+    // يمكن إضافة pagination هنا إذا لزم الأمر
+    document.getElementById('searchPagination').innerHTML = `
+        <small class="text-muted">
+            عرض ${pagination.current_page} من ${pagination.last_page} 
+            (إجمالي ${pagination.total} عنصر)
+        </small>
+    `;
+}
+
+function addWorkItemFromSearch(id, code, description, unit, price) {
+    const tbody = document.getElementById('workItemsBody');
+    const row = document.createElement('tr');
+    row.innerHTML = `
+        <td>
+            <select name="work_items[${workItemRowIndex}][work_item_id]" class="form-select form-select-sm" required>
+                <option value="${id}" selected>${code} - ${description}</option>
+            </select>
+        </td>
+        <td>
+            <input type="number" name="work_items[${workItemRowIndex}][planned_quantity]" 
+                   class="form-control form-control-sm" step="0.01" min="0" placeholder="الكمية" required>
+        </td>
+        <td>
+            <span class="text-muted">${unit}</span>
+        </td>
+        <td>
+            <input type="text" name="work_items[${workItemRowIndex}][notes]" 
+                   class="form-control form-control-sm" placeholder="ملاحظات">
+        </td>
+        <td>
+            <button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">
+                <i class="fas fa-trash"></i>
+            </button>
+        </td>
+    `;
+    tbody.appendChild(row);
+    workItemRowIndex++;
+    
+    // إغلاق نافذة البحث
+    bootstrap.Modal.getInstance(document.getElementById('workItemsSearchModal')).hide();
+}
+
+function refreshWorkItemsDropdowns(newItems) {
+    // تحديث جميع القوائم المنسدلة لبنود العمل
+    const selects = document.querySelectorAll('select[name*="work_item_id"]');
+    selects.forEach(select => {
+        newItems.forEach(item => {
+            const option = document.createElement('option');
+            option.value = item.id;
+            option.textContent = `${item.code} - ${item.description}`;
+            option.setAttribute('data-unit', item.unit);
+            select.appendChild(option);
+        });
+    });
+}
+
+// البحث المباشر عند الكتابة
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchWorkItems');
+    if (searchInput) {
+        searchInput.addEventListener('keyup', function(e) {
+            if (e.key === 'Enter') {
+                searchWorkItems();
+            }
+        });
     }
 });
 </script>

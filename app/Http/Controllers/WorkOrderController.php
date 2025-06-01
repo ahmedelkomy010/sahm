@@ -24,7 +24,9 @@ class WorkOrderController extends Controller
     // عرض نموذج إنشاء أمر عمل جديد
     public function create()
     {
-        return view('admin.work_orders.create');
+        $workItems = \App\Models\WorkItem::orderBy('code')->get();
+        $referenceMaterials = \App\Models\ReferenceMaterial::orderBy('code')->get();
+        return view('admin.work_orders.create', compact('workItems', 'referenceMaterials'));
     }
 
     // حفظ أمر عمل جديد
@@ -39,14 +41,58 @@ class WorkOrderController extends Controller
             'district' => 'required|string|max:255',
             'order_value_with_consultant' => 'required|numeric|min:0',
             'order_value_without_consultant' => 'required|numeric|min:0',
-            'execution_status' => 'required|in:1,2,3,4,5,6',
+            'execution_status' => 'required|in:1,2,3,4,5,6,7',
             'municipality' => 'nullable|string|max:255',
             'office' => 'nullable|string|max:255',
             'station_number' => 'nullable|string|max:255',
             'consultant_name' => 'nullable|string|max:255',
+            // بنود العمل
+            'work_items' => 'nullable|array',
+            'work_items.*.work_item_id' => 'required_with:work_items|exists:work_items,id',
+            'work_items.*.planned_quantity' => 'required_with:work_items|numeric|min:0',
+            'work_items.*.notes' => 'nullable|string',
+            // المواد
+            'materials' => 'nullable|array',
+            'materials.*.material_code' => 'required_with:materials|string|max:255',
+            'materials.*.material_description' => 'required_with:materials|string|max:255',
+            'materials.*.planned_quantity' => 'required_with:materials|numeric|min:0',
+            'materials.*.unit' => 'required_with:materials|string|max:50',
+            'materials.*.notes' => 'nullable|string',
         ]);
+        
         $validated['user_id'] = Auth::id();
+        
+        // إنشاء أمر العمل
         $workOrder = WorkOrder::create($validated);
+        
+        // حفظ بنود العمل
+        if ($request->has('work_items') && is_array($request->work_items)) {
+            foreach ($request->work_items as $workItem) {
+                if (!empty($workItem['work_item_id']) && !empty($workItem['planned_quantity'])) {
+                    $workOrder->workOrderItems()->create([
+                        'work_item_id' => $workItem['work_item_id'],
+                        'planned_quantity' => $workItem['planned_quantity'],
+                        'notes' => $workItem['notes'] ?? null,
+                    ]);
+                }
+            }
+        }
+        
+        // حفظ المواد
+        if ($request->has('materials') && is_array($request->materials)) {
+            foreach ($request->materials as $material) {
+                if (!empty($material['material_code']) && !empty($material['material_description'])) {
+                    $workOrder->workOrderMaterials()->create([
+                        'material_code' => $material['material_code'],
+                        'material_description' => $material['material_description'],
+                        'planned_quantity' => $material['planned_quantity'] ?? 0,
+                        'unit' => $material['unit'] ?? 'عدد',
+                        'notes' => $material['notes'] ?? null,
+                    ]);
+                }
+            }
+        }
+        
         return redirect()->route('admin.work-orders.index')->with('success', 'تم إنشاء أمر العمل بنجاح');
     }
 
@@ -80,9 +126,11 @@ class WorkOrderController extends Controller
                 'tax_value',
                 'procedure_155_delivery_date',
                 'final_total_value',
+                'execution_status',
             ]));
             return redirect()->route('admin.work-orders.actions-execution', $workOrder->id)->with('success', 'تم تحديث البيانات بنجاح');
         }
+        
         $validated = $request->validate([
             'order_number' => 'required|string|max:255|unique:work_orders,order_number,' . $workOrder->id,
             'work_type' => 'required|string|max:999',
@@ -92,7 +140,7 @@ class WorkOrderController extends Controller
             'district' => 'required|string|max:255',
             'order_value_with_consultant' => 'required|numeric|min:0',
             'order_value_without_consultant' => 'required|numeric|min:0',
-            'execution_status' => 'required|in:1,2,3,4,5,6',
+            'execution_status' => 'required|in:1,2,3,4,5,6,7',
             'municipality' => 'nullable|string|max:255',
             'office' => 'nullable|string|max:255',
             'station_number' => 'nullable|string|max:255',
@@ -178,9 +226,9 @@ class WorkOrderController extends Controller
             'pole_10m' => 'تركيب عمود 10 متر',
             'pole_13m' => 'تركيب عمود 13 متر',
             'pole_14m' => 'تركيب عمود 14 متر',
-            'Installing_antenna_100' => ' تركيب هوائي 100',
-            'Installing_antenna_200' => ' تركيب هوائي 200',
-            'Installing_antenna_300' => ' تركيب هوائي 300',
+            'Installing_antenna_100' => ' تركيب محول هوائي 100',
+            'Installing_antenna_200' => ' تركيب محول هوائي 200',
+            'Installing_antenna_300' => ' تركيب محول هوائي 300',
             'Installing_knife' => ' تركيب سكينة LBS',
             'Class_teacher' => ' تركيب معيد الفصل ',
             'Split_installation' => ' تركيب مجزئ',
@@ -846,9 +894,88 @@ class WorkOrderController extends Controller
 
     public function getMaterialDescription($code)
     {
-        $material = \App\Models\Material::where('code', $code)->first();
+        $material = \App\Models\ReferenceMaterial::where('code', $code)->first();
+        
+        if ($material) {
+            return response()->json([
+                'success' => true,
+                'description' => $material->description
+            ]);
+        }
+        
         return response()->json([
-            'description' => $material ? $material->description : ''
+            'success' => false,
+            'message' => 'Material not found'
         ]);
+    }
+
+    /**
+     * Import work items from Excel file
+     */
+    public function importWorkItems(Request $request)
+    {
+        $request->validate([
+            'excel_file' => 'required|file|mimes:xlsx,xls,csv|max:10240', // 10MB max
+        ]);
+
+        try {
+            $import = new \App\Imports\WorkItemsImport(0);
+            \Maatwebsite\Excel\Facades\Excel::import($import, $request->file('excel_file'));
+
+            $importedItems = $import->getImportedItems();
+            $errors = $import->errors();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'تم استيراد ' . count($importedItems) . ' عنصر بنجاح',
+                'imported_count' => count($importedItems),
+                'errors_count' => count($errors),
+                'errors' => $errors,
+                'imported_items' => $importedItems
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error importing work items: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء استيراد الملف: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get work items with search functionality
+     */
+    public function getWorkItems(Request $request)
+    {
+        $query = \App\Models\WorkItem::query();
+
+        // البحث في كل الأعمدة
+        if ($request->has('search') && !empty($request->search)) {
+            $searchTerm = $request->search;
+            $query->where(function($q) use ($searchTerm) {
+                $q->where('code', 'LIKE', "%{$searchTerm}%")
+                  ->orWhere('description', 'LIKE', "%{$searchTerm}%")
+                  ->orWhere('unit', 'LIKE', "%{$searchTerm}%")
+                  ->orWhere('notes', 'LIKE', "%{$searchTerm}%");
+            });
+        }
+
+        $workItems = $query->orderBy('code')->paginate(20);
+
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'data' => $workItems->items(),
+                'pagination' => [
+                    'current_page' => $workItems->currentPage(),
+                    'last_page' => $workItems->lastPage(),
+                    'total' => $workItems->total(),
+                    'per_page' => $workItems->perPage(),
+                ]
+            ]);
+        }
+
+        return view('admin.work_items.index', compact('workItems'));
     }
 } 

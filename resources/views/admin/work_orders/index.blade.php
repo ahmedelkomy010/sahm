@@ -165,10 +165,10 @@
                                                     <span class="badge bg-info">جاري العمل ....</span>
                                                     @break
                                                 @case('2')
-                                                    <span class="badge bg-warning">تم تسليم 155 ولم تصدر شهادة انجاز </span>
+                                                    <span class="badge bg-info">تم تسليم 155 ولم تصدر شهادة الانجاز</span>
                                                     @break
                                                 @case('3')
-                                                    <span class="badge bg-primary"> صدرت شهادة ولم تعتمد</span>
+                                                    <span class="badge bg-primary">صدرت شهادة ولم تعتمد</span>
                                                     @break
                                                 @case('4')
                                                     <span class="badge bg-secondary">تم اعتماد شهادة الانجاز</span>
@@ -180,7 +180,7 @@
                                                     <span class="badge bg-dark">دخلت مستخلص ولم تصرف</span>
                                                     @break
                                                 @case('7')
-                                                        <span class="badge bg-dark">منتهي تم الصرف</span>
+                                                    <span class="badge bg-success">منتهي تم الصرف</span>
                                                     @break
                                                 @default
                                                     <span class="badge bg-secondary">{{ $workOrder->execution_status }}</span>

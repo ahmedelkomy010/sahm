@@ -14,10 +14,13 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
+// Test route
+Route::get('/test', function () {
+    return response()->json(['message' => 'API is working']);
+});
+
 // Lab Licenses Routes
-Route::group(['prefix' => 'lab-licenses'], function () {
-    Route::get('/', [LabLicenseController::class, 'index']);
-    Route::post('/', [LabLicenseController::class, 'store']);
-    Route::put('/{id}', [LabLicenseController::class, 'update']);
-    Route::delete('/{id}', [LabLicenseController::class, 'destroy']);
-}); 
+Route::get('/lab-licenses', [LabLicenseController::class, 'index']);
+Route::post('/lab-licenses', [LabLicenseController::class, 'store']);
+Route::put('/lab-licenses/{id}', [LabLicenseController::class, 'update']);
+Route::delete('/lab-licenses/{id}', [LabLicenseController::class, 'destroy']); 

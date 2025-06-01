@@ -5,40 +5,38 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Material extends Model
+class WorkOrderMaterial extends Model
 {
     use HasFactory;
-    
+
     protected $fillable = [
         'work_order_id',
-        'code',
-        'description',
+        'material_code',
+        'material_description',
         'planned_quantity',
-        'actual_quantity',
-        'spent_quantity',
-        'executed_site_quantity',
         'unit',
-        'line',
-        'check_in_file',
-        'date_gatepass',
-        'gate_pass_file',
-        'store_in_file',
-        'store_out_file',
-        'difference',
+        'actual_quantity',
+        'notes'
     ];
-    
+
     protected $casts = [
-        'date_gatepass' => 'date',
         'planned_quantity' => 'decimal:2',
         'actual_quantity' => 'decimal:2',
-        'difference' => 'decimal:2',
     ];
-    
+
     /**
-     * Get the work order that owns the material.
+     * Get the work order that owns this material.
      */
     public function workOrder()
     {
         return $this->belongsTo(WorkOrder::class);
+    }
+
+    /**
+     * Get the reference material details if available.
+     */
+    public function referenceMaterial()
+    {
+        return $this->hasOne(ReferenceMaterial::class, 'code', 'material_code');
     }
 }

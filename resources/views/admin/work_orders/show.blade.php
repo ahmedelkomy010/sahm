@@ -193,7 +193,7 @@
                                                             <span class="badge bg-dark">دخلت مستخلص ولم تصرف</span>
                                                             @break
                                                         @case('7')
-                                                            <span class="badge bg-dark">منتهي تم الصرف</span>
+                                                            <span class="badge bg-success">منتهي تم الصرف</span>
                                                             @break
                                                         @default
                                                             <span class="badge bg-secondary">{{ $workOrder->execution_status }}</span>
@@ -337,7 +337,7 @@
                                                 <td>{{ $workOrder->license->license_value ? number_format($workOrder->license->license_value, 2) . ' ريال' : 'غير متوفر' }}</td>
                                             </tr>
                                             <tr>
-                                                <th>قيمة التمديدات</th>
+                                                <th>قيمة التمديد</th>
                                                 <td>{{ $workOrder->license->extension_value ? number_format($workOrder->license->extension_value, 2) . ' ريال' : 'غير متوفر' }}</td>
                                             </tr>
                                             @endif

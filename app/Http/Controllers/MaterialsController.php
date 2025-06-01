@@ -7,6 +7,8 @@ use App\Models\WorkOrder;
 use App\Models\ReferenceMaterial;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\MaterialsExport;
 
 class MaterialsController extends Controller
 {
@@ -17,7 +19,7 @@ class MaterialsController extends Controller
     {
         \Log::info('Materials page accessed from MaterialsController');
         try {
-            $workOrders = WorkOrder::where('execution_status', '!=', '5')->with('materials')->paginate(10);
+            $workOrders = WorkOrder::where('execution_status', '!=', '5')->with('materials')->get();
             $materials = Material::with('workOrder')->latest()->paginate(20);
             return view('admin.work_orders.materials', compact('workOrders', 'materials'));
         } catch (\Exception $e) {
@@ -42,10 +44,13 @@ class MaterialsController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'work_order_id' => 'nullable|exists:work_orders,id',
+            'work_order_id' => 'required|exists:work_orders,id',
             'code' => 'required|string|max:255',
             'description' => 'required|string',
             'planned_quantity' => 'nullable|numeric|min:0',
+            'actual_quantity' => 'nullable|numeric|min:0',
+            'spent_quantity' => 'nullable|numeric|min:0',
+            'executed_site_quantity' => 'nullable|numeric|min:0',
             'unit' => 'nullable|string|max:255',
             'line' => 'nullable|string|max:255',
             'check_in_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
@@ -53,7 +58,6 @@ class MaterialsController extends Controller
             'gate_pass_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
             'store_in_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
             'store_out_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
-            'actual_quantity' => 'nullable|numeric|min:0',
         ]);
 
         // التعامل مع الملفات
@@ -71,40 +75,15 @@ class MaterialsController extends Controller
             }
         }
         
-        // تحميل ملف check_in إذا وجد
-        if ($request->hasFile('check_in_file')) {
-            $file = $request->file('check_in_file');
-            $path = $file->store('materials/check_in', 'public');
-            $data['check_in_file'] = $path;
-        }
-        
-        // تحميل ملف gate_pass إذا وجد
-        if ($request->hasFile('gate_pass_file')) {
-            $file = $request->file('gate_pass_file');
-            $path = $file->store('materials/gate_pass', 'public');
-            $data['gate_pass_file'] = $path;
-        }
-
-        // تحميل ملف store_in إذا وجد
-        if ($request->hasFile('store_in_file')) {
-            $file = $request->file('store_in_file');
-            $path = $file->store('materials/store_in', 'public');
-            $data['store_in_file'] = $path;
-        }
-        
-        // تحميل ملف store_out إذا وجد
-        if ($request->hasFile('store_out_file')) {
-            $file = $request->file('store_out_file');
-            $path = $file->store('materials/store_out', 'public');
-            $data['store_out_file'] = $path;
-        }
-
         // حساب الفرق بين الكمية المخططة والكمية الفعلية
         $planned = $data['planned_quantity'] ?? 0;
         $actual = $data['actual_quantity'] ?? 0;
         $data['difference'] = $planned - $actual;
 
         $material = Material::create($data);
+
+        // تخزين الملفات بعد إنشاء السجل مع ID منفصل
+        $this->handleFileUploads($request, $material);
 
         if ($request->has('save_and_continue')) {
             // إعادة المستخدم لنفس صفحة المواد مع رسالة نجاح
@@ -139,10 +118,13 @@ class MaterialsController extends Controller
     public function update(Request $request, Material $material)
     {
         $validated = $request->validate([
-            'work_order_id' => 'nullable|exists:work_orders,id',
+            'work_order_id' => 'required|exists:work_orders,id',
             'code' => 'required|string|max:255',
             'description' => 'nullable|string',
             'planned_quantity' => 'nullable|numeric|min:0',
+            'actual_quantity' => 'nullable|numeric|min:0',
+            'spent_quantity' => 'nullable|numeric|min:0',
+            'executed_site_quantity' => 'nullable|numeric|min:0',
             'unit' => 'nullable|string|max:255',
             'line' => 'nullable|string|max:255',
             'check_in_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
@@ -150,59 +132,9 @@ class MaterialsController extends Controller
             'gate_pass_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
             'store_in_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
             'store_out_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
-            'actual_quantity' => 'nullable|numeric|min:0',
         ]);
 
-        // التعامل مع الملفات
         $data = $request->except(['check_in_file', 'gate_pass_file', 'store_in_file', 'store_out_file']);
-        
-        // تحميل ملف check_in إذا وجد
-        if ($request->hasFile('check_in_file')) {
-            // حذف الملف القديم إذا وجد
-            if ($material->check_in_file) {
-                Storage::disk('public')->delete($material->check_in_file);
-            }
-            
-            $file = $request->file('check_in_file');
-            $path = $file->store('materials/check_in', 'public');
-            $data['check_in_file'] = $path;
-        }
-        
-        // تحميل ملف gate_pass إذا وجد
-        if ($request->hasFile('gate_pass_file')) {
-            // حذف الملف القديم إذا وجد
-            if ($material->gate_pass_file) {
-                Storage::disk('public')->delete($material->gate_pass_file);
-            }
-            
-            $file = $request->file('gate_pass_file');
-            $path = $file->store('materials/gate_pass', 'public');
-            $data['gate_pass_file'] = $path;
-        }
-
-        // تحميل ملف store_in إذا وجد
-        if ($request->hasFile('store_in_file')) {
-            // حذف الملف القديم إذا وجد
-            if ($material->store_in_file) {
-                Storage::disk('public')->delete($material->store_in_file);
-            }
-            
-            $file = $request->file('store_in_file');
-            $path = $file->store('materials/store_in', 'public');
-            $data['store_in_file'] = $path;
-        }
-        
-        // تحميل ملف store_out إذا وجد
-        if ($request->hasFile('store_out_file')) {
-            // حذف الملف القديم إذا وجد
-            if ($material->store_out_file) {
-                Storage::disk('public')->delete($material->store_out_file);
-            }
-            
-            $file = $request->file('store_out_file');
-            $path = $file->store('materials/store_out', 'public');
-            $data['store_out_file'] = $path;
-        }
 
         // حساب الفرق بين الكمية المخططة والكمية الفعلية
         $planned = $data['planned_quantity'] ?? 0;
@@ -210,6 +142,9 @@ class MaterialsController extends Controller
         $data['difference'] = $planned - $actual;
 
         $material->update($data);
+
+        // تحديث الملفات
+        $this->handleFileUploads($request, $material, true);
 
         return redirect()->route('admin.work-orders.materials')
             ->with('success', 'تم تحديث المادة بنجاح');
@@ -274,5 +209,35 @@ class MaterialsController extends Controller
             return response()->json(['description' => $material->description]);
         }
         return response()->json(['description' => ''], 404);
+    }
+
+    /**
+     * Export materials to Excel
+     */
+    public function exportExcel()
+    {
+        return Excel::download(new MaterialsExport, 'materials_' . date('Y_m_d_H_i_s') . '.xlsx');
+    }
+
+    /**
+     * Handle file uploads separately
+     */
+    private function handleFileUploads(Request $request, Material $material, $isUpdate = false)
+    {
+        $files = ['check_in_file', 'gate_pass_file', 'store_in_file', 'store_out_file'];
+        
+        foreach ($files as $fileField) {
+            if ($request->hasFile($fileField)) {
+                // حذف الملف القديم في حالة التحديث
+                if ($isUpdate && $material->$fileField) {
+                    Storage::disk('public')->delete($material->$fileField);
+                }
+                
+                $file = $request->file($fileField);
+                $filename = time() . '_' . $material->id . '_' . $file->getClientOriginalName();
+                $path = $file->storeAs("materials/{$fileField}s", $filename, 'public');
+                $material->update([$fileField => $path]);
+            }
+        }
     }
 }

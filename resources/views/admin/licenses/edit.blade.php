@@ -1,531 +1,693 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container py-4">
-    <div class="row justify-content-center">
-        <div class="col-md-12">
-            <!-- قسم تعديل الرخصة -->
-            <div class="card license-form">
-                <div class="card-header">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h3 class="mb-0">
-                            تعديل الرخصة #{{ $license->id }} 
-                            @if($workOrder)
-                                - أمر العمل #{{ $workOrder->id }}
-                            @endif
-                        </h3>
-                        <div>
-                            <a href="{{ route('admin.work-orders.licenses.data') }}" class="btn btn-light btn-sm">
-                                <i class="fas fa-arrow-right"></i> العودة لقائمة الرخص
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card-body">
-                    <div class="alert alert-info mb-4">
-                        <i class="fas fa-info-circle ml-1"></i>
-                        أنت تقوم بتعديل بيانات الرخصة رقم {{ $license->id }}
-                    </div>
-                    
-                    <form action="{{ route('admin.licenses.update', $license) }}" method="POST" enctype="multipart/form-data" id="licenseForm">
-                        @csrf
-                        @method('PUT')
-
-                        <!-- شهادات التنسيق -->
-                        <div class="form-section mb-4">
-                            <h4 class="section-title">شهادات التنسيق</h4>
-                            <div class="file-upload-container">
-                                <label for="coordination_certificate" class="form-label">رفع شهادات التنسيق</label>
-                                <input type="file" class="form-control" id="coordination_certificate" name="coordination_certificate">
-                                @if($license->coordination_certificate_path)
-                                    <div class="mt-2">
-                                        <a href="{{ asset('storage/' . $license->coordination_certificate_path) }}" target="_blank" class="btn btn-info btn-sm">
-                                            <i class="fas fa-eye"></i> عرض الشهادة الحالية
-                                        </a>
-                                    </div>
+<div id="app">
+    <div class="container-fluid py-4">
+        <div class="row justify-content-center">
+            <div class="col-12 col-xl-10">
+                <div class="card shadow-lg border-0 rounded-lg">
+                    <div class="card-header bg-gradient-primary text-white py-3">
+                        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+                            <h3 class="mb-0 fs-4 text-center text-md-start">
+                                <i class="fas fa-edit me-2"></i>
+                                تعديل بيانات الرخصة
+                            </h3>
+                            <div class="d-flex flex-wrap justify-content-center gap-2">
+                                @if(isset($workOrder) && $workOrder)
+                                    <a href="{{ route('admin.work-orders.license', $workOrder) }}" class="btn btn-back btn-sm">
+                                        <i class="fas fa-arrow-right"></i> عودة للرخصة
+                                    </a>
+                                @elseif($license->workOrder)
+                                    <a href="{{ route('admin.work-orders.license', $license->workOrder) }}" class="btn btn-back btn-sm">
+                                        <i class="fas fa-arrow-right"></i> عودة للرخصة
+                                    </a>
+                                @else
+                                    <a href="{{ route('admin.licenses.data') }}" class="btn btn-back btn-sm">
+                                        <i class="fas fa-arrow-right"></i> عودة للبيانات
+                                    </a>
                                 @endif
+                                <a href="{{ route('admin.licenses.show', $license->id) }}" class="btn btn-info btn-sm">
+                                    <i class="fas fa-eye"></i> عرض التفاصيل
+                                </a>
                             </div>
                         </div>
+                    </div>
 
+                    <div class="card-body p-3 p-md-4">
+                        <!-- أزرار التبويبات الرئيسية -->
                         <div class="row mb-4">
-                            <!-- الحظر -->
-                            <div class="col-md-6">
-                                <div class="form-section h-100">
-                                    <h4 class="section-title">الحظر</h4>
-                                    <div class="compact-section">
-                                        <label class="form-label d-flex align-items-center mb-2">
-                                            <i class="fas fa-ban ml-2 text-danger"></i>
-                                            <span>هل يوجد حظر؟</span>
-                                        </label>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="radio" name="has_restriction" value="1" id="has_restriction_yes" {{ $license->has_restriction ? 'checked' : '' }} onchange="toggleRestrictionDetails()">
-                                            <label class="form-check-label" for="has_restriction_yes">نعم</label>
-                                        </div>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="radio" name="has_restriction" value="0" id="has_restriction_no" {{ !$license->has_restriction ? 'checked' : '' }} onchange="toggleRestrictionDetails()">
-                                            <label class="form-check-label" for="has_restriction_no">لا</label>
-                                        </div>
-                                        <div class="restriction-details mt-3" id="restrictionDetails" style="display: {{ $license->has_restriction ? 'block' : 'none' }};">
-                                            <div class="form-group mb-3">
-                                                <label for="restriction_authority" class="form-label">جهة الحظر</label>
-                                                <input type="text" class="form-control" id="restriction_authority" name="restriction_authority" value="{{ $license->restriction_authority }}" placeholder="أدخل جهة الحظر...">
-                                            </div>
-                                            <div class="form-group">
-                                                <label for="restriction_reason" class="form-label">سبب الحظر</label>
-                                                <textarea class="form-control" id="restriction_reason" name="restriction_reason" rows="3" placeholder="أدخل سبب الحظر هنا...">{{ $license->restriction_reason }}</textarea>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- الخطابات والتعهدات -->
-                            <div class="col-md-6">
-                                <div class="form-section h-100">
-                                    <h4 class="section-title">الخطابات والتعهدات</h4>
-                                    <div class="file-upload-container h-100">
-                                        <label for="letters_and_commitments" class="form-label">رفع الخطابات والتعهدات</label>
-                                        <input type="file" class="form-control" id="letters_and_commitments" name="letters_and_commitments" accept=".pdf,.jpg,.jpeg,.png">
-                                        @if($license->letters_and_commitments_path)
-                                            <div class="mt-3">
-                                                <a href="{{ asset('storage/' . $license->letters_and_commitments_path) }}" target="_blank" class="btn btn-info btn-sm">
-                                                    <i class="fas fa-eye"></i> عرض المرفق الحالي
-                                                </a>
-                                            </div>
-                                        @endif
-                                    </div>
+                            <div class="col-12">
+                                <div class="d-flex flex-wrap gap-2 justify-content-center">
+                                    <button type="button" class="btn btn-outline-primary tab-btn" data-target="basic-info-section">
+                                        <i class="fas fa-info-circle"></i> المعلومات الأساسية
+                                    </button>
+                                    <button type="button" class="btn btn-outline-success tab-btn" data-target="dates-section">
+                                        <i class="fas fa-calendar-alt"></i> التواريخ والمدد
+                                    </button>
+                                    <button type="button" class="btn btn-outline-warning tab-btn" data-target="evacuations-section">
+                                        <i class="fas fa-truck-moving"></i> الإخلاءات
+                                    </button>
+                                    <button type="button" class="btn btn-outline-danger tab-btn" data-target="violations-section">
+                                        <i class="fas fa-exclamation-triangle"></i> المخالفات
+                                    </button>
+                                    <button type="button" class="btn btn-outline-secondary tab-btn" data-target="files-section">
+                                        <i class="fas fa-paperclip"></i> المرفقات
+                                    </button>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- تفعيل الرخصة -->
-                        <div class="form-section mb-4">
-                            <h4 class="section-title mb-4">تفعيل الرخصة</h4>
-                            <div class="license-files-section mb-4">
-                                <div class="row g-3">
-                                    <div class="col-md-6">
-                                        <div class="file-upload-container h-100">
-                                            <label for="license_1" class="form-label d-flex align-items-center mb-2">
-                                                <i class="fas fa-file-alt ml-2 text-primary"></i>
-                                                <span>الرخصة</span>
-                                            </label>
-                                            <input type="file" class="form-control" id="license_1" name="license_1" accept=".pdf,.jpg,.jpeg,.png">
-                                            @if($license->license_1_path)
-                                                <div class="mt-2">
-                                                    <a href="{{ asset('storage/' . $license->license_1_path) }}" target="_blank" class="btn btn-info w-100">
-                                                        <i class="fas fa-eye ml-1"></i> عرض المرفق الحالي
-                                                    </a>
-                                                </div>
-                                            @endif
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="form-group h-100">
-                                            <label for="license_length" class="form-label d-flex align-items-center mb-2">
-                                                <i class="fas fa-ruler ml-2 text-primary"></i>
-                                                <span>طول الرخصة (متر)</span>
-                                            </label>
-                                            <input type="number" class="form-control" id="license_length" name="license_length" value="{{ $license->license_length }}" step="0.01" min="0">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                        <form action="{{ route('admin.licenses.update', $license->id) }}" method="POST" enctype="multipart/form-data" id="licenseEditForm">
+                            @csrf
+                            @method('PUT')
                             
-                            <div class="license-dates-section">
+                            <!-- قسم المعلومات الأساسية -->
+                            <div id="basic-info-section" class="tab-section" style="display: none;">
+                                <div class="card border-0 shadow-sm mb-4">
+                                    <div class="card-header bg-primary text-white">
+                                        <h4 class="mb-0 fs-5">
+                                            <i class="fas fa-info-circle me-2"></i>
+                                            المعلومات الأساسية للرخصة
+                                        </h4>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row g-3">
+                                            <div class="col-md-6">
+                                                <label for="license_number" class="form-label">رقم الرخصة</label>
+                                                <input type="text" class="form-control" id="license_number" name="license_number" 
+                                                       value="{{ old('license_number', $license->license_number) }}">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label for="license_type" class="form-label">نوع الرخصة</label>
+                                                <select class="form-select" id="license_type" name="license_type">
+                                                    <option value="">اختر نوع الرخصة</option>
+                                                    <option value="مشروع" {{ old('license_type', $license->license_type) == 'مشروع' ? 'selected' : '' }}>مشروع</option>
+                                                    <option value="طوارئ" {{ old('license_type', $license->license_type) == 'طوارئ' ? 'selected' : '' }}>طوارئ</option>
+                                                    <option value="عادي" {{ old('license_type', $license->license_type) == 'عادي' ? 'selected' : '' }}>عادي</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label for="license_value" class="form-label">قيمة الرخصة</label>
+                                                <input type="number" step="0.01" class="form-control" id="license_value" name="license_value" 
+                                                       value="{{ old('license_value', $license->license_value) }}">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label for="extension_value" class="form-label">قيمة التمديدات</label>
+                                                <input type="number" step="0.01" class="form-control" id="extension_value" name="extension_value" 
+                                                       value="{{ old('extension_value', $license->extension_value) }}">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label for="has_restriction" class="form-label">يوجد حظر؟</label>
+                                                <select class="form-select" name="has_restriction" id="has_restriction">
+                                                    <option value="0" {{ old('has_restriction', $license->has_restriction) == 0 ? 'selected' : '' }}>لا</option>
+                                                    <option value="1" {{ old('has_restriction', $license->has_restriction) == 1 ? 'selected' : '' }}>نعم</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-6" id="restriction_authority_field" style="display: none;">
+                                                <label for="restriction_authority" class="form-label">جهة الحظر</label>
+                                                <input type="text" class="form-control" id="restriction_authority" name="restriction_authority" 
+                                                       value="{{ old('restriction_authority', $license->restriction_authority) }}" 
+                                                       placeholder="اسم الجهة المسؤولة عن الحظر">
+                                            </div>
+                                            <div class="col-12">
+                                                <label for="restriction_reason" class="form-label">سبب الحظر</label>
+                                                <textarea class="form-control" id="restriction_reason" name="restriction_reason" rows="3"
+                                                          placeholder="اذكر سبب الحظر إن وجد">{{ old('restriction_reason', $license->restriction_reason) }}</textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- قسم التواريخ والمدد -->
+                            <div id="dates-section" class="tab-section" style="display: none;">
+                                <div class="card border-0 shadow-sm mb-4">
+                                    <div class="card-header bg-success text-white">
+                                        <h4 class="mb-0 fs-5">
+                                            <i class="fas fa-calendar-alt me-2"></i>
+                                            تواريخ الرخصة وعداد الأيام
+                                        </h4>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row g-3">
+                                            <div class="col-md-4">
+                                                <label class="form-label">تاريخ بداية الرخصة</label>
+                                                <input type="date" class="form-control" name="license_start_date" id="license_start_date"
+                                                       value="{{ old('license_start_date', $license->license_start_date ? $license->license_start_date->format('Y-m-d') : '') }}">
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label">تاريخ نهاية الرخصة</label>
+                                                <input type="date" class="form-control" name="license_end_date" id="license_end_date"
+                                                       value="{{ old('license_end_date', $license->license_end_date ? $license->license_end_date->format('Y-m-d') : '') }}">
+                                            </div>
+                                            <div class="col-md-4 d-flex align-items-end">
+                                                <div class="alert alert-info w-100 mb-0" id="license_days_counter">
+                                                    <i class="fas fa-clock me-2"></i>
+                                                    <span id="license_days_text">اختر التواريخ لحساب المدة</span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label">تاريخ بداية التمديد</label>
+                                                <input type="date" class="form-control" name="license_extension_start_date" id="extension_start_date"
+                                                       value="{{ old('license_extension_start_date', $license->license_extension_start_date ? $license->license_extension_start_date->format('Y-m-d') : '') }}">
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label">تاريخ نهاية التمديد</label>
+                                                <input type="date" class="form-control" name="license_extension_end_date" id="extension_end_date"
+                                                       value="{{ old('license_extension_end_date', $license->license_extension_end_date ? $license->license_extension_end_date->format('Y-m-d') : '') }}">
+                                            </div>
+                                            <div class="col-md-4 d-flex align-items-end">
+                                                <div class="alert alert-warning w-100 mb-0" id="extension_days_counter">
+                                                    <i class="fas fa-clock me-2"></i>
+                                                    <span id="extension_days_text">اختر تواريخ التمديد</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- قسم الإخلاءات -->
+                            <div id="evacuations-section" class="tab-section" style="display: none;">
                                 <div class="card border-0 shadow-sm">
-                                    <div class="card-body p-4">
-                                        <h5 class="card-title mb-4 d-flex align-items-center">
-                                            <i class="fas fa-calendar-alt ml-2 text-primary"></i>
-                                            <span>تواريخ الرخصة</span>
-                                        </h5>
-                                        <div class="row g-4">
+                                    <div class="card-header bg-warning text-dark">
+                                        <h4 class="mb-0 fs-5">
+                                            <i class="fas fa-truck-moving me-2"></i>
+                                            معلومات الإخلاءات
+                                        </h4>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row g-3">
                                             <div class="col-md-6">
-                                                <div class="form-group">
-                                                    <label for="license_start_date" class="form-label d-flex align-items-center mb-2">
-                                                        <i class="fas fa-calendar-plus ml-2 text-success"></i>
-                                                        <span>تاريخ بداية الرخصة</span>
-                                                    </label>
-                                                    <input type="date" class="form-control" id="license_start_date" name="license_start_date" value="{{ $license->license_start_date ? $license->license_start_date->format('Y-m-d') : '' }}">
-                                                </div>
+                                                <label class="form-label">تم الإخلاء؟</label>
+                                                <select class="form-select" name="is_evacuated" id="is_evacuated">
+                                                    <option value="0" {{ old('is_evacuated', $license->is_evacuated) == 0 ? 'selected' : '' }}>لا</option>
+                                                    <option value="1" {{ old('is_evacuated', $license->is_evacuated) == 1 ? 'selected' : '' }}>نعم</option>
+                                                </select>
                                             </div>
                                             <div class="col-md-6">
-                                                <div class="form-group">
-                                                    <label for="license_end_date" class="form-label d-flex align-items-center mb-2">
-                                                        <i class="fas fa-calendar-minus ml-2 text-danger"></i>
-                                                        <span>تاريخ نهاية الرخصة</span>
-                                                    </label>
-                                                    <input type="date" class="form-control" id="license_end_date" name="license_end_date" value="{{ $license->license_end_date ? $license->license_end_date->format('Y-m-d') : '' }}">
-                                                </div>
+                                                <label class="form-label">رقم الرخصة</label>
+                                                <input type="text" class="form-control" name="evac_license_number"
+                                                       value="{{ old('evac_license_number', $license->evac_license_number) }}">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">قيمة الرخصة</label>
+                                                <input type="number" step="0.01" class="form-control" name="evac_license_value"
+                                                       value="{{ old('evac_license_value', $license->evac_license_value) }}">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">رقم سداد الرخصة</label>
+                                                <input type="text" class="form-control" name="evac_payment_number"
+                                                       value="{{ old('evac_payment_number', $license->evac_payment_number) }}">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">تاريخ الإخلاء</label>
+                                                <input type="date" class="form-control" name="evac_date"
+                                                       value="{{ old('evac_date', $license->evac_date ? $license->evac_date->format('Y-m-d') : '') }}">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">مبلغ الإخلاء</label>
+                                                <input type="number" step="0.01" class="form-control" name="evac_amount"
+                                                       value="{{ old('evac_amount', $license->evac_amount) }}">
+                                            </div>
+                                            <div class="col-12">
+                                                <label class="form-label">مرفق الإخلاءات الجديدة</label>
+                                                <input type="file" class="form-control" name="evacuations_files[]" multiple accept=".pdf,.jpg,.jpeg,.png">
+                                                <small class="text-muted">يمكنك رفع ملفات جديدة، الملفات الحالية ستبقى محفوظة</small>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <!-- الاختبارات - مختصر -->
-                        <div class="form-section">
-                            <h4 class="section-title">الاختبارات</h4>
-                            <div class="tests-container">
-                                <!-- اختبار العمق -->
-                                <div class="test-item">
-                                    <div class="d-flex justify-content-between align-items-center p-3 bg-light rounded mb-2">
-                                        <div class="d-flex align-items-center">
-                                            <i class="fas fa-ruler-vertical ml-2 text-primary"></i>
-                                            <span class="test-name">اختبار العمق</span>
-                                        </div>
-                                        <div class="test-options">
-                                            <div class="form-check form-check-inline">
-                                                <input class="form-check-input" type="radio" name="has_depth_test" value="1" id="has_depth_test_yes" {{ $license->has_depth_test ? 'checked' : '' }}>
-                                                <label class="form-check-label" for="has_depth_test_yes">نعم</label>
-                                            </div>
-                                            <div class="form-check form-check-inline">
-                                                <input class="form-check-input" type="radio" name="has_depth_test" value="0" id="has_depth_test_no" {{ !$license->has_depth_test ? 'checked' : '' }}>
-                                                <label class="form-check-label" for="has_depth_test_no">لا</label>
-                                            </div>
-                                        </div>
+                            <!-- قسم المخالفات -->
+                            <div id="violations-section" class="tab-section" style="display: none;">
+                                <div class="card border-0 shadow-sm">
+                                    <div class="card-header bg-danger text-white">
+                                        <h4 class="mb-0 fs-5">
+                                            <i class="fas fa-exclamation-triangle me-2"></i>
+                                            معلومات المخالفات
+                                        </h4>
                                     </div>
-                                </div>
-
-                                <!-- اختبار دك التربة -->
-                                <div class="test-item">
-                                    <div class="d-flex justify-content-between align-items-center p-3 bg-light rounded mb-2">
-                                        <div class="d-flex align-items-center">
-                                            <i class="fas fa-compress-alt ml-2 text-primary"></i>
-                                            <span class="test-name">اختبار دك التربة</span>
-                                        </div>
-                                        <div class="test-options">
-                                            <div class="form-check form-check-inline">
-                                                <input class="form-check-input" type="radio" name="has_soil_compaction_test" value="1" id="has_soil_compaction_test_yes" {{ $license->has_soil_compaction_test ? 'checked' : '' }}>
-                                                <label class="form-check-label" for="has_soil_compaction_test_yes">نعم</label>
+                                    <div class="card-body">
+                                        <div class="row g-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label">رقم الرخصة التي عليها مخالفات</label>
+                                                <input type="text" class="form-control" name="violation_license_number"
+                                                       value="{{ old('violation_license_number', $license->violation_license_number) }}">
                                             </div>
-                                            <div class="form-check form-check-inline">
-                                                <input class="form-check-input" type="radio" name="has_soil_compaction_test" value="0" id="has_soil_compaction_test_no" {{ !$license->has_soil_compaction_test ? 'checked' : '' }}>
-                                                <label class="form-check-label" for="has_soil_compaction_test_no">لا</label>
+                                            <div class="col-md-6">
+                                                <label class="form-label">قيمة الرخصة</label>
+                                                <input type="number" step="0.01" class="form-control" name="violation_license_value"
+                                                       value="{{ old('violation_license_value', $license->violation_license_value) }}">
                                             </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- اختبار RC1-MC1 -->
-                                <div class="test-item">
-                                    <div class="d-flex justify-content-between align-items-center p-3 bg-light rounded mb-2">
-                                        <div class="d-flex align-items-center">
-                                            <i class="fas fa-vial ml-2 text-primary"></i>
-                                            <span class="test-name">اختبار RC1-MC1</span>
-                                        </div>
-                                        <div class="test-options">
-                                            <div class="form-check form-check-inline">
-                                                <input class="form-check-input" type="radio" name="has_rc1_mc1_test" value="1" id="has_rc1_mc1_test_yes" {{ $license->has_rc1_mc1_test ? 'checked' : '' }}>
-                                                <label class="form-check-label" for="has_rc1_mc1_test_yes">نعم</label>
+                                            <div class="col-md-6">
+                                                <label class="form-label">تاريخ الرخصة</label>
+                                                <input type="date" class="form-control" name="violation_license_date"
+                                                       value="{{ old('violation_license_date', $license->violation_license_date ? $license->violation_license_date->format('Y-m-d') : '') }}">
                                             </div>
-                                            <div class="form-check form-check-inline">
-                                                <input class="form-check-input" type="radio" name="has_rc1_mc1_test" value="0" id="has_rc1_mc1_test_no" {{ !$license->has_rc1_mc1_test ? 'checked' : '' }}>
-                                                <label class="form-check-label" for="has_rc1_mc1_test_no">لا</label>
+                                            <div class="col-md-6">
+                                                <label class="form-label">آخر موعد سداد للمخالفة</label>
+                                                <input type="date" class="form-control" name="violation_due_date"
+                                                       value="{{ old('violation_due_date', $license->violation_due_date ? $license->violation_due_date->format('Y-m-d') : '') }}">
                                             </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- اختبار الأسفلت -->
-                                <div class="test-item">
-                                    <div class="d-flex justify-content-between align-items-center p-3 bg-light rounded mb-2">
-                                        <div class="d-flex align-items-center">
-                                            <i class="fas fa-road ml-2 text-primary"></i>
-                                            <span class="test-name">اختبار الأسفلت</span>
-                                        </div>
-                                        <div class="test-options">
-                                            <div class="form-check form-check-inline">
-                                                <input class="form-check-input" type="radio" name="has_asphalt_test" value="1" id="has_asphalt_test_yes" {{ $license->has_asphalt_test ? 'checked' : '' }}>
-                                                <label class="form-check-label" for="has_asphalt_test_yes">نعم</label>
+                                            <div class="col-md-6">
+                                                <label class="form-label">رقم المخالفة</label>
+                                                <input type="text" class="form-control" name="violation_number"
+                                                       value="{{ old('violation_number', $license->violation_number) }}">
                                             </div>
-                                            <div class="form-check form-check-inline">
-                                                <input class="form-check-input" type="radio" name="has_asphalt_test" value="0" id="has_asphalt_test_no" {{ !$license->has_asphalt_test ? 'checked' : '' }}>
-                                                <label class="form-check-label" for="has_asphalt_test_no">لا</label>
+                                            <div class="col-md-6">
+                                                <label class="form-label">رقم سداد المخالفة</label>
+                                                <input type="text" class="form-control" name="violation_payment_number"
+                                                       value="{{ old('violation_payment_number', $license->violation_payment_number) }}">
                                             </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- اختبار التربة -->
-                                <div class="test-item">
-                                    <div class="d-flex justify-content-between align-items-center p-3 bg-light rounded mb-2">
-                                        <div class="d-flex align-items-center">
-                                            <i class="fas fa-mountain ml-2 text-primary"></i>
-                                            <span class="test-name">اختبار التربة</span>
-                                        </div>
-                                        <div class="test-options">
-                                            <div class="form-check form-check-inline">
-                                                <input class="form-check-input" type="radio" name="has_soil_test" value="1" id="has_soil_test_yes" {{ $license->has_soil_test ? 'checked' : '' }}>
-                                                <label class="form-check-label" for="has_soil_test_yes">نعم</label>
+                                            <div class="col-12">
+                                                <label class="form-label">المسبب</label>
+                                                <input type="text" class="form-control" name="violation_cause"
+                                                       value="{{ old('violation_cause', $license->violation_cause) }}">
                                             </div>
-                                            <div class="form-check form-check-inline">
-                                                <input class="form-check-input" type="radio" name="has_soil_test" value="0" id="has_soil_test_no" {{ !$license->has_soil_test ? 'checked' : '' }}>
-                                                <label class="form-check-label" for="has_soil_test_no">لا</label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- اختبار البلاط والانترلوك -->
-                                <div class="test-item">
-                                    <div class="d-flex justify-content-between align-items-center p-3 bg-light rounded mb-2">
-                                        <div class="d-flex align-items-center">
-                                            <i class="fas fa-th ml-2 text-primary"></i>
-                                            <span class="test-name">اختبار البلاط والانترلوك</span>
-                                        </div>
-                                        <div class="test-options">
-                                            <div class="form-check form-check-inline">
-                                                <input class="form-check-input" type="radio" name="has_interlock_test" value="1" id="has_interlock_test_yes" {{ $license->has_interlock_test ? 'checked' : '' }}>
-                                                <label class="form-check-label" for="has_interlock_test_yes">نعم</label>
-                                            </div>
-                                            <div class="form-check form-check-inline">
-                                                <input class="form-check-input" type="radio" name="has_interlock_test" value="0" id="has_interlock_test_no" {{ !$license->has_interlock_test ? 'checked' : '' }}>
-                                                <label class="form-check-label" for="has_interlock_test_no">لا</label>
+                                            <div class="col-12">
+                                                <label class="form-label">مرفق المخالفات الجديدة</label>
+                                                <input type="file" class="form-control" name="violations_files[]" multiple accept=".pdf,.jpg,.jpeg,.png">
+                                                <small class="text-muted">يمكنك رفع ملفات جديدة، الملفات الحالية ستبقى محفوظة</small>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <div class="multi-section">
-                            <!-- تمديد الرخصة -->
-                            <div class="form-section">
-                                <h4 class="section-title">تمديد الرخصة</h4>
-                                <div class="file-upload-container">
-                                    <label class="form-label">رفع مرفق تمديد الرخصة</label>
-                                    <input type="file" name="license_extension_file" class="form-control" accept=".pdf,.jpg,.jpeg,.png">
-                                    @if($license->license_extension_file_path)
-                                        <div class="mt-2">
-                                            <a href="{{ asset('storage/' . $license->license_extension_file_path) }}" target="_blank" class="btn btn-info btn-sm">
-                                                <i class="fas fa-eye"></i> عرض المرفق الحالي
-                                            </a>
-                                        </div>
-                                    @endif
-                                </div>
-                                <div class="row mt-2">
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label for="license_extension_start_date" class="form-label">تاريخ بداية التمديد</label>
-                                            <input type="date" name="license_extension_start_date" class="form-control date-input" id="license_extension_start_date" value="{{ $license->license_extension_start_date ? $license->license_extension_start_date->format('Y-m-d') : '' }}" onchange="calculateExtensionDays()">
-                                        </div>
+                            <!-- قسم المرفقات -->
+                            <div id="files-section" class="tab-section" style="display: none;">
+                                <div class="card border-0 shadow-sm">
+                                    <div class="card-header bg-secondary text-white">
+                                        <h4 class="mb-0 fs-5">
+                                            <i class="fas fa-paperclip me-2"></i>
+                                            المرفقات والوثائق
+                                        </h4>
                                     </div>
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label for="license_extension_end_date" class="form-label">تاريخ نهاية التمديد</label>
-                                            <input type="date" name="license_extension_end_date" class="form-control date-input" id="license_extension_end_date" value="{{ $license->license_extension_end_date ? $license->license_extension_end_date->format('Y-m-d') : '' }}" onchange="calculateExtensionDays()">
+                                    <div class="card-body">
+                                        <div class="row g-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label">شهادة التنسيق</label>
+                                                <input type="file" class="form-control" name="coordination_certificate" accept=".pdf,.jpg,.jpeg,.png">
+                                                @if($license->coordination_certificate_path)
+                                                    <small class="text-success">✓ يوجد ملف محفوظ</small>
+                                                @endif
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">الخطابات والتعهدات</label>
+                                                <input type="file" class="form-control" name="letters_and_commitments" accept=".pdf,.jpg,.jpeg,.png">
+                                                @if($license->letters_and_commitments_path)
+                                                    <small class="text-success">✓ يوجد ملف محفوظ</small>
+                                                @endif
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">ملف الرخصة</label>
+                                                <input type="file" class="form-control" name="license_1" accept=".pdf,.jpg,.jpeg,.png">
+                                                @if($license->license_1_path)
+                                                    <small class="text-success">✓ يوجد ملف محفوظ</small>
+                                                @endif
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">ملف تمديد الرخصة</label>
+                                                <input type="file" class="form-control" name="license_extension_file" accept=".pdf,.jpg,.jpeg,.png">
+                                                @if($license->license_extension_file_path)
+                                                    <small class="text-success">✓ يوجد ملف محفوظ</small>
+                                                @endif
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- تمديد الفاتورة -->
-                            <div class="form-section">
-                                <h4 class="section-title">تمديد الفاتورة</h4>
-                                <div class="file-upload-container">
-                                    <label class="form-label">رفع مرفق تمديد الفاتورة</label>
-                                    <input type="file" name="invoice_extension_file" class="form-control" accept=".pdf,.jpg,.jpeg,.png">
-                                    @if($license->invoice_extension_file_path)
-                                        <div class="mt-2">
-                                            <a href="{{ asset('storage/' . $license->invoice_extension_file_path) }}" target="_blank" class="btn btn-info btn-sm">
-                                                <i class="fas fa-eye"></i> عرض المرفق الحالي
-                                            </a>
-                                        </div>
-                                    @endif
-                                </div>
-                                <div class="row mt-2">
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label for="invoice_extension_start_date" class="form-label">تاريخ بداية التمديد</label>
-                                            <input type="date" name="invoice_extension_start_date" class="form-control date-input" id="invoice_extension_start_date" value="{{ $license->invoice_extension_start_date ? $license->invoice_extension_start_date->format('Y-m-d') : '' }}" onchange="calculateInvoiceExtensionDays()">
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label for="invoice_extension_end_date" class="form-label">تاريخ نهاية التمديد</label>
-                                            <input type="date" name="invoice_extension_end_date" class="form-control date-input" id="invoice_extension_end_date" value="{{ $license->invoice_extension_end_date ? $license->invoice_extension_end_date->format('Y-m-d') : '' }}" onchange="calculateInvoiceExtensionDays()">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="multi-section">
-                            <!-- نتائج الاختبار -->
-                            <div class="form-section">
-                                <h4 class="section-title">نتائج الاختبار</h4>
-                                <div class="file-upload-container">
-                                    <label class="form-label">رفع مرفق نتائج الاختبار</label>
-                                    <input type="file" name="test_results_file" class="form-control" accept=".pdf,.jpg,.jpeg,.png">
-                                    @if($license->test_results_file_path)
-                                        <div class="mt-2">
-                                            <a href="{{ asset('storage/' . $license->test_results_file_path) }}" target="_blank" class="btn btn-info btn-sm">
-                                                <i class="fas fa-eye"></i> عرض المرفق الحالي
-                                            </a>
-                                        </div>
+                            <!-- زر الحفظ -->
+                            <div class="row mt-4">
+                                <div class="col-12 text-center">
+                                    <button type="submit" class="btn btn-success btn-lg px-5">
+                                        <i class="fas fa-save me-2"></i>
+                                        حفظ التعديلات
+                                    </button>
+                                    @if(isset($workOrder) && $workOrder)
+                                        <a href="{{ route('admin.work-orders.license', $workOrder) }}" class="btn btn-secondary btn-lg px-5 ms-3">
+                                            <i class="fas fa-times me-2"></i>
+                                            إلغاء
+                                        </a>
+                                    @elseif($license->workOrder)
+                                        <a href="{{ route('admin.work-orders.license', $license->workOrder) }}" class="btn btn-secondary btn-lg px-5 ms-3">
+                                            <i class="fas fa-times me-2"></i>
+                                            إلغاء
+                                        </a>
+                                    @else
+                                        <a href="{{ route('admin.licenses.data') }}" class="btn btn-secondary btn-lg px-5 ms-3">
+                                            <i class="fas fa-times me-2"></i>
+                                            إلغاء
+                                        </a>
                                     @endif
                                 </div>
                             </div>
-
-                            <!-- الفحص النهائي -->
-                            <div class="form-section">
-                                <h4 class="section-title">الفحص النهائي</h4>
-                                <div class="file-upload-container">
-                                    <label class="form-label">رفع مرفق الفحص النهائي</label>
-                                    <input type="file" name="final_inspection_file" class="form-control" accept=".pdf,.jpg,.jpeg,.png">
-                                    @if($license->final_inspection_file_path)
-                                        <div class="mt-2">
-                                            <a href="{{ asset('storage/' . $license->final_inspection_file_path) }}" target="_blank" class="btn btn-info btn-sm">
-                                                <i class="fas fa-eye"></i> عرض المرفق الحالي
-                                            </a>
-                                        </div>
-                                    @endif
-                                </div>
-                            </div>
-
-                            <!-- إخلاء وإغلاق الرخصة -->
-                            <div class="form-section">
-                                <h4 class="section-title">إخلاء وإغلاق الرخصة</h4>
-                                <div class="file-upload-container">
-                                    <label class="form-label">رفع مرفق إخلاء وإغلاق الرخصة</label>
-                                    <input type="file" name="license_closure_file" class="form-control" accept=".pdf,.jpg,.jpeg,.png">
-                                    @if($license->license_closure_file_path)
-                                        <div class="mt-2">
-                                            <a href="{{ asset('storage/' . $license->license_closure_file_path) }}" target="_blank" class="btn btn-info btn-sm">
-                                                <i class="fas fa-eye"></i> عرض المرفق الحالي
-                                            </a>
-                                        </div>
-                                    @endif
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="submit-section mt-4">
-                            <button type="submit" class="btn btn-success">
-                                <i class="fas fa-save ml-1"></i> حفظ التعديلات
-                            </button>
-                            <a href="{{ route('admin.work-orders.licenses.data') }}" class="btn btn-secondary ms-2">
-                                <i class="fas fa-times ml-1"></i> إلغاء
-                            </a>
-                        </div>
-                    </form>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
+@push('scripts')
 <script>
-function toggleRestrictionDetails() {
-    const hasRestriction = document.getElementById('has_restriction_yes').checked;
-    const restrictionDetails = document.getElementById('restrictionDetails');
-    restrictionDetails.style.display = hasRestriction ? 'block' : 'none';
-    
-    if (!hasRestriction) {
-        document.getElementById('restriction_authority').value = '';
-        document.getElementById('restriction_reason').value = '';
-    }
-}
-
-function calculateExtensionDays() {
-    const startDate = document.getElementById('license_extension_start_date').value;
-    const endDate = document.getElementById('license_extension_end_date').value;
-    
-    if (startDate && endDate) {
-        const start = new Date(startDate);
-        const end = new Date(endDate);
-        
-        if (start > end) {
-            alert('تاريخ بداية تمديد الرخصة يجب أن يكون قبل تاريخ النهاية');
-            document.getElementById('license_extension_end_date').value = '';
-            return;
-        }
-    }
-}
-
-function calculateInvoiceExtensionDays() {
-    const startDate = document.getElementById('invoice_extension_start_date').value;
-    const endDate = document.getElementById('invoice_extension_end_date').value;
-    
-    if (startDate && endDate) {
-        const start = new Date(startDate);
-        const end = new Date(endDate);
-        
-        if (start > end) {
-            alert('تاريخ بداية تمديد الفاتورة يجب أن يكون قبل تاريخ النهاية');
-            document.getElementById('invoice_extension_end_date').value = '';
-            return;
-        }
-    }
-}
-
 document.addEventListener('DOMContentLoaded', function() {
-    toggleRestrictionDetails();
+    // تفعيل التبويبات
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    const tabSections = document.querySelectorAll('.tab-section');
     
-    // إضافة مستمعي أحداث للتحقق من التواريخ
-    document.getElementById('license_extension_start_date').addEventListener('change', calculateExtensionDays);
-    document.getElementById('license_extension_end_date').addEventListener('change', calculateExtensionDays);
-    document.getElementById('invoice_extension_start_date').addEventListener('change', calculateInvoiceExtensionDays);
-    document.getElementById('invoice_extension_end_date').addEventListener('change', calculateInvoiceExtensionDays);
+    tabButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const targetId = this.getAttribute('data-target');
+            
+            // إخفاء جميع الأقسام
+            tabSections.forEach(section => {
+                section.style.display = 'none';
+            });
+            
+            // إزالة الفئة النشطة من جميع الأزرار
+            tabButtons.forEach(btn => {
+                btn.classList.remove('btn-primary', 'btn-success', 'btn-warning', 'btn-danger', 'btn-secondary');
+                btn.classList.add('btn-outline-primary');
+            });
+            
+            // إظهار القسم المحدد
+            const targetSection = document.getElementById(targetId);
+            if (targetSection) {
+                targetSection.style.display = 'block';
+            }
+            
+            // تفعيل الزر المحدد بلون مناسب
+            this.classList.remove('btn-outline-primary');
+            if (targetId.includes('basic')) {
+                this.classList.add('btn-primary');
+            } else if (targetId.includes('dates')) {
+                this.classList.add('btn-success');
+            } else if (targetId.includes('evacuations')) {
+                this.classList.add('btn-warning');
+            } else if (targetId.includes('violations')) {
+                this.classList.add('btn-danger');
+            } else if (targetId.includes('files')) {
+                this.classList.add('btn-secondary');
+            }
+        });
+    });
+    
+    // إظهار القسم الأول افتراضياً
+    if (tabButtons.length > 0) {
+        tabButtons[0].click();
+    }
+    
+    // إظهار/إخفاء حقل جهة الحظر
+    const hasRestrictionSelect = document.getElementById('has_restriction');
+    const restrictionAuthorityField = document.getElementById('restriction_authority_field');
+    
+    function toggleRestrictionAuthority() {
+        if (hasRestrictionSelect.value == '1') {
+            restrictionAuthorityField.style.display = 'block';
+        } else {
+            restrictionAuthorityField.style.display = 'none';
+        }
+    }
+    
+    hasRestrictionSelect.addEventListener('change', toggleRestrictionAuthority);
+    toggleRestrictionAuthority(); // تشغيل عند التحميل
+    
+    // حساب عداد الأيام للرخصة
+    function calculateLicenseDays() {
+        const startDate = document.getElementById('license_start_date').value;
+        const endDate = document.getElementById('license_end_date').value;
+        const daysText = document.getElementById('license_days_text');
+        
+        if (startDate && endDate) {
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            const diffTime = end - start;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            if (diffDays > 0) {
+                daysText.innerHTML = `<strong>${diffDays} يوم</strong>`;
+                daysText.parentElement.className = 'alert alert-success w-100 mb-0';
+            } else if (diffDays === 0) {
+                daysText.innerHTML = '<strong>يوم واحد</strong>';
+                daysText.parentElement.className = 'alert alert-warning w-100 mb-0';
+            } else {
+                daysText.innerHTML = '<strong>تاريخ غير صحيح</strong>';
+                daysText.parentElement.className = 'alert alert-danger w-100 mb-0';
+            }
+        } else {
+            daysText.innerHTML = 'اختر التواريخ لحساب المدة';
+            daysText.parentElement.className = 'alert alert-info w-100 mb-0';
+        }
+    }
+    
+    // حساب عداد الأيام للتمديد
+    function calculateExtensionDays() {
+        const startDate = document.getElementById('extension_start_date').value;
+        const endDate = document.getElementById('extension_end_date').value;
+        const daysText = document.getElementById('extension_days_text');
+        
+        if (startDate && endDate) {
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            const diffTime = end - start;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            if (diffDays > 0) {
+                daysText.innerHTML = `<strong>${diffDays} يوم تمديد</strong>`;
+                daysText.parentElement.className = 'alert alert-success w-100 mb-0';
+            } else if (diffDays === 0) {
+                daysText.innerHTML = '<strong>يوم واحد تمديد</strong>';
+                daysText.parentElement.className = 'alert alert-warning w-100 mb-0';
+            } else {
+                daysText.innerHTML = '<strong>تاريخ تمديد غير صحيح</strong>';
+                daysText.parentElement.className = 'alert alert-danger w-100 mb-0';
+            }
+        } else {
+            daysText.innerHTML = 'اختر تواريخ التمديد';
+            daysText.parentElement.className = 'alert alert-warning w-100 mb-0';
+        }
+    }
+    
+    // ربط الأحداث بحقول التاريخ
+    document.getElementById('license_start_date').addEventListener('change', calculateLicenseDays);
+    document.getElementById('license_end_date').addEventListener('change', calculateLicenseDays);
+    document.getElementById('extension_start_date').addEventListener('change', calculateExtensionDays);
+    document.getElementById('extension_end_date').addEventListener('change', calculateExtensionDays);
+    
+    // حساب الأيام عند التحميل
+    calculateLicenseDays();
+    calculateExtensionDays();
+    
+    // تأكيد الحفظ
+    document.getElementById('licenseEditForm').addEventListener('submit', function(e) {
+        const confirmation = confirm('هل أنت متأكد من حفظ التعديلات؟');
+        if (!confirmation) {
+            e.preventDefault();
+        }
+    });
 });
 </script>
+@endpush
 
 <style>
-/* الألوان الأساسية المريحة للعين */
-:root {
-    --primary-color: #4a90e2;
-    --secondary-color: #6c757d;
-    --success-color: #2ecc71;
-    --danger-color: #e74c3c;
-    --warning-color: #f1c40f;
-    --info-color: #3498db;
-    --light-bg: #f8f9fa;
-    --dark-bg: #2c3e50;
-    --border-color: #e9ecef;
-    --text-color: #34495e;
-    --text-muted: #7f8c8d;
+/* نفس الأنماط من صفحة الرخصة الأساسية */
+.btn {
+    transition: all 0.3s ease;
+    border: none;
+    font-weight: 500;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    position: relative;
+    overflow: hidden;
 }
 
-/* تنسيق البطاقات */
+.btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+}
+
+.btn:hover::before {
+    left: 100%;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.btn-back {
+    background: linear-gradient(45deg, #795548, #8D6E63);
+    color: white;
+}
+
+.btn-back:hover {
+    background: linear-gradient(45deg, #6D4C41, #795548);
+    color: white;
+}
+
+.btn-primary {
+    background: linear-gradient(45deg, #2196F3, #42A5F5);
+    border-color: #2196F3;
+}
+
+.btn-outline-primary {
+    border: 2px solid #2196F3;
+    color: #2196F3;
+    background: transparent;
+}
+
+.btn-outline-primary:hover {
+    background: #2196F3;
+    color: white;
+}
+
+.btn-success {
+    background: linear-gradient(45deg, #4CAF50, #66BB6A);
+}
+
+.btn-info {
+    background: linear-gradient(45deg, #00BCD4, #26C6DA);
+    color: white;
+}
+
+.btn-warning {
+    background: linear-gradient(45deg, #FF9800, #FFB74D);
+    color: white;
+}
+
+.btn-danger {
+    background: linear-gradient(45deg, #F44336, #EF5350);
+}
+
+.btn-secondary {
+    background: linear-gradient(45deg, #607D8B, #78909C);
+}
+
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #1976D2, #2196F3, #42A5F5);
+}
+
 .card {
+    transition: all 0.3s ease;
     border: none;
-    border-radius: 0.375rem;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-    transition: all 0.2s ease;
-    background-color: #fff;
+    border-radius: 1rem;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 1rem 2rem rgba(0, 0, 0, 0.15) !important;
 }
 
 .card-header {
-    background-color: #fff;
-    border-bottom: 1px solid var(--border-color);
-    padding: 1rem;
-}
-
-.card-header h3 {
-    color: var(--text-color);
+    border-radius: 1rem 1rem 0 0 !important;
+    border-bottom: none;
     font-weight: 600;
-    margin: 0;
-    font-size: 1.1rem;
 }
 
-/* تنسيق النماذج والأقسام */
-.form-section {
-    background-color: #fff;
-    padding: 1.25rem;
-    border-radius: 0.375rem;
-    margin-bottom: 1.25rem;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+.form-control, .form-select {
+    border-radius: 0.5rem;
+    border: 2px solid #e9ecef;
+    padding: 0.75rem 1rem;
+    transition: all 0.3s ease;
+    font-size: 0.95rem;
 }
 
-.section-title {
-    color: var(--text-color);
+.form-control:focus, .form-select:focus {
+    border-color: #2196F3;
+    box-shadow: 0 0 0 0.2rem rgba(33, 150, 243, 0.25);
+    transform: scale(1.02);
+}
+
+.form-label {
     font-weight: 600;
-    margin-bottom: 1.25rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid var(--border-color);
-    font-size: 1rem;
+    margin-bottom: 0.5rem;
+    color: #495057;
 }
+
+.tab-btn {
+    margin: 0.25rem;
+    min-width: 150px;
+    font-weight: 600;
+}
+
+.tab-section {
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.alert {
+    border-radius: 0.75rem;
+    border: none;
+    font-weight: 600;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+    100% { transform: scale(1); }
+}
+
+.fas, .far {
+    transition: transform 0.3s ease;
+}
+
+.btn:hover .fas,
+.btn:hover .far {
+    transform: scale(1.1);
+}
+
+@media (max-width: 768px) {
+    .btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+        min-width: auto;
+    }
+    
+    .tab-btn {
+        min-width: 120px;
+        margin: 0.125rem;
+    }
+    
+    .card-body {
+        padding: 1rem;
+    }
+}
+
+.shadow-lg {
+    box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.175) !important;
+}
+
+.border-0 {
+    border: none !important;
+}
+
+.bg-primary { background: linear-gradient(45deg, #1976D2, #2196F3) !important; }
+.bg-success { background: linear-gradient(45deg, #388E3C, #4CAF50) !important; }
+.bg-info { background: linear-gradient(45deg, #0097A7, #00BCD4) !important; }
+.bg-warning { background: linear-gradient(45deg, #F57C00, #FF9800) !important; }
+.bg-danger { background: linear-gradient(45deg, #D32F2F, #F44336) !important; }
+.bg-secondary { background: linear-gradient(45deg, #424242, #616161) !important; }
 </style>
 @endsection 
