@@ -74,7 +74,7 @@
     }
     
     .btn-success-modern {
-        background: linear-gradient(45deg, #4CAF50, #81C784);
+        background: linear-gradient(45deg,rgb(82, 78, 78),rgb(91, 94, 91));
         color: white;
     }
     
@@ -163,7 +163,7 @@
     }
     
     .statistics-card {
-        background: linear-gradient(45deg, #667eea, #764ba2);
+        background: linear-gradient(45deg,rgb(80, 83, 94),rgb(65, 61, 70));
         color: white;
         border-radius: 15px;
         padding: 25px;
@@ -285,7 +285,7 @@
     }
 
     .difference-negative {
-        color: #27ae60;
+        color:rgb(70, 71, 71);
         font-weight: bold;
     }
 
@@ -298,7 +298,7 @@
     }
 
     .bg-teal {
-        background-color: #1abc9c !important;
+        background-color:rgb(52, 61, 59) !important;
     }
 
     .table-compact .badge-compact {
@@ -306,15 +306,15 @@
     }
 
     .bg-gradient-info {
-        background: linear-gradient(45deg, #17a2b8, #138496) !important;
+        background: linear-gradient(45deg,rgb(58, 68, 70),rgb(74, 85, 87)) !important;
     }
 
     .bg-gradient-warning {
-        background: linear-gradient(45deg, #ffc107, #e0a800) !important;
+        background: linear-gradient(45deg,rgb(83, 81, 74),rgb(83, 81, 74)) !important;
     }
 
     .bg-gradient-danger {
-        background: linear-gradient(45deg, #dc3545, #c82333) !important;
+        background: linear-gradient(45deg,rgb(94, 88, 88),rgb(58, 53, 54)) !important;
     }
 
     .bg-gradient-secondary {

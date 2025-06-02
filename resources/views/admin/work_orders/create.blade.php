@@ -34,13 +34,13 @@
                                         <div class="col-md-8">
                                             <select id="work_type" class="form-select @error('work_type') is-invalid @enderror" name="work_type">
                                                 <option value="">اختر نوع العمل</option>
-                                                <option value="409" {{ old('work_type') == '409' ? 'selected' : '' }}> -ازالة-نقل شبكة على المشترك</option>
-                                                <option value="408" {{ old('work_type') == '408' ? 'selected' : '' }}>-  ازاله عداد على المشترك</option>
-                                                <option value="460" {{ old('work_type') == '460' ? 'selected' : '' }}>-  استبدال شبكات</option>
+                                                <option value="409" {{ old('work_type') == '409' ? 'selected' : '' }}> - ازالة-نقل شبكة على المشترك</option>
+                                                <option value="408" {{ old('work_type') == '408' ? 'selected' : '' }}> -  ازاله عداد على المشترك</option>
+                                                <option value="460" {{ old('work_type') == '460' ? 'selected' : '' }}> -  استبدال شبكات</option>
                                                 <option value="901" {{ old('work_type') == '901' ? 'selected' : '' }}> -   اضافة  عداد  طاقة  شمسية</option>
                                                 <option value="440" {{ old('work_type') == '440' ? 'selected' : '' }}> - الرفع المساحي</option>
-                                                <option value="410" {{ old('work_type') == '410' ? 'selected' : '' }}>-  انشاء محطة/محول لمشترك/مشتركين </option>
-                                                <option value="801" {{ old('work_type') == '801' ? 'selected' : '' }}>-  تركيب عداد  ايصال سريع </option>
+                                                <option value="410" {{ old('work_type') == '410' ? 'selected' : '' }}> -  انشاء محطة/محول لمشترك/مشتركين </option>
+                                                <option value="801" {{ old('work_type') == '801' ? 'selected' : '' }}> -  تركيب عداد  ايصال سريع </option>
                                                 <option value="804" {{ old('work_type') == '804' ? 'selected' : '' }}> -  تركيب محطة ش ارضية VM ايصال سريع</option>
                                                 <option value="805" {{ old('work_type') == '805' ? 'selected' : '' }}> - تركيب محطة ش هوائية VM ايصال سريع</option>
                                                 <option value="480" {{ old('work_type') == '480' ? 'selected' : '' }}> -  (تسليم مفتاح) تمويل خارجي </option>
@@ -48,12 +48,12 @@
                                                 <option value="442" {{ old('work_type') == '442' ? 'selected' : '' }}> -  تعزيز شبكة هوائية ومحطات </option>
                                                 <option value="802" {{ old('work_type') == '802' ? 'selected' : '' }}> -  شبكة ارضية VL ايصال سريع</option>
                                                 <option value="803" {{ old('work_type') == '803' ? 'selected' : '' }}> -  شبكة هوائية VL ايصال سريع</option>
-                                                <option value="402" {{ old('work_type') == '402' ? 'selected' : '' }}>-  توصيل عداد بحفرية شبكة ارضيه </option>
+                                                <option value="402" {{ old('work_type') == '402' ? 'selected' : '' }}> -  توصيل عداد بحفرية شبكة ارضيه </option>
                                                 <option value="401" {{ old('work_type') == '401' ? 'selected' : '' }}> -  (عداد بدون حفرية ) أرضي/هوائي </option>
                                                 <option value="404" {{ old('work_type') == '404' ? 'selected' : '' }}> -  عداد بمحطة شبكة ارضية VM</option>
                                                 <option value="405" {{ old('work_type') == '405' ? 'selected' : '' }}> -  توصيل عداد بمحطة شبكة هوائية VM</option>
                                                 <option value="430" {{ old('work_type') == '430' ? 'selected' : '' }}> -  مخططات منح  وزارة  البلدية </option>
-                                                <option value="450" {{ old('work_type') == '450' ? 'selected' : '' }}>- مشاريع ربط محطات التحويل</option>
+                                                <option value="450" {{ old('work_type') == '450' ? 'selected' : '' }}> - مشاريع ربط محطات التحويل</option>
                                                 <option value="403" {{ old('work_type') == '403' ? 'selected' : '' }}> -  توصيل عداد شبكة هوائية VL</option>
                                             </select>
                                         </div>
