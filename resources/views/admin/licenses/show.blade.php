@@ -586,6 +586,17 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card bg-primary text-white border-0">
+                                <div class="card-body text-center py-4">
+                                    <i class="fas fa-ruler-combined fa-2x mb-2"></i>
+                                    <h5 class="card-title mb-1">
+                                        {{ $license->excavation_length ?? 0 }} × {{ $license->excavation_width ?? 0 }} × {{ $license->excavation_depth ?? 0 }}
+                                    </h5>
+                                    <p class="card-text mb-0">أبعاد الحفر (متر)</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

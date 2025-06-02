@@ -52,6 +52,7 @@ class WorkOrder extends Model
         'first_partial_payment_without_tax',
         'second_partial_payment_with_tax',
         'municipality',
+        'electrical_works',
     ];
 
     protected $casts = [
@@ -70,6 +71,7 @@ class WorkOrder extends Model
         'excavation_surfaced_rock' => 'array',
         'excavation_precise' => 'array',
         'invoice_images' => 'array',
+        'electrical_works' => 'array',
     ];
 
     // Relationships

@@ -174,10 +174,10 @@
                                                 <th>حالة التنفيذ</th>
                                                 <td>
                                                     @switch($workOrder->execution_status)
-                                                        @case('1')
+                                                        @case('2')
                                                             <span class="badge bg-info">جاري العمل ...</span>
                                                             @break
-                                                        @case('2')
+                                                        @case('1')
                                                             <span class="badge bg-warning">تم تسليم 155 ولم تصدر شهادة انجاز</span>
                                                             @break
                                                         @case('3')

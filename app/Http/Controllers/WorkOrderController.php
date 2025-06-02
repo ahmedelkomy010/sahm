@@ -408,48 +408,54 @@ class WorkOrderController extends Controller
     public function storeSurvey(Request $request, WorkOrder $workOrder)
     {
         $validated = $request->validate([
-            'survey_date' => 'required|date',
-            'survey_type' => 'required|string|max:255',
-            'survey_notes' => 'nullable|string',
-            'survey_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240', // 10MB max
+            'start_coordinates' => 'nullable|string|max:255',
+            'end_coordinates' => 'nullable|string|max:255',
+            'has_obstacles' => 'required|boolean',
+            'obstacles_notes' => 'nullable|string',
+            'site_images.*' => 'nullable|image|max:30720', // 30MB max per image
         ]);
 
         // حفظ بيانات المسح
         $survey = \App\Models\Survey::updateOrCreate(
             ['work_order_id' => $workOrder->id],
             [
-                'survey_date' => $validated['survey_date'],
-                'survey_type' => $validated['survey_type'],
-                'notes' => $validated['survey_notes']
+                'start_coordinates' => $validated['start_coordinates'],
+                'end_coordinates' => $validated['end_coordinates'],
+                'has_obstacles' => $validated['has_obstacles'],
+                'obstacles_notes' => $validated['obstacles_notes']
             ]
         );
 
-        // رفع ملف المسح إذا تم اختياره
-        if ($request->hasFile('survey_file')) {
-            $file = $request->file('survey_file');
-            $originalName = $file->getClientOriginalName();
-            $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-            $path = 'work_orders/' . $workOrder->id . '/survey';
-            
-            if (!Storage::disk('public')->exists($path)) {
-                Storage::disk('public')->makeDirectory($path);
+        // رفع الصور إذا تم اختيارها
+        if ($request->hasFile('site_images')) {
+            foreach ($request->file('site_images') as $image) {
+                $originalName = $image->getClientOriginalName();
+                $filename = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+                $path = 'work_orders/' . $workOrder->id . '/survey';
+                
+                if (!Storage::disk('public')->exists($path)) {
+                    Storage::disk('public')->makeDirectory($path);
+                }
+                
+                $filePath = $image->storeAs($path, $filename, 'public');
+                
+                \App\Models\WorkOrderFile::create([
+                    'work_order_id' => $workOrder->id,
+                    'survey_id' => $survey->id,
+                    'filename' => $filename,
+                    'original_filename' => $originalName,
+                    'file_path' => $filePath,
+                    'file_type' => $image->getClientMimeType(),
+                    'file_size' => $image->getSize(),
+                    'file_category' => 'survey'
+                ]);
             }
-            
-            $filePath = $file->storeAs($path, $filename, 'public');
-            
-            \App\Models\WorkOrderFile::create([
-                'work_order_id' => $workOrder->id,
-                'filename' => $filename,
-                'original_filename' => $originalName,
-                'file_path' => $filePath,
-                'file_type' => $file->getClientMimeType(),
-                'file_size' => $file->getSize(),
-                'file_category' => 'survey'
-            ]);
         }
 
-        return redirect()->route('admin.work-orders.survey', $workOrder)
-            ->with('success', 'تم حفظ بيانات المسح بنجاح');
+        return response()->json([
+            'success' => true,
+            'message' => 'تم حفظ بيانات المسح بنجاح'
+        ]);
     }
 
     // تعديل بيانات المسح
@@ -977,5 +983,174 @@ class WorkOrderController extends Controller
         }
 
         return view('admin.work_items.index', compact('workItems'));
+    }
+
+    public function updateLicense(Request $request, WorkOrder $workOrder)
+    {
+        try {
+            $request->validate([
+                'license_number' => 'nullable|string|max:255',
+                'license_date' => 'nullable|date',
+                'license_type' => 'nullable|string|max:255',
+                'license_value' => 'nullable|numeric|min:0',
+                'extension_value' => 'nullable|numeric|min:0',
+                'notes' => 'nullable|string',
+                'has_restriction' => 'boolean',
+                'restriction_authority' => 'nullable|string|max:255',
+                'restriction_reason' => 'nullable|string|max:255',
+                'restriction_notes' => 'nullable|string',
+                'coordination_certificate_notes' => 'nullable|string',
+                'license_start_date' => 'nullable|date',
+                'license_end_date' => 'nullable|date',
+                'license_alert_days' => 'nullable|integer|min:0',
+                'license_length' => 'nullable|numeric|min:0',
+                'excavation_length' => 'nullable|numeric|min:0',
+                'excavation_width' => 'nullable|numeric|min:0',
+                'excavation_depth' => 'nullable|numeric|min:0',
+                'has_depth_test' => 'boolean',
+                'has_soil_compaction_test' => 'boolean',
+                'has_rc1_mc1_test' => 'boolean',
+                'has_asphalt_test' => 'boolean',
+                'has_soil_test' => 'boolean',
+                'has_interlock_test' => 'boolean',
+                'is_evacuated' => 'boolean',
+                'evac_license_number' => 'nullable|string|max:255',
+                'evac_license_value' => 'nullable|numeric|min:0',
+                'evac_payment_number' => 'nullable|string|max:255',
+                'evac_date' => 'nullable|date',
+                'evac_amount' => 'nullable|numeric|min:0',
+                'lab_table1' => 'nullable|array',
+                'lab_table2' => 'nullable|array',
+                // الملفات
+                'coordination_certificate_path' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
+                'letters_commitments_files.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
+                'payment_invoices.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
+                'payment_proof.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
+                'license_activation.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
+                'extension_invoice.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
+                'soil_test_images.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
+                'evacuations_files.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
+                'violations_files.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
+            ]);
+
+            // تحديث أو إنشاء سجل الرخصة
+            $license = License::updateOrCreate(
+                ['work_order_id' => $workOrder->id],
+                [
+                    'license_number' => $request->license_number,
+                    'license_date' => $request->license_date,
+                    'license_type' => $request->license_type,
+                    'license_value' => $request->license_value,
+                    'extension_value' => $request->extension_value,
+                    'notes' => $request->notes,
+                    'has_restriction' => $request->has_restriction,
+                    'restriction_authority' => $request->restriction_authority,
+                    'restriction_reason' => $request->restriction_reason,
+                    'restriction_notes' => $request->restriction_notes,
+                    'coordination_certificate_notes' => $request->coordination_certificate_notes,
+                    'license_start_date' => $request->license_start_date,
+                    'license_end_date' => $request->license_end_date,
+                    'license_alert_days' => $request->license_alert_days,
+                    'license_length' => $request->license_length,
+                    'excavation_length' => $request->excavation_length,
+                    'excavation_width' => $request->excavation_width,
+                    'excavation_depth' => $request->excavation_depth,
+                    'has_depth_test' => $request->has_depth_test,
+                    'has_soil_compaction_test' => $request->has_soil_compaction_test,
+                    'has_rc1_mc1_test' => $request->has_rc1_mc1_test,
+                    'has_asphalt_test' => $request->has_asphalt_test,
+                    'has_soil_test' => $request->has_soil_test,
+                    'has_interlock_test' => $request->has_interlock_test,
+                    'is_evacuated' => $request->is_evacuated,
+                    'evac_license_number' => $request->evac_license_number,
+                    'evac_license_value' => $request->evac_license_value,
+                    'evac_payment_number' => $request->evac_payment_number,
+                    'evac_date' => $request->evac_date,
+                    'evac_amount' => $request->evac_amount,
+                ]
+            );
+
+            // معالجة جداول المختبر
+            if ($request->has('lab_table1')) {
+                $license->lab_table1_data = $this->processTableData($request->lab_table1);
+            }
+            
+            if ($request->has('lab_table2')) {
+                $license->lab_table2_data = $this->processTableData($request->lab_table2);
+            }
+
+            // معالجة الملفات
+            $fileFields = [
+                'coordination_certificate_path' => 'coordination_certificate_path',
+                'letters_commitments_files' => 'letters_commitments_file_path',
+                'payment_invoices' => 'payment_invoices_path',
+                'payment_proof' => 'payment_proof_path',
+                'license_activation' => 'activation_file_path',
+                'extension_invoice' => 'invoice_extension_file_path',
+                'soil_test_images' => 'soil_test_images_path',
+                'evacuations_files' => 'evac_files_path',
+                'violations_files' => 'violation_files_path'
+            ];
+
+            foreach ($fileFields as $requestField => $dbField) {
+                if ($request->hasFile($requestField)) {
+                    $files = $request->file($requestField);
+                    if (!is_array($files)) {
+                        $files = [$files];
+                    }
+                    
+                    $filePaths = [];
+                    foreach ($files as $file) {
+                        if ($file && $file->isValid()) {
+                            $filename = time() . '_' . $file->getClientOriginalName();
+                            $path = $file->storeAs("work_orders/{$workOrder->id}/licenses", $filename, 'public');
+                            $filePaths[] = $path;
+                        }
+                    }
+                    
+                    if (!empty($filePaths)) {
+                        $license->$dbField = count($filePaths) === 1 ? $filePaths[0] : json_encode($filePaths);
+                        $license->save();
+                    }
+                }
+            }
+
+            return redirect()->route('admin.licenses.data')
+                ->with('success', 'تم حفظ بيانات الرخصة بنجاح في صفحة بيانات الجودة');
+
+        } catch (\Exception $e) {
+            \Log::error('Error updating license: ' . $e->getMessage());
+            return back()
+                ->withInput()
+                ->with('error', 'حدث خطأ أثناء حفظ بيانات الرخصة: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * معالجة بيانات الجداول
+     */
+    private function processTableData($tableData)
+    {
+        if (!is_array($tableData)) {
+            return [];
+        }
+        
+        $processedData = [];
+        foreach ($tableData as $rowData) {
+            if (!is_array($rowData)) {
+                continue;
+            }
+            
+            // تنظيف البيانات وإزالة الصفوف الفارغة
+            $cleanRow = array_filter($rowData, function($value) {
+                return !empty(trim($value ?? ''));
+            });
+            
+            if (!empty($cleanRow)) {
+                $processedData[] = $rowData;
+            }
+        }
+        
+        return $processedData;
     }
 } 

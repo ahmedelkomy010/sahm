@@ -49,8 +49,9 @@
                             </div>
                         </div>
 
-                        <form action="{{ route('admin.work-orders.upload-license', $workOrder) }}" method="POST" enctype="multipart/form-data" id="licenseForm">
+                        <form action="{{ route('admin.work-orders.update-license', $workOrder) }}" method="POST" enctype="multipart/form-data" id="licenseForm">
                             @csrf
+                            @method('PUT')
                              <!-- شهادة التنسيق والمرفقات -->
                              <div class="card border-0 shadow-sm mb-4">
                                     <div class="card-header bg-warning text-dark">
@@ -77,6 +78,7 @@
                                                 <textarea class="form-control" name="coordination_certificate_notes" rows="3" 
                                                          placeholder="أدخل ملاحظات حول شهادة التنسيق">{{ old('coordination_certificate_notes', $license->coordination_certificate_notes ?? '') }}</textarea>
                                             </div>
+                                            
                                             <div class="col-12">
                                                 <label class="form-label">مرفق الخطابات والتعهدات</label>
                                                 <input type="file" class="form-control" name="letters_commitments_files[]" multiple accept=".pdf,.jpg,.jpeg,.png">
@@ -86,7 +88,32 @@
                                                             <i class="fas fa-eye"></i> عرض الخطابات والتعهدات الحالية
                                                         </a>
                                                     </div>
+                                                    
                                                 @endif
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label for="has_restriction" class="form-label">يوجد حظر؟</label>
+                                                <select class="form-select" name="has_restriction" id="has_restriction">
+                                                    <option value="0" {{ old('has_restriction', $license->has_restriction ?? 0) == 0 ? 'selected' : '' }}>لا</option>
+                                                    <option value="1" {{ old('has_restriction', $license->has_restriction ?? 0) == 1 ? 'selected' : '' }}>نعم</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-6" id="restriction_authority_field" style="display: none;">
+                                                <label for="restriction_authority" class="form-label">جهة الحظر</label>
+                                                <input type="text" class="form-control" id="restriction_authority" name="restriction_authority" 
+                                                       value="{{ old('restriction_authority', $license->restriction_authority ?? '') }}" 
+                                                       placeholder="اسم الجهة المسؤولة عن الحظر">
+                                            </div>
+                                            <div class="col-md-6" id="restriction_reason_field" style="display: none;">
+                                                <label for="restriction_reason" class="form-label">سبب الحظر</label>
+                                                <input type="text" class="form-control" id="restriction_reason" name="restriction_reason" 
+                                                       value="{{ old('restriction_reason', $license->restriction_reason ?? '') }}" 
+                                                       placeholder="أدخل سبب الحظر">
+                                            </div>
+                                            <div class="col-md-12" id="restriction_notes_field" style="display: none;">
+                                                <label for="restriction_notes" class="form-label">ملاحظات الحظر الإضافية</label>
+                                                <textarea class="form-control" id="restriction_notes" name="restriction_notes" rows="3" 
+                                                         placeholder="أدخل ملاحظات إضافية حول الحظر">{{ old('restriction_notes', $license->restriction_notes ?? '') }}</textarea>
                                             </div>
                                         </div>
                                     </div>
@@ -132,29 +159,29 @@
                                                 <input type="number" step="0.01" class="form-control" id="extension_value" name="extension_value" 
                                                        value="{{ old('extension_value', $license->extension_value ?? '') }}">
                                             </div>
-                                            <div class="col-md-6">
-                                                <label for="has_restriction" class="form-label">يوجد حظر؟</label>
-                                                <select class="form-select" name="has_restriction" id="has_restriction">
-                                                    <option value="0" {{ old('has_restriction', $license->has_restriction ?? 0) == 0 ? 'selected' : '' }}>لا</option>
-                                                    <option value="1" {{ old('has_restriction', $license->has_restriction ?? 0) == 1 ? 'selected' : '' }}>نعم</option>
-                                                </select>
+                                            <div class="col-md-4">
+                                                <label class="form-label">طول الحفر</label>
+                                                <div class="input-group">
+                                                    <input type="number" step="0.01" class="form-control" name="excavation_length"
+                                                           value="{{ old('excavation_length', $license->excavation_length ?? '') }}">
+                                                    <span class="input-group-text">متر</span>
+                                                </div>
                                             </div>
-                                            <div class="col-md-6" id="restriction_authority_field" style="display: none;">
-                                                <label for="restriction_authority" class="form-label">جهة الحظر</label>
-                                                <input type="text" class="form-control" id="restriction_authority" name="restriction_authority" 
-                                                       value="{{ old('restriction_authority', $license->restriction_authority ?? '') }}" 
-                                                       placeholder="اسم الجهة المسؤولة عن الحظر">
+                                            <div class="col-md-4">
+                                                <label class="form-label">عرض الحفر</label>
+                                                <div class="input-group">
+                                                    <input type="number" step="0.01" class="form-control" name="excavation_width"
+                                                           value="{{ old('excavation_width', $license->excavation_width ?? '') }}">
+                                                    <span class="input-group-text">متر</span>
+                                                </div>
                                             </div>
-                                            <div class="col-md-6" id="restriction_reason_field" style="display: none;">
-                                                <label for="restriction_reason" class="form-label">سبب الحظر</label>
-                                                <input type="text" class="form-control" id="restriction_reason" name="restriction_reason" 
-                                                       value="{{ old('restriction_reason', $license->restriction_reason ?? '') }}" 
-                                                       placeholder="أدخل سبب الحظر">
-                                            </div>
-                                            <div class="col-md-12" id="restriction_notes_field" style="display: none;">
-                                                <label for="restriction_notes" class="form-label">ملاحظات الحظر الإضافية</label>
-                                                <textarea class="form-control" id="restriction_notes" name="restriction_notes" rows="3" 
-                                                         placeholder="أدخل ملاحظات إضافية حول الحظر">{{ old('restriction_notes', $license->restriction_notes ?? '') }}</textarea>
+                                            <div class="col-md-4">
+                                                <label class="form-label">عمق الحفر</label>
+                                                <div class="input-group">
+                                                    <input type="number" step="0.01" class="form-control" name="excavation_depth"
+                                                           value="{{ old('excavation_depth', $license->excavation_depth ?? '') }}">
+                                                    <span class="input-group-text">متر</span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -379,6 +406,62 @@
                                     </div>
                                 </div>
 
+                                
+                            </div>
+
+                            <!-- قسم الإخلاءات -->
+                            <div id="evacuations-section" class="tab-section" style="display: none;">
+                                <div class="card border-0 shadow-sm">
+                                    <div class="card-header bg-warning text-dark">
+                                        <h4 class="mb-0 fs-5">
+                                            <i class="fas fa-truck-moving me-2"></i>
+                                            معلومات الإخلاءات
+                                        </h4>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row g-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label">تم الإخلاء؟</label>
+                                                <select class="form-select" name="is_evacuated" id="is_evacuated">
+                                                    <option value="0" {{ old('is_evacuated', $license->is_evacuated ?? 0) == 0 ? 'selected' : '' }}>لا</option>
+                                                    <option value="1" {{ old('is_evacuated', $license->is_evacuated ?? 0) == 1 ? 'selected' : '' }}>نعم</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">رقم الرخصة</label>
+                                                <input type="text" class="form-control" name="evac_license_number"
+                                                       value="{{ old('evac_license_number', $license->evac_license_number ?? '') }}">
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label">قيمة الرخصة</label>
+                                                <div class="input-group">
+                                                    <input type="number" step="0.01" class="form-control" name="evac_license_value"
+                                                           value="{{ old('evac_license_value', $license->evac_license_value ?? '') }}">
+                                                    <span class="input-group-text">ريال</span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">رقم سداد الرخصة</label>
+                                                <input type="text" class="form-control" name="evac_payment_number"
+                                                       value="{{ old('evac_payment_number', $license->evac_payment_number ?? '') }}">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">تاريخ الإخلاء</label>
+                                                <input type="date" class="form-control" name="evac_date"
+                                                       value="{{ old('evac_date', $license->evac_date ?? '') }}">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">مبلغ الإخلاء</label>
+                                                <input type="number" step="0.01" class="form-control" name="evac_amount"
+                                                       value="{{ old('evac_amount', $license->evac_amount ?? '') }}">
+                                            </div>
+                                            <div class="col-12">
+                                                <label class="form-label">مرفق الإخلاءات</label>
+                                                <input type="file" class="form-control" name="evacuations_files[]" multiple accept=".pdf,.jpg,.jpeg,.png">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                                 <!-- الجدول الأول للمختبر -->
                                 <div class="card border-0 shadow-sm mb-4">
                                     <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
@@ -473,58 +556,6 @@
                                                     <!-- سيتم إضافة الصفوف هنا ديناميكياً -->
                                                 </tbody>
                                             </table>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- قسم الإخلاءات -->
-                            <div id="evacuations-section" class="tab-section" style="display: none;">
-                                <div class="card border-0 shadow-sm">
-                                    <div class="card-header bg-warning text-dark">
-                                        <h4 class="mb-0 fs-5">
-                                            <i class="fas fa-truck-moving me-2"></i>
-                                            معلومات الإخلاءات
-                                        </h4>
-                                    </div>
-                                    <div class="card-body">
-                                        <div class="row g-3">
-                                            <div class="col-md-6">
-                                                <label class="form-label">تم الإخلاء؟</label>
-                                                <select class="form-select" name="is_evacuated" id="is_evacuated">
-                                                    <option value="0" {{ old('is_evacuated', $license->is_evacuated ?? 0) == 0 ? 'selected' : '' }}>لا</option>
-                                                    <option value="1" {{ old('is_evacuated', $license->is_evacuated ?? 0) == 1 ? 'selected' : '' }}>نعم</option>
-                                                </select>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <label class="form-label">رقم الرخصة</label>
-                                                <input type="text" class="form-control" name="evac_license_number"
-                                                       value="{{ old('evac_license_number', $license->evac_license_number ?? '') }}">
-                                            </div>
-                                            <div class="col-md-6">
-                                                <label class="form-label">قيمة الرخصة</label>
-                                                <input type="number" step="0.01" class="form-control" name="evac_license_value"
-                                                       value="{{ old('evac_license_value', $license->evac_license_value ?? '') }}">
-                                            </div>
-                                            <div class="col-md-6">
-                                                <label class="form-label">رقم سداد الرخصة</label>
-                                                <input type="text" class="form-control" name="evac_payment_number"
-                                                       value="{{ old('evac_payment_number', $license->evac_payment_number ?? '') }}">
-                                            </div>
-                                            <div class="col-md-6">
-                                                <label class="form-label">تاريخ الإخلاء</label>
-                                                <input type="date" class="form-control" name="evac_date"
-                                                       value="{{ old('evac_date', $license->evac_date ?? '') }}">
-                                            </div>
-                                            <div class="col-md-6">
-                                                <label class="form-label">مبلغ الإخلاء</label>
-                                                <input type="number" step="0.01" class="form-control" name="evac_amount"
-                                                       value="{{ old('evac_amount', $license->evac_amount ?? '') }}">
-                                            </div>
-                                            <div class="col-12">
-                                                <label class="form-label">مرفق الإخلاءات</label>
-                                                <input type="file" class="form-control" name="evacuations_files[]" multiple accept=".pdf,.jpg,.jpeg,.png">
-                                            </div>
                                         </div>
                                     </div>
                                 </div>

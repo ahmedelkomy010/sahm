@@ -36,16 +36,16 @@
                                         <td>{{ $label }}</td>
                                         <td>
                                             <div class="btn-group btn-group-sm w-100" role="group">
-                                                <input type="radio" class="btn-check" name="installations[{{ $key }}][status]" id="{{ $key }}_yes" value="yes" {{ old('installations.' . $key . '.status') == 'yes' ? 'checked' : '' }}>
+                                                <input type="radio" class="btn-check installation-status" name="installations[{{ $key }}][status]" id="{{ $key }}_yes" value="yes" {{ old('installations.' . $key . '.status', isset($workOrder->installations[$key]['status']) ? $workOrder->installations[$key]['status'] : '') == 'yes' ? 'checked' : '' }}>
                                                 <label class="btn btn-outline-success" for="{{ $key }}_yes">نعم</label>
-                                                <input type="radio" class="btn-check" name="installations[{{ $key }}][status]" id="{{ $key }}_no" value="no" {{ old('installations.' . $key . '.status') == 'no' ? 'checked' : '' }}>
+                                                <input type="radio" class="btn-check installation-status" name="installations[{{ $key }}][status]" id="{{ $key }}_no" value="no" {{ old('installations.' . $key . '.status', isset($workOrder->installations[$key]['status']) ? $workOrder->installations[$key]['status'] : '') == 'no' ? 'checked' : '' }}>
                                                 <label class="btn btn-outline-danger" for="{{ $key }}_no">لا</label>
-                                                <input type="radio" class="btn-check" name="installations[{{ $key }}][status]" id="{{ $key }}_na" value="na" {{ old('installations.' . $key . '.status') == 'na' ? 'checked' : '' }}>
+                                                <input type="radio" class="btn-check installation-status" name="installations[{{ $key }}][status]" id="{{ $key }}_na" value="na" {{ old('installations.' . $key . '.status', isset($workOrder->installations[$key]['status']) ? $workOrder->installations[$key]['status'] : '') == 'na' ? 'checked' : '' }}>
                                                 <label class="btn btn-outline-secondary" for="{{ $key }}_na">لا ينطبق</label>
                                             </div>
                                         </td>
                                         <td>
-                                            <input type="number" step="1" min="0" class="form-control form-control-sm" name="installations[{{ $key }}][quantity]" value="{{ old('installations.' . $key . '.quantity', '0') }}" placeholder="0" data-installation="{{ $key }}">
+                                            <input type="number" step="1" min="0" class="form-control form-control-sm installation-quantity" name="installations[{{ $key }}][quantity]" value="{{ old('installations.' . $key . '.quantity', isset($workOrder->installations[$key]['quantity']) ? $workOrder->installations[$key]['quantity'] : '0') }}" placeholder="0" data-installation="{{ $key }}">
                                         </td>
                                     </tr>
                                     @endforeach
@@ -56,6 +56,72 @@
                             <button type="submit" class="btn btn-primary px-4">حفظ بيانات التركيبات</button>
                         </div>
                     </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- جدول ملخص التركيبات -->
+        <div class="col-lg-6">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-gradient text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fas fa-clipboard-list me-2"></i>
+                            ملخص التركيبات
+                        </h5>
+                        <button type="button" class="btn btn-light btn-sm" onclick="printSummary()">
+                            <i class="fas fa-print me-1"></i>
+                            طباعة الملخص
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- إحصائيات سريعة -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4">
+                            <div class="card bg-primary text-white">
+                                <div class="card-body text-center p-3">
+                                    <i class="fas fa-check-circle fa-2x mb-2"></i>
+                                    <h3 class="mb-1" id="total-completed">0</h3>
+                                    <small>تم التركيب</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-danger text-white">
+                                <div class="card-body text-center p-3">
+                                    <i class="fas fa-times-circle fa-2x mb-2"></i>
+                                    <h3 class="mb-1" id="total-pending">0</h3>
+                                    <small>لم يتم التركيب</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-secondary text-white">
+                                <div class="card-body text-center p-3">
+                                    <i class="fas fa-minus-circle fa-2x mb-2"></i>
+                                    <h3 class="mb-1" id="total-na">0</h3>
+                                    <small>لا ينطبق</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- جدول الملخص -->
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover" id="summary-table">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th style="width: 40%">نوع التركيب</th>
+                                    <th style="width: 30%">الحالة</th>
+                                    <th style="width: 30%">العدد</th>
+                                </tr>
+                            </thead>
+                            <tbody id="summary-tbody">
+                                <!-- سيتم ملء البيانات تلقائياً بواسطة JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -250,6 +316,131 @@ document.addEventListener('DOMContentLoaded', function() {
             form.action = `/admin/work-orders/installations/images/${imageId}`;
         });
     });
+});
+
+// دالة تحديث ملخص التركيبات
+function updateInstallationsSummary() {
+    const tbody = document.getElementById('summary-tbody');
+    const totalCompleted = document.getElementById('total-completed');
+    const totalPending = document.getElementById('total-pending');
+    const totalNA = document.getElementById('total-na');
+    
+    if (!tbody) return;
+    
+    tbody.innerHTML = '';
+    let completed = 0;
+    let pending = 0;
+    let na = 0;
+    
+    // جمع البيانات من النموذج
+    document.querySelectorAll('tr').forEach(row => {
+        const label = row.querySelector('td')?.textContent?.trim();
+        if (!label) return;
+        
+        const status = row.querySelector('input[type="radio"]:checked')?.value;
+        const quantity = parseInt(row.querySelector('input[type="number"]')?.value || '0');
+        
+        if (status) {
+            // إضافة صف للجدول
+            const newRow = tbody.insertRow();
+            newRow.innerHTML = `
+                <td>${label}</td>
+                <td class="text-center">
+                    ${getStatusBadge(status)}
+                </td>
+                <td class="text-center">
+                    <span class="badge bg-primary rounded-pill">${quantity}</span>
+                </td>
+            `;
+            
+            // تحديث الإحصائيات
+            if (status === 'yes') completed++;
+            else if (status === 'no') pending++;
+            else if (status === 'na') na++;
+        }
+    });
+    
+    // تحديث الإحصائيات
+    totalCompleted.textContent = completed;
+    totalPending.textContent = pending;
+    totalNA.textContent = na;
+    
+    // إضافة رسالة إذا لم تكن هناك بيانات
+    if (tbody.children.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="3" class="text-center text-muted py-4">
+                    <i class="fas fa-info-circle fa-2x mb-2"></i><br>
+                    لم يتم إدخال أي بيانات بعد
+                </td>
+            </tr>
+        `;
+    }
+}
+
+// دالة إرجاع شارة الحالة
+function getStatusBadge(status) {
+    switch(status) {
+        case 'yes':
+            return '<span class="badge bg-success">تم التركيب</span>';
+        case 'no':
+            return '<span class="badge bg-danger">لم يتم التركيب</span>';
+        case 'na':
+            return '<span class="badge bg-secondary">لا ينطبق</span>';
+        default:
+            return '';
+    }
+}
+
+// دالة طباعة الملخص
+function printSummary() {
+    const printWindow = window.open('', '', 'width=800,height=600');
+    printWindow.document.write(`
+        <html dir="rtl">
+            <head>
+                <title>ملخص التركيبات</title>
+                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+                <style>
+                    body { font-family: Arial, sans-serif; }
+                    .table th, .table td { padding: 8px; }
+                    @media print {
+                        .no-print { display: none; }
+                    }
+                </style>
+            </head>
+            <body class="p-4">
+                <div class="text-center mb-4">
+                    <h3>ملخص التركيبات</h3>
+                    <p class="text-muted">تاريخ الطباعة: ${new Date().toLocaleDateString('ar-SA')}</p>
+                </div>
+                ${document.getElementById('summary-table').outerHTML}
+                <div class="row mt-4">
+                    <div class="col-4 text-center">
+                        <h5>تم التركيب: ${document.getElementById('total-completed').textContent}</h5>
+                    </div>
+                    <div class="col-4 text-center">
+                        <h5>لم يتم التركيب: ${document.getElementById('total-pending').textContent}</h5>
+                    </div>
+                    <div class="col-4 text-center">
+                        <h5>لا ينطبق: ${document.getElementById('total-na').textContent}</h5>
+                    </div>
+                </div>
+                <button class="btn btn-primary mt-4 no-print" onclick="window.print()">طباعة</button>
+            </body>
+        </html>
+    `);
+    printWindow.document.close();
+}
+
+// إضافة مستمعي الأحداث
+document.addEventListener('DOMContentLoaded', function() {
+    // تحديث الملخص عند تغيير أي حقل
+    document.querySelectorAll('.installation-status, .installation-quantity').forEach(input => {
+        input.addEventListener('change', updateInstallationsSummary);
+    });
+    
+    // تحديث أولي للملخص
+    updateInstallationsSummary();
 });
 </script>
 @endpush

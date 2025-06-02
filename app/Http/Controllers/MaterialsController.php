@@ -58,10 +58,17 @@ class MaterialsController extends Controller
             'gate_pass_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
             'store_in_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
             'store_out_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
+            'ddo_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
         ]);
 
         // التعامل مع الملفات
-        $data = $request->except(['check_in_file', 'gate_pass_file', 'store_in_file', 'store_out_file']);
+        $data = $request->except(['check_in_file', 'gate_pass_file', 'store_in_file', 'store_out_file', 'ddo_file']);
+        
+        // التأكد من أن القيم الرقمية لا تكون null
+        $data['planned_quantity'] = $data['planned_quantity'] ?? 0;
+        $data['actual_quantity'] = $data['actual_quantity'] ?? 0;
+        $data['spent_quantity'] = $data['spent_quantity'] ?? 0;
+        $data['executed_site_quantity'] = $data['executed_site_quantity'] ?? 0;
         
         // إذا كان الوصف فارغًا، نحاول جلب الوصف من جدول المواد المرجعية
         if (empty($data['description'])) {
@@ -76,8 +83,8 @@ class MaterialsController extends Controller
         }
         
         // حساب الفرق بين الكمية المخططة والكمية الفعلية
-        $planned = $data['planned_quantity'] ?? 0;
-        $actual = $data['actual_quantity'] ?? 0;
+        $planned = $data['planned_quantity'];
+        $actual = $data['actual_quantity'];
         $data['difference'] = $planned - $actual;
 
         $material = Material::create($data);
@@ -132,13 +139,32 @@ class MaterialsController extends Controller
             'gate_pass_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
             'store_in_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
             'store_out_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
+            'ddo_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
         ]);
 
-        $data = $request->except(['check_in_file', 'gate_pass_file', 'store_in_file', 'store_out_file']);
+        $data = $request->except(['check_in_file', 'gate_pass_file', 'store_in_file', 'store_out_file', 'ddo_file']);
 
+        // التأكد من أن القيم الرقمية لا تكون null
+        $data['planned_quantity'] = $data['planned_quantity'] ?? 0;
+        $data['actual_quantity'] = $data['actual_quantity'] ?? 0;
+        $data['spent_quantity'] = $data['spent_quantity'] ?? 0;
+        $data['executed_site_quantity'] = $data['executed_site_quantity'] ?? 0;
+        
+        // إذا كان الوصف فارغًا، نحاول جلب الوصف من جدول المواد المرجعية
+        if (empty($data['description'])) {
+            $referenceMaterial = ReferenceMaterial::where('code', $data['code'])->first();
+            if ($referenceMaterial) {
+                $data['description'] = $referenceMaterial->description;
+            } else {
+                return redirect()->back()
+                    ->withInput()
+                    ->withErrors(['description' => 'يرجى إدخال وصف المادة أو التأكد من وجود الكود في جدول المواد المرجعية']);
+            }
+        }
+        
         // حساب الفرق بين الكمية المخططة والكمية الفعلية
-        $planned = $data['planned_quantity'] ?? 0;
-        $actual = $data['actual_quantity'] ?? 0;
+        $planned = $data['planned_quantity'];
+        $actual = $data['actual_quantity'];
         $data['difference'] = $planned - $actual;
 
         $material->update($data);
@@ -224,7 +250,7 @@ class MaterialsController extends Controller
      */
     private function handleFileUploads(Request $request, Material $material, $isUpdate = false)
     {
-        $files = ['check_in_file', 'gate_pass_file', 'store_in_file', 'store_out_file'];
+        $files = ['check_in_file', 'gate_pass_file', 'store_in_file', 'store_out_file', 'ddo_file'];
         
         foreach ($files as $fileField) {
             if ($request->hasFile($fileField)) {

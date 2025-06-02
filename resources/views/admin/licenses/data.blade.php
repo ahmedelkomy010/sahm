@@ -2,6 +2,23 @@
 
 @section('content')
 <div class="container-fluid py-4">
+    <!-- عرض رسائل النجاح والخطأ -->
+    @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+            <i class="fas fa-check-circle me-2"></i>
+            {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i>
+            {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
     <div class="row">
         <div class="col-12">
             <div class="card shadow-lg border-0">
@@ -12,7 +29,7 @@
                             بيانات إدارة الجودة والرخص
                         </h3>
                         <div class="d-flex gap-2">
-                            <button type="button" class="btn btn-light btn-sm" onclick="exportAllData()">
+                            <button type="button" class="btn btn-light btn-sm" onclick="exportToExcel()">
                                 <i class="fas fa-file-excel"></i> تصدير Excel
                             </button>
                             <button type="button" class="btn btn-info btn-sm" onclick="printReport()">
@@ -27,200 +44,193 @@
                     <div class="row p-3 bg-light border-bottom">
                         <div class="col-md-3">
                             <label class="form-label">البحث في جميع الحقول</label>
-                            <input type="text" class="form-control" id="globalSearch" placeholder="ابحث في أي حقل...">
+                            <input type="text" class="form-control" id="searchInput" placeholder="ابحث هنا...">
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label">فلتر حسب نوع الرخصة</label>
+                            <label class="form-label">نوع الرخصة</label>
                             <select class="form-select" id="licenseTypeFilter">
-                                <option value="">جميع الأنواع</option>
+                                <option value="">الكل</option>
                                 <option value="مشروع">مشروع</option>
                                 <option value="طوارئ">طوارئ</option>
                                 <option value="عادي">عادي</option>
                             </select>
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label">فلتر حسب حالة الحظر</label>
+                            <label class="form-label">حالة الحظر</label>
                             <select class="form-select" id="restrictionFilter">
-                                <option value="">جميع الحالات</option>
+                                <option value="">الكل</option>
                                 <option value="1">يوجد حظر</option>
                                 <option value="0">لا يوجد حظر</option>
                             </select>
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label">فلتر حسب حالة الإخلاء</label>
+                            <label class="form-label">حالة الإخلاء</label>
                             <select class="form-select" id="evacuationFilter">
-                                <option value="">جميع الحالات</option>
+                                <option value="">الكل</option>
                                 <option value="1">تم الإخلاء</option>
                                 <option value="0">لم يتم الإخلاء</option>
                             </select>
                         </div>
                     </div>
 
-                    <!-- الجدول الرئيسي -->
+                    <!-- جدول البيانات -->
                     <div class="table-responsive">
-                        <table class="table table-striped table-hover mb-0" id="licensesDataTable">
-                            <thead class="table-dark sticky-top">
+                        <table class="table table-striped table-hover mb-0" id="licensesTable">
+                            <thead class="table-dark">
                                 <tr>
-                                    <th style="min-width: 80px;">#</th>
-                                    <th style="min-width: 150px;">أمر العمل</th>
-                                    <th style="min-width: 120px;">رقم الرخصة</th>
-                                    <th style="min-width: 100px;">تاريخ الرخصة</th>
-                                    <th style="min-width: 100px;">نوع الرخصة</th>
-                                    <th style="min-width: 120px;">قيمة الرخصة</th>
-                                    <th style="min-width: 120px;">قيمة التمديدات</th>
-                                    <th style="min-width: 100px;">حالة الحظر</th>
-                                    <th style="min-width: 150px;">جهة الحظر</th>
-                                    <th style="min-width: 100px;">تاريخ البداية</th>
-                                    <th style="min-width: 100px;">تاريخ النهاية</th>
-                                    <th style="min-width: 80px;">المدة</th>
-                                    <th style="min-width: 100px;">حالة الإخلاء</th>
-                                    <th style="min-width: 120px;">رقم رخصة الإخلاء</th>
-                                    <th style="min-width: 120px;">قيمة الإخلاء</th>
-                                    <th style="min-width: 100px;">تاريخ الإخلاء</th>
-                                    <th style="min-width: 150px;">رقم رخصة المخالفة</th>
-                                    <th style="min-width: 120px;">قيمة المخالفة</th>
-                                    <th style="min-width: 100px;">تاريخ المخالفة</th>
-                                    <th style="min-width: 120px;">موعد سداد المخالفة</th>
-                                    <th style="min-width: 200px;">ملاحظات</th>
-                                    <th style="min-width: 100px;">إجراءات</th>
+                                    <th>#</th>
+                                    <th>رقم أمر العمل</th>
+                                    <th>رقم الرخصة</th>
+                                    <th>نوع الرخصة</th>
+                                    <th>تاريخ الرخصة</th>
+                                    <th>قيمة الرخصة</th>
+                                    <th>قيمة التمديد</th>
+                                    <th>حالة الحظر</th>
+                                    <th>جهة الحظر</th>
+                                    <th>تاريخ البداية</th>
+                                    <th>تاريخ النهاية</th>
+                                    <th>طول الحفر</th>
+                                    <th>عرض الحفر</th>
+                                    <th>عمق الحفر</th>
+                                    <th>حالة الإخلاء</th>
+                                    <th>رقم رخصة الإخلاء</th>
+                                    <th>قيمة الإخلاء</th>
+                                    <th>الاختبارات</th>
+                                    <th>الإجراءات</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse($licenses as $index => $license)
-                                <tr>
-                                    <td>{{ $index + 1 }}</td>
-                                    <td>
-                                        @if($license->workOrder)
-                                            <a href="{{ route('admin.work-orders.show', $license->workOrder) }}" 
-                                               class="text-decoration-none" target="_blank">
-                                                {{ $license->workOrder->order_number ?? 'غير محدد' }}
-                                            </a>
-                                        @else
-                                            <span class="text-muted">غير مرتبط</span>
-                                        @endif
-                                    </td>
-                                    <td>{{ $license->license_number ?? '-' }}</td>
-                                    <td>{{ $license->license_date ? $license->license_date->format('Y-m-d') : '-' }}</td>
-                                    <td>
-                                        @if($license->license_type)
-                                            <span class="badge bg-info">{{ $license->license_type }}</span>
-                                        @else
-                                            <span class="text-muted">-</span>
-                                        @endif
-                                    </td>
-                                    <td>{{ number_format($license->license_value ?? 0, 2) }}</td>
-                                    <td>{{ number_format($license->extension_value ?? 0, 2) }}</td>
-                                    <td>
-                                        @if($license->has_restriction)
-                                            <span class="badge bg-danger">يوجد حظر</span>
-                                        @else
-                                            <span class="badge bg-success">لا يوجد حظر</span>
-                                        @endif
-                                    </td>
-                                    <td>{{ $license->restriction_authority ?? '-' }}</td>
-                                    <td>{{ $license->license_start_date ? $license->license_start_date->format('Y-m-d') : '-' }}</td>
-                                    <td>{{ $license->license_end_date ? $license->license_end_date->format('Y-m-d') : '-' }}</td>
-                                    <td>
-                                        @if($license->license_start_date && $license->license_end_date)
-                                            @php
-                                                $days = $license->license_start_date->diffInDays($license->license_end_date);
-                                            @endphp
-                                            <span class="badge bg-primary">{{ $days }} يوم</span>
-                                        @else
-                                            <span class="text-muted">-</span>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        @if($license->is_evacuated)
-                                            <span class="badge bg-warning">تم الإخلاء</span>
-                                        @else
-                                            <span class="badge bg-secondary">لم يتم الإخلاء</span>
-                                        @endif
-                                    </td>
-                                    <td>{{ $license->evac_license_number ?? '-' }}</td>
-                                    <td>{{ number_format($license->evac_license_value ?? 0, 2) }}</td>
-                                    <td>{{ $license->evac_date ? $license->evac_date->format('Y-m-d') : '-' }}</td>
-                                    <td>{{ $license->violation_license_number ?? '-' }}</td>
-                                    <td>{{ number_format($license->violation_license_value ?? 0, 2) }}</td>
-                                    <td>{{ $license->violation_license_date ? $license->violation_license_date->format('Y-m-d') : '-' }}</td>
-                                    <td>{{ $license->violation_due_date ? $license->violation_due_date->format('Y-m-d') : '-' }}</td>
-                                    <td>
-                                        @if($license->notes)
-                                            <span class="text-truncate d-inline-block" style="max-width: 200px;" 
-                                                  title="{{ $license->notes }}">
-                                                {{ Str::limit($license->notes, 50) }}
-                                            </span>
-                                        @else
-                                            <span class="text-muted">-</span>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        <div class="btn-group" role="group">
-                                            <a href="{{ route('admin.licenses.show', $license) }}" 
-                                               class="btn btn-sm btn-outline-info" title="عرض التفاصيل">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-                                            <a href="{{ route('admin.licenses.edit', $license) }}" 
-                                               class="btn btn-sm btn-outline-primary" title="تعديل">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
+                                @forelse($licenses as $license)
+                                    <tr>
+                                        <td>{{ $loop->iteration }}</td>
+                                        <td>
                                             @if($license->workOrder)
-                                                <a href="{{ route('admin.work-orders.license', $license->workOrder) }}" 
-                                                   class="btn btn-sm btn-outline-success" title="إدارة الجودة">
-                                                    <i class="fas fa-flask"></i>
+                                                <a href="{{ route('admin.work-orders.show', $license->workOrder) }}" class="text-primary">
+                                                    {{ $license->workOrder->order_number }}
                                                 </a>
+                                            @else
+                                                -
                                             @endif
-                                        </div>
-                                    </td>
-                                </tr>
+                                        </td>
+                                        <td>{{ $license->license_number ?? '-' }}</td>
+                                        <td>
+                                            <span class="badge bg-info">{{ $license->license_type ?? '-' }}</span>
+                                        </td>
+                                        <td>{{ $license->license_date ? date('Y-m-d', strtotime($license->license_date)) : '-' }}</td>
+                                        <td>{{ number_format($license->license_value ?? 0, 2) }} ريال</td>
+                                        <td>{{ number_format($license->extension_value ?? 0, 2) }} ريال</td>
+                                        <td>
+                                            @if($license->has_restriction)
+                                                <span class="badge bg-danger">يوجد حظر</span>
+                                            @else
+                                                <span class="badge bg-success">لا يوجد حظر</span>
+                                            @endif
+                                        </td>
+                                        <td>{{ $license->restriction_authority ?? '-' }}</td>
+                                        <td>{{ $license->license_start_date ? date('Y-m-d', strtotime($license->license_start_date)) : '-' }}</td>
+                                        <td>{{ $license->license_end_date ? date('Y-m-d', strtotime($license->license_end_date)) : '-' }}</td>
+                                        <td>{{ number_format($license->excavation_length ?? 0, 2) }} م</td>
+                                        <td>{{ number_format($license->excavation_width ?? 0, 2) }} م</td>
+                                        <td>{{ number_format($license->excavation_depth ?? 0, 2) }} م</td>
+                                        <td>
+                                            @if($license->is_evacuated)
+                                                <span class="badge bg-warning">تم الإخلاء</span>
+                                            @else
+                                                <span class="badge bg-secondary">لم يتم الإخلاء</span>
+                                            @endif
+                                        </td>
+                                        <td>{{ $license->evac_license_number ?? '-' }}</td>
+                                        <td>{{ number_format($license->evac_license_value ?? 0, 2) }} ريال</td>
+                                        <td>
+                                            <div class="d-flex flex-column gap-1">
+                                                @if($license->has_depth_test)
+                                                    <span class="badge bg-success">اختبار العمق ✓</span>
+                                                @endif
+                                                @if($license->has_soil_compaction_test)
+                                                    <span class="badge bg-success">اختبار دمك التربة ✓</span>
+                                                @endif
+                                                @if($license->has_rc1_mc1_test)
+                                                    <span class="badge bg-success">اختبار RC1/MC1 ✓</span>
+                                                @endif
+                                                @if($license->has_asphalt_test)
+                                                    <span class="badge bg-success">اختبار الأسفلت ✓</span>
+                                                @endif
+                                                @if($license->has_soil_test)
+                                                    <span class="badge bg-success">اختبار التربة ✓</span>
+                                                @endif
+                                                @if($license->has_interlock_test)
+                                                    <span class="badge bg-success">اختبار الانترلوك ✓</span>
+                                                @endif
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <a href="{{ route('admin.licenses.show', $license) }}" class="btn btn-sm btn-info">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a href="{{ route('admin.licenses.edit', $license) }}" class="btn btn-sm btn-primary">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                @if($license->workOrder)
+                                                    <a href="{{ route('admin.work-orders.license', $license->workOrder) }}" class="btn btn-sm btn-success">
+                                                        <i class="fas fa-flask"></i>
+                                                    </a>
+                                                @endif
+                                            </div>
+                                        </td>
+                                    </tr>
                                 @empty
-                                <tr>
-                                    <td colspan="22" class="text-center py-4">
-                                        <div class="text-muted">
-                                            <i class="fas fa-inbox fa-2x mb-2"></i>
-                                            <p>لا توجد بيانات رخص حالياً</p>
-                                        </div>
-                                    </td>
-                                </tr>
+                                    <tr>
+                                        <td colspan="19" class="text-center py-4">
+                                            <div class="text-muted">
+                                                <i class="fas fa-inbox fa-2x mb-2"></i>
+                                                <p>لا توجد بيانات رخص مسجلة</p>
+                                            </div>
+                                        </td>
+                                    </tr>
                                 @endforelse
                             </tbody>
                         </table>
                     </div>
 
-                    <!-- إحصائيات سريعة -->
+                    <!-- ملخص الإحصائيات -->
                     <div class="row p-3 bg-light border-top">
                         <div class="col-md-3">
-                            <div class="card border-0 bg-primary text-white">
-                                <div class="card-body p-3 text-center">
+                            <div class="card bg-primary text-white">
+                                <div class="card-body text-center p-3">
                                     <h5 class="mb-1">{{ $licenses->count() }}</h5>
                                     <small>إجمالي الرخص</small>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-3">
-                            <div class="card border-0 bg-danger text-white">
-                                <div class="card-body p-3 text-center">
+                            <div class="card bg-danger text-white">
+                                <div class="card-body text-center p-3">
                                     <h5 class="mb-1">{{ $licenses->where('has_restriction', true)->count() }}</h5>
-                                    <small>رخص محظورة</small>
+                                    <small>الرخص المحظورة</small>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-3">
-                            <div class="card border-0 bg-warning text-white">
-                                <div class="card-body p-3 text-center">
+                            <div class="card bg-warning text-dark">
+                                <div class="card-body text-center p-3">
                                     <h5 class="mb-1">{{ $licenses->where('is_evacuated', true)->count() }}</h5>
-                                    <small>رخص مخلاة</small>
+                                    <small>الرخص المخلاة</small>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-3">
-                            <div class="card border-0 bg-success text-white">
-                                <div class="card-body p-3 text-center">
-                                    <h5 class="mb-1">{{ number_format($licenses->sum('license_value'), 0) }}</h5>
+                            <div class="card bg-success text-white">
+                                <div class="card-body text-center p-3">
+                                    <h5 class="mb-1">{{ number_format($licenses->sum('license_value'), 2) }}</h5>
                                     <small>إجمالي قيمة الرخص</small>
                                 </div>
                             </div>
                         </div>
+                    </div>
+
+                    <div class="d-flex justify-content-center mt-4">
+                        {{ $licenses->links() }}
                     </div>
                 </div>
             </div>
@@ -230,172 +240,92 @@
 
 @push('scripts')
 <script>
+// تفعيل البحث والفلترة
 document.addEventListener('DOMContentLoaded', function() {
-    // تفعيل فلاتر البحث
-    const globalSearch = document.getElementById('globalSearch');
+    const searchInput = document.getElementById('searchInput');
     const licenseTypeFilter = document.getElementById('licenseTypeFilter');
     const restrictionFilter = document.getElementById('restrictionFilter');
     const evacuationFilter = document.getElementById('evacuationFilter');
-    const table = document.getElementById('licensesDataTable');
-    const tbody = table.querySelector('tbody');
-    const rows = Array.from(tbody.querySelectorAll('tr'));
+    const table = document.getElementById('licensesTable');
+    const rows = table.getElementsByTagName('tr');
 
     function filterTable() {
-        const globalTerm = globalSearch.value.toLowerCase();
+        const searchText = searchInput.value.toLowerCase();
         const licenseType = licenseTypeFilter.value;
         const restriction = restrictionFilter.value;
         const evacuation = evacuationFilter.value;
 
-        rows.forEach(row => {
-            if (row.children.length === 1) return; // تجاهل صف "لا توجد بيانات"
+        for (let i = 1; i < rows.length; i++) {
+            const row = rows[i];
+            const cells = row.getElementsByTagName('td');
+            if (cells.length === 0) continue;
 
-            const text = row.textContent.toLowerCase();
-            const rowLicenseType = row.children[4].textContent.trim();
-            const rowRestriction = row.children[7].textContent.includes('يوجد حظر') ? '1' : '0';
-            const rowEvacuation = row.children[12].textContent.includes('تم الإخلاء') ? '1' : '0';
+            const rowText = row.textContent.toLowerCase();
+            const rowLicenseType = cells[3].textContent.trim();
+            const rowRestriction = cells[7].textContent.includes('يوجد حظر') ? '1' : '0';
+            const rowEvacuation = cells[14].textContent.includes('تم الإخلاء') ? '1' : '0';
 
-            const matchesGlobal = globalTerm === '' || text.includes(globalTerm);
+            const matchesSearch = searchText === '' || rowText.includes(searchText);
             const matchesType = licenseType === '' || rowLicenseType.includes(licenseType);
             const matchesRestriction = restriction === '' || rowRestriction === restriction;
             const matchesEvacuation = evacuation === '' || rowEvacuation === evacuation;
 
-            if (matchesGlobal && matchesType && matchesRestriction && matchesEvacuation) {
-                row.style.display = '';
-            } else {
-                row.style.display = 'none';
-            }
-        });
+            row.style.display = 
+                matchesSearch && matchesType && matchesRestriction && matchesEvacuation
+                ? '' 
+                : 'none';
+        }
     }
 
-    globalSearch.addEventListener('input', filterTable);
+    searchInput.addEventListener('input', filterTable);
     licenseTypeFilter.addEventListener('change', filterTable);
     restrictionFilter.addEventListener('change', filterTable);
     evacuationFilter.addEventListener('change', filterTable);
 });
 
-// تصدير البيانات إلى Excel
-function exportAllData() {
-    const table = document.getElementById('licensesDataTable');
-    const rows = Array.from(table.querySelectorAll('tr'));
-    const csvData = [];
-
-    rows.forEach(row => {
-        if (row.style.display !== 'none') {
-            const cols = Array.from(row.querySelectorAll('th, td'));
-            const rowData = cols.slice(0, -1).map(col => {
-                // تنظيف النص من الأيقونات والعناصر غير المرغوبة
-                let text = col.textContent.trim();
-                text = text.replace(/\s+/g, ' ');
-                return `"${text}"`;
-            });
-            csvData.push(rowData.join(','));
-        }
-    });
-
-    const csv = csvData.join('\n');
-    const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = 'بيانات_الجودة_والرخص_' + new Date().toISOString().slice(0, 10) + '.csv';
-    link.click();
+// دالة تصدير البيانات إلى Excel
+function exportToExcel() {
+    const table = document.getElementById('licensesTable');
+    const wb = XLSX.utils.table_to_book(table, { sheet: "بيانات الرخص" });
+    XLSX.writeFile(wb, 'بيانات_الرخص_' + new Date().toISOString().slice(0, 10) + '.xlsx');
 }
 
-// طباعة التقرير
+// دالة طباعة التقرير
 function printReport() {
-    const printContent = document.querySelector('.card').innerHTML;
-    const originalContent = document.body.innerHTML;
-    
-    document.body.innerHTML = `
-        <div style="direction: rtl; font-family: Arial, sans-serif;">
-            <h2 style="text-align: center; margin-bottom: 30px;">تقرير بيانات إدارة الجودة والرخص</h2>
-            <p style="text-align: center; margin-bottom: 30px;">تاريخ التقرير: ${new Date().toLocaleDateString('ar-SA')}</p>
-            ${printContent}
-        </div>
-    `;
-    
     window.print();
-    document.body.innerHTML = originalContent;
-    location.reload();
 }
 </script>
 @endpush
 
 <style>
 .bg-gradient-primary {
-    background: linear-gradient(135deg, #1976D2, #2196F3, #42A5F5);
-}
-
-.table {
-    font-size: 0.875rem;
+    background: linear-gradient(135deg, #1976D2, #2196F3);
 }
 
 .table th {
-    background: linear-gradient(45deg, #212529, #495057) !important;
-    color: white !important;
-    border: none;
-    font-weight: 600;
-    text-align: center;
-    vertical-align: middle;
     white-space: nowrap;
-}
-
-.table tbody tr:hover {
-    background-color: #f8f9fa;
-    transform: scale(1.01);
-    transition: all 0.3s ease;
-}
-
-.sticky-top {
-    position: sticky;
-    top: 0;
-    z-index: 10;
+    background-color: #343a40 !important;
 }
 
 .badge {
-    font-size: 0.75rem;
+    font-size: 0.8rem;
 }
 
 .btn-group .btn {
-    margin: 0 1px;
-}
-
-.card {
-    border-radius: 1rem;
-    overflow: hidden;
-}
-
-.card-header {
-    border-radius: 1rem 1rem 0 0 !important;
+    padding: 0.25rem 0.5rem;
 }
 
 @media print {
-    .btn, .form-control, .form-select, .card-header .d-flex > div:last-child {
+    .btn-group, .card-header .btn, .row.p-3.bg-light {
         display: none !important;
     }
     
-    .card {
-        box-shadow: none !important;
-        border: 1px solid #ccc !important;
-    }
-    
     .table {
-        font-size: 10px !important;
+        font-size: 12px;
     }
     
-    .table th, .table td {
-        padding: 4px !important;
-        border: 1px solid #000 !important;
-    }
-}
-
-@media (max-width: 768px) {
-    .table {
-        font-size: 0.75rem;
-    }
-    
-    .btn-group .btn {
-        padding: 0.25rem 0.375rem;
-        font-size: 0.75rem;
+    .badge {
+        border: 1px solid #000;
     }
 }
 </style>

@@ -45,6 +45,18 @@ return new class extends Migration
                 $table->decimal('evac_license_value', 10, 2)->nullable()->after('evac_license_number');
             }
             
+            if (!Schema::hasColumn('licenses', 'excavation_length')) {
+                $table->decimal('excavation_length', 10, 2)->nullable()->after('evac_license_value')->comment('طول الحفر بالمتر');
+            }
+            
+            if (!Schema::hasColumn('licenses', 'excavation_width')) {
+                $table->decimal('excavation_width', 10, 2)->nullable()->after('excavation_length')->comment('عرض الحفر بالمتر');
+            }
+            
+            if (!Schema::hasColumn('licenses', 'excavation_depth')) {
+                $table->decimal('excavation_depth', 10, 2)->nullable()->after('excavation_width')->comment('عمق الحفر بالمتر');
+            }
+            
             if (!Schema::hasColumn('licenses', 'evac_payment_number')) {
                 $table->string('evac_payment_number')->nullable()->after('evac_license_value');
             }
@@ -111,6 +123,9 @@ return new class extends Migration
                 'is_evacuated',
                 'evac_license_number',
                 'evac_license_value',
+                'excavation_length',
+                'excavation_width',
+                'excavation_depth',
                 'evac_payment_number',
                 'evac_date',
                 'evac_amount',
