@@ -76,7 +76,7 @@
                                             <div class="col-md-6">
                                                 <label class="form-label">ملاحظات شهادة التنسيق</label>
                                                 <textarea class="form-control" name="coordination_certificate_notes" rows="3" 
-                                                         placeholder="أدخل ملاحظات حول شهادة التنسيق">{{ old('coordination_certificate_notes', $license->coordination_certificate_notes ?? '') }}</textarea>
+                                                         placeholder=" ملاحظات شهادة التنسيق">{{ old('coordination_certificate_notes', $license->coordination_certificate_notes ?? '') }}</textarea>
                                             </div>
                                             
                                             <div class="col-12">
@@ -104,17 +104,7 @@
                                                        value="{{ old('restriction_authority', $license->restriction_authority ?? '') }}" 
                                                        placeholder="اسم الجهة المسؤولة عن الحظر">
                                             </div>
-                                            <div class="col-md-6" id="restriction_reason_field" style="display: none;">
-                                                <label for="restriction_reason" class="form-label">سبب الحظر</label>
-                                                <input type="text" class="form-control" id="restriction_reason" name="restriction_reason" 
-                                                       value="{{ old('restriction_reason', $license->restriction_reason ?? '') }}" 
-                                                       placeholder="أدخل سبب الحظر">
-                                            </div>
-                                            <div class="col-md-12" id="restriction_notes_field" style="display: none;">
-                                                <label for="restriction_notes" class="form-label">ملاحظات الحظر الإضافية</label>
-                                                <textarea class="form-control" id="restriction_notes" name="restriction_notes" rows="3" 
-                                                         placeholder="أدخل ملاحظات إضافية حول الحظر">{{ old('restriction_notes', $license->restriction_notes ?? '') }}</textarea>
-                                            </div>
+                                            
                                         </div>
                                     </div>
                                 </div>
@@ -224,6 +214,7 @@
                                                 <input type="date" class="form-control" name="extension_end_date" id="extension_end_date"
                                                        value="{{ old('extension_end_date', $license->license_extension_end_date ?? '') }}">
                                             </div>
+                                            <input type="hidden" name="license_alert_days" value="30">
                                             <div class="col-md-4 d-flex align-items-end">
                                                 <div class="alert alert-warning w-100 mb-0" id="extension_days_counter">
                                                     <i class="fas fa-clock me-2"></i>
@@ -462,7 +453,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <!-- الجدول الأول للمختبر -->
+                                <!-- جدول الفسح والاختبارات الأول -->
                                 <div class="card border-0 shadow-sm mb-4">
                                     <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
                                         <h4 class="mb-0 fs-5">
@@ -472,12 +463,6 @@
                                         <div class="btn-group" role="group">
                                             <button type="button" class="btn btn-light btn-sm" onclick="addRowToTable1()">
                                                 <i class="fas fa-plus"></i> إضافة صف
-                                            </button>
-                                            <button type="button" class="btn btn-success btn-sm" onclick="importExcelTable1()">
-                                                <i class="fas fa-file-excel"></i> استيراد Excel
-                                            </button>
-                                            <button type="button" class="btn btn-warning btn-sm" onclick="exportExcelTable1()">
-                                                <i class="fas fa-download"></i> تصدير Excel
                                             </button>
                                         </div>
                                     </div>
@@ -501,7 +486,28 @@
                                                     </tr>
                                                 </thead>
                                                 <tbody id="labTable1Body">
-                                                    <!-- سيتم إضافة الصفوف هنا ديناميكياً -->
+                                                    @if(isset($license) && !empty($license->lab_table1_data))
+                                                        @foreach($license->lab_table1_data as $index => $row)
+                                                            <tr>
+                                                                <td><input type="text" class="form-control" name="lab_table1[{{ $index }}][clearance_number]" value="{{ $row['clearance_number'] ?? '' }}"></td>
+                                                                <td><input type="date" class="form-control" name="lab_table1[{{ $index }}][clearance_date]" value="{{ $row['clearance_date'] ?? '' }}"></td>
+                                                                <td><input type="number" step="0.01" class="form-control" name="lab_table1[{{ $index }}][length]" value="{{ $row['length'] ?? '' }}"></td>
+                                                                <td><input type="text" class="form-control" name="lab_table1[{{ $index }}][street_type]" value="{{ $row['street_type'] ?? '' }}"></td>
+                                                                <td><input type="checkbox" class="form-check-input" name="lab_table1[{{ $index }}][is_dirt]" value="1" {{ isset($row['is_dirt']) && $row['is_dirt'] ? 'checked' : '' }}></td>
+                                                                <td><input type="checkbox" class="form-check-input" name="lab_table1[{{ $index }}][is_asphalt]" value="1" {{ isset($row['is_asphalt']) && $row['is_asphalt'] ? 'checked' : '' }}></td>
+                                                                <td><input type="checkbox" class="form-check-input" name="lab_table1[{{ $index }}][is_tile]" value="1" {{ isset($row['is_tile']) && $row['is_tile'] ? 'checked' : '' }}></td>
+                                                                <td><input type="checkbox" class="form-check-input" name="lab_table1[{{ $index }}][is_soil]" value="1" {{ isset($row['is_soil']) && $row['is_soil'] ? 'checked' : '' }}></td>
+                                                                <td><input type="checkbox" class="form-check-input" name="lab_table1[{{ $index }}][is_mc1]" value="1" {{ isset($row['is_mc1']) && $row['is_mc1'] ? 'checked' : '' }}></td>
+                                                                <td><input type="checkbox" class="form-check-input" name="lab_table1[{{ $index }}][is_asphalt_final]" value="1" {{ isset($row['is_asphalt_final']) && $row['is_asphalt_final'] ? 'checked' : '' }}></td>
+                                                                <td><input type="text" class="form-control" name="lab_table1[{{ $index }}][notes]" value="{{ $row['notes'] ?? '' }}"></td>
+                                                                <td>
+                                                                    <button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">
+                                                                        <i class="fas fa-trash"></i>
+                                                                    </button>
+                                                                </td>
+                                                            </tr>
+                                                        @endforeach
+                                                    @endif
                                                 </tbody>
                                             </table>
                                         </div>
@@ -518,12 +524,6 @@
                                         <div class="btn-group" role="group">
                                             <button type="button" class="btn btn-light btn-sm" onclick="addRowToTable2()">
                                                 <i class="fas fa-plus"></i> إضافة صف
-                                            </button>
-                                            <button type="button" class="btn btn-success btn-sm" onclick="importExcelTable2()">
-                                                <i class="fas fa-file-excel"></i> استيراد Excel
-                                            </button>
-                                            <button type="button" class="btn btn-warning btn-sm" onclick="exportExcelTable2()">
-                                                <i class="fas fa-download"></i> تصدير Excel
                                             </button>
                                         </div>
                                     </div>
@@ -553,7 +553,34 @@
                                                     </tr>
                                                 </thead>
                                                 <tbody id="labTable2Body">
-                                                    <!-- سيتم إضافة الصفوف هنا ديناميكياً -->
+                                                    @if(isset($license) && !empty($license->lab_table2_data))
+                                                        @foreach($license->lab_table2_data as $index => $row)
+                                                            <tr>
+                                                                <td><input type="number" class="form-control" name="lab_table2[{{ $index }}][year]" value="{{ $row['year'] ?? '' }}"></td>
+                                                                <td><input type="text" class="form-control" name="lab_table2[{{ $index }}][work_type]" value="{{ $row['work_type'] ?? '' }}"></td>
+                                                                <td><input type="number" step="0.01" class="form-control" name="lab_table2[{{ $index }}][depth]" value="{{ $row['depth'] ?? '' }}"></td>
+                                                                <td><input type="checkbox" class="form-check-input" name="lab_table2[{{ $index }}][soil_compaction]" value="1" {{ isset($row['soil_compaction']) && $row['soil_compaction'] ? 'checked' : '' }}></td>
+                                                                <td><input type="checkbox" class="form-check-input" name="lab_table2[{{ $index }}][mc1rc2]" value="1" {{ isset($row['mc1rc2']) && $row['mc1rc2'] ? 'checked' : '' }}></td>
+                                                                <td><input type="checkbox" class="form-check-input" name="lab_table2[{{ $index }}][asphalt_compaction]" value="1" {{ isset($row['asphalt_compaction']) && $row['asphalt_compaction'] ? 'checked' : '' }}></td>
+                                                                <td><input type="checkbox" class="form-check-input" name="lab_table2[{{ $index }}][is_dirt]" value="1" {{ isset($row['is_dirt']) && $row['is_dirt'] ? 'checked' : '' }}></td>
+                                                                <td><input type="number" step="0.01" class="form-control" name="lab_table2[{{ $index }}][max_asphalt_density]" value="{{ $row['max_asphalt_density'] ?? '' }}"></td>
+                                                                <td><input type="number" step="0.01" class="form-control" name="lab_table2[{{ $index }}][asphalt_percentage]" value="{{ $row['asphalt_percentage'] ?? '' }}"></td>
+                                                                <td><input type="text" class="form-control" name="lab_table2[{{ $index }}][granular_gradient]" value="{{ $row['granular_gradient'] ?? '' }}"></td>
+                                                                <td><input type="text" class="form-control" name="lab_table2[{{ $index }}][marshall_test]" value="{{ $row['marshall_test'] ?? '' }}"></td>
+                                                                <td><input type="text" class="form-control" name="lab_table2[{{ $index }}][tile_evaluation]" value="{{ $row['tile_evaluation'] ?? '' }}"></td>
+                                                                <td><input type="number" step="0.01" class="form-control" name="lab_table2[{{ $index }}][coldness]" value="{{ $row['coldness'] ?? '' }}"></td>
+                                                                <td><input type="text" class="form-control" name="lab_table2[{{ $index }}][soil_classification]" value="{{ $row['soil_classification'] ?? '' }}"></td>
+                                                                <td><input type="text" class="form-control" name="lab_table2[{{ $index }}][proctor_test]" value="{{ $row['proctor_test'] ?? '' }}"></td>
+                                                                <td><input type="text" class="form-control" name="lab_table2[{{ $index }}][concrete]" value="{{ $row['concrete'] ?? '' }}"></td>
+                                                                <td><input type="text" class="form-control" name="lab_table2[{{ $index }}][notes]" value="{{ $row['notes'] ?? '' }}"></td>
+                                                                <td>
+                                                                    <button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">
+                                                                        <i class="fas fa-trash"></i>
+                                                                    </button>
+                                                                </td>
+                                                            </tr>
+                                                        @endforeach
+                                                    @endif
                                                 </tbody>
                                             </table>
                                         </div>
@@ -631,6 +658,17 @@
                                             <textarea class="form-control" name="notes" rows="4" 
                                                       placeholder="أدخل أي ملاحظات إضافية هنا...">{{ old('notes', $license->notes ?? '') }}</textarea>
                                         </div>
+                                        <div class="col-12">
+                                            <label class="form-label">مرفقات الملاحظات</label>
+                                            <input type="file" class="form-control" name="notes_attachments[]" multiple accept=".pdf,.jpg,.jpeg,.png">
+                                            @if(isset($license) && $license->notes_attachments_path)
+                                                <div class="mt-2">
+                                                    <a href="#" class="btn btn-sm btn-outline-info">
+                                                        <i class="fas fa-eye"></i> عرض المرفقات الحالية
+                                                    </a>
+                                                </div>
+                                            @endif
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -638,7 +676,7 @@
                             <!-- زر الحفظ -->
                             <div class="row mt-4">
                                 <div class="col-12 text-center">
-                                    <button type="submit" class="btn btn-success btn-lg px-5">
+                                    <button type="submit" class="btn btn-success btn-lg px-5" id="submitBtn">
                                         <i class="fas fa-save me-2"></i>
                                         حفظ جميع البيانات
                                     </button>
@@ -768,37 +806,114 @@ document.addEventListener('DOMContentLoaded', function() {
     calculateExtensionDays();
     
     // تأكيد الحفظ
-    document.getElementById('licenseForm').addEventListener('submit', function(e) {
-        const confirmation = confirm('هل أنت متأكد من حفظ جميع البيانات؟');
-        if (!confirmation) {
-            e.preventDefault();
-        }
-    });
+    const form = document.getElementById('licenseForm');
+    const submitBtn = document.getElementById('submitBtn');
     
-    // تحميل البيانات الموجودة للجداول
-    loadExistingTableData();
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // تعطيل زر الحفظ لمنع الضغط المتكرر
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> جاري الحفظ...';
+        
+        // إنشاء FormData object
+        const formData = new FormData(form);
+        
+        // إضافة بيانات الجداول
+        const table1Data = [];
+        document.querySelectorAll('#labTable1Body tr').forEach((row, index) => {
+            const rowData = {
+                clearance_number: row.querySelector('[name^="lab_table1["][name$="[clearance_number]"]')?.value,
+                clearance_date: row.querySelector('[name^="lab_table1["][name$="[clearance_date]"]')?.value,
+                length: row.querySelector('[name^="lab_table1["][name$="[length]"]')?.value,
+                street_type: row.querySelector('[name^="lab_table1["][name$="[street_type]"]')?.value,
+                is_dirt: row.querySelector('[name^="lab_table1["][name$="[is_dirt]"]')?.checked ? 1 : 0,
+                is_asphalt: row.querySelector('[name^="lab_table1["][name$="[is_asphalt]"]')?.checked ? 1 : 0,
+                is_tile: row.querySelector('[name^="lab_table1["][name$="[is_tile]"]')?.checked ? 1 : 0,
+                is_soil: row.querySelector('[name^="lab_table1["][name$="[is_soil]"]')?.checked ? 1 : 0,
+                is_mc1: row.querySelector('[name^="lab_table1["][name$="[is_mc1]"]')?.checked ? 1 : 0,
+                is_asphalt_final: row.querySelector('[name^="lab_table1["][name$="[is_asphalt_final]"]')?.checked ? 1 : 0,
+                notes: row.querySelector('[name^="lab_table1["][name$="[notes]"]')?.value
+            };
+            table1Data.push(rowData);
+        });
+        
+        const table2Data = [];
+        document.querySelectorAll('#labTable2Body tr').forEach((row, index) => {
+            const rowData = {
+                year: row.querySelector('[name^="lab_table2["][name$="[year]"]')?.value,
+                work_type: row.querySelector('[name^="lab_table2["][name$="[work_type]"]')?.value,
+                depth: row.querySelector('[name^="lab_table2["][name$="[depth]"]')?.value,
+                soil_compaction: row.querySelector('[name^="lab_table2["][name$="[soil_compaction]"]')?.checked ? 1 : 0,
+                mc1rc2: row.querySelector('[name^="lab_table2["][name$="[mc1rc2]"]')?.checked ? 1 : 0,
+                asphalt_compaction: row.querySelector('[name^="lab_table2["][name$="[asphalt_compaction]"]')?.checked ? 1 : 0,
+                is_dirt: row.querySelector('[name^="lab_table2["][name$="[is_dirt]"]')?.checked ? 1 : 0,
+                max_asphalt_density: row.querySelector('[name^="lab_table2["][name$="[max_asphalt_density]"]')?.value,
+                asphalt_percentage: row.querySelector('[name^="lab_table2["][name$="[asphalt_percentage]"]')?.value,
+                granular_gradient: row.querySelector('[name^="lab_table2["][name$="[granular_gradient]"]')?.value,
+                marshall_test: row.querySelector('[name^="lab_table2["][name$="[marshall_test]"]')?.value,
+                tile_evaluation: row.querySelector('[name^="lab_table2["][name$="[tile_evaluation]"]')?.value,
+                coldness: row.querySelector('[name^="lab_table2["][name$="[coldness]"]')?.value,
+                soil_classification: row.querySelector('[name^="lab_table2["][name$="[soil_classification]"]')?.value,
+                proctor_test: row.querySelector('[name^="lab_table2["][name$="[proctor_test]"]')?.value,
+                concrete: row.querySelector('[name^="lab_table2["][name$="[concrete]"]')?.value,
+                notes: row.querySelector('[name^="lab_table2["][name$="[notes]"]')?.value
+            };
+            table2Data.push(rowData);
+        });
+
+        formData.append('lab_table1_data', JSON.stringify(table1Data));
+        formData.append('lab_table2_data', JSON.stringify(table2Data));
+        
+        // إرسال البيانات
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // نجاح العملية
+                alert(data.message || 'تم حفظ البيانات بنجاح');
+                window.location.href = '{{ route("admin.licenses.data") }}';
+            } else {
+                // فشل العملية
+                alert(data.message || 'حدث خطأ أثناء حفظ البيانات');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-save me-2"></i> حفظ جميع البيانات';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('حدث خطأ أثناء حفظ البيانات');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-save me-2"></i> حفظ جميع البيانات';
+        });
+    });
 });
 
-// وظائف إدارة الجدول الأول
 function addRowToTable1() {
     const tbody = document.getElementById('labTable1Body');
-    const rowCount = tbody.children.length;
-    
+    const rowCount = tbody.rows.length;
     const row = document.createElement('tr');
+    
     row.innerHTML = `
-        <td><input type="text" class="form-control" name="lab_table1[${rowCount}][permit_number]" placeholder="رقم الفسح"></td>
-        <td><input type="date" class="form-control" name="lab_table1[${rowCount}][permit_date]"></td>
-        <td><input type="number" step="0.01" class="form-control" name="lab_table1[${rowCount}][length]" placeholder="الطول"></td>
-        <td><input type="text" class="form-control" name="lab_table1[${rowCount}][street_type]" placeholder="نوع الشارع"></td>
-        <td><input type="text" class="form-control" name="lab_table1[${rowCount}][soil]" placeholder="ترابي"></td>
-        <td><input type="text" class="form-control" name="lab_table1[${rowCount}][asphalt]" placeholder="أسفلت"></td>
-        <td><input type="text" class="form-control" name="lab_table1[${rowCount}][tiles]" placeholder="بلاط"></td>
-        <td><input type="text" class="form-control" name="lab_table1[${rowCount}][soil_test]" placeholder="تربة"></td>
-        <td><input type="text" class="form-control" name="lab_table1[${rowCount}][mc1_test]" placeholder="MC1"></td>
-        <td><input type="text" class="form-control" name="lab_table1[${rowCount}][asphalt_test]" placeholder="أسفلت"></td>
-        <td><input type="text" class="form-control" name="lab_table1[${rowCount}][notes]" placeholder="ملاحظات"></td>
+        <td><input type="text" class="form-control" name="lab_table1[${rowCount}][clearance_number]"></td>
+        <td><input type="date" class="form-control" name="lab_table1[${rowCount}][clearance_date]"></td>
+        <td><input type="number" step="0.01" class="form-control" name="lab_table1[${rowCount}][length]"></td>
+        <td><input type="text" class="form-control" name="lab_table1[${rowCount}][street_type]"></td>
+        <td><input type="checkbox" class="form-check-input" name="lab_table1[${rowCount}][is_dirt]" value="1"></td>
+        <td><input type="checkbox" class="form-check-input" name="lab_table1[${rowCount}][is_asphalt]" value="1"></td>
+        <td><input type="checkbox" class="form-check-input" name="lab_table1[${rowCount}][is_tile]" value="1"></td>
+        <td><input type="checkbox" class="form-check-input" name="lab_table1[${rowCount}][is_soil]" value="1"></td>
+        <td><input type="checkbox" class="form-check-input" name="lab_table1[${rowCount}][is_mc1]" value="1"></td>
+        <td><input type="checkbox" class="form-check-input" name="lab_table1[${rowCount}][is_asphalt_final]" value="1"></td>
+        <td><input type="text" class="form-control" name="lab_table1[${rowCount}][notes]"></td>
         <td>
-            <button type="button" class="btn btn-danger btn-sm" onclick="removeRowFromTable(this)">
+            <button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">
                 <i class="fas fa-trash"></i>
             </button>
         </td>
@@ -807,32 +922,31 @@ function addRowToTable1() {
     tbody.appendChild(row);
 }
 
-// وظائف إدارة الجدول الثاني
 function addRowToTable2() {
     const tbody = document.getElementById('labTable2Body');
-    const rowCount = tbody.children.length;
-    
+    const rowCount = tbody.rows.length;
     const row = document.createElement('tr');
+    
     row.innerHTML = `
-        <td><input type="number" class="form-control" name="lab_table2[${rowCount}][year]" placeholder="السنة"></td>
-        <td><input type="text" class="form-control" name="lab_table2[${rowCount}][work_type]" placeholder="نوع العمل"></td>
-        <td><input type="number" step="0.01" class="form-control" name="lab_table2[${rowCount}][depth]" placeholder="العمق"></td>
-        <td><input type="text" class="form-control" name="lab_table2[${rowCount}][soil_compaction]" placeholder="دك التربة"></td>
-        <td><input type="text" class="form-control" name="lab_table2[${rowCount}][mc1rc2]" placeholder="MC1RC2"></td>
-        <td><input type="text" class="form-control" name="lab_table2[${rowCount}][asphalt_compaction]" placeholder="دك أسفلت"></td>
-        <td><input type="text" class="form-control" name="lab_table2[${rowCount}][soil]" placeholder="ترابي"></td>
-        <td><input type="number" step="0.01" class="form-control" name="lab_table2[${rowCount}][max_asphalt_density]" placeholder="الكثافة القصوى"></td>
-        <td><input type="number" step="0.01" class="form-control" name="lab_table2[${rowCount}][asphalt_ratio]" placeholder="نسبة الأسفلت"></td>
-        <td><input type="text" class="form-control" name="lab_table2[${rowCount}][gradation]" placeholder="التدرج الحبيبي"></td>
-        <td><input type="text" class="form-control" name="lab_table2[${rowCount}][marshall_test]" placeholder="تجربة مارشال"></td>
-        <td><input type="text" class="form-control" name="lab_table2[${rowCount}][tiles_evaluation]" placeholder="تقييم البلاط"></td>
-        <td><input type="text" class="form-control" name="lab_table2[${rowCount}][cooling]" placeholder="البرودة"></td>
-        <td><input type="text" class="form-control" name="lab_table2[${rowCount}][soil_classification]" placeholder="تصنيف التربة"></td>
-        <td><input type="text" class="form-control" name="lab_table2[${rowCount}][proctor_test]" placeholder="تجربة بروكتور"></td>
-        <td><input type="text" class="form-control" name="lab_table2[${rowCount}][concrete]" placeholder="الخرسانة"></td>
-        <td><input type="text" class="form-control" name="lab_table2[${rowCount}][notes]" placeholder="ملاحظات"></td>
+        <td><input type="number" class="form-control" name="lab_table2[${rowCount}][year]"></td>
+        <td><input type="text" class="form-control" name="lab_table2[${rowCount}][work_type]"></td>
+        <td><input type="number" step="0.01" class="form-control" name="lab_table2[${rowCount}][depth]"></td>
+        <td><input type="checkbox" class="form-check-input" name="lab_table2[${rowCount}][soil_compaction]" value="1"></td>
+        <td><input type="checkbox" class="form-check-input" name="lab_table2[${rowCount}][mc1rc2]" value="1"></td>
+        <td><input type="checkbox" class="form-check-input" name="lab_table2[${rowCount}][asphalt_compaction]" value="1"></td>
+        <td><input type="checkbox" class="form-check-input" name="lab_table2[${rowCount}][is_dirt]" value="1"></td>
+        <td><input type="number" step="0.01" class="form-control" name="lab_table2[${rowCount}][max_asphalt_density]"></td>
+        <td><input type="number" step="0.01" class="form-control" name="lab_table2[${rowCount}][asphalt_percentage]"></td>
+        <td><input type="text" class="form-control" name="lab_table2[${rowCount}][granular_gradient]"></td>
+        <td><input type="text" class="form-control" name="lab_table2[${rowCount}][marshall_test]"></td>
+        <td><input type="text" class="form-control" name="lab_table2[${rowCount}][tile_evaluation]"></td>
+        <td><input type="number" step="0.01" class="form-control" name="lab_table2[${rowCount}][coldness]"></td>
+        <td><input type="text" class="form-control" name="lab_table2[${rowCount}][soil_classification]"></td>
+        <td><input type="text" class="form-control" name="lab_table2[${rowCount}][proctor_test]"></td>
+        <td><input type="text" class="form-control" name="lab_table2[${rowCount}][concrete]"></td>
+        <td><input type="text" class="form-control" name="lab_table2[${rowCount}][notes]"></td>
         <td>
-            <button type="button" class="btn btn-danger btn-sm" onclick="removeRowFromTable(this)">
+            <button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">
                 <i class="fas fa-trash"></i>
             </button>
         </td>
@@ -841,159 +955,9 @@ function addRowToTable2() {
     tbody.appendChild(row);
 }
 
-// حذف صف من الجدول
-function removeRowFromTable(button) {
-    if (confirm('هل أنت متأكد من حذف هذا الصف؟')) {
-        button.closest('tr').remove();
-    }
-}
-
-// استيراد Excel للجدول الأول
-function importExcelTable1() {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.xlsx,.xls,.csv';
-    input.onchange = function(e) {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                // هنا يمكن إضافة مكتبة لقراءة Excel مثل SheetJS
-                alert('تم رفع الملف بنجاح! سيتم تطبيق هذه الميزة قريباً.');
-            };
-            reader.readAsArrayBuffer(file);
-        }
-    };
-    input.click();
-}
-
-// استيراد Excel للجدول الثاني
-function importExcelTable2() {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.xlsx,.xls,.csv';
-    input.onchange = function(e) {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                // هنا يمكن إضافة مكتبة لقراءة Excel مثل SheetJS
-                alert('تم رفع الملف بنجاح! سيتم تطبيق هذه الميزة قريباً.');
-            };
-            reader.readAsArrayBuffer(file);
-        }
-    };
-    input.click();
-}
-
-// تصدير Excel للجدول الأول
-function exportExcelTable1() {
-    const table = document.getElementById('labTable1');
-    const data = extractTableData(table);
-    
-    if (data.length === 0) {
-        alert('لا توجد بيانات للتصدير');
-        return;
-    }
-    
-    // تحويل البيانات إلى CSV
-    const csv = convertTableToCSV(data);
-    downloadCSV(csv, 'جدول_الفسح_والاختبارات_الأول.csv');
-}
-
-// تصدير Excel للجدول الثاني
-function exportExcelTable2() {
-    const table = document.getElementById('labTable2');
-    const data = extractTableData(table);
-    
-    if (data.length === 0) {
-        alert('لا توجد بيانات للتصدير');
-        return;
-    }
-    
-    // تحويل البيانات إلى CSV
-    const csv = convertTableToCSV(data);
-    downloadCSV(csv, 'جدول_الاختبارات_التفصيلي_الثاني.csv');
-}
-
-// استخراج بيانات الجدول
-function extractTableData(table) {
-    const data = [];
-    const headers = [];
-    
-    // استخراج العناوين
-    const headerRow = table.querySelector('thead tr');
-    headerRow.querySelectorAll('th').forEach(th => {
-        headers.push(th.textContent.trim());
-    });
-    data.push(headers);
-    
-    // استخراج البيانات
-    const bodyRows = table.querySelectorAll('tbody tr');
-    bodyRows.forEach(row => {
-        const rowData = [];
-        row.querySelectorAll('input').forEach(input => {
-            rowData.push(input.value || '');
-        });
-        if (rowData.some(cell => cell !== '')) { // إضافة الصف فقط إذا كان يحتوي على بيانات
-            data.push(rowData);
-        }
-    });
-    
-    return data;
-}
-
-// تحويل البيانات إلى CSV
-function convertTableToCSV(data) {
-    return data.map(row => 
-        row.map(cell => `"${cell}"`).join(',')
-    ).join('\n');
-}
-
-// تحميل ملف CSV
-function downloadCSV(csv, filename) {
-    const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    if (link.download !== undefined) {
-        const url = URL.createObjectURL(blob);
-        link.setAttribute('href', url);
-        link.setAttribute('download', filename);
-        link.style.visibility = 'hidden';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    }
-}
-
-// تحميل البيانات الموجودة للجداول
-function loadExistingTableData() {
-    // تحميل بيانات الجدول الأول إذا كانت موجودة
-    @if(isset($license) && $license->lab_table1_data)
-        const table1Data = @json($license->lab_table1_data);
-        table1Data.forEach((row, index) => {
-            addRowToTable1();
-            const inputs = document.querySelectorAll(`#labTable1Body tr:last-child input`);
-            Object.keys(row).forEach((key, i) => {
-                if (inputs[i]) {
-                    inputs[i].value = row[key] || '';
-                }
-            });
-        });
-    @endif
-    
-    // تحميل بيانات الجدول الثاني إذا كانت موجودة
-    @if(isset($license) && $license->lab_table2_data)
-        const table2Data = @json($license->lab_table2_data);
-        table2Data.forEach((row, index) => {
-            addRowToTable2();
-            const inputs = document.querySelectorAll(`#labTable2Body tr:last-child input`);
-            Object.keys(row).forEach((key, i) => {
-                if (inputs[i]) {
-                    inputs[i].value = row[key] || '';
-                }
-            });
-        });
-    @endif
+function removeRow(button) {
+    const row = button.closest('tr');
+    row.remove();
 }
 </script>
 @endpush

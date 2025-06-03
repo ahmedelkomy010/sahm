@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('work_orders', function (Blueprint $table) {
-            //
+        Schema::table('licenses', function (Blueprint $table) {
+            $table->text('notes_attachments_path')->nullable();
         });
     }
 
@@ -21,8 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('work_orders', function (Blueprint $table) {
-            //
+        Schema::table('licenses', function (Blueprint $table) {
+            $table->dropColumn('notes_attachments_path');
         });
     }
-};
+}; 

@@ -988,95 +988,101 @@ class WorkOrderController extends Controller
     public function updateLicense(Request $request, WorkOrder $workOrder)
     {
         try {
-            $request->validate([
+            \Log::info('Received license update request:', $request->all());
+
+            $validatedData = $request->validate([
                 'license_number' => 'nullable|string|max:255',
                 'license_date' => 'nullable|date',
                 'license_type' => 'nullable|string|max:255',
                 'license_value' => 'nullable|numeric|min:0',
                 'extension_value' => 'nullable|numeric|min:0',
                 'notes' => 'nullable|string',
-                'has_restriction' => 'boolean',
+                'has_restriction' => 'nullable|boolean',
                 'restriction_authority' => 'nullable|string|max:255',
                 'restriction_reason' => 'nullable|string|max:255',
                 'restriction_notes' => 'nullable|string',
                 'coordination_certificate_notes' => 'nullable|string',
                 'license_start_date' => 'nullable|date',
                 'license_end_date' => 'nullable|date',
-                'license_alert_days' => 'nullable|integer|min:0',
+                'license_alert_days' => 'required|integer|min:0',
                 'license_length' => 'nullable|numeric|min:0',
                 'excavation_length' => 'nullable|numeric|min:0',
                 'excavation_width' => 'nullable|numeric|min:0',
                 'excavation_depth' => 'nullable|numeric|min:0',
-                'has_depth_test' => 'boolean',
-                'has_soil_compaction_test' => 'boolean',
-                'has_rc1_mc1_test' => 'boolean',
-                'has_asphalt_test' => 'boolean',
-                'has_soil_test' => 'boolean',
-                'has_interlock_test' => 'boolean',
-                'is_evacuated' => 'boolean',
+                'has_depth_test' => 'nullable|boolean',
+                'has_soil_compaction_test' => 'nullable|boolean',
+                'has_rc1_mc1_test' => 'nullable|boolean',
+                'has_asphalt_test' => 'nullable|boolean',
+                'has_soil_test' => 'nullable|boolean',
+                'has_interlock_test' => 'nullable|boolean',
+                'is_evacuated' => 'nullable|boolean',
                 'evac_license_number' => 'nullable|string|max:255',
                 'evac_license_value' => 'nullable|numeric|min:0',
                 'evac_payment_number' => 'nullable|string|max:255',
                 'evac_date' => 'nullable|date',
                 'evac_amount' => 'nullable|numeric|min:0',
-                'lab_table1' => 'nullable|array',
-                'lab_table2' => 'nullable|array',
-                // الملفات
-                'coordination_certificate_path' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
-                'letters_commitments_files.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
-                'payment_invoices.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
-                'payment_proof.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
-                'license_activation.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
-                'extension_invoice.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
-                'soil_test_images.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
-                'evacuations_files.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
-                'violations_files.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
+                'lab_table1_data' => 'nullable|string',
+                'lab_table2_data' => 'nullable|string',
             ]);
 
+            \Log::info('Validation passed');
+
             // تحديث أو إنشاء سجل الرخصة
-            $license = License::updateOrCreate(
+            $license = \App\Models\License::updateOrCreate(
                 ['work_order_id' => $workOrder->id],
                 [
-                    'license_number' => $request->license_number,
-                    'license_date' => $request->license_date,
-                    'license_type' => $request->license_type,
-                    'license_value' => $request->license_value,
-                    'extension_value' => $request->extension_value,
-                    'notes' => $request->notes,
-                    'has_restriction' => $request->has_restriction,
-                    'restriction_authority' => $request->restriction_authority,
-                    'restriction_reason' => $request->restriction_reason,
-                    'restriction_notes' => $request->restriction_notes,
-                    'coordination_certificate_notes' => $request->coordination_certificate_notes,
-                    'license_start_date' => $request->license_start_date,
-                    'license_end_date' => $request->license_end_date,
-                    'license_alert_days' => $request->license_alert_days,
-                    'license_length' => $request->license_length,
-                    'excavation_length' => $request->excavation_length,
-                    'excavation_width' => $request->excavation_width,
-                    'excavation_depth' => $request->excavation_depth,
-                    'has_depth_test' => $request->has_depth_test,
-                    'has_soil_compaction_test' => $request->has_soil_compaction_test,
-                    'has_rc1_mc1_test' => $request->has_rc1_mc1_test,
-                    'has_asphalt_test' => $request->has_asphalt_test,
-                    'has_soil_test' => $request->has_soil_test,
-                    'has_interlock_test' => $request->has_interlock_test,
-                    'is_evacuated' => $request->is_evacuated,
-                    'evac_license_number' => $request->evac_license_number,
-                    'evac_license_value' => $request->evac_license_value,
-                    'evac_payment_number' => $request->evac_payment_number,
-                    'evac_date' => $request->evac_date,
-                    'evac_amount' => $request->evac_amount,
+                    'license_number' => $validatedData['license_number'] ?? null,
+                    'license_date' => $validatedData['license_date'] ?? null,
+                    'license_type' => $validatedData['license_type'] ?? null,
+                    'license_value' => $validatedData['license_value'] ?? null,
+                    'extension_value' => $validatedData['extension_value'] ?? null,
+                    'notes' => $validatedData['notes'] ?? null,
+                    'has_restriction' => $request->boolean('has_restriction'),
+                    'restriction_authority' => $validatedData['restriction_authority'] ?? null,
+                    'restriction_reason' => $validatedData['restriction_reason'] ?? null,
+                    'restriction_notes' => $validatedData['restriction_notes'] ?? null,
+                    'coordination_certificate_notes' => $validatedData['coordination_certificate_notes'] ?? null,
+                    'license_start_date' => $validatedData['license_start_date'] ?? null,
+                    'license_end_date' => $validatedData['license_end_date'] ?? null,
+                    'license_alert_days' => $validatedData['license_alert_days'] ?? 30,
+                    'license_length' => $validatedData['license_length'] ?? null,
+                    'excavation_length' => $validatedData['excavation_length'] ?? null,
+                    'excavation_width' => $validatedData['excavation_width'] ?? null,
+                    'excavation_depth' => $validatedData['excavation_depth'] ?? null,
+                    'has_depth_test' => $request->boolean('has_depth_test'),
+                    'has_soil_compaction_test' => $request->boolean('has_soil_compaction_test'),
+                    'has_rc1_mc1_test' => $request->boolean('has_rc1_mc1_test'),
+                    'has_asphalt_test' => $request->boolean('has_asphalt_test'),
+                    'has_soil_test' => $request->boolean('has_soil_test'),
+                    'has_interlock_test' => $request->boolean('has_interlock_test'),
+                    'is_evacuated' => $request->boolean('is_evacuated'),
+                    'evac_license_number' => $validatedData['evac_license_number'] ?? null,
+                    'evac_license_value' => $validatedData['evac_license_value'] ?? null,
+                    'evac_payment_number' => $validatedData['evac_payment_number'] ?? null,
+                    'evac_date' => $validatedData['evac_date'] ?? null,
+                    'evac_amount' => $validatedData['evac_amount'] ?? null,
                 ]
             );
 
-            // معالجة جداول المختبر
-            if ($request->has('lab_table1')) {
-                $license->lab_table1_data = $this->processTableData($request->lab_table1);
+            \Log::info('License record created/updated:', ['license_id' => $license->id]);
+
+            // معالجة بيانات الجداول
+            if ($request->has('lab_table1_data')) {
+                $table1Data = json_decode($request->lab_table1_data, true);
+                if (json_last_error() === JSON_ERROR_NONE) {
+                    $license->lab_table1_data = $table1Data;
+                    $license->save();
+                    \Log::info('Lab table 1 data processed');
+                }
             }
             
-            if ($request->has('lab_table2')) {
-                $license->lab_table2_data = $this->processTableData($request->lab_table2);
+            if ($request->has('lab_table2_data')) {
+                $table2Data = json_decode($request->lab_table2_data, true);
+                if (json_last_error() === JSON_ERROR_NONE) {
+                    $license->lab_table2_data = $table2Data;
+                    $license->save();
+                    \Log::info('Lab table 2 data processed');
+                }
             }
 
             // معالجة الملفات
@@ -1105,52 +1111,45 @@ class WorkOrderController extends Controller
                             $filename = time() . '_' . $file->getClientOriginalName();
                             $path = $file->storeAs("work_orders/{$workOrder->id}/licenses", $filename, 'public');
                             $filePaths[] = $path;
+                            \Log::info('File uploaded:', ['field' => $requestField, 'path' => $path]);
                         }
                     }
                     
                     if (!empty($filePaths)) {
-                        $license->$dbField = count($filePaths) === 1 ? $filePaths[0] : json_encode($filePaths);
+                        $license->$dbField = count($filePaths) === 1 ? $filePaths[0] : json_encode($filePaths, JSON_UNESCAPED_UNICODE);
                         $license->save();
                     }
                 }
             }
 
-            return redirect()->route('admin.licenses.data')
-                ->with('success', 'تم حفظ بيانات الرخصة بنجاح في صفحة بيانات الجودة');
+            // معالجة مرفقات الملاحظات
+            if ($request->hasFile('notes_attachments')) {
+                $paths = [];
+                foreach ($request->file('notes_attachments') as $file) {
+                    $path = $file->store('licenses/notes_attachments', 'public');
+                    $paths[] = $path;
+                    \Log::info('Notes attachment uploaded:', ['path' => $path]);
+                }
+                $license->notes_attachments_path = json_encode($paths, JSON_UNESCAPED_UNICODE);
+                $license->save();
+            }
+
+            \Log::info('License update completed successfully');
+
+            return response()->json([
+                'success' => true,
+                'message' => 'تم حفظ بيانات الرخصة بنجاح',
+                'redirect' => route('admin.licenses.data')
+            ], 200, [], JSON_UNESCAPED_UNICODE);
 
         } catch (\Exception $e) {
             \Log::error('Error updating license: ' . $e->getMessage());
-            return back()
-                ->withInput()
-                ->with('error', 'حدث خطأ أثناء حفظ بيانات الرخصة: ' . $e->getMessage());
-        }
-    }
+            \Log::error('Stack trace: ' . $e->getTraceAsString());
 
-    /**
-     * معالجة بيانات الجداول
-     */
-    private function processTableData($tableData)
-    {
-        if (!is_array($tableData)) {
-            return [];
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء حفظ بيانات الرخصة: ' . $e->getMessage()
+            ], 500, [], JSON_UNESCAPED_UNICODE);
         }
-        
-        $processedData = [];
-        foreach ($tableData as $rowData) {
-            if (!is_array($rowData)) {
-                continue;
-            }
-            
-            // تنظيف البيانات وإزالة الصفوف الفارغة
-            $cleanRow = array_filter($rowData, function($value) {
-                return !empty(trim($value ?? ''));
-            });
-            
-            if (!empty($cleanRow)) {
-                $processedData[] = $rowData;
-            }
-        }
-        
-        return $processedData;
     }
 } 

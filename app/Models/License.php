@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class License extends Model
 {
@@ -70,6 +71,7 @@ class License extends Model
         'violation_payment_number',
         'violation_cause',
         'violation_files_path',
+        'notes_attachments_path',
     ];
 
     protected $casts = [
@@ -114,7 +116,7 @@ class License extends Model
         'violation_due_date',
     ];
 
-    public function workOrder()
+    public function workOrder(): BelongsTo
     {
         return $this->belongsTo(WorkOrder::class);
     }
