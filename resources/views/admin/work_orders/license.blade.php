@@ -1,6 +1,9 @@
 @extends('layouts.app')
 
 @section('content')
+<!-- إضافة CSRF token -->
+<meta name="csrf-token" content="{{ csrf_token() }}">
+
 <div id="app">
     <div class="container-fluid py-4">
         <div class="row justify-content-center">
@@ -9,21 +12,13 @@
                     <div class="card-header bg-gradient-primary text-white py-3">
                         <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
                             <h3 class="mb-0 fs-4 text-center text-md-start">
-                                <i class="fas fa-certificate me-2"></i>
-                                إدارة الجودة والرخص
+                                <i class="fas fa-plus-circle me-2"></i>
+                                إنشاء رخصة جديدة - أمر العمل {{ $workOrder->order_number }}
                             </h3>
                             <div class="d-flex flex-wrap justify-content-center gap-2">
                                 <a href="{{ route('admin.work-orders.show', $workOrder) }}" class="btn btn-back btn-sm">
                                     <i class="fas fa-arrow-right"></i> عودة لتفاصيل العمل
                                 </a>
-                                <a href="{{ route('admin.licenses.data') }}" class="btn btn-light btn-sm">
-                                    <i class="fas fa-database"></i> بيانات الجودة
-                                </a>
-                                @if(isset($license) && $license->id)
-                                    <a href="{{ route('admin.licenses.show', $license->id) }}" class="btn btn-info btn-sm">
-                                        <i class="fas fa-eye"></i> عرض التفاصيل
-                                    </a>
-                                @endif
                             </div>
                         </div>
                     </div>
@@ -49,9 +44,10 @@
                             </div>
                         </div>
 
-                        <form action="{{ route('admin.work-orders.update-license', $workOrder) }}" method="POST" enctype="multipart/form-data" id="licenseForm">
+                        <form action="{{ route('admin.licenses.store') }}" method="POST" enctype="multipart/form-data" id="licenseForm">
                             @csrf
-                            @method('PUT')
+                            <!-- إضافة حقل مخفي لـ work_order_id -->
+                            <input type="hidden" name="work_order_id" value="{{ $workOrder->id }}">
                              <!-- شهادة التنسيق والمرفقات -->
                              <div class="card border-0 shadow-sm mb-4">
                                     <div class="card-header bg-warning text-dark">
@@ -76,7 +72,7 @@
                                             <div class="col-md-6">
                                                 <label class="form-label">ملاحظات شهادة التنسيق</label>
                                                 <textarea class="form-control" name="coordination_certificate_notes" rows="3" 
-                                                         placeholder=" ملاحظات شهادة التنسيق">{{ old('coordination_certificate_notes', $license->coordination_certificate_notes ?? '') }}</textarea>
+                                                         placeholder=" ملاحظات شهادة التنسيق">{{ old('coordination_certificate_notes') }}</textarea>
                                             </div>
                                             
                                             <div class="col-12">
@@ -94,14 +90,14 @@
                                             <div class="col-md-6">
                                                 <label for="has_restriction" class="form-label">يوجد حظر؟</label>
                                                 <select class="form-select" name="has_restriction" id="has_restriction">
-                                                    <option value="0" {{ old('has_restriction', $license->has_restriction ?? 0) == 0 ? 'selected' : '' }}>لا</option>
-                                                    <option value="1" {{ old('has_restriction', $license->has_restriction ?? 0) == 1 ? 'selected' : '' }}>نعم</option>
+                                                    <option value="0" {{ old('has_restriction', 0) == 0 ? 'selected' : '' }}>لا</option>
+                                                    <option value="1" {{ old('has_restriction', 0) == 1 ? 'selected' : '' }}>نعم</option>
                                                 </select>
                                             </div>
                                             <div class="col-md-6" id="restriction_authority_field" style="display: none;">
                                                 <label for="restriction_authority" class="form-label">جهة الحظر</label>
                                                 <input type="text" class="form-control" id="restriction_authority" name="restriction_authority" 
-                                                       value="{{ old('restriction_authority', $license->restriction_authority ?? '') }}" 
+                                                       value="{{ old('restriction_authority') }}" 
                                                        placeholder="اسم الجهة المسؤولة عن الحظر">
                                             </div>
                                             
@@ -123,37 +119,37 @@
                                             <div class="col-md-6">
                                                 <label for="license_number" class="form-label">رقم الرخصة</label>
                                                 <input type="text" class="form-control" id="license_number" name="license_number" 
-                                                       value="{{ old('license_number', $license->license_number ?? '') }}">
+                                                       value="{{ old('license_number') }}">
                                             </div>
                                             <div class="col-md-6">
                                                 <label for="license_date" class="form-label">تاريخ الرخصة</label>
                                                 <input type="date" class="form-control" id="license_date" name="license_date" 
-                                                       value="{{ old('license_date', $license->license_date ?? '') }}">
+                                                       value="{{ old('license_date') }}">
                                             </div>
                                             <div class="col-md-6">
                                                 <label for="license_type" class="form-label">نوع الرخصة</label>
                                                 <select class="form-select" id="license_type" name="license_type">
                                                     <option value="">اختر نوع الرخصة</option>
-                                                    <option value="مشروع" {{ old('license_type', $license->license_type ?? '') == 'مشروع' ? 'selected' : '' }}>مشروع</option>
-                                                    <option value="طوارئ" {{ old('license_type', $license->license_type ?? '') == 'طوارئ' ? 'selected' : '' }}>طوارئ</option>
-                                                    <option value="عادي" {{ old('license_type', $license->license_type ?? '') == 'عادي' ? 'selected' : '' }}>عادي</option>
+                                                    <option value="مشروع" {{ old('license_type') == 'مشروع' ? 'selected' : '' }}>مشروع</option>
+                                                    <option value="طوارئ" {{ old('license_type') == 'طوارئ' ? 'selected' : '' }}>طوارئ</option>
+                                                    <option value="عادي" {{ old('license_type') == 'عادي' ? 'selected' : '' }}>عادي</option>
                                                 </select>
                                             </div>
                                             <div class="col-md-6">
                                                 <label for="license_value" class="form-label">قيمة الرخصة</label>
                                                 <input type="number" step="0.01" class="form-control" id="license_value" name="license_value" 
-                                                       value="{{ old('license_value', $license->license_value ?? '') }}">
+                                                       value="{{ old('license_value') }}">
                                             </div>
                                             <div class="col-md-6">
                                                 <label for="extension_value" class="form-label">قيمة التمديدات</label>
                                                 <input type="number" step="0.01" class="form-control" id="extension_value" name="extension_value" 
-                                                       value="{{ old('extension_value', $license->extension_value ?? '') }}">
+                                                       value="{{ old('extension_value') }}">
                                             </div>
                                             <div class="col-md-4">
                                                 <label class="form-label">طول الحفر</label>
                                                 <div class="input-group">
                                                     <input type="number" step="0.01" class="form-control" name="excavation_length"
-                                                           value="{{ old('excavation_length', $license->excavation_length ?? '') }}">
+                                                           value="{{ old('excavation_length') }}">
                                                     <span class="input-group-text">متر</span>
                                                 </div>
                                             </div>
@@ -161,7 +157,7 @@
                                                 <label class="form-label">عرض الحفر</label>
                                                 <div class="input-group">
                                                     <input type="number" step="0.01" class="form-control" name="excavation_width"
-                                                           value="{{ old('excavation_width', $license->excavation_width ?? '') }}">
+                                                           value="{{ old('excavation_width') }}">
                                                     <span class="input-group-text">متر</span>
                                                 </div>
                                             </div>
@@ -169,7 +165,7 @@
                                                 <label class="form-label">عمق الحفر</label>
                                                 <div class="input-group">
                                                     <input type="number" step="0.01" class="form-control" name="excavation_depth"
-                                                           value="{{ old('excavation_depth', $license->excavation_depth ?? '') }}">
+                                                           value="{{ old('excavation_depth') }}">
                                                     <span class="input-group-text">متر</span>
                                                 </div>
                                             </div>
@@ -191,12 +187,12 @@
                                             <div class="col-md-4">
                                                 <label class="form-label">تاريخ بداية الرخصة</label>
                                                 <input type="date" class="form-control" name="license_start_date" id="license_start_date"
-                                                       value="{{ old('license_start_date', $license->license_start_date ?? '') }}">
+                                                       value="{{ old('license_start_date') }}">
                                             </div>
                                             <div class="col-md-4">
                                                 <label class="form-label">تاريخ نهاية الرخصة</label>
                                                 <input type="date" class="form-control" name="license_end_date" id="license_end_date"
-                                                       value="{{ old('license_end_date', $license->license_end_date ?? '') }}">
+                                                       value="{{ old('license_end_date') }}">
                                             </div>
                                             <div class="col-md-4 d-flex align-items-end">
                                                 <div class="alert alert-info w-100 mb-0" id="license_days_counter">
@@ -207,12 +203,12 @@
                                             <div class="col-md-4">
                                                 <label class="form-label">تاريخ بداية التمديد</label>
                                                 <input type="date" class="form-control" name="extension_start_date" id="extension_start_date"
-                                                       value="{{ old('extension_start_date', $license->license_extension_start_date ?? '') }}">
+                                                       value="{{ old('extension_start_date') }}">
                                             </div>
                                             <div class="col-md-4">
                                                 <label class="form-label">تاريخ نهاية التمديد</label>
                                                 <input type="date" class="form-control" name="extension_end_date" id="extension_end_date"
-                                                       value="{{ old('extension_end_date', $license->license_extension_end_date ?? '') }}">
+                                                       value="{{ old('extension_end_date') }}">
                                             </div>
                                             <input type="hidden" name="license_alert_days" value="30">
                                             <div class="col-md-4 d-flex align-items-end">
@@ -278,8 +274,8 @@
                                                                 اختبار العمق
                                                             </label>
                                                             <select class="form-select" name="has_depth_test">
-                                                                <option value="0" {{ old('has_depth_test', $license->has_depth_test ?? 0) == 0 ? 'selected' : '' }}>لا</option>
-                                                                <option value="1" {{ old('has_depth_test', $license->has_depth_test ?? 0) == 1 ? 'selected' : '' }}>نعم</option>
+                                                                <option value="0" {{ old('has_depth_test', 0) == 0 ? 'selected' : '' }}>لا</option>
+                                                                <option value="1" {{ old('has_depth_test', 0) == 1 ? 'selected' : '' }}>نعم</option>
                                                             </select>
                                                         </div>
                                                         <div class="mt-2">
@@ -299,8 +295,8 @@
                                                                 اختبار دك التربة
                                                             </label>
                                                             <select class="form-select" name="has_soil_compaction_test">
-                                                                <option value="0" {{ old('has_soil_compaction_test', $license->has_soil_compaction_test ?? 0) == 0 ? 'selected' : '' }}>لا</option>
-                                                                <option value="1" {{ old('has_soil_compaction_test', $license->has_soil_compaction_test ?? 0) == 1 ? 'selected' : '' }}>نعم</option>
+                                                                <option value="0" {{ old('has_soil_compaction_test', 0) == 0 ? 'selected' : '' }}>لا</option>
+                                                                <option value="1" {{ old('has_soil_compaction_test', 0) == 1 ? 'selected' : '' }}>نعم</option>
                                                             </select>
                                                         </div>
                                                         <div class="mt-2">
@@ -320,8 +316,8 @@
                                                                 اختبار MC1, RC2
                                                             </label>
                                                             <select class="form-select" name="has_rc1_mc1_test">
-                                                                <option value="0" {{ old('has_rc1_mc1_test', $license->has_rc1_mc1_test ?? 0) == 0 ? 'selected' : '' }}>لا</option>
-                                                                <option value="1" {{ old('has_rc1_mc1_test', $license->has_rc1_mc1_test ?? 0) == 1 ? 'selected' : '' }}>نعم</option>
+                                                                <option value="0" {{ old('has_rc1_mc1_test', 0) == 0 ? 'selected' : '' }}>لا</option>
+                                                                <option value="1" {{ old('has_rc1_mc1_test', 0) == 1 ? 'selected' : '' }}>نعم</option>
                                                             </select>
                                                         </div>
                                                         <div class="mt-2">
@@ -341,8 +337,8 @@
                                                                 اختبار أسفلت
                                                             </label>
                                                             <select class="form-select" name="has_asphalt_test">
-                                                                <option value="0" {{ old('has_asphalt_test', $license->has_asphalt_test ?? 0) == 0 ? 'selected' : '' }}>لا</option>
-                                                                <option value="1" {{ old('has_asphalt_test', $license->has_asphalt_test ?? 0) == 1 ? 'selected' : '' }}>نعم</option>
+                                                                <option value="0" {{ old('has_asphalt_test', 0) == 0 ? 'selected' : '' }}>لا</option>
+                                                                <option value="1" {{ old('has_asphalt_test', 0) == 1 ? 'selected' : '' }}>نعم</option>
                                                             </select>
                                                         </div>
                                                         <div class="mt-2">
@@ -362,8 +358,8 @@
                                                                 اختبار تربة
                                                             </label>
                                                             <select class="form-select" name="has_soil_test">
-                                                                <option value="0" {{ old('has_soil_test', $license->has_soil_test ?? 0) == 0 ? 'selected' : '' }}>لا</option>
-                                                                <option value="1" {{ old('has_soil_test', $license->has_soil_test ?? 0) == 1 ? 'selected' : '' }}>نعم</option>
+                                                                <option value="0" {{ old('has_soil_test', 0) == 0 ? 'selected' : '' }}>لا</option>
+                                                                <option value="1" {{ old('has_soil_test', 0) == 1 ? 'selected' : '' }}>نعم</option>
                                                             </select>
                                                         </div>
                                                         <div class="mt-2">
@@ -383,8 +379,8 @@
                                                                 اختبار بلاط وانترلوك
                                                             </label>
                                                             <select class="form-select" name="has_interlock_test">
-                                                                <option value="0" {{ old('has_interlock_test', $license->has_interlock_test ?? 0) == 0 ? 'selected' : '' }}>لا</option>
-                                                                <option value="1" {{ old('has_interlock_test', $license->has_interlock_test ?? 0) == 1 ? 'selected' : '' }}>نعم</option>
+                                                                <option value="0" {{ old('has_interlock_test', 0) == 0 ? 'selected' : '' }}>لا</option>
+                                                                <option value="1" {{ old('has_interlock_test', 0) == 1 ? 'selected' : '' }}>نعم</option>
                                                             </select>
                                                         </div>
                                                         <div class="mt-2">
@@ -414,32 +410,32 @@
                                             <div class="col-md-6">
                                                 <label class="form-label">تم الإخلاء؟</label>
                                                 <select class="form-select" name="is_evacuated" id="is_evacuated">
-                                                    <option value="0" {{ old('is_evacuated', $license->is_evacuated ?? 0) == 0 ? 'selected' : '' }}>لا</option>
-                                                    <option value="1" {{ old('is_evacuated', $license->is_evacuated ?? 0) == 1 ? 'selected' : '' }}>نعم</option>
+                                                    <option value="0" {{ old('is_evacuated', 0) == 0 ? 'selected' : '' }}>لا</option>
+                                                    <option value="1" {{ old('is_evacuated', 0) == 1 ? 'selected' : '' }}>نعم</option>
                                                 </select>
                                             </div>
                                             <div class="col-md-6">
                                                 <label class="form-label">رقم الرخصة</label>
                                                 <input type="text" class="form-control" name="evac_license_number"
-                                                       value="{{ old('evac_license_number', $license->evac_license_number ?? '') }}">
+                                                       value="{{ old('evac_license_number') }}">
                                             </div>
                                             <div class="col-md-4">
                                                 <label class="form-label">قيمة الرخصة</label>
                                                 <div class="input-group">
                                                     <input type="number" step="0.01" class="form-control" name="evac_license_value"
-                                                           value="{{ old('evac_license_value', $license->evac_license_value ?? '') }}">
+                                                           value="{{ old('evac_license_value') }}">
                                                     <span class="input-group-text">ريال</span>
                                                 </div>
                                             </div>
                                             <div class="col-md-6">
                                                 <label class="form-label">رقم سداد الرخصة</label>
                                                 <input type="text" class="form-control" name="evac_payment_number"
-                                                       value="{{ old('evac_payment_number', $license->evac_payment_number ?? '') }}">
+                                                       value="{{ old('evac_payment_number') }}">
                                             </div>
                                             <div class="col-md-6">
                                                 <label class="form-label">تاريخ الإخلاء</label>
                                                 <input type="date" class="form-control" name="evac_date"
-                                                       value="{{ old('evac_date', $license->evac_date ?? '') }}">
+                                                       value="{{ old('evac_date') }}">
                                             </div>
                                             <div class="col-md-6">
                                                 <label class="form-label">مبلغ الإخلاء</label>
@@ -486,28 +482,7 @@
                                                     </tr>
                                                 </thead>
                                                 <tbody id="labTable1Body">
-                                                    @if(isset($license) && !empty($license->lab_table1_data))
-                                                        @foreach($license->lab_table1_data as $index => $row)
-                                                            <tr>
-                                                                <td><input type="text" class="form-control" name="lab_table1[{{ $index }}][clearance_number]" value="{{ $row['clearance_number'] ?? '' }}"></td>
-                                                                <td><input type="date" class="form-control" name="lab_table1[{{ $index }}][clearance_date]" value="{{ $row['clearance_date'] ?? '' }}"></td>
-                                                                <td><input type="number" step="0.01" class="form-control" name="lab_table1[{{ $index }}][length]" value="{{ $row['length'] ?? '' }}"></td>
-                                                                <td><input type="text" class="form-control" name="lab_table1[{{ $index }}][street_type]" value="{{ $row['street_type'] ?? '' }}"></td>
-                                                                <td><input type="checkbox" class="form-check-input" name="lab_table1[{{ $index }}][is_dirt]" value="1" {{ isset($row['is_dirt']) && $row['is_dirt'] ? 'checked' : '' }}></td>
-                                                                <td><input type="checkbox" class="form-check-input" name="lab_table1[{{ $index }}][is_asphalt]" value="1" {{ isset($row['is_asphalt']) && $row['is_asphalt'] ? 'checked' : '' }}></td>
-                                                                <td><input type="checkbox" class="form-check-input" name="lab_table1[{{ $index }}][is_tile]" value="1" {{ isset($row['is_tile']) && $row['is_tile'] ? 'checked' : '' }}></td>
-                                                                <td><input type="checkbox" class="form-check-input" name="lab_table1[{{ $index }}][is_soil]" value="1" {{ isset($row['is_soil']) && $row['is_soil'] ? 'checked' : '' }}></td>
-                                                                <td><input type="checkbox" class="form-check-input" name="lab_table1[{{ $index }}][is_mc1]" value="1" {{ isset($row['is_mc1']) && $row['is_mc1'] ? 'checked' : '' }}></td>
-                                                                <td><input type="checkbox" class="form-check-input" name="lab_table1[{{ $index }}][is_asphalt_final]" value="1" {{ isset($row['is_asphalt_final']) && $row['is_asphalt_final'] ? 'checked' : '' }}></td>
-                                                                <td><input type="text" class="form-control" name="lab_table1[{{ $index }}][notes]" value="{{ $row['notes'] ?? '' }}"></td>
-                                                                <td>
-                                                                    <button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">
-                                                                        <i class="fas fa-trash"></i>
-                                                                    </button>
-                                                                </td>
-                                                            </tr>
-                                                        @endforeach
-                                                    @endif
+                                                    <!-- الجدول فارغ للإدخال الجديد -->
                                                 </tbody>
                                             </table>
                                         </div>
@@ -553,34 +528,7 @@
                                                     </tr>
                                                 </thead>
                                                 <tbody id="labTable2Body">
-                                                    @if(isset($license) && !empty($license->lab_table2_data))
-                                                        @foreach($license->lab_table2_data as $index => $row)
-                                                            <tr>
-                                                                <td><input type="number" class="form-control" name="lab_table2[{{ $index }}][year]" value="{{ $row['year'] ?? '' }}"></td>
-                                                                <td><input type="text" class="form-control" name="lab_table2[{{ $index }}][work_type]" value="{{ $row['work_type'] ?? '' }}"></td>
-                                                                <td><input type="number" step="0.01" class="form-control" name="lab_table2[{{ $index }}][depth]" value="{{ $row['depth'] ?? '' }}"></td>
-                                                                <td><input type="checkbox" class="form-check-input" name="lab_table2[{{ $index }}][soil_compaction]" value="1" {{ isset($row['soil_compaction']) && $row['soil_compaction'] ? 'checked' : '' }}></td>
-                                                                <td><input type="checkbox" class="form-check-input" name="lab_table2[{{ $index }}][mc1rc2]" value="1" {{ isset($row['mc1rc2']) && $row['mc1rc2'] ? 'checked' : '' }}></td>
-                                                                <td><input type="checkbox" class="form-check-input" name="lab_table2[{{ $index }}][asphalt_compaction]" value="1" {{ isset($row['asphalt_compaction']) && $row['asphalt_compaction'] ? 'checked' : '' }}></td>
-                                                                <td><input type="checkbox" class="form-check-input" name="lab_table2[{{ $index }}][is_dirt]" value="1" {{ isset($row['is_dirt']) && $row['is_dirt'] ? 'checked' : '' }}></td>
-                                                                <td><input type="number" step="0.01" class="form-control" name="lab_table2[{{ $index }}][max_asphalt_density]" value="{{ $row['max_asphalt_density'] ?? '' }}"></td>
-                                                                <td><input type="number" step="0.01" class="form-control" name="lab_table2[{{ $index }}][asphalt_percentage]" value="{{ $row['asphalt_percentage'] ?? '' }}"></td>
-                                                                <td><input type="text" class="form-control" name="lab_table2[{{ $index }}][granular_gradient]" value="{{ $row['granular_gradient'] ?? '' }}"></td>
-                                                                <td><input type="text" class="form-control" name="lab_table2[{{ $index }}][marshall_test]" value="{{ $row['marshall_test'] ?? '' }}"></td>
-                                                                <td><input type="text" class="form-control" name="lab_table2[{{ $index }}][tile_evaluation]" value="{{ $row['tile_evaluation'] ?? '' }}"></td>
-                                                                <td><input type="number" step="0.01" class="form-control" name="lab_table2[{{ $index }}][coldness]" value="{{ $row['coldness'] ?? '' }}"></td>
-                                                                <td><input type="text" class="form-control" name="lab_table2[{{ $index }}][soil_classification]" value="{{ $row['soil_classification'] ?? '' }}"></td>
-                                                                <td><input type="text" class="form-control" name="lab_table2[{{ $index }}][proctor_test]" value="{{ $row['proctor_test'] ?? '' }}"></td>
-                                                                <td><input type="text" class="form-control" name="lab_table2[{{ $index }}][concrete]" value="{{ $row['concrete'] ?? '' }}"></td>
-                                                                <td><input type="text" class="form-control" name="lab_table2[{{ $index }}][notes]" value="{{ $row['notes'] ?? '' }}"></td>
-                                                                <td>
-                                                                    <button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">
-                                                                        <i class="fas fa-trash"></i>
-                                                                    </button>
-                                                                </td>
-                                                            </tr>
-                                                        @endforeach
-                                                    @endif
+                                                    <!-- الجدول فارغ للإدخال الجديد -->
                                                 </tbody>
                                             </table>
                                         </div>
@@ -602,37 +550,37 @@
                                             <div class="col-md-6">
                                                 <label class="form-label">رقم الرخصة التي عليها مخالفات</label>
                                                 <input type="text" class="form-control" name="violation_license_number"
-                                                       value="{{ old('violation_license_number', $license->violation_license_number ?? '') }}">
+                                                       value="{{ old('violation_license_number') }}">
                                             </div>
                                             <div class="col-md-6">
                                                 <label class="form-label">قيمة الرخصة</label>
                                                 <input type="number" step="0.01" class="form-control" name="violation_license_value"
-                                                       value="{{ old('violation_license_value', $license->violation_license_value ?? '') }}">
+                                                       value="{{ old('violation_license_value') }}">
                                             </div>
                                             <div class="col-md-6">
                                                 <label class="form-label">تاريخ الرخصة</label>
                                                 <input type="date" class="form-control" name="violation_license_date"
-                                                       value="{{ old('violation_license_date', $license->violation_license_date ?? '') }}">
+                                                       value="{{ old('violation_license_date') }}">
                                             </div>
                                             <div class="col-md-6">
                                                 <label class="form-label">آخر موعد سداد للمخالفة</label>
                                                 <input type="date" class="form-control" name="violation_due_date"
-                                                       value="{{ old('violation_due_date', $license->violation_due_date ?? '') }}">
+                                                       value="{{ old('violation_due_date') }}">
                                             </div>
                                             <div class="col-md-6">
                                                 <label class="form-label">رقم المخالفة</label>
                                                 <input type="text" class="form-control" name="violation_number"
-                                                       value="{{ old('violation_number', $license->violation_number ?? '') }}">
+                                                       value="{{ old('violation_number') }}">
                                             </div>
                                             <div class="col-md-6">
                                                 <label class="form-label">رقم سداد المخالفة</label>
                                                 <input type="text" class="form-control" name="violation_payment_number"
-                                                       value="{{ old('violation_payment_number', $license->violation_payment_number ?? '') }}">
+                                                       value="{{ old('violation_payment_number') }}">
                                             </div>
                                             <div class="col-12">
                                                 <label class="form-label">المسبب</label>
                                                 <input type="text" class="form-control" name="violation_cause"
-                                                       value="{{ old('violation_cause', $license->violation_cause ?? '') }}">
+                                                       value="{{ old('violation_cause') }}">
                                             </div>
                                             <div class="col-12">
                                                 <label class="form-label">مرفق المخالفات</label>
@@ -656,7 +604,7 @@
                                         <div class="col-12">
                                             <label class="form-label">ملاحظات</label>
                                             <textarea class="form-control" name="notes" rows="4" 
-                                                      placeholder="أدخل أي ملاحظات إضافية هنا...">{{ old('notes', $license->notes ?? '') }}</textarea>
+                                                      placeholder="أدخل أي ملاحظات إضافية هنا...">{{ old('notes') }}</textarea>
                                         </div>
                                         <div class="col-12">
                                             <label class="form-label">مرفقات الملاحظات</label>
@@ -678,11 +626,233 @@
                                 <div class="col-12 text-center">
                                     <button type="submit" class="btn btn-success btn-lg px-5" id="submitBtn">
                                         <i class="fas fa-save me-2"></i>
-                                        حفظ جميع البيانات
+                                        حفظ رخصة جديدة
+                                    </button>
+                                    
+                                    <!-- زر حفظ مبسط إضافي -->
+                                    <button type="button" class="btn btn-primary btn-lg px-5 ms-3" onclick="saveNewLicense()">
+                                        <i class="fas fa-plus me-2"></i>
+                                        إنشاء رخصة
                                     </button>
                                 </div>
                             </div>
                         </form>
+
+                        <!-- جدول الرخص المحفوظة -->
+                        <div class="card border-0 shadow-sm mt-5">
+                            <div class="card-header bg-gradient-secondary text-white">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h4 class="mb-0 fs-5">
+                                        <i class="fas fa-table me-2"></i>
+                                        جدول الرخص المحفوظة لأمر العمل {{ $workOrder->order_number }}
+                                    </h4>
+                                    <div class="d-flex gap-2">
+                                        <span class="badge bg-primary">
+                                            <i class="fas fa-list-ol me-1"></i>
+                                            إجمالي الرخص: <span id="totalLicensesCount">{{ $workOrder->licenses->count() ?? 0 }}</span>
+                                        </span>
+                                        <button type="button" class="btn btn-light btn-sm" onclick="refreshLicensesTable()">
+                                            <i class="fas fa-sync-alt me-1"></i>
+                                            تحديث
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-hover table-striped mb-0" id="licensesTable">
+                                        <thead class="table-dark sticky-top">
+                                            <tr>
+                                                <th style="min-width: 60px;">#</th>
+                                                <th style="min-width: 120px;">رقم الرخصة</th>
+                                                <th style="min-width: 120px;">تاريخ الرخصة</th>
+                                                <th style="min-width: 100px;">نوع الرخصة</th>
+                                                <th style="min-width: 120px;">قيمة الرخصة</th>
+                                                <th style="min-width: 120px;">قيمة التمديد</th>
+                                                <th style="min-width: 120px;">تاريخ البداية</th>
+                                                <th style="min-width: 120px;">تاريخ النهاية</th>
+                                                <th style="min-width: 100px;">أبعاد الحفر</th>
+                                                <th style="min-width: 80px;">حظر</th>
+                                                <th style="min-width: 100px;">جهة الحظر</th>
+                                                <!-- اختبارات المختبر -->
+                                                <th style="min-width: 80px;">اختبار العمق</th>
+                                                <th style="min-width: 80px;">اختبار التربة</th>
+                                                <th style="min-width: 80px;">اختبار الأسفلت</th>
+                                                <th style="min-width: 80px;">اختبار الدك</th>
+                                                <th style="min-width: 80px;">اختبار RC1/MC1</th>
+                                                <th style="min-width: 80px;">اختبار انترلوك</th>
+                                                <!-- الإخلاءات -->
+                                                <th style="min-width: 80px;">تم الإخلاء</th>
+                                                <th style="min-width: 120px;">رقم رخصة الإخلاء</th>
+                                                <th style="min-width: 120px;">قيمة رخصة الإخلاء</th>
+                                                <th style="min-width: 120px;">رقم سداد الإخلاء</th>
+                                                <th style="min-width: 120px;">تاريخ الإخلاء</th>
+                                                <th style="min-width: 120px;">مبلغ الإخلاء</th>
+                                                <!-- المخالفات -->
+                                                <th style="min-width: 120px;">رقم رخصة المخالفة</th>
+                                                <th style="min-width: 120px;">قيمة رخصة المخالفة</th>
+                                                <th style="min-width: 120px;">تاريخ رخصة المخالفة</th>
+                                                <th style="min-width: 120px;">آخر موعد سداد المخالفة</th>
+                                                <th style="min-width: 120px;">رقم المخالفة</th>
+                                                <th style="min-width: 120px;">رقم سداد المخالفة</th>
+                                                <th style="min-width: 150px;">مسبب المخالفة</th>
+                                                <!-- عام -->
+                                                <th style="min-width: 150px;">ملاحظات</th>
+                                                <th style="min-width: 100px;">تاريخ الإنشاء</th>
+                                                <th style="min-width: 150px;" class="text-center">الإجراءات</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="licensesTableBody">
+                                            <!-- سيتم ملء البيانات من خلال JavaScript أو من قاعدة البيانات -->
+                                            @if(isset($workOrder->licenses) && $workOrder->licenses->count() > 0)
+                                                @foreach($workOrder->licenses as $index => $license)
+                                                <tr data-license-id="{{ $license->id }}">
+                                                    <td>{{ $index + 1 }}</td>
+                                                    <td>
+                                                        <span class="fw-bold text-primary">{{ $license->license_number ?? 'غير محدد' }}</span>
+                                                    </td>
+                                                    <td>{{ $license->license_date ? $license->license_date->format('Y-m-d') : 'غير محدد' }}</td>
+                                                    <td>
+                                                        <span class="badge bg-info">{{ $license->license_type ?? 'غير محدد' }}</span>
+                                                    </td>
+                                                    <td>
+                                                        <span class="text-success fw-bold">{{ number_format($license->license_value ?? 0, 2) }} ر.س</span>
+                                                    </td>
+                                                    <td>
+                                                        <span class="text-warning fw-bold">{{ number_format($license->extension_value ?? 0, 2) }} ر.س</span>
+                                                    </td>
+                                                    <td>{{ $license->license_start_date ? $license->license_start_date->format('Y-m-d') : 'غير محدد' }}</td>
+                                                    <td>{{ $license->license_end_date ? $license->license_end_date->format('Y-m-d') : 'غير محدد' }}</td>
+                                                    <td>
+                                                        @if($license->excavation_length || $license->excavation_width || $license->excavation_depth)
+                                                            <small>
+                                                                الطول: {{ $license->excavation_length ?? 0 }} م<br>
+                                                                العرض: {{ $license->excavation_width ?? 0 }} م<br>
+                                                                العمق: {{ $license->excavation_depth ?? 0 }} م
+                                                            </small>
+                                                        @else
+                                                            <span class="text-muted">غير محدد</span>
+                                                        @endif
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge {{ $license->has_restriction ? 'bg-danger' : 'bg-success' }}">
+                                                            {{ $license->has_restriction ? 'نعم' : 'لا' }}
+                                                        </span>
+                                                    </td>
+                                                    <td>{{ $license->restriction_authority ?? 'لا يوجد' }}</td>
+                                                    <td>
+                                                        <span class="badge {{ $license->has_depth_test ? 'bg-success' : 'bg-secondary' }}">
+                                                            {{ $license->has_depth_test ? 'نعم' : 'لا' }}
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge {{ $license->has_soil_test ? 'bg-success' : 'bg-secondary' }}">
+                                                            {{ $license->has_soil_test ? 'نعم' : 'لا' }}
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge {{ $license->has_asphalt_test ? 'bg-success' : 'bg-secondary' }}">
+                                                            {{ $license->has_asphalt_test ? 'نعم' : 'لا' }}
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge {{ $license->has_soil_compaction_test ? 'bg-success' : 'bg-secondary' }}">
+                                                            {{ $license->has_soil_compaction_test ? 'نعم' : 'لا' }}
+                                                        </span>
+                                                    </td>
+                                                    <!-- اختبارات إضافية -->
+                                                    <td>
+                                                        <span class="badge {{ $license->has_rc1_mc1_test ? 'bg-success' : 'bg-secondary' }}">
+                                                            {{ $license->has_rc1_mc1_test ? 'نعم' : 'لا' }}
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge {{ $license->has_interlock_test ? 'bg-success' : 'bg-secondary' }}">
+                                                            {{ $license->has_interlock_test ? 'نعم' : 'لا' }}
+                                                        </span>
+                                                    </td>
+                                                    <!-- الإخلاءات -->
+                                                    <td>
+                                                        <span class="badge {{ $license->is_evacuated ? 'bg-warning' : 'bg-secondary' }}">
+                                                            {{ $license->is_evacuated ? 'نعم' : 'لا' }}
+                                                        </span>
+                                                    </td>
+                                                    <td>{{ $license->evac_license_number ?? 'غير محدد' }}</td>
+                                                    <td>
+                                                        <span class="text-warning fw-bold">{{ $license->evac_license_value ? number_format($license->evac_license_value, 2) . ' ر.س' : 'غير محدد' }}</span>
+                                                    </td>
+                                                    <td>{{ $license->evac_payment_number ?? 'غير محدد' }}</td>
+                                                    <td>{{ $license->evac_date ? $license->evac_date->format('Y-m-d') : 'غير محدد' }}</td>
+                                                    <td>
+                                                        <span class="text-info fw-bold">{{ $license->evac_amount ? number_format($license->evac_amount, 2) . ' ر.س' : 'غير محدد' }}</span>
+                                                    </td>
+                                                    <!-- المخالفات -->
+                                                    <td>{{ $license->violation_license_number ?? 'لا يوجد' }}</td>
+                                                    <td>
+                                                        <span class="text-danger fw-bold">{{ $license->violation_license_value ? number_format($license->violation_license_value, 2) . ' ر.س' : 'لا يوجد' }}</span>
+                                                    </td>
+                                                    <td>{{ $license->violation_license_date ? $license->violation_license_date->format('Y-m-d') : 'لا يوجد' }}</td>
+                                                    <td>{{ $license->violation_due_date ? $license->violation_due_date->format('Y-m-d') : 'لا يوجد' }}</td>
+                                                    <td>{{ $license->violation_number ?? 'لا يوجد' }}</td>
+                                                    <td>{{ $license->violation_payment_number ?? 'لا يوجد' }}</td>
+                                                    <td>
+                                                        @if($license->violation_cause)
+                                                            <div class="text-truncate" style="max-width: 150px;" title="{{ $license->violation_cause }}">
+                                                                {{ $license->violation_cause }}
+                                                            </div>
+                                                        @else
+                                                            <span class="text-muted">لا يوجد</span>
+                                                        @endif
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge {{ $license->is_evacuated ? 'bg-warning' : 'bg-secondary' }}">
+                                                            {{ $license->is_evacuated ? 'نعم' : 'لا' }}
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        @if($license->notes)
+                                                            <div class="text-truncate" style="max-width: 150px;" title="{{ $license->notes }}">
+                                                                {{ $license->notes }}
+                                                            </div>
+                                                        @else
+                                                            <span class="text-muted">لا توجد ملاحظات</span>
+                                                        @endif
+                                                    </td>
+                                                    <td>
+                                                        <small class="text-muted">{{ $license->created_at->format('Y-m-d H:i') }}</small>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <div class="btn-group btn-group-sm" role="group">
+                                                            <button type="button" class="btn btn-outline-info" onclick="viewLicenseDetails({{ $license->id }})" title="عرض التفاصيل">
+                                                                <i class="fas fa-eye"></i>
+                                                            </button>
+                                                            <button type="button" class="btn btn-outline-primary" onclick="editLicenseDetails({{ $license->id }})" title="تعديل">
+                                                                <i class="fas fa-edit"></i>
+                                                            </button>
+                                                            <button type="button" class="btn btn-outline-danger" onclick="deleteLicenseRecord({{ $license->id }})" title="حذف">
+                                                                <i class="fas fa-trash"></i>
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                                @endforeach
+                                            @else
+                                                <tr id="noLicensesRow">
+                                                    <td colspan="31" class="text-center py-4">
+                                                    <td colspan="19" class="text-center py-4">
+                                                        <div class="text-muted">
+                                                            <i class="fas fa-inbox fa-3x mb-3"></i>
+                                                            <h5>لا توجد رخص محفوظة بعد</h5>
+                                                            <p>قم بملء النموذج أعلاه وحفظ رخصة جديدة لعرضها هنا</p>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            @endif
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -692,7 +862,33 @@
 
 @push('scripts')
 <script>
+// وظيفة مبسطة لحفظ رخصة جديدة
+function saveNewLicense() {
+    const form = document.getElementById('licenseForm');
+    if (!form) {
+        alert('لم يتم العثور على النموذج');
+        return;
+    }
+    
+    // التحقق من الحقول المطلوبة
+    const licenseNumber = form.querySelector('[name="license_number"]');
+    if (!licenseNumber || !licenseNumber.value.trim()) {
+        alert('يرجى إدخال رقم الرخصة');
+        licenseNumber.focus();
+        return;
+    }
+    
+    // إرسال النموذج مباشرة
+    const submitBtn = document.getElementById('submitBtn');
+    if (submitBtn) {
+        submitBtn.click();
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
+    // إعداد CSRF token لجميع طلبات AJAX
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    
     // تفعيل التبويبات
     const tabButtons = document.querySelectorAll('.tab-btn');
     const tabSections = document.querySelectorAll('.tab-section');
@@ -713,6 +909,10 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             // تفعيل الزر المحدد
+            tabButtons.forEach(btn => {
+                btn.classList.remove('btn-primary');
+                btn.classList.add('btn-outline-primary');
+            });
             this.classList.remove('btn-outline-primary');
             this.classList.add('btn-primary');
         });
@@ -721,33 +921,31 @@ document.addEventListener('DOMContentLoaded', function() {
     // إظهار/إخفاء حقول الحظر
     const hasRestrictionSelect = document.getElementById('has_restriction');
     const restrictionAuthorityField = document.getElementById('restriction_authority_field');
-    const restrictionReasonField = document.getElementById('restriction_reason_field');
-    const restrictionNotesField = document.getElementById('restriction_notes_field');
     
     function toggleRestrictionFields() {
-        if (hasRestrictionSelect.value == '1') {
-            restrictionAuthorityField.style.display = 'block';
-            restrictionReasonField.style.display = 'block';
-            restrictionNotesField.style.display = 'block';
-        } else {
-            restrictionAuthorityField.style.display = 'none';
-            restrictionReasonField.style.display = 'none';
-            restrictionNotesField.style.display = 'none';
+        if (hasRestrictionSelect && restrictionAuthorityField) {
+            if (hasRestrictionSelect.value == '1') {
+                restrictionAuthorityField.style.display = 'block';
+            } else {
+                restrictionAuthorityField.style.display = 'none';
+            }
         }
     }
     
-    hasRestrictionSelect.addEventListener('change', toggleRestrictionFields);
-    toggleRestrictionFields(); // تشغيل عند التحميل
+    if (hasRestrictionSelect) {
+        hasRestrictionSelect.addEventListener('change', toggleRestrictionFields);
+        toggleRestrictionFields(); // تشغيل عند التحميل
+    }
     
     // حساب عداد الأيام للرخصة
     function calculateLicenseDays() {
-        const startDate = document.getElementById('license_start_date').value;
-        const endDate = document.getElementById('license_end_date').value;
+        const startDate = document.getElementById('license_start_date');
+        const endDate = document.getElementById('license_end_date');
         const daysText = document.getElementById('license_days_text');
         
-        if (startDate && endDate) {
-            const start = new Date(startDate);
-            const end = new Date(endDate);
+        if (startDate && endDate && daysText && startDate.value && endDate.value) {
+            const start = new Date(startDate.value);
+            const end = new Date(endDate.value);
             const diffTime = end - start;
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
             
@@ -761,21 +959,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 daysText.innerHTML = '<strong>تاريخ غير صحيح</strong>';
                 daysText.parentElement.className = 'alert alert-danger w-100 mb-0';
             }
-        } else {
-            daysText.innerHTML = 'اختر التواريخ لحساب المدة';
-            daysText.parentElement.className = 'alert alert-info w-100 mb-0';
         }
     }
     
     // حساب عداد الأيام للتمديد
     function calculateExtensionDays() {
-        const startDate = document.getElementById('extension_start_date').value;
-        const endDate = document.getElementById('extension_end_date').value;
+        const startDate = document.getElementById('extension_start_date');
+        const endDate = document.getElementById('extension_end_date');
         const daysText = document.getElementById('extension_days_text');
         
-        if (startDate && endDate) {
-            const start = new Date(startDate);
-            const end = new Date(endDate);
+        if (startDate && endDate && daysText && startDate.value && endDate.value) {
+            const start = new Date(startDate.value);
+            const end = new Date(endDate.value);
             const diffTime = end - start;
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
             
@@ -789,17 +984,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 daysText.innerHTML = '<strong>تاريخ تمديد غير صحيح</strong>';
                 daysText.parentElement.className = 'alert alert-danger w-100 mb-0';
             }
-        } else {
-            daysText.innerHTML = 'اختر تواريخ التمديد';
-            daysText.parentElement.className = 'alert alert-warning w-100 mb-0';
         }
     }
     
     // ربط الأحداث بحقول التاريخ
-    document.getElementById('license_start_date').addEventListener('change', calculateLicenseDays);
-    document.getElementById('license_end_date').addEventListener('change', calculateLicenseDays);
-    document.getElementById('extension_start_date').addEventListener('change', calculateExtensionDays);
-    document.getElementById('extension_end_date').addEventListener('change', calculateExtensionDays);
+    const licenseStartDate = document.getElementById('license_start_date');
+    const licenseEndDate = document.getElementById('license_end_date');
+    const extensionStartDate = document.getElementById('extension_start_date');
+    const extensionEndDate = document.getElementById('extension_end_date');
+    
+    if (licenseStartDate) licenseStartDate.addEventListener('change', calculateLicenseDays);
+    if (licenseEndDate) licenseEndDate.addEventListener('change', calculateLicenseDays);
+    if (extensionStartDate) extensionStartDate.addEventListener('change', calculateExtensionDays);
+    if (extensionEndDate) extensionEndDate.addEventListener('change', calculateExtensionDays);
     
     // حساب الأيام عند التحميل
     calculateLicenseDays();
@@ -809,92 +1006,21 @@ document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('licenseForm');
     const submitBtn = document.getElementById('submitBtn');
     
-    form.addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        // تعطيل زر الحفظ لمنع الضغط المتكرر
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> جاري الحفظ...';
-        
-        // إنشاء FormData object
-        const formData = new FormData(form);
-        
-        // إضافة بيانات الجداول
-        const table1Data = [];
-        document.querySelectorAll('#labTable1Body tr').forEach((row, index) => {
-            const rowData = {
-                clearance_number: row.querySelector('[name^="lab_table1["][name$="[clearance_number]"]')?.value,
-                clearance_date: row.querySelector('[name^="lab_table1["][name$="[clearance_date]"]')?.value,
-                length: row.querySelector('[name^="lab_table1["][name$="[length]"]')?.value,
-                street_type: row.querySelector('[name^="lab_table1["][name$="[street_type]"]')?.value,
-                is_dirt: row.querySelector('[name^="lab_table1["][name$="[is_dirt]"]')?.checked ? 1 : 0,
-                is_asphalt: row.querySelector('[name^="lab_table1["][name$="[is_asphalt]"]')?.checked ? 1 : 0,
-                is_tile: row.querySelector('[name^="lab_table1["][name$="[is_tile]"]')?.checked ? 1 : 0,
-                is_soil: row.querySelector('[name^="lab_table1["][name$="[is_soil]"]')?.checked ? 1 : 0,
-                is_mc1: row.querySelector('[name^="lab_table1["][name$="[is_mc1]"]')?.checked ? 1 : 0,
-                is_asphalt_final: row.querySelector('[name^="lab_table1["][name$="[is_asphalt_final]"]')?.checked ? 1 : 0,
-                notes: row.querySelector('[name^="lab_table1["][name$="[notes]"]')?.value
-            };
-            table1Data.push(rowData);
+    if (form && submitBtn) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // تعطيل زر الحفظ لمنع الضغط المتكرر
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> جاري الحفظ...';
+            
+            // إرسال النموذج مباشرة بدون AJAX معقد
+            this.submit();
         });
-        
-        const table2Data = [];
-        document.querySelectorAll('#labTable2Body tr').forEach((row, index) => {
-            const rowData = {
-                year: row.querySelector('[name^="lab_table2["][name$="[year]"]')?.value,
-                work_type: row.querySelector('[name^="lab_table2["][name$="[work_type]"]')?.value,
-                depth: row.querySelector('[name^="lab_table2["][name$="[depth]"]')?.value,
-                soil_compaction: row.querySelector('[name^="lab_table2["][name$="[soil_compaction]"]')?.checked ? 1 : 0,
-                mc1rc2: row.querySelector('[name^="lab_table2["][name$="[mc1rc2]"]')?.checked ? 1 : 0,
-                asphalt_compaction: row.querySelector('[name^="lab_table2["][name$="[asphalt_compaction]"]')?.checked ? 1 : 0,
-                is_dirt: row.querySelector('[name^="lab_table2["][name$="[is_dirt]"]')?.checked ? 1 : 0,
-                max_asphalt_density: row.querySelector('[name^="lab_table2["][name$="[max_asphalt_density]"]')?.value,
-                asphalt_percentage: row.querySelector('[name^="lab_table2["][name$="[asphalt_percentage]"]')?.value,
-                granular_gradient: row.querySelector('[name^="lab_table2["][name$="[granular_gradient]"]')?.value,
-                marshall_test: row.querySelector('[name^="lab_table2["][name$="[marshall_test]"]')?.value,
-                tile_evaluation: row.querySelector('[name^="lab_table2["][name$="[tile_evaluation]"]')?.value,
-                coldness: row.querySelector('[name^="lab_table2["][name$="[coldness]"]')?.value,
-                soil_classification: row.querySelector('[name^="lab_table2["][name$="[soil_classification]"]')?.value,
-                proctor_test: row.querySelector('[name^="lab_table2["][name$="[proctor_test]"]')?.value,
-                concrete: row.querySelector('[name^="lab_table2["][name$="[concrete]"]')?.value,
-                notes: row.querySelector('[name^="lab_table2["][name$="[notes]"]')?.value
-            };
-            table2Data.push(rowData);
-        });
-
-        formData.append('lab_table1_data', JSON.stringify(table1Data));
-        formData.append('lab_table2_data', JSON.stringify(table2Data));
-        
-        // إرسال البيانات
-        fetch(form.action, {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // نجاح العملية
-                alert(data.message || 'تم حفظ البيانات بنجاح');
-                window.location.href = '{{ route("admin.licenses.data") }}';
-            } else {
-                // فشل العملية
-                alert(data.message || 'حدث خطأ أثناء حفظ البيانات');
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = '<i class="fas fa-save me-2"></i> حفظ جميع البيانات';
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('حدث خطأ أثناء حفظ البيانات');
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = '<i class="fas fa-save me-2"></i> حفظ جميع البيانات';
-        });
-    });
+    }
 });
 
+// وظائف إضافية للجداول
 function addRowToTable1() {
     const tbody = document.getElementById('labTable1Body');
     const rowCount = tbody.rows.length;
@@ -958,6 +1084,74 @@ function addRowToTable2() {
 function removeRow(button) {
     const row = button.closest('tr');
     row.remove();
+}
+
+// وظائف التعامل مع الأزرار
+function viewLicense(licenseId) {
+    const showUrl = "{{ route('admin.licenses.show', ':id') }}".replace(':id', licenseId);
+    window.open(showUrl, '_blank');
+}
+
+function editLicense(licenseId) {
+    const editUrl = "{{ route('admin.licenses.edit', ':id') }}".replace(':id', licenseId);
+    window.open(editUrl, '_blank');
+}
+
+async function deleteLicense(licenseId) {
+    if (!confirm('هل أنت متأكد من حذف هذه الرخصة؟\nلن يمكن التراجع عن هذا الإجراء.')) {
+        return;
+    }
+    
+    try {
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        
+        const response = await fetch(`{{ route('admin.licenses.destroy', ':id') }}`.replace(':id', licenseId), {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken,
+                'Accept': 'application/json'
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // إزالة الصف من الجدول
+            const row = document.querySelector(`tr[data-license-id="${licenseId}"]`);
+            if (row) {
+                row.remove();
+                
+                // التحقق من وجود صفوف أخرى
+                const tableBody = document.getElementById('licensesTableBody');
+                if (tableBody.children.length === 0) {
+                    const noLicensesRow = document.createElement('tr');
+                    noLicensesRow.id = 'noLicensesRow';
+                    noLicensesRow.innerHTML = `
+                        <td colspan="31" class="text-center py-4">
+                            <div class="text-muted">
+                                <i class="fas fa-inbox fa-3x mb-3"></i>
+                                <h5>لا توجد رخص محفوظة بعد</h5>
+                                <p>قم بملء النموذج أعلاه وحفظ رخصة جديدة لعرضها هنا</p>
+                            </div>
+                        </td>
+                    `;
+                    tableBody.appendChild(noLicensesRow);
+                }
+            }
+            
+            alert('تم حذف الرخصة بنجاح!');
+        } else {
+            alert('فشل في حذف الرخصة: ' + (data.message || 'خطأ غير معروف'));
+        }
+    } catch (error) {
+        console.error('Error deleting license:', error);
+        alert('حدث خطأ أثناء حذف الرخصة');
+    }
+}
+
+function refreshLicensesTable() {
+    location.reload();
 }
 </script>
 @endpush
@@ -1340,6 +1534,151 @@ input[type="file"]:hover {
 .alert-danger {
     background: linear-gradient(45deg, #ffebee, #ffcdd2);
     color: #c62828;
+}
+
+/* تحسين الجدول الجديد */
+.table th {
+    font-size: 0.875rem;
+    white-space: nowrap;
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+.editable-field {
+    border: 1px solid #dee2e6;
+    transition: all 0.15s ease-in-out;
+}
+
+.editable-field:focus {
+    border-color: #86b7fe;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+.table-warning {
+    background-color: rgba(255, 193, 7, 0.1) !important;
+}
+
+.table-success {
+    background-color: rgba(25, 135, 84, 0.1) !important;
+}
+
+.sticky-top {
+    top: 0;
+    z-index: 1020;
+}
+
+.btn-group-sm > .btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+}
+
+.bg-gradient-secondary {
+    background: linear-gradient(135deg, #6c757d, #868e96);
+}
+
+/* تحسين جدول الرخص المحفوظة */
+#licensesTable {
+    min-width: 1800px; /* عرض أدنى للجدول */
+}
+
+#licensesTable thead th {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: linear-gradient(45deg, #212529, #495057) !important;
+    color: white !important;
+    border: none;
+    font-weight: 600;
+    text-align: center;
+    vertical-align: middle;
+    padding: 0.75rem 0.5rem;
+    white-space: nowrap;
+    font-size: 0.8rem;
+}
+
+#licensesTable tbody tr {
+    transition: all 0.3s ease;
+}
+
+#licensesTable tbody tr:hover {
+    background-color: rgba(0, 123, 255, 0.1);
+    transform: scale(1.01);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+#licensesTable tbody td {
+    padding: 0.5rem;
+    vertical-align: middle;
+    border: 1px solid #dee2e6;
+    font-size: 0.875rem;
+}
+
+/* تأثيرات خاصة للبيانات */
+.badge {
+    font-size: 0.75rem;
+}
+
+.text-truncate {
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* تحسين أزرار الإجراءات */
+.btn-group .btn {
+    border-radius: 0.25rem;
+    margin: 0 1px;
+    transition: all 0.2s ease;
+}
+
+.btn-group .btn:hover {
+    transform: scale(1.1);
+}
+
+/* تحسين عرض الأرقام */
+.fw-bold {
+    font-weight: 600 !important;
+}
+
+/* تحسين العداد */
+.badge.bg-primary {
+    font-size: 0.875rem;
+    padding: 0.5rem 0.75rem;
+}
+
+/* تحسين الرسائل الفارغة */
+#noLicensesRow .text-muted {
+    color: #6c757d !important;
+}
+
+#noLicensesRow .fa-inbox {
+    opacity: 0.3;
+}
+
+/* تحسين التأثيرات البصرية */
+.table-success {
+    background: linear-gradient(45deg, rgba(25, 135, 84, 0.1), rgba(40, 167, 69, 0.1)) !important;
+    animation: successGlow 2s ease-in-out;
+}
+
+@keyframes successGlow {
+    0% { 
+        background: rgba(25, 135, 84, 0.3) !important;
+        transform: scale(1.02);
+    }
+    100% { 
+        background: rgba(25, 135, 84, 0.1) !important;
+        transform: scale(1);
+    }
+}
+
+@media (max-width: 768px) {
+    .btn-group .btn {
+        padding: 0.375rem 0.5rem;
+        font-size: 0.75rem;
+    }
 }
 </style>
 @endsection 

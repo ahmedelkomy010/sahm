@@ -386,6 +386,9 @@ class WorkOrderController extends Controller
         // جلب معلومات الرخص من جدول الرخص إذا كان موجوداً
         $license = \App\Models\License::where('work_order_id', $workOrder->id)->first();
 
+        // جلب جميع الرخص الخاصة بأمر العمل هذا فقط
+        $workOrderWithLicenses = $workOrder->load('licenses');
+
         return view('admin.work_orders.license', compact('workOrder', 'licenseFiles', 'license'));
     }
 

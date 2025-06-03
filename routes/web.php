@@ -55,7 +55,6 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::post('users', [App\Http\Controllers\Admin\UserController::class, 'store'])->name('users.store');
     Route::get('users/{user}/edit', [App\Http\Controllers\Admin\UserController::class, 'edit'])->name('users.edit');
     Route::put('users/{user}', [App\Http\Controllers\Admin\UserController::class, 'update'])->name('users.update');
-    Route::patch('users/{user}', [App\Http\Controllers\Admin\UserController::class, 'update'])->name('users.update');
     Route::delete('users/{user}', [App\Http\Controllers\Admin\UserController::class, 'destroy'])->name('users.destroy');
     Route::patch('users/{user}/toggle-admin', [App\Http\Controllers\Admin\UserController::class, 'toggleAdmin'])->name('users.toggle-admin');
     
@@ -93,7 +92,6 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     
     // صفحات الرخص والتنفيذ
     Route::get('work-orders/licenses', [WorkOrderController::class, 'licenses'])->name('work-orders.licenses');
-    Route::get('work-orders/licenses/data', [\App\Http\Controllers\Admin\LicenseController::class, 'display'])->name('work-orders.licenses.data');
     Route::get('work-orders/{workOrder}/execution', [WorkOrderController::class, 'execution'])->name('work-orders.execution');
     Route::put('work-orders/{workOrder}/execution', [WorkOrderController::class, 'updateExecution'])->name('work-orders.update-execution');
     Route::delete('work-orders/{workOrder}/execution-file', [WorkOrderController::class, 'deleteExecutionFile'])->name('work-orders.delete-execution-file');
@@ -143,6 +141,31 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         ->name('work-orders.import-work-items');
     Route::get('work-orders/work-items', [WorkOrderController::class, 'getWorkItems'])
         ->name('work-orders.work-items');
+
+    // مسارات إدارة الرخص
+    Route::get('work-orders/licenses', [WorkOrderController::class, 'licenses'])->name('work-orders.licenses');
+    Route::get('work-orders/licenses/data', [\App\Http\Controllers\Admin\LicenseController::class, 'display'])->name('work-orders.licenses.data');
+    Route::post('licenses', [\App\Http\Controllers\Admin\LicenseController::class, 'store'])->name('licenses.store');
+    Route::delete('licenses/{license}', [\App\Http\Controllers\Admin\LicenseController::class, 'destroy'])->name('licenses.destroy');
+    Route::get('licenses/export/excel', [\App\Http\Controllers\Admin\LicenseController::class, 'exportExcel'])->name('licenses.export.excel');
+    Route::put('licenses/{license}/update', [\App\Http\Controllers\Admin\LicenseController::class, 'update'])->name('licenses.update-inline');
+    
+    // مسارات عرض وتعديل الرخص
+    Route::get('licenses/{license}/edit', [\App\Http\Controllers\Admin\LicenseController::class, 'edit'])->name('licenses.edit');
+    Route::put('licenses/{license}', [\App\Http\Controllers\Admin\LicenseController::class, 'update'])->name('licenses.update');
+    Route::get('licenses/{license}', [\App\Http\Controllers\Admin\LicenseController::class, 'show'])->name('licenses.show');
+
+    Route::post('work-orders/{workOrder}/installations/images', [App\Http\Controllers\WorkOrderController::class, 'uploadInstallationsImages'])->name('work-orders.installations.images');
+    Route::delete('work-orders/installations/images/{imageId}', [App\Http\Controllers\WorkOrderController::class, 'deleteInstallationImage'])->name('work-orders.installations.images.delete');
+    Route::post('work-orders/{workOrder}/electrical-works/images', [App\Http\Controllers\WorkOrderController::class, 'uploadElectricalWorksImages'])->name('work-orders.electrical-works.images');
+
+    Route::get('materials/description/{code}', [App\Http\Controllers\WorkOrderController::class, 'getMaterialDescription'])->name('materials.description');
+
+    // مرفقات الفاتورة
+    Route::post('work-orders/{workOrder}/invoice-attachments', [\App\Http\Controllers\Admin\InvoiceAttachmentController::class, 'store'])
+        ->name('work-orders.invoice-attachments.store');
+    Route::delete('work-orders/invoice-attachments/{invoiceAttachment}', [\App\Http\Controllers\Admin\InvoiceAttachmentController::class, 'destroy'])
+        ->name('work-orders.invoice-attachments.destroy');
 });
 
 // Project Selection Route
@@ -206,29 +229,6 @@ Route::middleware(['auth'])->group(function () {
     // ونبقي فقط على مسار وصف المواد الذي لا يتعارض
     Route::get('/materials/descriptions/{code}', [MaterialsController::class, 'getMaterialDescription'])->name('materials.description');
 });
-
-// مسارات إدارة الرخص
-Route::get('admin/work-orders/licenses/data', [\App\Http\Controllers\Admin\LicenseController::class, 'display'])->name('admin.work-orders.licenses.data');
-Route::get('admin/licenses/data', [\App\Http\Controllers\Admin\LicenseController::class, 'data'])->name('admin.licenses.data');
-Route::get('admin/work-orders/{workOrder}/license', [WorkOrderController::class, 'license'])->name('admin.work-orders.license');
-Route::put('admin/work-orders/{workOrder}/update-license', [WorkOrderController::class, 'updateLicense'])->name('admin.work-orders.update-license');
-Route::get('admin/licenses/{license}/edit', [\App\Http\Controllers\Admin\LicenseController::class, 'edit'])->name('admin.licenses.edit');
-Route::put('admin/licenses/{license}/update', [\App\Http\Controllers\Admin\LicenseController::class, 'update'])->name('admin.licenses.update');
-Route::get('admin/licenses/{license}/show', [App\Http\Controllers\Admin\LicenseController::class, 'show'])->name('admin.licenses.show');
-
-Route::post('admin/work-orders/{workOrder}/installations/images', [App\Http\Controllers\WorkOrderController::class, 'uploadInstallationsImages'])->name('admin.work-orders.installations.images');
-Route::delete('admin/work-orders/installations/images/{imageId}', [App\Http\Controllers\WorkOrderController::class, 'deleteInstallationImage'])->name('admin.work-orders.installations.images.delete');
-Route::post('admin/work-orders/{workOrder}/electrical-works/images', [App\Http\Controllers\WorkOrderController::class, 'uploadElectricalWorksImages'])->name('admin.work-orders.electrical-works.images');
-
-Route::get('admin/materials/description/{code}', [App\Http\Controllers\WorkOrderController::class, 'getMaterialDescription'])->name('admin.materials.description');
-
-// مرفقات الفاتورة
-Route::post('admin/work-orders/{workOrder}/invoice-attachments', [\App\Http\Controllers\Admin\InvoiceAttachmentController::class, 'store'])
-    ->name('admin.work-orders.invoice-attachments.store');
-Route::delete('admin/work-orders/invoice-attachments/{invoiceAttachment}', [\App\Http\Controllers\Admin\InvoiceAttachmentController::class, 'destroy'])
-    ->name('admin.work-orders.invoice-attachments.destroy');
-
-Route::get('materials/description/{code}', [App\Http\Controllers\MaterialsController::class, 'getDescriptionByCode']);
 
 // Lab Licenses Web Routes
 Route::get('/lab-licenses', [LabLicenseWebController::class, 'index'])->name('lab-licenses.index');
