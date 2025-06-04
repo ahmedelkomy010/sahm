@@ -427,7 +427,79 @@
                                         </div>
                                     </div>
 
-                                    <!-- جداول المختبر -->
+                                    
+
+                                    <div class="row mt-3">
+                                        <div class="col-12 text-center">
+                                            <button type="button" class="btn btn-success btn-lg px-4" onclick="saveLabSection()">
+                                                <i class="fas fa-save me-2"></i>
+                                                حفظ المختبر
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <!-- قسم الإخلاءات -->
+                            <div id="evacuations-section" class="tab-section" style="display: none;">
+                                <form id="evacuationsForm" class="evacuations-form">
+                                    @csrf
+                                    <input type="hidden" name="work_order_id" value="{{ $workOrder->id }}">
+                                    <input type="hidden" name="section_type" value="evacuations">
+                                    
+                                <div class="card border-0 shadow-sm mb-4">
+                                    <div class="card-header bg-warning text-dark">
+                                        <h4 class="mb-0 fs-5">
+                                            <i class="fas fa-truck-moving me-2"></i>
+                                            معلومات الإخلاءات
+                                        </h4>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row g-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label">تم الإخلاء؟</label>
+                                                <select class="form-select" name="is_evacuated" id="is_evacuated">
+                                                    <option value="0" {{ old('is_evacuated', 0) == 0 ? 'selected' : '' }}>لا</option>
+                                                    <option value="1" {{ old('is_evacuated', 0) == 1 ? 'selected' : '' }}>نعم</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">رقم الرخصة</label>
+                                                <input type="text" class="form-control" name="evac_license_number"
+                                                       value="{{ old('evac_license_number') }}">
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label">قيمة الرخصة</label>
+                                                <div class="input-group">
+                                                    <input type="number" step="0.01" class="form-control" name="evac_license_value"
+                                                           value="{{ old('evac_license_value') }}">
+                                                    <span class="input-group-text">ريال</span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">رقم سداد الرخصة</label>
+                                                <input type="text" class="form-control" name="evac_payment_number"
+                                                       value="{{ old('evac_payment_number') }}">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">تاريخ الإخلاء</label>
+                                                <input type="date" class="form-control" name="evac_date"
+                                                       value="{{ old('evac_date') }}">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">مبلغ الإخلاء</label>
+                                                <input type="number" step="0.01" class="form-control" name="evac_amount"
+                                                       value="{{ old('evac_amount', $license->evac_amount ?? '') }}">
+                                            </div>
+                                            <div class="col-12">
+                                                <label class="form-label">مرفق الإخلاءات</label>
+                                                <input type="file" class="form-control" name="evacuations_files[]" multiple accept=".pdf,.jpg,.jpeg,.png">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                    <!-- جداول المختبر المنقولة -->
                                     <div class="card border-0 shadow-sm mb-4">
                                         <div class="card-header bg-info text-white">
                                             <h4 class="mb-0 fs-5">
@@ -437,30 +509,34 @@
                                         </div>
                                         <div class="card-body">
                                             <div class="table-responsive">
-                                                <table class="table table-bordered" id="labTable1">
+                                                <table class="table table-bordered" id="evacTable1">
                                                     <thead class="bg-primary text-white">
                                                         <tr>
-                                                            <th colspan="2" class="text-center">الفسح</th>
-                                                            <th colspan="3" class="text-center">نوع الشارع</th>
+                                                            <th rowspan="2" class="align-middle">رقم الفسح</th>
+                                                            <th rowspan="2" class="align-middle">تاريخ الفسح</th>
+                                                            <th colspan="3" class="text-center">كمية المواد (متر مكعب)</th>
+                                                            <th rowspan="2" class="align-middle">نوع الشارع</th>
                                                             <th rowspan="2" class="align-middle">الطول</th>
-                                                            <th rowspan="2" class="align-middle">تدقيق المختبر</th>
+                                                            <th rowspan="2" class="align-middle">رقم الفسح والمختبر</th>
+                                                            <th colspan="3" class="text-center">تدقيق المختبر</th>
                                                             <th rowspan="2" class="align-middle">ملاحظات</th>
                                                             <th rowspan="2" class="align-middle">حذف</th>
                                                         </tr>
                                                         <tr>
-                                                            <th>رقم الفسح</th>
-                                                            <th>تاريخ الفسح</th>
                                                             <th>ترابي</th>
                                                             <th>أسفلت</th>
                                                             <th>بلاط</th>
+                                                            <th>التربة</th>
+                                                            <th>MC1</th>
+                                                            <th>أسفلت</th>
                                                         </tr>
                                                     </thead>
-                                                    <tbody id="labTable1Body">
+                                                    <tbody id="evacTable1Body">
                                                         <!-- سيتم إضافة الصفوف هنا -->
                                                     </tbody>
                                                 </table>
                                             </div>
-                                            <button type="button" class="btn btn-primary btn-sm mt-2" onclick="addRowToTable1()">
+                                            <button type="button" class="btn btn-primary btn-sm mt-2" onclick="addRowToEvacTable1()">
                                                 <i class="fas fa-plus"></i> إضافة صف جديد
                                             </button>
                                         </div>
@@ -476,7 +552,7 @@
                                         </div>
                                         <div class="card-body">
                                             <div class="table-responsive">
-                                                <table class="table table-bordered" id="labTable2">
+                                                <table class="table table-bordered" id="evacTable2">
                                                     <thead class="bg-dark text-white">
                                                         <tr>
                                                             <th>السنة</th>
@@ -499,84 +575,14 @@
                                                             <th>حذف</th>
                                                         </tr>
                                                     </thead>
-                                                    <tbody id="labTable2Body">
+                                                    <tbody id="evacTable2Body">
                                                         <!-- سيتم إضافة الصفوف هنا -->
                                                     </tbody>
                                                 </table>
                                             </div>
-                                            <button type="button" class="btn btn-primary btn-sm mt-2" onclick="addRowToTable2()">
+                                            <button type="button" class="btn btn-primary btn-sm mt-2" onclick="addRowToEvacTable2()">
                                                 <i class="fas fa-plus"></i> إضافة صف جديد
                                             </button>
-                                        </div>
-                                    </div>
-
-                                    <div class="row mt-3">
-                                        <div class="col-12 text-center">
-                                            <button type="button" class="btn btn-success btn-lg px-4" onclick="saveLabSection()">
-                                                <i class="fas fa-save me-2"></i>
-                                                حفظ المختبر
-                                            </button>
-                                        </div>
-                                    </div>
-                                </form>
-                            </div>
-
-                            <!-- قسم الإخلاءات -->
-                            <div id="evacuations-section" class="tab-section" style="display: none;">
-                                <form id="evacuationsForm" class="evacuations-form">
-                                    @csrf
-                                    <input type="hidden" name="work_order_id" value="{{ $workOrder->id }}">
-                                    <input type="hidden" name="section_type" value="evacuations">
-                                    
-                                    <div class="card border-0 shadow-sm">
-                                        <div class="card-header bg-warning text-dark">
-                                            <h4 class="mb-0 fs-5">
-                                                <i class="fas fa-truck-moving me-2"></i>
-                                                معلومات الإخلاءات
-                                            </h4>
-                                        </div>
-                                        <div class="card-body">
-                                            <div class="row g-3">
-                                                <div class="col-md-6">
-                                                    <label class="form-label">تم الإخلاء؟</label>
-                                                    <select class="form-select" name="is_evacuated" id="is_evacuated">
-                                                        <option value="0" {{ old('is_evacuated', 0) == 0 ? 'selected' : '' }}>لا</option>
-                                                        <option value="1" {{ old('is_evacuated', 0) == 1 ? 'selected' : '' }}>نعم</option>
-                                                    </select>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <label class="form-label">رقم الرخصة</label>
-                                                    <input type="text" class="form-control" name="evac_license_number"
-                                                           value="{{ old('evac_license_number') }}">
-                                                </div>
-                                                <div class="col-md-4">
-                                                    <label class="form-label">قيمة الرخصة</label>
-                                                    <div class="input-group">
-                                                        <input type="number" step="0.01" class="form-control" name="evac_license_value"
-                                                               value="{{ old('evac_license_value') }}">
-                                                        <span class="input-group-text">ريال</span>
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <label class="form-label">رقم سداد الرخصة</label>
-                                                    <input type="text" class="form-control" name="evac_payment_number"
-                                                           value="{{ old('evac_payment_number') }}">
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <label class="form-label">تاريخ الإخلاء</label>
-                                                    <input type="date" class="form-control" name="evac_date"
-                                                           value="{{ old('evac_date') }}">
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <label class="form-label">مبلغ الإخلاء</label>
-                                                    <input type="number" step="0.01" class="form-control" name="evac_amount"
-                                                           value="{{ old('evac_amount', $license->evac_amount ?? '') }}">
-                                                </div>
-                                                <div class="col-12">
-                                                    <label class="form-label">مرفق الإخلاءات</label>
-                                                    <input type="file" class="form-control" name="evacuations_files[]" multiple accept=".pdf,.jpg,.jpeg,.png">
-                                                </div>
-                                            </div>
                                         </div>
                                     </div>
                                     
@@ -1222,6 +1228,9 @@
                         if (input.type === 'checkbox') {
                             rowData[fieldName] = input.checked;
                             if (input.checked) hasData = true;
+                        } else if (input.type === 'number') {
+                            rowData[fieldName] = parseFloat(input.value) || 0;
+                            if (input.value.trim()) hasData = true;
                         } else {
                             rowData[fieldName] = input.value;
                             if (input.value.trim()) hasData = true;
@@ -1240,6 +1249,18 @@
         async function saveEvacuationsSection() {
             const form = document.getElementById('evacuationsForm');
             const formData = new FormData(form);
+            
+            // معالجة بيانات جداول الإخلاءات
+            const evacTable1Data = collectTableData('evacTable1Body');
+            const evacTable2Data = collectTableData('evacTable2Body');
+            
+            if (evacTable1Data.length > 0) {
+                formData.append('evac_table1_data', JSON.stringify(evacTable1Data));
+            }
+            
+            if (evacTable2Data.length > 0) {
+                formData.append('evac_table2_data', JSON.stringify(evacTable2Data));
+            }
             
             try {
                 showLoadingState('evacuationsForm', 'جاري حفظ الإخلاءات...');
@@ -1406,11 +1427,15 @@
             row.innerHTML = `
                 <td><input type="text" class="form-control form-control-sm" name="lab_table1[${rowCount}][clearance_number]" placeholder="رقم الفسح"></td>
                 <td><input type="date" class="form-control form-control-sm" name="lab_table1[${rowCount}][clearance_date]"></td>
-                <td><input type="checkbox" class="form-check-input" name="lab_table1[${rowCount}][is_dirt]" value="1"></td>
-                <td><input type="checkbox" class="form-check-input" name="lab_table1[${rowCount}][is_asphalt]" value="1"></td>
-                <td><input type="checkbox" class="form-check-input" name="lab_table1[${rowCount}][is_tile]" value="1"></td>
+                <td><input type="number" step="0.01" class="form-control form-control-sm" name="lab_table1[${rowCount}][dirt_quantity]" placeholder="كمية ترابي"></td>
+                <td><input type="number" step="0.01" class="form-control form-control-sm" name="lab_table1[${rowCount}][asphalt_quantity]" placeholder="كمية أسفلت"></td>
+                <td><input type="number" step="0.01" class="form-control form-control-sm" name="lab_table1[${rowCount}][tile_quantity]" placeholder="كمية بلاط"></td>
+                <td><input type="text" class="form-control form-control-sm" name="lab_table1[${rowCount}][street_type]" placeholder="نوع الشارع"></td>
                 <td><input type="number" step="0.01" class="form-control form-control-sm" name="lab_table1[${rowCount}][length]" placeholder="الطول بالمتر"></td>
-                <td><input type="text" class="form-control form-control-sm" name="lab_table1[${rowCount}][lab_check]" placeholder="تدقيق المختبر"></td>
+                <td><input type="text" class="form-control form-control-sm" name="lab_table1[${rowCount}][clearance_lab_number]" placeholder="رقم الفسح والمختبر"></td>
+                <td><input type="number" step="0.01" class="form-control form-control-sm" name="lab_table1[${rowCount}][soil_check]" placeholder="تدقيق التربة"></td>
+                <td><input type="number" step="0.01" class="form-control form-control-sm" name="lab_table1[${rowCount}][mc1_check]" placeholder="تدقيق MC1"></td>
+                <td><input type="number" step="0.01" class="form-control form-control-sm" name="lab_table1[${rowCount}][asphalt_check]" placeholder="تدقيق أسفلت"></td>
                 <td><input type="text" class="form-control form-control-sm" name="lab_table1[${rowCount}][notes]" placeholder="ملاحظات"></td>
                 <td>
                     <button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">
@@ -1651,6 +1676,67 @@
             }
         });
         
+        // وظائف إدارة جداول الإخلاءات
+        function addRowToEvacTable1() {
+            const tbody = document.getElementById('evacTable1Body');
+            const rowCount = tbody.rows.length;
+            const row = document.createElement('tr');
+            
+            row.innerHTML = `
+                <td><input type="text" class="form-control form-control-sm" name="evac_table1[${rowCount}][clearance_number]" placeholder="رقم الفسح"></td>
+                <td><input type="date" class="form-control form-control-sm" name="evac_table1[${rowCount}][clearance_date]"></td>
+                <td><input type="number" step="0.01" class="form-control form-control-sm" name="evac_table1[${rowCount}][dirt_quantity]" placeholder="كمية ترابي"></td>
+                <td><input type="number" step="0.01" class="form-control form-control-sm" name="evac_table1[${rowCount}][asphalt_quantity]" placeholder="كمية أسفلت"></td>
+                <td><input type="number" step="0.01" class="form-control form-control-sm" name="evac_table1[${rowCount}][tile_quantity]" placeholder="كمية بلاط"></td>
+                <td><input type="text" class="form-control form-control-sm" name="evac_table1[${rowCount}][street_type]" placeholder="نوع الشارع"></td>
+                <td><input type="number" step="0.01" class="form-control form-control-sm" name="evac_table1[${rowCount}][length]" placeholder="الطول بالمتر"></td>
+                <td><input type="text" class="form-control form-control-sm" name="evac_table1[${rowCount}][clearance_lab_number]" placeholder="رقم الفسح والمختبر"></td>
+                <td><input type="number" step="0.01" class="form-control form-control-sm" name="evac_table1[${rowCount}][soil_check]" placeholder="تدقيق التربة"></td>
+                <td><input type="number" step="0.01" class="form-control form-control-sm" name="evac_table1[${rowCount}][mc1_check]" placeholder="تدقيق MC1"></td>
+                <td><input type="number" step="0.01" class="form-control form-control-sm" name="evac_table1[${rowCount}][asphalt_check]" placeholder="تدقيق أسفلت"></td>
+                <td><input type="text" class="form-control form-control-sm" name="evac_table1[${rowCount}][notes]" placeholder="ملاحظات"></td>
+                <td>
+                    <button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            `;
+            
+            tbody.appendChild(row);
+        }
+
+        function addRowToEvacTable2() {
+            const tbody = document.getElementById('evacTable2Body');
+            const rowCount = tbody.rows.length;
+            const row = document.createElement('tr');
+            
+            row.innerHTML = `
+                <td><input type="number" class="form-control form-control-sm" name="evac_table2[${rowCount}][year]" value="${new Date().getFullYear()}"></td>
+                <td><input type="text" class="form-control form-control-sm" name="evac_table2[${rowCount}][work_type]" placeholder="نوع العمل"></td>
+                <td><input type="number" step="0.01" class="form-control form-control-sm" name="evac_table2[${rowCount}][depth]" placeholder="العمق"></td>
+                <td><input type="checkbox" class="form-check-input" name="evac_table2[${rowCount}][soil_compaction]" value="1"></td>
+                <td><input type="checkbox" class="form-check-input" name="evac_table2[${rowCount}][mc1rc2]" value="1"></td>
+                <td><input type="checkbox" class="form-check-input" name="evac_table2[${rowCount}][asphalt_compaction]" value="1"></td>
+                <td><input type="checkbox" class="form-check-input" name="evac_table2[${rowCount}][is_dirt]" value="1"></td>
+                <td><input type="number" step="0.01" class="form-control form-control-sm" name="evac_table2[${rowCount}][max_asphalt_density]" placeholder="الكثافة القصوى"></td>
+                <td><input type="number" step="0.01" class="form-control form-control-sm" name="evac_table2[${rowCount}][asphalt_percentage]" placeholder="نسبة الأسفلت"></td>
+                <td><input type="text" class="form-control form-control-sm" name="evac_table2[${rowCount}][granular_gradient]" placeholder="التدرج الحبيبي"></td>
+                <td><input type="text" class="form-control form-control-sm" name="evac_table2[${rowCount}][marshall_test]" placeholder="تجربة مارشال"></td>
+                <td><input type="text" class="form-control form-control-sm" name="evac_table2[${rowCount}][tile_evaluation]" placeholder="تقييم البلاط"></td>
+                <td><input type="number" step="0.01" class="form-control form-control-sm" name="evac_table2[${rowCount}][coldness]" placeholder="البرودة"></td>
+                <td><input type="text" class="form-control form-control-sm" name="evac_table2[${rowCount}][soil_classification]" placeholder="تصنيف التربة"></td>
+                <td><input type="text" class="form-control form-control-sm" name="evac_table2[${rowCount}][proctor_test]" placeholder="تجربة بروكتور"></td>
+                <td><input type="text" class="form-control form-control-sm" name="evac_table2[${rowCount}][concrete]" placeholder="الخرسانة"></td>
+                <td><input type="text" class="form-control form-control-sm" name="evac_table2[${rowCount}][notes]" placeholder="ملاحظات"></td>
+                <td>
+                    <button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            `;
+            
+            tbody.appendChild(row);
+        }
 </script>
 @endpush
 
