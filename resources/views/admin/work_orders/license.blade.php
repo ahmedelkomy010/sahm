@@ -720,7 +720,7 @@
                             <div class="card-header bg-gradient-success text-white">
                                 <h4 class="mb-0 fs-5">
                                     <i class="fas fa-save me-2"></i>
-                                    حفظ الرخصة
+                                    اعداد الرخصة
                                 </h4>
                             </div>
                             <div class="card-body text-center">
@@ -729,42 +729,6 @@
                                         <div class="row g-3">
                                             <!-- أزرار حفظ الأقسام الفردية -->
                                             <div class="col-lg-4 col-md-6">
-                                                <button type="button" class="btn btn-warning w-100" onclick="saveCoordinationSection(true)">
-                                                    <i class="fas fa-certificate me-2"></i>
-                                                    إنشاء رخصة جديدة - شهادة التنسيق
-                                                </button>
-                                            </div>
-                                            <div class="col-lg-4 col-md-6">
-                                                <button type="button" class="btn btn-primary w-100" onclick="saveDigLicenseSection(true)">
-                                                    <i class="fas fa-file-contract me-2"></i>
-                                                    إنشاء رخصة جديدة - رخص الحفر
-                                                </button>
-                                            </div>
-                                            <div class="col-lg-4 col-md-6">
-                                                <button type="button" class="btn btn-success w-100" onclick="saveLabSection(true)">
-                                                    <i class="fas fa-flask me-2"></i>
-                                                    إنشاء رخصة جديدة - المختبر
-                                                </button>
-                                            </div>
-                                            <div class="col-lg-4 col-md-6">
-                                                <button type="button" class="btn btn-info w-100" onclick="saveEvacuationsSection(true)">
-                                                    <i class="fas fa-truck-moving me-2"></i>
-                                                    إنشاء رخصة جديدة - الإخلاءات
-                                                </button>
-                                            </div>
-                                            <div class="col-lg-4 col-md-6">
-                                                <button type="button" class="btn btn-danger w-100" onclick="saveViolationsSection(true)">
-                                                    <i class="fas fa-exclamation-triangle me-2"></i>
-                                                    إنشاء رخصة جديدة - المخالفات
-                                                </button>
-                                            </div>
-                                            <div class="col-lg-4 col-md-6">
-                                                <button type="button" class="btn btn-dark w-100" onclick="saveNotesSection(true)">
-                                                    <i class="fas fa-sticky-note me-2"></i>
-                                                    إنشاء رخصة جديدة - الملاحظات
-                                                </button>
-                                            </div>
-                                        </div>
                                         
                                         <hr class="my-4">
                                         
@@ -780,12 +744,7 @@
                                             </button>
                                         </div>
                                         
-                                        <div class="mt-3">
-                                            <small class="text-muted">
-                                                <i class="fas fa-info-circle me-1"></i>
-                                                جميع الأزرار تنشئ رخصة جديدة منفصلة تماماً
-                                            </small>
-                                        </div>
+                                        
                                     </div>
                                 </div>
                             </div>
@@ -1358,9 +1317,9 @@
                 <td><input type="text" class="form-control form-control-sm" name="evac_table1[${rowCount}][street_type]" placeholder="نوع الشارع"></td>
                 <td><input type="number" step="0.01" class="form-control form-control-sm" name="evac_table1[${rowCount}][length]" placeholder="الطول بالمتر"></td>
                 <td><input type="text" class="form-control form-control-sm" name="evac_table1[${rowCount}][clearance_lab_number]" placeholder="رقم الفسح والمختبر"></td>
-                <td><input type="number" step="0.01" class="form-control form-control-sm" name="evac_table1[${rowCount}][soil_check]" placeholder="تدقيق التربة"></td>
-                <td><input type="number" step="0.01" class="form-control form-control-sm" name="evac_table1[${rowCount}][mc1_check]" placeholder="تدقيق MC1"></td>
-                <td><input type="number" step="0.01" class="form-control form-control-sm" name="evac_table1[${rowCount}][asphalt_check]" placeholder="تدقيق أسفلت"></td>
+                <td><input type="text" class="form-control form-control-sm" name="evac_table1[${rowCount}][soil_check]" placeholder="تدقيق التربة"></td>
+                <td><input type="text" step="0.01" class="form-control form-control-sm" name="evac_table1[${rowCount}][mc1_check]" placeholder="تدقيق MC1"></td>
+                <td><input type="text" step="0.01" class="form-control form-control-sm" name="evac_table1[${rowCount}][asphalt_check]" placeholder="تدقيق أسفلت"></td>
                 <td><input type="text" class="form-control form-control-sm" name="evac_table1[${rowCount}][notes]" placeholder="ملاحظات"></td>
                 <td>
                     <button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">
