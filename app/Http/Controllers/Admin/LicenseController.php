@@ -439,4 +439,347 @@ class LicenseController extends Controller
 
         return response()->stream($callback, 200, $headers);
     }
+
+    /**
+     * حفظ قسم منفصل من الرخصة
+     */
+    public function saveSection(Request $request)
+    {
+        try {
+            $sectionType = $request->input('section_type');
+            $workOrderId = $request->input('work_order_id');
+            
+            // التحقق من صحة المعاملات الأساسية
+            if (!$sectionType || !$workOrderId) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'نوع القسم أو معرف أمر العمل مفقود'
+                ], 400);
+            }
+            
+            // البحث عن رخصة موجودة أو إنشاء واحدة جديدة
+            $license = License::where('work_order_id', $workOrderId)->first();
+            $isNewLicense = false;
+            
+            if (!$license) {
+                $license = new License();
+                $license->work_order_id = $workOrderId;
+                $isNewLicense = true;
+            }
+            
+            // حفظ البيانات حسب نوع القسم
+            switch ($sectionType) {
+                case 'coordination':
+                    $this->saveCoordinationSection($request, $license);
+                    break;
+                case 'dig_license':
+                    $this->saveDigLicenseSection($request, $license);
+                    break;
+                case 'lab':
+                    $this->saveLabSection($request, $license);
+                    break;
+                case 'evacuations':
+                    $this->saveEvacuationsSection($request, $license);
+                    break;
+                case 'violations':
+                    $this->saveViolationsSection($request, $license);
+                    break;
+                case 'notes':
+                    $this->saveNotesSection($request, $license);
+                    break;
+                default:
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'نوع القسم غير معروف'
+                    ], 400);
+            }
+            
+            $license->save();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'تم حفظ القسم بنجاح',
+                'license_id' => $license->id,
+                'refresh_table' => $isNewLicense
+            ]);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error saving license section: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'request' => $request->all()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء حفظ القسم: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+    
+    /**
+     * حفظ قسم شهادة التنسيق
+     */
+    private function saveCoordinationSection(Request $request, License $license)
+    {
+        $license->coordination_certificate_notes = $request->input('coordination_certificate_notes');
+        $license->has_restriction = $request->input('has_restriction', 0) == '1';
+        $license->restriction_authority = $request->input('restriction_authority');
+        
+        // معالجة ملفات شهادة التنسيق
+        if ($request->hasFile('coordination_certificate_path')) {
+            $file = $request->file('coordination_certificate_path');
+            $filename = time() . '_coordination_cert_' . $file->getClientOriginalName();
+            $path = $file->storeAs('licenses/coordination', $filename, 'public');
+            $license->coordination_certificate_path = $path;
+        }
+        
+        // معالجة ملفات الخطابات والتعهدات
+        if ($request->hasFile('letters_commitments_files')) {
+            $files = $request->file('letters_commitments_files');
+            $filePaths = [];
+            
+            foreach ($files as $file) {
+                $filename = time() . '_letters_' . $file->getClientOriginalName();
+                $path = $file->storeAs('licenses/letters', $filename, 'public');
+                $filePaths[] = $path;
+            }
+            
+            $license->letters_commitments_file_path = json_encode($filePaths);
+        }
+    }
+    
+    /**
+     * حفظ قسم رخص الحفر
+     */
+    private function saveDigLicenseSection(Request $request, License $license)
+    {
+        $license->license_number = $request->input('license_number');
+        $license->license_date = $request->input('license_date');
+        $license->license_type = $request->input('license_type');
+        $license->license_value = $request->input('license_value');
+        $license->extension_value = $request->input('extension_value');
+        $license->excavation_length = $request->input('excavation_length');
+        $license->excavation_width = $request->input('excavation_width');
+        $license->excavation_depth = $request->input('excavation_depth');
+        $license->license_start_date = $request->input('license_start_date');
+        $license->license_end_date = $request->input('license_end_date');
+        $license->extension_start_date = $request->input('extension_start_date');
+        $license->extension_end_date = $request->input('extension_end_date');
+        
+        // معالجة الملفات
+        $this->handleDigLicenseFiles($request, $license);
+    }
+    
+    /**
+     * حفظ قسم المختبر
+     */
+    private function saveLabSection(Request $request, License $license)
+    {
+        $license->has_depth_test = $request->input('has_depth_test', 0) == '1';
+        $license->has_soil_compaction_test = $request->input('has_soil_compaction_test', 0) == '1';
+        $license->has_rc1_mc1_test = $request->input('has_rc1_mc1_test', 0) == '1';
+        $license->has_asphalt_test = $request->input('has_asphalt_test', 0) == '1';
+        $license->has_soil_test = $request->input('has_soil_test', 0) == '1';
+        $license->has_interlock_test = $request->input('has_interlock_test', 0) == '1';
+        
+        // معالجة بيانات جدول المختبر الأول
+        if ($request->has('lab_table1')) {
+            $labTable1Data = $request->input('lab_table1');
+            $cleanedTable1Data = [];
+            
+            foreach ($labTable1Data as $row) {
+                // تنظيف البيانات وإزالة الصفوف الفارغة
+                $cleanRow = array_filter($row, function($value, $key) {
+                    if (in_array($key, ['is_dirt', 'is_asphalt', 'is_tile'])) {
+                        return true; // احتفظ بقيم checkbox حتى لو كانت false
+                    }
+                    return !empty(trim($value));
+                }, ARRAY_FILTER_USE_BOTH);
+                
+                if (!empty($cleanRow) && (isset($row['clearance_number']) || isset($row['clearance_date']))) {
+                    $cleanedTable1Data[] = $row;
+                }
+            }
+            
+            $license->lab_table1_data = !empty($cleanedTable1Data) ? json_encode($cleanedTable1Data) : null;
+        }
+        
+        // معالجة بيانات جدول المختبر الثاني
+        if ($request->has('lab_table2')) {
+            $labTable2Data = $request->input('lab_table2');
+            $cleanedTable2Data = [];
+            
+            foreach ($labTable2Data as $row) {
+                // تنظيف البيانات وإزالة الصفوف الفارغة
+                $cleanRow = array_filter($row, function($value, $key) {
+                    if (in_array($key, ['soil_compaction', 'mc1rc2', 'asphalt_compaction', 'is_dirt'])) {
+                        return true; // احتفظ بقيم checkbox حتى لو كانت false
+                    }
+                    return !empty(trim($value));
+                }, ARRAY_FILTER_USE_BOTH);
+                
+                if (!empty($cleanRow) && (isset($row['year']) || isset($row['work_type']))) {
+                    $cleanedTable2Data[] = $row;
+                }
+            }
+            
+            $license->lab_table2_data = !empty($cleanedTable2Data) ? json_encode($cleanedTable2Data) : null;
+        }
+        
+        // معالجة ملفات الاختبارات
+        $this->handleLabFiles($request, $license);
+    }
+    
+    /**
+     * حفظ قسم الإخلاءات
+     */
+    private function saveEvacuationsSection(Request $request, License $license)
+    {
+        $license->is_evacuated = $request->input('is_evacuated', 0) == '1';
+        $license->evac_license_number = $request->input('evac_license_number');
+        $license->evac_license_value = $request->input('evac_license_value');
+        $license->evac_payment_number = $request->input('evac_payment_number');
+        $license->evac_date = $request->input('evac_date');
+        $license->evac_amount = $request->input('evac_amount');
+        
+        // معالجة ملفات الإخلاءات
+        if ($request->hasFile('evacuations_files')) {
+            $files = $request->file('evacuations_files');
+            $filePaths = [];
+            
+            foreach ($files as $file) {
+                $filename = time() . '_evacuation_' . $file->getClientOriginalName();
+                $path = $file->storeAs('licenses/evacuations', $filename, 'public');
+                $filePaths[] = $path;
+            }
+            
+            $license->evacuations_file_path = json_encode($filePaths);
+        }
+    }
+    
+    /**
+     * حفظ قسم المخالفات
+     */
+    private function saveViolationsSection(Request $request, License $license)
+    {
+        $license->violation_license_number = $request->input('violation_license_number');
+        $license->violation_license_value = $request->input('violation_license_value');
+        $license->violation_license_date = $request->input('violation_license_date');
+        $license->violation_due_date = $request->input('violation_due_date');
+        $license->violation_number = $request->input('violation_number');
+        $license->violation_payment_number = $request->input('violation_payment_number');
+        $license->violation_cause = $request->input('violation_cause');
+        
+        // معالجة ملفات المخالفات
+        if ($request->hasFile('violations_files')) {
+            $files = $request->file('violations_files');
+            $filePaths = [];
+            
+            foreach ($files as $file) {
+                $filename = time() . '_violation_' . $file->getClientOriginalName();
+                $path = $file->storeAs('licenses/violations', $filename, 'public');
+                $filePaths[] = $path;
+            }
+            
+            $license->violations_file_path = json_encode($filePaths);
+        }
+    }
+    
+    /**
+     * حفظ قسم الملاحظات الإضافية
+     */
+    private function saveNotesSection(Request $request, License $license)
+    {
+        $license->notes = $request->input('notes');
+        
+        // معالجة مرفقات الملاحظات
+        if ($request->hasFile('notes_attachments')) {
+            $files = $request->file('notes_attachments');
+            $filePaths = [];
+            
+            foreach ($files as $file) {
+                $filename = time() . '_notes_' . $file->getClientOriginalName();
+                $path = $file->storeAs('licenses/notes', $filename, 'public');
+                $filePaths[] = $path;
+            }
+            
+            $license->notes_attachments_path = json_encode($filePaths);
+        }
+    }
+    
+    /**
+     * معالجة ملفات رخص الحفر
+     */
+    private function handleDigLicenseFiles(Request $request, License $license)
+    {
+        if ($request->hasFile('license_file')) {
+            $file = $request->file('license_file');
+            $filename = time() . '_license_' . $file->getClientOriginalName();
+            $path = $file->storeAs('licenses/files', $filename, 'public');
+            $license->license_file_path = $path;
+        }
+        
+        if ($request->hasFile('payment_invoices')) {
+            $files = $request->file('payment_invoices');
+            $filePaths = [];
+            
+            foreach ($files as $file) {
+                $filename = time() . '_invoice_' . $file->getClientOriginalName();
+                $path = $file->storeAs('licenses/invoices', $filename, 'public');
+                $filePaths[] = $path;
+            }
+            
+            $license->payment_invoices_path = json_encode($filePaths);
+        }
+        
+        if ($request->hasFile('payment_proof')) {
+            $files = $request->file('payment_proof');
+            $filePaths = [];
+            
+            foreach ($files as $file) {
+                $filename = time() . '_proof_' . $file->getClientOriginalName();
+                $path = $file->storeAs('licenses/proof', $filename, 'public');
+                $filePaths[] = $path;
+            }
+            
+            $license->payment_proof_path = json_encode($filePaths);
+        }
+        
+        if ($request->hasFile('license_activation')) {
+            $files = $request->file('license_activation');
+            $filePaths = [];
+            
+            foreach ($files as $file) {
+                $filename = time() . '_activation_' . $file->getClientOriginalName();
+                $path = $file->storeAs('licenses/activation', $filename, 'public');
+                $filePaths[] = $path;
+            }
+            
+            $license->license_activation_path = json_encode($filePaths);
+        }
+    }
+    
+    /**
+     * معالجة ملفات المختبر
+     */
+    private function handleLabFiles(Request $request, License $license)
+    {
+        $labFiles = [
+            'depth_test_file' => 'depth_test_file_path',
+            'soil_compaction_file' => 'soil_compaction_file_path',
+            'rc1_mc1_file' => 'rc1_mc1_file_path',
+            'asphalt_test_file' => 'asphalt_test_file_path',
+            'soil_test_file' => 'soil_test_file_path',
+            'interlock_test_file' => 'interlock_test_file_path'
+        ];
+        
+        foreach ($labFiles as $fileField => $dbField) {
+            if ($request->hasFile($fileField)) {
+                $file = $request->file($fileField);
+                $filename = time() . '_' . $fileField . '_' . $file->getClientOriginalName();
+                $path = $file->storeAs('licenses/lab', $filename, 'public');
+                $license->{$dbField} = $path;
+            }
+        }
+    }
 } 

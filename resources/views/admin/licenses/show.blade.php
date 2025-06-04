@@ -188,7 +188,6 @@
                     </div>
 
                     <!-- الإخلاءات -->
-                    @if($license->is_evacuated)
                     <div class="row mb-4">
                         <div class="col-12">
                             <h5 class="text-warning mb-3">
@@ -196,27 +195,37 @@
                                 معلومات الإخلاءات
                             </h5>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-2">
+                            <strong>حالة الإخلاء:</strong>
+                            <span class="badge {{ $license->is_evacuated ? 'bg-warning' : 'bg-secondary' }} ms-2">
+                                {{ $license->is_evacuated ? 'تم الإخلاء' : 'لم يتم الإخلاء' }}
+                            </span>
+                        </div>
+                        @if($license->is_evacuated)
+                        <div class="col-md-2">
                             <strong>رقم رخصة الإخلاء:</strong>
                             <p class="text-muted">{{ $license->evac_license_number ?? 'غير محدد' }}</p>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             <strong>قيمة رخصة الإخلاء:</strong>
                             <p class="text-warning fw-bold">{{ $license->evac_license_value ? number_format($license->evac_license_value, 2) . ' ر.س' : 'غير محدد' }}</p>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-2">
+                            <strong>رقم سداد الإخلاء:</strong>
+                            <p class="text-muted">{{ $license->evac_payment_number ?? 'غير محدد' }}</p>
+                        </div>
+                        <div class="col-md-2">
                             <strong>تاريخ الإخلاء:</strong>
                             <p class="text-muted">{{ $license->evac_date ? $license->evac_date->format('Y-m-d') : 'غير محدد' }}</p>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             <strong>مبلغ الإخلاء:</strong>
                             <p class="text-info fw-bold">{{ $license->evac_amount ? number_format($license->evac_amount, 2) . ' ر.س' : 'غير محدد' }}</p>
                         </div>
+                        @endif
                     </div>
-                    @endif
 
                     <!-- المخالفات -->
-                    @if($license->violation_number)
                     <div class="row mb-4">
                         <div class="col-12">
                             <h5 class="text-danger mb-3">
@@ -224,22 +233,142 @@
                                 معلومات المخالفات
                             </h5>
                         </div>
-                        <div class="col-md-4">
-                            <strong>رقم المخالفة:</strong>
-                            <p class="text-muted">{{ $license->violation_number }}</p>
+                        @if($license->violation_number || $license->violation_license_number)
+                        <div class="col-md-3">
+                            <strong>رقم رخصة المخالفة:</strong>
+                            <p class="text-muted">{{ $license->violation_license_number ?? 'غير محدد' }}</p>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <strong>قيمة رخصة المخالفة:</strong>
                             <p class="text-danger fw-bold">{{ $license->violation_license_value ? number_format($license->violation_license_value, 2) . ' ر.س' : 'غير محدد' }}</p>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-3">
+                            <strong>تاريخ رخصة المخالفة:</strong>
+                            <p class="text-muted">{{ $license->violation_license_date ? $license->violation_license_date->format('Y-m-d') : 'غير محدد' }}</p>
+                        </div>
+                        <div class="col-md-3">
+                            <strong>رقم المخالفة:</strong>
+                            <p class="text-muted">{{ $license->violation_number ?? 'غير محدد' }}</p>
+                        </div>
+                        <div class="col-md-3">
+                            <strong>رقم سداد المخالفة:</strong>
+                            <p class="text-muted">{{ $license->violation_payment_number ?? 'غير محدد' }}</p>
+                        </div>
+                        <div class="col-md-3">
                             <strong>آخر موعد سداد:</strong>
                             <p class="text-muted">{{ $license->violation_due_date ? $license->violation_due_date->format('Y-m-d') : 'غير محدد' }}</p>
                         </div>
                         @if($license->violation_cause)
                         <div class="col-12">
                             <strong>مسبب المخالفة:</strong>
-                            <p class="text-muted">{{ $license->violation_cause }}</p>
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <p class="mb-0">{{ $license->violation_cause }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+                        @else
+                        <div class="col-12">
+                            <div class="alert alert-success">
+                                <i class="fas fa-check-circle me-2"></i>
+                                لا توجد مخالفات مسجلة لهذه الرخصة
+                            </div>
+                        </div>
+                        @endif
+                    </div>
+
+                    <!-- جداول المختبر -->
+                    @if($license->lab_table1_data || $license->lab_table2_data)
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h5 class="text-success mb-3">
+                                <i class="fas fa-table me-2"></i>
+                                جداول المختبر
+                            </h5>
+                        </div>
+                        
+                        @if($license->lab_table1_data)
+                        <div class="col-12 mb-3">
+                            <h6 class="text-info mb-2">جدول الفسح ونوع الشارع:</h6>
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-sm">
+                                    <thead class="bg-primary text-white">
+                                        <tr>
+                                            <th>رقم الفسح</th>
+                                            <th>تاريخ الفسح</th>
+                                            <th>ترابي</th>
+                                            <th>أسفلت</th>
+                                            <th>بلاط</th>
+                                            <th>الطول</th>
+                                            <th>تدقيق المختبر</th>
+                                            <th>ملاحظات</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach(json_decode($license->lab_table1_data, true) ?? [] as $row)
+                                        <tr>
+                                            <td>{{ $row['clearance_number'] ?? '-' }}</td>
+                                            <td>{{ $row['clearance_date'] ?? '-' }}</td>
+                                            <td>{{ isset($row['is_dirt']) && $row['is_dirt'] ? '✓' : '-' }}</td>
+                                            <td>{{ isset($row['is_asphalt']) && $row['is_asphalt'] ? '✓' : '-' }}</td>
+                                            <td>{{ isset($row['is_tile']) && $row['is_tile'] ? '✓' : '-' }}</td>
+                                            <td>{{ $row['length'] ?? '-' }} م</td>
+                                            <td>{{ $row['lab_check'] ?? '-' }}</td>
+                                            <td>{{ $row['notes'] ?? '-' }}</td>
+                                        </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        @endif
+                        
+                        @if($license->lab_table2_data)
+                        <div class="col-12">
+                            <h6 class="text-info mb-2">جدول التفاصيل الفنية:</h6>
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-sm">
+                                    <thead class="bg-dark text-white">
+                                        <tr>
+                                            <th>السنة</th>
+                                            <th>نوع العمل</th>
+                                            <th>العمق</th>
+                                            <th>دك التربة</th>
+                                            <th>MC1-RC2</th>
+                                            <th>الكثافة القصوى</th>
+                                            <th>نسبة الأسفلت</th>
+                                            <th>التدرج الحبيبي</th>
+                                            <th>تجربة مارشال</th>
+                                            <th>تقييم البلاط</th>
+                                            <th>تصنيف التربة</th>
+                                            <th>تجربة بروكتور</th>
+                                            <th>الخرسانة</th>
+                                            <th>ملاحظات</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach(json_decode($license->lab_table2_data, true) ?? [] as $row)
+                                        <tr>
+                                            <td>{{ $row['year'] ?? '-' }}</td>
+                                            <td>{{ $row['work_type'] ?? '-' }}</td>
+                                            <td>{{ $row['depth'] ?? '-' }}</td>
+                                            <td>{{ isset($row['soil_compaction']) && $row['soil_compaction'] ? '✓' : '-' }}</td>
+                                            <td>{{ isset($row['mc1rc2']) && $row['mc1rc2'] ? '✓' : '-' }}</td>
+                                            <td>{{ $row['max_asphalt_density'] ?? '-' }}</td>
+                                            <td>{{ $row['asphalt_percentage'] ?? '-' }}</td>
+                                            <td>{{ $row['granular_gradient'] ?? '-' }}</td>
+                                            <td>{{ $row['marshall_test'] ?? '-' }}</td>
+                                            <td>{{ $row['tile_evaluation'] ?? '-' }}</td>
+                                            <td>{{ $row['soil_classification'] ?? '-' }}</td>
+                                            <td>{{ $row['proctor_test'] ?? '-' }}</td>
+                                            <td>{{ $row['concrete'] ?? '-' }}</td>
+                                            <td>{{ $row['notes'] ?? '-' }}</td>
+                                        </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                         @endif
                     </div>
