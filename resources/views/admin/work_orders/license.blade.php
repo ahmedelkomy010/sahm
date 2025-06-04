@@ -712,22 +712,84 @@
                                 </div>
                             </div>
 
-                            <!-- زر الحفظ -->
-                            <div class="row mt-4">
-                                <div class="col-12 text-center">
-                                    <button type="submit" class="btn btn-success btn-lg px-5" id="submitBtn">
-                                        <i class="fas fa-save me-2"></i>
-                                        حفظ رخصة جديدة
-                                    </button>
-                                    
-                                    <!-- زر حفظ مبسط إضافي -->
-                                    <button type="button" class="btn btn-primary btn-lg px-5 ms-3" onclick="saveNewLicense()">
-                                        <i class="fas fa-plus me-2"></i>
-                                        إنشاء رخصة
-                                    </button>
+                            
+                        </form>
+
+                        <!-- أزرار الحفظ العامة -->
+                        <div class="card border-0 shadow-sm mt-4 mb-4">
+                            <div class="card-header bg-gradient-success text-white">
+                                <h4 class="mb-0 fs-5">
+                                    <i class="fas fa-save me-2"></i>
+                                    حفظ الرخصة
+                                </h4>
+                            </div>
+                            <div class="card-body text-center">
+                                <div class="row justify-content-center">
+                                    <div class="col-12">
+                                        <div class="row g-3">
+                                            <!-- أزرار حفظ الأقسام الفردية -->
+                                            <div class="col-lg-4 col-md-6">
+                                                <button type="button" class="btn btn-warning w-100" onclick="saveCoordinationSection(true)">
+                                                    <i class="fas fa-certificate me-2"></i>
+                                                    إنشاء رخصة جديدة - شهادة التنسيق
+                                                </button>
+                                            </div>
+                                            <div class="col-lg-4 col-md-6">
+                                                <button type="button" class="btn btn-primary w-100" onclick="saveDigLicenseSection(true)">
+                                                    <i class="fas fa-file-contract me-2"></i>
+                                                    إنشاء رخصة جديدة - رخص الحفر
+                                                </button>
+                                            </div>
+                                            <div class="col-lg-4 col-md-6">
+                                                <button type="button" class="btn btn-success w-100" onclick="saveLabSection(true)">
+                                                    <i class="fas fa-flask me-2"></i>
+                                                    إنشاء رخصة جديدة - المختبر
+                                                </button>
+                                            </div>
+                                            <div class="col-lg-4 col-md-6">
+                                                <button type="button" class="btn btn-info w-100" onclick="saveEvacuationsSection(true)">
+                                                    <i class="fas fa-truck-moving me-2"></i>
+                                                    إنشاء رخصة جديدة - الإخلاءات
+                                                </button>
+                                            </div>
+                                            <div class="col-lg-4 col-md-6">
+                                                <button type="button" class="btn btn-danger w-100" onclick="saveViolationsSection(true)">
+                                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                                    إنشاء رخصة جديدة - المخالفات
+                                                </button>
+                                            </div>
+                                            <div class="col-lg-4 col-md-6">
+                                                <button type="button" class="btn btn-dark w-100" onclick="saveNotesSection(true)">
+                                                    <i class="fas fa-sticky-note me-2"></i>
+                                                    إنشاء رخصة جديدة - الملاحظات
+                                                </button>
+                                            </div>
+                                        </div>
+                                        
+                                        <hr class="my-4">
+                                        
+                                        <!-- زر إنشاء رخصة شاملة -->
+                                        <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                                            <button type="button" class="btn btn-success btn-lg px-5" onclick="createNewLicense()">
+                                                <i class="fas fa-plus-circle me-2"></i>
+                                                إنشاء رخصة جديدة شاملة
+                                            </button>
+                                            <button type="button" class="btn btn-secondary btn-lg px-5" onclick="resetAllForms()">
+                                                <i class="fas fa-refresh me-2"></i>
+                                                إعادة تعيين النماذج
+                                            </button>
+                                        </div>
+                                        
+                                        <div class="mt-3">
+                                            <small class="text-muted">
+                                                <i class="fas fa-info-circle me-1"></i>
+                                                جميع الأزرار تنشئ رخصة جديدة منفصلة تماماً
+                                            </small>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                        </form>
+                        </div>
 
                         <!-- جدول الرخص المحفوظة -->
                         <div class="card border-0 shadow-sm mt-5">
@@ -1096,10 +1158,14 @@
         }
         
         // وظائف الحفظ المنفصل
-        async function saveCoordinationSection() {
-            console.log('saveCoordinationSection called');
+        async function saveCoordinationSection(forceNew = false) {
+            console.log('saveCoordinationSection called with forceNew:', forceNew);
             const form = document.getElementById('coordinationForm');
             const formData = new FormData(form);
+            
+            if (forceNew) {
+                formData.append('force_new', '1');
+            }
             
             try {
                 showLoadingState('coordinationForm', 'جاري حفظ شهادة التنسيق...');
@@ -1115,9 +1181,10 @@
                 const result = await response.json();
                 
                 if (result.success) {
-                    showSuccessMessage('تم حفظ شهادة التنسيق والمرفقات بنجاح!');
+                    showSuccessMessage('تم حفظ شهادة التنسيق والمرفقات بنجاح!' + 
+                        (result.is_new ? ' (رخصة جديدة رقم: ' + result.license_id + ')' : ''));
                     if (result.refresh_table) {
-                        refreshLicensesTable();
+                        setTimeout(() => refreshLicensesTable(), 1000);
                     }
                 } else {
                     showErrorMessage('خطأ في حفظ شهادة التنسيق: ' + (result.message || 'خطأ غير معروف'));
@@ -1130,12 +1197,110 @@
             }
         }
 
-        async function saveDigLicenseSection() {
-            const form = document.getElementById('digLicenseForm');
+        async function saveDigLicenseSection(forceNew = false) {
+            console.log('=== DEBUG: saveDigLicenseSection started ===');
+            console.log('forceNew:', forceNew);
+            
+            // أولاً، تأكد من أن قسم رخص الحفر مرئي
+            const formSection = document.getElementById('dig-license-section');
+            if (formSection && formSection.style.display === 'none') {
+                console.log('Making dig license section visible...');
+                formSection.style.display = 'block';
+                
+                // تفعيل زر التبويب
+                const tabButton = document.querySelector('.tab-btn[data-target="dig-license-section"]');
+                if (tabButton) {
+                    // إزالة التفعيل من جميع الأزرار
+                    document.querySelectorAll('.tab-btn').forEach(btn => {
+                        btn.classList.remove('btn-primary');
+                        btn.classList.add('btn-outline-primary');
+                    });
+                    
+                    // تفعيل زر رخص الحفر
+                    tabButton.classList.remove('btn-outline-primary');
+                    tabButton.classList.add('btn-primary');
+                    
+                    // إخفاء الأقسام الأخرى
+                    document.querySelectorAll('.tab-section').forEach(section => {
+                        section.style.display = 'none';
+                    });
+                    
+                    // إظهار قسم رخص الحفر
+                    formSection.style.display = 'block';
+                }
+            }
+            
+            // الآن حاول العثور على النموذج
+            let form = document.getElementById('digLicenseForm');
+            console.log('First attempt - Form element:', form);
+            
+            // إذا لم نجد النموذج، جرب طرق أخرى
+            if (!form) {
+                console.log('Trying alternative methods to find form...');
+                
+                // جرب البحث داخل القسم المرئي
+                if (formSection) {
+                    form = formSection.querySelector('form.dig-license-form');
+                    console.log('Found form inside section:', form);
+                }
+                
+                // جرب البحث بـ class name
+                if (!form) {
+                    form = document.querySelector('.dig-license-form');
+                    console.log('Found form by class:', form);
+                }
+                
+                // جرب البحث بـ form داخل dig-license-section
+                if (!form) {
+                    form = document.querySelector('#dig-license-section form');
+                    console.log('Found form by section query:', form);
+                }
+            }
+            
+            if (!form) {
+                console.error('digLicenseForm not found after all attempts!');
+                console.log('Available forms on page:', document.querySelectorAll('form'));
+                showErrorMessage('لم يتم العثور على نموذج رخص الحفر');
+                return;
+            }
+            
+            console.log('Form found successfully:', form);
+            console.log('Form section:', formSection);
+            console.log('Form section display style:', formSection ? formSection.style.display : 'not found');
+            console.log('Form visible:', form.offsetParent !== null);
+            
             const formData = new FormData(form);
+            console.log('Form data created');
+            
+            // Debug: طباعة جميع بيانات النموذج بشكل منظم
+            console.log('=== FormData Contents ===');
+            let hasData = false;
+            for (let pair of formData.entries()) {
+                console.log('FormData:', pair[0], '=', pair[1]);
+                if (pair[1] && pair[1] !== '') {
+                    hasData = true;
+                }
+            }
+            console.log('Form has data:', hasData);
+            
+            // تحقق من الحقول المهمة
+            const licenseNumber = form.querySelector('[name="license_number"]');
+            const workOrderId = form.querySelector('[name="work_order_id"]');
+            const sectionType = form.querySelector('[name="section_type"]');
+            
+            console.log('Key fields check:');
+            console.log('- license_number field:', licenseNumber, 'value:', licenseNumber ? licenseNumber.value : 'not found');
+            console.log('- work_order_id field:', workOrderId, 'value:', workOrderId ? workOrderId.value : 'not found');
+            console.log('- section_type field:', sectionType, 'value:', sectionType ? sectionType.value : 'not found');
+            
+            if (forceNew) {
+                formData.append('force_new', '1');
+                console.log('Added force_new flag');
+            }
             
             try {
                 showLoadingState('digLicenseForm', 'جاري حفظ رخص الحفر...');
+                console.log('Loading state shown');
                 
                 const response = await fetch('{{ route("admin.licenses.save-section") }}', {
                     method: 'POST',
@@ -1145,27 +1310,108 @@
                     }
                 });
                 
+                console.log('Response status:', response.status);
+                console.log('Response headers:', response.headers);
+                
+                if (!response.ok) {
+                    console.error('Response not OK:', response.statusText);
+                    const errorText = await response.text();
+                    console.error('Error response body:', errorText);
+                    throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
+                }
+                
                 const result = await response.json();
+                console.log('Response result:', result);
                 
                 if (result.success) {
-                    showSuccessMessage('تم حفظ رخص الحفر بنجاح!');
+                    showSuccessMessage('تم حفظ رخص الحفر بنجاح!' + 
+                        (result.is_new ? ' (رخصة جديدة رقم: ' + result.license_id + ')' : ''));
                     if (result.refresh_table) {
-                        refreshLicensesTable();
+                        setTimeout(() => refreshLicensesTable(), 1000);
                     }
                 } else {
+                    console.error('Save failed:', result.message);
                     showErrorMessage('خطأ في حفظ رخص الحفر: ' + (result.message || 'خطأ غير معروف'));
                 }
             } catch (error) {
                 console.error('Error saving dig license section:', error);
-                showErrorMessage('حدث خطأ أثناء حفظ رخص الحفر');
+                console.error('Error stack:', error.stack);
+                showErrorMessage('حدث خطأ أثناء حفظ رخص الحفر: ' + error.message);
             } finally {
                 hideLoadingState('digLicenseForm', 'حفظ رخص الحفر');
+                console.log('=== DEBUG: saveDigLicenseSection finished ===');
             }
         }
+        
+        // وظائف إدارة جداول الإخلاءات
+        function addRowToEvacTable1() {
+            const tbody = document.getElementById('evacTable1Body');
+            const rowCount = tbody.rows.length;
+            const row = document.createElement('tr');
+            
+            row.innerHTML = `
+                <td><input type="text" class="form-control form-control-sm" name="evac_table1[${rowCount}][clearance_number]" placeholder="رقم الفسح"></td>
+                <td><input type="date" class="form-control form-control-sm" name="evac_table1[${rowCount}][clearance_date]"></td>
+                <td><input type="number" step="0.01" class="form-control form-control-sm" name="evac_table1[${rowCount}][dirt_quantity]" placeholder="كمية ترابي"></td>
+                <td><input type="number" step="0.01" class="form-control form-control-sm" name="evac_table1[${rowCount}][asphalt_quantity]" placeholder="كمية أسفلت"></td>
+                <td><input type="number" step="0.01" class="form-control form-control-sm" name="evac_table1[${rowCount}][tile_quantity]" placeholder="كمية بلاط"></td>
+                <td><input type="text" class="form-control form-control-sm" name="evac_table1[${rowCount}][street_type]" placeholder="نوع الشارع"></td>
+                <td><input type="number" step="0.01" class="form-control form-control-sm" name="evac_table1[${rowCount}][length]" placeholder="الطول بالمتر"></td>
+                <td><input type="text" class="form-control form-control-sm" name="evac_table1[${rowCount}][clearance_lab_number]" placeholder="رقم الفسح والمختبر"></td>
+                <td><input type="number" step="0.01" class="form-control form-control-sm" name="evac_table1[${rowCount}][soil_check]" placeholder="تدقيق التربة"></td>
+                <td><input type="number" step="0.01" class="form-control form-control-sm" name="evac_table1[${rowCount}][mc1_check]" placeholder="تدقيق MC1"></td>
+                <td><input type="number" step="0.01" class="form-control form-control-sm" name="evac_table1[${rowCount}][asphalt_check]" placeholder="تدقيق أسفلت"></td>
+                <td><input type="text" class="form-control form-control-sm" name="evac_table1[${rowCount}][notes]" placeholder="ملاحظات"></td>
+                <td>
+                    <button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            `;
+            
+            tbody.appendChild(row);
+        }
 
-        async function saveLabSection() {
+        function addRowToEvacTable2() {
+            const tbody = document.getElementById('evacTable2Body');
+            const rowCount = tbody.rows.length;
+            const row = document.createElement('tr');
+            
+            row.innerHTML = `
+                <td><input type="number" class="form-control form-control-sm" name="evac_table2[${rowCount}][year]" value="${new Date().getFullYear()}"></td>
+                <td><input type="text" class="form-control form-control-sm" name="evac_table2[${rowCount}][work_type]" placeholder="نوع العمل"></td>
+                <td><input type="number" step="0.01" class="form-control form-control-sm" name="evac_table2[${rowCount}][depth]" placeholder="العمق"></td>
+                <td><input type="checkbox" class="form-check-input" name="evac_table2[${rowCount}][soil_compaction]" value="1"></td>
+                <td><input type="checkbox" class="form-check-input" name="evac_table2[${rowCount}][mc1rc2]" value="1"></td>
+                <td><input type="checkbox" class="form-check-input" name="evac_table2[${rowCount}][asphalt_compaction]" value="1"></td>
+                <td><input type="checkbox" class="form-check-input" name="evac_table2[${rowCount}][is_dirt]" value="1"></td>
+                <td><input type="number" step="0.01" class="form-control form-control-sm" name="evac_table2[${rowCount}][max_asphalt_density]" placeholder="الكثافة القصوى"></td>
+                <td><input type="number" step="0.01" class="form-control form-control-sm" name="evac_table2[${rowCount}][asphalt_percentage]" placeholder="نسبة الأسفلت"></td>
+                <td><input type="text" class="form-control form-control-sm" name="evac_table2[${rowCount}][granular_gradient]" placeholder="التدرج الحبيبي"></td>
+                <td><input type="text" class="form-control form-control-sm" name="evac_table2[${rowCount}][marshall_test]" placeholder="تجربة مارشال"></td>
+                <td><input type="text" class="form-control form-control-sm" name="evac_table2[${rowCount}][tile_evaluation]" placeholder="تقييم البلاط"></td>
+                <td><input type="number" step="0.01" class="form-control form-control-sm" name="evac_table2[${rowCount}][coldness]" placeholder="البرودة"></td>
+                <td><input type="text" class="form-control form-control-sm" name="evac_table2[${rowCount}][soil_classification]" placeholder="تصنيف التربة"></td>
+                <td><input type="text" class="form-control form-control-sm" name="evac_table2[${rowCount}][proctor_test]" placeholder="تجربة بروكتور"></td>
+                <td><input type="text" class="form-control form-control-sm" name="evac_table2[${rowCount}][concrete]" placeholder="الخرسانة"></td>
+                <td><input type="text" class="form-control form-control-sm" name="evac_table2[${rowCount}][notes]" placeholder="ملاحظات"></td>
+                <td>
+                    <button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            `;
+            
+            tbody.appendChild(row);
+        }
+
+        async function saveLabSection(forceNew = false) {
             const form = document.getElementById('labForm');
             const formData = new FormData(form);
+            
+            if (forceNew) {
+                formData.append('force_new', '1');
+            }
             
             // معالجة بيانات جداول المختبر
             const table1Data = collectTableData('labTable1Body');
@@ -1193,9 +1439,10 @@
                 const result = await response.json();
                 
                 if (result.success) {
-                    showSuccessMessage('تم حفظ المختبر بنجاح!');
+                    showSuccessMessage('تم حفظ المختبر بنجاح!' + 
+                        (result.is_new ? ' (رخصة جديدة رقم: ' + result.license_id + ')' : ''));
                     if (result.refresh_table) {
-                        refreshLicensesTable();
+                        setTimeout(() => refreshLicensesTable(), 1000);
                     }
                 } else {
                     showErrorMessage('خطأ في حفظ المختبر: ' + (result.message || 'خطأ غير معروف'));
@@ -1246,9 +1493,13 @@
             return data;
         }
 
-        async function saveEvacuationsSection() {
+        async function saveEvacuationsSection(forceNew = false) {
             const form = document.getElementById('evacuationsForm');
             const formData = new FormData(form);
+            
+            if (forceNew) {
+                formData.append('force_new', '1');
+            }
             
             // معالجة بيانات جداول الإخلاءات
             const evacTable1Data = collectTableData('evacTable1Body');
@@ -1276,9 +1527,10 @@
                 const result = await response.json();
                 
                 if (result.success) {
-                    showSuccessMessage('تم حفظ الإخلاءات بنجاح!');
+                    showSuccessMessage('تم حفظ الإخلاءات بنجاح!' + 
+                        (result.is_new ? ' (رخصة جديدة رقم: ' + result.license_id + ')' : ''));
                     if (result.refresh_table) {
-                        refreshLicensesTable();
+                        setTimeout(() => refreshLicensesTable(), 1000);
                     }
                 } else {
                     showErrorMessage('خطأ في حفظ الإخلاءات: ' + (result.message || 'خطأ غير معروف'));
@@ -1291,9 +1543,13 @@
             }
         }
 
-        async function saveViolationsSection() {
+        async function saveViolationsSection(forceNew = false) {
             const form = document.getElementById('violationsForm');
             const formData = new FormData(form);
+            
+            if (forceNew) {
+                formData.append('force_new', '1');
+            }
             
             try {
                 showLoadingState('violationsForm', 'جاري حفظ المخالفات...');
@@ -1309,9 +1565,10 @@
                 const result = await response.json();
                 
                 if (result.success) {
-                    showSuccessMessage('تم حفظ المخالفات بنجاح!');
+                    showSuccessMessage('تم حفظ المخالفات بنجاح!' + 
+                        (result.is_new ? ' (رخصة جديدة رقم: ' + result.license_id + ')' : ''));
                     if (result.refresh_table) {
-                        refreshLicensesTable();
+                        setTimeout(() => refreshLicensesTable(), 1000);
                     }
                 } else {
                     showErrorMessage('خطأ في حفظ المخالفات: ' + (result.message || 'خطأ غير معروف'));
@@ -1324,9 +1581,13 @@
             }
         }
 
-        async function saveNotesSection() {
+        async function saveNotesSection(forceNew = false) {
             const form = document.getElementById('notesForm');
             const formData = new FormData(form);
+            
+            if (forceNew) {
+                formData.append('force_new', '1');
+            }
             
             try {
                 showLoadingState('notesForm', 'جاري حفظ الملاحظات...');
@@ -1342,9 +1603,10 @@
                 const result = await response.json();
                 
                 if (result.success) {
-                    showSuccessMessage('تم حفظ الملاحظات الإضافية بنجاح!');
+                    showSuccessMessage('تم حفظ الملاحظات الإضافية بنجاح!' + 
+                        (result.is_new ? ' (رخصة جديدة رقم: ' + result.license_id + ')' : ''));
                     if (result.refresh_table) {
-                        refreshLicensesTable();
+                        setTimeout(() => refreshLicensesTable(), 1000);
                     }
                 } else {
                     showErrorMessage('خطأ في حفظ الملاحظات: ' + (result.message || 'خطأ غير معروف'));
@@ -1359,20 +1621,84 @@
 
         // وظائف مساعدة لحالة التحميل والرسائل
         function showLoadingState(formId, message) {
+            console.log('showLoadingState called for form:', formId);
             const form = document.getElementById(formId);
-            const button = form.querySelector('button[onclick*="save"], button[type="button"]:last-child');
+            if (!form) {
+                console.error('Form not found:', formId);
+                return;
+            }
+            
+            let button = null;
+            
+            // محاولة العثور على الزر بطرق مختلفة
+            if (formId === 'digLicenseForm') {
+                button = form.querySelector('button[onclick*="saveDigLicenseSection"]');
+            } else if (formId === 'coordinationForm') {
+                button = form.querySelector('button[onclick*="saveCoordinationSection"]');
+            } else if (formId === 'labForm') {
+                button = form.querySelector('button[onclick*="saveLabSection"]');
+            } else if (formId === 'evacuationsForm') {
+                button = form.querySelector('button[onclick*="saveEvacuationsSection"]');
+            } else if (formId === 'violationsForm') {
+                button = form.querySelector('button[onclick*="saveViolationsSection"]');
+            } else if (formId === 'notesForm') {
+                button = form.querySelector('button[onclick*="saveNotesSection"]');
+            }
+            
+            // إذا لم نجد الزر بالطريقة المخصصة، استخدم الطريقة العامة
+            if (!button) {
+                button = form.querySelector('button[onclick*="save"], button[type="button"]:last-child, button[type="submit"]');
+            }
+            
+            console.log('Button found:', button);
+            
             if (button) {
                 button.disabled = true;
                 button.innerHTML = `<i class="fas fa-spinner fa-spin me-2"></i>${message}`;
+                console.log('Button loading state set');
+            } else {
+                console.error('No button found in form:', formId);
             }
         }
 
         function hideLoadingState(formId, originalText) {
+            console.log('hideLoadingState called for form:', formId);
             const form = document.getElementById(formId);
-            const button = form.querySelector('button[onclick*="save"], button[type="button"]:last-child');
+            if (!form) {
+                console.error('Form not found:', formId);
+                return;
+            }
+            
+            let button = null;
+            
+            // محاولة العثور على الزر بطرق مختلفة
+            if (formId === 'digLicenseForm') {
+                button = form.querySelector('button[onclick*="saveDigLicenseSection"]');
+            } else if (formId === 'coordinationForm') {
+                button = form.querySelector('button[onclick*="saveCoordinationSection"]');
+            } else if (formId === 'labForm') {
+                button = form.querySelector('button[onclick*="saveLabSection"]');
+            } else if (formId === 'evacuationsForm') {
+                button = form.querySelector('button[onclick*="saveEvacuationsSection"]');
+            } else if (formId === 'violationsForm') {
+                button = form.querySelector('button[onclick*="saveViolationsSection"]');
+            } else if (formId === 'notesForm') {
+                button = form.querySelector('button[onclick*="saveNotesSection"]');
+            }
+            
+            // إذا لم نجد الزر بالطريقة المخصصة، استخدم الطريقة العامة
+            if (!button) {
+                button = form.querySelector('button[onclick*="save"], button[type="button"]:last-child, button[type="submit"]');
+            }
+            
+            console.log('Button found for hide:', button);
+            
             if (button) {
                 button.disabled = false;
                 button.innerHTML = `<i class="fas fa-save me-2"></i>${originalText}`;
+                console.log('Button normal state restored');
+            } else {
+                console.error('No button found in form for hiding:', formId);
             }
         }
 
@@ -1416,6 +1742,188 @@
 
         function refreshLicensesTable() {
             location.reload();
+        }
+
+        // دالة إنشاء رخصة جديدة
+        async function createNewLicense() {
+            if (!confirm('هل تريد إنشاء رخصة جديدة بجميع البيانات المدخلة؟\nسيتم إنشاء رخصة جديدة منفصلة تماماً.')) {
+                return;
+            }
+            
+            try {
+                showGlobalLoadingState('جاري إنشاء الرخصة الجديدة...');
+                
+                const formData = createCompleteFormData();
+                formData.append('force_new', '1'); // إجبار إنشاء رخصة جديدة
+                
+                const response = await fetch('{{ route("admin.licenses.save-section") }}', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showSuccessMessage('تم إنشاء الرخصة الجديدة بنجاح! (رقم الرخصة: ' + result.license_id + ')');
+                    
+                    // إعادة تعيين النماذج
+                    resetAllForms();
+                    
+                    // تحديث الجدول
+                    setTimeout(() => {
+                        refreshLicensesTable();
+                    }, 1500);
+                } else {
+                    showErrorMessage('خطأ في إنشاء الرخصة: ' + (result.message || 'خطأ غير معروف'));
+                }
+            } catch (error) {
+                console.error('Error creating new license:', error);
+                showErrorMessage('حدث خطأ أثناء إنشاء الرخصة الجديدة');
+            } finally {
+                hideGlobalLoadingState();
+            }
+        }
+
+        // دالة إعادة تعيين جميع النماذج
+        function resetAllForms() {
+            if (!confirm('هل تريد إعادة تعيين جميع النماذج؟ سيتم حذف جميع البيانات المدخلة.')) {
+                return;
+            }
+            
+            const forms = [
+                'coordinationForm',
+                'digLicenseForm', 
+                'labForm',
+                'evacuationsForm',
+                'violationsForm',
+                'notesForm'
+            ];
+            
+            forms.forEach(formId => {
+                const form = document.getElementById(formId);
+                if (form) {
+                    form.reset();
+                }
+            });
+            
+            // إعادة تعيين الجداول
+            const tableIds = ['evacTable1Body', 'evacTable2Body', 'labTable1Body', 'labTable2Body'];
+            tableIds.forEach(tableId => {
+                const tbody = document.getElementById(tableId);
+                if (tbody) {
+                    tbody.innerHTML = '';
+                }
+            });
+            
+            // إعادة تعيين حقول الحظر
+            const restrictionField = document.getElementById('restriction_authority_field');
+            if (restrictionField) {
+                restrictionField.style.display = 'none';
+            }
+            
+            // إعادة تعيين عداد الأيام
+            const daysCounter = document.getElementById('dig_license_days_text');
+            const extensionCounter = document.getElementById('dig_extension_days_text');
+            
+            if (daysCounter) {
+                daysCounter.innerHTML = 'اختر التواريخ لحساب المدة';
+                daysCounter.parentElement.className = 'alert alert-info w-100 mb-0';
+            }
+            
+            if (extensionCounter) {
+                extensionCounter.innerHTML = 'اختر تواريخ التمديد';
+                extensionCounter.parentElement.className = 'alert alert-warning w-100 mb-0';
+            }
+            
+            showSuccessMessage('تم إعادة تعيين جميع النماذج بنجاح!');
+        }
+
+        // دالة لإنشاء FormData شامل
+        function createCompleteFormData() {
+            const formData = new FormData();
+            formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+            formData.append('work_order_id', '{{ $workOrder->id }}');
+            formData.append('section_type', 'complete_license');
+            
+            // جمع البيانات من جميع النماذج
+            const forms = [
+                'coordinationForm',
+                'digLicenseForm', 
+                'labForm',
+                'evacuationsForm',
+                'violationsForm',
+                'notesForm'
+            ];
+            
+            forms.forEach(formId => {
+                const form = document.getElementById(formId);
+                if (form) {
+                    const inputs = form.querySelectorAll('input, select, textarea');
+                    inputs.forEach(input => {
+                        if (input.name && input.name !== '_token') {
+                            if (input.type === 'file') {
+                                if (input.files.length > 0) {
+                                    for (let i = 0; i < input.files.length; i++) {
+                                        formData.append(input.name, input.files[i]);
+                                    }
+                                }
+                            } else if (input.type === 'checkbox') {
+                                formData.append(input.name, input.checked ? '1' : '0');
+                            } else if (input.value) {
+                                formData.append(input.name, input.value);
+                            }
+                        }
+                    });
+                }
+            });
+            
+            // إضافة بيانات الجداول
+            const evacTable1Data = collectTableData('evacTable1Body');
+            const evacTable2Data = collectTableData('evacTable2Body');
+            
+            if (evacTable1Data.length > 0) {
+                formData.append('evac_table1_data', JSON.stringify(evacTable1Data));
+            }
+            
+            if (evacTable2Data.length > 0) {
+                formData.append('evac_table2_data', JSON.stringify(evacTable2Data));
+            }
+            
+            return formData;
+        }
+
+        // دوال حالة التحميل العامة
+        function showGlobalLoadingState(message) {
+            const buttons = document.querySelectorAll('.btn');
+            buttons.forEach(btn => btn.disabled = true);
+            
+            const createBtn = document.querySelector('button[onclick*="createNewLicense"]');
+            const resetBtn = document.querySelector('button[onclick*="resetAllForms"]');
+            
+            if (createBtn) {
+                createBtn.innerHTML = `<i class="fas fa-spinner fa-spin me-2"></i>${message}`;
+            }
+            if (resetBtn) {
+                resetBtn.innerHTML = `<i class="fas fa-spinner fa-spin me-2"></i>جاري المعالجة...`;
+            }
+        }
+
+        function hideGlobalLoadingState() {
+            const buttons = document.querySelectorAll('.btn');
+            buttons.forEach(btn => btn.disabled = false);
+            
+            const createBtn = document.querySelector('button[onclick*="createNewLicense"]');
+            const resetBtn = document.querySelector('button[onclick*="resetAllForms"]');
+            
+            if (createBtn) {
+                createBtn.innerHTML = `<i class="fas fa-plus-circle me-2"></i>إنشاء رخصة جديدة شاملة`;
+            }
+            if (resetBtn) {
+                resetBtn.innerHTML = `<i class="fas fa-refresh me-2"></i>إعادة تعيين النماذج`;
+            }
         }
 
         // وظائف إدارة جداول المختبر
@@ -2350,5 +2858,54 @@ input[type="file"]:hover {
 }
 
 @keyframes successGlow {
+    0% { 
+        background: rgba(25, 135, 84, 0.3) !important;
+        transform: scale(1.02);
+    }
+    100% { 
+        background: rgba(25, 135, 84, 0.1) !important;
+        transform: scale(1);
+    }
+}
+
+/* تحسين أزرار الحفظ الجديدة */
+.bg-gradient-success {
+    background: linear-gradient(135deg, #28a745, #20c997, #17a2b8);
+}
+
+.card .btn-lg {
+    padding: 0.75rem 2rem;
+    font-weight: 600;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.card .btn-lg:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.d-grid.gap-2.d-md-flex .btn + .btn {
+    margin-left: 0.5rem;
+}
+
+@media (max-width: 768px) {
+    .d-grid.gap-2.d-md-flex {
+        gap: 0.5rem !important;
+    }
+    
+    .d-grid.gap-2.d-md-flex .btn {
+        margin-left: 0;
+        margin-bottom: 0.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .btn-group .btn {
+        padding: 0.375rem 0.5rem;
+        font-size: 0.75rem;
+    }
+}
 </style>
 @endsection 

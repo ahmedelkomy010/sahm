@@ -448,6 +448,7 @@ class LicenseController extends Controller
         try {
             $sectionType = $request->input('section_type');
             $workOrderId = $request->input('work_order_id');
+            $forceNew = $request->input('force_new', false); // إجبار إنشاء رخصة جديدة
             
             // التحقق من صحة المعاملات الأساسية
             if (!$sectionType || !$workOrderId) {
@@ -457,37 +458,62 @@ class LicenseController extends Controller
                 ], 400);
             }
             
-            // البحث عن رخصة موجودة أو إنشاء واحدة جديدة
-            $license = License::where('work_order_id', $workOrderId)->first();
-            $isNewLicense = false;
-            
-            if (!$license) {
+            // إنشاء رخصة جديدة دائماً أو البحث عن واحدة موجودة
+            if ($forceNew || $sectionType === 'complete_license') {
+                // إنشاء رخصة جديدة دائماً
                 $license = new License();
                 $license->work_order_id = $workOrderId;
                 $isNewLicense = true;
+            } else {
+                // البحث عن رخصة موجودة أو إنشاء واحدة جديدة
+                $license = License::where('work_order_id', $workOrderId)->first();
+                $isNewLicense = false;
+                
+                if (!$license) {
+                    $license = new License();
+                    $license->work_order_id = $workOrderId;
+                    $isNewLicense = true;
+                }
             }
             
             // حفظ البيانات حسب نوع القسم
             switch ($sectionType) {
                 case 'coordination':
+                    \Log::info('Processing coordination section');
                     $this->saveCoordinationSection($request, $license);
                     break;
                 case 'dig_license':
+                    \Log::info('Processing dig_license section');
                     $this->saveDigLicenseSection($request, $license);
                     break;
                 case 'lab':
+                    \Log::info('Processing lab section');
                     $this->saveLabSection($request, $license);
                     break;
                 case 'evacuations':
+                    \Log::info('Processing evacuations section');
                     $this->saveEvacuationsSection($request, $license);
                     break;
                 case 'violations':
+                    \Log::info('Processing violations section');
                     $this->saveViolationsSection($request, $license);
                     break;
                 case 'notes':
+                    \Log::info('Processing notes section');
+                    $this->saveNotesSection($request, $license);
+                    break;
+                case 'complete_license':
+                    // حفظ جميع الأقسام
+                    \Log::info('Processing complete_license - all sections');
+                    $this->saveCoordinationSection($request, $license);
+                    $this->saveDigLicenseSection($request, $license);
+                    $this->saveLabSection($request, $license);
+                    $this->saveEvacuationsSection($request, $license);
+                    $this->saveViolationsSection($request, $license);
                     $this->saveNotesSection($request, $license);
                     break;
                 default:
+                    \Log::error('Unknown section type: ' . $sectionType);
                     return response()->json([
                         'success' => false,
                         'message' => 'نوع القسم غير معروف'
@@ -500,7 +526,8 @@ class LicenseController extends Controller
                 'success' => true,
                 'message' => 'تم حفظ القسم بنجاح',
                 'license_id' => $license->id,
-                'refresh_table' => $isNewLicense
+                'refresh_table' => true, // إعادة تحديث الجدول دائماً
+                'is_new' => $isNewLicense
             ]);
             
         } catch (\Exception $e) {
@@ -521,30 +548,41 @@ class LicenseController extends Controller
      */
     private function saveCoordinationSection(Request $request, License $license)
     {
-        $license->coordination_certificate_notes = $request->input('coordination_certificate_notes');
-        $license->has_restriction = $request->input('has_restriction', 0) == '1';
-        $license->restriction_authority = $request->input('restriction_authority');
-        
-        // معالجة ملفات شهادة التنسيق
-        if ($request->hasFile('coordination_certificate_path')) {
-            $file = $request->file('coordination_certificate_path');
-            $filename = time() . '_coordination_cert_' . $file->getClientOriginalName();
-            $path = $file->storeAs('licenses/coordination', $filename, 'public');
-            $license->coordination_certificate_path = $path;
-        }
-        
-        // معالجة ملفات الخطابات والتعهدات
-        if ($request->hasFile('letters_commitments_files')) {
-            $files = $request->file('letters_commitments_files');
-            $filePaths = [];
+        try {
+            $license->coordination_certificate_notes = $request->input('coordination_certificate_notes');
+            $license->has_restriction = $request->input('has_restriction', 0) == '1';
+            $license->restriction_authority = $request->input('restriction_authority');
             
-            foreach ($files as $file) {
-                $filename = time() . '_letters_' . $file->getClientOriginalName();
-                $path = $file->storeAs('licenses/letters', $filename, 'public');
-                $filePaths[] = $path;
+            // معالجة ملفات شهادة التنسيق
+            if ($request->hasFile('coordination_certificate_path')) {
+                $file = $request->file('coordination_certificate_path');
+                $filename = time() . '_coordination_cert_' . $file->getClientOriginalName();
+                $path = $file->storeAs('licenses/coordination', $filename, 'public');
+                $license->coordination_certificate_path = $path;
             }
             
-            $license->letters_commitments_file_path = json_encode($filePaths);
+            // معالجة ملفات الخطابات والتعهدات
+            if ($request->hasFile('letters_commitments_files')) {
+                $files = $request->file('letters_commitments_files');
+                $filePaths = [];
+                
+                foreach ($files as $file) {
+                    $filename = time() . '_letters_' . $file->getClientOriginalName();
+                    $path = $file->storeAs('licenses/letters', $filename, 'public');
+                    $filePaths[] = $path;
+                }
+                
+                $license->letters_commitments_file_path = json_encode($filePaths);
+            }
+            
+            \Log::info('Coordination section saved successfully', [
+                'license_id' => $license->id ?? 'new',
+                'work_order_id' => $license->work_order_id
+            ]);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error saving coordination section: ' . $e->getMessage());
+            throw $e;
         }
     }
     
@@ -553,21 +591,42 @@ class LicenseController extends Controller
      */
     private function saveDigLicenseSection(Request $request, License $license)
     {
-        $license->license_number = $request->input('license_number');
-        $license->license_date = $request->input('license_date');
-        $license->license_type = $request->input('license_type');
-        $license->license_value = $request->input('license_value');
-        $license->extension_value = $request->input('extension_value');
-        $license->excavation_length = $request->input('excavation_length');
-        $license->excavation_width = $request->input('excavation_width');
-        $license->excavation_depth = $request->input('excavation_depth');
-        $license->license_start_date = $request->input('license_start_date');
-        $license->license_end_date = $request->input('license_end_date');
-        $license->extension_start_date = $request->input('extension_start_date');
-        $license->extension_end_date = $request->input('extension_end_date');
-        
-        // معالجة الملفات
-        $this->handleDigLicenseFiles($request, $license);
+        try {
+            \Log::info('=== saveDigLicenseSection started ===', [
+                'license_id' => $license->id ?? 'new',
+                'request_data' => $request->all()
+            ]);
+            
+            $license->license_number = $request->input('license_number');
+            $license->license_date = $request->input('license_date');
+            $license->license_type = $request->input('license_type');
+            $license->license_value = $request->input('license_value');
+            $license->extension_value = $request->input('extension_value');
+            $license->excavation_length = $request->input('excavation_length');
+            $license->excavation_width = $request->input('excavation_width');
+            $license->excavation_depth = $request->input('excavation_depth');
+            $license->license_start_date = $request->input('license_start_date');
+            $license->license_end_date = $request->input('license_end_date');
+            $license->extension_start_date = $request->input('extension_start_date');
+            $license->extension_end_date = $request->input('extension_end_date');
+            
+            \Log::info('License fields set', [
+                'license_number' => $license->license_number,
+                'license_type' => $license->license_type,
+                'license_value' => $license->license_value
+            ]);
+            
+            // معالجة الملفات
+            $this->handleDigLicenseFiles($request, $license);
+            
+            \Log::info('=== saveDigLicenseSection completed ===');
+            
+        } catch (\Exception $e) {
+            \Log::error('Error in saveDigLicenseSection: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+            throw $e;
+        }
     }
     
     /**
@@ -641,6 +700,55 @@ class LicenseController extends Controller
         $license->evac_payment_number = $request->input('evac_payment_number');
         $license->evac_date = $request->input('evac_date');
         $license->evac_amount = $request->input('evac_amount');
+        
+        // معالجة بيانات جدول الإخلاءات الأول
+        if ($request->has('evac_table1_data')) {
+            $evacTable1Data = json_decode($request->input('evac_table1_data'), true);
+            if (!empty($evacTable1Data)) {
+                $license->evac_table1_data = json_encode($evacTable1Data);
+            }
+        } elseif ($request->has('evac_table1')) {
+            $evacTable1Data = $request->input('evac_table1');
+            $cleanedTable1Data = [];
+            
+            foreach ($evacTable1Data as $row) {
+                $cleanRow = array_filter($row, function($value) {
+                    return !empty(trim($value));
+                });
+                
+                if (!empty($cleanRow) && (isset($row['clearance_number']) || isset($row['clearance_date']))) {
+                    $cleanedTable1Data[] = $row;
+                }
+            }
+            
+            $license->evac_table1_data = !empty($cleanedTable1Data) ? json_encode($cleanedTable1Data) : null;
+        }
+        
+        // معالجة بيانات جدول الإخلاءات الثاني
+        if ($request->has('evac_table2_data')) {
+            $evacTable2Data = json_decode($request->input('evac_table2_data'), true);
+            if (!empty($evacTable2Data)) {
+                $license->evac_table2_data = json_encode($evacTable2Data);
+            }
+        } elseif ($request->has('evac_table2')) {
+            $evacTable2Data = $request->input('evac_table2');
+            $cleanedTable2Data = [];
+            
+            foreach ($evacTable2Data as $row) {
+                $cleanRow = array_filter($row, function($value, $key) {
+                    if (in_array($key, ['soil_compaction', 'mc1rc2', 'asphalt_compaction', 'is_dirt'])) {
+                        return true;
+                    }
+                    return !empty(trim($value));
+                }, ARRAY_FILTER_USE_BOTH);
+                
+                if (!empty($cleanRow) && (isset($row['year']) || isset($row['work_type']))) {
+                    $cleanedTable2Data[] = $row;
+                }
+            }
+            
+            $license->evac_table2_data = !empty($cleanedTable2Data) ? json_encode($cleanedTable2Data) : null;
+        }
         
         // معالجة ملفات الإخلاءات
         if ($request->hasFile('evacuations_files')) {

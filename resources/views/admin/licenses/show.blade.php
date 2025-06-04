@@ -1,6 +1,9 @@
 @extends('layouts.app')
 
 @section('content')
+@php
+    use Illuminate\Support\Facades\Storage;
+@endphp
 <div class="container-fluid py-4">
     <div class="row justify-content-center">
         <div class="col-12">
@@ -374,6 +377,480 @@
                     </div>
                     @endif
 
+                    <!-- جداول الإخلاءات -->
+                    @if($license->evac_table1_data || $license->evac_table2_data)
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h5 class="text-warning mb-3">
+                                <i class="fas fa-table me-2"></i>
+                                جداول الإخلاءات
+                            </h5>
+                        </div>
+                        
+                        @if($license->evac_table1_data)
+                        <div class="col-12 mb-3">
+                            <h6 class="text-warning mb-2">جدول الفسح ونوع الشارع (الإخلاءات):</h6>
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-sm">
+                                    <thead class="bg-warning text-dark">
+                                        <tr>
+                                            <th rowspan="2" class="align-middle">رقم الفسح</th>
+                                            <th rowspan="2" class="align-middle">تاريخ الفسح</th>
+                                            <th colspan="3" class="text-center">كمية المواد (متر مكعب)</th>
+                                            <th rowspan="2" class="align-middle">نوع الشارع</th>
+                                            <th rowspan="2" class="align-middle">الطول</th>
+                                            <th rowspan="2" class="align-middle">رقم الفسح والمختبر</th>
+                                            <th colspan="3" class="text-center">تدقيق المختبر</th>
+                                            <th rowspan="2" class="align-middle">ملاحظات</th>
+                                        </tr>
+                                        <tr>
+                                            <th>ترابي</th>
+                                            <th>أسفلت</th>
+                                            <th>بلاط</th>
+                                            <th>التربة</th>
+                                            <th>MC1</th>
+                                            <th>أسفلت</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach(json_decode($license->evac_table1_data, true) ?? [] as $row)
+                                        <tr>
+                                            <td>{{ $row['clearance_number'] ?? '-' }}</td>
+                                            <td>{{ $row['clearance_date'] ?? '-' }}</td>
+                                            <td>{{ $row['dirt_quantity'] ?? '-' }}</td>
+                                            <td>{{ $row['asphalt_quantity'] ?? '-' }}</td>
+                                            <td>{{ $row['tile_quantity'] ?? '-' }}</td>
+                                            <td>{{ $row['street_type'] ?? '-' }}</td>
+                                            <td>{{ $row['length'] ?? '-' }} م</td>
+                                            <td>{{ $row['clearance_lab_number'] ?? '-' }}</td>
+                                            <td>{{ $row['soil_check'] ?? '-' }}</td>
+                                            <td>{{ $row['mc1_check'] ?? '-' }}</td>
+                                            <td>{{ $row['asphalt_check'] ?? '-' }}</td>
+                                            <td>{{ $row['notes'] ?? '-' }}</td>
+                                        </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        @endif
+                        
+                        @if($license->evac_table2_data)
+                        <div class="col-12">
+                            <h6 class="text-warning mb-2">جدول التفاصيل الفنية (الإخلاءات):</h6>
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-sm">
+                                    <thead class="bg-secondary text-white">
+                                        <tr>
+                                            <th>السنة</th>
+                                            <th>نوع العمل</th>
+                                            <th>العمق</th>
+                                            <th>دك التربة</th>
+                                            <th>MC1-RC2</th>
+                                            <th>دك أسفلت</th>
+                                            <th>ترابي</th>
+                                            <th>الكثافة القصوى للأسفلت</th>
+                                            <th>نسبة الأسفلت</th>
+                                            <th>التدرج الحبيبي</th>
+                                            <th>تجربة مارشال</th>
+                                            <th>تقييم البلاط</th>
+                                            <th>البرودة</th>
+                                            <th>تصنيف التربة</th>
+                                            <th>تجربة بروكتور</th>
+                                            <th>الخرسانة</th>
+                                            <th>ملاحظات</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach(json_decode($license->evac_table2_data, true) ?? [] as $row)
+                                        <tr>
+                                            <td>{{ $row['year'] ?? '-' }}</td>
+                                            <td>{{ $row['work_type'] ?? '-' }}</td>
+                                            <td>{{ $row['depth'] ?? '-' }}</td>
+                                            <td>{{ isset($row['soil_compaction']) && $row['soil_compaction'] ? '✓' : '-' }}</td>
+                                            <td>{{ isset($row['mc1rc2']) && $row['mc1rc2'] ? '✓' : '-' }}</td>
+                                            <td>{{ isset($row['asphalt_compaction']) && $row['asphalt_compaction'] ? '✓' : '-' }}</td>
+                                            <td>{{ isset($row['is_dirt']) && $row['is_dirt'] ? '✓' : '-' }}</td>
+                                            <td>{{ $row['max_asphalt_density'] ?? '-' }}</td>
+                                            <td>{{ $row['asphalt_percentage'] ?? '-' }}</td>
+                                            <td>{{ $row['granular_gradient'] ?? '-' }}</td>
+                                            <td>{{ $row['marshall_test'] ?? '-' }}</td>
+                                            <td>{{ $row['tile_evaluation'] ?? '-' }}</td>
+                                            <td>{{ $row['coldness'] ?? '-' }}</td>
+                                            <td>{{ $row['soil_classification'] ?? '-' }}</td>
+                                            <td>{{ $row['proctor_test'] ?? '-' }}</td>
+                                            <td>{{ $row['concrete'] ?? '-' }}</td>
+                                            <td>{{ $row['notes'] ?? '-' }}</td>
+                                        </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        @endif
+                    </div>
+                    @endif
+
+                    <!-- المرفقات والوثائق -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h5 class="text-info mb-3">
+                                <i class="fas fa-paperclip me-2"></i>
+                                المرفقات والوثائق
+                            </h5>
+                        </div>
+                        
+                        <!-- شهادة التنسيق -->
+                        @if($license->coordination_certificate_path)
+                        <div class="col-md-6 mb-3">
+                            <div class="card border-warning">
+                                <div class="card-header bg-warning text-dark">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-certificate me-2"></i>
+                                        شهادة التنسيق
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <a href="{{ Storage::url($license->coordination_certificate_path) }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                                        <i class="fas fa-eye me-1"></i> عرض الشهادة
+                                    </a>
+                                    <a href="{{ Storage::url($license->coordination_certificate_path) }}" download class="btn btn-outline-success btn-sm">
+                                        <i class="fas fa-download me-1"></i> تحميل
+                                    </a>
+                                    @if($license->coordination_certificate_notes)
+                                    <div class="mt-2">
+                                        <small class="text-muted"><strong>ملاحظات:</strong> {{ $license->coordination_certificate_notes }}</small>
+                                    </div>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+                        
+                        <!-- الخطابات والتعهدات -->
+                        @if($license->letters_commitments_file_path)
+                        <div class="col-md-6 mb-3">
+                            <div class="card border-info">
+                                <div class="card-header bg-info text-white">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-file-contract me-2"></i>
+                                        الخطابات والتعهدات
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    @php
+                                        $letterFiles = json_decode($license->letters_commitments_file_path, true) ?? [];
+                                    @endphp
+                                    @foreach($letterFiles as $index => $filePath)
+                                    <div class="d-flex gap-2 mb-2">
+                                        <a href="{{ Storage::url($filePath) }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                                            <i class="fas fa-eye me-1"></i> ملف {{ $index + 1 }}
+                                        </a>
+                                        <a href="{{ Storage::url($filePath) }}" download class="btn btn-outline-success btn-sm">
+                                            <i class="fas fa-download me-1"></i> تحميل
+                                        </a>
+                                    </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+                        
+                        <!-- ملف الرخصة -->
+                        @if($license->license_file_path)
+                        <div class="col-md-6 mb-3">
+                            <div class="card border-primary">
+                                <div class="card-header bg-primary text-white">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-file-alt me-2"></i>
+                                        ملف الرخصة
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <a href="{{ Storage::url($license->license_file_path) }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                                        <i class="fas fa-eye me-1"></i> عرض الملف
+                                    </a>
+                                    <a href="{{ Storage::url($license->license_file_path) }}" download class="btn btn-outline-success btn-sm">
+                                        <i class="fas fa-download me-1"></i> تحميل
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+                        
+                        <!-- فواتير السداد -->
+                        @if($license->payment_invoices_path)
+                        <div class="col-md-6 mb-3">
+                            <div class="card border-success">
+                                <div class="card-header bg-success text-white">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-receipt me-2"></i>
+                                        فواتير السداد
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    @php
+                                        $invoiceFiles = json_decode($license->payment_invoices_path, true) ?? [];
+                                    @endphp
+                                    @foreach($invoiceFiles as $index => $filePath)
+                                    <div class="d-flex gap-2 mb-2">
+                                        <a href="{{ Storage::url($filePath) }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                                            <i class="fas fa-eye me-1"></i> فاتورة {{ $index + 1 }}
+                                        </a>
+                                        <a href="{{ Storage::url($filePath) }}" download class="btn btn-outline-success btn-sm">
+                                            <i class="fas fa-download me-1"></i> تحميل
+                                        </a>
+                                    </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+                        
+                        <!-- إثبات السداد -->
+                        @if($license->payment_proof_path)
+                        <div class="col-md-6 mb-3">
+                            <div class="card border-secondary">
+                                <div class="card-header bg-secondary text-white">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-check-circle me-2"></i>
+                                        إثبات السداد
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    @php
+                                        $proofFiles = json_decode($license->payment_proof_path, true) ?? [];
+                                    @endphp
+                                    @foreach($proofFiles as $index => $filePath)
+                                    <div class="d-flex gap-2 mb-2">
+                                        <a href="{{ Storage::url($filePath) }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                                            <i class="fas fa-eye me-1"></i> إثبات {{ $index + 1 }}
+                                        </a>
+                                        <a href="{{ Storage::url($filePath) }}" download class="btn btn-outline-success btn-sm">
+                                            <i class="fas fa-download me-1"></i> تحميل
+                                        </a>
+                                    </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+                        
+                        <!-- تفعيل الرخصة -->
+                        @if($license->license_activation_path)
+                        <div class="col-md-6 mb-3">
+                            <div class="card border-warning">
+                                <div class="card-header bg-warning text-dark">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-toggle-on me-2"></i>
+                                        تفعيل الرخصة
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    @php
+                                        $activationFiles = json_decode($license->license_activation_path, true) ?? [];
+                                    @endphp
+                                    @foreach($activationFiles as $index => $filePath)
+                                    <div class="d-flex gap-2 mb-2">
+                                        <a href="{{ Storage::url($filePath) }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                                            <i class="fas fa-eye me-1"></i> تفعيل {{ $index + 1 }}
+                                        </a>
+                                        <a href="{{ Storage::url($filePath) }}" download class="btn btn-outline-success btn-sm">
+                                            <i class="fas fa-download me-1"></i> تحميل
+                                        </a>
+                                    </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+                        
+                        <!-- ملفات اختبارات المختبر -->
+                        @if($license->depth_test_file_path || $license->soil_test_file_path || $license->asphalt_test_file_path || $license->soil_compaction_file_path || $license->rc1_mc1_file_path || $license->interlock_test_file_path)
+                        <div class="col-12 mb-3">
+                            <div class="card border-info">
+                                <div class="card-header bg-info text-white">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-flask me-2"></i>
+                                        ملفات اختبارات المختبر
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        @if($license->depth_test_file_path)
+                                        <div class="col-md-4 mb-2">
+                                            <strong>اختبار العمق:</strong><br>
+                                            <a href="{{ Storage::url($license->depth_test_file_path) }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                                                <i class="fas fa-eye me-1"></i> عرض
+                                            </a>
+                                            <a href="{{ Storage::url($license->depth_test_file_path) }}" download class="btn btn-outline-success btn-sm">
+                                                <i class="fas fa-download me-1"></i> تحميل
+                                            </a>
+                                        </div>
+                                        @endif
+                                        
+                                        @if($license->soil_test_file_path)
+                                        <div class="col-md-4 mb-2">
+                                            <strong>اختبار التربة:</strong><br>
+                                            <a href="{{ Storage::url($license->soil_test_file_path) }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                                                <i class="fas fa-eye me-1"></i> عرض
+                                            </a>
+                                            <a href="{{ Storage::url($license->soil_test_file_path) }}" download class="btn btn-outline-success btn-sm">
+                                                <i class="fas fa-download me-1"></i> تحميل
+                                            </a>
+                                        </div>
+                                        @endif
+                                        
+                                        @if($license->asphalt_test_file_path)
+                                        <div class="col-md-4 mb-2">
+                                            <strong>اختبار الأسفلت:</strong><br>
+                                            <a href="{{ Storage::url($license->asphalt_test_file_path) }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                                                <i class="fas fa-eye me-1"></i> عرض
+                                            </a>
+                                            <a href="{{ Storage::url($license->asphalt_test_file_path) }}" download class="btn btn-outline-success btn-sm">
+                                                <i class="fas fa-download me-1"></i> تحميل
+                                            </a>
+                                        </div>
+                                        @endif
+                                        
+                                        @if($license->soil_compaction_file_path)
+                                        <div class="col-md-4 mb-2">
+                                            <strong>اختبار دك التربة:</strong><br>
+                                            <a href="{{ Storage::url($license->soil_compaction_file_path) }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                                                <i class="fas fa-eye me-1"></i> عرض
+                                            </a>
+                                            <a href="{{ Storage::url($license->soil_compaction_file_path) }}" download class="btn btn-outline-success btn-sm">
+                                                <i class="fas fa-download me-1"></i> تحميل
+                                            </a>
+                                        </div>
+                                        @endif
+                                        
+                                        @if($license->rc1_mc1_file_path)
+                                        <div class="col-md-4 mb-2">
+                                            <strong>اختبار RC1/MC1:</strong><br>
+                                            <a href="{{ Storage::url($license->rc1_mc1_file_path) }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                                                <i class="fas fa-eye me-1"></i> عرض
+                                            </a>
+                                            <a href="{{ Storage::url($license->rc1_mc1_file_path) }}" download class="btn btn-outline-success btn-sm">
+                                                <i class="fas fa-download me-1"></i> تحميل
+                                            </a>
+                                        </div>
+                                        @endif
+                                        
+                                        @if($license->interlock_test_file_path)
+                                        <div class="col-md-4 mb-2">
+                                            <strong>اختبار انترلوك:</strong><br>
+                                            <a href="{{ Storage::url($license->interlock_test_file_path) }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                                                <i class="fas fa-eye me-1"></i> عرض
+                                            </a>
+                                            <a href="{{ Storage::url($license->interlock_test_file_path) }}" download class="btn btn-outline-success btn-sm">
+                                                <i class="fas fa-download me-1"></i> تحميل
+                                            </a>
+                                        </div>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+                        
+                        <!-- ملفات الإخلاءات -->
+                        @if($license->evacuations_file_path)
+                        <div class="col-md-6 mb-3">
+                            <div class="card border-warning">
+                                <div class="card-header bg-warning text-dark">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-truck-moving me-2"></i>
+                                        ملفات الإخلاءات
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    @php
+                                        $evacuationFiles = json_decode($license->evacuations_file_path, true) ?? [];
+                                    @endphp
+                                    @foreach($evacuationFiles as $index => $filePath)
+                                    <div class="d-flex gap-2 mb-2">
+                                        <a href="{{ Storage::url($filePath) }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                                            <i class="fas fa-eye me-1"></i> إخلاء {{ $index + 1 }}
+                                        </a>
+                                        <a href="{{ Storage::url($filePath) }}" download class="btn btn-outline-success btn-sm">
+                                            <i class="fas fa-download me-1"></i> تحميل
+                                        </a>
+                                    </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+                        
+                        <!-- ملفات المخالفات -->
+                        @if($license->violations_file_path)
+                        <div class="col-md-6 mb-3">
+                            <div class="card border-danger">
+                                <div class="card-header bg-danger text-white">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-exclamation-triangle me-2"></i>
+                                        ملفات المخالفات
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    @php
+                                        $violationFiles = json_decode($license->violations_file_path, true) ?? [];
+                                    @endphp
+                                    @foreach($violationFiles as $index => $filePath)
+                                    <div class="d-flex gap-2 mb-2">
+                                        <a href="{{ Storage::url($filePath) }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                                            <i class="fas fa-eye me-1"></i> مخالفة {{ $index + 1 }}
+                                        </a>
+                                        <a href="{{ Storage::url($filePath) }}" download class="btn btn-outline-success btn-sm">
+                                            <i class="fas fa-download me-1"></i> تحميل
+                                        </a>
+                                    </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+                        
+                        <!-- مرفقات الملاحظات -->
+                        @if($license->notes_attachments_path)
+                        <div class="col-md-6 mb-3">
+                            <div class="card border-dark">
+                                <div class="card-header bg-dark text-white">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-sticky-note me-2"></i>
+                                        مرفقات الملاحظات
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    @php
+                                        $notesFiles = json_decode($license->notes_attachments_path, true) ?? [];
+                                    @endphp
+                                    @foreach($notesFiles as $index => $filePath)
+                                    <div class="d-flex gap-2 mb-2">
+                                        <a href="{{ Storage::url($filePath) }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                                            <i class="fas fa-eye me-1"></i> مرفق {{ $index + 1 }}
+                                        </a>
+                                        <a href="{{ Storage::url($filePath) }}" download class="btn btn-outline-success btn-sm">
+                                            <i class="fas fa-download me-1"></i> تحميل
+                                        </a>
+                                    </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+                        
+                        @if(!$license->coordination_certificate_path && !$license->letters_commitments_file_path && !$license->license_file_path && !$license->payment_invoices_path && !$license->payment_proof_path && !$license->license_activation_path && !$license->depth_test_file_path && !$license->soil_test_file_path && !$license->asphalt_test_file_path && !$license->soil_compaction_file_path && !$license->rc1_mc1_file_path && !$license->interlock_test_file_path && !$license->evacuations_file_path && !$license->violations_file_path && !$license->notes_attachments_path)
+                        <div class="col-12">
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>
+                                لا توجد مرفقات محفوظة لهذه الرخصة
+                            </div>
+                        </div>
+                        @endif
+                    </div>
+
                     <!-- الملاحظات -->
                     @if($license->notes)
                     <div class="row mb-4">
@@ -442,5 +919,62 @@ h5 {
 
 .fw-bold {
     font-weight: 600 !important;
+}
+
+/* تحسينات المرفقات */
+.card.border-warning {
+    border-color: #ffc107 !important;
+}
+
+.card.border-info {
+    border-color: #0dcaf0 !important;
+}
+
+.card.border-primary {
+    border-color: #0d6efd !important;
+}
+
+.card.border-success {
+    border-color: #198754 !important;
+}
+
+.card.border-secondary {
+    border-color: #6c757d !important;
+}
+
+.card.border-danger {
+    border-color: #dc3545 !important;
+}
+
+.card.border-dark {
+    border-color: #212529 !important;
+}
+
+.btn-outline-primary:hover {
+    color: white;
+}
+
+.btn-outline-success:hover {
+    color: white;
+}
+
+/* تحسين عرض المرفقات */
+.d-flex.gap-2 {
+    gap: 0.5rem !important;
+}
+
+.card h6 {
+    font-weight: 600;
+}
+
+.table-responsive {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.alert.alert-info {
+    background-color: #d1ecf1;
+    border-color: #bee5eb;
+    color: #0c5460;
 }
 </style> 
