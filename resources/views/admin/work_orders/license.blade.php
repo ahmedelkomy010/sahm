@@ -121,8 +121,7 @@
                             
                             <!-- قسم رخص الحفر -->
                             <div id="dig-license-section" class="tab-section" style="display: none;">
-                                <form id="digLicenseForm" class="dig-license-form">
-                                    @csrf
+                                <div id="digLicenseForm" class="dig-license-form">
                                     <input type="hidden" name="work_order_id" value="{{ $workOrder->id }}">
                                     <input type="hidden" name="section_type" value="dig_license">
                                     
@@ -278,13 +277,12 @@
                                             </button>
                                         </div>
                                     </div>
-                                </form>
+                                </div>
                             </div>
 
                             <!-- قسم المختبر -->
                             <div id="lab-section" class="tab-section" style="display: none;">
-                                <form id="labForm" class="lab-form">
-                                    @csrf
+                                <div id="labForm" class="lab-form">
                                     <input type="hidden" name="work_order_id" value="{{ $workOrder->id }}">
                                     <input type="hidden" name="section_type" value="lab">
                                     
@@ -437,13 +435,12 @@
                                             </button>
                                         </div>
                                     </div>
-                                </form>
+                                </div>
                             </div>
 
                             <!-- قسم الإخلاءات -->
                             <div id="evacuations-section" class="tab-section" style="display: none;">
-                                <form id="evacuationsForm" class="evacuations-form">
-                                    @csrf
+                                <div id="evacuationsForm" class="evacuations-form">
                                     <input type="hidden" name="work_order_id" value="{{ $workOrder->id }}">
                                     <input type="hidden" name="section_type" value="evacuations">
                                     
@@ -516,8 +513,8 @@
                                                             <th rowspan="2" class="align-middle">تاريخ الفسح</th>
                                                             <th colspan="3" class="text-center">كمية المواد (متر مكعب)</th>
                                                             <th rowspan="2" class="align-middle">نوع الشارع</th>
-                                                            <th rowspan="2" class="align-middle">الطول</th>
-                                                            <th rowspan="2" class="align-middle">رقم الفسح والمختبر</th>
+                                                            <th rowspan="2" class="align-middle">طول الفسح</th>
+                                                            <th rowspan="2" class="align-middle">طول المختبر</th>
                                                             <th colspan="3" class="text-center">تدقيق المختبر</th>
                                                             <th rowspan="2" class="align-middle">ملاحظات</th>
                                                             <th rowspan="2" class="align-middle">حذف</th>
@@ -594,13 +591,12 @@
                                             </button>
                                         </div>
                                     </div>
-                                </form>
+                                </div>
                             </div>
 
                             <!-- قسم المخالفات -->
                             <div id="violations-section" class="tab-section" style="display: none;">
-                                <form id="violationsForm" class="violations-form">
-                                    @csrf
+                                <div id="violationsForm" class="violations-form">
                                     <input type="hidden" name="work_order_id" value="{{ $workOrder->id }}">
                                     <input type="hidden" name="section_type" value="violations">
                                     
@@ -664,7 +660,7 @@
                                             </button>
                                         </div>
                                     </div>
-                                </form>
+                                </div>
                             </div>
 
                             <!-- ملاحظات إضافية -->
@@ -676,8 +672,7 @@
                                     </h4>
                                 </div>
                                 <div class="card-body">
-                                    <form id="notesForm" class="notes-form">
-                                        @csrf
+                                    <div id="notesForm" class="notes-form">
                                         <input type="hidden" name="work_order_id" value="{{ $workOrder->id }}">
                                         <input type="hidden" name="section_type" value="notes">
                                         
@@ -708,7 +703,7 @@
                                                 </button>
                                             </div>
                                         </div>
-                                    </form>
+                                    </div>
                                 </div>
                             </div>
 
@@ -1079,7 +1074,7 @@
                                 <th>تصنيف التربة</th>
                                 <th>تجربة بروكتور</th>
                                 <th>الخرسانة</th>
-                                <th>ملاحظات</th>
+                                
                             </tr>
                         </thead>
                         <tbody>
@@ -1101,7 +1096,7 @@
                         <td>${row.soil_classification || '-'}</td>
                         <td>${row.proctor_test || '-'}</td>
                         <td>${row.concrete || '-'}</td>
-                        <td>${row.notes || '-'}</td>
+                        
                     </tr>
                 `;
             });
@@ -1189,46 +1184,63 @@
                 }
             }
             
-            // الآن حاول العثور على النموذج
-            let form = document.getElementById('digLicenseForm');
-            console.log('First attempt - Form element:', form);
-            
-            // إذا لم نجد النموذج، جرب طرق أخرى
-            if (!form) {
-                console.log('Trying alternative methods to find form...');
-                
-                // جرب البحث داخل القسم المرئي
-                if (formSection) {
-                    form = formSection.querySelector('form.dig-license-form');
-                    console.log('Found form inside section:', form);
-                }
-                
-                // جرب البحث بـ class name
-                if (!form) {
-                    form = document.querySelector('.dig-license-form');
-                    console.log('Found form by class:', form);
-                }
-                
-                // جرب البحث بـ form داخل dig-license-section
-                if (!form) {
-                    form = document.querySelector('#dig-license-section form');
-                    console.log('Found form by section query:', form);
-                }
-            }
-            
-            if (!form) {
-                console.error('digLicenseForm not found after all attempts!');
-                console.log('Available forms on page:', document.querySelectorAll('form'));
-                showErrorMessage('لم يتم العثور على نموذج رخص الحفر');
+            // استخدام النموذج الرئيسي
+            const mainForm = document.getElementById('licenseForm');
+            if (!mainForm) {
+                console.error('Main licenseForm not found!');
+                showErrorMessage('لم يتم العثور على النموذج الرئيسي');
                 return;
             }
             
-            console.log('Form found successfully:', form);
-            console.log('Form section:', formSection);
-            console.log('Form section display style:', formSection ? formSection.style.display : 'not found');
-            console.log('Form visible:', form.offsetParent !== null);
+            // التأكد من وجود قسم رخص الحفر
+            const digSection = document.getElementById('digLicenseForm');
+            if (!digSection) {
+                console.error('digLicenseForm section not found!');
+                showErrorMessage('لم يتم العثور على قسم رخص الحفر');
+                return;
+            }
             
-            const formData = new FormData(form);
+            console.log('Main form found successfully:', mainForm);
+            console.log('Dig section found successfully:', digSection);
+            console.log('Form section display style:', formSection ? formSection.style.display : 'not found');
+            
+            // إنشاء FormData من جميع العناصر في قسم رخص الحفر
+            const formData = new FormData();
+            
+            // إضافة الحقول المطلوبة
+            const workOrderIdField = mainForm.querySelector('input[name="work_order_id"]');
+            if (workOrderIdField) {
+                formData.append('work_order_id', workOrderIdField.value);
+            }
+            
+            formData.append('section_type', 'dig_license');
+            
+            // جمع البيانات من جميع العناصر في قسم رخص الحفر
+            const inputs = digSection.querySelectorAll('input, select, textarea');
+            inputs.forEach(input => {
+                if (input.type === 'file') {
+                    if (input.files.length > 0) {
+                        if (input.multiple) {
+                            Array.from(input.files).forEach(file => {
+                                formData.append(input.name, file);
+                            });
+                        } else {
+                            formData.append(input.name, input.files[0]);
+                        }
+                    }
+                } else if (input.type === 'checkbox') {
+                    if (input.checked) {
+                        formData.append(input.name, input.value);
+                    }
+                } else if (input.type === 'radio') {
+                    if (input.checked) {
+                        formData.append(input.name, input.value);
+                    }
+                } else if (input.value && input.value.trim() !== '') {
+                    formData.append(input.name, input.value);
+                }
+            });
+            
             console.log('Form data created');
             
             // Debug: طباعة جميع بيانات النموذج بشكل منظم
@@ -1241,16 +1253,6 @@
                 }
             }
             console.log('Form has data:', hasData);
-            
-            // تحقق من الحقول المهمة
-            const licenseNumber = form.querySelector('[name="license_number"]');
-            const workOrderId = form.querySelector('[name="work_order_id"]');
-            const sectionType = form.querySelector('[name="section_type"]');
-            
-            console.log('Key fields check:');
-            console.log('- license_number field:', licenseNumber, 'value:', licenseNumber ? licenseNumber.value : 'not found');
-            console.log('- work_order_id field:', workOrderId, 'value:', workOrderId ? workOrderId.value : 'not found');
-            console.log('- section_type field:', sectionType, 'value:', sectionType ? sectionType.value : 'not found');
             
             if (forceNew) {
                 formData.append('force_new', '1');
@@ -1365,8 +1367,56 @@
         }
 
         async function saveLabSection(forceNew = false) {
-            const form = document.getElementById('labForm');
-            const formData = new FormData(form);
+            const mainForm = document.getElementById('licenseForm');
+            if (!mainForm) {
+                console.error('Main licenseForm not found!');
+                showErrorMessage('لم يتم العثور على النموذج الرئيسي');
+                return;
+            }
+            
+            const labSection = document.getElementById('labForm');
+            if (!labSection) {
+                console.error('labForm section not found!');
+                showErrorMessage('لم يتم العثور على قسم المختبر');
+                return;
+            }
+            
+            // إنشاء FormData من جميع العناصر في قسم المختبر
+            const formData = new FormData();
+            
+            // إضافة الحقول المطلوبة
+            const workOrderIdField = mainForm.querySelector('input[name="work_order_id"]');
+            if (workOrderIdField) {
+                formData.append('work_order_id', workOrderIdField.value);
+            }
+            
+            formData.append('section_type', 'lab');
+            
+            // جمع البيانات من جميع العناصر في قسم المختبر
+            const inputs = labSection.querySelectorAll('input, select, textarea');
+            inputs.forEach(input => {
+                if (input.type === 'file') {
+                    if (input.files.length > 0) {
+                        if (input.multiple) {
+                            Array.from(input.files).forEach(file => {
+                                formData.append(input.name, file);
+                            });
+                        } else {
+                            formData.append(input.name, input.files[0]);
+                        }
+                    }
+                } else if (input.type === 'checkbox') {
+                    if (input.checked) {
+                        formData.append(input.name, input.value);
+                    }
+                } else if (input.type === 'radio') {
+                    if (input.checked) {
+                        formData.append(input.name, input.value);
+                    }
+                } else if (input.value && input.value.trim() !== '') {
+                    formData.append(input.name, input.value);
+                }
+            });
             
             if (forceNew) {
                 formData.append('force_new', '1');
@@ -1453,8 +1503,56 @@
         }
 
         async function saveEvacuationsSection(forceNew = false) {
-            const form = document.getElementById('evacuationsForm');
-            const formData = new FormData(form);
+            const mainForm = document.getElementById('licenseForm');
+            if (!mainForm) {
+                console.error('Main licenseForm not found!');
+                showErrorMessage('لم يتم العثور على النموذج الرئيسي');
+                return;
+            }
+            
+            const evacSection = document.getElementById('evacuationsForm');
+            if (!evacSection) {
+                console.error('evacuationsForm section not found!');
+                showErrorMessage('لم يتم العثور على قسم الإخلاءات');
+                return;
+            }
+            
+            // إنشاء FormData من جميع العناصر في قسم الإخلاءات
+            const formData = new FormData();
+            
+            // إضافة الحقول المطلوبة
+            const workOrderIdField = mainForm.querySelector('input[name="work_order_id"]');
+            if (workOrderIdField) {
+                formData.append('work_order_id', workOrderIdField.value);
+            }
+            
+            formData.append('section_type', 'evacuations');
+            
+            // جمع البيانات من جميع العناصر في قسم الإخلاءات
+            const inputs = evacSection.querySelectorAll('input, select, textarea');
+            inputs.forEach(input => {
+                if (input.type === 'file') {
+                    if (input.files.length > 0) {
+                        if (input.multiple) {
+                            Array.from(input.files).forEach(file => {
+                                formData.append(input.name, file);
+                            });
+                        } else {
+                            formData.append(input.name, input.files[0]);
+                        }
+                    }
+                } else if (input.type === 'checkbox') {
+                    if (input.checked) {
+                        formData.append(input.name, input.value);
+                    }
+                } else if (input.type === 'radio') {
+                    if (input.checked) {
+                        formData.append(input.name, input.value);
+                    }
+                } else if (input.value && input.value.trim() !== '') {
+                    formData.append(input.name, input.value);
+                }
+            });
             
             if (forceNew) {
                 formData.append('force_new', '1');
@@ -1503,8 +1601,56 @@
         }
 
         async function saveViolationsSection(forceNew = false) {
-            const form = document.getElementById('violationsForm');
-            const formData = new FormData(form);
+            const mainForm = document.getElementById('licenseForm');
+            if (!mainForm) {
+                console.error('Main licenseForm not found!');
+                showErrorMessage('لم يتم العثور على النموذج الرئيسي');
+                return;
+            }
+            
+            const violationsSection = document.getElementById('violationsForm');
+            if (!violationsSection) {
+                console.error('violationsForm section not found!');
+                showErrorMessage('لم يتم العثور على قسم المخالفات');
+                return;
+            }
+            
+            // إنشاء FormData من جميع العناصر في قسم المخالفات
+            const formData = new FormData();
+            
+            // إضافة الحقول المطلوبة
+            const workOrderIdField = mainForm.querySelector('input[name="work_order_id"]');
+            if (workOrderIdField) {
+                formData.append('work_order_id', workOrderIdField.value);
+            }
+            
+            formData.append('section_type', 'violations');
+            
+            // جمع البيانات من جميع العناصر في قسم المخالفات
+            const inputs = violationsSection.querySelectorAll('input, select, textarea');
+            inputs.forEach(input => {
+                if (input.type === 'file') {
+                    if (input.files.length > 0) {
+                        if (input.multiple) {
+                            Array.from(input.files).forEach(file => {
+                                formData.append(input.name, file);
+                            });
+                        } else {
+                            formData.append(input.name, input.files[0]);
+                        }
+                    }
+                } else if (input.type === 'checkbox') {
+                    if (input.checked) {
+                        formData.append(input.name, input.value);
+                    }
+                } else if (input.type === 'radio') {
+                    if (input.checked) {
+                        formData.append(input.name, input.value);
+                    }
+                } else if (input.value && input.value.trim() !== '') {
+                    formData.append(input.name, input.value);
+                }
+            });
             
             if (forceNew) {
                 formData.append('force_new', '1');
@@ -1541,8 +1687,56 @@
         }
 
         async function saveNotesSection(forceNew = false) {
-            const form = document.getElementById('notesForm');
-            const formData = new FormData(form);
+            const mainForm = document.getElementById('licenseForm');
+            if (!mainForm) {
+                console.error('Main licenseForm not found!');
+                showErrorMessage('لم يتم العثور على النموذج الرئيسي');
+                return;
+            }
+            
+            const notesSection = document.getElementById('notesForm');
+            if (!notesSection) {
+                console.error('notesForm section not found!');
+                showErrorMessage('لم يتم العثور على قسم الملاحظات');
+                return;
+            }
+            
+            // إنشاء FormData من جميع العناصر في قسم الملاحظات
+            const formData = new FormData();
+            
+            // إضافة الحقول المطلوبة
+            const workOrderIdField = mainForm.querySelector('input[name="work_order_id"]');
+            if (workOrderIdField) {
+                formData.append('work_order_id', workOrderIdField.value);
+            }
+            
+            formData.append('section_type', 'notes');
+            
+            // جمع البيانات من جميع العناصر في قسم الملاحظات
+            const inputs = notesSection.querySelectorAll('input, select, textarea');
+            inputs.forEach(input => {
+                if (input.type === 'file') {
+                    if (input.files.length > 0) {
+                        if (input.multiple) {
+                            Array.from(input.files).forEach(file => {
+                                formData.append(input.name, file);
+                            });
+                        } else {
+                            formData.append(input.name, input.files[0]);
+                        }
+                    }
+                } else if (input.type === 'checkbox') {
+                    if (input.checked) {
+                        formData.append(input.name, input.value);
+                    }
+                } else if (input.type === 'radio') {
+                    if (input.checked) {
+                        formData.append(input.name, input.value);
+                    }
+                } else if (input.value && input.value.trim() !== '') {
+                    formData.append(input.name, input.value);
+                }
+            });
             
             if (forceNew) {
                 formData.append('force_new', '1');
@@ -1574,7 +1768,7 @@
                 console.error('Error saving notes section:', error);
                 showErrorMessage('حدث خطأ أثناء حفظ الملاحظات');
             } finally {
-                hideLoadingState('notesForm', 'حفظ الملاحظات الإضافية');
+                hideLoadingState('notesForm', 'حفظ الملاحظات');
             }
         }
 
@@ -2158,9 +2352,9 @@
                 <td><input type="text" class="form-control form-control-sm" name="evac_table1[${rowCount}][street_type]" placeholder="نوع الشارع"></td>
                 <td><input type="number" step="0.01" class="form-control form-control-sm" name="evac_table1[${rowCount}][length]" placeholder="الطول بالمتر"></td>
                 <td><input type="text" class="form-control form-control-sm" name="evac_table1[${rowCount}][clearance_lab_number]" placeholder="رقم الفسح والمختبر"></td>
-                <td><input type="number" step="0.01" class="form-control form-control-sm" name="evac_table1[${rowCount}][soil_check]" placeholder="تدقيق التربة"></td>
-                <td><input type="number" step="0.01" class="form-control form-control-sm" name="evac_table1[${rowCount}][mc1_check]" placeholder="تدقيق MC1"></td>
-                <td><input type="number" step="0.01" class="form-control form-control-sm" name="evac_table1[${rowCount}][asphalt_check]" placeholder="تدقيق أسفلت"></td>
+                <td><input type="text" class="form-control form-control-sm" name="evac_table1[${rowCount}][soil_check]" placeholder="تدقيق التربة"></td>
+                <td><input type="text" step="0.01" class="form-control form-control-sm" name="evac_table1[${rowCount}][mc1_check]" placeholder="تدقيق MC1"></td>
+                <td><input type="text" step="0.01" class="form-control form-control-sm" name="evac_table1[${rowCount}][asphalt_check]" placeholder="تدقيق أسفلت"></td>
                 <td><input type="text" class="form-control form-control-sm" name="evac_table1[${rowCount}][notes]" placeholder="ملاحظات"></td>
                 <td>
                     <button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">
