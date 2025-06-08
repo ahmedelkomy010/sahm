@@ -248,10 +248,106 @@ class WorkOrderController extends Controller
         return view('admin.work_orders.installations', compact('workOrder', 'installations', 'installationImages'));
     }
 
-    public function civilWorks(WorkOrder $workOrder)
+    public function civilWorks(Request $request, WorkOrder $workOrder)
     {
+        // إذا كان الطلب POST أو PUT، احفظ البيانات
+        if ($request->isMethod('put') || $request->isMethod('post')) {
+            // تحديث بيانات الحفريات
+            $updateData = [];
+            
+            // حفظ بيانات الحفريات التربة الترابية غير مسفلتة
+            if ($request->has('excavation_unsurfaced_soil')) {
+                $updateData['excavation_unsurfaced_soil'] = $request->input('excavation_unsurfaced_soil');
+            }
+            
+            // حفظ بيانات الحفريات التربة الترابية مسفلتة
+            if ($request->has('excavation_surfaced_soil')) {
+                $updateData['excavation_surfaced_soil'] = $request->input('excavation_surfaced_soil');
+            }
+            
+            // حفظ بيانات الحفريات التربة الصخرية غير مسفلتة
+            if ($request->has('excavation_unsurfaced_rock')) {
+                $updateData['excavation_unsurfaced_rock'] = $request->input('excavation_unsurfaced_rock');
+            }
+            
+            // حفظ بيانات الحفريات التربة الصخرية مسفلتة
+            if ($request->has('excavation_surfaced_rock')) {
+                $updateData['excavation_surfaced_rock'] = $request->input('excavation_surfaced_rock');
+            }
+            
+            // حفظ بيانات الحفريات الدقيقة
+            if ($request->has('excavation_precise')) {
+                $updateData['excavation_precise'] = $request->input('excavation_precise');
+            }
+            
+            // حفظ بيانات الحفر المفتوح للحفريات التربة الترابية غير مسفلتة
+            if ($request->has('excavation_unsurfaced_soil_open')) {
+                $updateData['excavation_unsurfaced_soil_open'] = $request->input('excavation_unsurfaced_soil_open');
+            }
+            
+            // حفظ بيانات الحفر المفتوح للحفريات التربة الترابية مسفلتة
+            if ($request->has('excavation_surfaced_soil_open')) {
+                $updateData['excavation_surfaced_soil_open'] = $request->input('excavation_surfaced_soil_open');
+            }
+            
+            // حفظ بيانات الحفر المفتوح للحفريات التربة الصخرية غير مسفلتة
+            if ($request->has('excavation_unsurfaced_rock_open')) {
+                $updateData['excavation_unsurfaced_rock_open'] = $request->input('excavation_unsurfaced_rock_open');
+            }
+            
+            // حفظ بيانات الحفر المفتوح للحفريات التربة الصخرية مسفلتة
+            if ($request->has('excavation_surfaced_rock_open')) {
+                $updateData['excavation_surfaced_rock_open'] = $request->input('excavation_surfaced_rock_open');
+            }
+            
+            // حفظ بيانات الأعمال الكهربائية
+            if ($request->has('electrical_items')) {
+                $updateData['electrical_works'] = $request->input('electrical_items');
+            }
+            
+            // حفظ بيانات أعمال الأسفلت والحفر المفتوح
+            if ($request->has('open_excavation')) {
+                $updateData['open_excavation'] = $request->input('open_excavation');
+            }
+            
+            // حفظ بيانات الجدول التفصيلي
+            if ($request->has('excavation_details_table')) {
+                $updateData['excavation_details_table'] = $request->input('excavation_details_table');
+            }
+            
+            // تحديث البيانات في قاعدة البيانات
+            if (!empty($updateData)) {
+                $workOrder->update($updateData);
+            }
+            
+            // إذا كان الطلب AJAX، أرجع JSON response
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'تم حفظ بيانات الأعمال المدنية بنجاح'
+                ]);
+            }
+            
+            return redirect()->route('admin.work-orders.civil-works', $workOrder)
+                ->with('success', 'تم حفظ بيانات الأعمال المدنية بنجاح');
+        }
+        
+        // عرض الصفحة
         $workOrder->load('civilWorksFiles');
         return view('admin.work_orders.civil_works', compact('workOrder'));
+    }
+
+    /**
+     * Get excavation details for AJAX request
+     */
+    public function getExcavationDetails(WorkOrder $workOrder)
+    {
+        $excavationDetails = $workOrder->excavation_details_table ?? [];
+        
+        return response()->json([
+            'success' => true,
+            'excavationDetails' => $excavationDetails
+        ]);
     }
 
     public function uploadInstallationsImages(Request $request, WorkOrder $workOrder)

@@ -430,9 +430,41 @@
         }
 
         /* تحسين الجدول التفصيلي */
+        #excavation-details-table {
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            border-radius: 15px;
+            overflow: hidden;
+        }
+        
+                 #excavation-details-table thead th {
+             background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+             color: white;
+             font-weight: 600;
+             border: none;
+             padding: 18px 12px;
+             text-align: center;
+             font-size: 0.9rem;
+             letter-spacing: 0.5px;
+         }
+         
+         #excavation-details-table thead th.bg-warning {
+             background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%) !important;
+             color: white !important;
+             font-weight: 700;
+             text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+         }
+        
         #excavation-details-table tbody tr {
             border-left: 4px solid transparent;
             transition: all 0.3s ease;
+            background: white;
+        }
+        
+        #excavation-details-table tbody tr:hover {
+            background-color: rgba(0, 123, 255, 0.05) !important;
+            transform: translateX(5px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border-left-color: #007bff;
         }
 
         #excavation-details-table tbody tr.table-success {
@@ -450,6 +482,50 @@
         #excavation-details-table tbody tr.table-info {
             border-left-color: #0dcaf0;
         }
+        
+        #excavation-details-table td {
+            padding: 15px 12px;
+            vertical-align: middle;
+            border-color: #e9ecef;
+        }
+        
+        /* تحسين البادجات */
+        .badge.bg-secondary {
+            background: linear-gradient(135deg, #6c757d 0%, #495057 100%) !important;
+        }
+        
+        .badge.bg-light {
+            border: 1px solid #dee2e6;
+        }
+        
+        /* تحسين نقاط الألوان */
+        .rounded-circle {
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+                 /* تحسين الكود */
+         code.bg-light {
+             font-family: 'Courier New', monospace;
+             font-size: 0.85rem;
+             color: #495057;
+             font-weight: 600;
+         }
+         
+         /* تحسين بادجات حالة السطح */
+         .badge.bg-danger {
+             background: linear-gradient(135deg, #dc3545 0%, #c82333 100%) !important;
+             box-shadow: 0 2px 4px rgba(220, 53, 69, 0.3);
+         }
+         
+         .badge.bg-success {
+             background: linear-gradient(135deg, #28a745 0%, #20c997 100%) !important;
+             box-shadow: 0 2px 4px rgba(40, 167, 69, 0.3);
+         }
+         
+         .badge.bg-info {
+             background: linear-gradient(135deg, #17a2b8 0%, #138496 100%) !important;
+             box-shadow: 0 2px 4px rgba(23, 162, 184, 0.3);
+         }
 
         /* تحسين الرسالة التوضيحية */
         .table-info td {
@@ -534,6 +610,20 @@
             </a>
         </div>
 
+        @if(session('success'))
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="fas fa-check-circle me-2"></i>{{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
+
+        @if(session('error'))
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-circle me-2"></i>{{ session('error') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
+
         <form method="POST" action="{{ route('admin.work-orders.civil-works.store', $workOrder) }}" 
               enctype="multipart/form-data" class="needs-validation" novalidate>
             @csrf
@@ -566,7 +656,7 @@
                                                     <div class="input-group input-group-sm">
                                                         <input type="number" step="0.01" class="form-control dimension-input" 
                                                                name="excavation_unsurfaced_soil[{{ $loop->index }}]" 
-                                                               value="{{ old('excavation_unsurfaced_soil.' . $loop->index) }}"
+                                                               value="{{ old('excavation_unsurfaced_soil.' . $loop->index, $workOrder->excavation_unsurfaced_soil[$loop->index] ?? '') }}"
                                                                placeholder="0.00">
                                                         <span class="input-group-text">متر</span>
                                                     </div>
@@ -645,7 +735,7 @@
                                                     <div class="input-group input-group-sm">
                                                         <input type="number" step="0.01" class="form-control dimension-input" 
                                                                name="excavation_surfaced_soil[{{ $loop->index }}]" 
-                                                               value="{{ old('excavation_surfaced_soil.' . $loop->index) }}"
+                                                               value="{{ old('excavation_surfaced_soil.' . $loop->index, $workOrder->excavation_surfaced_soil[$loop->index] ?? '') }}"
                                                                placeholder="0.00">
                                                         <span class="input-group-text">متر</span>
                                                     </div>
@@ -974,28 +1064,81 @@
                             <div class="subsection mb-3">
                                 <h6 class="subsection-title">حفريات تربة صخرية مسفلتة</h6>
                                 <div class="table-responsive">
-                                    <table class="table table-bordered table-sm">
-                                        <thead>
+                                    <table class="table table-bordered table-sm align-middle">
+                                        <thead class="table-light">
                                             <tr>
-                                                <th style="width: 60%">نوع الكابل</th>
-                                                <th style="width: 40%">الطول (متر)</th>
+                                                <th style="width: 35%">نوع الكابل</th>
+                                                <th style="width: 15%">الطول (متر)</th>
+                                                <th style="width: 15%">العرض (متر)</th>
+                                                <th style="width: 15%">العمق (متر)</th>
+                                                <th style="width: 20%">الإجمالي</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                        @foreach([ 'كابل منخفض', '2 كابل منخفض', '3 كابل منخفض', '4 كابل منخفض', '1 كابل متوسط', '2 كابل متوسط', '3 كابل متوسط', '4 كابل متوسط', 'حفر مفتوح اكبر من 4 كابلات'] as $cable)
-
+                                        @foreach([ 'كابل منخفض', '2 كابل منخفض', '3 كابل منخفض', '4 كابل منخفض', '1 كابل متوسط', '2 كابل متوسط', '3 كابل متوسط', '4 كابل متوسط'] as $cable)
+                                        <tr>
                                                 <td class="align-middle">{{ $cable }}</td>
-                                                <td>
+                                                <td colspan="4">
                                                     <div class="input-group input-group-sm">
                                                         <input type="number" step="0.01" class="form-control dimension-input" 
                                                                name="excavation_surfaced_rock[{{ $loop->index }}]" 
                                                                value="{{ old('excavation_surfaced_rock.' . $loop->index) }}"
                                                                placeholder="0.00">
-                                                        <span class="input-group-text">م</span>
+                                                        <span class="input-group-text">متر</span>
                                                     </div>
                                                 </td>
                                             </tr>
                                             @endforeach
+                                            <!-- حفر مفتوح اكبر من 4 كابلات - حقول منفصلة -->
+                                            <tr class="table-warning">
+                                                <td class="align-middle fw-bold">حفر مفتوح اكبر من 4 كابلات</td>
+                                                <td>
+                                                    <div class="input-group input-group-sm">
+                                                        <input type="number" step="0.01" class="form-control dimension-input excavation-calc" 
+                                                               name="excavation_surfaced_rock_open[length]" 
+                                                               data-type="length"
+                                                               data-target="surfaced_rock_open"
+                                                               value="{{ old('excavation_surfaced_rock_open.length', $workOrder->excavation_surfaced_rock_open['length'] ?? '') }}"
+                                                               placeholder="0.00">
+                                                        <span class="input-group-text">م</span>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div class="input-group input-group-sm">
+                                                        <input type="number" step="0.01" class="form-control dimension-input excavation-calc" 
+                                                               name="excavation_surfaced_rock_open[width]" 
+                                                               data-type="width"
+                                                               data-target="surfaced_rock_open"
+                                                               value="{{ old('excavation_surfaced_rock_open.width', $workOrder->excavation_surfaced_rock_open['width'] ?? '') }}"
+                                                               placeholder="0.00">
+                                                        <span class="input-group-text">م</span>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div class="input-group input-group-sm">
+                                                        <input type="number" step="0.01" class="form-control dimension-input excavation-calc" 
+                                                               name="excavation_surfaced_rock_open[depth]" 
+                                                               data-type="depth"
+                                                               data-target="surfaced_rock_open"
+                                                               value="{{ old('excavation_surfaced_rock_open.depth', $workOrder->excavation_surfaced_rock_open['depth'] ?? '') }}"
+                                                               placeholder="0.00">
+                                                        <span class="input-group-text">م</span>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div class="input-group input-group-sm">
+                                                        <input type="text" class="form-control bg-light fw-bold text-primary" 
+                                                               id="total_surfaced_rock_open" 
+                                                               readonly 
+                                                               value="{{ 
+                                                                   ($workOrder->excavation_surfaced_rock_open['length'] ?? 0) * 
+                                                                   ($workOrder->excavation_surfaced_rock_open['width'] ?? 0) * 
+                                                                   ($workOrder->excavation_surfaced_rock_open['depth'] ?? 0) 
+                                                               }}">
+                                                        <span class="input-group-text bg-primary text-white">م³</span>
+                                                    </div>
+                                                </td>
+                                            </tr>
                                         </tbody>
                                     </table>
                                 </div>
@@ -1182,95 +1325,7 @@
                             
                 </div>
 
-                <!-- جدول ملخص البيانات -->
-                <div class="col-12">
-                    <div class="card shadow-lg mb-4 border-0">
-                        <div class="card-header bg-gradient text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                            <i class="fas fa-table me-2"></i>
-                            <h5 class="mb-0 d-inline">ملخص الأعمال المدنية المدخلة</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="alert alert-info border-0 shadow-sm">
-                                <i class="fas fa-info-circle me-2"></i>
-                                هذا الجدول يعرض ملخصاً شاملاً لجميع البيانات التي تم إدخالها في نموذج الأعمال المدنية
-                            </div>
-                            
-                            <!-- إحصائيات سريعة -->
-                            <div class="row mb-4">
-                                <div class="col-md-3">
-                                    <div class="card bg-primary text-white border-0 shadow-sm">
-                                        <div class="card-body text-center">
-                                            <i class="fas fa-cube fa-2x mb-2"></i>
-                                            <h4 class="mb-1" id="total-volume">0.00</h4>
-                                            <small>إجمالي الحجم (م³)</small>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="card bg-success text-white border-0 shadow-sm">
-                                        <div class="card-body text-center">
-                                            <i class="fas fa-square fa-2x mb-2"></i>
-                                            <h4 class="mb-1" id="total-area">0.00</h4>
-                                            <small>إجمالي المساحة (م²)</small>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="card bg-warning text-white border-0 shadow-sm">
-                                        <div class="card-body text-center">
-                                            <i class="fas fa-ruler fa-2x mb-2"></i>
-                                            <h4 class="mb-1" id="total-length">0.00</h4>
-                                            <small>إجمالي الطول (م)</small>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="card bg-info text-white border-0 shadow-sm">
-                                        <div class="card-body text-center">
-                                            <i class="fas fa-tasks fa-2x mb-2"></i>
-                                            <h4 class="mb-1" id="completed-fields">0</h4>
-                                            <small>الحقول المكتملة</small>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- جدول تفصيلي -->
-                            <div class="table-responsive">
-                                <table class="table table-striped table-hover align-middle" id="summary-table">
-                                    <thead class="table-dark">
-                                        <tr>
-                                            <th style="width: 5%">#</th>
-                                            <th style="width: 35%">نوع العمل</th>
-                                            <th style="width: 15%">الكمية/القيمة</th>
-                                            <th style="width: 10%">الوحدة</th>
-                                            <th style="width: 20%">الفئة</th>
-                                            <th style="width: 15%">الحالة</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="summary-tbody">
-                                        <!-- سيتم ملء البيانات تلقائياً بواسطة JavaScript -->
-                                    </tbody>
-                                </table>
-                            </div>
-
-                            <!-- ملاحظات إضافية -->
-                            <div class="mt-4">
-                                <h6 class="text-muted mb-3">
-                                    <i class="fas fa-sticky-note me-2"></i>ملاحظات إضافية
-                                </h6>
-                                <div class="form-floating">
-                                    <textarea class="form-control" 
-                                              id="additional_notes" 
-                                              name="additional_notes" 
-                                              style="height: 100px"
-                                              placeholder="أضف أي ملاحظات إضافية هنا...">{{ old('additional_notes', $workOrder->additional_notes ?? '') }}</textarea>
-                                    <label for="additional_notes">ملاحظات إضافية</label>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                
 
                 <!-- جدول شامل لبيانات الحفريات -->
                 <div class="col-12">
@@ -1278,10 +1333,10 @@
                         <div class="card-header bg-gradient text-white" style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);">
                             <i class="fas fa-shovel me-2"></i>
                             <h5 class="mb-0 d-inline">جدول تفصيلي لجميع بيانات الحفريات المدخلة</h5>
-                            <button type="button" class="btn btn-light btn-sm float-end" onclick="exportExcavationData()">
+                            <button type="button" class="btn btn-light btn-sm float-end" id="export-excavation-btn">
                                 <i class="fas fa-download me-1"></i>تصدير Excel
                             </button>
-                            <button type="button" class="btn btn-outline-primary btn-sm me-2 float-end" onclick="updateExcavationDetailsTable()">
+                            <button type="button" class="btn btn-outline-primary btn-sm me-2 float-end" id="update-excavation-table-btn">
                                 <i class="fas fa-sync-alt me-1"></i>تحديث الجدول
                             </button>
                         </div>
@@ -1312,22 +1367,46 @@
                                 <table class="table table-striped table-hover align-middle" id="excavation-details-table">
                                     <thead class="table-dark">
                                         <tr>
-                                            <th style="width: 5%">#</th>
-                                            <th style="width: 20%">نوع الحفر</th>
-                                            <th style="width: 15%">تصنيف الكابل</th>
-                                            <th style="width: 10%">نوع السطح</th>
-                                            <th style="width: 8%">الطول (م)</th>
-                                            <th style="width: 8%">العرض (م)</th>
-                                            <th style="width: 8%">العمق (م)</th>
-                                            <th style="width: 10%">الحجم (م³)</th>
-                                            <th style="width: 8%">الكمية</th>
-                                            <th style="width: 8%">الوحدة</th>
+                                            <th style="width: 8%" class="text-center">#</th>
+                                            <th style="width: 40%">تفاصيل نوع الحفرية</th>
+                                            <th style="width: 15%" class="text-center">الكمية</th>
+                                            <th style="width: 12%" class="text-center">الوحدة</th>
+                                            <th style="width: 15%" class="text-center">الحجم/المساحة</th>
+                                            <th style="width: 10%" class="text-center bg-warning">حالة السطح</th>
                                         </tr>
                                     </thead>
                                     <tbody id="excavation-details-tbody">
                                         <!-- سيتم ملء البيانات تلقائياً بواسطة JavaScript -->
                                     </tbody>
                                 </table>
+                            </div>
+
+                            <!-- أزرار إدارة الجدول التفصيلي -->
+                            <div class="row mt-3 mb-4">
+                                <div class="col-12">
+                                    <div class="d-flex flex-wrap gap-2 justify-content-center">
+                                        <button type="button" class="btn btn-primary" onclick="scrollToExcavationDetails()">
+                                            <i class="fas fa-eye me-2"></i>
+                                            عرض الجدول التفصيلي
+                                        </button>
+                                        <button type="button" class="btn btn-success" onclick="updateExcavationDetailsTable()">
+                                            <i class="fas fa-sync me-2"></i>
+                                            تحديث الجدول
+                                        </button>
+                                        <button type="button" class="btn btn-info" onclick="saveExcavationDetailsTable()">
+                                            <i class="fas fa-save me-2"></i>
+                                            حفظ الجدول التفصيلي
+                                        </button>
+                                        <button type="button" class="btn btn-secondary" onclick="loadSavedExcavationDetails()">
+                                            <i class="fas fa-download me-2"></i>
+                                            تحميل البيانات المحفوظة
+                                        </button>
+                                        <button type="button" class="btn btn-warning" onclick="exportExcavationData()">
+                                            <i class="fas fa-file-excel me-2"></i>
+                                            تصدير Excel
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
 
                             <!-- إحصائيات تفصيلية -->
@@ -1565,7 +1644,7 @@
                 <!-- زر للانتقال إلى الجدول التفصيلي -->
                 <div class="col-12 mb-4">
                     <div class="text-center">
-                        <button type="button" class="btn btn-primary btn-lg px-5 py-3 shadow-lg" onclick="scrollToExcavationDetails()">
+                        <button type="button" class="btn btn-primary btn-lg px-5 py-3 shadow-lg" id="scroll-to-details-btn">
                             <i class="fas fa-table me-3"></i>
                             عرض الجدول التفصيلي للحفريات
                             <i class="fas fa-arrow-down ms-3"></i>
@@ -1606,777 +1685,512 @@
 
     <!-- Bootstrap Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    
     <script>
+    // كود JavaScript مبسط للجدول التفصيلي
     document.addEventListener('DOMContentLoaded', function() {
-        // دالة لحساب الإجمالي لكل صف (حجم)
+        console.log('تم تحميل الصفحة - بدء إعداد الأحداث');
+        
+        // دالة لحساب الإجمالي لكل صف (حجم) - محسنة مع فحص الأمان
         function calculateTotal(rowId) {
-            const length = parseFloat(document.querySelector(`input[data-row="${rowId}"][name$="[length]"]`).value) || 0;
-            const width = parseFloat(document.querySelector(`input[data-row="${rowId}"][name$="[width]"]`).value) || 0;
-            const depth = parseFloat(document.querySelector(`input[data-row="${rowId}"][name$="[depth]"]`).value) || 0;
-            
-            const total = length * width * depth;
-            document.getElementById(`total-${rowId}`).value = total.toFixed(2);
+            try {
+                const lengthInput = document.querySelector(`input[data-row="${rowId}"][name$="[length]"]`);
+                const widthInput = document.querySelector(`input[data-row="${rowId}"][name$="[width]"]`);
+                const depthInput = document.querySelector(`input[data-row="${rowId}"][name$="[depth]"]`);
+                
+                const length = lengthInput ? parseFloat(lengthInput.value) || 0 : 0;
+                const width = widthInput ? parseFloat(widthInput.value) || 0 : 0;
+                const depth = depthInput ? parseFloat(depthInput.value) || 0 : 0;
+                
+                const total = length * width * depth;
+                const totalField = document.getElementById(`total-${rowId}`);
+                if (totalField) {
+                    totalField.value = total.toFixed(2);
+                }
+            } catch (error) {
+                console.warn(`خطأ في حساب الإجمالي لـ ${rowId}:`, error);
+            }
         }
 
-        // دالة لحساب المساحة لكل صف (متر مربع)
+        // دالة لحساب المساحة لكل صف (متر مربع) - محسنة مع فحص الأمان
         function calculateArea(rowId) {
-            const length = parseFloat(document.querySelector(`input[data-row="${rowId}"][name$="[length]"]`).value) || 0;
-            const width = parseFloat(document.querySelector(`input[data-row="${rowId}"][name$="[width]"]`).value) || 0;
-            
-            const total = length * width;
-            document.getElementById(`total-${rowId}`).value = total.toFixed(2);
+            try {
+                const lengthInput = document.querySelector(`input[data-row="${rowId}"][name$="[length]"]`);
+                const widthInput = document.querySelector(`input[data-row="${rowId}"][name$="[width]"]`);
+                
+                const length = lengthInput ? parseFloat(lengthInput.value) || 0 : 0;
+                const width = widthInput ? parseFloat(widthInput.value) || 0 : 0;
+                
+                const total = length * width;
+                const totalField = document.getElementById(`total-${rowId}`);
+                if (totalField) {
+                    totalField.value = total.toFixed(2);
+                }
+            } catch (error) {
+                console.warn(`خطأ في حساب المساحة لـ ${rowId}:`, error);
+            }
         }
 
-        // إضافة مستمع الحدث لجميع حقول الإدخال (الحجم)
+        // إضافة مستمع الحدث لجميع حقول الإدخال (الحجم) - مع فحص الأمان
         document.querySelectorAll('.calculate-total').forEach(input => {
-            input.addEventListener('input', function() {
-                calculateTotal(this.dataset.row);
-            });
+            if (input && input.dataset && input.dataset.row) {
+                input.addEventListener('input', function() {
+                    calculateTotal(this.dataset.row);
+                });
+            }
         });
 
-        // إضافة مستمع الحدث لجميع حقول الإدخال (المساحة)
+        // إضافة مستمع الحدث لجميع حقول الإدخال (المساحة) - مع فحص الأمان
         document.querySelectorAll('.calculate-area').forEach(input => {
-            input.addEventListener('input', function() {
-                calculateArea(this.dataset.row);
-            });
+            if (input && input.dataset && input.dataset.row) {
+                input.addEventListener('input', function() {
+                    calculateArea(this.dataset.row);
+                });
+            }
         });
 
-        // حساب الإجماليات الأولية عند تحميل الصفحة (الحجم)
+        // حساب الإجماليات الأولية عند تحميل الصفحة - مع فحص وجود العناصر
         const volumeRows = ['medium', 'low', 'sand_under', 'sand_over', 'first_sibz', 'second_sibz', 'concrete'];
-        volumeRows.forEach(row => calculateTotal(row));
+        volumeRows.forEach(row => {
+            // فحص وجود العناصر قبل حساب الإجمالي
+            const lengthInput = document.querySelector(`input[data-row="${row}"][name$="[length]"]`);
+            if (lengthInput) {
+                calculateTotal(row);
+            }
+        });
 
-        // حساب الإجماليات الأولية عند تحميل الصفحة (المساحة)
         const areaRows = ['first_asphalt', 'asphalt_scraping'];
-        areaRows.forEach(row => calculateArea(row));
+        areaRows.forEach(row => {
+            // فحص وجود العناصر قبل حساب المساحة
+            const lengthInput = document.querySelector(`input[data-row="${row}"][name$="[length]"]`);
+            if (lengthInput) {
+                calculateArea(row);
+            }
+        });
 
-        // دالة لحساب الحجم للحفر المفتوح أكبر من 4 كابلات
+        // دالة لحساب الحجم للحفر المفتوح - محسنة مع فحص الأمان
         function calculateExcavationVolume(targetId) {
-            const lengthInput = document.querySelector(`input[data-target="${targetId}"][data-type="length"]`);
-            const widthInput = document.querySelector(`input[data-target="${targetId}"][data-type="width"]`);
-            const depthInput = document.querySelector(`input[data-target="${targetId}"][data-type="depth"]`);
-            const totalField = document.getElementById(`total_${targetId}`);
+            try {
+                const lengthInput = document.querySelector(`input[data-target="${targetId}"][data-type="length"]`);
+                const widthInput = document.querySelector(`input[data-target="${targetId}"][data-type="width"]`);
+                const depthInput = document.querySelector(`input[data-target="${targetId}"][data-type="depth"]`);
+                const totalField = document.getElementById(`total_${targetId}`);
+                
+                if (lengthInput && widthInput && depthInput && totalField) {
+                    const length = parseFloat(lengthInput.value) || 0;
+                    const width = parseFloat(widthInput.value) || 0;
+                    const depth = parseFloat(depthInput.value) || 0;
+                    
+                    const volume = length * width * depth;
+                    totalField.value = volume.toFixed(2);
+                } else {
+                    console.log(`بعض العناصر غير موجودة لـ ${targetId}`);
+                }
+            } catch (error) {
+                console.warn(`خطأ في حساب حجم الحفر لـ ${targetId}:`, error);
+            }
+        }
+
+        // إضافة مستمع الأحداث لحقول الحفر المفتوح - مع فحص الأمان
+        document.querySelectorAll('.excavation-calc').forEach(input => {
+            if (input && input.dataset && input.dataset.target) {
+                input.addEventListener('input', function() {
+                    const targetId = this.dataset.target;
+                    if (targetId) {
+                        calculateExcavationVolume(targetId);
+                    }
+                });
+            }
+        });
+
+        // حساب الأحجام الأولية للحفر المفتوح - مع فحص وجود العناصر
+        const excavationTargets = ['unsurfaced_soil_open', 'surfaced_soil_open', 'unsurfaced_rock_open', 'surfaced_rock_open'];
+        excavationTargets.forEach(target => {
+            // فحص وجود العناصر قبل حساب الحجم
+            const lengthInput = document.querySelector(`input[data-target="${target}"][data-type="length"]`);
+            if (lengthInput) {
+                calculateExcavationVolume(target);
+            } else {
+                console.log(`عناصر ${target} غير موجودة، تم تجاهلها`);
+            }
+        });
+
+        console.log('تم إعداد جميع الأحدث بنجاح');
+        
+        // تحديث الجدول التفصيلي عند تحميل الصفحة
+        setTimeout(() => {
+            updateExcavationDetailsTable();
+        }, 500);
+    });
+
+    // دوال الجدول التفصيلي - متاحة عالمياً
+    window.scrollToExcavationDetails = function() {
+        console.log('الانتقال إلى الجدول التفصيلي');
+        const detailsSection = document.querySelector('#excavation-details-table');
+        if (detailsSection) {
+            detailsSection.scrollIntoView({ behavior: 'smooth' });
+            updateExcavationDetailsTable();
+        } else {
+            console.warn('لم يتم العثور على الجدول التفصيلي');
+        }
+    };
+
+    window.updateExcavationDetailsTable = function() {
+        console.log('تحديث الجدول التفصيلي');
+        const tbody = document.getElementById('excavation-details-tbody');
+        if (!tbody) {
+            console.warn('لم يتم العثور على tbody');
+            return;
+        }
+
+        // تنظيف الجدول
+        tbody.innerHTML = '';
+
+        // جمع البيانات من النموذج
+        const excavationData = [];
+        
+        // 1. بيانات الحفريات الترابية غير المسفلتة
+        const soilUnsurfacedInputs = document.querySelectorAll('input[name^="excavation_unsurfaced_soil"]');
+        const cableTypes = [
+            'كابل منخفض واحد', 
+            'كابلين منخفضين', 
+            '3 كابلات منخفضة', 
+            '4 كابلات منخفضة',
+            'كابل متوسط واحد', 
+            'كابلين متوسطين', 
+            '3 كابلات متوسطة', 
+            '4 كابلات متوسطة'
+        ];
+        
+        soilUnsurfacedInputs.forEach((input, index) => {
+            const value = parseFloat(input.value);
+            if (value > 0) {
+                excavationData.push({
+                    type: 'حفريات التربة الترابية',
+                    surface: 'غير مسفلت',
+                    description: cableTypes[index] || `كابل ${index + 1}`,
+                    dimensions: '-',
+                    value: value,
+                    unit: 'متر طولي',
+                    volume: '-',
+                    badge: 'success'
+                });
+            }
+        });
+
+        // 2. بيانات الحفريات الترابية المسفلتة
+        const soilSurfacedInputs = document.querySelectorAll('input[name^="excavation_surfaced_soil"]');
+        soilSurfacedInputs.forEach((input, index) => {
+            const value = parseFloat(input.value);
+            if (value > 0) {
+                excavationData.push({
+                    type: 'حفريات التربة الترابية',
+                    surface: 'مسفلت',
+                    description: cableTypes[index] || `كابل ${index + 1}`,
+                    dimensions: '-',
+                    value: value,
+                    unit: 'متر طولي',
+                    volume: '-',
+                    badge: 'primary'
+                });
+            }
+        });
+
+        // 3. بيانات الحفريات الصخرية غير المسفلتة
+        const rockUnsurfacedInputs = document.querySelectorAll('input[name^="excavation_unsurfaced_rock"]');
+        rockUnsurfacedInputs.forEach((input, index) => {
+            const value = parseFloat(input.value);
+            if (value > 0) {
+                excavationData.push({
+                    type: 'حفريات التربة الصخرية',
+                    surface: 'غير مسفلت',
+                    description: cableTypes[index] || `كابل ${index + 1}`,
+                    dimensions: '-',
+                    value: value,
+                    unit: 'متر طولي',
+                    volume: '-',
+                    badge: 'warning'
+                });
+            }
+        });
+
+        // 4. بيانات الحفريات الصخرية المسفلتة
+        const rockSurfacedInputs = document.querySelectorAll('input[name^="excavation_surfaced_rock"]');
+        rockSurfacedInputs.forEach((input, index) => {
+            const value = parseFloat(input.value);
+            if (value > 0) {
+                excavationData.push({
+                    type: 'حفريات التربة الصخرية',
+                    surface: 'مسفلت',
+                    description: cableTypes[index] || `كابل ${index + 1}`,
+                    dimensions: '-',
+                    value: value,
+                    unit: 'متر طولي',
+                    volume: '-',
+                    badge: 'danger'
+                });
+            }
+        });
+
+        // 5. بيانات الحفر المفتوح
+        const openExcavationTypes = [
+            { 
+                id: 'unsurfaced_soil_open', 
+                name: 'حفر مفتوح في التربة الترابية', 
+                surface: 'غير مسفلت',
+                badge: 'info'
+            },
+            { 
+                id: 'surfaced_soil_open', 
+                name: 'حفر مفتوح في التربة الترابية', 
+                surface: 'مسفلت',
+                badge: 'info'
+            },
+            { 
+                id: 'unsurfaced_rock_open', 
+                name: 'حفر مفتوح في التربة الصخرية', 
+                surface: 'غير مسفلت',
+                badge: 'dark'
+            },
+            { 
+                id: 'surfaced_rock_open', 
+                name: 'حفر مفتوح في التربة الصخرية', 
+                surface: 'مسفلت',
+                badge: 'dark'
+            }
+        ];
+
+        openExcavationTypes.forEach(type => {
+            const lengthInput = document.querySelector(`input[data-target="${type.id}"][data-type="length"]`);
+            const widthInput = document.querySelector(`input[data-target="${type.id}"][data-type="width"]`);
+            const depthInput = document.querySelector(`input[data-target="${type.id}"][data-type="depth"]`);
             
-            if (lengthInput && widthInput && depthInput && totalField) {
+            if (lengthInput && widthInput && depthInput) {
                 const length = parseFloat(lengthInput.value) || 0;
                 const width = parseFloat(widthInput.value) || 0;
                 const depth = parseFloat(depthInput.value) || 0;
-                
                 const volume = length * width * depth;
-                totalField.value = volume.toFixed(2);
+                
+                if (volume > 0) {
+                    excavationData.push({
+                        type: type.name,
+                        surface: type.surface,
+                        description: `حفر مفتوح ${type.surface === 'مسفلت' ? 'في سطح مسفلت' : 'في سطح ترابي'}`,
+                        dimensions: `${length} × ${width} × ${depth}`,
+                        value: volume,
+                        unit: 'متر مكعب',
+                        volume: volume.toFixed(2),
+                        badge: type.badge
+                    });
+                }
             }
-        }
-
-        // إضافة مستمع الأحداث لحقول الحفر المفتوح
-        document.querySelectorAll('.excavation-calc').forEach(input => {
-            input.addEventListener('input', function() {
-                const targetId = this.dataset.target;
-                calculateExcavationVolume(targetId);
-            });
         });
 
-        // حساب الأحجام الأولية للحفر المفتوح
-        const excavationTargets = ['unsurfaced_soil_open', 'surfaced_soil_open', 'unsurfaced_rock_open', 'surfaced_rock_open', 'surfaced_rock_open_2'];
-        excavationTargets.forEach(target => calculateExcavationVolume(target));
-
-        // دالة لتحديث جدول الملخص
-        function updateSummaryTable() {
-            const tbody = document.getElementById('summary-tbody');
-            if (!tbody) return;
-
-            tbody.innerHTML = '';
-            let totalVolume = 0;
-            let totalArea = 0;
-            let totalLength = 0;
-            let completedFields = 0;
-            let rowIndex = 1;
-
-            // Object to store all categories
-            const categories = {
-                'حفريات تربة': [],
-                'حفريات صخرية': [],
-                'أعمال السفلتة': [],
-                'تمديدات الكابلات': [],
-                'حفريات دقيقة': []
-            };
-
-            // 1. جمع بيانات الحفريات الترابية
-            const soilExcavations = [
-                { name: 'حفريات تربة ترابية غير مسفلتة', prefix: 'excavation_unsurfaced_soil' },
-                { name: 'حفريات تربة ترابية مسفلتة', prefix: 'excavation_surfaced_soil' }
-            ];
-
-            soilExcavations.forEach(type => {
-                document.querySelectorAll(`input[name^="${type.prefix}"]`).forEach(input => {
-                    if (input.value && parseFloat(input.value) > 0) {
-                        const value = parseFloat(input.value);
-                        totalLength += value;
-                        completedFields++;
-                        
-                        // Get cable type from parent row if available
-                        const cableType = input.closest('tr')?.querySelector('td')?.textContent || 'غير محدد';
-                        
-                        categories['حفريات تربة'].push({
-                            name: `${type.name} - ${cableType}`,
-                            value: value,
-                            unit: 'متر'
-                        });
-                    }
-                });
-            });
-
-            // 2. جمع بيانات الحفريات الصخرية
-            const rockExcavations = [
-                { name: 'حفريات تربة صخرية غير مسفلتة', prefix: 'excavation_unsurfaced_rock' },
-                { name: 'حفريات تربة صخرية مسفلتة', prefix: 'excavation_surfaced_rock' }
-            ];
-
-            rockExcavations.forEach(type => {
-                document.querySelectorAll(`input[name^="${type.prefix}"]`).forEach(input => {
-                    if (input.value && parseFloat(input.value) > 0) {
-                        const value = parseFloat(input.value);
-                        totalLength += value;
-                        completedFields++;
-                        
-                        const cableType = input.closest('tr')?.querySelector('td')?.textContent || 'غير محدد';
-                        
-                        categories['حفريات صخرية'].push({
-                            name: `${type.name} - ${cableType}`,
-                            value: value,
-                            unit: 'متر'
-                        });
-                    }
-                });
-            });
-
-            // 3. جمع بيانات الحفر المفتوح والأسفلت
-            const openExcavations = [
-                { name: 'أسفلت طبقة أولى', id: 'total-first_asphalt', unit: 'م²' },
-                { name: 'كشط وإعادة السفلتة', id: 'total-asphalt_scraping', unit: 'م²' }
-            ];
-
-            openExcavations.forEach(item => {
-                const totalField = document.getElementById(item.id);
-                if (totalField && totalField.value && parseFloat(totalField.value) > 0) {
-                    const value = parseFloat(totalField.value);
-                    totalArea += value;
-                    completedFields++;
-                    
-                    categories['أعمال السفلتة'].push({
-                        name: item.name,
-                        value: value,
-                        unit: item.unit
-                    });
-                }
-            });
-
-            // 4. جمع بيانات الكابلات
-            document.querySelectorAll('input[name*="electrical_items"]').forEach(input => {
-                if (input.value && parseFloat(input.value) > 0) {
-                    const value = parseFloat(input.value);
-                    totalLength += value;
-                    completedFields++;
-                    
-                    const cableType = input.closest('tr')?.querySelector('td')?.textContent || 'غير محدد';
-                    
-                    categories['تمديدات الكابلات'].push({
-                        name: cableType,
-                        value: value,
-                        unit: 'متر'
-                    });
-                }
-            });
-
-            // 5. جمع بيانات الحفريات الدقيقة
-            document.querySelectorAll('input[name*="excavation_precise"]').forEach(input => {
-                if (input.value && parseFloat(input.value) > 0) {
-                    const value = parseFloat(input.value);
-                    totalLength += value;
-                    completedFields++;
-                    
-                    const rowName = input.closest('tr')?.querySelector('td')?.textContent || 'غير محدد';
-                    
-                    categories['حفريات دقيقة'].push({
-                        name: rowName,
-                        value: value,
-                        unit: 'متر'
-                    });
-                }
-            });
-
-            // إضافة البيانات للجدول مع التصنيف
-            for (const [category, items] of Object.entries(categories)) {
-                if (items.length > 0) {
-                    // إضافة عنوان التصنيف
-                    const headerRow = tbody.insertRow();
-                    headerRow.innerHTML = `
-                        <td colspan="6" class="bg-light">
-                            <h6 class="mb-0 fw-bold text-primary">
-                                <i class="fas fa-folder-open me-2"></i>${category}
-                            </h6>
-                        </td>
-                    `;
-
-                    // إضافة العناصر
-                    items.forEach(item => {
-                        const row = tbody.insertRow();
-                        row.innerHTML = `
-                            <td class="text-center">${rowIndex++}</td>
-                            <td>${item.name}</td>
-                            <td class="text-center fw-bold text-primary">${item.value.toFixed(2)}</td>
-                            <td class="text-center">${item.unit}</td>
-                            <td><span class="badge bg-info">${category}</span></td>
-                            <td><span class="badge bg-success"><i class="fas fa-check me-1"></i>مكتمل</span></td>
-                        `;
-                    });
-                }
-            }
-
-            // تحديث الإحصائيات
-            document.getElementById('total-volume').textContent = totalVolume.toFixed(2);
-            document.getElementById('total-area').textContent = totalArea.toFixed(2);
-            document.getElementById('total-length').textContent = totalLength.toFixed(2);
-            document.getElementById('completed-fields').textContent = completedFields;
-
-            // إضافة رسالة إذا لم يتم إدخال بيانات
-            if (rowIndex === 1) {
+        // 6. عرض البيانات في الجدول
+        if (excavationData.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4"><i class="fas fa-info-circle me-2"></i>لا توجد بيانات حفريات مدخلة للعرض</td></tr>';
+        } else {
+            excavationData.forEach((item, index) => {
                 const row = tbody.insertRow();
                 row.innerHTML = `
-                    <td colspan="6" class="text-center text-muted py-4">
-                        <i class="fas fa-info-circle fa-2x mb-2"></i><br>
-                        لم يتم إدخال أي بيانات بعد. ابدأ بملء النموذج لرؤية الملخص هنا.
+                    <td class="text-center fw-bold">${index + 1}</td>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <div class="bg-${item.badge} rounded-circle me-2" style="width: 10px; height: 10px;"></div>
+                            <div>
+                                <strong class="d-block">${item.type}</strong>
+                                <small class="text-muted">${item.description}</small>
+                                ${item.dimensions !== '-' ? `<br><span class="badge bg-light text-dark mt-1"><i class="fas fa-ruler-combined me-1"></i>${item.dimensions}</span>` : ''}
+                            </div>
+                        </div>
+                    </td>
+                    <td class="text-center">
+                        <strong class="text-primary fs-5">${item.value.toFixed(2)}</strong>
+                    </td>
+                    <td class="text-center">
+                        <span class="badge bg-info text-white">${item.unit}</span>
+                    </td>
+                    <td class="text-center">
+                        <span class="text-success fw-bold fs-6">${item.volume}</span>
+                    </td>
+                    <td class="text-center">
+                        <span class="badge ${item.surface === 'مسفلت' ? 'bg-danger' : 'bg-success'} text-white px-3 py-2">
+                            <i class="fas ${item.surface === 'مسفلت' ? 'fa-road' : 'fa-mountain'} me-1"></i>
+                            ${item.surface}
+                        </span>
                     </td>
                 `;
-            }
-        }
-
-        // تحديث المستمعين لجميع الحقول
-        function setupInputListeners() {
-            const allInputs = document.querySelectorAll('input[type="number"], input.dimension-input, input.form-control');
-            allInputs.forEach(input => {
-                input.addEventListener('input', () => {
-                    // حفظ العدد الحالي للصفوف قبل التحديث
-                    const currentRows = document.querySelectorAll('#excavation-details-tbody tr:not(.table-info)').length;
-                    
-                    setTimeout(() => {
-                        updateExcavationDetailsTable();
-                        
-                        // التحقق من إضافة صفوف جديدة
-                        const newRows = document.querySelectorAll('#excavation-details-tbody tr:not(.table-info)').length;
-                        if (newRows > currentRows) {
-                            showNewItemNotification();
-                        }
-                    }, 150);
-                });
+                
+                // إضافة تأثير hover للصف
+                row.classList.add('table-hover-row');
             });
         }
 
-        // دالة لإظهار إشعار عند إضافة عنصر جديد
-        function showNewItemNotification() {
-            // إنشاء إشعار مؤقت
-            const notification = document.createElement('div');
-            notification.className = 'alert alert-success alert-dismissible fade show position-fixed';
-            notification.style.cssText = `
-                top: 20px;
-                right: 20px;
-                z-index: 9999;
-                min-width: 300px;
-                animation: slideInRight 0.5s ease-out;
-            `;
-            notification.innerHTML = `
-                <i class="fas fa-plus-circle me-2"></i>
-                <strong>عنصر جديد!</strong> تم إضافة عنصر جديد إلى الجدول التفصيلي
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            `;
-            
-            document.body.appendChild(notification);
-            
-            // إزالة الإشعار تلقائياً بعد 3 ثوانٍ
-            setTimeout(() => {
-                if (notification.parentNode) {
-                    notification.style.animation = 'slideOutRight 0.5s ease-in';
-                    setTimeout(() => {
-                        notification.remove();
-                    }, 500);
-                }
-            }, 3000);
-        }
+        console.log(`تم عرض ${excavationData.length} عنصر في الجدول التفصيلي`);
+        
+        // تحديث الإحصائيات
+        updateExcavationStats(excavationData);
+    };
 
-        // إضافة CSS للرسوم المتحركة
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes slideInRight {
-                from {
-                    transform: translateX(100%);
-                    opacity: 0;
-                }
-                to {
-                    transform: translateX(0);
-                    opacity: 1;
-                }
+    // دالة لتحديث إحصائيات الحفريات
+    function updateExcavationStats(excavationData) {
+        let totalSoilLength = 0;
+        let totalRockLength = 0;
+        let totalVolume = 0;
+        let totalCount = excavationData.length;
+
+        excavationData.forEach(item => {
+            if (item.type.includes('التربة الترابية')) {
+                totalSoilLength += item.value;
+            } else if (item.type.includes('التربة الصخرية')) {
+                totalRockLength += item.value;
             }
             
-            @keyframes slideOutRight {
-                from {
-                    transform: translateX(0);
-                    opacity: 1;
-                }
-                to {
-                    transform: translateX(100%);
-                    opacity: 0;
-                }
+            if (item.unit === 'متر مكعب') {
+                totalVolume += item.value;
             }
-        `;
-        document.head.appendChild(style);
+        });
 
-        // إعداد المستمعين عند تحميل الصفحة
-        setupInputListeners();
+        // تحديث الإحصائيات في الكروت
+        const soilStat = document.getElementById('total-soil-excavation');
+        const rockStat = document.getElementById('total-rock-excavation');
+        const volumeStat = document.getElementById('final-total-volume');
+        const lengthStat = document.getElementById('final-total-length');
 
-        // إعداد الجدول التفصيلي للحفريات
-        setupExcavationDetailsTable();
-        
-        // إعداد المستمعين للتصفية والبحث
-        setupExcavationFilters();
-        
-        // تحديث أولي للجدول التفصيلي
-        setTimeout(updateExcavationDetailsTable, 700);
-    });
-
-    // دالة لإعداد الجدول التفصيلي للحفريات
-    function setupExcavationDetailsTable() {
-        // تحديث الجدول عند تغيير أي حقل - تم نقله لدالة setupInputListeners
-        // لا حاجة لتكرار المستمعين هنا
+        if (soilStat) soilStat.textContent = totalSoilLength.toFixed(2);
+        if (rockStat) rockStat.textContent = totalRockLength.toFixed(2);
+        if (volumeStat) volumeStat.textContent = totalVolume.toFixed(2) + ' متر مكعب';
+        if (lengthStat) lengthStat.textContent = (totalSoilLength + totalRockLength).toFixed(2) + ' متر';
     }
 
-    // دالة لتحديث الجدول التفصيلي للحفريات
-    function updateExcavationDetailsTable() {
-        const tbody = document.getElementById('excavation-details-tbody');
-        if (!tbody) return;
+    window.exportExcavationData = function() {
+        console.log('تصدير البيانات');
+        alert('ميزة التصدير قيد التطوير');
+    };
+
+    // دالة جديدة لحفظ بيانات الجدول التفصيلي في قاعدة البيانات
+    window.saveExcavationDetailsTable = function() {
+        console.log('حفظ بيانات الجدول التفصيلي');
         
-        tbody.innerHTML = '';
-        let rowIndex = 1;
+        // جمع البيانات من الجدول التفصيلي
+        const tableRows = document.querySelectorAll('#excavation-details-tbody tr');
+        const excavationDetails = [];
         
-        // إحصائيات منفصلة
-        let totalSoilExcavation = 0;
-        let totalRockExcavation = 0;
-        let totalAsphaltWork = 0;
-        let totalPreciseExcavation = 0;
-        let finalTotalLength = 0;
-        let finalTotalVolume = 0;
-        let finalTotalArea = 0;
-
-        // 1. جمع بيانات حفريات التربة غير المسفلتة
-        const soilUnsurfacedCables = [
-            'كابل منخفض', '2 كابل منخفض', '3 كابل منخفض', '4 كابل منخفض',
-            '1 كابل متوسط', '2 كابل متوسط', '3 كابل متوسط', '4 كابل متوسط'
-        ];
-        
-        soilUnsurfacedCables.forEach((cableType, index) => {
-            const input = document.querySelector(`input[name="excavation_unsurfaced_soil[${index}]"]`);
-            if (input && input.value && parseFloat(input.value) > 0) {
-                const value = parseFloat(input.value);
-                totalSoilExcavation += value;
-                finalTotalLength += value;
-                
-                addExcavationRow(tbody, rowIndex++, 'حفريات تربة ترابية', cableType, 'غير مسفلتة', value, '', '', '', value, 'متر', 'soil');
-            }
-        });
-
-        // حفر مفتوح تربة غير مسفلتة
-        const unsurfacedSoilLength = document.querySelector('input[name="excavation_unsurfaced_soil_open[length]"]');
-        const unsurfacedSoilWidth = document.querySelector('input[name="excavation_unsurfaced_soil_open[width]"]');
-        const unsurfacedSoilDepth = document.querySelector('input[name="excavation_unsurfaced_soil_open[depth]"]');
-        
-        if (unsurfacedSoilLength && unsurfacedSoilWidth && unsurfacedSoilDepth && 
-            unsurfacedSoilLength.value && unsurfacedSoilWidth.value && unsurfacedSoilDepth.value &&
-            parseFloat(unsurfacedSoilLength.value) > 0 && parseFloat(unsurfacedSoilWidth.value) > 0 && parseFloat(unsurfacedSoilDepth.value) > 0) {
-            const length = parseFloat(unsurfacedSoilLength.value);
-            const width = parseFloat(unsurfacedSoilWidth.value);
-            const depth = parseFloat(unsurfacedSoilDepth.value);
-            const volume = length * width * depth;
-            
-            totalSoilExcavation += length;
-            finalTotalLength += length;
-            finalTotalVolume += volume;
-            
-            addExcavationRow(tbody, rowIndex++, 'حفريات تربة ترابية', 'حفر مفتوح أكبر من 4 كابلات', 'غير مسفلتة', length, width, depth, volume, volume, 'م³', 'soil');
-        }
-
-        // 2. جمع بيانات حفريات التربة المسفلتة
-        soilUnsurfacedCables.forEach((cableType, index) => {
-            const input = document.querySelector(`input[name="excavation_surfaced_soil[${index}]"]`);
-            if (input && input.value && parseFloat(input.value) > 0) {
-                const value = parseFloat(input.value);
-                totalSoilExcavation += value;
-                finalTotalLength += value;
-                
-                addExcavationRow(tbody, rowIndex++, 'حفريات تربة ترابية', cableType, 'مسفلتة', value, '', '', '', value, 'متر', 'soil');
-            }
-        });
-
-        // حفر مفتوح تربة مسفلتة
-        const surfacedSoilLength = document.querySelector('input[name="excavation_surfaced_soil_open[length]"]');
-        const surfacedSoilWidth = document.querySelector('input[name="excavation_surfaced_soil_open[width]"]');
-        const surfacedSoilDepth = document.querySelector('input[name="excavation_surfaced_soil_open[depth]"]');
-        
-        if (surfacedSoilLength && surfacedSoilWidth && surfacedSoilDepth && 
-            surfacedSoilLength.value && surfacedSoilWidth.value && surfacedSoilDepth.value &&
-            parseFloat(surfacedSoilLength.value) > 0 && parseFloat(surfacedSoilWidth.value) > 0 && parseFloat(surfacedSoilDepth.value) > 0) {
-            const length = parseFloat(surfacedSoilLength.value);
-            const width = parseFloat(surfacedSoilWidth.value);
-            const depth = parseFloat(surfacedSoilDepth.value);
-            const volume = length * width * depth;
-            
-            totalSoilExcavation += length;
-            finalTotalLength += length;
-            finalTotalVolume += volume;
-            
-            addExcavationRow(tbody, rowIndex++, 'حفريات تربة ترابية', 'حفر مفتوح أكبر من 4 كابلات', 'مسفلتة', length, width, depth, volume, volume, 'م³', 'soil');
-        }
-
-        // 3. جمع بيانات حفريات الصخر غير المسفلتة
-        soilUnsurfacedCables.forEach((cableType, index) => {
-            const input = document.querySelector(`input[name="excavation_unsurfaced_rock[${index}]"]`);
-            if (input && input.value && parseFloat(input.value) > 0) {
-                const value = parseFloat(input.value);
-                totalRockExcavation += value;
-                finalTotalLength += value;
-                
-                addExcavationRow(tbody, rowIndex++, 'حفريات تربة صخرية', cableType, 'غير مسفلتة', value, '', '', '', value, 'متر', 'rock');
-            }
-        });
-
-        // حفر مفتوح صخر غير مسفلت
-        const unsurfacedRockLength = document.querySelector('input[name="excavation_unsurfaced_rock_open[length]"]');
-        const unsurfacedRockWidth = document.querySelector('input[name="excavation_unsurfaced_rock_open[width]"]');
-        const unsurfacedRockDepth = document.querySelector('input[name="excavation_unsurfaced_rock_open[depth]"]');
-        
-        if (unsurfacedRockLength && unsurfacedRockWidth && unsurfacedRockDepth && 
-            unsurfacedRockLength.value && unsurfacedRockWidth.value && unsurfacedRockDepth.value &&
-            parseFloat(unsurfacedRockLength.value) > 0 && parseFloat(unsurfacedRockWidth.value) > 0 && parseFloat(unsurfacedRockDepth.value) > 0) {
-            const length = parseFloat(unsurfacedRockLength.value);
-            const width = parseFloat(unsurfacedRockWidth.value);
-            const depth = parseFloat(unsurfacedRockDepth.value);
-            const volume = length * width * depth;
-            
-            totalRockExcavation += length;
-            finalTotalLength += length;
-            finalTotalVolume += volume;
-            
-            addExcavationRow(tbody, rowIndex++, 'حفريات تربة صخرية', 'حفر مفتوح أكبر من 4 كابلات', 'غير مسفلتة', length, width, depth, volume, volume, 'م³', 'rock');
-        }
-
-        // 4. جمع بيانات حفريات الصخر المسفلتة (القسم الأول)
-        soilUnsurfacedCables.forEach((cableType, index) => {
-            const input = document.querySelector(`input[name="excavation_surfaced_rock[${index}]"]`);
-            if (input && input.value && parseFloat(input.value) > 0) {
-                const value = parseFloat(input.value);
-                totalRockExcavation += value;
-                finalTotalLength += value;
-                
-                addExcavationRow(tbody, rowIndex++, 'حفريات تربة صخرية', cableType, 'مسفلتة (القسم الأول)', value, '', '', '', value, 'متر', 'rock');
-            }
-        });
-
-        // حفر مفتوح صخر مسفلت (القسم الأول)
-        const surfacedRockLength = document.querySelector('input[name="excavation_surfaced_rock_open[length]"]');
-        const surfacedRockWidth = document.querySelector('input[name="excavation_surfaced_rock_open[width]"]');
-        const surfacedRockDepth = document.querySelector('input[name="excavation_surfaced_rock_open[depth]"]');
-        
-        if (surfacedRockLength && surfacedRockWidth && surfacedRockDepth && 
-            surfacedRockLength.value && surfacedRockWidth.value && surfacedRockDepth.value &&
-            parseFloat(surfacedRockLength.value) > 0 && parseFloat(surfacedRockWidth.value) > 0 && parseFloat(surfacedRockDepth.value) > 0) {
-            const length = parseFloat(surfacedRockLength.value);
-            const width = parseFloat(surfacedRockWidth.value);
-            const depth = parseFloat(surfacedRockDepth.value);
-            const volume = length * width * depth;
-            
-            totalRockExcavation += length;
-            finalTotalLength += length;
-            finalTotalVolume += volume;
-            
-            addExcavationRow(tbody, rowIndex++, 'حفريات تربة صخرية', 'حفر مفتوح أكبر من 4 كابلات', 'مسفلتة (القسم الأول)', length, width, depth, volume, volume, 'م³', 'rock');
-        }
-
-        // 5. جمع بيانات حفريات الصخر المسفلتة (القسم الثاني)
-        soilUnsurfacedCables.forEach((cableType, index) => {
-            const input = document.querySelector(`input[name="excavation_surfaced_rock_second[${index}]"]`);
-            if (input && input.value && parseFloat(input.value) > 0) {
-                const value = parseFloat(input.value);
-                totalRockExcavation += value;
-                finalTotalLength += value;
-                
-                addExcavationRow(tbody, rowIndex++, 'حفريات تربة صخرية', cableType, 'مسفلتة (القسم الثاني)', value, '', '', '', value, 'متر', 'rock');
-            }
-        });
-
-        // 6. جمع بيانات أعمال الأسفلت
-        const firstAsphaltInput = document.getElementById('total-first_asphalt');
-        const asphaltScrapingInput = document.getElementById('total-asphalt_scraping');
-        
-        if (firstAsphaltInput && firstAsphaltInput.value && parseFloat(firstAsphaltInput.value) > 0) {
-            const value = parseFloat(firstAsphaltInput.value);
-            totalAsphaltWork += value;
-            finalTotalArea += value;
-            
-            addExcavationRow(tbody, rowIndex++, 'أعمال السفلتة', 'أسفلت طبقة أولى', '-', '', '', '', '', value, 'م²', 'asphalt');
-        }
-        
-        if (asphaltScrapingInput && asphaltScrapingInput.value && parseFloat(asphaltScrapingInput.value) > 0) {
-            const value = parseFloat(asphaltScrapingInput.value);
-            totalAsphaltWork += value;
-            finalTotalArea += value;
-            
-            addExcavationRow(tbody, rowIndex++, 'أعمال السفلتة', 'كشط وإعادة السفلتة', '-', '', '', '', '', value, 'م²', 'asphalt');
-        }
-
-        // 7. جمع بيانات الحفريات الدقيقة
-        document.querySelectorAll('input[name*="excavation_precise"]').forEach(input => {
-            if (input.value && parseFloat(input.value) > 0) {
-                const value = parseFloat(input.value);
-                totalPreciseExcavation += value;
-                finalTotalLength += value;
-                
-                const rowName = input.closest('tr')?.querySelector('td')?.textContent || 'حفر دقيق';
-                addExcavationRow(tbody, rowIndex++, 'حفريات دقيقة', rowName, '-', '', '', '', '', value, 'متر', 'precise');
-            }
-        });
-
-        // 8. جمع بيانات تمديدات الكابلات
-        document.querySelectorAll('input[name*="electrical_items"]').forEach(input => {
-            if (input.value && parseFloat(input.value) > 0) {
-                const value = parseFloat(input.value);
-                finalTotalLength += value;
-                
-                const rowName = input.closest('tr')?.querySelector('td')?.textContent || 'تمديد كابل';
-                addExcavationRow(tbody, rowIndex++, 'تمديدات الكابلات', rowName, '-', '', '', '', '', value, 'متر', 'precise');
-            }
-        });
-
-        // تحديث الإحصائيات التفصيلية
-        updateExcavationStats(totalSoilExcavation, totalRockExcavation, totalAsphaltWork, totalPreciseExcavation);
-        updateFinalTotals(finalTotalLength, finalTotalVolume, finalTotalArea);
-
-        // إضافة رسالة إذا لم يتم إدخال بيانات
-        if (rowIndex === 1) {
-            const row = tbody.insertRow();
-            row.innerHTML = `
-                <td colspan="10" class="text-center text-muted py-5">
-                    <div class="d-flex flex-column align-items-center">
-                        <i class="fas fa-excavator fa-4x mb-3 opacity-50 text-primary"></i>
-                        <h4 class="text-muted">لا توجد بيانات حفريات مدخلة</h4>
-                        <p class="text-muted">ابدأ بملء حقول الحفريات في النموذج أعلاه لرؤية التفاصيل هنا</p>
-                        <div class="mt-3">
-                            <span class="badge bg-info me-2">💡 نصيحة:</span>
-                            <small class="text-muted">سيظهر هنا فقط العناصر التي تحتوي على قيم أكبر من صفر</small>
-                        </div>
-                    </div>
-                </td>
-            `;
-        } else {
-            // إضافة رسالة توضيحية في أعلى الجدول
-            const infoRow = tbody.insertRow(0);
-            infoRow.className = 'table-info';
-            infoRow.innerHTML = `
-                <td colspan="10" class="text-center py-2">
-                    <small><i class="fas fa-info-circle me-1"></i>
-                    يتم عرض العناصر التي تحتوي على قيم فقط - إجمالي العناصر المعروضة: <strong>${rowIndex - 1}</strong></small>
-                </td>
-            `;
-        }
-    }
-
-    // دالة لإضافة صف للجدول التفصيلي مع تأثيرات بصرية
-    function addExcavationRow(tbody, index, type, cable, surface, length, width, depth, volume, quantity, unit, category) {
-        const row = tbody.insertRow();
-        row.setAttribute('data-category', category);
-        row.setAttribute('data-newly-added', 'true');
-        
-        // تحديد لون الصف حسب النوع
-        let rowClass = '';
-        let iconClass = '';
-        switch(category) {
-            case 'soil': 
-                rowClass = 'table-success'; 
-                iconClass = 'fas fa-mountain text-success';
-                break;
-            case 'rock': 
-                rowClass = 'table-danger'; 
-                iconClass = 'fas fa-hammer text-danger';
-                break;
-            case 'asphalt': 
-                rowClass = 'table-warning'; 
-                iconClass = 'fas fa-road text-warning';
-                break;
-            case 'precise': 
-                rowClass = 'table-info'; 
-                iconClass = 'fas fa-crosshairs text-info';
-                break;
-        }
-        
-        row.className = rowClass + ' excavation-row-animated';
-        row.innerHTML = `
-            <td class="text-center fw-bold align-middle">
-                <span class="badge bg-primary rounded-pill">${index}</span>
-            </td>
-            <td class="align-middle">
-                <i class="${iconClass} me-2"></i>
-                <strong>${type}</strong>
-            </td>
-            <td class="align-middle">${cable}</td>
-            <td class="text-center align-middle">
-                ${surface !== '-' ? `<span class="badge bg-secondary">${surface}</span>` : '-'}
-            </td>
-            <td class="text-center align-middle fw-bold text-primary">${length ? length.toFixed(2) : '-'}</td>
-            <td class="text-center align-middle fw-bold text-primary">${width ? width.toFixed(2) : '-'}</td>
-            <td class="text-center align-middle fw-bold text-primary">${depth ? depth.toFixed(2) : '-'}</td>
-            <td class="text-center align-middle">
-                ${volume ? `<span class="badge bg-dark fs-6">${volume.toFixed(2)}</span>` : '-'}
-            </td>
-            <td class="text-center align-middle">
-                <span class="fw-bold text-success fs-6">${quantity.toFixed(2)}</span>
-            </td>
-            <td class="text-center align-middle">
-                <span class="badge bg-outline-primary">${unit}</span>
-            </td>
-        `;
-
-        // إضافة تأثير الظهور التدريجي
-        setTimeout(() => {
-            row.classList.add('fade-in-row');
-        }, 50);
-    }
-
-    // دالة لتحديث الإحصائيات التفصيلية
-    function updateExcavationStats(soil, rock, asphalt, precise) {
-        document.getElementById('total-soil-excavation').textContent = soil.toFixed(2);
-        document.getElementById('total-rock-excavation').textContent = rock.toFixed(2);
-        document.getElementById('total-asphalt-work').textContent = asphalt.toFixed(2);
-        document.getElementById('total-precise-excavation').textContent = precise.toFixed(2);
-    }
-
-    // دالة لتحديث الإجماليات النهائية
-    function updateFinalTotals(totalLength, totalVolume, totalArea) {
-        document.getElementById('final-total-length').textContent = totalLength.toFixed(2) + ' متر';
-        document.getElementById('final-total-volume').textContent = totalVolume.toFixed(2) + ' متر مكعب';
-        document.getElementById('final-total-area').textContent = totalArea.toFixed(2) + ' متر مربع';
-    }
-
-    // دالة لإعداد فلاتر الجدول
-    function setupExcavationFilters() {
-        // أزرار التصفية
-        document.querySelectorAll('[data-filter]').forEach(button => {
-            button.addEventListener('click', function() {
-                const filter = this.getAttribute('data-filter');
-                
-                // تحديث حالة الأزرار
-                document.querySelectorAll('[data-filter]').forEach(btn => {
-                    btn.classList.remove('active');
-                    btn.classList.add('btn-outline-primary', 'btn-outline-success', 'btn-outline-danger', 'btn-outline-warning', 'btn-outline-info');
-                    btn.classList.remove('btn-primary', 'btn-success', 'btn-danger', 'btn-warning', 'btn-info');
+        tableRows.forEach((row, index) => {
+            const cells = row.querySelectorAll('td');
+            if (cells.length >= 4 && !row.textContent.includes('لا توجد بيانات')) {
+                excavationDetails.push({
+                    index: index + 1,
+                    type: cells[1].textContent.trim(),
+                    description: cells[2].textContent.trim(),
+                    quantity: cells[3].textContent.trim()
                 });
-                
-                this.classList.add('active');
-                if (filter === 'all') this.classList.add('btn-primary');
-                else if (filter === 'soil') this.classList.add('btn-success');
-                else if (filter === 'rock') this.classList.add('btn-danger');
-                else if (filter === 'asphalt') this.classList.add('btn-warning');
-                else if (filter === 'precise') this.classList.add('btn-info');
-
-                // تطبيق الفلتر
-                filterExcavationTable(filter);
-            });
+            }
         });
 
-        // البحث في الجدول
-        document.getElementById('excavation-search').addEventListener('input', function() {
-            const searchTerm = this.value.toLowerCase();
-            searchExcavationTable(searchTerm);
-        });
-    }
+        if (excavationDetails.length === 0) {
+            alert('لا توجد بيانات للحفظ');
+            return;
+        }
 
-    // دالة للتصفية
-    function filterExcavationTable(filter) {
-        const rows = document.querySelectorAll('#excavation-details-tbody tr');
-        
-        rows.forEach(row => {
-            if (filter === 'all') {
-                row.style.display = '';
+        // إرسال البيانات عبر AJAX
+        const formData = new FormData();
+        formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+        formData.append('_method', 'PUT');
+        formData.append('excavation_details_table', JSON.stringify(excavationDetails));
+
+        // عرض رسالة التحميل
+        const saveButton = document.querySelector('button[onclick="saveExcavationDetailsTable()"]');
+        const originalText = saveButton ? saveButton.innerHTML : '';
+        if (saveButton) {
+            saveButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>جاري الحفظ...';
+            saveButton.disabled = true;
+        }
+
+        fetch(window.location.href, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('تم حفظ بيانات الجدول التفصيلي بنجاح');
+                console.log('تم حفظ ' + excavationDetails.length + ' عنصر في قاعدة البيانات');
             } else {
-                const category = row.getAttribute('data-category');
-                row.style.display = category === filter ? '' : 'none';
+                alert('حدث خطأ أثناء الحفظ: ' + (data.message || 'خطأ غير معروف'));
+            }
+        })
+        .catch(error => {
+            console.error('خطأ في حفظ البيانات:', error);
+            alert('حدث خطأ أثناء حفظ البيانات');
+        })
+        .finally(() => {
+            // استعادة النص الأصلي للزر
+            if (saveButton) {
+                saveButton.innerHTML = originalText;
+                saveButton.disabled = false;
             }
         });
-    }
+    };
 
-    // دالة للبحث
-    function searchExcavationTable(searchTerm) {
-        const rows = document.querySelectorAll('#excavation-details-tbody tr');
+    // دالة لتحميل بيانات الجدول التفصيلي المحفوظة
+    window.loadSavedExcavationDetails = function() {
+        console.log('تحميل البيانات المحفوظة للجدول التفصيلي');
         
-        rows.forEach(row => {
-            const text = row.textContent.toLowerCase();
-            row.style.display = text.includes(searchTerm) ? '' : 'none';
-        });
-    }
-
-    // دالة لتصدير البيانات
-    function exportExcavationData() {
-        const table = document.getElementById('excavation-details-table');
-        if (!table) return;
-
-        // إنشاء محتوى CSV
-        let csvContent = '\uFEFF'; // BOM for UTF-8
-        const headers = [];
-        const headerCells = table.querySelectorAll('thead th');
-        headerCells.forEach(cell => headers.push(cell.textContent.trim()));
-        csvContent += headers.join(',') + '\n';
-
-        // إضافة الصفوف المرئية فقط
-        const visibleRows = Array.from(table.querySelectorAll('tbody tr')).filter(row => 
-            row.style.display !== 'none' && row.cells.length > 1
-        );
-
-        visibleRows.forEach(row => {
-            const rowData = [];
-            for (let i = 0; i < row.cells.length; i++) {
-                rowData.push('"' + row.cells[i].textContent.trim().replace(/"/g, '""') + '"');
+        fetch('{{ route("admin.work-orders.civil-works.excavation-details", $workOrder) }}', {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
             }
-            csvContent += rowData.join(',') + '\n';
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.excavationDetails) {
+                const tbody = document.getElementById('excavation-details-tbody');
+                if (!tbody) return;
+
+                tbody.innerHTML = '';
+                
+                if (data.excavationDetails.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">لا توجد بيانات محفوظة</td></tr>';
+                } else {
+                    data.excavationDetails.forEach((item, index) => {
+                        const row = tbody.insertRow();
+                        row.innerHTML = `
+                            <td>${index + 1}</td>
+                            <td>${item.type}</td>
+                            <td>${item.description}</td>
+                            <td>${item.quantity}</td>
+                        `;
+                    });
+                    console.log(`تم تحميل ${data.excavationDetails.length} عنصر من البيانات المحفوظة`);
+                }
+            }
+        })
+        .catch(error => {
+            console.error('خطأ في تحميل البيانات المحفوظة:', error);
         });
+    };
+    </script>
 
-        // تحميل الملف
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement('a');
-        const url = URL.createObjectURL(blob);
-        link.setAttribute('href', url);
-        link.setAttribute('download', 'بيانات_الحفريات_' + new Date().toISOString().split('T')[0] + '.csv');
-        link.style.visibility = 'hidden';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    }
-
-    // دالة للانتقال إلى الجدول التفصيلي
-    function scrollToExcavationDetails() {
-        const detailsSection = document.querySelector('.card:has(#excavation-details-table)');
-        if (detailsSection) {
-            detailsSection.scrollIntoView({ 
-                behavior: 'smooth',
-                block: 'start'
-            });
-            
-            // تحديث الجدول عند الوصول إليه
-            setTimeout(() => {
-                updateExcavationDetailsTable();
-            }, 500);
+    <!-- دالة مشتركة لتنسيق حجم الملف -->
+    <script>
+        // دالة عامة لتنسيق حجم الملف
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
         }
-    }
-
-    // جعل الدالة متاحة على مستوى global
-    window.scrollToExcavationDetails = scrollToExcavationDetails;
-
-    // حساب الأحجام الأولية للحفر المفتوح (محدث)
-    const excavationTargetsUpdated = ['unsurfaced_soil_open', 'surfaced_soil_open', 'unsurfaced_rock_open', 'surfaced_rock_open', 'surfaced_rock_open_2', 'surfaced_rock_second_open'];
-    excavationTargetsUpdated.forEach(target => calculateExcavationVolume(target));
+        
+        // جعل الدالة متاحة عالمياً
+        window.formatFileSize = formatFileSize;
     </script>
 
     <!-- إضافة JavaScript للتعامل مع رفع الصور -->
@@ -2449,15 +2263,6 @@
     <!-- إضافة JavaScript للتعامل مع رفع المرفقات -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // دالة مشتركة لتنسيق حجم الملف
-            function formatFileSize(bytes) {
-                if (bytes === 0) return '0 Bytes';
-                const k = 1024;
-                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-                const i = Math.floor(Math.log(bytes) / Math.log(k));
-                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-            }
-
             // دالة لتحديد أيقونة الملف
             function getFileIcon(filename) {
                 const ext = filename.split('.').pop().toLowerCase();

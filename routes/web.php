@@ -107,6 +107,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     // Civil Works Routes
     Route::get('work-orders/{workOrder}/civil-works', [WorkOrderController::class, 'civilWorks'])->name('work-orders.civil-works');
     Route::put('work-orders/{workOrder}/civil-works', [WorkOrderController::class, 'civilWorks'])->name('work-orders.civil-works.store');
+    Route::get('work-orders/{workOrder}/civil-works/excavation-details', [WorkOrderController::class, 'getExcavationDetails'])->name('work-orders.civil-works.excavation-details');
     Route::delete('work-orders/{workOrder}/civil-works/{file}', [WorkOrderController::class, 'deleteCivilWorksFile'])->name('work-orders.civil-works.delete-file');
 
     // Survey Routes
