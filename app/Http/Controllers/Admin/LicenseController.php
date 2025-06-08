@@ -460,10 +460,15 @@ class LicenseController extends Controller
             
             // إنشاء رخصة جديدة دائماً أو البحث عن واحدة موجودة
             if ($forceNew || $sectionType === 'complete_license') {
-                // إنشاء رخصة جديدة دائماً
+                // إنشاء رخصة جديدة دائماً - لا تحديث على رخصة موجودة
                 $license = new License();
                 $license->work_order_id = $workOrderId;
                 $isNewLicense = true;
+                
+                \Log::info('Creating NEW license (force_new = true)', [
+                    'work_order_id' => $workOrderId,
+                    'force_new' => $forceNew
+                ]);
             } else {
                 // البحث عن رخصة موجودة أو إنشاء واحدة جديدة
                 $license = License::where('work_order_id', $workOrderId)->first();
@@ -473,6 +478,15 @@ class LicenseController extends Controller
                     $license = new License();
                     $license->work_order_id = $workOrderId;
                     $isNewLicense = true;
+                    
+                    \Log::info('Creating NEW license (no existing license found)', [
+                        'work_order_id' => $workOrderId
+                    ]);
+                } else {
+                    \Log::info('Updating EXISTING license', [
+                        'license_id' => $license->id,
+                        'work_order_id' => $workOrderId
+                    ]);
                 }
             }
             

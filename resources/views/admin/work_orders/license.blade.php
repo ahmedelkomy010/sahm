@@ -28,9 +28,7 @@
                         <div class="row mb-4">
                             <div class="col-md-8">
                                 <div class="btn-group" role="group">
-                                    <button type="button" class="btn btn-outline-primary tab-btn" data-target="coordination-section" onclick="showSection('coordination-section')">
-                                        <i class="fas fa-certificate me-2"></i>شهادة التنسيق
-                                    </button>
+                                    
                                     <button type="button" class="btn btn-outline-primary tab-btn" data-target="dig-license-section" onclick="showSection('dig-license-section')">
                                         <i class="fas fa-hard-hat me-2"></i>رخصة الحفر
                                     </button>
@@ -43,12 +41,7 @@
                                     <button type="button" class="btn btn-outline-primary tab-btn" data-target="violations-section" onclick="showSection('violations-section')">
                                         <i class="fas fa-exclamation-triangle me-2"></i>المخالفات
                                     </button>
-                                    <button type="button" class="btn btn-outline-primary tab-btn" data-target="notes-section" onclick="showSection('notes-section')">
-                                        <i class="fas fa-sticky-note me-2"></i>ملاحظات
-                                    </button>
-                                    <button type="button" class="btn btn-outline-primary tab-btn" data-target="saved-licenses-section" onclick="showSection('saved-licenses-section')">
-                                        <i class="fas fa-save me-2"></i>الرخص المحفوظة
-                                    </button>
+                                    
                                 </div>
                             </div>
                             <div class="col-md-4 text-end">
@@ -63,7 +56,6 @@
                                     <i class="fas fa-info-circle me-2"></i>
                                     <strong>معلومة هامة:</strong> 
                                     <span id="latestLicenseMessage">جميع التبويبات ستحفظ البيانات في آخر رخصة تم إنشاؤها.</span>
-                                    إذا لم توجد رخصة سابقة، سيتم إنشاء رخصة جديدة تلقائياً.
                                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                                 </div>
                             </div>
@@ -80,8 +72,7 @@
                                     <div class="alert alert-info alert-sm mb-0 d-flex align-items-center">
                                         <i class="fas fa-info-circle me-2"></i>
                                         <small>
-                                            <strong>ملاحظة:</strong> عند حفظ شهادة التنسيق سيتم إنشاء رخصة جديدة في جدول الرخص المحفوظة تلقائياً.
-                                        </small>
+                                            <strong>ملاحظة:</strong>  حفظ شهادة التنسيق 
                                     </div>
                                 </div>
                             </div>
@@ -137,22 +128,23 @@
                                     
                                     <div class="row mt-3">
                                         <div class="col-12 text-center">
-                                            <div class="btn-group" role="group">
-                                                <button type="button" class="btn btn-success btn-lg px-4" onclick="saveCoordinationSection(true)">
-                                                    <i class="fas fa-plus-circle me-2"></i>
+                                            <div class="d-grid gap-2 d-md-block">
+                                                <button type="button" class="btn btn-success btn-lg px-5 shadow-lg me-2" onclick="saveCoordinationSection(true)">
+                                                    <i class="fas fa-file-plus me-2"></i>
                                                     إنشاء رخصة جديدة مع التنسيق
+                                                    <br><small class="d-block mt-1">سيتم إنشاء رخصة منفصلة جديدة</small>
                                                 </button>
-                                                <button type="button" class="btn btn-warning btn-lg px-4" onclick="saveCoordinationSection(false)" 
+                                                <button type="button" class="btn btn-warning btn-lg px-4 shadow" onclick="saveCoordinationSection(false)" 
                                                         id="updateCoordinationBtn" style="display: none;">
                                                     <i class="fas fa-edit me-2"></i>
                                                     تحديث الرخصة الحالية
                                                 </button>
                                             </div>
-                                            <div class="mt-2">
-                                                <small class="text-muted">
-                                                    <i class="fas fa-info-circle me-1"></i>
-                                                    اختر "إنشاء رخصة جديدة" لبدء رخصة منفصلة أو "تحديث" لتعديل الرخصة النشطة
-                                                </small>
+                                            <div class="mt-3">
+                                                <div class="alert alert-success d-inline-block">
+                                                    <i class="fas fa-info-circle me-2"></i>
+                                                    <strong>تأكيد:</strong> عند الضغط على "إنشاء رخصة جديدة" سيتم إنشاء رخصة منفصلة تماماً مع شهادة التنسيق وجميع المرفقات
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -576,10 +568,10 @@
                                                         <tr>
                                                             <th rowspan="2" class="align-middle">رقم الفسح</th>
                                                             <th rowspan="2" class="align-middle">تاريخ الفسح</th>
-                                                            <th colspan="3" class="text-center">كمية المواد (متر مكعب)</th>
-                                                            <th rowspan="2" class="align-middle">نوع الشارع</th>
                                                             <th rowspan="2" class="align-middle">طول الفسح</th>
                                                             <th rowspan="2" class="align-middle">طول المختبر</th>
+                                                            <th rowspan="2" class="align-middle">نوع الشارع</th>
+                                                            <th colspan="3" class="text-center">كمية المواد (متر مكعب)</th>
                                                             <th colspan="3" class="text-center">تدقيق المختبر</th>
                                                             <th rowspan="2" class="align-middle">ملاحظات</th>
                                                             <th rowspan="2" class="align-middle">حذف</th>
@@ -625,11 +617,9 @@
                                                             <th>دك أسفلت</th>
                                                             <th>ترابي</th>
                                                             <th>الكثافة القصوى للأسفلت</th>
-                                                            <th>نسبة الأسفلت</th>
-                                                            <th>التدرج الحبيبي</th>
+                                                            <th>نسبة الأسفلت / التدرج الحبيبي</th>
                                                             <th>تجربة مارشال</th>
-                                                            <th>تقييم البلاط</th>
-                                                            <th>البرودة</th>
+                                                            <th>تقييم البلاط / البرودة</th>
                                                             <th>تصنيف التربة</th>
                                                             <th>تجربة بروكتور</th>
                                                             <th>الخرسانة</th>
@@ -1504,10 +1494,6 @@
                 return;
             }
             
-            // دائماً الحفظ في آخر رخصة تم إنشاؤها
-            const useLatestLicense = latestLicenseId ? true : false; // true إذا كان هناك آخر رخصة
-            console.log('useLatestLicense:', useLatestLicense, 'latestLicenseId:', latestLicenseId);
-            
             const formData = new FormData(form);
             
             // التأكد من وجود work_order_id
@@ -1521,13 +1507,19 @@
             // إضافة نوع القسم
             formData.append('section_type', 'coordination');
             
-            // الحفظ في آخر رخصة أو إنشاء جديدة
-            if (useLatestLicense && latestLicenseId) {
-                formData.append('current_license_id', latestLicenseId);
-                console.log('Will update latest license:', latestLicenseId);
-            } else {
+            // التحكم في إنشاء رخصة جديدة أو تحديث الموجودة
+            if (forceNew) {
                 formData.append('force_new', '1');
-                console.log('Will create new license (no latest license found)');
+                console.log('Will create NEW license (forceNew = true)');
+            } else {
+                // تحديث آخر رخصة إذا كانت موجودة
+                if (latestLicenseId) {
+                    formData.append('current_license_id', latestLicenseId);
+                    console.log('Will update existing license:', latestLicenseId);
+                } else {
+                    formData.append('force_new', '1');
+                    console.log('Will create new license (no existing license found)');
+                }
             }
             
             // التأكد من إضافة CSRF token
@@ -1540,9 +1532,9 @@
             }
             
             try {
-                const loadingMessage = useLatestLicense ? 
-                    'جاري حفظ شهادة التنسيق في آخر رخصة...' : 
-                    'جاري إنشاء رخصة جديدة مع شهادة التنسيق...';
+                const loadingMessage = forceNew ? 
+                    'جاري إنشاء رخصة جديدة مع شهادة التنسيق...' : 
+                    'جاري حفظ شهادة التنسيق في الرخصة الحالية...';
                     
                 showLoadingState('coordinationForm', loadingMessage);
                 
@@ -1567,11 +1559,11 @@
                 console.log('Response result:', result);
                 
                 if (result.success) {
-                    // الحفظ في آخر رخصة أو إنشاء جديدة
-                    const successMessage = useLatestLicense ? 
-                        'تم حفظ شهادة التنسيق في آخر رخصة بنجاح!' + 
-                        (result.license_id ? ' (رقم الرخصة: ' + result.license_id + ')' : '') :
+                    // رسالة النجاح حسب نوع العملية
+                    const successMessage = forceNew ? 
                         'تم إنشاء رخصة جديدة مع شهادة التنسيق بنجاح!' + 
+                        (result.license_id ? ' (رقم الرخصة: ' + result.license_id + ')' : '') :
+                        'تم حفظ شهادة التنسيق في الرخصة الحالية بنجاح!' + 
                         (result.license_id ? ' (رقم الرخصة: ' + result.license_id + ')' : '');
                     
                     // تحديث الرخصة الحالية
@@ -1601,9 +1593,8 @@
                     
                     // إظهار رسالة توجيهية للمستخدم
                     setTimeout(() => {
-                        const guideMessage = useLatestLicense ? 
-                            'تم الحفظ في آخر رخصة. جميع التبويبات ستحفظ في نفس الرخصة.' :
-                            'تم إنشاء رخصة جديدة. جميع التبويبات ستحفظ في هذه الرخصة.';
+                        const guideMessage = forceNew ? 
+                            'تم إنشاء رخصة جديدة. جميع التبويبات ستحفظ في هذه الرخصة الجديدة.' :
                         showSuccessMessage(guideMessage);
                     }, 2000);
                     
@@ -2887,12 +2878,12 @@
             row.innerHTML = `
                 <td><input type="text" class="form-control form-control-sm" name="evac_table1[${rowCount}][clearance_number]" placeholder="رقم الفسح"></td>
                 <td><input type="date" class="form-control form-control-sm" name="evac_table1[${rowCount}][clearance_date]"></td>
+                <td><input type="number" step="0.01" class="form-control form-control-sm" name="evac_table1[${rowCount}][length]" placeholder="الطول بالمتر"></td>
+                <td><input type="text" class="form-control form-control-sm" name="evac_table1[${rowCount}][clearance_lab_number]" placeholder="طول المختبر"></td>
+                <td><input type="text" class="form-control form-control-sm" name="evac_table1[${rowCount}][street_type]" placeholder="نوع الشارع"></td>
                 <td><input type="number" step="0.01" class="form-control form-control-sm" name="evac_table1[${rowCount}][dirt_quantity]" placeholder="كمية ترابي"></td>
                 <td><input type="number" step="0.01" class="form-control form-control-sm" name="evac_table1[${rowCount}][asphalt_quantity]" placeholder="كمية أسفلت"></td>
                 <td><input type="number" step="0.01" class="form-control form-control-sm" name="evac_table1[${rowCount}][tile_quantity]" placeholder="كمية بلاط"></td>
-                <td><input type="text" class="form-control form-control-sm" name="evac_table1[${rowCount}][street_type]" placeholder="نوع الشارع"></td>
-                <td><input type="number" step="0.01" class="form-control form-control-sm" name="evac_table1[${rowCount}][length]" placeholder="الطول بالمتر"></td>
-                <td><input type="text" class="form-control form-control-sm" name="evac_table1[${rowCount}][clearance_lab_number]" placeholder="رقم الفسح والمختبر"></td>
                 <td><input type="text" class="form-control form-control-sm" name="evac_table1[${rowCount}][soil_check]" placeholder="تدقيق التربة"></td>
                 <td><input type="text" step="0.01" class="form-control form-control-sm" name="evac_table1[${rowCount}][mc1_check]" placeholder="تدقيق MC1"></td>
                 <td><input type="text" step="0.01" class="form-control form-control-sm" name="evac_table1[${rowCount}][asphalt_check]" placeholder="تدقيق أسفلت"></td>
@@ -2916,16 +2907,14 @@
                 <td><input type="number" class="form-control form-control-sm" name="evac_table2[${rowCount}][year]" value="${new Date().getFullYear()}"></td>
                 <td><input type="text" class="form-control form-control-sm" name="evac_table2[${rowCount}][work_type]" placeholder="نوع العمل"></td>
                 <td><input type="number" step="0.01" class="form-control form-control-sm" name="evac_table2[${rowCount}][depth]" placeholder="العمق"></td>
-                <td><input type="checkbox" class="form-check-input" name="evac_table2[${rowCount}][soil_compaction]" value="1"></td>
-                <td><input type="checkbox" class="form-check-input" name="evac_table2[${rowCount}][mc1rc2]" value="1"></td>
-                <td><input type="checkbox" class="form-check-input" name="evac_table2[${rowCount}][asphalt_compaction]" value="1"></td>
-                <td><input type="checkbox" class="form-check-input" name="evac_table2[${rowCount}][is_dirt]" value="1"></td>
+                <td><input type="number" step="0.01" class="form-control form-control-sm" name="evac_table2[${rowCount}][soil_compaction]" placeholder="دك التربة"></td>
+                <td><input type="number" step="0.01" class="form-control form-control-sm" name="evac_table2[${rowCount}][mc1rc2]" placeholder="MC1-RC2"></td>
+                <td><input type="number" step="0.01" class="form-control form-control-sm" name="evac_table2[${rowCount}][asphalt_compaction]" placeholder="دك أسفلت"></td>
+                <td><input type="number" step="0.01" class="form-control form-control-sm" name="evac_table2[${rowCount}][is_dirt]" placeholder="ترابي"></td>
                 <td><input type="number" step="0.01" class="form-control form-control-sm" name="evac_table2[${rowCount}][max_asphalt_density]" placeholder="الكثافة القصوى"></td>
-                <td><input type="number" step="0.01" class="form-control form-control-sm" name="evac_table2[${rowCount}][asphalt_percentage]" placeholder="نسبة الأسفلت"></td>
-                <td><input type="text" class="form-control form-control-sm" name="evac_table2[${rowCount}][granular_gradient]" placeholder="التدرج الحبيبي"></td>
+                <td><input type="text" class="form-control form-control-sm" name="evac_table2[${rowCount}][asphalt_percentage_gradient]" placeholder="نسبة الأسفلت / التدرج"></td>
                 <td><input type="text" class="form-control form-control-sm" name="evac_table2[${rowCount}][marshall_test]" placeholder="تجربة مارشال"></td>
-                <td><input type="text" class="form-control form-control-sm" name="evac_table2[${rowCount}][tile_evaluation]" placeholder="تقييم البلاط"></td>
-                <td><input type="number" step="0.01" class="form-control form-control-sm" name="evac_table2[${rowCount}][coldness]" placeholder="البرودة"></td>
+                <td><input type="text" class="form-control form-control-sm" name="evac_table2[${rowCount}][tile_evaluation_coldness]" placeholder="تقييم البلاط / البرودة"></td>
                 <td><input type="text" class="form-control form-control-sm" name="evac_table2[${rowCount}][soil_classification]" placeholder="تصنيف التربة"></td>
                 <td><input type="text" class="form-control form-control-sm" name="evac_table2[${rowCount}][proctor_test]" placeholder="تجربة بروكتور"></td>
                 <td><input type="text" class="form-control form-control-sm" name="evac_table2[${rowCount}][concrete]" placeholder="الخرسانة"></td>

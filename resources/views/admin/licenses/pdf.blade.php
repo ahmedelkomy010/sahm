@@ -288,6 +288,17 @@
                         <div class="date-label">تاريخ نهاية التمديد:</div>
                         <div class="date-value end">{{ $license->license_extension_end_date ? $license->license_extension_end_date->format('Y-m-d') : 'غير محدد' }}</div>
                     </div>
+                    @if($license->license_extension_start_date && $license->license_extension_end_date)
+                    @php
+                        $startDate = \Carbon\Carbon::parse($license->license_extension_start_date);
+                        $endDate = \Carbon\Carbon::parse($license->license_extension_end_date);
+                        $extensionDays = $endDate->diffInDays($startDate);
+                    @endphp
+                    <div class="date-item" style="margin-top: 10px; padding: 8px; background-color: #e8f4f8; border-radius: 4px;">
+                        <div class="date-label" style="font-weight: bold;">عدد أيام التمديد:</div>
+                        <div class="date-value" style="font-size: 16px; font-weight: bold; color: #0066cc;">{{ $extensionDays }} يوم</div>
+                    </div>
+                    @endif
                 @else
                     <div class="no-extension">لا يوجد تمديد لهذه الرخصة</div>
                 @endif

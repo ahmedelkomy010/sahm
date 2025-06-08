@@ -240,6 +240,154 @@
                             </div>
                         </div>
 
+                        <!-- جداول الإخلاءات -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="text-info mb-3">
+                                    <i class="fas fa-table me-2"></i>
+                                    جداول الإخلاءات
+                                </h5>
+                            </div>
+                            
+                            <!-- جدول الفسح ونوع الشارع -->
+                            <div class="col-12 mb-4">
+                                <div class="card border-0 shadow-sm">
+                                    <div class="card-header bg-primary text-white">
+                                        <h6 class="mb-0">
+                                            <i class="fas fa-table me-2"></i>
+                                            جدول الفسح ونوع الشارع
+                                        </h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <table class="table table-bordered" id="evacTable1Edit">
+                                                <thead class="bg-primary text-white">
+                                                    <tr>
+                                                        <th rowspan="2" class="align-middle">رقم الفسح</th>
+                                                        <th rowspan="2" class="align-middle">تاريخ الفسح</th>
+                                                        <th rowspan="2" class="align-middle">طول الفسح</th>
+                                                        <th rowspan="2" class="align-middle">طول المختبر</th>
+                                                        <th rowspan="2" class="align-middle">نوع الشارع</th>
+                                                        <th colspan="3" class="text-center">كمية المواد (متر مكعب)</th>
+                                                        <th colspan="3" class="text-center">تدقيق المختبر</th>
+                                                        <th rowspan="2" class="align-middle">ملاحظات</th>
+                                                        <th rowspan="2" class="align-middle">حذف</th>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>ترابي</th>
+                                                        <th>أسفلت</th>
+                                                        <th>بلاط</th>
+                                                        <th>التربة</th>
+                                                        <th>MC1</th>
+                                                        <th>أسفلت</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="evacTable1EditBody">
+                                                    @php
+                                                        $evacTable1Data = $license->evac_table1_data ? json_decode($license->evac_table1_data, true) : [];
+                                                    @endphp
+                                                    @foreach($evacTable1Data as $index => $row)
+                                                    <tr>
+                                                        <td><input type="text" class="form-control form-control-sm" name="evac_table1[{{ $index }}][clearance_number]" value="{{ $row['clearance_number'] ?? '' }}" placeholder="رقم الفسح"></td>
+                                                        <td><input type="date" class="form-control form-control-sm" name="evac_table1[{{ $index }}][clearance_date]" value="{{ $row['clearance_date'] ?? '' }}"></td>
+                                                        <td><input type="number" step="0.01" class="form-control form-control-sm" name="evac_table1[{{ $index }}][length]" value="{{ $row['length'] ?? '' }}" placeholder="الطول بالمتر"></td>
+                                                        <td><input type="text" class="form-control form-control-sm" name="evac_table1[{{ $index }}][clearance_lab_number]" value="{{ $row['clearance_lab_number'] ?? '' }}" placeholder="طول المختبر"></td>
+                                                        <td><input type="text" class="form-control form-control-sm" name="evac_table1[{{ $index }}][street_type]" value="{{ $row['street_type'] ?? '' }}" placeholder="نوع الشارع"></td>
+                                                        <td><input type="number" step="0.01" class="form-control form-control-sm" name="evac_table1[{{ $index }}][dirt_quantity]" value="{{ $row['dirt_quantity'] ?? '' }}" placeholder="كمية ترابي"></td>
+                                                        <td><input type="number" step="0.01" class="form-control form-control-sm" name="evac_table1[{{ $index }}][asphalt_quantity]" value="{{ $row['asphalt_quantity'] ?? '' }}" placeholder="كمية أسفلت"></td>
+                                                        <td><input type="number" step="0.01" class="form-control form-control-sm" name="evac_table1[{{ $index }}][tile_quantity]" value="{{ $row['tile_quantity'] ?? '' }}" placeholder="كمية بلاط"></td>
+                                                        <td><input type="text" class="form-control form-control-sm" name="evac_table1[{{ $index }}][soil_check]" value="{{ $row['soil_check'] ?? '' }}" placeholder="تدقيق التربة"></td>
+                                                        <td><input type="text" class="form-control form-control-sm" name="evac_table1[{{ $index }}][mc1_check]" value="{{ $row['mc1_check'] ?? '' }}" placeholder="تدقيق MC1"></td>
+                                                        <td><input type="text" class="form-control form-control-sm" name="evac_table1[{{ $index }}][asphalt_check]" value="{{ $row['asphalt_check'] ?? '' }}" placeholder="تدقيق أسفلت"></td>
+                                                        <td><input type="text" class="form-control form-control-sm" name="evac_table1[{{ $index }}][notes]" value="{{ $row['notes'] ?? '' }}" placeholder="ملاحظات"></td>
+                                                        <td>
+                                                            <button type="button" class="btn btn-danger btn-sm" onclick="removeRowEdit(this)">
+                                                                <i class="fas fa-trash"></i>
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                    @endforeach
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <button type="button" class="btn btn-primary btn-sm mt-2" onclick="addRowToEvacTable1Edit()">
+                                            <i class="fas fa-plus"></i> إضافة صف جديد
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- جدول التفاصيل الفنية -->
+                            <div class="col-12 mb-4">
+                                <div class="card border-0 shadow-sm">
+                                    <div class="card-header bg-secondary text-white">
+                                        <h6 class="mb-0">
+                                            <i class="fas fa-cogs me-2"></i>
+                                            جدول التفاصيل الفنية للمختبر
+                                        </h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <table class="table table-bordered" id="evacTable2Edit">
+                                                <thead class="bg-dark text-white">
+                                                    <tr>
+                                                        <th>السنة</th>
+                                                        <th>نوع العمل</th>
+                                                        <th>العمق</th>
+                                                        <th>دك التربة</th>
+                                                        <th>MC1-RC2</th>
+                                                        <th>دك أسفلت</th>
+                                                        <th>ترابي</th>
+                                                        <th>الكثافة القصوى للأسفلت</th>
+                                                        <th>نسبة الأسفلت / التدرج الحبيبي</th>
+                                                        <th>تجربة مارشال</th>
+                                                        <th>تقييم البلاط / البرودة</th>
+                                                        <th>تصنيف التربة</th>
+                                                        <th>تجربة بروكتور</th>
+                                                        <th>الخرسانة</th>
+                                                        <th>ملاحظات</th>
+                                                        <th>حذف</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="evacTable2EditBody">
+                                                    @php
+                                                        $evacTable2Data = $license->evac_table2_data ? json_decode($license->evac_table2_data, true) : [];
+                                                    @endphp
+                                                    @foreach($evacTable2Data as $index => $row)
+                                                    <tr>
+                                                        <td><input type="number" class="form-control form-control-sm" name="evac_table2[{{ $index }}][year]" value="{{ $row['year'] ?? date('Y') }}"></td>
+                                                        <td><input type="text" class="form-control form-control-sm" name="evac_table2[{{ $index }}][work_type]" value="{{ $row['work_type'] ?? '' }}" placeholder="نوع العمل"></td>
+                                                        <td><input type="number" step="0.01" class="form-control form-control-sm" name="evac_table2[{{ $index }}][depth]" value="{{ $row['depth'] ?? '' }}" placeholder="العمق"></td>
+                                                        <td><input type="number" step="0.01" class="form-control form-control-sm" name="evac_table2[{{ $index }}][soil_compaction]" value="{{ is_numeric($row['soil_compaction'] ?? '') ? $row['soil_compaction'] : '' }}" placeholder="دك التربة"></td>
+                                                        <td><input type="number" step="0.01" class="form-control form-control-sm" name="evac_table2[{{ $index }}][mc1rc2]" value="{{ is_numeric($row['mc1rc2'] ?? '') ? $row['mc1rc2'] : '' }}" placeholder="MC1-RC2"></td>
+                                                        <td><input type="number" step="0.01" class="form-control form-control-sm" name="evac_table2[{{ $index }}][asphalt_compaction]" value="{{ is_numeric($row['asphalt_compaction'] ?? '') ? $row['asphalt_compaction'] : '' }}" placeholder="دك أسفلت"></td>
+                                                        <td><input type="number" step="0.01" class="form-control form-control-sm" name="evac_table2[{{ $index }}][is_dirt]" value="{{ is_numeric($row['is_dirt'] ?? '') ? $row['is_dirt'] : '' }}" placeholder="ترابي"></td>
+                                                        <td><input type="number" step="0.01" class="form-control form-control-sm" name="evac_table2[{{ $index }}][max_asphalt_density]" value="{{ $row['max_asphalt_density'] ?? '' }}" placeholder="الكثافة القصوى"></td>
+                                                        <td><input type="text" class="form-control form-control-sm" name="evac_table2[{{ $index }}][asphalt_percentage_gradient]" value="{{ ($row['asphalt_percentage'] ?? '') . (isset($row['granular_gradient']) ? ' / ' . $row['granular_gradient'] : '') }}" placeholder="نسبة الأسفلت / التدرج"></td>
+                                                        <td><input type="text" class="form-control form-control-sm" name="evac_table2[{{ $index }}][marshall_test]" value="{{ $row['marshall_test'] ?? '' }}" placeholder="تجربة مارشال"></td>
+                                                        <td><input type="text" class="form-control form-control-sm" name="evac_table2[{{ $index }}][tile_evaluation_coldness]" value="{{ ($row['tile_evaluation'] ?? '') . (isset($row['coldness']) ? ' / ' . $row['coldness'] : '') }}" placeholder="تقييم البلاط / البرودة"></td>
+                                                        <td><input type="text" class="form-control form-control-sm" name="evac_table2[{{ $index }}][soil_classification]" value="{{ $row['soil_classification'] ?? '' }}" placeholder="تصنيف التربة"></td>
+                                                        <td><input type="text" class="form-control form-control-sm" name="evac_table2[{{ $index }}][proctor_test]" value="{{ $row['proctor_test'] ?? '' }}" placeholder="تجربة بروكتور"></td>
+                                                        <td><input type="text" class="form-control form-control-sm" name="evac_table2[{{ $index }}][concrete]" value="{{ $row['concrete'] ?? '' }}" placeholder="الخرسانة"></td>
+                                                        <td><input type="text" class="form-control form-control-sm" name="evac_table2[{{ $index }}][notes]" value="{{ $row['notes'] ?? '' }}" placeholder="ملاحظات"></td>
+                                                        <td>
+                                                            <button type="button" class="btn btn-danger btn-sm" onclick="removeRowEdit(this)">
+                                                                <i class="fas fa-trash"></i>
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                    @endforeach
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <button type="button" class="btn btn-primary btn-sm mt-2" onclick="addRowToEvacTable2Edit()">
+                                            <i class="fas fa-plus"></i> إضافة صف جديد
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- المخالفات -->
                         <div class="row mb-4">
                             <div class="col-12">
@@ -333,6 +481,70 @@ document.addEventListener('DOMContentLoaded', function() {
         toggleRestrictionFields(); // تشغيل عند التحميل
     }
 });
+
+// وظائف إدارة جداول الإخلاءات في صفحة التعديل
+function addRowToEvacTable1Edit() {
+    const tbody = document.getElementById('evacTable1EditBody');
+    const rowCount = tbody.rows.length;
+    const row = document.createElement('tr');
+    
+    row.innerHTML = `
+        <td><input type="text" class="form-control form-control-sm" name="evac_table1[${rowCount}][clearance_number]" placeholder="رقم الفسح"></td>
+        <td><input type="date" class="form-control form-control-sm" name="evac_table1[${rowCount}][clearance_date]"></td>
+        <td><input type="number" step="0.01" class="form-control form-control-sm" name="evac_table1[${rowCount}][length]" placeholder="الطول بالمتر"></td>
+        <td><input type="text" class="form-control form-control-sm" name="evac_table1[${rowCount}][clearance_lab_number]" placeholder="طول المختبر"></td>
+        <td><input type="text" class="form-control form-control-sm" name="evac_table1[${rowCount}][street_type]" placeholder="نوع الشارع"></td>
+        <td><input type="number" step="0.01" class="form-control form-control-sm" name="evac_table1[${rowCount}][dirt_quantity]" placeholder="كمية ترابي"></td>
+        <td><input type="number" step="0.01" class="form-control form-control-sm" name="evac_table1[${rowCount}][asphalt_quantity]" placeholder="كمية أسفلت"></td>
+        <td><input type="number" step="0.01" class="form-control form-control-sm" name="evac_table1[${rowCount}][tile_quantity]" placeholder="كمية بلاط"></td>
+        <td><input type="text" class="form-control form-control-sm" name="evac_table1[${rowCount}][soil_check]" placeholder="تدقيق التربة"></td>
+        <td><input type="text" class="form-control form-control-sm" name="evac_table1[${rowCount}][mc1_check]" placeholder="تدقيق MC1"></td>
+        <td><input type="text" class="form-control form-control-sm" name="evac_table1[${rowCount}][asphalt_check]" placeholder="تدقيق أسفلت"></td>
+        <td><input type="text" class="form-control form-control-sm" name="evac_table1[${rowCount}][notes]" placeholder="ملاحظات"></td>
+        <td>
+            <button type="button" class="btn btn-danger btn-sm" onclick="removeRowEdit(this)">
+                <i class="fas fa-trash"></i>
+            </button>
+        </td>
+    `;
+    
+    tbody.appendChild(row);
+}
+
+function addRowToEvacTable2Edit() {
+    const tbody = document.getElementById('evacTable2EditBody');
+    const rowCount = tbody.rows.length;
+    const row = document.createElement('tr');
+    
+    row.innerHTML = `
+        <td><input type="number" class="form-control form-control-sm" name="evac_table2[${rowCount}][year]" value="${new Date().getFullYear()}"></td>
+        <td><input type="text" class="form-control form-control-sm" name="evac_table2[${rowCount}][work_type]" placeholder="نوع العمل"></td>
+        <td><input type="number" step="0.01" class="form-control form-control-sm" name="evac_table2[${rowCount}][depth]" placeholder="العمق"></td>
+        <td><input type="number" step="0.01" class="form-control form-control-sm" name="evac_table2[${rowCount}][soil_compaction]" placeholder="دك التربة"></td>
+        <td><input type="number" step="0.01" class="form-control form-control-sm" name="evac_table2[${rowCount}][mc1rc2]" placeholder="MC1-RC2"></td>
+        <td><input type="number" step="0.01" class="form-control form-control-sm" name="evac_table2[${rowCount}][asphalt_compaction]" placeholder="دك أسفلت"></td>
+        <td><input type="number" step="0.01" class="form-control form-control-sm" name="evac_table2[${rowCount}][is_dirt]" placeholder="ترابي"></td>
+        <td><input type="number" step="0.01" class="form-control form-control-sm" name="evac_table2[${rowCount}][max_asphalt_density]" placeholder="الكثافة القصوى"></td>
+        <td><input type="text" class="form-control form-control-sm" name="evac_table2[${rowCount}][asphalt_percentage_gradient]" placeholder="نسبة الأسفلت / التدرج"></td>
+        <td><input type="text" class="form-control form-control-sm" name="evac_table2[${rowCount}][marshall_test]" placeholder="تجربة مارشال"></td>
+        <td><input type="text" class="form-control form-control-sm" name="evac_table2[${rowCount}][tile_evaluation_coldness]" placeholder="تقييم البلاط / البرودة"></td>
+        <td><input type="text" class="form-control form-control-sm" name="evac_table2[${rowCount}][soil_classification]" placeholder="تصنيف التربة"></td>
+        <td><input type="text" class="form-control form-control-sm" name="evac_table2[${rowCount}][proctor_test]" placeholder="تجربة بروكتور"></td>
+        <td><input type="text" class="form-control form-control-sm" name="evac_table2[${rowCount}][concrete]" placeholder="الخرسانة"></td>
+        <td><input type="text" class="form-control form-control-sm" name="evac_table2[${rowCount}][notes]" placeholder="ملاحظات"></td>
+        <td>
+            <button type="button" class="btn btn-danger btn-sm" onclick="removeRowEdit(this)">
+                <i class="fas fa-trash"></i>
+            </button>
+        </td>
+    `;
+    
+    tbody.appendChild(row);
+}
+
+function removeRowEdit(button) {
+    button.closest('tr').remove();
+}
 </script>
 @endpush
 

@@ -129,6 +129,23 @@
                                             <p class="text-danger fw-bold">{{ $license->license_extension_end_date ? $license->license_extension_end_date->format('Y-m-d') : 'غير محدد' }}</p>
                                         </div>
                                     </div>
+                                    @if($license->license_extension_start_date && $license->license_extension_end_date)
+                                    @php
+                                        $startDate = \Carbon\Carbon::parse($license->license_extension_start_date);
+                                        $endDate = \Carbon\Carbon::parse($license->license_extension_end_date);
+                                        $extensionDays = $endDate->diffInDays($startDate);
+                                    @endphp
+                                    <div class="row mt-3">
+                                        <div class="col-12 text-center">
+                                            <div class="alert alert-info mb-0">
+                                                <i class="fas fa-calendar-check me-2"></i>
+                                                <strong>عدد أيام التمديد: {{ $extensionDays }} يوم</strong>
+                                                <br>
+                                                <small class="text-muted">من {{ $startDate->format('Y-m-d') }} إلى {{ $endDate->format('Y-m-d') }}</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    @endif
                                     @else
                                     <div class="text-center text-muted">
                                         <i class="fas fa-info-circle me-2"></i>
@@ -436,10 +453,10 @@
                                         <tr>
                                             <th rowspan="2" class="align-middle">رقم الفسح</th>
                                             <th rowspan="2" class="align-middle">تاريخ الفسح</th>
-                                            <th colspan="3" class="text-center">كمية المواد (متر مكعب)</th>
+                                            <th rowspan="2" class="align-middle">طول الفسح</th>
+                                            <th rowspan="2" class="align-middle">طول المختبر</th>
                                             <th rowspan="2" class="align-middle">نوع الشارع</th>
-                                            <th rowspan="2" class="align-middle">الطول</th>
-                                            <th rowspan="2" class="align-middle">رقم الفسح والمختبر</th>
+                                            <th colspan="3" class="text-center">كمية المواد (متر مكعب)</th>
                                             <th colspan="3" class="text-center">تدقيق المختبر</th>
                                             <th rowspan="2" class="align-middle">ملاحظات</th>
                                         </tr>
@@ -457,12 +474,12 @@
                                         <tr>
                                             <td>{{ $row['clearance_number'] ?? '-' }}</td>
                                             <td>{{ $row['clearance_date'] ?? '-' }}</td>
+                                            <td>{{ $row['length'] ?? '-' }} م</td>
+                                            <td>{{ $row['clearance_lab_number'] ?? '-' }}</td>
+                                            <td>{{ $row['street_type'] ?? '-' }}</td>
                                             <td>{{ $row['dirt_quantity'] ?? '-' }}</td>
                                             <td>{{ $row['asphalt_quantity'] ?? '-' }}</td>
                                             <td>{{ $row['tile_quantity'] ?? '-' }}</td>
-                                            <td>{{ $row['street_type'] ?? '-' }}</td>
-                                            <td>{{ $row['length'] ?? '-' }} م</td>
-                                            <td>{{ $row['clearance_lab_number'] ?? '-' }}</td>
                                             <td>{{ $row['soil_check'] ?? '-' }}</td>
                                             <td>{{ $row['mc1_check'] ?? '-' }}</td>
                                             <td>{{ $row['asphalt_check'] ?? '-' }}</td>
@@ -490,11 +507,9 @@
                                             <th>دك أسفلت</th>
                                             <th>ترابي</th>
                                             <th>الكثافة القصوى للأسفلت</th>
-                                            <th>نسبة الأسفلت</th>
-                                            <th>التدرج الحبيبي</th>
+                                            <th>نسبة الأسفلت / التدرج الحبيبي</th>
                                             <th>تجربة مارشال</th>
-                                            <th>تقييم البلاط</th>
-                                            <th>البرودة</th>
+                                            <th>تقييم البلاط / البرودة</th>
                                             <th>تصنيف التربة</th>
                                             <th>تجربة بروكتور</th>
                                             <th>الخرسانة</th>
@@ -507,16 +522,14 @@
                                             <td>{{ $row['year'] ?? '-' }}</td>
                                             <td>{{ $row['work_type'] ?? '-' }}</td>
                                             <td>{{ $row['depth'] ?? '-' }}</td>
-                                            <td>{{ isset($row['soil_compaction']) && $row['soil_compaction'] ? '✓' : '-' }}</td>
-                                            <td>{{ isset($row['mc1rc2']) && $row['mc1rc2'] ? '✓' : '-' }}</td>
-                                            <td>{{ isset($row['asphalt_compaction']) && $row['asphalt_compaction'] ? '✓' : '-' }}</td>
-                                            <td>{{ isset($row['is_dirt']) && $row['is_dirt'] ? '✓' : '-' }}</td>
+                                            <td>{{ is_numeric($row['soil_compaction'] ?? '') ? $row['soil_compaction'] : (isset($row['soil_compaction']) && $row['soil_compaction'] ? '✓' : '-') }}</td>
+                                            <td>{{ is_numeric($row['mc1rc2'] ?? '') ? $row['mc1rc2'] : (isset($row['mc1rc2']) && $row['mc1rc2'] ? '✓' : '-') }}</td>
+                                            <td>{{ is_numeric($row['asphalt_compaction'] ?? '') ? $row['asphalt_compaction'] : (isset($row['asphalt_compaction']) && $row['asphalt_compaction'] ? '✓' : '-') }}</td>
+                                            <td>{{ is_numeric($row['is_dirt'] ?? '') ? $row['is_dirt'] : (isset($row['is_dirt']) && $row['is_dirt'] ? '✓' : '-') }}</td>
                                             <td>{{ $row['max_asphalt_density'] ?? '-' }}</td>
-                                            <td>{{ $row['asphalt_percentage'] ?? '-' }}</td>
-                                            <td>{{ $row['granular_gradient'] ?? '-' }}</td>
+                                            <td>{{ isset($row['asphalt_percentage_gradient']) ? $row['asphalt_percentage_gradient'] : (($row['asphalt_percentage'] ?? '') . (isset($row['granular_gradient']) && $row['granular_gradient'] ? ' / ' . $row['granular_gradient'] : '')) }}</td>
                                             <td>{{ $row['marshall_test'] ?? '-' }}</td>
-                                            <td>{{ $row['tile_evaluation'] ?? '-' }}</td>
-                                            <td>{{ $row['coldness'] ?? '-' }}</td>
+                                            <td>{{ isset($row['tile_evaluation_coldness']) ? $row['tile_evaluation_coldness'] : (($row['tile_evaluation'] ?? '') . (isset($row['coldness']) && $row['coldness'] ? ' / ' . $row['coldness'] : '')) }}</td>
                                             <td>{{ $row['soil_classification'] ?? '-' }}</td>
                                             <td>{{ $row['proctor_test'] ?? '-' }}</td>
                                             <td>{{ $row['concrete'] ?? '-' }}</td>
