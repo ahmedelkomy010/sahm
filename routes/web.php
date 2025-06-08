@@ -155,6 +155,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::get('licenses/{license}/edit', [\App\Http\Controllers\Admin\LicenseController::class, 'edit'])->name('licenses.edit');
     Route::put('licenses/{license}', [\App\Http\Controllers\Admin\LicenseController::class, 'update'])->name('licenses.update');
     Route::get('licenses/{license}', [\App\Http\Controllers\Admin\LicenseController::class, 'show'])->name('licenses.show');
+    Route::get('licenses/{license}/pdf', [\App\Http\Controllers\Admin\LicenseController::class, 'exportPdf'])->name('licenses.pdf');
 
     Route::post('work-orders/{workOrder}/installations/images', [App\Http\Controllers\WorkOrderController::class, 'uploadInstallationsImages'])->name('work-orders.installations.images');
     Route::delete('work-orders/installations/images/{imageId}', [App\Http\Controllers\WorkOrderController::class, 'deleteInstallationImage'])->name('work-orders.installations.images.delete');

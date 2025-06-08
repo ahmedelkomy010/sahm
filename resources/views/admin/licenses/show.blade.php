@@ -15,6 +15,9 @@
                             تفاصيل الرخصة - {{ $license->license_number ?? 'غير محدد' }}
                         </h3>
                         <div class="d-flex gap-2">
+                            <a href="{{ route('admin.licenses.pdf', $license) }}" class="btn btn-danger btn-sm" target="_blank">
+                                <i class="fas fa-file-pdf me-1"></i> تصدير PDF
+                            </a>
                             <a href="{{ route('admin.licenses.edit', $license) }}" class="btn btn-warning btn-sm">
                                 <i class="fas fa-edit me-1"></i> تعديل
                             </a>
@@ -82,21 +85,58 @@
                                 التواريخ المهمة
                             </h5>
                         </div>
-                        <div class="col-md-3">
-                            <strong>تاريخ البداية:</strong>
-                            <p class="text-muted">{{ $license->license_start_date ? $license->license_start_date->format('Y-m-d') : 'غير محدد' }}</p>
+                        <!-- تواريخ الرخصة الأصلية -->
+                        <div class="col-md-6">
+                            <div class="card border-primary h-100">
+                                <div class="card-header bg-primary text-white">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-file-contract me-2"></i>
+                                        الرخصة الأصلية
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <strong>تاريخ البداية:</strong>
+                                            <p class="text-success fw-bold">{{ $license->license_start_date ? $license->license_start_date->format('Y-m-d') : 'غير محدد' }}</p>
+                                        </div>
+                                        <div class="col-6">
+                                            <strong>تاريخ النهاية:</strong>
+                                            <p class="text-danger fw-bold">{{ $license->license_end_date ? $license->license_end_date->format('Y-m-d') : 'غير محدد' }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="col-md-3">
-                            <strong>تاريخ النهاية:</strong>
-                            <p class="text-muted">{{ $license->license_end_date ? $license->license_end_date->format('Y-m-d') : 'غير محدد' }}</p>
-                        </div>
-                        <div class="col-md-3">
-                            <strong>تاريخ بداية التمديد:</strong>
-                            <p class="text-muted">{{ $license->license_extension_start_date ? $license->license_extension_start_date->format('Y-m-d') : 'غير محدد' }}</p>
-                        </div>
-                        <div class="col-md-3">
-                            <strong>تاريخ نهاية التمديد:</strong>
-                            <p class="text-muted">{{ $license->license_extension_end_date ? $license->license_extension_end_date->format('Y-m-d') : 'غير محدد' }}</p>
+                        <!-- تواريخ التمديد -->
+                        <div class="col-md-6">
+                            <div class="card border-warning h-100">
+                                <div class="card-header bg-warning text-dark">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-clock me-2"></i>
+                                        فترة التمديد
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    @if($license->license_extension_start_date || $license->license_extension_end_date)
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <strong>تاريخ بداية التمديد:</strong>
+                                            <p class="text-success fw-bold">{{ $license->license_extension_start_date ? $license->license_extension_start_date->format('Y-m-d') : 'غير محدد' }}</p>
+                                        </div>
+                                        <div class="col-6">
+                                            <strong>تاريخ نهاية التمديد:</strong>
+                                            <p class="text-danger fw-bold">{{ $license->license_extension_end_date ? $license->license_extension_end_date->format('Y-m-d') : 'غير محدد' }}</p>
+                                        </div>
+                                    </div>
+                                    @else
+                                    <div class="text-center text-muted">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        لا يوجد تمديد لهذه الرخصة
+                                    </div>
+                                    @endif
+                                </div>
+                            </div>
                         </div>
                     </div>
 

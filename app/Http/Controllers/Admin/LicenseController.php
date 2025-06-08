@@ -890,4 +890,33 @@ class LicenseController extends Controller
             }
         }
     }
+
+    /**
+     * تصدير تفاصيل الرخصة كملف PDF
+     */
+    public function exportPdf(License $license)
+    {
+        try {
+            $license->load('workOrder');
+            
+            // استخدام DomPDF
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.licenses.pdf', compact('license'))
+                ->setPaper('A4', 'portrait')
+                ->setOption('defaultFont', 'DejaVu Sans')
+                ->setOption('isRemoteEnabled', true)
+                ->setOption('isHtml5ParserEnabled', true);
+            
+            $filename = 'license_' . ($license->license_number ?? $license->id) . '_' . date('Y-m-d') . '.pdf';
+            
+            return $pdf->download($filename);
+            
+        } catch (\Exception $e) {
+            \Log::error('PDF Export Error: ' . $e->getMessage(), [
+                'license_id' => $license->id,
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return redirect()->back()->with('error', 'حدث خطأ أثناء تصدير ملف PDF: ' . $e->getMessage());
+        }
+    }
 } 
