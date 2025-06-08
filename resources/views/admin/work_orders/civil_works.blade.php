@@ -236,7 +236,92 @@
             border: none;
             position: sticky;
             top: 0;
-            z-index: 10;
+            z-index: 100;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        /* تثبيت الجدول التفصيلي */
+        .excavation-details-container {
+            position: sticky;
+            top: 20px;
+            z-index: 50;
+            max-height: 80vh;
+            overflow-y: auto;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            background: white;
+        }
+
+        .excavation-details-container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .excavation-details-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        .excavation-details-container::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 4px;
+        }
+
+        .excavation-details-container::-webkit-scrollbar-thumb:hover {
+            background: #764ba2;
+        }
+
+        /* جعل البيانات ثابتة ومرئية */
+        .permanent-visible {
+            display: block !important;
+            opacity: 1 !important;
+            transform: none !important;
+        }
+
+        /* تثبيت حالة البيانات */
+        .data-locked {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%) !important;
+            color: white !important;
+        }
+
+        .data-locked i {
+            animation: lock-pulse 2s infinite;
+        }
+
+        @keyframes lock-pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        /* تثبيت الجدول في الصفحة */
+        .fixed-table-container {
+            position: fixed;
+            top: 50px;
+            right: 20px;
+            width: 500px;
+            max-height: 70vh;
+            overflow-y: auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            z-index: 1000;
+            transform: translateX(520px);
+            transition: transform 0.3s ease;
+        }
+
+        .fixed-table-container.visible {
+            transform: translateX(0);
+        }
+
+        .fixed-table-toggle {
+            position: fixed;
+            top: 120px;
+            right: 20px;
+            z-index: 1001;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            font-size: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
 
         #excavation-details-table tbody tr {
@@ -1327,18 +1412,64 @@
 
                 
 
+                <!-- زر تثبيت الجدول -->
+                <button type="button" class="btn btn-primary fixed-table-toggle" id="toggle-fixed-table" title="تثبيت/إلغاء تثبيت الجدول">
+                    <i class="fas fa-thumbtack"></i>
+                </button>
+
+                <!-- الجدول المثبت -->
+                <div class="fixed-table-container" id="fixed-table-container">
+                    <div class="card border-0 h-100">
+                        <div class="card-header bg-gradient text-white p-2" style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0">
+                                    <i class="fas fa-lock me-1"></i>الجدول المثبت
+                                </h6>
+                                <button type="button" class="btn btn-sm btn-outline-light" id="close-fixed-table">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body p-2">
+                            <div class="table-responsive">
+                                <table class="table table-sm table-striped" id="fixed-excavation-table">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th class="text-center">#</th>
+                                            <th>النوع</th>
+                                            <th class="text-center">الكمية</th>
+                                            <th class="text-center">الوحدة</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="fixed-table-tbody">
+                                        <!-- سيتم ملء البيانات تلقائياً -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- جدول شامل لبيانات الحفريات -->
                 <div class="col-12">
-                    <div class="card shadow-lg mb-4 border-0">
-                        <div class="card-header bg-gradient text-white" style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);">
+                    <div class="card shadow-lg mb-4 border-0 excavation-details-container permanent-visible">
+                        <div class="card-header bg-gradient text-white data-locked" style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);">
                             <i class="fas fa-shovel me-2"></i>
-                            <h5 class="mb-0 d-inline">جدول تفصيلي لجميع بيانات الحفريات المدخلة</h5>
-                            <button type="button" class="btn btn-light btn-sm float-end" id="export-excavation-btn">
-                                <i class="fas fa-download me-1"></i>تصدير Excel
-                            </button>
-                            <button type="button" class="btn btn-outline-primary btn-sm me-2 float-end" id="update-excavation-table-btn">
-                                <i class="fas fa-sync-alt me-1"></i>تحديث الجدول
-                            </button>
+                            <h5 class="mb-0 d-inline">جدول تفصيلي لجميع بيانات الحفريات المدخلة - مثبت دائماً</h5>
+                            <div class="float-end">
+                                <button type="button" class="btn btn-light btn-sm me-1" id="export-excavation-btn">
+                                    <i class="fas fa-download me-1"></i>تصدير Excel
+                                </button>
+                                <button type="button" class="btn btn-success btn-sm me-1" id="update-excavation-table-btn">
+                                    <i class="fas fa-sync-alt me-1"></i>تحديث الجدول
+                                </button>
+                                <button type="button" class="btn btn-warning btn-sm me-1" id="lock-data-btn">
+                                    <i class="fas fa-lock me-1"></i>تثبيت البيانات
+                                </button>
+                                <button type="button" class="btn btn-info btn-sm" id="toggle-fixed-view-btn">
+                                    <i class="fas fa-eye me-1"></i>عرض مثبت
+                                </button>
+                            </div>
                         </div>
                         <div class="card-body">
                             <div class="alert alert-warning border-0 shadow-sm">
@@ -1819,8 +1950,40 @@
         
         // تحديث الجدول التفصيلي عند تحميل الصفحة
         setTimeout(() => {
+            // فحص البيانات المحفوظة أولاً
+            const savedData = loadDataFromLocalStorage();
+            if (savedData && savedData.length > 0) {
+                // استعادة حالة التثبيت
+                const mainTable = document.querySelector('.excavation-details-container');
+                const lockBtn = document.getElementById('lock-data-btn');
+                
+                if (mainTable && lockBtn) {
+                    mainTable.classList.add('data-locked');
+                    lockBtn.innerHTML = '<i class="fas fa-lock me-1"></i>البيانات مثبتة';
+                    lockBtn.className = 'btn btn-success btn-sm me-1';
+                    
+                    // منع تحديث البيانات
+                    const updateBtn = document.getElementById('update-excavation-table-btn');
+                    if (updateBtn) updateBtn.disabled = true;
+                }
+                console.log('تم استعادة حالة التثبيت من التخزين المحلي');
+            }
+            
             updateExcavationDetailsTable();
+            loadFixedTableData();
         }, 500);
+
+        // إدارة الجدول المثبت
+        setupFixedTableControls();
+        
+        // إضافة مؤشر بصري للتثبيت في العنوان
+        const mainCardHeader = document.querySelector('.excavation-details-container .card-header');
+        if (mainCardHeader) {
+            const lockIndicator = document.createElement('span');
+            lockIndicator.id = 'lock-indicator';
+            lockIndicator.innerHTML = ' <i class="fas fa-lock-open text-light ms-2" title="غير مثبت"></i>';
+            mainCardHeader.querySelector('h5').appendChild(lockIndicator);
+        }
     });
 
     // دوال الجدول التفصيلي - متاحة عالمياً
@@ -1838,9 +2001,22 @@
     window.updateExcavationDetailsTable = function() {
         console.log('تحديث الجدول التفصيلي');
         const tbody = document.getElementById('excavation-details-tbody');
+        const mainTable = document.querySelector('.excavation-details-container');
+        
         if (!tbody) {
             console.warn('لم يتم العثور على tbody');
             return;
+        }
+
+        // فحص إذا كانت البيانات مثبتة
+        if (mainTable && mainTable.classList.contains('data-locked')) {
+            console.log('البيانات مثبتة - لا يمكن التحديث');
+            const savedData = loadDataFromLocalStorage();
+            if (savedData && savedData.length > 0) {
+                console.log('استعادة البيانات المثبتة من التخزين المحلي');
+                displaySavedData(savedData, tbody);
+                return;
+            }
         }
 
         // تنظيف الجدول
@@ -2030,7 +2206,51 @@
         
         // تحديث الإحصائيات
         updateExcavationStats(excavationData);
+        
+        // تحديث الجدول المثبت
+        setTimeout(() => {
+            loadFixedTableData();
+        }, 100);
     };
+
+    // عرض البيانات المحفوظة
+    function displaySavedData(savedData, tbody) {
+        tbody.innerHTML = '';
+        
+        savedData.forEach((item, index) => {
+            const row = tbody.insertRow();
+            row.innerHTML = `
+                <td class="text-center fw-bold">${item.index}</td>
+                <td>
+                    <div class="d-flex align-items-center">
+                        <div class="bg-success rounded-circle me-2" style="width: 10px; height: 10px;"></div>
+                        <div>
+                            <strong class="d-block text-success">${item.type} (محفوظ)</strong>
+                            <small class="text-muted">بيانات مثبتة</small>
+                        </div>
+                    </div>
+                </td>
+                <td class="text-center">
+                    <strong class="text-primary fs-5">${item.quantity}</strong>
+                </td>
+                <td class="text-center">
+                    <span class="badge bg-info text-white">${item.unit}</span>
+                </td>
+                <td class="text-center">
+                    <span class="text-success fw-bold fs-6">${item.volume}</span>
+                </td>
+                <td class="text-center">
+                    <span class="badge bg-success text-white px-3 py-2">
+                        <i class="fas fa-lock me-1"></i>
+                        ${item.surface}
+                    </span>
+                </td>
+            `;
+            
+            // إضافة فئة للصف المحفوظ
+            row.classList.add('table-success', 'table-hover-row');
+        });
+    }
 
     // دالة لتحديث إحصائيات الحفريات
     function updateExcavationStats(excavationData) {
@@ -2061,6 +2281,15 @@
         if (rockStat) rockStat.textContent = totalRockLength.toFixed(2);
         if (volumeStat) volumeStat.textContent = totalVolume.toFixed(2) + ' متر مكعب';
         if (lengthStat) lengthStat.textContent = (totalSoilLength + totalRockLength).toFixed(2) + ' متر';
+        
+        // إضافة إشارة للبيانات المثبتة
+        const mainTable = document.querySelector('.excavation-details-container');
+        if (mainTable && mainTable.classList.contains('data-locked')) {
+            if (soilStat) soilStat.innerHTML += ' <i class="fas fa-lock text-success ms-1" title="مثبت"></i>';
+            if (rockStat) rockStat.innerHTML += ' <i class="fas fa-lock text-success ms-1" title="مثبت"></i>';
+            if (volumeStat) volumeStat.innerHTML += ' <i class="fas fa-lock text-success ms-1" title="مثبت"></i>';
+            if (lengthStat) lengthStat.innerHTML += ' <i class="fas fa-lock text-success ms-1" title="مثبت"></i>';
+        }
     }
 
     window.exportExcavationData = function() {
@@ -2176,6 +2405,218 @@
             console.error('خطأ في تحميل البيانات المحفوظة:', error);
         });
     };
+
+    // دوال إدارة الجدول المثبت
+    function setupFixedTableControls() {
+        const toggleBtn = document.getElementById('toggle-fixed-table');
+        const fixedContainer = document.getElementById('fixed-table-container');
+        const closeBtn = document.getElementById('close-fixed-table');
+        const lockDataBtn = document.getElementById('lock-data-btn');
+        const toggleFixedViewBtn = document.getElementById('toggle-fixed-view-btn');
+
+        // تبديل عرض الجدول المثبت
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', function() {
+                fixedContainer.classList.toggle('visible');
+                loadFixedTableData();
+                
+                if (fixedContainer.classList.contains('visible')) {
+                    toggleBtn.innerHTML = '<i class="fas fa-eye-slash"></i>';
+                    toggleBtn.title = 'إخفاء الجدول المثبت';
+                } else {
+                    toggleBtn.innerHTML = '<i class="fas fa-thumbtack"></i>';
+                    toggleBtn.title = 'عرض الجدول المثبت';
+                }
+            });
+        }
+
+        // إغلاق الجدول المثبت
+        if (closeBtn) {
+            closeBtn.addEventListener('click', function() {
+                fixedContainer.classList.remove('visible');
+                toggleBtn.innerHTML = '<i class="fas fa-thumbtack"></i>';
+                toggleBtn.title = 'عرض الجدول المثبت';
+            });
+        }
+
+        // تثبيت البيانات
+        if (lockDataBtn) {
+            lockDataBtn.addEventListener('click', function() {
+                lockExcavationData();
+            });
+        }
+
+        // تبديل العرض المثبت
+        if (toggleFixedViewBtn) {
+            toggleFixedViewBtn.addEventListener('click', function() {
+                const mainTable = document.querySelector('.excavation-details-container');
+                if (mainTable) {
+                    mainTable.classList.toggle('permanent-visible');
+                    const isVisible = mainTable.classList.contains('permanent-visible');
+                    
+                    this.innerHTML = isVisible ? 
+                        '<i class="fas fa-eye-slash me-1"></i>إخفاء العرض' : 
+                        '<i class="fas fa-eye me-1"></i>عرض مثبت';
+                }
+            });
+        }
+    }
+
+    // تحميل بيانات الجدول المثبت
+    function loadFixedTableData() {
+        const mainTableBody = document.getElementById('excavation-details-tbody');
+        const fixedTableBody = document.getElementById('fixed-table-tbody');
+        
+        if (!mainTableBody || !fixedTableBody) return;
+
+        // نسخ البيانات من الجدول الرئيسي للجدول المثبت
+        const mainRows = mainTableBody.querySelectorAll('tr');
+        fixedTableBody.innerHTML = '';
+
+        if (mainRows.length === 0 || mainRows[0].textContent.includes('لا توجد بيانات')) {
+            fixedTableBody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">لا توجد بيانات</td></tr>';
+            return;
+        }
+
+        mainRows.forEach((row, index) => {
+            const cells = row.querySelectorAll('td');
+            if (cells.length >= 4) {
+                const newRow = fixedTableBody.insertRow();
+                
+                // رقم السطر
+                newRow.insertCell(0).innerHTML = `<span class="badge bg-primary">${index + 1}</span>`;
+                
+                // نوع الحفرية (مبسط)
+                const typeCell = newRow.insertCell(1);
+                const typeText = cells[1].textContent.trim();
+                const shortType = typeText.length > 30 ? typeText.substring(0, 30) + '...' : typeText;
+                typeCell.innerHTML = `<small class="fw-bold text-primary">${shortType}</small>`;
+                
+                // الكمية
+                const quantityCell = newRow.insertCell(2);
+                quantityCell.innerHTML = `<span class="fw-bold text-success">${cells[2].textContent.trim()}</span>`;
+                quantityCell.className = 'text-center';
+                
+                // الوحدة
+                const unitCell = newRow.insertCell(3);
+                unitCell.innerHTML = `<span class="badge bg-info">${cells[3].textContent.trim()}</span>`;
+                unitCell.className = 'text-center';
+                
+                // إضافة hover effect
+                newRow.addEventListener('mouseenter', function() {
+                    this.style.backgroundColor = 'rgba(102, 126, 234, 0.1)';
+                });
+                
+                newRow.addEventListener('mouseleave', function() {
+                    this.style.backgroundColor = '';
+                });
+            }
+        });
+
+        console.log(`تم تحميل ${mainRows.length} عنصر في الجدول المثبت`);
+    }
+
+    // تثبيت البيانات
+    function lockExcavationData() {
+        const mainTable = document.querySelector('.excavation-details-container');
+        const lockBtn = document.getElementById('lock-data-btn');
+        
+        if (!mainTable || !lockBtn) return;
+
+        const isLocked = mainTable.classList.contains('data-locked');
+        
+        if (isLocked) {
+            // إلغاء التثبيت
+            mainTable.classList.remove('data-locked');
+            lockBtn.innerHTML = '<i class="fas fa-unlock me-1"></i>إلغاء التثبيت';
+            lockBtn.className = 'btn btn-outline-warning btn-sm me-1';
+            
+            // تمكين تحديث البيانات
+            const updateBtn = document.getElementById('update-excavation-table-btn');
+            if (updateBtn) updateBtn.disabled = false;
+            
+            // تحديث مؤشر التثبيت
+            const lockIndicator = document.getElementById('lock-indicator');
+            if (lockIndicator) {
+                lockIndicator.innerHTML = ' <i class="fas fa-lock-open text-light ms-2" title="غير مثبت"></i>';
+            }
+            
+            // حذف البيانات من التخزين المحلي
+            localStorage.removeItem('excavation_data_locked');
+            
+            alert('تم إلغاء تثبيت البيانات - يمكن تحديثها الآن');
+        } else {
+            // تثبيت البيانات
+            mainTable.classList.add('data-locked');
+            lockBtn.innerHTML = '<i class="fas fa-lock me-1"></i>البيانات مثبتة';
+            lockBtn.className = 'btn btn-success btn-sm me-1';
+            
+            // منع تحديث البيانات
+            const updateBtn = document.getElementById('update-excavation-table-btn');
+            if (updateBtn) updateBtn.disabled = true;
+            
+            // تحديث مؤشر التثبيت
+            const lockIndicator = document.getElementById('lock-indicator');
+            if (lockIndicator) {
+                lockIndicator.innerHTML = ' <i class="fas fa-lock text-warning ms-2" title="مثبت"></i>';
+            }
+            
+            // حفظ البيانات في التخزين المحلي
+            saveDataToLocalStorage();
+            
+            alert('تم تثبيت البيانات بنجاح - البيانات محمية من التغيير');
+        }
+    }
+
+    // حفظ البيانات في التخزين المحلي
+    function saveDataToLocalStorage() {
+        const tableData = [];
+        const rows = document.querySelectorAll('#excavation-details-tbody tr');
+        
+        rows.forEach((row, index) => {
+            const cells = row.querySelectorAll('td');
+            if (cells.length >= 4 && !row.textContent.includes('لا توجد بيانات')) {
+                tableData.push({
+                    index: index + 1,
+                    type: cells[1].textContent.trim(),
+                    quantity: cells[2].textContent.trim(),
+                    unit: cells[3].textContent.trim(),
+                    volume: cells[4] ? cells[4].textContent.trim() : '',
+                    surface: cells[5] ? cells[5].textContent.trim() : ''
+                });
+            }
+        });
+
+        localStorage.setItem('excavation_data_locked', JSON.stringify({
+            data: tableData,
+            timestamp: new Date().toISOString(),
+            workOrderId: '{{ $workOrder->id }}'
+        }));
+
+        console.log(`تم حفظ ${tableData.length} عنصر في التخزين المحلي`);
+    }
+
+    // استعادة البيانات من التخزين المحلي
+    function loadDataFromLocalStorage() {
+        const savedData = localStorage.getItem('excavation_data_locked');
+        if (!savedData) return false;
+
+        try {
+            const parsedData = JSON.parse(savedData);
+            if (parsedData.workOrderId === '{{ $workOrder->id }}') {
+                return parsedData.data;
+            }
+        } catch (error) {
+            console.error('خطأ في استعادة البيانات:', error);
+        }
+        
+        return false;
+    }
+
+    // جعل الدوال متاحة عالمياً
+    window.loadFixedTableData = loadFixedTableData;
+    window.lockExcavationData = lockExcavationData;
+    window.setupFixedTableControls = setupFixedTableControls;
     </script>
 
     <!-- دالة مشتركة لتنسيق حجم الملف -->
