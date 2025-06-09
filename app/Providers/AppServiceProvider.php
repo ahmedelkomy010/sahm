@@ -12,7 +12,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // تسجيل FileHelper
+        $this->app->singleton('filehelper', function () {
+            return new \App\Helpers\FileHelper();
+        });
     }
 
     /**
@@ -36,5 +39,18 @@ class AppServiceProvider extends ServiceProvider
                 mkdir($path, 0755, true);
             }
         }
+
+        // إضافة البلايد directives للملفات
+        \Blade::directive('imageUrl', function ($expression) {
+            return "<?php echo \App\Helpers\FileHelper::getImageUrl($expression); ?>";
+        });
+        
+        \Blade::directive('fileIcon', function ($expression) {
+            return "<?php echo \App\Helpers\FileHelper::getFileIcon($expression); ?>";
+        });
+        
+        \Blade::directive('fileSize', function ($expression) {
+            return "<?php echo \App\Helpers\FileHelper::formatFileSize($expression); ?>";
+        });
     }
 }

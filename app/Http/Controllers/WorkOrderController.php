@@ -537,7 +537,7 @@ class WorkOrderController extends Controller
     {
         $workOrder = WorkOrder::with(['files', 'civilWorksFiles', 'civilWorksAttachments'])->find($workOrder->id);
         $executionImages = \App\Models\WorkOrderFile::where('work_order_id', $workOrder->id)
-            ->whereIn('file_category', ['civil_works_execution', 'installations', 'electrical_works'])
+            ->whereIn('file_category', ['civil_exec', 'installations', 'electrical_works'])
             ->where('file_type', 'like', 'image/%')
             ->get();
         return view('admin.work_orders.actions-execution', compact('workOrder', 'executionImages'));
@@ -1373,7 +1373,7 @@ class WorkOrderController extends Controller
             ]);
 
             $request->validate([
-                'civil_works_images.*' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:10240', // 10MB max per image
+                'civil_works_images.*' => 'required|image|mimes:jpeg,png,jpg,gif,webp,bmp,svg,tiff|max:10240', // 10MB max per image
             ]);
 
             $savedImages = [];
@@ -1387,14 +1387,14 @@ class WorkOrderController extends Controller
                     // تحسين اسم الملف للخادم العالمي
                     $filename = 'civil_' . $workOrder->id . '_' . time() . '_' . uniqid() . '.' . $extension;
                     // مسار مهيأ للخادم العالمي
-                    $path = 'uploads/work_orders/' . $workOrder->id . '/civil_works_execution';
+                    $directory = 'work_orders/' . $workOrder->id . '/civil_exec';
                     
                     // إنشاء المجلد إذا لم يكن موجوداً
-                    if (!\Storage::disk('public')->exists($path)) {
-                        \Storage::disk('public')->makeDirectory($path, 0755, true);
+                    if (!\Storage::disk('public')->exists($directory)) {
+                        \Storage::disk('public')->makeDirectory($directory, 0755, true);
                     }
                     
-                    $filePath = $file->storeAs($path, $filename, 'public');
+                    $filePath = $file->storeAs($directory, $filename, 'public');
                     
                     // حفظ بيانات الملف في قاعدة البيانات
                     $savedFile = \App\Models\WorkOrderFile::create([
@@ -1404,7 +1404,7 @@ class WorkOrderController extends Controller
                         'file_path' => $filePath,
                         'file_type' => $file->getClientMimeType(),
                         'file_size' => $file->getSize(),
-                        'file_category' => 'civil_works_execution' // الآن بحجم 100 حرف
+                        'file_category' => 'civil_exec' // تقصير الاسم
                     ]);
                     
                     $savedImages[] = $savedFile;
@@ -1472,14 +1472,14 @@ class WorkOrderController extends Controller
                     // تحسين اسم الملف للخادم العالمي
                     $filename = 'attach_' . $workOrder->id . '_' . time() . '_' . uniqid() . '.' . $extension;
                     // مسار مهيأ للخادم العالمي
-                    $path = 'uploads/work_orders/' . $workOrder->id . '/civil_works_attachments';
+                    $directory = 'work_orders/' . $workOrder->id . '/civil_attach';
                     
                     // إنشاء المجلد إذا لم يكن موجوداً
-                    if (!\Storage::disk('public')->exists($path)) {
-                        \Storage::disk('public')->makeDirectory($path, 0755, true);
+                    if (!\Storage::disk('public')->exists($directory)) {
+                        \Storage::disk('public')->makeDirectory($directory, 0755, true);
                     }
                     
-                    $filePath = $file->storeAs($path, $filename, 'public');
+                    $filePath = $file->storeAs($directory, $filename, 'public');
                     
                     // حفظ بيانات الملف في قاعدة البيانات
                     $savedFile = \App\Models\WorkOrderFile::create([
@@ -1489,7 +1489,7 @@ class WorkOrderController extends Controller
                         'file_path' => $filePath,
                         'file_type' => $file->getClientMimeType(),
                         'file_size' => $file->getSize(),
-                        'file_category' => 'civil_works_attachments' // الآن بحجم 100 حرف
+                        'file_category' => 'civil_attach' // تقصير الاسم
                     ]);
                     
                     $savedAttachments[] = $savedFile;

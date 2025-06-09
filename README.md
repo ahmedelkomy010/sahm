@@ -1,67 +1,218 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 🏗️ نظام إدارة أوامر العمل - SAHM
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+نظام شامل لإدارة أوامر العمل والمشاريع باللغة العربية، مصمم خصيصاً للشركات والمؤسسات الحكومية.
 
-## About Laravel
+## ✨ المميزات الرئيسية
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+### 📋 إدارة أوامر العمل
+- إنشاء وتعديل أوامر العمل بتفاصيل شاملة
+- تتبع حالة تنفيذ المشاريع
+- دعم أنواع مختلفة من الأعمال (مدنية، كهربائية، تركيبات)
+- نظام مراحل متقدم للمشاريع
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+### 🔧 إدارة المواد والمعدات
+- نظام مواد مفصل لكل أمر عمل
+- تتبع الكميات والأسعار
+- إدارة الوحدات والخطوط
+- Auto-save للبيانات
+- فصل كامل للمواد بين أوامر العمل
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### 📊 التقارير والإحصائيات
+- تقارير تفصيلية للمشاريع
+- إحصائيات الأداء
+- تصدير Excel للمواد
+- تصدير مخصص لكل أمر عمل
 
-## Learning Laravel
+### 🖼️ إدارة الملفات والصور
+- رفع ومعاينة الصور بجودة عالية
+- دعم جميع صيغ الصور الشائعة
+- مرفقات متنوعة (PDF, DOC, XLS, etc.)
+- معرض صور متقدم
+- ضغط وتحسين الصور
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### 🔒 الأمان والحماية
+- نظام مصادقة آمن
+- حماية الملفات الحساسة
+- تشفير البيانات
+- نسخ احتياطية تلقائية
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+## 🎯 التقنيات المستخدمة
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- **Backend**: Laravel 10.x (PHP 8.1+)
+- **Frontend**: Bootstrap 5, jQuery
+- **Database**: MySQL 5.7+
+- **Storage**: Laravel Storage + Symbolic Links
+- **Security**: Laravel Authentication & Authorization
 
-## Laravel Sponsors
+## 📦 المتطلبات
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### الحد الأدنى:
+- PHP 8.1 أو أحدث
+- MySQL 5.7 أو أحدث
+- مساحة تخزين: 500 ميجابايت
+- ذاكرة: 256 ميجابايت
 
-### Premium Partners
+### PHP Extensions:
+- PDO MySQL
+- OpenSSL
+- Mbstring
+- Tokenizer
+- XML, Ctype, JSON
+- BCMath, Fileinfo
+- GD Library
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+## 🚀 التثبيت
 
-## Contributing
+### 1. للتطوير المحلي:
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+```bash
+# استنساخ المشروع
+git clone https://github.com/your-repo/sahm.git
+cd sahm
 
-## Code of Conduct
+# تثبيت التبعيات
+composer install
+npm install
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+# إعداد البيئة
+cp .env.example .env
+php artisan key:generate
 
-## Security Vulnerabilities
+# إعداد قاعدة البيانات
+php artisan migrate
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+# إنشاء الروابط
+php artisan storage:link
 
-## License
+# تشغيل الخادم
+php artisan serve
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
-"# sahm" 
+### 2. للاستضافة (cPanel):
+
+راجع دليل التثبيت الشامل في `INSTALLATION_GUIDE.md`
+
+## 🔧 الاستخدام
+
+### إنشاء أمر عمل جديد:
+1. اذهب إلى "أوامر العمل" → "إنشاء جديد"
+2. املأ البيانات الأساسية
+3. اختر نوع العمل والمكتب
+4. احفظ وابدأ إضافة المواد
+
+### إضافة مواد لأمر عمل:
+1. من صفحة أوامر العمل، اضغط "المواد"
+2. سيتم فتح صفحة خاصة بذلك الأمر فقط
+3. أضف المواد مع التفاصيل
+4. استخدم Auto-save للحفظ التلقائي
+
+### رفع الصور والمرفقات:
+1. اذهب إلى صفحة الأعمال المدنية
+2. ارفع الصور (JPEG, PNG, GIF, WebP, etc.)
+3. أضف المرفقات (PDF, DOC, XLS, etc.)
+4. عاين الصور في معرض متقدم
+
+## 📱 واجهة المستخدم
+
+- **تصميم عربي**: محسن للغة العربية
+- **متجاوب**: يعمل على جميع الأجهزة
+- **سهل الاستخدام**: واجهة بديهية ومبسطة
+- **ألوان محسنة**: نظام ألوان احترافي
+
+## 🔍 المشاكل والحلول
+
+### مشكلة عرض الصور:
+```bash
+# تأكد من symbolic link
+php artisan storage:link --force
+
+# تنظيف cache
+php artisan cache:clear
+php artisan view:clear
+```
+
+### مشكلة الأذونات:
+```bash
+chmod 755 storage/
+chmod 755 bootstrap/cache/
+```
+
+### مشكلة قاعدة البيانات:
+```bash
+# فحص الاتصال
+php check_installation.php
+
+# إعادة تشغيل migrations
+php artisan migrate:fresh
+```
+
+## 📊 الأداء والتحسين
+
+### لتحسين الأداء:
+```bash
+# cache الإعدادات
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+
+# تحسين autoloader
+composer install --optimize-autoloader --no-dev
+```
+
+### للنسخ الاحتياطية:
+```bash
+# تشغيل النسخ الاحتياطي
+php backup.php
+
+# جدولة النسخ (في cron)
+0 2 * * * /usr/bin/php /path/to/sahm/backup.php
+```
+
+## 🛡️ الأمان
+
+- جميع الملفات الحساسة محمية
+- تشفير كلمات المرور
+- حماية من XSS و CSRF
+- HTTPS مُفعل افتراضياً
+
+## 📞 الدعم والصيانة
+
+### فحص النظام:
+```bash
+php check_installation.php
+```
+
+### مراقبة الأخطاء:
+- راجع `storage/logs/laravel.log`
+- راجع error logs في cPanel
+
+### التحديثات:
+1. عمل نسخة احتياطية
+2. تحديث الملفات
+3. تشغيل `php artisan migrate`
+4. تنظيف cache
+
+## 👥 المساهمة
+
+نرحب بالمساهمات! يرجى:
+1. Fork المشروع
+2. إنشاء branch جديد
+3. عمل التغييرات
+4. إرسال Pull Request
+
+## 📄 الترخيص
+
+هذا المشروع مرخص تحت MIT License.
+
+## 🙏 شكر خاص
+
+شكر لجميع المساهمين والمطورين الذين ساهموا في تطوير هذا النظام.
+
+---
+
+**نظام SAHM** - نظام إدارة أوامر العمل المتكامل  
+تطوير: [اسم المطور]  
+النسخة: 1.0.0  
+التاريخ: 2025  
+
+للاستفسارات: [بريد إلكتروني] 

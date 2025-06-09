@@ -369,7 +369,7 @@
     {{-- صور التنفيذ للأعمال المدنية --}}
     @php
         $civilWorksExecutionImages = \App\Models\WorkOrderFile::where('work_order_id', $workOrder->id)
-            ->where('file_category', 'civil_works_execution')
+                                                    ->where('file_category', 'civil_exec')
             ->where('file_type', 'like', 'image/%')
             ->orderBy('created_at', 'desc')
             ->get();
@@ -397,13 +397,13 @@
                 @foreach($civilWorksExecutionImages->take(8) as $image)
                     <div class="col-6 col-md-3 col-lg-2 mb-3">
                         <div class="card h-100 border-success">
-                            <img src="{{ asset('storage/' . $image->file_path) }}" 
+                            <img src="@imageUrl($image->file_path)" 
                                  class="card-img-top" 
                                  style="height: 120px; object-fit: cover; cursor: pointer;"
                                  alt="صورة الأعمال المدنية"
                                  data-bs-toggle="modal" 
                                  data-bs-target="#viewCivilWorksImageModal"
-                                 data-image-url="{{ asset('storage/' . $image->file_path) }}"
+                                 data-image-url="@imageUrl($image->file_path)"
                                  data-image-name="{{ $image->original_filename }}"
                                  data-image-date="{{ $image->created_at->format('Y-m-d H:i') }}">
                             <div class="card-body p-2">
@@ -497,11 +497,11 @@
                         @foreach($civilWorksExecutionImages as $image)
                             <div class="col-6 col-md-4 col-lg-3 mb-3">
                                 <div class="card h-100 border-success">
-                                    <img src="{{ asset('storage/' . $image->file_path) }}" 
+                                    <img src="@imageUrl($image->file_path)" 
                                          class="card-img-top" 
                                          style="height: 150px; object-fit: cover; cursor: pointer;"
                                          onclick="openCivilWorksImageModal(this)"
-                                         data-image-url="{{ asset('storage/' . $image->file_path) }}"
+                                         data-image-url="@imageUrl($image->file_path)"
                                          data-image-name="{{ $image->original_filename }}"
                                          data-image-date="{{ $image->created_at->format('Y-m-d H:i') }}"
                                          alt="صورة الأعمال المدنية">
