@@ -107,6 +107,9 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     // Civil Works Routes
     Route::get('work-orders/{workOrder}/civil-works', [WorkOrderController::class, 'civilWorks'])->name('work-orders.civil-works');
     Route::put('work-orders/{workOrder}/civil-works', [WorkOrderController::class, 'civilWorks'])->name('work-orders.civil-works.store');
+    Route::post('work-orders/{workOrder}/lock-images', [WorkOrderController::class, 'lockCivilWorksImages'])->name('work-orders.lock-images');
+    Route::post('work-orders/{workOrder}/save-images', [WorkOrderController::class, 'saveCivilWorksImages'])->name('work-orders.save-images');
+    Route::post('work-orders/{workOrder}/save-attachments', [WorkOrderController::class, 'saveCivilWorksAttachments'])->name('work-orders.save-attachments');
     Route::get('work-orders/{workOrder}/civil-works/excavation-details', [WorkOrderController::class, 'getExcavationDetails'])->name('work-orders.civil-works.excavation-details');
     Route::delete('work-orders/{workOrder}/civil-works/{file}', [WorkOrderController::class, 'deleteCivilWorksFile'])->name('work-orders.civil-works.delete-file');
 

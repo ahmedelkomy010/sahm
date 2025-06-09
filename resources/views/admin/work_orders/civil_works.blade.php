@@ -1457,17 +1457,8 @@
                             <i class="fas fa-shovel me-2"></i>
                             <h5 class="mb-0 d-inline">جدول تفصيلي لجميع بيانات الحفريات المدخلة - مثبت دائماً</h5>
                             <div class="float-end">
-                                <button type="button" class="btn btn-light btn-sm me-1" id="export-excavation-btn">
-                                    <i class="fas fa-download me-1"></i>تصدير Excel
-                                </button>
-                                <button type="button" class="btn btn-success btn-sm me-1" id="update-excavation-table-btn">
-                                    <i class="fas fa-sync-alt me-1"></i>تحديث الجدول
-                                </button>
                                 <button type="button" class="btn btn-warning btn-sm me-1" id="lock-data-btn">
                                     <i class="fas fa-lock me-1"></i>تثبيت البيانات
-                                </button>
-                                <button type="button" class="btn btn-info btn-sm" id="toggle-fixed-view-btn">
-                                    <i class="fas fa-eye me-1"></i>عرض مثبت
                                 </button>
                             </div>
                         </div>
@@ -1477,21 +1468,7 @@
                                 هذا الجدول يعرض تفاصيل شاملة لجميع أنواع الحفريات والأعمال المدنية المدخلة في النموذج
                             </div>
                             
-                            <!-- أزرار التصفية -->
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <div class="btn-group btn-group-sm" role="group">
-                                        <button type="button" class="btn btn-outline-primary active" data-filter="all">الكل</button>
-                                        <button type="button" class="btn btn-outline-success" data-filter="soil">حفريات تربة</button>
-                                        <button type="button" class="btn btn-outline-danger" data-filter="rock">حفريات صخرية</button>
-                                        <button type="button" class="btn btn-outline-warning" data-filter="asphalt">أعمال أسفلت</button>
-                                        <button type="button" class="btn btn-outline-info" data-filter="precise">حفريات دقيقة</button>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <input type="text" class="form-control form-control-sm" id="excavation-search" placeholder="البحث في البيانات...">
-                                </div>
-                            </div>
+                            <!-- أزرار التصفية تم حذفها -->
 
                             <!-- الجدول التفصيلي -->
                             <div class="table-responsive">
@@ -1519,22 +1496,6 @@
                                         <button type="button" class="btn btn-primary" onclick="scrollToExcavationDetails()">
                                             <i class="fas fa-eye me-2"></i>
                                             عرض الجدول التفصيلي
-                                        </button>
-                                        <button type="button" class="btn btn-success" onclick="updateExcavationDetailsTable()">
-                                            <i class="fas fa-sync me-2"></i>
-                                            تحديث الجدول
-                                        </button>
-                                        <button type="button" class="btn btn-info" onclick="saveExcavationDetailsTable()">
-                                            <i class="fas fa-save me-2"></i>
-                                            حفظ الجدول التفصيلي
-                                        </button>
-                                        <button type="button" class="btn btn-secondary" onclick="loadSavedExcavationDetails()">
-                                            <i class="fas fa-download me-2"></i>
-                                            تحميل البيانات المحفوظة
-                                        </button>
-                                        <button type="button" class="btn btn-warning" onclick="exportExcavationData()">
-                                            <i class="fas fa-file-excel me-2"></i>
-                                            تصدير Excel
                                         </button>
                                     </div>
                                 </div>
@@ -1688,7 +1649,7 @@
                 </div>
 
                 <!-- قسم رفع الصور -->
-                <div class="col-12">
+                <div class="col-md-6">
                     <div class="card shadow-sm mb-4">
                         <div class="card-header bg-info text-white">
                             <i class="fas fa-images me-2"></i>
@@ -1697,7 +1658,7 @@
                         <div class="card-body">
                             <div class="alert alert-info">
                                 <i class="fas fa-info-circle me-2"></i>
-                                يمكنك رفع حتى 70 صورة بحجم إجمالي لا يتجاوز 30 ميجابايت
+                                يمكنك رفع حتى 50 صورة بحجم إجمالي لا يتجاوز 30 ميجابايت
                             </div>
                             
                             <div class="mb-3">
@@ -1708,59 +1669,28 @@
                                        name="civil_works_images[]" 
                                        multiple 
                                        accept="image/*"
-                                       data-max-files="70"
+                                       data-max-files="50"
                                        data-max-size="31457280">
-                                <div class="form-text">يمكنك اختيار عدة صور عن طريق الضغط على Ctrl أثناء الاختيار</div>
+                                <div class="form-text">اختر عدة صور معاً</div>
                             </div>
 
-                            <div id="image-preview" class="row g-3">
+                            <div id="images-preview" class="row g-2">
                                 <!-- سيتم إضافة معاينات الصور هنا -->
                             </div>
 
-                            <div id="upload-progress" class="progress d-none mt-3">
-                                <div class="progress-bar progress-bar-striped progress-bar-animated" 
-                                     role="progressbar" 
-                                     style="width: 0%">0%</div>
-                            </div>
-
-                            <div id="upload-status" class="alert d-none mt-3"></div>
-
                             <!-- عرض الصور المرفوعة -->
-                            @if($workOrder->civilWorksFiles->count() > 0)
-                                <div class="mt-4">
-                                    <h5 class="mb-3">الصور المرفوعة</h5>
-                                    <div class="row g-3">
+                            @if(isset($workOrder->civilWorksFiles) && $workOrder->civilWorksFiles->count() > 0)
+                                <div class="mt-3">
+                                    <h6 class="mb-2">الصور المرفوعة</h6>
+                                    <div class="row g-2">
                                         @foreach($workOrder->civilWorksFiles as $file)
-                                            <div class="col-md-3">
-                                                <div class="card h-100">
+                                            <div class="col-6">
+                                                <div class="card">
                                                     <img src="{{ asset('storage/' . $file->file_path) }}" 
                                                          class="card-img-top" 
-                                                         alt="{{ $file->original_filename }}"
-                                                         style="height: 200px; object-fit: cover;">
-                                                    <div class="card-body">
-                                                        <p class="card-text small text-truncate" title="{{ $file->original_filename }}">
-                                                            {{ Str::limit($file->original_filename, 30) }}
-                                                        </p>
-                                                        <p class="card-text small text-muted">
-                                                            {{ round($file->file_size / 1024 / 1024, 2) }} MB
-                                                        </p>
-                                                        <div class="btn-group w-100">
-                                                            <a href="{{ asset('storage/' . $file->file_path) }}" 
-                                                               class="btn btn-sm btn-info" 
-                                                               target="_blank">
-                                                                <i class="fas fa-eye"></i> عرض
-                                                            </a>
-                                                            <form action="{{ route('admin.work-orders.civil-works.delete-file', [$workOrder, $file]) }}" 
-                                                                  method="POST" 
-                                                                  class="d-inline"
-                                                                  onsubmit="return confirm('هل أنت متأكد من حذف هذه الصورة؟');">
-                                                                @csrf
-                                                                @method('DELETE')
-                                                                <button type="submit" class="btn btn-sm btn-danger">
-                                                                    <i class="fas fa-trash"></i> حذف
-                                                                </button>
-                                                            </form>
-                                                        </div>
+                                                         style="height: 100px; object-fit: cover;">
+                                                    <div class="card-body p-2">
+                                                        <small class="text-muted">{{ round($file->file_size / 1024 / 1024, 2) }} MB</small>
                                                     </div>
                                                 </div>
                                             </div>
@@ -1768,6 +1698,68 @@
                                     </div>
                                 </div>
                             @endif
+
+                            <!-- زر حفظ الصور -->
+                            <div class="text-center mt-3">
+                                <button type="button" class="btn btn-success btn-sm" onclick="saveImages()">
+                                    <i class="fas fa-save me-2"></i>
+                                    حفظ الصور
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- قسم رفع المرفقات -->
+                <div class="col-md-6">
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-warning text-dark">
+                            <i class="fas fa-paperclip me-2"></i>
+                            المرفقات والمستندات
+                        </div>
+                        <div class="card-body">
+                            <div class="alert alert-warning">
+                                <i class="fas fa-info-circle me-2"></i>
+                                يمكنك رفع المرفقات (PDF, DOC, XLS, PPT, TXT) - حجم أقصى 20 ميجابايت لكل ملف
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="civil_works_attachments" class="form-label">اختر المرفقات</label>
+                                <input type="file" 
+                                       class="form-control" 
+                                       id="civil_works_attachments" 
+                                       name="civil_works_attachments[]" 
+                                       multiple 
+                                       accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip,.rar"
+                                       data-max-files="20"
+                                       data-max-file-size="20971520">
+                            </div>
+
+                            <div id="attachments-preview" class="mb-3">
+                                <!-- سيتم إضافة معاينات المرفقات هنا -->
+                            </div>
+
+                            <!-- عرض المرفقات المرفوعة -->
+                            @if(isset($workOrder->civilWorksAttachments) && $workOrder->civilWorksAttachments->count() > 0)
+                                <div class="mt-3">
+                                    <h6 class="mb-2">المرفقات المرفوعة</h6>
+                                    @foreach($workOrder->civilWorksAttachments as $file)
+                                        <div class="d-flex align-items-center border rounded p-2 mb-2">
+                                            <i class="fas fa-file-pdf text-danger me-2"></i>
+                                            <span class="flex-grow-1">{{ Str::limit($file->original_filename, 30) }}</span>
+                                            <small class="text-muted">{{ round($file->file_size / 1024 / 1024, 2) }} MB</small>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @endif
+
+                            <!-- زر حفظ المرفقات -->
+                            <div class="text-center mt-3">
+                                <button type="button" class="btn btn-warning btn-sm" onclick="saveAttachments()">
+                                    <i class="fas fa-save me-2"></i>
+                                    حفظ المرفقات
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1804,11 +1796,12 @@
                     </div>
                 </div>
             </div>
+            <!-- زر التثبيت النهائي -->
             <div class="text-center mt-5 mb-4">
-                <button type="submit" class="btn btn-primary btn-lg px-5 py-3 shadow-lg">
-                    <i class="fas fa-save me-3"></i>
-                    حفظ الأعمال المدنية
-                    <i class="fas fa-arrow-left ms-3"></i>
+                <button type="button" class="btn btn-success btn-lg px-5 py-3 shadow-lg" onclick="lockCivilWorksData()">
+                    <i class="fas fa-lock me-3"></i>
+                    تثبيت الأعمال المدنية
+                    <i class="fas fa-check ms-3"></i>
                 </button>
             </div>
         </form>
@@ -2634,72 +2627,7 @@
         window.formatFileSize = formatFileSize;
     </script>
 
-    <!-- إضافة JavaScript للتعامل مع رفع الصور -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const imageInput = document.getElementById('civil_works_images');
-            const imagePreview = document.getElementById('image-preview');
-            const uploadProgress = document.getElementById('upload-progress');
-            const progressBar = uploadProgress.querySelector('.progress-bar');
-            const uploadStatus = document.getElementById('upload-status');
-            
-            if (imageInput) {
-            const maxFiles = parseInt(imageInput.dataset.maxFiles);
-            const maxSize = parseInt(imageInput.dataset.maxSize);
-            let totalSize = 0;
-
-            // التحقق من حجم الملفات عند الاختيار
-            imageInput.addEventListener('change', function(e) {
-                const files = Array.from(e.target.files);
-                totalSize = files.reduce((sum, file) => sum + file.size, 0);
-
-                // التحقق من عدد الملفات
-                if (files.length > maxFiles) {
-                        showImageError(`يمكنك رفع ${maxFiles} صور كحد أقصى`);
-                    imageInput.value = '';
-                    return;
-                }
-
-                // التحقق من الحجم الإجمالي
-                if (totalSize > maxSize) {
-                        showImageError(`الحجم الإجمالي للصور يجب أن لا يتجاوز 30 ميجابايت`);
-                    imageInput.value = '';
-                    return;
-                }
-
-                // عرض معاينة الصور
-                imagePreview.innerHTML = '';
-                files.forEach((file, index) => {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        const col = document.createElement('div');
-                        col.className = 'col-md-3 col-sm-4 col-6';
-                        col.innerHTML = `
-                            <div class="card h-100">
-                                    <img src="${e.target.result}" class="card-img-top" alt="معاينة الصورة ${index + 1}" style="height: 150px; object-fit: cover;">
-                                <div class="card-body p-2">
-                                    <p class="card-text small text-muted mb-0">${formatFileSize(file.size)}</p>
-                                </div>
-                            </div>
-                        `;
-                        imagePreview.appendChild(col);
-                    };
-                    reader.readAsDataURL(file);
-                });
-
-                // إخفاء رسائل الخطأ السابقة
-                uploadStatus.classList.add('d-none');
-            });
-            }
-
-            // دالة لعرض رسائل خطأ الصور
-            function showImageError(message) {
-                uploadStatus.className = 'alert alert-danger mt-3';
-                uploadStatus.textContent = message;
-                uploadStatus.classList.remove('d-none');
-            }
-        });
-    </script>
+    <!-- JavaScript للتعامل مع الصور تم حذفه -->
 
     <!-- إضافة JavaScript للتعامل مع رفع المرفقات -->
     <script>
@@ -2786,6 +2714,188 @@
                 attachmentUploadStatus.classList.remove('d-none');
             }
         });
+    </script>
+
+    <!-- JavaScript للصور والمرفقات -->
+    <script>
+        // دالة معاينة الصور
+        document.addEventListener('DOMContentLoaded', function() {
+            const imagesInput = document.getElementById('civil_works_images');
+            const imagesPreview = document.getElementById('images-preview');
+            
+            if (imagesInput) {
+                imagesInput.addEventListener('change', function(e) {
+                    const files = Array.from(e.target.files);
+                    imagesPreview.innerHTML = '';
+                    
+                    files.forEach((file, index) => {
+                        if (file.type.startsWith('image/')) {
+                            const reader = new FileReader();
+                            reader.onload = function(e) {
+                                const col = document.createElement('div');
+                                col.className = 'col-6';
+                                col.innerHTML = `
+                                    <div class="card">
+                                        <img src="${e.target.result}" class="card-img-top" style="height: 100px; object-fit: cover;">
+                                        <div class="card-body p-2">
+                                            <small class="text-muted">${(file.size / 1024 / 1024).toFixed(2)} MB</small>
+                                        </div>
+                                    </div>
+                                `;
+                                imagesPreview.appendChild(col);
+                            };
+                            reader.readAsDataURL(file);
+                        }
+                    });
+                });
+            }
+
+            // معاينة المرفقات
+            const attachmentsInput = document.getElementById('civil_works_attachments');
+            const attachmentsPreview = document.getElementById('attachments-preview');
+            
+            if (attachmentsInput) {
+                attachmentsInput.addEventListener('change', function(e) {
+                    const files = Array.from(e.target.files);
+                    attachmentsPreview.innerHTML = '';
+                    
+                    files.forEach(file => {
+                        const fileDiv = document.createElement('div');
+                        fileDiv.className = 'd-flex align-items-center border rounded p-2 mb-2';
+                        fileDiv.innerHTML = `
+                            <i class="fas fa-file text-primary me-2"></i>
+                            <span class="flex-grow-1">${file.name}</span>
+                            <small class="text-muted">${(file.size / 1024 / 1024).toFixed(2)} MB</small>
+                        `;
+                        attachmentsPreview.appendChild(fileDiv);
+                    });
+                });
+            }
+        });
+
+        // دالة حفظ الصور
+        function saveImages() {
+            const imagesInput = document.getElementById('civil_works_images');
+            const files = imagesInput.files;
+            
+            if (files.length === 0) {
+                alert('يرجى اختيار صور أولاً');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+            
+            for (let i = 0; i < files.length; i++) {
+                formData.append('civil_works_images[]', files[i]);
+            }
+
+            fetch(`/admin/work-orders/{{ $workOrder->id }}/save-images`, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('تم حفظ الصور بنجاح!');
+                    location.reload();
+                } else {
+                    alert('خطأ: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('حدث خطأ أثناء حفظ الصور');
+            });
+        }
+
+        // دالة حفظ المرفقات
+        function saveAttachments() {
+            const attachmentsInput = document.getElementById('civil_works_attachments');
+            const files = attachmentsInput.files;
+            
+            if (files.length === 0) {
+                alert('يرجى اختيار مرفقات أولاً');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+            
+            for (let i = 0; i < files.length; i++) {
+                formData.append('civil_works_attachments[]', files[i]);
+            }
+
+            fetch(`/admin/work-orders/{{ $workOrder->id }}/save-attachments`, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('تم حفظ المرفقات بنجاح!');
+                    location.reload();
+                } else {
+                    alert('خطأ: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('حدث خطأ أثناء حفظ المرفقات');
+            });
+        }
+
+        // دالة تثبيت الأعمال المدنية
+        function lockCivilWorksData() {
+            if (confirm('هل أنت متأكد من تثبيت بيانات الأعمال المدنية؟\nلن تتمكن من تعديلها بعد التثبيت.')) {
+                
+                // إرسال طلب POST لتثبيت البيانات
+                const url = `/admin/work-orders/{{ $workOrder->id }}/lock-images`;
+                const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                
+                const formData = new FormData();
+                formData.append('_token', csrfToken);
+                
+                fetch(url, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken,
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('تم تثبيت الأعمال المدنية بنجاح!');
+                        // تعطيل جميع inputs في الصفحة
+                        document.querySelectorAll('input, textarea, select').forEach(element => {
+                            element.disabled = true;
+                        });
+                        // تغيير النص وحالة الزر
+                        const lockBtn = document.querySelector('[onclick="lockCivilWorksData()"]');
+                        lockBtn.innerHTML = '<i class="fas fa-check me-3"></i>تم التثبيت بنجاح<i class="fas fa-lock ms-3"></i>';
+                        lockBtn.className = 'btn btn-secondary btn-lg px-5 py-3 shadow-lg';
+                        lockBtn.disabled = true;
+                    } else {
+                        alert('خطأ: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('حدث خطأ أثناء التثبيت');
+                });
+            }
+        }
     </script>
 </body>
 </html> 

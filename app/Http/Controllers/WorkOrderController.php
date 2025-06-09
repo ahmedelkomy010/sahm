@@ -333,7 +333,7 @@ class WorkOrderController extends Controller
         }
         
         // عرض الصفحة
-        $workOrder->load('civilWorksFiles');
+        $workOrder->load(['civilWorksFiles', 'civilWorksAttachments']);
         return view('admin.work_orders.civil_works', compact('workOrder'));
     }
 
@@ -462,9 +462,9 @@ class WorkOrderController extends Controller
 
     public function actionsExecution(WorkOrder $workOrder)
     {
-        $workOrder = WorkOrder::with('files')->find($workOrder->id);
+        $workOrder = WorkOrder::with(['files', 'civilWorksFiles', 'civilWorksAttachments'])->find($workOrder->id);
         $executionImages = \App\Models\WorkOrderFile::where('work_order_id', $workOrder->id)
-            ->whereIn('file_category', ['civil_works', 'installations', 'electrical_works'])
+            ->whereIn('file_category', ['civil_works_execution', 'installations', 'electrical_works'])
             ->where('file_type', 'like', 'image/%')
             ->get();
         return view('admin.work_orders.actions-execution', compact('workOrder', 'executionImages'));
@@ -1249,6 +1249,212 @@ class WorkOrderController extends Controller
                 'success' => false,
                 'message' => 'حدث خطأ أثناء حفظ بيانات الرخصة: ' . $e->getMessage()
             ], 500, [], JSON_UNESCAPED_UNICODE);
+        }
+    }
+
+    /**
+     * تثبيت بيانات الأعمال المدنية
+     */
+    public function lockCivilWorksImages(Request $request, WorkOrder $workOrder)
+    {
+        try {
+            \Log::info('Locking civil works data', [
+                'work_order_id' => $workOrder->id,
+                'user_id' => auth()->id()
+            ]);
+
+            // تحديث حالة التثبيت
+            $workOrder->update([
+                'civil_works_images_locked' => true,
+                'civil_works_images_locked_at' => now(),
+                'civil_works_images_locked_by' => auth()->id()
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'تم تثبيت بيانات الأعمال المدنية بنجاح'
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error locking civil works data', [
+                'error' => $e->getMessage(),
+                'work_order_id' => $workOrder->id
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء التثبيت'
+            ], 500);
+        }
+    }
+
+    /**
+     * حفظ صور الأعمال المدنية
+     */
+    public function saveCivilWorksImages(Request $request, WorkOrder $workOrder)
+    {
+        try {
+            \Log::info('Saving civil works images', [
+                'work_order_id' => $workOrder->id,
+                'user_id' => auth()->id()
+            ]);
+
+            $request->validate([
+                'civil_works_images.*' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:10240', // 10MB max per image
+            ]);
+
+            $savedImages = [];
+
+            if ($request->hasFile('civil_works_images')) {
+                $files = $request->file('civil_works_images');
+
+                foreach ($files as $file) {
+                    $originalName = $file->getClientOriginalName();
+                    $extension = $file->getClientOriginalExtension();
+                    // تحسين اسم الملف للخادم العالمي
+                    $filename = 'civil_' . $workOrder->id . '_' . time() . '_' . uniqid() . '.' . $extension;
+                    // مسار مهيأ للخادم العالمي
+                    $path = 'uploads/work_orders/' . $workOrder->id . '/civil_works_execution';
+                    
+                    // إنشاء المجلد إذا لم يكن موجوداً
+                    if (!\Storage::disk('public')->exists($path)) {
+                        \Storage::disk('public')->makeDirectory($path, 0755, true);
+                    }
+                    
+                    $filePath = $file->storeAs($path, $filename, 'public');
+                    
+                    // حفظ بيانات الملف في قاعدة البيانات
+                    $savedFile = \App\Models\WorkOrderFile::create([
+                        'work_order_id' => $workOrder->id,
+                        'filename' => $filename,
+                        'original_filename' => $originalName,
+                        'file_path' => $filePath,
+                        'file_type' => $file->getClientMimeType(),
+                        'file_size' => $file->getSize(),
+                        'file_category' => 'civil_works_execution' // الآن بحجم 100 حرف
+                    ]);
+                    
+                    $savedImages[] = $savedFile;
+                    
+                    \Log::info('Image saved successfully', [
+                        'filename' => $filename,
+                        'path' => $filePath,
+                        'size' => $file->getSize()
+                    ]);
+                }
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'تم حفظ ' . count($savedImages) . ' صورة بنجاح',
+                'images_count' => count($savedImages),
+                'images' => collect($savedImages)->map(function($img) {
+                    return [
+                        'id' => $img->id,
+                        'filename' => $img->filename,
+                        'original_filename' => $img->original_filename,
+                        'url' => asset('storage/' . $img->file_path)
+                    ];
+                })
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error saving civil works images', [
+                'error' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile(),
+                'work_order_id' => $workOrder->id
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء حفظ الصور: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * حفظ مرفقات الأعمال المدنية
+     */
+    public function saveCivilWorksAttachments(Request $request, WorkOrder $workOrder)
+    {
+        try {
+            \Log::info('Saving civil works attachments', [
+                'work_order_id' => $workOrder->id,
+                'user_id' => auth()->id()
+            ]);
+
+            $request->validate([
+                'civil_works_attachments.*' => 'required|file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,txt,zip,rar|max:20480', // 20MB max per file
+            ]);
+
+            $savedAttachments = [];
+
+            if ($request->hasFile('civil_works_attachments')) {
+                $files = $request->file('civil_works_attachments');
+
+                foreach ($files as $file) {
+                    $originalName = $file->getClientOriginalName();
+                    $extension = $file->getClientOriginalExtension();
+                    // تحسين اسم الملف للخادم العالمي
+                    $filename = 'attach_' . $workOrder->id . '_' . time() . '_' . uniqid() . '.' . $extension;
+                    // مسار مهيأ للخادم العالمي
+                    $path = 'uploads/work_orders/' . $workOrder->id . '/civil_works_attachments';
+                    
+                    // إنشاء المجلد إذا لم يكن موجوداً
+                    if (!\Storage::disk('public')->exists($path)) {
+                        \Storage::disk('public')->makeDirectory($path, 0755, true);
+                    }
+                    
+                    $filePath = $file->storeAs($path, $filename, 'public');
+                    
+                    // حفظ بيانات الملف في قاعدة البيانات
+                    $savedFile = \App\Models\WorkOrderFile::create([
+                        'work_order_id' => $workOrder->id,
+                        'filename' => $filename,
+                        'original_filename' => $originalName,
+                        'file_path' => $filePath,
+                        'file_type' => $file->getClientMimeType(),
+                        'file_size' => $file->getSize(),
+                        'file_category' => 'civil_works_attachments' // الآن بحجم 100 حرف
+                    ]);
+                    
+                    $savedAttachments[] = $savedFile;
+                    
+                    \Log::info('Attachment saved successfully', [
+                        'filename' => $filename,
+                        'path' => $filePath,
+                        'size' => $file->getSize()
+                    ]);
+                }
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'تم حفظ ' . count($savedAttachments) . ' مرفق بنجاح',
+                'attachments_count' => count($savedAttachments),
+                'attachments' => collect($savedAttachments)->map(function($att) {
+                    return [
+                        'id' => $att->id,
+                        'filename' => $att->filename,
+                        'original_filename' => $att->original_filename,
+                        'url' => asset('storage/' . $att->file_path)
+                    ];
+                })
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error saving civil works attachments', [
+                'error' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile(),
+                'work_order_id' => $workOrder->id
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء حفظ المرفقات: ' . $e->getMessage()
+            ], 500);
         }
     }
 } 
