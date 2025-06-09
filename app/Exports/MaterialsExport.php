@@ -17,9 +17,22 @@ use PhpOffice\PhpSpreadsheet\Style\Border;
 
 class MaterialsExport implements FromCollection, WithHeadings, WithMapping, WithStyles, WithColumnWidths, WithEvents
 {
+    protected $workOrderNumber;
+
+    public function __construct($workOrderNumber = null)
+    {
+        $this->workOrderNumber = $workOrderNumber;
+    }
+
     public function collection()
     {
-        return Material::with('workOrder')->get();
+        $query = Material::with('workOrder');
+        
+        if ($this->workOrderNumber) {
+            $query->where('work_order_number', $this->workOrderNumber);
+        }
+        
+        return $query->get();
     }
 
     public function headings(): array
@@ -28,7 +41,6 @@ class MaterialsExport implements FromCollection, WithHeadings, WithMapping, With
             'كود المادة',
             'وصف المادة',
             'أمر العمل',
-            'المشترك',
             'السطر',
             'الكمية المخططة',
             'الكمية الفعلية',
@@ -50,8 +62,7 @@ class MaterialsExport implements FromCollection, WithHeadings, WithMapping, With
         return [
             $material->code,
             $material->description,
-            $material->workOrder ? $material->workOrder->order_number : '-',
-            $material->workOrder ? $material->workOrder->subscriber_name : '-',
+            $material->work_order_number ?? ($material->workOrder ? $material->workOrder->order_number : '-'),
             $material->line ?? '-',
             $material->planned_quantity ?? 0,
             $material->actual_quantity ?? 0,
@@ -101,20 +112,19 @@ class MaterialsExport implements FromCollection, WithHeadings, WithMapping, With
             'A' => 15, // كود المادة
             'B' => 30, // وصف المادة
             'C' => 15, // أمر العمل
-            'D' => 20, // المشترك
-            'E' => 10, // السطر
-            'F' => 12, // الكمية المخططة
-            'G' => 12, // الكمية الفعلية
-            'H' => 12, // الكمية المصروفة
-            'I' => 15, // الكمية المنفذة بالموقع
-            'J' => 10, // الفرق
-            'K' => 10, // الوحدة
-            'L' => 15, // تاريخ تصريح البوابة
-            'M' => 15, // ملف دخول المواد
-            'N' => 15, // ملف تصريح البوابة
-            'O' => 15, // ملف إدخال المخزن
-            'P' => 15, // ملف إخراج المخزن
-            'Q' => 20  // تاريخ الإنشاء
+            'D' => 10, // السطر
+            'E' => 12, // الكمية المخططة
+            'F' => 12, // الكمية الفعلية
+            'G' => 12, // الكمية المصروفة
+            'H' => 15, // الكمية المنفذة بالموقع
+            'I' => 10, // الفرق
+            'J' => 10, // الوحدة
+            'K' => 15, // تاريخ تصريح البوابة
+            'L' => 15, // ملف دخول المواد
+            'M' => 15, // ملف تصريح البوابة
+            'N' => 15, // ملف إدخال المخزن
+            'O' => 15, // ملف إخراج المخزن
+            'P' => 20  // تاريخ الإنشاء
         ];
     }
 

@@ -205,6 +205,22 @@ class WorkOrderController extends Controller
     public function installations(WorkOrder $workOrder)
     {
         $workOrder->load('installationsFiles');
+        
+        // تحديث البيانات من قاعدة البيانات
+        $workOrder = $workOrder->fresh();
+        
+        // تسجيل البيانات المسترجعة للتشخيص
+        \Log::info('Retrieved installations data for work order ' . $workOrder->id);
+        \Log::info('Raw from DB:', ['data' => $workOrder->getOriginal('installations_data')]);
+        \Log::info('Cast data:', ['data' => $workOrder->installations_data]);
+        \Log::info('Accessor data:', ['data' => $workOrder->installations]);
+        
+        // أيضاً تحقق من نوع البيانات
+        \Log::info('Data types:');
+        \Log::info('Raw type:', ['type' => gettype($workOrder->getOriginal('installations_data'))]);
+        \Log::info('Cast type:', ['type' => gettype($workOrder->installations_data)]);
+        \Log::info('Accessor type:', ['type' => gettype($workOrder->installations)]);
+        
         $installations = [
             'single_meter_box' => 'تركيب صندوق ومفرد بعداد واحد',
             'double_meter_box_single' => 'تركيب صندوق مزدوج بعداد واحد',
@@ -446,18 +462,75 @@ class WorkOrderController extends Controller
 
     public function storeInstallations(Request $request, WorkOrder $workOrder)
     {
-        $request->validate([
-            'installations.*.status' => 'required|in:yes,no,na',
-            'installations.*.quantity' => 'nullable|integer|min:0',
-        ]);
+        try {
+            $request->validate([
+                'installations.*.status' => 'sometimes|required|in:yes,no,na',
+                'installations.*.quantity' => 'nullable|integer|min:0',
+            ]);
 
-        // حفظ بيانات التركيبات في جدول work_orders أو جدول منفصل حسب الحاجة
-        $workOrder->update([
-            'installations_data' => json_encode($request->input('installations'), JSON_UNESCAPED_UNICODE)
-        ]);
+            // حفظ بيانات التركيبات
+            $installationsData = $request->input('installations', []);
+            \Log::info('Saving installations data:', ['data' => $installationsData]);
+            \Log::info('Full request data:', ['data' => $request->all()]);
+            
+            // تنظيف البيانات وضمان وجود quantity مع الحفاظ على القيم الرقمية
+            foreach ($installationsData as $key => $data) {
+                // التأكد من وجود status
+                if (!isset($data['status'])) {
+                    $installationsData[$key]['status'] = '';
+                }
+                
+                // التأكد من وجود quantity والحفاظ على القيم الرقمية
+                if (!isset($data['quantity'])) {
+                    $installationsData[$key]['quantity'] = '';
+                } else {
+                    // تحويل القيمة إلى رقم إذا كانت رقمية، وإلا الاحتفاظ بها كما هي
+                    $quantity = trim($data['quantity']);
+                    if (is_numeric($quantity) && $quantity !== '' && $quantity > 0) {
+                        $installationsData[$key]['quantity'] = (string) intval($quantity);
+                    } else {
+                        $installationsData[$key]['quantity'] = '';
+                    }
+                }
+                
+                \Log::info("Installation $key:", ['data' => $installationsData[$key]]);
+            }
+            
+            $workOrder->update([
+                'installations_data' => $installationsData
+            ]);
+            
+            // التحقق من الحفظ
+            $workOrder = $workOrder->fresh();
+            \Log::info('Saved installations data verified:');
+            \Log::info('Raw data from DB:', ['data' => $workOrder->getOriginal('installations_data')]);
+            \Log::info('Cast data:', ['data' => $workOrder->installations_data]);
+            \Log::info('Accessor data:', ['data' => $workOrder->installations]);
 
-        return redirect()->route('admin.work-orders.installations', $workOrder)
-            ->with('success', 'تم حفظ بيانات التركيبات بنجاح');
+            // إذا كان الطلب AJAX، إرجاع استجابة JSON
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'تم حفظ بيانات التركيبات بنجاح'
+                ]);
+            }
+
+            return redirect()->route('admin.work-orders.installations', $workOrder)
+                ->with('success', 'تم حفظ بيانات التركيبات بنجاح');
+                
+        } catch (\Exception $e) {
+            \Log::error('Error saving installations: ' . $e->getMessage());
+            
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'حدث خطأ أثناء حفظ البيانات: ' . $e->getMessage()
+                ], 500);
+            }
+
+            return redirect()->route('admin.work-orders.installations', $workOrder)
+                ->with('error', 'حدث خطأ أثناء حفظ البيانات');
+        }
     }
 
     public function actionsExecution(WorkOrder $workOrder)

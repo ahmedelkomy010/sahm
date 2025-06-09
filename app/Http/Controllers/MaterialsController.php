@@ -15,13 +15,33 @@ class MaterialsController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index($workOrderNumber = null)
     {
-        \Log::info('Materials page accessed from MaterialsController');
+        \Log::info('Materials page accessed from MaterialsController', ['work_order_number' => $workOrderNumber]);
         try {
             $workOrders = WorkOrder::where('execution_status', '!=', '5')->with('materials')->get();
-            $materials = Material::with('workOrder')->latest()->paginate(20);
-            return view('admin.work_orders.materials', compact('workOrders', 'materials'));
+            
+            // إذا تم تحديد رقم أمر عمل، عرض المواد المخصصة له فقط
+            if ($workOrderNumber) {
+                $materials = Material::with('workOrder')
+                            ->where('work_order_number', $workOrderNumber)
+                            ->orderBy('created_at', 'desc')
+                            ->paginate(50);
+                            
+                // إضافة معلومة أمر العمل المحدد للـ view
+                $currentWorkOrder = $workOrderNumber;
+            } else {
+                // عرض المواد مرتبة حسب work_order_number لضمان الفصل الكامل
+                $materials = Material::with('workOrder')
+                            ->whereNotNull('work_order_number') // فقط المواد التي لها رقم أمر عمل
+                            ->orderBy('work_order_number')
+                            ->orderBy('created_at', 'desc')
+                            ->paginate(50); // زيادة العدد لعرض أفضل
+                            
+                $currentWorkOrder = null;
+            }
+            
+            return view('admin.work_orders.materials', compact('workOrders', 'materials', 'currentWorkOrder'));
         } catch (\Exception $e) {
             \Log::error('Error in materials page: ' . $e->getMessage());
             \Log::error('Error stack trace: ' . $e->getTraceAsString());
@@ -44,7 +64,7 @@ class MaterialsController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'work_order_id' => 'required|exists:work_orders,id',
+            'work_order_number' => 'required|string|max:255',
             'code' => 'required|string|max:255',
             'description' => 'required|string',
             'planned_quantity' => 'nullable|numeric|min:0',
@@ -70,6 +90,13 @@ class MaterialsController extends Controller
         $data['spent_quantity'] = $data['spent_quantity'] ?? 0;
         $data['executed_site_quantity'] = $data['executed_site_quantity'] ?? 0;
         
+        // التأكد من أن الحقول النصية لا تكون null
+        $data['unit'] = $data['unit'] ?? 'قطعة'; // قيمة افتراضية
+        $data['line'] = $data['line'] ?? '';
+        
+        // إزالة work_order_id من البيانات لأننا نستخدم work_order_number الآن
+        unset($data['work_order_id']);
+        
         // إذا كان الوصف فارغًا، نحاول جلب الوصف من جدول المواد المرجعية
         if (empty($data['description'])) {
             $referenceMaterial = ReferenceMaterial::where('code', $data['code'])->first();
@@ -87,6 +114,16 @@ class MaterialsController extends Controller
         $actual = $data['actual_quantity'];
         $data['difference'] = $planned - $actual;
 
+        // التأكد من أن work_order_number محدد لضمان الاستقلالية
+        if (empty($data['work_order_number'])) {
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['work_order_number' => 'رقم أمر العمل مطلوب']);
+        }
+
+        // تنظيف رقم أمر العمل (إزالة المسافات والأحرف الغير مرغوبة)
+        $data['work_order_number'] = trim($data['work_order_number']);
+
         $material = Material::create($data);
 
         // تخزين الملفات بعد إنشاء السجل مع ID منفصل
@@ -94,10 +131,11 @@ class MaterialsController extends Controller
 
         if ($request->has('save_and_continue')) {
             // إعادة المستخدم لنفس صفحة المواد مع رسالة نجاح
-            return redirect()->back()->with('success', 'تم إضافة المادة بنجاح، يمكنك إضافة مادة أخرى.');
+            return redirect()->route('admin.work-orders.materials', $data['work_order_number'])
+                ->with('success', 'تم إضافة المادة بنجاح، يمكنك إضافة مادة أخرى.');
         } else {
-            // إعادة المستخدم لجدول المواد
-            return redirect()->route('admin.work-orders.materials')
+            // إعادة المستخدم لجدول المواد الخاص بأمر العمل
+            return redirect()->route('admin.work-orders.materials', $data['work_order_number'])
                 ->with('success', 'تم إضافة المادة بنجاح');
         }
     }
@@ -240,9 +278,16 @@ class MaterialsController extends Controller
     /**
      * Export materials to Excel
      */
-    public function exportExcel()
+    public function exportExcel(Request $request)
     {
-        return Excel::download(new MaterialsExport, 'materials_' . date('Y_m_d_H_i_s') . '.xlsx');
+        $workOrder = $request->get('work_order');
+        $filename = 'materials_' . date('Y_m_d_H_i_s');
+        
+        if ($workOrder) {
+            $filename = 'materials_' . $workOrder . '_' . date('Y_m_d_H_i_s');
+        }
+        
+        return Excel::download(new MaterialsExport($workOrder), $filename . '.xlsx');
     }
 
     /**

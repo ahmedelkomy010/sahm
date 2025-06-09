@@ -59,6 +59,10 @@ class WorkOrder extends Model
         'second_partial_payment_with_tax',
         'municipality',
         'electrical_works',
+        'installations_data',
+        'installations_locked',
+        'installations_locked_at',
+        'installations_locked_by',
     ];
 
     protected $casts = [
@@ -84,6 +88,7 @@ class WorkOrder extends Model
         'excavation_details_table' => 'array',
         'invoice_images' => 'array',
         'electrical_works' => 'array',
+        'installations_data' => 'array',
     ];
 
     // Relationships
@@ -206,5 +211,36 @@ class WorkOrder extends Model
             'high' => 'عالي',
             'urgent' => 'عاجل',
         ][$this->priority] ?? $this->priority;
+    }
+
+    // Accessor للتركيبات
+    public function getInstallationsAttribute()
+    {
+        $data = $this->installations_data;
+        
+        // إذا كانت البيانات string، حولها إلى array
+        if (is_string($data)) {
+            $decoded = json_decode($data, true);
+            $data = is_array($decoded) ? $decoded : [];
+        }
+        
+        // إذا كانت البيانات array، تأكد من صحة البيانات
+        if (is_array($data)) {
+            // التأكد من أن القيم الرقمية تظهر كما هي وليس كـ "0"
+            foreach ($data as $key => $item) {
+                if (isset($item['quantity'])) {
+                    // الاحتفاظ بالقيم الرقمية الصحيحة فقط
+                    if (is_numeric($item['quantity']) && $item['quantity'] > 0) {
+                        $data[$key]['quantity'] = (string) intval($item['quantity']);
+                    } else {
+                        $data[$key]['quantity'] = '';
+                    }
+                }
+            }
+            return $data;
+        }
+        
+        // إذا كانت البيانات null أو غير صالحة، أرجع array فارغ
+        return [];
     }
 }

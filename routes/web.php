@@ -68,7 +68,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     
     // وحدات التحكم في أوامر العمل والمواد
     // صفحة المواد ووظائفها (سنضعها قبل resource لأهميتها)
-    Route::get('work-orders/materials', [WorkOrderController::class, 'materials'])->name('work-orders.materials');
+    Route::get('work-orders/materials/{workOrderNumber?}', [MaterialsController::class, 'index'])->name('work-orders.materials');
     Route::post('work-orders/materials', [MaterialsController::class, 'store'])->name('work-orders.materials.store');
     Route::get('work-orders/materials/{material}/edit', [MaterialsController::class, 'edit'])->name('work-orders.materials.edit');
     Route::put('work-orders/materials/{material}', [MaterialsController::class, 'update'])->name('work-orders.materials.update');
@@ -126,6 +126,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     // Electrical Works Routes
     Route::get('work-orders/{workOrder}/electrical-works', [App\Http\Controllers\ElectricalWorksController::class, 'index'])->name('work-orders.electrical-works');
     Route::put('work-orders/{workOrder}/electrical-works/store', [App\Http\Controllers\ElectricalWorksController::class, 'store'])->name('work-orders.electrical-works.store');
+    Route::post('work-orders/{workOrder}/electrical-works/store', [App\Http\Controllers\ElectricalWorksController::class, 'store'])->name('work-orders.electrical-works.store.post');
     Route::post('work-orders/{workOrder}/electrical-works/images', [App\Http\Controllers\ElectricalWorksController::class, 'storeImages'])->name('work-orders.electrical-works.images');
     Route::delete('work-orders/{workOrder}/electrical-works/images/{image}', [App\Http\Controllers\ElectricalWorksController::class, 'deleteImage'])->name('work-orders.electrical-works.delete-image');
 

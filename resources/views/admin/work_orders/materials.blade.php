@@ -374,68 +374,34 @@
             </div>
         @endif
 
-        <!-- بطاقات الإحصائيات -->
-        @if($materials->count() > 0)
+        <!-- زر الرجوع -->
         <div class="row mb-4">
-            <div class="col-md-2">
-                <div class="card border-0 bg-gradient-info text-white">
-                    <div class="card-body text-center py-3">
-                        <i class="fas fa-clipboard-list fa-2x mb-2"></i>
-                        <h4 class="mb-1">{{ number_format($materials->sum('planned_quantity'), 1) }}</h4>
-                        <small>إجمالي المخطط</small>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-2">
-                <div class="card border-0 bg-gradient-warning text-white">
-                    <div class="card-body text-center py-3">
-                        <i class="fas fa-check-double fa-2x mb-2"></i>
-                        <h4 class="mb-1">{{ number_format($materials->sum('actual_quantity'), 1) }}</h4>
-                        <small>إجمالي الفعلي</small>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-2">
-                <div class="card border-0 text-white" style="background: linear-gradient(45deg, #9b59b6, #8e44ad);">
-                    <div class="card-body text-center py-3">
-                        <i class="fas fa-money-bill-wave fa-2x mb-2"></i>
-                        <h4 class="mb-1">{{ number_format($materials->sum('spent_quantity'), 1) }}</h4>
-                        <small>إجمالي المصروف</small>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-2">
-                <div class="card border-0 text-white" style="background: linear-gradient(45deg, #1abc9c, #16a085);">
-                    <div class="card-body text-center py-3">
-                        <i class="fas fa-hammer fa-2x mb-2"></i>
-                        <h4 class="mb-1">{{ number_format($materials->sum('executed_site_quantity'), 1) }}</h4>
-                        <small>إجمالي المنفذ</small>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-2">
-                <div class="card border-0 bg-gradient-danger text-white">
-                    <div class="card-body text-center py-3">
-                        <i class="fas fa-balance-scale fa-2x mb-2"></i>
-                        @php
-                            $totalDiff = $materials->sum('planned_quantity') - $materials->sum('actual_quantity');
-                        @endphp
-                        <h4 class="mb-1">{{ number_format(abs($totalDiff), 1) }}</h4>
-                        <small>إجمالي الفرق</small>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-2">
-                <div class="card border-0 bg-gradient-secondary text-white">
-                    <div class="card-body text-center py-3">
-                        <i class="fas fa-boxes fa-2x mb-2"></i>
-                        <h4 class="mb-1">{{ $materials->count() }}</h4>
-                        <small>عدد المواد</small>
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center">
+                    <a href="{{ route('admin.work-orders.index') }}" class="btn btn-secondary btn-modern">
+                        <i class="fas fa-arrow-right me-2"></i>
+                        الرجوع لأوامر العمل
+                    </a>
+                    <div class="d-flex align-items-center">
+                        <span class="badge bg-primary me-2">
+                            <i class="fas fa-box me-1"></i>
+                            {{ $materials->total() ?? $materials->count() }} مادة
+                        </span>
+                        @if(!isset($currentWorkOrder) || !$currentWorkOrder)
+                        <span class="badge bg-success">
+                            <i class="fas fa-clipboard-list me-1"></i>
+                            {{ $materials->groupBy('work_order_number')->count() }} أمر عمل
+                        </span>
+                        @else
+                        <span class="badge bg-warning">
+                            <i class="fas fa-filter me-1"></i>
+                            عرض مخصص
+                        </span>
+                        @endif
                     </div>
                 </div>
             </div>
         </div>
-        @endif
 
         <div class="row">
             <!-- قسم إضافة المواد -->
@@ -458,16 +424,15 @@
                                     معلومات أمر العمل
                                 </h5>
                                 <div class="mb-3">
-                                    <label for="work_order_id" class="form-label required-field">أمر العمل</label>
-                                    <select name="work_order_id" id="work_order_id" class="form-control form-control-modern" required>
-                                        <option value="">اختر أمر العمل</option>
-                                        @foreach($workOrders as $workOrder)
-                                            <option value="{{ $workOrder->id }}">
-                                                {{ $workOrder->order_number }} - {{ $workOrder->subscriber_name }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                    <div class="invalid-feedback">يرجى اختيار أمر العمل</div>
+                                    <label for="work_order_number" class="form-label required-field">رقم أمر العمل</label>
+                                    <input type="text" class="form-control form-control-modern" id="work_order_number" name="work_order_number" 
+                                           placeholder="مثال: WO-2024-001" required autocomplete="off" 
+                                           value="{{ isset($currentWorkOrder) && $currentWorkOrder ? $currentWorkOrder : '' }}">
+                                    <div class="invalid-feedback">يرجى إدخال رقم أمر العمل</div>
+                                    <small class="text-muted">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        كل رقم أمر عمل سيكون له جدول مواد منفصل ومستقل
+                                    </small>
                                 </div>
                             </div>
 
@@ -539,7 +504,7 @@
                                     <div class="col-md-6 mb-3">
                                         <label for="unit" class="form-label">الوحدة</label>
                                         <select class="form-control form-control-modern" id="unit" name="unit">
-                                            <option value="">اختر الوحدة</option>
+                                    
                                             <option value="L.M">L.M</option>
                                             <option value="Kit">Kit</option>
                                             <option value="Ech">Ech</option>
@@ -623,16 +588,29 @@
 
             <!-- قسم عرض المواد -->
             <div class="col-lg-7">
-                <div class="card card-modern">
+                <!-- جداول منفصلة لكل أمر عمل -->
+                @forelse($materials->groupBy('work_order_number') as $workOrderNumber => $workOrderMaterials)
+                <div class="card card-modern mb-4">
                     <div class="card-header card-header-modern d-flex justify-content-between align-items-center">
-                        <h3 class="mb-0">
-                            <i class="fas fa-list me-2"></i>
-                            جدول المواد المسجلة
-                        </h3>
                         <div>
-                            <a href="{{ route('admin.work-orders.materials.export.excel') }}" class="btn btn-success-modern btn-modern">
-                                <i class="fas fa-file-excel me-2"></i>
-                                تصدير Excel
+                            <h5 class="mb-0">
+                                <i class="fas fa-clipboard-list me-2"></i>
+                                أمر العمل: {{ $workOrderNumber }}
+                            </h5>
+                            <small class="text-white-50">
+                                <i class="fas fa-box me-1"></i>
+                                {{ $workOrderMaterials->count() }} مادة
+                                <span class="mx-2">|</span>
+                                <i class="fas fa-shield-alt me-1"></i>
+                                مواد مستقلة
+                            </small>
+                        </div>
+                        <div>
+                            <span class="badge bg-light text-dark">{{ $workOrderMaterials->count() }} مادة</span>
+                            <a href="{{ route('admin.work-orders.materials.export.excel', ['work_order' => $workOrderNumber]) }}" 
+                               class="btn btn-success-modern btn-sm ms-2">
+                                <i class="fas fa-file-excel me-1"></i>
+                                تصدير
                             </a>
                         </div>
                     </div>
@@ -641,39 +619,30 @@
                             <table class="table table-modern table-compact mb-0">
                                 <thead class="table-dark">
                                     <tr>
-                                        <th style="width: 80px;">كود المادة</th>
-                                        <th style="width: 150px;">الوصف</th>
-                                        <th style="width: 100px;">أمر العمل</th>
-                                        <th style="width: 50px;">السطر</th>
-                                        <th style="width: 70px;">كمية مخططة</th>
-                                        <th style="width: 70px;">كمية فعلية</th>
-                                        <th style="width: 70px;">كمية مصروفة</th>
-                                        <th style="width: 70px;">كمية منفذة بالموقع</th>
-                                        <th style="width: 60px;">الفرق</th>
-                                        <th style="width: 50px;">الوحدة</th>
-                                        <th style="width: 90px;">تاريخ البوابة</th>
+                                        <th style="width: 100px;">كود المادة</th>
+                                        <th style="width: 200px;">الوصف</th>
+                                        <th style="width: 60px;">السطر</th>
+                                        <th style="width: 80px;">كمية مخططة</th>
+                                        <th style="width: 80px;">كمية فعلية</th>
+                                        <th style="width: 80px;">كمية مصروفة</th>
+                                        <th style="width: 80px;">كمية منفذة</th>
+                                        <th style="width: 70px;">الفرق</th>
+                                        <th style="width: 60px;">الوحدة</th>
+                                        <th style="width: 100px;">تاريخ البوابة</th>
                                         <th style="width: 80px;">الملفات</th>
                                         <th style="width: 80px;">الإجراءات</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @forelse($materials as $material)
+                                    @foreach($workOrderMaterials as $material)
                                         <tr>
                                             <td>
                                                 <span class="badge badge-compact bg-primary">{{ $material->code }}</span>
                                             </td>
                                             <td>
-                                                <div style="max-width: 180px;" class="text-truncate" title="{{ $material->description }}">
-                                                    {{ Str::limit($material->description, 30) }}
+                                                <div style="max-width: 200px;" class="text-truncate" title="{{ $material->description }}">
+                                                    {{ Str::limit($material->description, 40) }}
                                                 </div>
-                                            </td>
-                                            <td>
-                                                @if($material->workOrder)
-                                                    <small class="text-muted" style="font-size: 0.7rem;">{{ $material->workOrder->order_number }}</small><br>
-                                                    <strong style="font-size: 0.8rem;">{{ Str::limit($material->workOrder->subscriber_name, 15) }}</strong>
-                                                @else
-                                                    <span class="text-muted">-</span>
-                                                @endif
                                             </td>
                                             <td><small>{{ $material->line ?? '-' }}</small></td>
                                             <td>
@@ -779,59 +748,59 @@
                                                 </div>
                                             </td>
                                         </tr>
-                                    @empty
-                                        <tr>
-                                            <td colspan="13" class="text-center py-5">
-                                                <div class="text-muted">
-                                                    <i class="fas fa-box-open fa-3x mb-3"></i>
-                                                    <h5>لا توجد مواد مسجلة حتى الآن</h5>
-                                                    <p>قم بإضافة أول مادة باستخدام النموذج على اليسار</p>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    @endforelse
+                                    @endforeach
                                 </tbody>
-                                @if($materials->count() > 0)
                                 <tfoot class="table-secondary">
                                     <tr style="font-weight: bold;">
-                                        <td colspan="4" class="text-center">
-                                            <i class="fas fa-calculator me-2"></i>الإجمالي
+                                        <td colspan="3" class="text-center">
+                                            <i class="fas fa-calculator me-2"></i>إجمالي أمر العمل
                                         </td>
                                         <td>
-                                            <span class="badge bg-info text-white">{{ number_format($materials->sum('planned_quantity'), 1) }}</span>
+                                            <span class="badge bg-info text-white">{{ number_format($workOrderMaterials->sum('planned_quantity'), 1) }}</span>
                                         </td>
                                         <td>
-                                            <span class="badge bg-warning text-white">{{ number_format($materials->sum('actual_quantity'), 1) }}</span>
+                                            <span class="badge bg-warning text-white">{{ number_format($workOrderMaterials->sum('actual_quantity'), 1) }}</span>
                                         </td>
                                         <td>
-                                            <span class="badge bg-purple text-white">{{ number_format($materials->sum('spent_quantity'), 1) }}</span>
+                                            <span class="badge bg-purple text-white">{{ number_format($workOrderMaterials->sum('spent_quantity'), 1) }}</span>
                                         </td>
                                         <td>
-                                            <span class="badge bg-teal text-white">{{ number_format($materials->sum('executed_site_quantity'), 1) }}</span>
+                                            <span class="badge bg-teal text-white">{{ number_format($workOrderMaterials->sum('executed_site_quantity'), 1) }}</span>
                                         </td>
                                         <td>
                                             @php
-                                                $totalDiff = $materials->sum('planned_quantity') - $materials->sum('actual_quantity');
-                                                $diffClass = $totalDiff > 0 ? 'bg-danger' : ($totalDiff < 0 ? 'bg-success' : 'bg-secondary');
+                                                $workOrderDiff = $workOrderMaterials->sum('planned_quantity') - $workOrderMaterials->sum('actual_quantity');
+                                                $diffClass = $workOrderDiff > 0 ? 'bg-danger' : ($workOrderDiff < 0 ? 'bg-success' : 'bg-secondary');
                                             @endphp
-                                            <span class="badge {{ $diffClass }} text-white">{{ number_format(abs($totalDiff), 1) }}</span>
+                                            <span class="badge {{ $diffClass }} text-white">{{ number_format(abs($workOrderDiff), 1) }}</span>
                                         </td>
-                                        <td colspan="4" class="text-center text-muted">
-                                            <small>{{ $materials->count() }} مادة</small>
+                                        <td colspan="3" class="text-center text-muted">
+                                            <small>{{ $workOrderMaterials->count() }} مادة</small>
                                         </td>
                                     </tr>
                                 </tfoot>
-                                @endif
                             </table>
                         </div>
-                        
-                        @if($materials->hasPages())
-                            <div class="card-footer bg-light">
-                                {{ $materials->links() }}
-                            </div>
-                        @endif
                     </div>
                 </div>
+                @empty
+                <div class="card card-modern">
+                    <div class="card-body text-center py-5">
+                        <div class="text-muted">
+                            <i class="fas fa-box-open fa-3x mb-3"></i>
+                            <h5>لا توجد مواد مسجلة حتى الآن</h5>
+                            <p>قم بإضافة أول مادة باستخدام النموذج على اليسار</p>
+                        </div>
+                    </div>
+                </div>
+                @endforelse
+
+                <!-- شريط التصفح إذا كان موجود -->
+                @if($materials->hasPages())
+                    <div class="d-flex justify-content-center mt-4">
+                        {{ $materials->links() }}
+                    </div>
+                @endif
             </div>
         </div>
     </div>

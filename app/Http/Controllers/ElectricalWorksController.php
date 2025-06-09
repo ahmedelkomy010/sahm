@@ -30,6 +30,13 @@ class ElectricalWorksController extends Controller
 
     public function index(WorkOrder $workOrder)
     {
+        // تحديث البيانات من قاعدة البيانات
+        $workOrder = $workOrder->fresh();
+        
+        // تسجيل البيانات المسترجعة للتشخيص
+        \Log::info('Retrieved electrical works data for work order ' . $workOrder->id);
+        \Log::info('Electrical works data:', ['data' => $workOrder->electrical_works]);
+        
         return view('admin.work_orders.electrical_works', [
             'workOrder' => $workOrder,
             'electricalItems' => $this->electricalItems
@@ -38,17 +45,65 @@ class ElectricalWorksController extends Controller
 
     public function store(Request $request, WorkOrder $workOrder)
     {
-        $validatedData = $request->validate([
-            'electrical_works' => 'required|array',
-            'electrical_works.*.status' => 'required|in:completed,pending,na',
-            'electrical_works.*.quantity' => 'required|integer|min:0'
-        ]);
+        try {
+            // حفظ بيانات الأعمال الكهربائية
+            $electricalWorksData = $request->input('electrical_works', []);
+            \Log::info('Saving electrical works data:', ['data' => $electricalWorksData]);
+            \Log::info('Full request data:', ['data' => $request->all()]);
+            
+            // تنظيف البيانات وضمان وجود quantity مع الحفاظ على القيم الرقمية
+            foreach ($electricalWorksData as $key => $data) {
+                // التأكد من وجود status
+                if (!isset($data['status'])) {
+                    $electricalWorksData[$key]['status'] = '';
+                }
+                
+                // التأكد من وجود quantity والحفاظ على القيم الرقمية
+                if (!isset($data['quantity'])) {
+                    $electricalWorksData[$key]['quantity'] = '';
+                } else {
+                    // تحويل القيمة إلى رقم إذا كانت رقمية، وإلا الاحتفاظ بها كما هي
+                    $quantity = trim($data['quantity']);
+                    if (is_numeric($quantity) && $quantity !== '') {
+                        $electricalWorksData[$key]['quantity'] = (string) intval($quantity);
+                    } else {
+                        $electricalWorksData[$key]['quantity'] = '';
+                    }
+                }
+                
+                \Log::info("Electrical work item $key:", ['data' => $electricalWorksData[$key]]);
+            }
+            
+            $workOrder->update([
+                'electrical_works' => $electricalWorksData
+            ]);
+            
+            // التحقق من الحفظ
+            $workOrder = $workOrder->fresh();
+            \Log::info('Saved electrical works data verified:', ['data' => $workOrder->electrical_works]);
 
-        $workOrder->update([
-            'electrical_works' => $validatedData['electrical_works']
-        ]);
+            // إذا كان الطلب AJAX، إرجاع استجابة JSON
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'تم حفظ بيانات الأعمال الكهربائية بنجاح'
+                ]);
+            }
 
-        return redirect()->back()->with('success', 'تم حفظ بيانات الأعمال الكهربائية بنجاح');
+            return redirect()->back()->with('success', 'تم حفظ بيانات الأعمال الكهربائية بنجاح');
+                
+        } catch (\Exception $e) {
+            \Log::error('Error saving electrical works: ' . $e->getMessage());
+            
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'حدث خطأ أثناء حفظ البيانات: ' . $e->getMessage()
+                ], 500);
+            }
+
+            return redirect()->back()->with('error', 'حدث خطأ أثناء حفظ البيانات');
+        }
     }
 
     public function storeImages(Request $request, WorkOrder $workOrder)

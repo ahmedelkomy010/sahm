@@ -11,6 +11,8 @@ class Material extends Model
     
     protected $fillable = [
         'work_order_id',
+        'work_order_number',
+        'subscriber_name',
         'code',
         'description',
         'planned_quantity',
@@ -43,6 +45,8 @@ class Material extends Model
         'spent_quantity' => 0,
         'executed_site_quantity' => 0,
         'difference' => 0,
+        'unit' => 'قطعة',
+        'line' => '',
     ];
     
     /**

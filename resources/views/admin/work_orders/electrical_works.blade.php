@@ -67,7 +67,7 @@
                                                    min="0" 
                                                    class="form-control form-control-sm electrical-quantity" 
                                                    name="electrical_works[{{ $key }}][quantity]" 
-                                                   value="{{ old('electrical_works.' . $key . '.quantity', isset($workOrder->electrical_works[$key]['quantity']) ? $workOrder->electrical_works[$key]['quantity'] : '0') }}" 
+                                                   value="{{ old('electrical_works.' . $key . '.quantity', isset($workOrder->electrical_works[$key]['quantity']) && $workOrder->electrical_works[$key]['quantity'] !== null ? $workOrder->electrical_works[$key]['quantity'] : '') }}" 
                                                    placeholder="0" 
                                                    data-item="{{ $key }}">
                                                         </td>
@@ -81,9 +81,32 @@
                                 <i class="fas fa-save me-2"></i>
                                 حفظ الأعمال الكهربائية
                             </button>
-                                                                </div>
+                        </div>
+                        
+                        <div id="auto-save-indicator" class="text-center mt-2" style="display: none;">
+                            <small class="text-success">
+                                <i class="fas fa-check me-1"></i>
+                                تم الحفظ التلقائي
+                            </small>
+                        </div>
+                        
+                        @if($workOrder->electrical_works && count($workOrder->electrical_works) > 0)
+                            <div class="alert alert-info mt-3 text-center">
+                                <i class="fas fa-info-circle me-2"></i>
+                                تم استرداد البيانات المحفوظة سابقاً - يمكنك تعديلها وحفظها مرة أخرى
+                            </div>
+                        @endif
+                        
+                        <!-- تشخيص مؤقت -->
+                        <div class="alert alert-warning mt-2" style="font-size: 11px; max-height: 200px; overflow: auto;">
+                            <strong>تشخيص البيانات:</strong><br>
+                            Raw data: {{ json_encode($workOrder->getOriginal('electrical_works')) }}<br>
+                            Electrical works accessor: {{ json_encode($workOrder->electrical_works) }}<br>
+                            Sample status for 'al_500_joint': {{ $workOrder->electrical_works['al_500_joint']['status'] ?? 'not set' }}<br>
+                            Sample quantity for 'al_500_joint': {{ $workOrder->electrical_works['al_500_joint']['quantity'] ?? 'not set' }}
+                        </div>
                     </form>
-                                                                </div>
+                </div>
                                                             </div>
                                                             </div>
 
@@ -189,6 +212,120 @@
 
 @push('scripts')
 <script>
+// المتغيرات العامة
+let autoSaveTimeout;
+
+
+
+// تهيئة الصفحة
+document.addEventListener('DOMContentLoaded', function() {
+    // إعداد الحفظ التلقائي
+    setupAutoSave();
+    
+    // إعداد الحفظ اليدوي
+    const form = document.getElementById('electrical-works-form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            // التحقق من أن النموذج جاهز للإرسال
+            console.log('Form submitting...');
+        });
+    }
+    
+    // تحديث الملخص عند تغيير أي حقل
+    document.querySelectorAll('.electrical-status, .electrical-quantity').forEach(input => {
+        input.addEventListener('change', updateElectricalWorksSummary);
+    });
+    
+    // تحديث أولي للملخص
+    updateElectricalWorksSummary();
+});
+
+// إعداد الحفظ التلقائي
+function setupAutoSave() {
+    const form = document.getElementById('electrical-works-form');
+    if (!form) return;
+    
+    form.addEventListener('change', function(e) {
+        if (e.target.classList.contains('electrical-status') || 
+            e.target.classList.contains('electrical-quantity')) {
+            
+            // إلغاء التايمر السابق
+            clearTimeout(autoSaveTimeout);
+            
+            // تأخير الحفظ لثانية واحدة
+            autoSaveTimeout = setTimeout(() => {
+                autoSaveElectricalWorks();
+            }, 1000);
+        }
+    });
+}
+
+// دالة الحفظ التلقائي
+function autoSaveElectricalWorks() {
+    const form = document.getElementById('electrical-works-form');
+    if (!form) return;
+    
+    const formData = new FormData(form);
+    
+    // التأكد من إرسال جميع قيم quantity بشكل صحيح
+    document.querySelectorAll('input[type="number"].electrical-quantity').forEach(input => {
+        const name = input.name;
+        const value = input.value || '';
+        
+        // تحديث القيمة في FormData مع القيمة الفعلية من الحقل
+        formData.set(name, value);
+        
+        console.log('Sending quantity:', name, '=', value);
+    });
+    
+    // التأكد من إرسال جميع قيم status
+    document.querySelectorAll('input[type="radio"].electrical-status:checked').forEach(input => {
+        const name = input.name;
+        const value = input.value;
+        
+        formData.set(name, value);
+        console.log('Sending status:', name, '=', value);
+    });
+    
+    // طباعة جميع البيانات المرسلة للتشخيص
+    console.log('FormData contents:');
+    for (let pair of formData.entries()) {
+        console.log(pair[0] + ': ' + pair[1]);
+    }
+    
+    fetch('{{ route("admin.work-orders.electrical-works.store.post", $workOrder) }}', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAutoSaveIndicator();
+            // تحديث الملخص بعد الحفظ
+            updateElectricalWorksSummary();
+        } else {
+            console.error('Auto-save failed:', data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Auto-save error:', error);
+    });
+}
+
+// عرض مؤشر الحفظ التلقائي
+function showAutoSaveIndicator() {
+    const indicator = document.getElementById('auto-save-indicator');
+    if (indicator) {
+        indicator.style.display = 'block';
+        setTimeout(() => {
+            indicator.style.display = 'none';
+        }, 2000);
+    }
+}
+
 // دالة تحديث ملخص الأعمال الكهربائية
 function updateElectricalWorksSummary() {
     const tbody = document.getElementById('summary-tbody');
@@ -211,7 +348,8 @@ function updateElectricalWorksSummary() {
         if (!label) return;
         
         const status = row.querySelector('input[type="radio"]:checked')?.value;
-        const quantity = parseInt(row.querySelector('input[type="number"]')?.value || '0');
+        const quantityValue = row.querySelector('input[type="number"]')?.value;
+        const quantity = quantityValue && quantityValue !== '' ? parseInt(quantityValue) : 0;
         
         if (status) {
             // إضافة صف للجدول
@@ -282,46 +420,35 @@ function printSummary() {
                     .table th, .table td { padding: 8px; }
                     @media print {
                         .no-print { display: none; }
-}
-</style>
+                    }
+                </style>
             </head>
             <body class="p-4">
                 <div class="text-center mb-4">
                     <h3>ملخص الأعمال الكهربائية</h3>
                     <p class="text-muted">تاريخ الطباعة: ${new Date().toLocaleDateString('ar-SA')}</p>
-    </div>
+                </div>
                 ${document.getElementById('summary-table').outerHTML}
                 <div class="row mt-4">
                     <div class="col-4 text-center">
                         <h5>تم التنفيذ: ${document.getElementById('total-completed').textContent}</h5>
-        </div>
+                    </div>
                     <div class="col-4 text-center">
                         <h5>قيد التنفيذ: ${document.getElementById('total-pending').textContent}</h5>
-        </div>
+                    </div>
                     <div class="col-4 text-center">
                         <h5>لا ينطبق: ${document.getElementById('total-na').textContent}</h5>
                     </div>
                 </div>
                 <div class="text-center mt-3">
                     <h5>إجمالي البنود المنفذة: ${document.getElementById('total-items').textContent}</h5>
-        </div>
+                </div>
                 <button class="btn btn-primary mt-4 no-print" onclick="window.print()">طباعة</button>
             </body>
         </html>
     `);
     printWindow.document.close();
 }
-
-// إضافة مستمعي الأحداث
-document.addEventListener('DOMContentLoaded', function() {
-    // تحديث الملخص عند تغيير أي حقل
-    document.querySelectorAll('.electrical-status, .electrical-quantity').forEach(input => {
-        input.addEventListener('change', updateElectricalWorksSummary);
-    });
-    
-    // تحديث أولي للملخص
-    updateElectricalWorksSummary();
-});
 </script>
 @endpush
 
