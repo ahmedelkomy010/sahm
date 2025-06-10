@@ -117,6 +117,11 @@ class WorkOrder extends Model
         return $this->hasMany(WorkOrderFile::class)->where('file_category', 'electrical_works');
     }
 
+    public function basicAttachments()
+    {
+        return $this->hasMany(WorkOrderFile::class)->where('file_category', 'basic_attachments');
+    }
+
     public function assignedTo()
     {
         return $this->belongsTo(User::class, 'assigned_to');

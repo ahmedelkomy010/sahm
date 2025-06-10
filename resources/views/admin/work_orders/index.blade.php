@@ -161,10 +161,10 @@
                                         <td>{{ date('Y-m-d', strtotime($workOrder->approval_date)) }}</td>
                                         <td>
                                             @switch($workOrder->execution_status)
-                                                @case('2')
+                                                @case('1')
                                                     <span class="badge bg-info">جاري العمل ....</span>
                                                     @break
-                                                @case('1')
+                                                @case('2')
                                                     <span class="badge bg-info">تم تسليم 155 ولم تصدر شهادة الانجاز</span>
                                                     @break
                                                 @case('3')

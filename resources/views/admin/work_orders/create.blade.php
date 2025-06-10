@@ -187,12 +187,7 @@
                                     <label for="execution_status" class="form-label fw-bold">حالة تنفيذ أمر العمل</label>
                                     <select id="execution_status" class="form-select @error('execution_status') is-invalid @enderror" name="execution_status">
                                         <option value="1" {{ old('execution_status', '1') == '1' ? 'selected' : '' }}>جاري العمل ...</option>
-                                        <option value="2" {{ old('execution_status') == '2' ? 'selected' : '' }}> تم تسليم 155 ولم تصدر شهادة انجاز </option>
-                                        <option value="3" {{ old('execution_status') == '3' ? 'selected' : '' }}>صدرت شهادة ولم تعتمد</option>
-                                        <option value="4" {{ old('execution_status') == '4' ? 'selected' : '' }}>تم اعتماد شهادة الانجاز</option>
-                                        <option value="5" {{ old('execution_status') == '5' ? 'selected' : '' }}>مؤكد ولم تدخل مستخلص</option>
-                                        <option value="6" {{ old('execution_status') == '6' ? 'selected' : '' }}>دخلت مستخلص ولم تصرف</option>
-                                        <option value="7" {{ old('execution_status') == '7' ? 'selected' : '' }}>منتهي تم الصرف</option>
+                                        
                                     </select>
                                     @error('execution_status')
                                         <span class="invalid-feedback" role="alert">
@@ -739,13 +734,10 @@ function addMaterial() {
         </td>
         <td>
             <select name="materials[${materialRowIndex}][unit]" class="form-select form-select-sm" required>
-                <option value="عدد">عدد</option>
-                <option value="متر">متر</option>
-                <option value="متر مربع">متر مربع</option>
-                <option value="متر مكعب">متر مكعب</option>
-                <option value="كيلو جرام">كيلو جرام</option>
-                <option value="طن">طن</option>
-                <option value="لتر">لتر</option>
+                <option value="L.M">L.M</option>
+                <option value="Kit">Kit</option>
+                <option value=" Ech"> Ech</option>
+             
             </select>
         </td>
         <td>

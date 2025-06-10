@@ -58,6 +58,10 @@ class WorkOrderController extends Controller
             'materials.*.planned_quantity' => 'required_with:materials|numeric|min:0',
             'materials.*.unit' => 'required_with:materials|string|max:50',
             'materials.*.notes' => 'nullable|string',
+            // المرفقات
+            'files.license_estimate' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png|max:20480',
+            'files.daily_measurement' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png|max:20480',
+            'files.backup_1' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png|max:20480',
         ]);
         
         $validated['user_id'] = Auth::id();
@@ -93,13 +97,48 @@ class WorkOrderController extends Controller
             }
         }
         
+        // حفظ المرفقات الأساسية
+        if ($request->hasFile('files')) {
+            $fileFields = [
+                'license_estimate' => 'مقايسة الأعمال',
+                'daily_measurement' => 'مقايسة المواد', 
+                'backup_1' => 'مرفق احتياطي'
+            ];
+            
+            foreach ($fileFields as $field => $description) {
+                if ($request->hasFile("files.$field")) {
+                    $file = $request->file("files.$field");
+                    $originalName = $file->getClientOriginalName();
+                    $filename = time() . '_' . uniqid() . '_' . $field . '.' . $file->getClientOriginalExtension();
+                    $path = 'work_orders/' . $workOrder->id . '/basic_attachments';
+                    
+                    if (!Storage::disk('public')->exists($path)) {
+                        Storage::disk('public')->makeDirectory($path);
+                    }
+                    
+                    $filePath = $file->storeAs($path, $filename, 'public');
+                    
+                    WorkOrderFile::create([
+                        'work_order_id' => $workOrder->id,
+                        'filename' => $filename,
+                        'original_filename' => $originalName,
+                        'file_path' => $filePath,
+                        'file_type' => $file->getClientMimeType(),
+                        'file_size' => $file->getSize(),
+                        'file_category' => 'basic_attachments',
+                        'attachment_type' => $field,
+                    ]);
+                }
+            }
+        }
+        
         return redirect()->route('admin.work-orders.index')->with('success', 'تم إنشاء أمر العمل بنجاح');
     }
 
     // عرض أمر عمل محدد
     public function show(WorkOrder $workOrder)
     {
-        $workOrder->load('files');
+        $workOrder->load(['files', 'basicAttachments', 'invoiceAttachments']);
         return view('admin.work_orders.show', compact('workOrder'));
     }
 
@@ -1068,6 +1107,17 @@ class WorkOrderController extends Controller
         $workOrders = \App\Models\WorkOrder::all();
         $materials = \App\Models\Material::with('workOrder')->latest()->paginate(15);
         return view('admin.work_orders.materials', compact('workOrders', 'materials'));
+    }
+
+    public function materialsForWorkOrder(WorkOrder $workOrder)
+    {
+        $workOrder->load('basicAttachments');
+        $workOrders = \App\Models\WorkOrder::all();
+        $materials = \App\Models\Material::with('workOrder')
+            ->where('work_order_number', $workOrder->order_number)
+            ->latest()
+            ->paginate(15);
+        return view('admin.work_orders.materials', compact('workOrders', 'materials', 'workOrder'));
     }
 
     public function getMaterialDescription($code)

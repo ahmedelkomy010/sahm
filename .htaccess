@@ -1,0 +1,11 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    
+    # إعادة توجيه جميع الطلبات إلى مجلد public
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteRule ^(.*)$ /public/$1 [L]
+    
+    # إعادة توجيه الطلبات الفارغة إلى public/index.php
+    RewriteCond %{REQUEST_URI} ^/$
+    RewriteRule ^$ /public/index.php [L]
+</IfModule> 

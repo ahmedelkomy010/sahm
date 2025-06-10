@@ -132,7 +132,6 @@
                                                 <button type="button" class="btn btn-success btn-lg px-5 shadow-lg me-2" onclick="saveCoordinationSection(true)">
                                                     <i class="fas fa-file-plus me-2"></i>
                                                     إنشاء رخصة جديدة مع التنسيق
-                                                    <br><small class="d-block mt-1">سيتم إنشاء رخصة منفصلة جديدة</small>
                                                 </button>
                                                 <button type="button" class="btn btn-warning btn-lg px-4 shadow" onclick="saveCoordinationSection(false)" 
                                                         id="updateCoordinationBtn" style="display: none;">
@@ -140,12 +139,7 @@
                                                     تحديث الرخصة الحالية
                                                 </button>
                                             </div>
-                                            <div class="mt-3">
-                                                <div class="alert alert-success d-inline-block">
-                                                    <i class="fas fa-info-circle me-2"></i>
-                                                    <strong>تأكيد:</strong> عند الضغط على "إنشاء رخصة جديدة" سيتم إنشاء رخصة منفصلة تماماً مع شهادة التنسيق وجميع المرفقات
-                                                </div>
-                                            </div>
+                                            
                                         </div>
                                     </div>
                                 </form>
