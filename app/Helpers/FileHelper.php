@@ -27,22 +27,13 @@ class FileHelper
             return asset($filePath);
         }
 
-        // إذا كان المسار عادي، استخدم Storage::url
-        try {
-            $url = Storage::url($filePath);
-            
-            // فحص إمكانية الوصول للرابط
-            $headers = @get_headers($url, 1);
-            if (!$headers || strpos($headers[0], '404') !== false) {
-                // إذا فشل الرابط العادي، استخدم المسار البديل
-                return route('files.serve', ['path' => $filePath]);
-            }
-            
-            return $url;
-        } catch (\Exception $e) {
-            // في حالة الخطأ، استخدم المسار البديل
-            return route('files.serve', ['path' => $filePath]);
-        }
+                 // إذا كان المسار عادي، استخدم Storage::url
+         try {
+             return Storage::url($filePath);
+         } catch (\Exception $e) {
+             // في حالة الخطأ، استخدم serve_file.php
+             return url('serve_file.php?file=' . urlencode($filePath));
+         }
     }
 
     /**
