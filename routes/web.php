@@ -245,3 +245,12 @@ Route::get('/lab-licenses', [LabLicenseWebController::class, 'index'])->name('la
 Route::post('/lab-licenses', [LabLicenseWebController::class, 'store'])->name('lab-licenses.store');
 Route::put('/lab-licenses/{id}', [LabLicenseWebController::class, 'update'])->name('lab-licenses.update');
 Route::delete('/lab-licenses/{id}', [LabLicenseWebController::class, 'destroy'])->name('lab-licenses.destroy');
+
+// مسار بديل للوصول للملفات في حالة فشل storage link
+Route::get('files/{path}', function ($path) {
+    $filePath = storage_path('app/public/' . $path);
+    if (!file_exists($filePath)) {
+        abort(404);
+    }
+    return response()->file($filePath);
+})->where('path', '.*')->name('files.serve');

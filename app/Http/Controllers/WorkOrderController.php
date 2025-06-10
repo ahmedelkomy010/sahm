@@ -702,11 +702,11 @@ class WorkOrderController extends Controller
 
         // إذا كان الطلب AJAX، أرجع JSON
         if ($request->ajax() || $request->wantsJson()) {
-            $images = $surveyFiles->map(function ($file) {
+                         $images = $surveyFiles->map(function ($file) {
                 return [
                     'id' => $file->id,
                     'name' => $file->original_filename,
-                    'url' => asset('storage/' . $file->file_path),
+                    'url' => \App\Helpers\FileHelper::getFileUrl($file->file_path),
                     'size' => $file->file_size,
                     'type' => $file->file_type
                 ];
