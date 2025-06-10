@@ -302,7 +302,8 @@ function editSurvey(surveyId) {
         method: 'GET',
         headers: {
             'Accept': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest'
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
         },
         credentials: 'same-origin'
     })
@@ -384,21 +385,25 @@ document.getElementById('surveyForm').addEventListener('submit', function(e) {
     const formData = new FormData(this);
     const surveyId = document.getElementById('survey_id').value;
     
-    // Add CSRF token to headers
-    const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    // Show loading state
+    const submitButton = this.querySelector('button[type="submit"]');
+    const originalText = submitButton.innerHTML;
+    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> جاري الحفظ...';
+    submitButton.disabled = true;
     
     fetch(this.action, {
         method: 'POST',
         body: formData,
         headers: {
-            'X-CSRF-TOKEN': token,
-            'Accept': 'application/json'
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
         },
         credentials: 'same-origin'
     })
     .then(response => {
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
         return response.json();
     })
@@ -409,17 +414,63 @@ document.getElementById('surveyForm').addEventListener('submit', function(e) {
             if (modal) {
                 modal.hide();
             }
+            
             // Show success message
-            alert('تم حفظ المسح بنجاح');
+            const successAlert = document.createElement('div');
+            successAlert.className = 'alert alert-success alert-dismissible fade show';
+            successAlert.innerHTML = `
+                <i class="fas fa-check-circle me-2"></i>
+                ${data.message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
+            
+            // Insert success message at the top of the card body
+            const cardBody = document.querySelector('.card-body');
+            cardBody.insertBefore(successAlert, cardBody.firstChild);
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                if (successAlert.parentNode) {
+                    successAlert.remove();
+                }
+            }, 5000);
+            
             // Reload the page to show updated data
-            window.location.reload();
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+            
         } else {
             throw new Error(data.message || 'حدث خطأ أثناء حفظ المسح');
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        alert('حدث خطأ أثناء حفظ المسح: ' + error.message);
+        
+        // Show error message
+        const errorAlert = document.createElement('div');
+        errorAlert.className = 'alert alert-danger alert-dismissible fade show';
+        errorAlert.innerHTML = `
+            <i class="fas fa-exclamation-circle me-2"></i>
+            حدث خطأ أثناء حفظ المسح: ${error.message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        `;
+        
+        // Insert error message at the top of the modal body
+        const modalBody = document.querySelector('#createSurveyModal .modal-body');
+        modalBody.insertBefore(errorAlert, modalBody.firstChild);
+        
+        // Auto-hide after 5 seconds
+        setTimeout(() => {
+            if (errorAlert.parentNode) {
+                errorAlert.remove();
+            }
+        }, 5000);
+    })
+    .finally(() => {
+        // Restore button state
+        submitButton.innerHTML = originalText;
+        submitButton.disabled = false;
     });
 });
 </script>

@@ -619,6 +619,7 @@ class WorkOrderController extends Controller
     public function storeSurvey(Request $request, WorkOrder $workOrder)
     {
         $validated = $request->validate([
+            'survey_id' => 'nullable|exists:surveys,id',
             'start_coordinates' => 'nullable|string|max:255',
             'end_coordinates' => 'nullable|string|max:255',
             'has_obstacles' => 'required|boolean',
@@ -626,57 +627,103 @@ class WorkOrderController extends Controller
             'site_images.*' => 'nullable|image|max:30720', // 30MB max per image
         ]);
 
-        // حفظ بيانات المسح
-        $survey = \App\Models\Survey::updateOrCreate(
-            ['work_order_id' => $workOrder->id],
-            [
-                'start_coordinates' => $validated['start_coordinates'],
-                'end_coordinates' => $validated['end_coordinates'],
-                'has_obstacles' => $validated['has_obstacles'],
-                'obstacles_notes' => $validated['obstacles_notes']
-            ]
-        );
-
-        // رفع الصور إذا تم اختيارها
-        if ($request->hasFile('site_images')) {
-            foreach ($request->file('site_images') as $image) {
-                $originalName = $image->getClientOriginalName();
-                $filename = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
-                $path = 'work_orders/' . $workOrder->id . '/survey';
-                
-                if (!Storage::disk('public')->exists($path)) {
-                    Storage::disk('public')->makeDirectory($path);
-                }
-                
-                $filePath = $image->storeAs($path, $filename, 'public');
-                
-                \App\Models\WorkOrderFile::create([
-                    'work_order_id' => $workOrder->id,
-                    'survey_id' => $survey->id,
-                    'filename' => $filename,
-                    'original_filename' => $originalName,
-                    'file_path' => $filePath,
-                    'file_type' => $image->getClientMimeType(),
-                    'file_size' => $image->getSize(),
-                    'file_category' => 'survey'
+        try {
+            // إذا كان هناك survey_id، فهذا تعديل، وإلا فهو إنشاء جديد
+            if ($request->survey_id) {
+                $survey = \App\Models\Survey::findOrFail($request->survey_id);
+                $survey->update([
+                    'start_coordinates' => $validated['start_coordinates'],
+                    'end_coordinates' => $validated['end_coordinates'],
+                    'has_obstacles' => $validated['has_obstacles'],
+                    'obstacles_notes' => $validated['obstacles_notes']
                 ]);
+                $message = 'تم تحديث بيانات المسح بنجاح';
+            } else {
+                // إنشاء مسح جديد
+                $survey = \App\Models\Survey::create([
+                    'work_order_id' => $workOrder->id,
+                    'start_coordinates' => $validated['start_coordinates'],
+                    'end_coordinates' => $validated['end_coordinates'],
+                    'has_obstacles' => $validated['has_obstacles'],
+                    'obstacles_notes' => $validated['obstacles_notes']
+                ]);
+                $message = 'تم حفظ بيانات المسح بنجاح';
             }
-        }
 
-        return response()->json([
-            'success' => true,
-            'message' => 'تم حفظ بيانات المسح بنجاح'
-        ]);
+            // رفع الصور إذا تم اختيارها
+            if ($request->hasFile('site_images')) {
+                foreach ($request->file('site_images') as $image) {
+                    $originalName = $image->getClientOriginalName();
+                    $filename = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+                    $path = 'work_orders/' . $workOrder->id . '/survey';
+                    
+                    if (!Storage::disk('public')->exists($path)) {
+                        Storage::disk('public')->makeDirectory($path);
+                    }
+                    
+                    $filePath = $image->storeAs($path, $filename, 'public');
+                    
+                    \App\Models\WorkOrderFile::create([
+                        'work_order_id' => $workOrder->id,
+                        'survey_id' => $survey->id,
+                        'filename' => $filename,
+                        'original_filename' => $originalName,
+                        'file_path' => $filePath,
+                        'file_type' => $image->getClientMimeType(),
+                        'file_size' => $image->getSize(),
+                        'file_category' => 'survey'
+                    ]);
+                }
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => $message
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error saving survey: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء حفظ بيانات المسح: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     // تعديل بيانات المسح
-    public function editSurvey(Survey $survey)
+    public function editSurvey(Survey $survey, Request $request)
     {
         $workOrder = $survey->workOrder;
         $surveyFiles = \App\Models\WorkOrderFile::where('work_order_id', $workOrder->id)
             ->where('file_category', 'survey')
+            ->where('survey_id', $survey->id)
             ->orderBy('created_at', 'desc')
             ->get();
+
+        // إذا كان الطلب AJAX، أرجع JSON
+        if ($request->ajax() || $request->wantsJson()) {
+            $images = $surveyFiles->map(function ($file) {
+                return [
+                    'id' => $file->id,
+                    'name' => $file->original_filename,
+                    'url' => asset('storage/' . $file->file_path),
+                    'size' => $file->file_size,
+                    'type' => $file->file_type
+                ];
+            });
+
+            return response()->json([
+                'success' => true,
+                'survey' => [
+                    'id' => $survey->id,
+                    'start_coordinates' => $survey->start_coordinates,
+                    'end_coordinates' => $survey->end_coordinates,
+                    'has_obstacles' => $survey->has_obstacles,
+                    'obstacles_notes' => $survey->obstacles_notes,
+                    'images' => $images
+                ]
+            ]);
+        }
 
         return view('admin.work_orders.edit_survey', compact('workOrder', 'survey', 'surveyFiles'));
     }
