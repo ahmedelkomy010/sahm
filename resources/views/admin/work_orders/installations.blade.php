@@ -74,13 +74,7 @@
                         @endif
                         
                         <!-- تشخيص مؤقت -->
-                        <div class="alert alert-warning mt-2" style="font-size: 11px; max-height: 200px; overflow: auto;">
-                            <strong>تشخيص البيانات:</strong><br>
-                            Raw data: {{ json_encode($workOrder->getOriginal('installations_data')) }}<br>
-                            Installations accessor: {{ json_encode($workOrder->installations) }}<br>
-                            Sample quantity for 'single_meter_box': {{ $workOrder->installations['single_meter_box']['quantity'] ?? 'not set' }}<br>
-                            Sample complete data for 'single_meter_box': {{ json_encode($workOrder->installations['single_meter_box'] ?? []) }}
-                        </div>
+                        
                     </form>
                 </div>
             </div>
@@ -159,15 +153,22 @@
                     رفع صور التركيبات
                 </div>
                 <div class="card-body">
-                    <form action="{{ route('admin.work-orders.installations.images', $workOrder) }}" method="POST" enctype="multipart/form-data">
+                    <form id="installations-images-form" action="{{ route('admin.work-orders.installations.images', $workOrder) }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         <div class="mb-3">
                             <label for="installations_images" class="form-label">اختر صور التركيبات</label>
                             <input type="file" class="form-control" id="installations_images" name="installations_images[]" multiple accept="image/*">
                             <div class="form-text">يمكنك اختيار عدة صور (حتى 70 صورة، كل صورة حتى 30 ميجا)</div>
+                            <div id="installations-images-preview" class="mt-3" style="display: none;">
+                                <h6>معاينة الصور المختارة:</h6>
+                                <div class="row g-2" id="installations-preview-container"></div>
+                            </div>
                         </div>
                         <div class="text-center">
-                            <button type="submit" class="btn btn-success px-4">حفظ الصور</button>
+                            <button type="submit" class="btn btn-success px-4" id="upload-installations-images-btn">
+                                <i class="fas fa-upload me-2"></i>
+                                حفظ الصور
+                            </button>
                         </div>
                     </form>
                 </div>
@@ -176,7 +177,6 @@
     </div>
 
     <!-- عرض صور التركيبات المرفوعة -->
-    @if($installationImages->count() > 0)
     <div class="row mt-4">
         <div class="col-12">
             <div class="card shadow-sm">
@@ -184,53 +184,65 @@
                     <div>
                         <i class="fas fa-images me-2"></i>
                         صور التركيبات المرفوعة
+                        @if($installationImages->count() > 0)
+                            <span class="badge bg-light text-dark ms-2">{{ $installationImages->count() }}</span>
+                        @endif
                     </div>
-                    <button type="button" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#viewAllImagesModal">
-                        <i class="fas fa-expand-alt me-1"></i>
-                        عرض جميع الصور
-                    </button>
+                    @if($installationImages->count() > 0)
+                        <button type="button" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#viewAllImagesModal">
+                            <i class="fas fa-expand-alt me-1"></i>
+                            عرض جميع الصور
+                        </button>
+                    @endif
                 </div>
                 <div class="card-body">
-                    <div class="row g-3">
-                        @foreach($installationImages as $image)
-                            <div class="col-6 col-md-4 col-lg-3">
-                                <div class="card h-100 position-relative">
-                                    <button type="button" 
-                                            class="btn btn-danger btn-sm position-absolute top-0 end-0 m-2 delete-image" 
-                                            data-image-id="{{ $image->id }}"
-                                            data-bs-toggle="modal" 
-                                            data-bs-target="#deleteImageModal"
-                                            style="z-index: 1;">
-                                        <i class="fas fa-times"></i>
-                                    </button>
-                                    <a href="#" class="text-decoration-none view-image" 
-                                       data-bs-toggle="modal" 
-                                       data-bs-target="#viewImageModal"
-                                       data-image-url="{{ Storage::url($image->file_path) }}"
-                                       data-image-name="{{ $image->original_filename }}"
-                                       data-image-date="{{ \Carbon\Carbon::parse($image->created_at)->format('Y-m-d H:i') }}">
-                                        <img src="{{ Storage::url($image->file_path) }}" 
-                                             class="card-img-top" 
-                                             alt="{{ $image->original_filename }}"
-                                             style="height: 200px; object-fit: cover;">
-                                        <div class="card-body p-2">
-                                            <p class="card-text small text-muted mb-0 text-truncate">
-                                                {{ $image->original_filename }}
-                                            </p>
-                                            <p class="card-text small text-muted mb-0">
-                                                {{ \Carbon\Carbon::parse($image->created_at)->format('Y-m-d H:i') }}
-                                            </p>
-                                        </div>
-                                    </a>
+                    @if($installationImages->count() > 0)
+                        <div class="row g-3">
+                            @foreach($installationImages as $image)
+                                <div class="col-6 col-md-4 col-lg-3">
+                                    <div class="card h-100 position-relative">
+                                        <button type="button" 
+                                                class="btn btn-danger btn-sm position-absolute top-0 end-0 m-2 delete-image" 
+                                                data-image-id="{{ $image->id }}"
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#deleteImageModal"
+                                                style="z-index: 1;">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                        <a href="#" class="text-decoration-none view-image" 
+                                           data-bs-toggle="modal" 
+                                           data-bs-target="#viewImageModal"
+                                           data-image-url="{{ Storage::url($image->file_path) }}"
+                                           data-image-name="{{ $image->original_filename }}"
+                                           data-image-date="{{ \Carbon\Carbon::parse($image->created_at)->format('Y-m-d H:i') }}">
+                                            <img src="{{ Storage::url($image->file_path) }}" 
+                                                 class="card-img-top" 
+                                                 alt="{{ $image->original_filename }}"
+                                                 style="height: 200px; object-fit: cover;">
+                                            <div class="card-body p-2">
+                                                <p class="card-text small text-muted mb-0 text-truncate">
+                                                    {{ $image->original_filename }}
+                                                </p>
+                                                <p class="card-text small text-muted mb-0">
+                                                    {{ \Carbon\Carbon::parse($image->created_at)->format('Y-m-d H:i') }}
+                                                </p>
+                                            </div>
+                                        </a>
+                                    </div>
                                 </div>
-                            </div>
-                        @endforeach
-                    </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <div class="text-center py-5">
+                            <i class="fas fa-images fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted mb-2">لم يتم رفع أي صور بعد</h5>
+                            <p class="text-muted">استخدم النموذج أعلاه لرفع صور التركيبات</p>
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>
     </div>
-    @endif
 
     <!-- Modal لعرض صورة واحدة -->
     <div class="modal fade" id="viewImageModal" tabindex="-1" aria-labelledby="viewImageModalLabel" aria-hidden="true">
@@ -320,7 +332,11 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    هل أنت متأكد من حذف هذه الصورة؟
+                    <div class="text-center">
+                        <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+                        <h5>تأكيد حذف الصورة</h5>
+                        <p class="text-muted">هل أنت متأكد من حذف هذه الصورة؟ لا يمكن التراجع عن هذا الإجراء.</p>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <form id="deleteImageForm" action="" method="POST">
@@ -413,7 +429,8 @@ document.addEventListener('DOMContentLoaded', function() {
         button.addEventListener('click', function() {
             const imageId = this.dataset.imageId;
             const form = document.getElementById('deleteImageForm');
-            form.action = `/admin/work-orders/installations/images/${imageId}`;
+            const baseUrl = '{{ url("admin/work-orders/installations/images") }}';
+            form.action = `${baseUrl}/${imageId}`;
         });
     });
 });
@@ -626,6 +643,9 @@ document.addEventListener('DOMContentLoaded', function() {
         input.addEventListener('change', updateInstallationsSummary);
     });
     
+    // إعداد رفع الصور
+    setupInstallationsImagesUpload();
+    
     // استعادة القيم المحفوظة وعرضها بوضوح
     restoreSavedValues();
     
@@ -676,6 +696,81 @@ function restoreSavedValues() {
             label.style.fontWeight = 'bold';
         }
     });
+}
+
+// إعداد رفع صور التركيبات
+function setupInstallationsImagesUpload() {
+    const form = document.getElementById('installations-images-form');
+    const button = document.getElementById('upload-installations-images-btn');
+    const fileInput = document.getElementById('installations_images');
+    
+    if (form && button && fileInput) {
+        form.addEventListener('submit', function(e) {
+            if (fileInput.files.length === 0) {
+                e.preventDefault();
+                alert('يرجى اختيار صور للرفع');
+                return;
+            }
+            
+            // تغيير نص الزر أثناء الرفع
+            button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>جاري الرفع...';
+            button.disabled = true;
+        });
+        
+        // إعادة تعيين الزر في حالة الخطأ
+        form.addEventListener('error', function() {
+            button.innerHTML = '<i class="fas fa-upload me-2"></i>حفظ الصور';
+            button.disabled = false;
+        });
+        
+        // معاينة الصور المختارة
+        fileInput.addEventListener('change', function() {
+            const preview = document.getElementById('installations-images-preview');
+            const container = document.getElementById('installations-preview-container');
+            
+            container.innerHTML = '';
+            
+            if (this.files.length > 0) {
+                preview.style.display = 'block';
+                
+                Array.from(this.files).slice(0, 10).forEach((file, index) => {
+                    if (file.type.startsWith('image/')) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            const col = document.createElement('div');
+                            col.className = 'col-6 col-md-4 col-lg-3';
+                            col.innerHTML = `
+                                <div class="card">
+                                    <img src="${e.target.result}" class="card-img-top" style="height: 100px; object-fit: cover;">
+                                    <div class="card-body p-2">
+                                        <small class="text-muted text-truncate d-block">${file.name}</small>
+                                    </div>
+                                </div>
+                            `;
+                            container.appendChild(col);
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+                
+                if (this.files.length > 10) {
+                    const moreCol = document.createElement('div');
+                    moreCol.className = 'col-6 col-md-4 col-lg-3';
+                    moreCol.innerHTML = `
+                        <div class="card bg-light d-flex align-items-center justify-content-center" style="height: 140px;">
+                            <div class="text-center">
+                                <i class="fas fa-plus fa-2x text-muted mb-2"></i>
+                                <small class="text-muted">+${this.files.length - 10} صور أخرى</small>
+                            </div>
+                        </div>
+                    `;
+                    container.appendChild(moreCol);
+                }
+            } else {
+                preview.style.display = 'none';
+            }
+        });
+    }
 }
 </script>
 @endpush

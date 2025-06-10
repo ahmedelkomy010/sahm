@@ -33,13 +33,21 @@ class ElectricalWorksController extends Controller
         // تحديث البيانات من قاعدة البيانات
         $workOrder = $workOrder->fresh();
         
+        // استرجاع صور الأعمال الكهربائية
+        $electricalWorksImages = $workOrder->electricalWorksFiles()
+            ->where('file_type', 'like', 'image/%')
+            ->orderBy('created_at', 'desc')
+            ->get();
+        
         // تسجيل البيانات المسترجعة للتشخيص
         \Log::info('Retrieved electrical works data for work order ' . $workOrder->id);
         \Log::info('Electrical works data:', ['data' => $workOrder->electrical_works]);
+        \Log::info('Electrical works images count:', ['count' => $electricalWorksImages->count()]);
         
         return view('admin.work_orders.electrical_works', [
             'workOrder' => $workOrder,
-            'electricalItems' => $this->electricalItems
+            'electricalItems' => $this->electricalItems,
+            'electricalWorksImages' => $electricalWorksImages
         ]);
     }
 
@@ -130,9 +138,11 @@ class ElectricalWorksController extends Controller
         return redirect()->back()->with('success', 'تم رفع الصور بنجاح');
     }
 
-    public function deleteImage($workOrder, $image)
+    public function deleteImage(WorkOrder $workOrder, $image)
     {
-        $file = $workOrder->files()->findOrFail($image);
+        $file = $workOrder->electricalWorksFiles()
+            ->where('id', $image)
+            ->firstOrFail();
         
         if (Storage::disk('public')->exists($file->file_path)) {
             Storage::disk('public')->delete($file->file_path);
@@ -140,6 +150,6 @@ class ElectricalWorksController extends Controller
         
         $file->delete();
 
-        return redirect()->back()->with('success', 'تم حذف الصورة بنجاح');
+        return redirect()->back()->with('success', 'تم حذف صورة الأعمال الكهربائية بنجاح');
     }
 } 
