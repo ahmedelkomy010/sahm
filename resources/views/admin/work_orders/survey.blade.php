@@ -232,15 +232,26 @@
                                                         </div>
                                                         <div class="modal-body">
                                                             <div class="row">
-                                                                @forelse($survey->files as $file)
-                                                                    <div class="col-md-4 mb-3">
-                                                                        <div class="card">
-                                                                            <img src="{{ asset('storage/' . $file->file_path) }}" class="card-img-top" alt="{{ $file->original_filename }}">
-                                                                            <div class="card-body">
-                                                                                <p class="card-text small">{{ $file->original_filename }}</p>
+                                                                @php
+                                                                    $validFiles = $survey->files->filter(function($file) {
+                                                                        return \App\Helpers\FileHelper::getFileUrl($file->file_path) !== null;
+                                                                    });
+                                                                @endphp
+                                                                @forelse($validFiles as $file)
+                                                                    @php
+                                                                        $fileUrl = \App\Helpers\FileHelper::getFileUrl($file->file_path);
+                                                                    @endphp
+                                                                    @if($fileUrl)
+                                                                        <div class="col-md-4 mb-3">
+                                                                            <div class="card">
+                                                                                <img src="{{ $fileUrl }}" class="card-img-top" alt="{{ $file->original_filename }}" 
+                                                                                     onerror="this.parentElement.parentElement.style.display='none'">
+                                                                                <div class="card-body">
+                                                                                    <p class="card-text small">{{ $file->original_filename }}</p>
+                                                                                </div>
                                                                             </div>
                                                                         </div>
-                                                                    </div>
+                                                                    @endif
                                                                 @empty
                                                                     <div class="col-12">
                                                                         <div class="alert alert-info">

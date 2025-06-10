@@ -27,13 +27,18 @@ class FileHelper
             return asset($filePath);
         }
 
-                 // إذا كان المسار عادي، استخدم Storage::url
-         try {
-             return Storage::url($filePath);
-         } catch (\Exception $e) {
-             // في حالة الخطأ، استخدم serve_file.php
-             return url('serve_file.php?file=' . urlencode($filePath));
-         }
+        // التحقق من وجود الملف أولاً
+        if (!self::fileExists($filePath)) {
+            return null; // إرجاع null إذا كان الملف غير موجود
+        }
+
+        // إذا كان المسار عادي، استخدم Storage::url
+        try {
+            return Storage::url($filePath);
+        } catch (\Exception $e) {
+            // في حالة الخطأ، استخدم serve_file.php
+            return url('serve_file.php?file=' . urlencode($filePath));
+        }
     }
 
     /**

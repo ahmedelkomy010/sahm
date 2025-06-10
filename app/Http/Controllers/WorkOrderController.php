@@ -702,15 +702,22 @@ class WorkOrderController extends Controller
 
         // إذا كان الطلب AJAX، أرجع JSON
         if ($request->ajax() || $request->wantsJson()) {
-                         $images = $surveyFiles->map(function ($file) {
+            $images = $surveyFiles->map(function ($file) {
+                $url = \App\Helpers\FileHelper::getFileUrl($file->file_path);
+                
+                // تصفية الملفات غير الموجودة
+                if (!$url) {
+                    return null;
+                }
+                
                 return [
                     'id' => $file->id,
                     'name' => $file->original_filename,
-                    'url' => \App\Helpers\FileHelper::getFileUrl($file->file_path),
+                    'url' => $url,
                     'size' => $file->file_size,
                     'type' => $file->file_type
                 ];
-            });
+            })->filter(); // إزالة العناصر null
 
             return response()->json([
                 'success' => true,
