@@ -33,29 +33,54 @@
                 @csrf
                 @method('PUT')
                 
+                <!-- إبقاء work_order_id كحقل مخفي للتوافق -->
+                <input type="hidden" name="work_order_id" value="{{ $material->work_order_id }}">
+                
+                <div class="row">   
+                    <div class="col-md-12 mb-3">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>أمر العمل الحالي:</strong> {{ $material->workOrder->order_number }} - {{ $material->workOrder->subscriber_name }}
+                            <br><small class="text-muted">سيتم الاحتفاظ بنفس أمر العمل عند التحديث</small>
+                        </div>
+                        <!-- حقل مخفي للحفاظ على أمر العمل الحالي -->
+                        <input type="hidden" name="work_order_id" value="{{ $material->work_order_id }}">
+                    </div>
+                </div>
+                
                 <div class="row">
                     <div class="col-md-6 mb-3">
-                        <label for="work_order_id" class="form-label">أمر العمل</label>
-                        <select name="work_order_id" id="work_order_id" class="form-select" required>
-                            <option value="">اختر أمر العمل</option>
-                            @foreach($workOrders as $workOrder)
-                                <option value="{{ $workOrder->id }}" {{ $material->work_order_id == $workOrder->id ? 'selected' : '' }}>
-                                    {{ $workOrder->order_number }} - {{ $workOrder->subscriber_name }}
-                                </option>
-                            @endforeach
-                        </select>
+                        <label for="code" class="form-label">كود المادة</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="code" name="code" value="{{ $material->code }}" required>
+                            <button type="button" class="btn btn-outline-secondary" id="search-material-btn" title="البحث عن وصف المادة">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
                     </div>
                     
                     <div class="col-md-6 mb-3">
-                        <label for="code" class="form-label">كود المادة</label>
-                        <input type="text" class="form-control" id="code" name="code" value="{{ $material->code }}" required>
+                        <label for="line" class="form-label">السطر</label>
+                        <input type="text" class="form-control" id="line" name="line" value="{{ $material->line }}">
                     </div>
                 </div>
                 
                 <div class="row">
                     <div class="col-md-12 mb-3">
                         <label for="description" class="form-label">وصف المادة</label>
-                        <textarea class="form-control" id="description" name="description" rows="3" required>{{ $material->description }}</textarea>
+                        <div class="position-relative">
+                            <textarea class="form-control" id="description" name="description" rows="4" required 
+                                      style="min-height: 100px; resize: vertical;">{{ $material->description }}</textarea>
+                            <div id="description-loader" class="position-absolute top-0 end-0 p-2" style="display: none;">
+                                <i class="fas fa-spinner fa-spin text-primary"></i>
+                            </div>
+                        </div>
+                        <small class="text-muted">
+                            <i class="fas fa-info-circle"></i> يمكن البحث عن الوصف تلقائياً بكود المادة
+                        </small>
+                        <small class="text-success" id="description-status" style="display: none;">
+                            <i class="fas fa-check-circle"></i> تم جلب الوصف تلقائياً
+                        </small>
                     </div>
                 </div>
                 
@@ -167,45 +192,132 @@
 
 @section('scripts')
 <script>
-// قائمة أكواد المواد وأوصافها
-const materialsData = {
-    "M001": "أنابيب مياه بلاستيكية قطر 50 مم",
-    "M002": "أنابيب صرف صحي 100 مم",
-    "M003": "محابس مياه معدنية 3/4 بوصة",
-    "M004": "وصلات بلاستيكية T شكل",
-    "M005": "صمامات تحكم بالضغط",
-    // يمكن إضافة المزيد من الأكواد والأوصاف
-};
+document.addEventListener('DOMContentLoaded', function() {
+    // تحديث select box أمر العمل
+    const workOrderSelect = document.getElementById('work_order_id');
 
-// تحديث وصف المادة عند تغيير كود المادة
-document.getElementById('code').addEventListener('input', function() {
-    const code = this.value.trim();
-    const description = document.getElementById('description');
+    // البحث عن وصف المادة
+    const codeInput = document.getElementById('code');
+    const descriptionTextarea = document.getElementById('description');
+    const descriptionLoader = document.getElementById('description-loader');
+    const descriptionStatus = document.getElementById('description-status');
+    const searchBtn = document.getElementById('search-material-btn');
     
-    if (materialsData[code] && !description.dataset.userEdited) {
-        description.value = materialsData[code];
+    let searchTimeout;
+    
+    // دالة البحث عن وصف المادة
+    function searchMaterialDescription(code) {
+        if (!code) return;
+        
+        descriptionLoader.style.display = 'block';
+        descriptionStatus.style.display = 'none';
+        
+        fetch(`/admin/materials/description/${code}`)
+            .then(response => response.json())
+            .then(data => {
+                descriptionLoader.style.display = 'none';
+                
+                if (data.description && data.description.trim()) {
+                    descriptionTextarea.value = data.description;
+                    descriptionStatus.style.display = 'block';
+                    descriptionStatus.innerHTML = '<i class="fas fa-check-circle"></i> تم جلب الوصف تلقائياً';
+                } else {
+                    descriptionStatus.style.display = 'block';
+                    descriptionStatus.innerHTML = '<i class="fas fa-exclamation-triangle text-warning"></i> لم يتم العثور على وصف لهذا الكود';
+                    descriptionStatus.className = 'text-warning';
+                }
+            })
+            .catch(error => {
+                console.error('خطأ في جلب وصف المادة:', error);
+                descriptionLoader.style.display = 'none';
+                descriptionStatus.style.display = 'block';
+                descriptionStatus.innerHTML = '<i class="fas fa-times-circle text-danger"></i> خطأ في جلب الوصف';
+                descriptionStatus.className = 'text-danger';
+            });
     }
-});
-
-// تتبع تعديلات المستخدم على وصف المادة
-document.getElementById('description').addEventListener('input', function() {
-    this.dataset.userEdited = true;
-});
-
-// حساب الفرق بين الكمية المخططة والكمية الفعلية
-function calculateDifference() {
-    const plannedQuantity = parseFloat(document.getElementById('planned_quantity').value) || 0;
-    const actualQuantity = parseFloat(document.getElementById('actual_quantity').value) || 0;
-    const difference = plannedQuantity - actualQuantity;
     
-    document.querySelector('.col-md-12.mb-3 input[readonly]').value = difference.toFixed(2);
-}
+    // البحث عند تغيير كود المادة
+    if (codeInput) {
+        codeInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            const code = this.value.trim();
+            
+            if (code.length >= 2) {
+                searchTimeout = setTimeout(() => {
+                    searchMaterialDescription(code);
+                }, 500);
+            } else {
+                descriptionLoader.style.display = 'none';
+                descriptionStatus.style.display = 'none';
+            }
+        });
+        
+        codeInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const code = this.value.trim();
+                if (code) {
+                    searchMaterialDescription(code);
+                }
+            }
+        });
+    }
+    
+    // البحث عند الضغط على زر البحث
+    if (searchBtn) {
+        searchBtn.addEventListener('click', function() {
+            const code = codeInput.value.trim();
+            if (code) {
+                searchMaterialDescription(code);
+            } else {
+                codeInput.focus();
+                codeInput.style.borderColor = '#dc3545';
+                setTimeout(() => {
+                    codeInput.style.borderColor = '';
+                }, 2000);
+            }
+        });
+    }
 
-// تحديث الفرق عند تغيير الكميات
-document.getElementById('planned_quantity').addEventListener('input', calculateDifference);
-document.getElementById('actual_quantity').addEventListener('input', calculateDifference);
+    // حساب الفرق بين الكمية المخططة والكمية الفعلية
+    function calculateDifference() {
+        const plannedQuantity = parseFloat(document.getElementById('planned_quantity').value) || 0;
+        const actualQuantity = parseFloat(document.getElementById('actual_quantity').value) || 0;
+        const difference = plannedQuantity - actualQuantity;
+        
+        const diffInput = document.querySelector('.col-md-12.mb-3 input[readonly]');
+        if (diffInput) {
+            diffInput.value = difference.toFixed(2);
+        }
+    }
 
-// حساب الفرق عند تحميل الصفحة
-calculateDifference();
+    // تحديث الفرق عند تغيير الكميات
+    const plannedQtyInput = document.getElementById('planned_quantity');
+    const actualQtyInput = document.getElementById('actual_quantity');
+    
+    if (plannedQtyInput) {
+        plannedQtyInput.addEventListener('input', calculateDifference);
+    }
+    if (actualQtyInput) {
+        actualQtyInput.addEventListener('input', calculateDifference);
+    }
+
+    // حساب الفرق عند تحميل الصفحة
+    calculateDifference();
+    
+    // تحسين تجربة رفع الملفات
+    const fileInputs = document.querySelectorAll('input[type="file"]');
+    fileInputs.forEach(function(input) {
+        input.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                const small = this.nextElementSibling;
+                if (small && small.tagName === 'SMALL') {
+                    small.innerHTML = `<i class="fas fa-check-circle text-success"></i> ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+                }
+            }
+        });
+    });
+});
 </script>
 @endsection 

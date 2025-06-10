@@ -341,6 +341,37 @@
         background-color: #f8f9fa !important;
         border-top: 2px solid #dee2e6;
     }
+    
+    /* فلتر البحث */
+    .materials-filter {
+        background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+        border: 1px solid #e9ecef;
+        border-radius: 15px;
+        transition: all 0.3s ease;
+    }
+    
+    .materials-filter:hover {
+        border-color: #2196F3;
+        box-shadow: 0 5px 15px rgba(33, 150, 243, 0.1);
+    }
+    
+    #material-code-filter:focus {
+        border-color: #2196F3;
+        box-shadow: 0 0 20px rgba(33, 150, 243, 0.2);
+    }
+    
+    .filter-stats {
+        font-size: 0.85rem;
+    }
+    
+    .materials-table-card {
+        transition: all 0.3s ease;
+    }
+    
+    .materials-table-card[style*="display: none"] {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
 </style>
 
 <div class="materials-container">
@@ -378,25 +409,41 @@
         <div class="row mb-4">
             <div class="col-12">
                 <div class="d-flex justify-content-between align-items-center">
-                    <a href="{{ route('admin.work-orders.index') }}" class="btn btn-secondary btn-modern">
-                        <i class="fas fa-arrow-right me-2"></i>
-                        الرجوع لأوامر العمل
-                    </a>
+                    <div class="d-flex align-items-center">
+                        <a href="{{ route('admin.work-orders.index') }}" class="btn btn-secondary btn-modern me-3">
+                            <i class="fas fa-arrow-right me-2"></i>
+                            الرجوع لأوامر العمل
+                        </a>
+                        @if(isset($currentWorkOrder))
+                        <div class="alert alert-primary mb-0 p-2">
+                            <i class="fas fa-clipboard-list me-2"></i>
+                            <strong>أمر العمل:</strong> {{ $currentWorkOrder->order_number }}
+                            <br><small>{{ $currentWorkOrder->subscriber_name }}</small>
+                        </div>
+                        @endif
+                    </div>
                     <div class="d-flex align-items-center">
                         <span class="badge bg-primary me-2">
                             <i class="fas fa-box me-1"></i>
-                            {{ $materials->total() ?? $materials->count() }} مادة
+                            {{ $materials->count() }} مادة
                         </span>
-                        @if(!isset($currentWorkOrder) || !$currentWorkOrder)
-                        <span class="badge bg-success">
-                            <i class="fas fa-clipboard-list me-1"></i>
-                            {{ $materials->groupBy('work_order_number')->count() }} أمر عمل
-                        </span>
-                        @else
-                        <span class="badge bg-warning">
-                            <i class="fas fa-filter me-1"></i>
-                            عرض مخصص
-                        </span>
+                        <!-- تنقل بين أوامر العمل -->
+                        @if($workOrders->count() > 1)
+                        <div class="dropdown">
+                           
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                @foreach($workOrders as $workOrder)
+                                    <li>
+                                        <a class="dropdown-item {{ isset($currentWorkOrder) && $currentWorkOrder->id == $workOrder->id ? 'active' : '' }}" 
+                                           href="{{ route('admin.work-orders.materials', $workOrder->id) }}">
+                                            <i class="fas fa-clipboard-list me-2"></i>
+                                            {{ $workOrder->order_number }}
+                                            <br><small class="text-muted">{{ $workOrder->subscriber_name }}</small>
+                                        </a>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        </div>
                         @endif
                     </div>
                 </div>
@@ -417,22 +464,49 @@
                         <form action="{{ route('admin.work-orders.materials.store') }}" method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
                             @csrf
                             
-                            <!-- معلومات أمر العمل - مطلوب -->
+                            <!-- معلومات أمر العمل - تلقائي -->
                             <div class="form-section">
                                 <h5 class="text-primary mb-3">
                                     <i class="fas fa-clipboard-list me-2"></i>
                                     معلومات أمر العمل
                                 </h5>
                                 <div class="mb-3">
-                                    <label for="work_order_number" class="form-label required-field">رقم أمر العمل</label>
-                                    <input type="text" class="form-control form-control-modern" id="work_order_number" name="work_order_number" 
-                                           placeholder="مثال: WO-2024-001" required autocomplete="off" 
-                                           value="{{ isset($currentWorkOrder) && $currentWorkOrder ? $currentWorkOrder : '' }}">
-                                    <div class="invalid-feedback">يرجى إدخال رقم أمر العمل</div>
-                                    <small class="text-muted">
-                                        <i class="fas fa-info-circle me-1"></i>
-                                        كل رقم أمر عمل سيكون له جدول مواد منفصل ومستقل
-                                    </small>
+                                    @if(isset($currentWorkOrder))
+                                    <div class="alert alert-success">
+                                        <i class="fas fa-check-circle me-2"></i>
+                                        <strong>أمر العمل الحالي:</strong> {{ $currentWorkOrder->order_number }}
+                                        <br><small>{{ $currentWorkOrder->subscriber_name }}</small>
+                                        <br><small class="text-muted">سيتم إضافة المواد لهذا الأمر تلقائياً</small>
+                                    </div>
+                                    @else
+                                    <div class="alert alert-warning">
+                                        <i class="fas fa-exclamation-triangle me-2"></i>
+                                        <strong>تنبيه:</strong> لم يتم تحديد أمر عمل. يرجى اختيار أمر عمل أولاً.
+                                    </div>
+                                    @endif
+                                    
+                                    @if($workOrders->count() > 0)
+                                        <div class="alert alert-success">
+                                            <i class="fas fa-check-circle me-2"></i>
+                                            <strong>أوامر العمل المتاحة:</strong>
+                                            <ul class="mb-0 mt-2">
+                                                @foreach($workOrders->take(5) as $workOrder)
+                                                    <li>{{ $workOrder->order_number }} - {{ $workOrder->subscriber_name }}</li>
+                                                @endforeach
+                                                @if($workOrders->count() > 5)
+                                                    <li><small class="text-muted">... و {{ $workOrders->count() - 5 }} أوامر أخرى</small></li>
+                                                @endif
+                                            </ul>
+                                        </div>
+                                    @else
+                                        <div class="alert alert-warning">
+                                            <i class="fas fa-exclamation-triangle me-2"></i>
+                                            <strong>تنبيه:</strong> لا توجد أوامر عمل متاحة. يرجى إنشاء أمر عمل أولاً.
+                                        </div>
+                                    @endif
+                                    
+                                    <!-- حقل مخفي للتوافق مع الكنترولر -->
+                                    <input type="hidden" id="work_order_id" name="work_order_id" value="{{ isset($currentWorkOrder) ? $currentWorkOrder->id : '1' }}">
                                 </div>
                             </div>
 
@@ -588,29 +662,65 @@
 
             <!-- قسم عرض المواد -->
             <div class="col-lg-7">
-                <!-- جداول منفصلة لكل أمر عمل -->
-                @forelse($materials->groupBy('work_order_number') as $workOrderNumber => $workOrderMaterials)
-                <div class="card card-modern mb-4">
+                <!-- فلتر البحث -->
+                <div class="card card-modern materials-filter mb-3">
+                    <div class="card-body">
+                        <div class="row align-items-end">
+                            <div class="col-md-6">
+                                <label for="material-code-filter" class="form-label">
+                                    <i class="fas fa-filter me-1"></i>
+                                    فلتر حسب كود المادة
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-search text-muted"></i>
+                                    </span>
+                                    <input type="text" class="form-control" id="material-code-filter" 
+                                           placeholder="ابحث بكود المادة..." autocomplete="off">
+                                    <button type="button" class="btn btn-outline-secondary" id="clear-filter-btn" title="مسح الفلتر">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="text-end filter-stats">
+                                    <span class="badge bg-info" id="total-materials">
+                                        <i class="fas fa-box me-1"></i>
+                                        <span id="visible-count">{{ $materials->count() }}</span> مادة ظاهرة
+                                    </span>
+                                    <span class="badge bg-secondary" id="total-hidden" style="display: none;">
+                                        <i class="fas fa-eye-slash me-1"></i>
+                                        <span id="hidden-count">0</span> مادة مخفية
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- جدول مواد أمر العمل الحالي -->
+                @if(isset($currentWorkOrder) && $materials->count() > 0)
+                <div class="card card-modern mb-4 materials-table-card">
                     <div class="card-header card-header-modern d-flex justify-content-between align-items-center">
                         <div>
                             <h5 class="mb-0">
                                 <i class="fas fa-clipboard-list me-2"></i>
-                                أمر العمل: {{ $workOrderNumber }}
+                                رقم الطلب: {{ $currentWorkOrder->order_number }}
                             </h5>
                             <small class="text-white-50">
-                                <i class="fas fa-box me-1"></i>
-                                {{ $workOrderMaterials->count() }} مادة
+                                <i class="fas fa-user me-1"></i>
+                                {{ $currentWorkOrder->subscriber_name }}
                                 <span class="mx-2">|</span>
-                                <i class="fas fa-shield-alt me-1"></i>
-                                مواد مستقلة
+                                <i class="fas fa-box me-1"></i>
+                                {{ $materials->count() }} مادة
                             </small>
                         </div>
                         <div>
-                            <span class="badge bg-light text-dark">{{ $workOrderMaterials->count() }} مادة</span>
-                            <a href="{{ route('admin.work-orders.materials.export.excel', ['work_order' => $workOrderNumber]) }}" 
-                               class="btn btn-success-modern btn-sm ms-2">
+                            <span class="badge bg-light text-dark">{{ $materials->count() }} مادة</span>
+                            <a href="{{ route('admin.work-orders.materials.export.excel', ['work_order' => $currentWorkOrder->order_number]) }}" 
+                               class="btn btn-success-modern btn-sm ms-2" target="_blank">
                                 <i class="fas fa-file-excel me-1"></i>
-                                تصدير
+                                تصدير إكسل
                             </a>
                         </div>
                     </div>
@@ -620,7 +730,7 @@
                                 <thead class="table-dark">
                                     <tr>
                                         <th style="width: 100px;">كود المادة</th>
-                                        <th style="width: 200px;">الوصف</th>
+                                        <th style="width: 350px;">الوصف</th>
                                         <th style="width: 60px;">السطر</th>
                                         <th style="width: 80px;">كمية مخططة</th>
                                         <th style="width: 80px;">كمية فعلية</th>
@@ -628,20 +738,20 @@
                                         <th style="width: 80px;">كمية منفذة</th>
                                         <th style="width: 70px;">الفرق</th>
                                         <th style="width: 60px;">الوحدة</th>
-                                        <th style="width: 100px;">تاريخ البوابة</th>
+                                        <th style="width: 100px;">DATE GATEPASS</th>
                                         <th style="width: 80px;">الملفات</th>
                                         <th style="width: 80px;">الإجراءات</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach($workOrderMaterials as $material)
+                                    @foreach($materials as $material)
                                         <tr>
                                             <td>
                                                 <span class="badge badge-compact bg-primary">{{ $material->code }}</span>
                                             </td>
                                             <td>
-                                                <div style="max-width: 200px;" class="text-truncate" title="{{ $material->description }}">
-                                                    {{ Str::limit($material->description, 40) }}
+                                                <div style="max-width: 350px; white-space: normal; line-height: 1.4;" title="{{ $material->description }}">
+                                                    {{ $material->description }}
                                                 </div>
                                             </td>
                                             <td><small>{{ $material->line ?? '-' }}</small></td>
@@ -756,26 +866,26 @@
                                             <i class="fas fa-calculator me-2"></i>إجمالي أمر العمل
                                         </td>
                                         <td>
-                                            <span class="badge bg-info text-white">{{ number_format($workOrderMaterials->sum('planned_quantity'), 1) }}</span>
+                                            <span class="badge bg-info text-white">{{ number_format($materials->sum('planned_quantity'), 1) }}</span>
                                         </td>
                                         <td>
-                                            <span class="badge bg-warning text-white">{{ number_format($workOrderMaterials->sum('actual_quantity'), 1) }}</span>
+                                            <span class="badge bg-warning text-white">{{ number_format($materials->sum('actual_quantity'), 1) }}</span>
                                         </td>
                                         <td>
-                                            <span class="badge bg-purple text-white">{{ number_format($workOrderMaterials->sum('spent_quantity'), 1) }}</span>
+                                            <span class="badge bg-purple text-white">{{ number_format($materials->sum('spent_quantity'), 1) }}</span>
                                         </td>
                                         <td>
-                                            <span class="badge bg-teal text-white">{{ number_format($workOrderMaterials->sum('executed_site_quantity'), 1) }}</span>
+                                            <span class="badge bg-teal text-white">{{ number_format($materials->sum('executed_site_quantity'), 1) }}</span>
                                         </td>
                                         <td>
                                             @php
-                                                $workOrderDiff = $workOrderMaterials->sum('planned_quantity') - $workOrderMaterials->sum('actual_quantity');
-                                                $diffClass = $workOrderDiff > 0 ? 'bg-danger' : ($workOrderDiff < 0 ? 'bg-success' : 'bg-secondary');
+                                                $totalDiff = $materials->sum('planned_quantity') - $materials->sum('actual_quantity');
+                                                $diffClass = $totalDiff > 0 ? 'bg-danger' : ($totalDiff < 0 ? 'bg-success' : 'bg-secondary');
                                             @endphp
-                                            <span class="badge {{ $diffClass }} text-white">{{ number_format(abs($workOrderDiff), 1) }}</span>
+                                            <span class="badge {{ $diffClass }} text-white">{{ number_format(abs($totalDiff), 1) }}</span>
                                         </td>
                                         <td colspan="3" class="text-center text-muted">
-                                            <small>{{ $workOrderMaterials->count() }} مادة</small>
+                                            <small>{{ $materials->count() }} مادة</small>
                                         </td>
                                     </tr>
                                 </tfoot>
@@ -783,7 +893,7 @@
                         </div>
                     </div>
                 </div>
-                @empty
+                @elseif(isset($currentWorkOrder))
                 <div class="card card-modern">
                     <div class="card-body text-center py-5">
                         <div class="text-muted">
@@ -793,14 +903,19 @@
                         </div>
                     </div>
                 </div>
-                @endforelse
-
-                <!-- شريط التصفح إذا كان موجود -->
-                @if($materials->hasPages())
-                    <div class="d-flex justify-content-center mt-4">
-                        {{ $materials->links() }}
+                @else
+                <div class="card card-modern">
+                    <div class="card-body text-center py-5">
+                        <div class="text-muted">
+                            <i class="fas fa-exclamation-triangle fa-3x mb-3"></i>
+                            <h5>لم يتم تحديد أمر عمل</h5>
+                            <p>يرجى اختيار أمر عمل من القائمة أعلاه</p>
+                        </div>
                     </div>
+                </div>
                 @endif
+
+                <!-- تم حذف شريط التصفح لأن النظام يعرض جميع المواد الآن -->
             </div>
         </div>
     </div>
@@ -1084,6 +1199,85 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+
+    // تم حذف أزرار اختيار أمر العمل لأن النظام يعمل تلقائياً الآن
+
+    // فلتر البحث حسب كود المادة
+    const materialCodeFilter = document.getElementById('material-code-filter');
+    const clearFilterBtn = document.getElementById('clear-filter-btn');
+    const visibleCountSpan = document.getElementById('visible-count');
+    const hiddenCountSpan = document.getElementById('hidden-count');
+    const totalHiddenBadge = document.getElementById('total-hidden');
+    
+    if (materialCodeFilter) {
+        materialCodeFilter.addEventListener('input', function() {
+            const filterValue = this.value.toLowerCase().trim();
+            let visibleCount = 0;
+            let hiddenCount = 0;
+            
+            // البحث في جميع الصفوف
+            const allRows = document.querySelectorAll('.materials-table-card tbody tr');
+            const allTables = document.querySelectorAll('.materials-table-card');
+            
+            allRows.forEach(function(row) {
+                const codeCell = row.querySelector('td:first-child span.badge');
+                if (codeCell) {
+                    const codeText = codeCell.textContent.toLowerCase();
+                    const shouldShow = filterValue === '' || codeText.includes(filterValue);
+                    
+                    row.style.display = shouldShow ? '' : 'none';
+                    
+                    if (shouldShow) {
+                        visibleCount++;
+                    } else {
+                        hiddenCount++;
+                    }
+                }
+            });
+            
+            // تحديث الجداول - إخفاء الجداول التي لا تحتوي على صفوف ظاهرة
+            allTables.forEach(function(table) {
+                const visibleRowsInTable = table.querySelectorAll('tbody tr:not([style*="display: none"])');
+                const shouldShowTable = visibleRowsInTable.length > 0 || filterValue === '';
+                table.style.display = shouldShowTable ? '' : 'none';
+            });
+            
+            // تحديث العدادات
+            visibleCountSpan.textContent = visibleCount;
+            hiddenCountSpan.textContent = hiddenCount;
+            
+            if (hiddenCount > 0) {
+                totalHiddenBadge.style.display = 'inline-block';
+            } else {
+                totalHiddenBadge.style.display = 'none';
+            }
+            
+            // تمييز حقل البحث
+            if (filterValue) {
+                materialCodeFilter.style.backgroundColor = '#fff3cd';
+                materialCodeFilter.style.borderColor = '#ffc107';
+            } else {
+                materialCodeFilter.style.backgroundColor = '';
+                materialCodeFilter.style.borderColor = '';
+            }
+        });
+        
+        // زر مسح الفلتر
+        if (clearFilterBtn) {
+            clearFilterBtn.addEventListener('click', function() {
+                materialCodeFilter.value = '';
+                materialCodeFilter.dispatchEvent(new Event('input'));
+                materialCodeFilter.focus();
+            });
+        }
+        
+        // البحث عند الضغط على Enter
+        materialCodeFilter.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+            }
+        });
+    }
 });
 </script>
 @endpush

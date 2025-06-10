@@ -73,7 +73,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::get('work-orders/materials/{material}/edit', [MaterialsController::class, 'edit'])->name('work-orders.materials.edit');
     Route::put('work-orders/materials/{material}', [MaterialsController::class, 'update'])->name('work-orders.materials.update');
     Route::delete('work-orders/materials/{material}', [MaterialsController::class, 'destroy'])->name('work-orders.materials.destroy');
-    Route::get('work-orders/materials/export/excel', [MaterialsController::class, 'exportExcel'])->name('work-orders.materials.export.excel');
+    Route::get('materials/export/excel', [MaterialsController::class, 'exportExcel'])->name('work-orders.materials.export.excel');
     Route::get('materials/description/{code}', [MaterialsController::class, 'getDescriptionByCode'])->name('materials.description');
     
     // وظائف أوامر العمل الأخرى
