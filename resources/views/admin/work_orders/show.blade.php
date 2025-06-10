@@ -305,17 +305,48 @@
                                             <tr>
                                                 <th>مرفق اختبارات ما قبل التشغيل 211</th>
                                                 <td>
-                                                    @if($workOrder->pre_operation_tests_file)
-                                                        <div class="d-flex align-items-center">
-                                                            <i class="fas fa-file-pdf text-danger me-2"></i>
-                                                            <a href="{{ Storage::url($workOrder->pre_operation_tests_file) }}" 
-                                                               target="_blank" 
-                                                               class="text-decoration-none">
-                                                                عرض الملف
-                                                            </a>
+                                                    @php
+                                                        $preOperationTestsFile = $workOrder->files()
+                                                            ->where('file_category', 'post_execution')
+                                                            ->where('attachment_type', 'pre_operation_tests_file')
+                                                            ->first();
+                                                    @endphp
+                                                    @if($preOperationTestsFile)
+                                                        <div class="d-flex align-items-center justify-content-between">
+                                                            <div class="d-flex align-items-center">
+                                                                <i class="fas fa-file-pdf text-danger me-2"></i>
+                                                                <div>
+                                                                    <a href="{{ Storage::url($preOperationTestsFile->file_path) }}" 
+                                                                       target="_blank" 
+                                                                       class="text-decoration-none fw-bold">
+                                                                        {{ $preOperationTestsFile->original_filename }}
+                                                                    </a>
+                                                                    <br>
+                                                                    <small class="text-muted">
+                                                                        <i class="fas fa-calendar me-1"></i>
+                                                                        {{ $preOperationTestsFile->created_at->format('Y-m-d H:i') }}
+                                                                        <span class="mx-2">|</span>
+                                                                        <i class="fas fa-file-archive me-1"></i>
+                                                                        {{ number_format($preOperationTestsFile->file_size / 1024 / 1024, 2) }} MB
+                                                                    </small>
+                                                                </div>
+                                                            </div>
+                                                            <div>
+                                                                <a href="{{ Storage::url($preOperationTestsFile->file_path) }}" 
+                                                                   target="_blank" 
+                                                                   class="btn btn-sm btn-danger">
+                                                                    <i class="fas fa-eye me-1"></i>عرض
+                                                                </a>
+                                                            </div>
                                                         </div>
                                                     @else
-                                                        <span class="text-muted">لا يوجد مرفق</span>
+                                                        <div class="text-center py-3">
+                                                            <i class="fas fa-file-times fa-2x text-muted mb-2"></i>
+                                                            <br>
+                                                            <span class="text-muted">لا يوجد مرفق لاختبارات ما قبل التشغيل 211</span>
+                                                            <br>
+                                                            <small class="text-muted">يمكن رفع الملف من صفحة إجراءات ما بعد التنفيذ</small>
+                                                        </div>
                                                     @endif
                                                 </td>
                                             </tr>

@@ -366,166 +366,9 @@
         </div>
     </div>
 
-    {{-- صور التنفيذ للأعمال المدنية --}}
-    @php
-        $civilWorksExecutionImages = \App\Models\WorkOrderFile::where('work_order_id', $workOrder->id)
-                                                    ->where('file_category', 'civil_exec')
-            ->where('file_type', 'like', 'image/%')
-            ->orderBy('created_at', 'desc')
-            ->get();
-    @endphp
-    
-    @if($civilWorksExecutionImages->count() > 0)
-    <div class="card mb-4 shadow-sm">
-        <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
-            <span>
-                <i class="fas fa-camera me-2"></i>
-                صور التنفيذ - الأعمال المدنية
-                <span class="badge bg-light text-dark ms-2">{{ $civilWorksExecutionImages->count() }} صورة</span>
-            </span>
-            <button type="button" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#viewCivilWorksImagesModal">
-                <i class="fas fa-images"></i> عرض جميع الصور
-            </button>
-        </div>
-        <div class="card-body">
-            <div class="alert alert-success border-0">
-                <i class="fas fa-info-circle me-2"></i>
-                هذه الصور تم رفعها من صفحة الأعمال المدنية وتُظهر تفاصيل التنفيذ الفعلي
-            </div>
-            
-            <div class="row">
-                @foreach($civilWorksExecutionImages->take(8) as $image)
-                    <div class="col-6 col-md-3 col-lg-2 mb-3">
-                        <div class="card h-100 border-success">
-                            <img src="@imageUrl($image->file_path)" 
-                                 class="card-img-top" 
-                                 style="height: 120px; object-fit: cover; cursor: pointer;"
-                                 alt="صورة الأعمال المدنية"
-                                 data-bs-toggle="modal" 
-                                 data-bs-target="#viewCivilWorksImageModal"
-                                 data-image-url="@imageUrl($image->file_path)"
-                                 data-image-name="{{ $image->original_filename }}"
-                                 data-image-date="{{ $image->created_at->format('Y-m-d H:i') }}">
-                            <div class="card-body p-2">
-                                <small class="text-success fw-bold d-block text-truncate">{{ $image->original_filename }}</small>
-                                <small class="text-muted d-block">{{ $image->created_at->format('Y-m-d H:i') }}</small>
-                                <small class="badge bg-success">{{ round($image->file_size / 1024 / 1024, 2) }} MB</small>
-                            </div>
-                        </div>
-                    </div>
-                @endforeach
-                
-                @if($civilWorksExecutionImages->count() > 8)
-                    <div class="col-12 text-center mt-3">
-                        <p class="text-muted">
-                            <i class="fas fa-images me-2"></i>
-                            و {{ $civilWorksExecutionImages->count() - 8 }} صورة أخرى... 
-                            <button type="button" class="btn btn-link p-0" data-bs-toggle="modal" data-bs-target="#viewCivilWorksImagesModal">
-                                اضغط لعرض الجميع
-                            </button>
-                        </p>
-                    </div>
-                @endif
-            </div>
-        </div>
-    </div>
-    @else
-    <div class="card mb-4 shadow-sm">
-        <div class="card-header bg-secondary text-white">
-            <i class="fas fa-camera me-2"></i>
-            صور التنفيذ - الأعمال المدنية
-        </div>
-        <div class="card-body text-center py-5">
-            <i class="fas fa-camera fa-3x text-muted mb-3"></i>
-            <h5 class="text-muted">لا توجد صور للأعمال المدنية</h5>
-            <p class="text-muted mb-3">يمكنك رفع الصور من صفحة الأعمال المدنية</p>
-            <a href="{{ route('admin.work-orders.civil-works', $workOrder) }}" class="btn btn-success">
-                <i class="fas fa-plus me-2"></i>الذهاب لرفع الصور
-            </a>
-        </div>
-    </div>
-    @endif
 
-    {{-- Modal لعرض صورة واحدة من الأعمال المدنية --}}
-    <div class="modal fade" id="viewCivilWorksImageModal" tabindex="-1">
-        <div class="modal-dialog modal-lg modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header bg-success text-white">
-                    <h5 class="modal-title">
-                        <i class="fas fa-camera me-2"></i>صورة الأعمال المدنية
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body text-center">
-                    <img src="" id="modalCivilWorksImage" class="img-fluid rounded shadow" alt="صورة الأعمال المدنية">
-                    <div class="mt-3 p-3 bg-light rounded">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <strong class="text-success">اسم الملف:</strong>
-                                <p class="mb-1" id="modalCivilWorksImageName"></p>
-                            </div>
-                            <div class="col-md-6">
-                                <strong class="text-success">تاريخ الرفع:</strong>
-                                <p class="mb-1" id="modalCivilWorksImageDate"></p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
-                    <a href="" id="downloadCivilWorksImageBtn" target="_blank" class="btn btn-success">
-                        <i class="fas fa-download me-2"></i>تحميل الصورة
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    {{-- Modal لعرض جميع صور الأعمال المدنية --}}
-    <div class="modal fade" id="viewCivilWorksImagesModal" tabindex="-1">
-        <div class="modal-dialog modal-xl modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header bg-success text-white">
-                    <h5 class="modal-title">
-                        <i class="fas fa-images me-2"></i>
-                        جميع صور الأعمال المدنية ({{ $civilWorksExecutionImages->count() }} صورة)
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="row">
-                        @foreach($civilWorksExecutionImages as $image)
-                            <div class="col-6 col-md-4 col-lg-3 mb-3">
-                                <div class="card h-100 border-success">
-                                    <img src="@imageUrl($image->file_path)" 
-                                         class="card-img-top" 
-                                         style="height: 150px; object-fit: cover; cursor: pointer;"
-                                         onclick="openCivilWorksImageModal(this)"
-                                         data-image-url="@imageUrl($image->file_path)"
-                                         data-image-name="{{ $image->original_filename }}"
-                                         data-image-date="{{ $image->created_at->format('Y-m-d H:i') }}"
-                                         alt="صورة الأعمال المدنية">
-                                    <div class="card-body p-2">
-                                        <small class="text-success fw-bold d-block text-truncate">{{ $image->original_filename }}</small>
-                                        <small class="text-muted d-block">{{ $image->created_at->format('Y-m-d H:i') }}</small>
-                                        <small class="badge bg-success">{{ round($image->file_size / 1024 / 1024, 2) }} MB</small>
-                                    </div>
-                                </div>
-                            </div>
-                        @endforeach
-                    </div>
-                    
-                    @if($civilWorksExecutionImages->count() == 0)
-                        <div class="text-center py-5">
-                            <i class="fas fa-camera fa-3x text-muted mb-3"></i>
-                            <h5 class="text-muted">لا توجد صور للأعمال المدنية</h5>
-                            <p class="text-muted">يمكنك رفع الصور من صفحة الأعمال المدنية</p>
-                        </div>
-                    @endif
-                </div>
-            </div>
-        </div>
-    </div>
+
 
     @push('scripts')
     <script>
@@ -539,16 +382,7 @@
             });
         });
 
-        // التعامل مع modal صور الأعمال المدنية
-        document.querySelectorAll('[data-bs-target="#viewCivilWorksImageModal"]').forEach(img => {
-            img.addEventListener('click', function() {
-                const modal = document.getElementById('viewCivilWorksImageModal');
-                modal.querySelector('#modalCivilWorksImage').src = this.dataset.imageUrl;
-                modal.querySelector('#modalCivilWorksImageName').textContent = this.dataset.imageName;
-                modal.querySelector('#modalCivilWorksImageDate').textContent = this.dataset.imageDate;
-                modal.querySelector('#downloadCivilWorksImageBtn').href = this.dataset.imageUrl;
-            });
-        });
+
 
         // دالة لفتح مودال الصورة من عرض جميع الصور
         function openImageModal(img) {
@@ -559,15 +393,7 @@
             new bootstrap.Modal(modal).show();
         }
 
-        // دالة لفتح مودال صور الأعمال المدنية
-        function openCivilWorksImageModal(img) {
-            const modal = document.getElementById('viewCivilWorksImageModal');
-            modal.querySelector('#modalCivilWorksImage').src = img.dataset.imageUrl;
-            modal.querySelector('#modalCivilWorksImageName').textContent = img.dataset.imageName;
-            modal.querySelector('#modalCivilWorksImageDate').textContent = img.dataset.imageDate;
-            modal.querySelector('#downloadCivilWorksImageBtn').href = img.dataset.imageUrl;
-            new bootstrap.Modal(modal).show();
-        }
+
 
         // التحقق من عدد الملفات قبل الرفع
         document.getElementById('uploadInvoiceAttachmentsForm').addEventListener('submit', function(e) {
