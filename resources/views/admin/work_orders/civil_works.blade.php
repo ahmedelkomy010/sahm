@@ -1562,92 +1562,7 @@
                     </div>
                 </div>
 
-                <!-- قسم رفع المرفقات -->
-                <div class="col-12">
-                    <div class="card shadow-sm mb-4">
-                        <div class="card-header bg-warning text-dark">
-                            <i class="fas fa-paperclip me-2"></i>
-                            المرفقات والمستندات
-                        </div>
-                        <div class="card-body">
-                            <div class="alert alert-warning">
-                                <i class="fas fa-info-circle me-2"></i>
-                                يمكنك رفع المرفقات والمستندات المتعلقة بالأعمال المدنية (PDF, DOC, XLS, PPT, TXT) - حجم أقصى 20 ميجابايت لكل ملف
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="civil_works_attachments" class="form-label">اختر المرفقات</label>
-                                <input type="file" 
-                                       class="form-control" 
-                                       id="civil_works_attachments" 
-                                       name="civil_works_attachments[]" 
-                                       multiple 
-                                       accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip,.rar"
-                                       data-max-files="20"
-                                       data-max-file-size="20971520">
-                                <div class="form-text">أنواع الملفات المسموحة: PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX, TXT, ZIP, RAR</div>
-                            </div>
-
-                            <div id="attachment-preview" class="row g-3">
-                                <!-- سيتم إضافة معاينات المرفقات هنا -->
-                            </div>
-
-                            <div id="attachment-upload-progress" class="progress d-none mt-3">
-                                <div class="progress-bar progress-bar-striped progress-bar-animated bg-warning" 
-                                     role="progressbar" 
-                                     style="width: 0%">0%</div>
-                            </div>
-
-                            <div id="attachment-upload-status" class="alert d-none mt-3"></div>
-
-                            <!-- عرض المرفقات المرفوعة -->
-                            @if(isset($workOrder->civilWorksAttachments) && $workOrder->civilWorksAttachments->count() > 0)
-                                <div class="mt-4">
-                                    <h5 class="mb-3">المرفقات المرفوعة</h5>
-                                    <div class="row g-3">
-                                        @foreach($workOrder->civilWorksAttachments as $file)
-                                            <div class="col-md-4">
-                                                <div class="card h-100">
-                                                    <div class="card-body">
-                                                        <div class="d-flex align-items-center mb-2">
-                                                            <i class="fas fa-file-{{ getFileIcon($file->original_filename) }} fa-2x text-primary me-3"></i>
-                                                            <div class="flex-grow-1">
-                                                                <h6 class="card-title mb-1 text-truncate" title="{{ $file->original_filename }}">
-                                                                    {{ Str::limit($file->original_filename, 25) }}
-                                                                </h6>
-                                                                <p class="card-text small text-muted mb-0">
-                                                                    {{ round($file->file_size / 1024 / 1024, 2) }} MB
-                                                                </p>
-                                                            </div>
-                                                        </div>
-                                                        <div class="btn-group w-100">
-                                                            <a href="{{ asset('storage/' . $file->file_path) }}" 
-                                                               class="btn btn-sm btn-outline-primary" 
-                                                               target="_blank">
-                                                                <i class="fas fa-download"></i> تحميل
-                                                            </a>
-                                                            <form action="{{ route('admin.work-orders.civil-works.delete-attachment', [$workOrder, $file]) }}" 
-                                                                  method="POST" 
-                                                                  class="d-inline"
-                                                                  onsubmit="return confirm('هل أنت متأكد من حذف هذا المرفق؟');">
-                                                                @csrf
-                                                                @method('DELETE')
-                                                                <button type="submit" class="btn btn-sm btn-outline-danger">
-                                                                    <i class="fas fa-trash"></i> حذف
-                                                                </button>
-                                                            </form>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        @endforeach
-                                    </div>
-                                </div>
-                            @endif
-                        </div>
-                    </div>
-                </div>
-
+                
                 <!-- قسم رفع الصور -->
                 <div class="col-md-6">
                     <div class="card shadow-sm mb-4">
@@ -1764,46 +1679,13 @@
                     </div>
                 </div>
 
-                <!-- زر للانتقال إلى الجدول التفصيلي -->
-                <div class="col-12 mb-4">
-                    <div class="text-center">
-                        <button type="button" class="btn btn-primary btn-lg px-5 py-3 shadow-lg" id="scroll-to-details-btn">
-                            <i class="fas fa-table me-3"></i>
-                            عرض الجدول التفصيلي للحفريات
-                            <i class="fas fa-arrow-down ms-3"></i>
-                        </button>
-                    </div>
+               
                     
-                    <!-- ملاحظات إضافية -->
-                    <div class="mt-4">
-                        <div class="card shadow-sm">
-                            <div class="card-header bg-secondary text-white">
-                                <h6 class="mb-0">
-                                    <i class="fas fa-sticky-note me-2"></i>ملاحظات إضافية
-                                </h6>
-                            </div>
-                            <div class="card-body">
-                                <div class="form-floating">
-                                    <textarea class="form-control" 
-                                              id="additional_notes" 
-                                              name="additional_notes" 
-                                              style="height: 100px"
-                                              placeholder="أضف أي ملاحظات إضافية هنا...">{{ old('additional_notes', $workOrder->additional_notes ?? '') }}</textarea>
-                                    <label for="additional_notes">ملاحظات إضافية</label>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                  
                 </div>
             </div>
             <!-- زر التثبيت النهائي -->
-            <div class="text-center mt-5 mb-4">
-                <button type="button" class="btn btn-success btn-lg px-5 py-3 shadow-lg" onclick="lockCivilWorksData()">
-                    <i class="fas fa-lock me-3"></i>
-                    تثبيت الأعمال المدنية
-                    <i class="fas fa-check ms-3"></i>
-                </button>
-            </div>
+            
         </form>
     </div>
 
