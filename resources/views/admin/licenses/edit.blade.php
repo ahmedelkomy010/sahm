@@ -59,6 +59,17 @@
                                 <input type="number" step="0.01" class="form-control" id="license_value" name="license_value" 
                                        value="{{ old('license_value', $license->license_value) }}">
                             </div>
+                            <div class="col-md-6">
+                                <label for="coordination_certificate_number" class="form-label">رقم شهادة التنسيق</label>
+                                <input type="text" class="form-control" id="coordination_certificate_number" name="coordination_certificate_number" 
+                                       value="{{ old('coordination_certificate_number', $license->coordination_certificate_number) }}"
+                                       placeholder="أدخل رقم شهادة التنسيق">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="extension_value" class="form-label">قيمة التمديدات</label>
+                                <input type="number" step="0.01" class="form-control" id="extension_value" name="extension_value" 
+                                       value="{{ old('extension_value', $license->extension_value) }}">
+                            </div>
                         </div>
 
                         <!-- التواريخ -->

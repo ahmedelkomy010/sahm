@@ -470,8 +470,10 @@ class LicenseController extends Controller
                     'force_new' => $forceNew
                 ]);
             } else {
-                // البحث عن رخصة موجودة أو إنشاء واحدة جديدة
-                $license = License::where('work_order_id', $workOrderId)->first();
+                // البحث عن آخر رخصة تم إنشاؤها أو إنشاء واحدة جديدة
+                $license = License::where('work_order_id', $workOrderId)
+                                 ->orderBy('created_at', 'desc')
+                                 ->first();
                 $isNewLicense = false;
                 
                 if (!$license) {
@@ -483,9 +485,10 @@ class LicenseController extends Controller
                         'work_order_id' => $workOrderId
                     ]);
                 } else {
-                    \Log::info('Updating EXISTING license', [
+                    \Log::info('Updating LATEST existing license', [
                         'license_id' => $license->id,
-                        'work_order_id' => $workOrderId
+                        'work_order_id' => $workOrderId,
+                        'created_at' => $license->created_at
                     ]);
                 }
             }
@@ -526,6 +529,16 @@ class LicenseController extends Controller
                     $this->saveViolationsSection($request, $license);
                     $this->saveNotesSection($request, $license);
                     break;
+                case 'complete_license_with_coordination':
+                    // حفظ جميع الأقسام مع التركيز على شهادة التنسيق
+                    \Log::info('Processing complete_license_with_coordination - all sections with coordination focus');
+                    $this->saveCoordinationSection($request, $license);
+                    $this->saveDigLicenseSection($request, $license);
+                    $this->saveLabSection($request, $license);
+                    $this->saveEvacuationsSection($request, $license);
+                    $this->saveViolationsSection($request, $license);
+                    $this->saveNotesSection($request, $license);
+                    break;
                 default:
                     \Log::error('Unknown section type: ' . $sectionType);
                     return response()->json([
@@ -536,12 +549,25 @@ class LicenseController extends Controller
             
             $license->save();
             
+            // جلب آخر رخصة للعمل لضمان إرجاع آخر رقم رخصة
+            $latestLicense = License::where('work_order_id', $workOrderId)
+                                   ->orderBy('created_at', 'desc')
+                                   ->first();
+            
             return response()->json([
                 'success' => true,
                 'message' => 'تم حفظ القسم بنجاح',
                 'license_id' => $license->id,
+                'latest_license_id' => $latestLicense ? $latestLicense->id : $license->id,
                 'refresh_table' => true, // إعادة تحديث الجدول دائماً
-                'is_new' => $isNewLicense
+                'is_new' => $isNewLicense,
+                'total_licenses' => License::where('work_order_id', $workOrderId)->count(),
+                'debug_info' => [
+                    'updated_license_id' => $license->id,
+                    'latest_license_id' => $latestLicense ? $latestLicense->id : null,
+                    'work_order_id' => $workOrderId,
+                    'section_type' => $sectionType
+                ]
             ]);
             
         } catch (\Exception $e) {
@@ -563,6 +589,7 @@ class LicenseController extends Controller
     private function saveCoordinationSection(Request $request, License $license)
     {
         try {
+            $license->coordination_certificate_number = $request->input('coordination_certificate_number');
             $license->coordination_certificate_notes = $request->input('coordination_certificate_notes');
             $license->has_restriction = $request->input('has_restriction', 0) == '1';
             $license->restriction_authority = $request->input('restriction_authority');

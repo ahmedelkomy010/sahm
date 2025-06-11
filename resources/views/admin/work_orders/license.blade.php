@@ -21,46 +21,7 @@
                                 </a>
                             </div>
                         </div>
-                    </div>
-
-                    <div class="card-body p-3 p-md-4">
-                        <!-- أزرار التبويبات الرئيسية -->
-                        <div class="row mb-4">
-                            <div class="col-md-8">
-                                <div class="btn-group" role="group">
-                                    
-                                    <button type="button" class="btn btn-outline-primary tab-btn" data-target="dig-license-section" onclick="showSection('dig-license-section')">
-                                        <i class="fas fa-hard-hat me-2"></i>رخصة الحفر
-                                    </button>
-                                    <button type="button" class="btn btn-outline-primary tab-btn" data-target="lab-section" onclick="showSection('lab-section')">
-                                        <i class="fas fa-flask me-2"></i>المختبر
-                                    </button>
-                                    <button type="button" class="btn btn-outline-primary tab-btn" data-target="evacuations-section" onclick="showSection('evacuations-section')">
-                                        <i class="fas fa-truck me-2"></i>الإخلاءات
-                                    </button>
-                                    <button type="button" class="btn btn-outline-primary tab-btn" data-target="violations-section" onclick="showSection('violations-section')">
-                                        <i class="fas fa-exclamation-triangle me-2"></i>المخالفات
-                                    </button>
-                                    
-                                </div>
-                            </div>
-                            <div class="col-md-4 text-end">
-                                <!-- تم حذف أزرار تحديث البيانات ورخصة جديدة -->
-                            </div>
-                        </div>
-
-                        <!-- رسالة توضيحية -->
-                        <div class="row mb-3">
-                            <div class="col-12">
-                                <div class="alert alert-success alert-dismissible fade show" role="alert" id="latestLicenseAlert">
-                                    <i class="fas fa-info-circle me-2"></i>
-                                    <strong>معلومة هامة:</strong> 
-                                    <span id="latestLicenseMessage">جميع التبويبات ستحفظ البيانات في آخر رخصة تم إنشاؤها.</span>
-                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                                </div>
-                            </div>
-                        </div>
-
+                    </div>                        
                         <!-- شهادة التنسيق والمرفقات -->
                         <div class="card border-0 shadow-sm mb-4">
                             <div class="card-header bg-warning text-dark">
@@ -68,13 +29,7 @@
                                     <i class="fas fa-certificate me-2"></i>
                                     شهادة التنسيق والمرفقات
                                 </h4>
-                                <div class="mt-2">
-                                    <div class="alert alert-info alert-sm mb-0 d-flex align-items-center">
-                                        <i class="fas fa-info-circle me-2"></i>
-                                        <small>
-                                            <strong>ملاحظة:</strong>  حفظ شهادة التنسيق 
-                                    </div>
-                                </div>
+                                
                             </div>
                             <div class="card-body">
                                 <form id="coordinationForm" class="coordination-form">
@@ -95,11 +50,12 @@
                                             @endif
                                         </div>
                                         <div class="col-md-6">
-                                            <label class="form-label">ملاحظات شهادة التنسيق</label>
-                                            <textarea class="form-control" name="coordination_certificate_notes" rows="3" 
-                                                     placeholder=" ملاحظات شهادة التنسيق">{{ old('coordination_certificate_notes') }}</textarea>
+                                            <label class="form-label">رقم شهادة التنسيق</label>
+                                            <input type="text" class="form-control" name="coordination_certificate_number" 
+                                                   value="{{ old('coordination_certificate_number', isset($license) ? $license->coordination_certificate_number : '') }}"
+                                                   placeholder="أدخل رقم شهادة التنسيق">
                                         </div>
-                                        
+
                                         <div class="col-12">
                                             <label class="form-label">مرفق الخطابات والتعهدات</label>
                                             <input type="file" class="form-control" name="letters_commitments_files[]" multiple accept=".pdf,.jpg,.jpeg,.png">
@@ -128,21 +84,37 @@
                                     
                                     <div class="row mt-3">
                                         <div class="col-12 text-center">
-                                            <div class="d-grid gap-2 d-md-block">
+                                                                                        <div class="d-grid gap-2 d-md-block">
                                                 <button type="button" class="btn btn-success btn-lg px-5 shadow-lg me-2" onclick="saveCoordinationSection(true)">
                                                     <i class="fas fa-file-plus me-2"></i>
-                                                    إنشاء رخصة جديدة مع التنسيق
+                                                 حفظ شهادة التنسيق
                                                 </button>
-                                                <button type="button" class="btn btn-warning btn-lg px-4 shadow" onclick="saveCoordinationSection(false)" 
-                                                        id="updateCoordinationBtn" style="display: none;">
-                                                    <i class="fas fa-edit me-2"></i>
-                                                    تحديث الرخصة الحالية
-                                                </button>
+                                                
                                             </div>
                                             
                                         </div>
                                     </div>
                                 </form>
+                            </div>
+                        </div>
+
+                        <!-- أزرار التبويبات الرئيسية -->
+                        <div class="row mb-4 mt-4">
+                            <div class="col-12">
+                                <div class="btn-group d-flex flex-wrap justify-content-center" role="group">
+                                    <button type="button" class="btn btn-outline-primary tab-btn" data-target="dig-license-section" onclick="showSection('dig-license-section')">
+                                        <i class="fas fa-hard-hat me-2"></i>رخصة الحفر
+                                    </button>
+                                    <button type="button" class="btn btn-outline-primary tab-btn" data-target="lab-section" onclick="showSection('lab-section')">
+                                        <i class="fas fa-flask me-2"></i>المختبر
+                                    </button>
+                                    <button type="button" class="btn btn-outline-primary tab-btn" data-target="evacuations-section" onclick="showSection('evacuations-section')">
+                                        <i class="fas fa-truck me-2"></i>الإخلاءات
+                                    </button>
+                                    <button type="button" class="btn btn-outline-primary tab-btn" data-target="violations-section" onclick="showSection('violations-section')">
+                                        <i class="fas fa-exclamation-triangle me-2"></i>المخالفات
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
@@ -712,6 +684,8 @@
                                 </div>
                             </div>
 
+
+
                             <!-- ملاحظات إضافية -->
                             <div class="card border-0 shadow-sm mt-4">
                                 <div class="card-header bg-dark text-white">
@@ -759,37 +733,7 @@
                             
                         </form>
 
-                        <!-- أزرار الحفظ العامة -->
-                        <div class="card border-0 shadow-sm mt-4 mb-4">
-                            <div class="card-header bg-gradient-success text-white">
-                                <h4 class="mb-0 fs-5">
-                                    <i class="fas fa-save me-2"></i>
-                                    اعداد الرخصة
-                                </h4>
-                            </div>
-                            <div class="card-body text-center">
-                                <div class="row justify-content-center">
-                                    <div class="col-12">
-                                        <div class="row g-3">
-                                            <!-- أزرار حفظ الأقسام الفردية -->
-                                            <div class="col-lg-4 col-md-6">
-                                        
-                                        <hr class="my-4">
-                                        
-                                        <!-- زر إنشاء رخصة شاملة -->
-                                        <div class="d-grid gap-2 d-md-flex justify-content-md-center">
-                                            <button type="button" class="btn btn-success btn-lg px-5" onclick="createNewLicense()">
-                                                <i class="fas fa-plus-circle me-2"></i>
-                                                إنشاء رخصة جديدة شاملة
-                                            </button>
-                                            <!-- تم حذف زر إعادة تعيين النماذج -->
-                                        </div>
-                                        
-                                        
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+
 
                         <!-- جدول الرخص المحفوظة -->
                         <div class="card border-0 shadow-sm mt-5">
@@ -804,11 +748,7 @@
                                             <i class="fas fa-list-ol me-1"></i>
                                             إجمالي الرخص: <span id="totalLicensesCount">{{ $workOrder->licenses->count() ?? 0 }}</span>
                                         </span>
-                                        <!-- تم حذف زر إنشاء رخصة جديدة -->
-                                        <button type="button" class="btn btn-light btn-sm" onclick="refreshLicensesTable()">
-                                            <i class="fas fa-sync-alt me-1"></i>
-                                            تحديث
-                                        </button>
+
                                         <button type="button" class="btn btn-info btn-sm" onclick="exportLicensesTable()">
                                             <i class="fas fa-download me-1"></i>
                                             تصدير
@@ -827,6 +767,7 @@
                                                 <th style="min-width: 100px;">نوع الرخصة</th>
                                                 <th style="min-width: 120px;">قيمة الرخصة</th>
                                                 <th style="min-width: 120px;">قيمة التمديد</th>
+                                                <th style="min-width: 120px;">رقم شهادة التنسيق</th>
                                                 <th style="min-width: 120px;">تاريخ البداية</th>
                                                 <th style="min-width: 120px;">تاريخ النهاية</th>
                                                 <th style="min-width: 100px;">أبعاد الحفر</th>
@@ -884,6 +825,9 @@
                                                     </td>
                                                     <td>
                                                         <span class="text-warning fw-bold">{{ number_format($license->extension_value ?? 0, 2) }} ر.س</span>
+                                                    </td>
+                                                    <td>
+                                                        <span class="text-info fw-bold">{{ $license->coordination_certificate_number ?? 'غير محدد' }}</span>
                                                     </td>
                                                     <td>{{ $license->license_start_date ? $license->license_start_date->format('Y-m-d') : 'غير محدد' }}</td>
                                                     <td>{{ $license->license_end_date ? $license->license_end_date->format('Y-m-d') : 'غير محدد' }}</td>
@@ -1014,7 +958,7 @@
                                                 @endforeach
                                             @else
                                                 <tr id="noLicensesRow">
-                                                    <td colspan="31" class="text-center py-4">
+                                                    <td colspan="32" class="text-center py-4">
                                                         <div class="text-muted">
                                                             <i class="fas fa-inbox fa-3x mb-3"></i>
                                                             <h5>لا توجد رخص محفوظة بعد</h5>
@@ -1481,43 +1425,30 @@
         // وظائف الحفظ المنفصل
         async function saveCoordinationSection(forceNew = true) {
             console.log('saveCoordinationSection called with forceNew:', forceNew);
-            const form = document.getElementById('coordinationForm');
-            if (!form) {
-                console.error('coordinationForm not found!');
-                showErrorMessage('لم يتم العثور على نموذج شهادة التنسيق');
-                return;
-            }
             
-            const formData = new FormData(form);
+            // استخدام createCompleteFormData لحفظ جميع التبويبات في رخصة واحدة
+            const formData = createCompleteFormData();
             
-            // التأكد من وجود work_order_id
-            const workOrderIdField = document.querySelector('input[name="work_order_id"]');
-            if (workOrderIdField) {
-                formData.append('work_order_id', workOrderIdField.value);
-            } else {
-                formData.append('work_order_id', '{{ $workOrder->id }}');
-            }
+            // تعديل نوع القسم ليشمل جميع البيانات
+            formData.set('section_type', 'complete_license_with_coordination');
             
-            // إضافة نوع القسم
-            formData.append('section_type', 'coordination');
-            
-            // التحكم في إنشاء رخصة جديدة أو تحديث الموجودة
+            // التحكم في إنشاء رخصة جديدة
             if (forceNew) {
                 formData.append('force_new', '1');
-                console.log('Will create NEW license (forceNew = true)');
+                console.log('Will create NEW license with ALL TABS DATA (forceNew = true)');
             } else {
                 // تحديث آخر رخصة إذا كانت موجودة
                 if (latestLicenseId) {
                     formData.append('current_license_id', latestLicenseId);
-                    console.log('Will update existing license:', latestLicenseId);
+                    console.log('Will update existing license with all tabs data:', latestLicenseId);
                 } else {
                     formData.append('force_new', '1');
-                    console.log('Will create new license (no existing license found)');
+                    console.log('Will create new license with all tabs data (no existing license found)');
                 }
             }
             
             // التأكد من إضافة CSRF token
-            formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+            formData.set('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
             
             // Debug: طباعة بيانات النموذج
             console.log('=== FormData Contents for Coordination ===');
@@ -1527,10 +1458,10 @@
             
             try {
                 const loadingMessage = forceNew ? 
-                    'جاري إنشاء رخصة جديدة مع شهادة التنسيق...' : 
-                    'جاري حفظ شهادة التنسيق في الرخصة الحالية...';
+                    'جاري إنشاء رخصة جديدة شاملة مع جميع بيانات التبويبات...' : 
+                    'جاري حفظ جميع بيانات التبويبات في الرخصة الحالية...';
                     
-                showLoadingState('coordinationForm', loadingMessage);
+                showGlobalLoadingState(loadingMessage);
                 
                 const response = await fetch('{{ route("admin.licenses.save-section") }}', {
                     method: 'POST',
@@ -1553,24 +1484,30 @@
                 console.log('Response result:', result);
                 
                 if (result.success) {
+                    // طباعة معلومات debug
+                    console.log('Coordination section - Server response debug info:', result.debug_info);
+                    
                     // رسالة النجاح حسب نوع العملية
                     const successMessage = forceNew ? 
-                        'تم إنشاء رخصة جديدة مع شهادة التنسيق بنجاح!' + 
+                        'تم إنشاء رخصة جديدة شاملة بجميع بيانات التبويبات بنجاح!' + 
                         (result.license_id ? ' (رقم الرخصة: ' + result.license_id + ')' : '') :
-                        'تم حفظ شهادة التنسيق في الرخصة الحالية بنجاح!' + 
+                        'تم حفظ جميع بيانات التبويبات في الرخصة الحالية بنجاح!' + 
                         (result.license_id ? ' (رقم الرخصة: ' + result.license_id + ')' : '');
                     
-                    // تحديث الرخصة الحالية
-                    currentLicenseId = result.license_id;
-                    isNewLicenseCreated = true;
-                    latestLicenseId = result.license_id; // تحديث آخر رخصة
-                    updateCurrentLicenseDisplay(result.license_id);
-                    
-                    console.log('Updated license IDs:', {
-                        currentLicenseId,
-                        latestLicenseId,
-                        isNewLicenseCreated
-                    });
+                    // تحديث الرخصة الحالية باستخدام latest_license_id من الخادم
+                    if (result.latest_license_id) {
+                        currentLicenseId = result.latest_license_id;
+                        latestLicenseId = result.latest_license_id; // تحديث آخر رخصة
+                        isNewLicenseCreated = result.is_new || false;
+                        updateCurrentLicenseDisplay(result.latest_license_id);
+                        
+                        console.log('Updated license IDs from coordination (using latest_license_id):', {
+                            currentLicenseId,
+                            latestLicenseId,
+                            isNewLicenseCreated,
+                            serverResponse: result.debug_info
+                        });
+                    }
                     
                     showSuccessMessage(successMessage);
                     
@@ -1588,19 +1525,20 @@
                     // إظهار رسالة توجيهية للمستخدم
                     setTimeout(() => {
                         const guideMessage = forceNew ? 
-                            'تم إنشاء رخصة جديدة. جميع التبويبات ستحفظ في هذه الرخصة الجديدة.' :
+                            'تم إنشاء رخصة جديدة شاملة. جميع بيانات التبويبات محفوظة في هذه الرخصة.' :
+                            'تم حفظ جميع بيانات التبويبات بنجاح.';
                         showSuccessMessage(guideMessage);
                     }, 2000);
                     
                 } else {
                     console.error('Save failed:', result.message);
-                    showErrorMessage('خطأ في حفظ شهادة التنسيق: ' + (result.message || 'خطأ غير معروف'));
+                    showErrorMessage('خطأ في حفظ بيانات الرخصة الشاملة: ' + (result.message || 'خطأ غير معروف'));
                 }
             } catch (error) {
-                console.error('Error saving coordination section:', error);
-                showErrorMessage('حدث خطأ أثناء حفظ شهادة التنسيق: ' + error.message);
+                console.error('Error saving complete license:', error);
+                showErrorMessage('حدث خطأ أثناء حفظ بيانات الرخصة الشاملة: ' + error.message);
             } finally {
-                hideLoadingState('coordinationForm', 'إنشاء رخصة جديدة مع التنسيق');
+                hideGlobalLoadingState();
             }
         }
 
@@ -1751,6 +1689,9 @@
                 console.log('Response result:', result);
                 
                 if (result.success) {
+                    // طباعة معلومات debug
+                    console.log('Server response debug info:', result.debug_info);
+                    
                     // الحفظ في آخر رخصة أو إنشاء جديدة
                     const successMessage = useLatestLicense ? 
                         'تم حفظ رخص الحفر في آخر رخصة بنجاح!' + 
@@ -1760,17 +1701,18 @@
                     
                     showSuccessMessage(successMessage);
                     
-                    // تحديث معرفات الرخصة (دائماً رخصة جديدة)
-                    if (result.license_id) {
-                        currentLicenseId = result.license_id;
-                        isNewLicenseCreated = true;
-                        latestLicenseId = result.license_id; // تحديث آخر رخصة
-                        updateCurrentLicenseDisplay(result.license_id);
+                    // تحديث معرفات الرخصة باستخدام latest_license_id من الخادم
+                    if (result.latest_license_id) {
+                        currentLicenseId = result.latest_license_id;
+                        latestLicenseId = result.latest_license_id; // تحديث آخر رخصة
+                        isNewLicenseCreated = result.is_new || false;
+                        updateCurrentLicenseDisplay(result.latest_license_id);
                         
-                        console.log('Updated license IDs from dig license:', {
+                        console.log('Updated license IDs from dig license (using latest_license_id):', {
                             currentLicenseId,
                             latestLicenseId,
-                            isNewLicenseCreated
+                            isNewLicenseCreated,
+                            serverResponse: result.debug_info
                         });
                     }
                     
@@ -1953,6 +1895,9 @@
                 
                 if (result.success) {
                     // الحفظ في آخر رخصة أو إنشاء جديدة
+                    // طباعة معلومات debug
+                    console.log('Lab section - Server response debug info:', result.debug_info);
+                    
                     const successMessage = useLatestLicense ? 
                         'تم حفظ بيانات المختبر في آخر رخصة بنجاح!' + 
                         (result.license_id ? ' (رقم الرخصة: ' + result.license_id + ')' : '') :
@@ -1963,16 +1908,20 @@
                     
                     // تحديث معرفات الرخصة (دائماً رخصة جديدة)
                     if (result.license_id) {
-                        currentLicenseId = result.license_id;
-                        isNewLicenseCreated = true;
-                        latestLicenseId = result.license_id; // تحديث آخر رخصة
-                        updateCurrentLicenseDisplay(result.license_id);
-                        
-                        console.log('Updated license IDs from lab section:', {
-                            currentLicenseId,
-                            latestLicenseId,
-                            isNewLicenseCreated
-                        });
+                        // تحديث الرخصة الحالية باستخدام latest_license_id من الخادم
+                        if (result.latest_license_id) {
+                            currentLicenseId = result.latest_license_id;
+                            latestLicenseId = result.latest_license_id; // تحديث آخر رخصة
+                            isNewLicenseCreated = result.is_new || false;
+                            updateCurrentLicenseDisplay(result.latest_license_id);
+                            
+                            console.log('Updated license IDs from lab section (using latest_license_id):', {
+                                currentLicenseId,
+                                latestLicenseId,
+                                isNewLicenseCreated,
+                                serverResponse: result.debug_info
+                            });
+                        }
                     }
                     
                     if (result.refresh_table) {
@@ -2200,6 +2149,9 @@
                 const result = await response.json();
                 
                 if (result.success) {
+                    // طباعة معلومات debug
+                    console.log('Notes section - Server response debug info:', result.debug_info);
+                    
                     const successMessage = useLatestLicense ? 
                         'تم حفظ الملاحظات في آخر رخصة بنجاح!' + 
                         (result.license_id ? ' (رقم الرخصة: ' + result.license_id + ')' : '') :
@@ -2208,17 +2160,18 @@
                     
                     showSuccessMessage(successMessage);
                     
-                    // تحديث معرف آخر رخصة تم إنشاؤها إذا تم إنشاء رخصة جديدة
-                    if (!useLatestLicense && result.license_id) {
-                        currentLicenseId = result.license_id;
-                        isNewLicenseCreated = true;
-                        latestLicenseId = result.license_id; // تحديث آخر رخصة
-                        updateCurrentLicenseDisplay(result.license_id);
+                    // تحديث معرف آخر رخصة تم إنشاؤها باستخدام latest_license_id من الخادم
+                    if (result.latest_license_id) {
+                        currentLicenseId = result.latest_license_id;
+                        latestLicenseId = result.latest_license_id; // تحديث آخر رخصة
+                        isNewLicenseCreated = result.is_new || false;
+                        updateCurrentLicenseDisplay(result.latest_license_id);
                         
-                        console.log('Updated license IDs from notes section:', {
+                        console.log('Updated license IDs from notes section (using latest_license_id):', {
                             currentLicenseId,
                             latestLicenseId,
-                            isNewLicenseCreated
+                            isNewLicenseCreated,
+                            serverResponse: result.debug_info
                         });
                     }
                     
@@ -2419,19 +2372,25 @@
                 const result = await response.json();
                 
                 if (result.success) {
+                    // طباعة معلومات debug
+                    console.log('Create new license - Server response debug info:', result.debug_info);
+                    
                     showSuccessMessage('تم إنشاء الرخصة الجديدة بنجاح! (رقم الرخصة: ' + result.license_id + ')');
                     
-                    // تحديث الرخصة الحالية
-                    currentLicenseId = result.license_id;
-                    isNewLicenseCreated = true;
-                    latestLicenseId = result.license_id; // تحديث آخر رخصة
-                    updateCurrentLicenseDisplay(result.license_id);
-                    
-                    console.log('Updated license IDs from createNewLicense:', {
-                        currentLicenseId,
-                        latestLicenseId,
-                        isNewLicenseCreated
-                    });
+                    // تحديث الرخصة الحالية باستخدام latest_license_id من الخادم
+                    if (result.latest_license_id) {
+                        currentLicenseId = result.latest_license_id;
+                        latestLicenseId = result.latest_license_id; // تحديث آخر رخصة
+                        isNewLicenseCreated = result.is_new || true;
+                        updateCurrentLicenseDisplay(result.latest_license_id);
+                        
+                        console.log('Updated license IDs from createNewLicense (using latest_license_id):', {
+                            currentLicenseId,
+                            latestLicenseId,
+                            isNewLicenseCreated,
+                            serverResponse: result.debug_info
+                        });
+                    }
                     
                     // لا حاجة لإعادة تعيين النماذج - البيانات ستحفظ في الرخصة الجديدة
                     
@@ -3337,6 +3296,9 @@
                 const result = await response.json();
                 
                 if (result.success) {
+                    // طباعة معلومات debug
+                    console.log('Evacuations section - Server response debug info:', result.debug_info);
+                    
                     // الحفظ في آخر رخصة أو إنشاء جديدة
                     const successMessage = useLatestLicense ? 
                         'تم حفظ بيانات الإخلاءات في آخر رخصة بنجاح!' + 
@@ -3346,17 +3308,18 @@
                     
                     showSuccessMessage(successMessage);
                     
-                    // تحديث معرفات الرخصة (دائماً رخصة جديدة)
-                    if (result.license_id) {
-                        currentLicenseId = result.license_id;
-                        isNewLicenseCreated = true;
-                        latestLicenseId = result.license_id; // تحديث آخر رخصة
-                        updateCurrentLicenseDisplay(result.license_id);
+                    // تحديث معرفات الرخصة باستخدام latest_license_id من الخادم
+                    if (result.latest_license_id) {
+                        currentLicenseId = result.latest_license_id;
+                        latestLicenseId = result.latest_license_id; // تحديث آخر رخصة
+                        isNewLicenseCreated = result.is_new || false;
+                        updateCurrentLicenseDisplay(result.latest_license_id);
                         
-                        console.log('Updated license IDs from evacuations section:', {
+                        console.log('Updated license IDs from evacuations section (using latest_license_id):', {
                             currentLicenseId,
                             latestLicenseId,
-                            isNewLicenseCreated
+                            isNewLicenseCreated,
+                            serverResponse: result.debug_info
                         });
                     }
                     
@@ -3461,6 +3424,9 @@
                 const result = await response.json();
                 
                 if (result.success) {
+                    // طباعة معلومات debug
+                    console.log('Violations section - Server response debug info:', result.debug_info);
+                    
                     const successMessage = useLatestLicense ? 
                         'تم حفظ بيانات المخالفات في آخر رخصة بنجاح!' + 
                         (result.license_id ? ' (رقم الرخصة: ' + result.license_id + ')' : '') :
@@ -3469,17 +3435,18 @@
                     
                     showSuccessMessage(successMessage);
                     
-                    // تحديث معرف الرخصة الحالية إذا تم إنشاء رخصة جديدة
-                    if (!useLatestLicense && result.license_id) {
-                        currentLicenseId = result.license_id;
-                        isNewLicenseCreated = true;
-                        latestLicenseId = result.license_id; // تحديث آخر رخصة
-                        updateCurrentLicenseDisplay(result.license_id);
+                    // تحديث معرف الرخصة الحالية باستخدام latest_license_id من الخادم
+                    if (result.latest_license_id) {
+                        currentLicenseId = result.latest_license_id;
+                        latestLicenseId = result.latest_license_id; // تحديث آخر رخصة
+                        isNewLicenseCreated = result.is_new || false;
+                        updateCurrentLicenseDisplay(result.latest_license_id);
                         
-                        console.log('Updated license IDs from violations section:', {
+                        console.log('Updated license IDs from violations section (using latest_license_id):', {
                             currentLicenseId,
                             latestLicenseId,
-                            isNewLicenseCreated
+                            isNewLicenseCreated,
+                            serverResponse: result.debug_info
                         });
                     }
                     

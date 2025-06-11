@@ -30,5 +30,8 @@ class DatabaseSeeder extends Seeder
 
         // استدعاء Seeder المواد المرجعية
         $this->call(ReferenceMaterialsSeeder::class);
+        
+        // إنشاء أرقام شهادات التنسيق للرخص الموجودة
+        $this->call(CoordinationCertificateNumberSeeder::class);
     }
 }

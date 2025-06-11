@@ -195,6 +195,36 @@ Route::get('/make-me-admin', function () {
     return redirect()->route('login');
 });
 
+// مسار مؤقت لإنشاء أرقام شهادات التنسيق
+Route::get('/generate-coordination-numbers', function () {
+    $licenses = \App\Models\License::whereNull('coordination_certificate_number')
+                                  ->orWhere('coordination_certificate_number', '')
+                                  ->get();
+
+    $count = 0;
+    $results = [];
+
+    foreach ($licenses as $license) {
+        $year = $license->license_date ? $license->license_date->format('Y') : date('Y');
+        $workOrderId = str_pad($license->work_order_id, 4, '0', STR_PAD_LEFT);
+        $licenseId = str_pad($license->id, 4, '0', STR_PAD_LEFT);
+        
+        $coordinationNumber = "TC-{$year}-{$workOrderId}-{$licenseId}";
+        
+        $license->update([
+            'coordination_certificate_number' => $coordinationNumber
+        ]);
+        
+        $count++;
+        $results[] = "تم إنشاء رقم شهادة التنسيق للرخصة #{$license->id}: {$coordinationNumber}";
+    }
+
+    $output = implode('<br>', $results);
+    $output .= "<br><br><strong>تم إنشاء أرقام شهادات التنسيق لـ {$count} رخصة بنجاح!</strong>";
+    
+    return $output;
+})->middleware('auth');
+
 // مسار مؤقت لتعيين مستخدم معين كمسؤول - سيتم إزالته لاحقاً
 Route::get('/make-elkomy-admin', function () {
     $user = \App\Models\User::where('email', 'like', '%ahmedelkomy%')

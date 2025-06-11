@@ -21,6 +21,7 @@ class License extends Model
         'extension_end_date',
         'notes',
         'coordination_certificate_path',
+        'coordination_certificate_number',
         'coordination_certificate_notes',
         'letters_commitments_file_path',
         'has_restriction',

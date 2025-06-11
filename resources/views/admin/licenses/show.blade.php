@@ -72,6 +72,10 @@
                             <p class="text-warning fw-bold">{{ $license->extension_value ? number_format($license->extension_value, 2) . ' ر.س' : 'غير محدد' }}</p>
                         </div>
                         <div class="col-md-4">
+                            <strong>رقم شهادة التنسيق:</strong>
+                            <p class="text-info fw-bold">{{ $license->coordination_certificate_number ?? 'غير محدد' }}</p>
+                        </div>
+                        <div class="col-md-4">
                             <strong>إجمالي القيمة:</strong>
                             <p class="text-primary fw-bold">{{ ($license->license_value + $license->extension_value) ? number_format($license->license_value + $license->extension_value, 2) . ' ر.س' : 'غير محدد' }}</p>
                         </div>
