@@ -252,6 +252,85 @@
                                                 <th>اسم الاستشاري</th>
                                                 <td>{{ $workOrder->consultant_name ?? 'غير متوفر' }}</td>
                                             </tr>
+                                            <tr>
+                                                <th>المرفق الاحتياطي</th>
+                                                <td>
+                                                    @php
+                                                        $backupFile = $workOrder->files()
+                                                            ->where('file_category', 'basic_attachments')
+                                                            ->where('attachment_type', 'backup_1')
+                                                            ->first();
+                                                    @endphp
+                                                    @if($backupFile)
+                                                        <div class="d-flex align-items-center justify-content-between">
+                                                            <div class="d-flex align-items-center">
+                                                                @php
+                                                                    $fileExtension = strtolower(pathinfo($backupFile->original_filename, PATHINFO_EXTENSION));
+                                                                    $fileIcon = 'fas fa-file';
+                                                                    $iconColor = 'text-secondary';
+                                                                    
+                                                                    switch($fileExtension) {
+                                                                        case 'pdf':
+                                                                            $fileIcon = 'fas fa-file-pdf';
+                                                                            $iconColor = 'text-danger';
+                                                                            break;
+                                                                        case 'doc':
+                                                                        case 'docx':
+                                                                            $fileIcon = 'fas fa-file-word';
+                                                                            $iconColor = 'text-primary';
+                                                                            break;
+                                                                        case 'xls':
+                                                                        case 'xlsx':
+                                                                            $fileIcon = 'fas fa-file-excel';
+                                                                            $iconColor = 'text-success';
+                                                                            break;
+                                                                        case 'jpg':
+                                                                        case 'jpeg':
+                                                                        case 'png':
+                                                                        case 'gif':
+                                                                            $fileIcon = 'fas fa-file-image';
+                                                                            $iconColor = 'text-info';
+                                                                            break;
+                                                                    }
+                                                                @endphp
+                                                                <i class="{{ $fileIcon }} {{ $iconColor }} me-2"></i>
+                                                                <div>
+                                                                    <a href="{{ Storage::url($backupFile->file_path) }}" 
+                                                                       target="_blank" 
+                                                                       class="text-decoration-none fw-bold">
+                                                                        {{ Str::limit($backupFile->original_filename, 30) }}
+                                                                    </a>
+                                                                    <br>
+                                                                    <small class="text-muted">
+                                                                        <i class="fas fa-calendar me-1"></i>
+                                                                        {{ $backupFile->created_at->format('Y-m-d H:i') }}
+                                                                        <span class="mx-2">|</span>
+                                                                        <i class="fas fa-weight-hanging me-1"></i>
+                                                                        {{ number_format($backupFile->file_size / 1024 / 1024, 2) }} MB
+                                                                    </small>
+                                                                </div>
+                                                            </div>
+                                                            <div class="d-flex gap-1">
+                                                                <a href="{{ Storage::url($backupFile->file_path) }}" 
+                                                                   target="_blank" 
+                                                                   class="btn btn-sm btn-outline-primary">
+                                                                    <i class="fas fa-eye me-1"></i>عرض
+                                                                </a>
+                                                                <a href="{{ Storage::url($backupFile->file_path) }}" 
+                                                                   download 
+                                                                   class="btn btn-sm btn-outline-success">
+                                                                    <i class="fas fa-download me-1"></i>تحميل
+                                                                </a>
+                                                            </div>
+                                                        </div>
+                                                    @else
+                                                        <div class="text-center py-2">
+                                                            <i class="fas fa-file-times text-muted me-2"></i>
+                                                            <span class="text-muted">لا يوجد مرفق احتياطي</span>
+                                                        </div>
+                                                    @endif
+                                                </td>
+                                            </tr>
                                         </tbody>
                                     </table>
                                 </div>
@@ -415,135 +494,7 @@
                             </div>
                         </div>
 
-                        <!-- المرفقات الأساسية -->
-                        <div class="col-12">
-                            <div class="custom-card">
-                                <div class="card-header">
-                                    <h4>
-                                        <i class="fas fa-paperclip text-primary me-2"></i>
-                                        المرفقات الأساسية
-                                    </h4>
-                                </div>
-                                <div class="card-body p-0">
-                                    @php
-                                        $basicAttachments = $workOrder->basicAttachments;
-                                        $attachmentTypes = [
-                                            'license_estimate' => ['name' => 'مقايسة الأعمال', 'icon' => 'fas fa-tasks', 'color' => 'primary'],
-                                            'daily_measurement' => ['name' => 'مقايسة المواد', 'icon' => 'fas fa-boxes', 'color' => 'success'],
-                                            'backup_1' => ['name' => 'مرفق احتياطي', 'icon' => 'fas fa-archive', 'color' => 'secondary']
-                                        ];
-                                    @endphp
-                                    
-                                    @if($basicAttachments->count() > 0)
-                                        <div class="row g-3 p-3">
-                                            @foreach($attachmentTypes as $type => $info)
-                                                @php
-                                                    $attachment = $basicAttachments->where('attachment_type', $type)->first();
-                                                @endphp
-                                                <div class="col-md-4">
-                                                    <div class="card h-100 border-0 shadow-sm">
-                                                        <div class="card-body text-center">
-                                                            <div class="mb-3">
-                                                                <i class="{{ $info['icon'] }} fa-2x text-{{ $info['color'] }}"></i>
-                                                            </div>
-                                                            <h6 class="card-title fw-bold text-{{ $info['color'] }}">
-                                                                {{ $info['name'] }}
-                                                            </h6>
-                                                            
-                                                            @if($attachment)
-                                                                <div class="text-start mt-3">
-                                                                    <div class="d-flex align-items-center mb-2">
-                                                                        <i class="fas fa-file me-2 text-muted"></i>
-                                                                        <span class="text-truncate fw-medium" title="{{ $attachment->original_filename }}">
-                                                                            {{ Str::limit($attachment->original_filename, 25) }}
-                                                                        </span>
-                                                                    </div>
-                                                                    <div class="d-flex align-items-center mb-2">
-                                                                        <i class="fas fa-calendar me-2 text-muted"></i>
-                                                                        <small class="text-muted">{{ $attachment->created_at->format('Y-m-d H:i') }}</small>
-                                                                    </div>
-                                                                    <div class="d-flex align-items-center mb-3">
-                                                                        <i class="fas fa-weight-hanging me-2 text-muted"></i>
-                                                                        <small class="text-muted">{{ number_format($attachment->file_size / 1024 / 1024, 2) }} MB</small>
-                                                                    </div>
-                                                                    
-                                                                    <a href="{{ Storage::url($attachment->file_path) }}" 
-                                                                       target="_blank" 
-                                                                       class="btn btn-{{ $info['color'] }} btn-sm w-100">
-                                                                        <i class="fas fa-eye me-1"></i>عرض الملف
-                                                                    </a>
-                                                                </div>
-                                                            @else
-                                                                <div class="text-center py-3">
-                                                                    <i class="fas fa-file-times fa-2x text-muted mb-2"></i>
-                                                                    <br>
-                                                                    <small class="text-muted">لم يتم رفع الملف</small>
-                                                                </div>
-                                                            @endif
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            @endforeach
-                                        </div>
-                                        
-                                        <!-- جدول تفصيلي للمرفقات -->
-                                        <div class="mt-4">
-                                            <table class="custom-table">
-                                                <thead>
-                                                    <tr>
-                                                        <th class="text-center" style="width: 60px">#</th>
-                                                        <th>نوع المرفق</th>
-                                                        <th>اسم الملف</th>
-                                                        <th>حجم الملف</th>
-                                                        <th>تاريخ الرفع</th>
-                                                        <th class="text-center" style="width: 100px">الإجراءات</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    @foreach($basicAttachments as $file)
-                                                        <tr>
-                                                            <td class="text-center">{{ $loop->iteration }}</td>
-                                                            <td>
-                                                                @php
-                                                                    $attachmentInfo = $attachmentTypes[$file->attachment_type] ?? ['name' => 'غير محدد', 'icon' => 'fas fa-file', 'color' => 'secondary'];
-                                                                @endphp
-                                                                <div class="d-flex align-items-center">
-                                                                    <i class="{{ $attachmentInfo['icon'] }} me-2 text-{{ $attachmentInfo['color'] }}"></i>
-                                                                    <span class="fw-medium">{{ $attachmentInfo['name'] }}</span>
-                                                                </div>
-                                                            </td>
-                                                            <td>
-                                                                <span class="text-truncate" style="max-width: 200px;" title="{{ $file->original_filename }}">
-                                                                    {{ $file->original_filename }}
-                                                                </span>
-                                                            </td>
-                                                            <td>
-                                                                <span class="badge bg-light text-dark">
-                                                                    {{ number_format($file->file_size / 1024 / 1024, 2) }} MB
-                                                                </span>
-                                                            </td>
-                                                            <td>{{ $file->created_at->format('Y-m-d H:i') }}</td>
-                                                            <td class="text-center">
-                                                                <a href="{{ Storage::url($file->file_path) }}" target="_blank" class="custom-btn btn-info btn-sm">
-                                                                    <i class="fas fa-eye"></i>
-                                                                    <span class="d-none d-sm-inline">عرض</span>
-                                                                </a>
-                                                            </td>
-                                                        </tr>
-                                                    @endforeach
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    @else
-                                        <div class="text-center py-5">
-                                            <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
-                                            <h5 class="text-muted">لا توجد مرفقات أساسية</h5>
-                                            <p class="text-muted">يمكنك رفع المرفقات عند إنشاء أمر العمل أو تعديله</p>
-                                        </div>
-                                    @endif
-                                </div>
-                            </div>
-                        </div>
+
                     </div>
                 </div>
             </div>

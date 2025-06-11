@@ -5,11 +5,50 @@
     <div class="row justify-content-center">
         <div class="col-md-12">
             <div class="card shadow-lg border-0">
-                <div class="card-header bg-primary text-white py-3 d-flex justify-content-between align-items-center">
-                    <h3 class="mb-0 fs-4">صفحة التنفيذ</h3>
-                    <a href="{{ route('admin.work-orders.show', $workOrder) }}" class="btn btn-light btn-sm">
-                        <i class="fas fa-arrow-right"></i> عودة
-                    </a>
+                <div class="card-header bg-primary text-white py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h3 class="mb-0 fs-4">صفحة التنفيذ</h3>
+                        <div class="d-flex align-items-center gap-3">
+                            @php
+                                $createdDate = $workOrder->created_at;
+                                $daysPassed = $createdDate->diffInDays(now());
+                                $isToday = $createdDate->isToday();
+                                $isYesterday = $createdDate->isYesterday();
+                                
+                                if ($isToday) {
+                                    $daysText = 'اليوم';
+                                    $badgeColor = 'success';
+                                } elseif ($isYesterday) {
+                                    $daysText = 'أمس';
+                                    $badgeColor = 'info';
+                                } elseif ($daysPassed <= 7) {
+                                    $daysText = $daysPassed . ' ' . ($daysPassed == 1 ? 'يوم' : 'أيام');
+                                    $badgeColor = 'warning';
+                                } elseif ($daysPassed <= 30) {
+                                    $daysText = $daysPassed . ' يوم';
+                                    $badgeColor = 'danger';
+                                } else {
+                                    $daysText = $daysPassed . ' يوم';
+                                    $badgeColor = 'dark';
+                                }
+                            @endphp
+                            
+                            <div class="bg-white bg-opacity-20 rounded-pill px-3 py-2 duration-counter">
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="fas fa-calendar-alt"></i>
+                                    <span class="fw-medium">مدة أمر العمل:</span>
+                                    <span class="badge bg-{{ $badgeColor }} fw-bold">{{ $daysText }}</span>
+                                </div>
+                                <small class="text-white-50 d-block mt-1">
+                                    تم الإنشاء: {{ $createdDate->format('Y-m-d H:i') }}
+                                </small>
+                            </div>
+                            
+                            <a href="{{ route('admin.work-orders.show', $workOrder) }}" class="btn btn-light btn-sm">
+                                <i class="fas fa-arrow-right"></i> عودة
+                            </a>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="card-body p-4">
@@ -108,9 +147,51 @@
     box-shadow: 0 4px 12px rgba(74, 144, 226, 0.2);
 }
 
+/* تنسيق عداد الأيام */
+.bg-opacity-20 {
+    --bs-bg-opacity: 0.2;
+}
+
+.duration-counter {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.duration-counter .badge {
+    font-size: 0.85rem;
+    padding: 0.4rem 0.8rem;
+    border-radius: 50px;
+}
+
+.text-white-50 {
+    --bs-text-opacity: 0.75;
+    color: rgba(var(--bs-white-rgb), var(--bs-text-opacity)) !important;
+}
+
 @media (max-width: 768px) {
     .col-md-4 {
         margin-bottom: 1rem;
+    }
+    
+    .duration-counter {
+        font-size: 0.85rem;
+    }
+    
+    .duration-counter .badge {
+        font-size: 0.75rem;
+        padding: 0.3rem 0.6rem;
+    }
+    
+    .card-header .d-flex {
+        flex-direction: column;
+        gap: 1rem !important;
+    }
+    
+    .duration-counter {
+        order: -1;
+        align-self: stretch;
+        text-align: center;
     }
 }
 </style>

@@ -239,11 +239,37 @@
                                             @enderror
                                         </div>
                                         <div class="col-md-6 mb-3">
-                                            <label class="form-label">مرفق احتياطي 1</label>
-                                            <input type="file" class="form-control @error('files.backup_1') is-invalid @enderror" name="files[backup_1]">
-                                            @if($workOrder->files->where('file_type', 'backup_1')->first())
-                                                <div class="mt-2">
-                                                    <small class="text-muted">الملف الحالي: {{ $workOrder->files->where('file_type', 'backup_1')->first()->original_filename }}</small>
+                                            <label class="form-label fw-bold">
+                                                <i class="fas fa-paperclip text-secondary me-2"></i>
+                                                مرفق احتياطي (اختياري)
+                                            </label>
+                                            <input type="file" class="form-control @error('files.backup_1') is-invalid @enderror" name="files[backup_1]" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png">
+                                            <div class="form-text">
+                                                PDF, Word, Excel, أو صورة - الحد الأقصى 20 ميجابايت
+                                            </div>
+                                            @php
+                                                $currentBackupFile = $workOrder->files()
+                                                    ->where('file_category', 'basic_attachments')
+                                                    ->where('attachment_type', 'backup_1')
+                                                    ->first();
+                                            @endphp
+                                            @if($currentBackupFile)
+                                                <div class="mt-2 p-2 bg-light rounded">
+                                                    <div class="d-flex align-items-center justify-content-between">
+                                                        <div class="d-flex align-items-center">
+                                                            <i class="fas fa-file text-primary me-2"></i>
+                                                            <div>
+                                                                <small class="fw-bold">الملف الحالي:</small>
+                                                                <br>
+                                                                <small class="text-muted">{{ Str::limit($currentBackupFile->original_filename, 40) }}</small>
+                                                            </div>
+                                                        </div>
+                                                        <a href="{{ Storage::url($currentBackupFile->file_path) }}" 
+                                                           target="_blank" 
+                                                           class="btn btn-sm btn-outline-primary">
+                                                            <i class="fas fa-eye me-1"></i>عرض
+                                                        </a>
+                                                    </div>
                                                 </div>
                                             @endif
                                             @error('files.backup_1')

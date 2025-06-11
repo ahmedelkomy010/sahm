@@ -199,27 +199,16 @@
                                 <div class="form-section mb-4">
                                     <h4 class="section-title mb-3">المرفقات</h4>
                                     <div class="row">
+                                        
                                         <div class="col-md-6 mb-3">
-                                            <label class="form-label">مقايسة الأعمال</label>
-                                            <input type="file" class="form-control @error('files.license_estimate') is-invalid @enderror" name="files[license_estimate]">
-                                            @error('files.license_estimate')
-                                                <span class="invalid-feedback" role="alert">
-                                                    <strong>{{ $message }}</strong>
-                                                </span>
-                                            @enderror
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label"> مقايسة المواد
-                                            <input type="file" class="form-control @error('files.daily_measurement') is-invalid @enderror" name="files[daily_measurement]">
-                                            @error('files.daily_measurement')
-                                                <span class="invalid-feedback" role="alert">
-                                                    <strong>{{ $message }}</strong>
-                                                </span>
-                                            @enderror
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label">مرفق احتياطي
-                                            <input type="file" class="form-control @error('files.backup_1') is-invalid @enderror" name="files[backup_1]">
+                                            <label class="form-label fw-bold">
+                                                <i class="fas fa-paperclip text-secondary me-2"></i>
+                                                مرفق احتياطي (اختياري)
+                                            </label>
+                                            <input type="file" class="form-control @error('files.backup_1') is-invalid @enderror" name="files[backup_1]" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png">
+                                            <div class="form-text">
+                                                PDF, Word, Excel, أو صورة - الحد الأقصى 20 ميجابايت
+                                            </div>
                                             @error('files.backup_1')
                                                 <span class="invalid-feedback" role="alert">
                                                     <strong>{{ $message }}</strong>
