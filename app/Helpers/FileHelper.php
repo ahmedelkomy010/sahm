@@ -158,7 +158,9 @@ class FileHelper
             }
         }
 
-        return $default ?: asset('images/no-image.png');
+        // استخدام serve_file_enhanced.php للملفات المفقودة
+        // سيحاول العثور على بدائل أو عرض صورة افتراضية
+        return url('serve_file_enhanced.php?file=' . urlencode($cleanPath));
     }
 
     /**

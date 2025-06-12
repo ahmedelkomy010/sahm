@@ -422,9 +422,7 @@
                                                         <div class="text-center py-3">
                                                             <i class="fas fa-file-times fa-2x text-muted mb-2"></i>
                                                             <br>
-                                                            <span class="text-muted">لا يوجد مرفق لاختبارات ما قبل التشغيل 211</span>
-                                                            <br>
-                                                            <small class="text-muted">يمكن رفع الملف من صفحة إجراءات ما بعد التنفيذ</small>
+                                                            <span class="text-muted">لا يوجد مرفق 211</span>
                                                         </div>
                                                     @endif
                                                 </td>

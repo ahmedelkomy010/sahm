@@ -250,8 +250,8 @@
                                                     <th style="width: 40%">بند العقد</th>
                                                     <th style="width: 25%">الكمية المخططة</th>
                                                     <th style="width: 15%">الوحدة</th>
-                                                    <th style="width: 15%">ملاحظات</th>
-                                                    <th style="width: 5%">حذف</th>
+                                                    <th style="width: 15%">سعر الوحدة</th>
+                                                    
                                                 </tr>
                                             </thead>
                                             <tbody id="workItemsBody">
@@ -324,9 +324,32 @@
                     <i class="fas fa-info-circle me-2"></i>
                     <strong>تنسيق الملف المطلوب:</strong>
                     <br>
-                    الأعمدة: البند، الوصف الكامل، الوحدة، سعر الوحدة
-                    <br>
-                    أو: code، description، unit، unit_price
+                    <div class="row mt-2">
+                        <div class="col-md-6">
+                            <strong>بالإنجليزية:</strong>
+                            <ul class="mb-0 mt-1">
+                                <li><code>Item</code> - كود/رقم البند</li>
+                                <li><code>Long Description</code> - الوصف الكامل</li>
+                                <li><code>UOM</code> - وحدة القياس</li>
+                                <li><code>Unit Price</code> - سعر الوحدة</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>بالعربية:</strong>
+                            <ul class="mb-0 mt-1">
+                                <li><code>البند</code> أو <code>كود</code></li>
+                                <li><code>الوصف الكامل</code> أو <code>الوصف</code></li>
+                                <li><code>الوحدة</code> أو <code>وحدة</code></li>
+                                <li><code>سعر الوحدة</code> أو <code>السعر</code></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        <small class="text-muted">
+                            <i class="fas fa-lightbulb me-1"></i>
+                            <strong>ملاحظة:</strong> النظام يدعم الأعمدة بأسماء مختلفة وسيتعرف عليها تلقائياً
+                        </small>
+                    </div>
                 </div>
                 
                 <form id="excelImportForm" enctype="multipart/form-data">
@@ -351,6 +374,46 @@
                 </div>
                 
                 <div id="importResults" class="mt-3"></div>
+                
+                <!-- مثال توضيحي -->
+                <div class="mt-3">
+                    <div class="card border-light">
+                        <div class="card-header bg-light py-2">
+                            <h6 class="mb-0">
+                                <i class="fas fa-table text-success me-2"></i>
+                                مثال على بنية الملف:
+                            </h6>
+                        </div>
+                        <div class="card-body p-2">
+                            <div class="table-responsive">
+                                <table class="table table-sm table-bordered mb-0">
+                                    <thead class="table-primary">
+                                        <tr>
+                                            <th>Item</th>
+                                            <th>Long Description</th>
+                                            <th>UOM</th>
+                                            <th>Unit Price</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>A1</td>
+                                            <td>CONSTRUCTION AND MAINTENANCE OF DISTRIBUTION NETWORKS</td>
+                                            <td>LS</td>
+                                            <td>100000000</td>
+                                        </tr>
+                                        <tr>
+                                            <td>101000000</td>
+                                            <td>SURVEYING AND GEOGRAPHICAL INFORMATION SYSTEM (GIS) WORKS</td>
+                                            <td>LS</td>
+                                            <td>-</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>

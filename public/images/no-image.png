@@ -1,0 +1,19 @@
+<?php
+// إنشاء صورة افتراضية
+$image = imagecreate(200, 150);
+$bg_color = imagecolorallocate($image, 245, 245, 245);
+$border_color = imagecolorallocate($image, 200, 200, 200);
+$text_color = imagecolorallocate($image, 120, 120, 120);
+
+// إضافة إطار
+imagerectangle($image, 0, 0, 199, 149, $border_color);
+
+// إضافة نص
+imagestring($image, 3, 60, 60, 'No Image', $text_color);
+imagestring($image, 2, 70, 80, 'Available', $text_color);
+
+// حفظ الصورة
+header('Content-Type: image/png');
+imagepng($image);
+imagedestroy($image);
+?> 

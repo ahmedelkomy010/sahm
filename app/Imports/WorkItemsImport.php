@@ -29,17 +29,35 @@ class WorkItemsImport implements ToModel, WithHeadingRow, WithValidation, SkipsO
      */
     public function model(array $row)
     {
-        // تنظيف البيانات - دعم أعمدة متعددة
-        $code = trim($row['code'] ?? $row['كود'] ?? $row['البند'] ?? '');
-        $description = trim($row['description'] ?? $row['الوصف'] ?? $row['وصف'] ?? $row['الوصف الكامل'] ?? $row['الوصف_الكامل'] ?? '');
-        $unit = trim($row['unit'] ?? $row['الوحدة'] ?? $row['وحدة'] ?? 'عدد');
-        $unitPrice = floatval($row['unit_price'] ?? $row['سعر الوحدة'] ?? $row['سعر_الوحدة'] ?? $row['السعر'] ?? 0);
+        // تنظيف البيانات - دعم أعمدة متعددة حسب ملف Excel المعروض
+        $code = trim($row['item'] ?? $row['code'] ?? $row['كود'] ?? $row['البند'] ?? '');
+        $description = trim($row['long_description'] ?? $row['description'] ?? $row['الوصف'] ?? $row['وصف'] ?? $row['الوصف الكامل'] ?? $row['الوصف_الكامل'] ?? '');
+        $unit = trim($row['uom'] ?? $row['unit'] ?? $row['الوحدة'] ?? $row['وحدة'] ?? 'عدد');
+        $unitPrice = $this->parsePrice($row['unit_price'] ?? $row['سعر الوحدة'] ?? $row['سعر_الوحدة'] ?? $row['السعر'] ?? 0);
         $notes = trim($row['notes'] ?? $row['ملاحظات'] ?? '');
 
-        // إذا كان الكود فارغ، نستخدم أول كلمة من الوصف أو نصنع كود عشوائي
+        // تنظيف الكود - إزالة المسافات والأحرف الغريبة
+        $code = preg_replace('/[^\w\-]/', '', $code);
+        
+        // إذا كان الكود فارغ، نستخدم رقم تسلسلي من الوصف
         if (empty($code) && !empty($description)) {
-            $words = explode(' ', $description);
-            $code = 'WI' . rand(1000, 9999) . '_' . substr($words[0], 0, 5);
+            // استخراج أي رقم من الوصف أو إنشاء كود فريد
+            preg_match('/\d+/', $description, $matches);
+            if (!empty($matches)) {
+                $code = 'A' . $matches[0];
+            } else {
+                $code = 'WI' . rand(100000000, 999999999);
+            }
+        }
+
+        // تنظيف الوصف من الأحرف غير المرغوبة
+        $description = preg_replace('/[\x00-\x1F\x7F-\xFF]/', ' ', $description);
+        $description = trim(preg_replace('/\s+/', ' ', $description));
+        
+        // تنظيف الوحدة
+        $unit = preg_replace('/[\x00-\x1F\x7F-\xFF]/', '', $unit);
+        if (empty($unit)) {
+            $unit = 'عدد';
         }
 
         if (empty($code) || empty($description)) {
@@ -62,6 +80,22 @@ class WorkItemsImport implements ToModel, WithHeadingRow, WithValidation, SkipsO
 
         return $workItem;
     }
+    
+    /**
+     * تنظيف وتحويل السعر إلى رقم
+     */
+    private function parsePrice($price)
+    {
+        if (is_numeric($price)) {
+            return floatval($price);
+        }
+        
+        // إزالة العملات والفواصل
+        $price = str_replace(['$', '€', '£', '₪', 'ريال', 'درهم', ','], '', $price);
+        $price = trim($price);
+        
+        return is_numeric($price) ? floatval($price) : 0;
+    }
 
     /**
      * @return array
@@ -69,21 +103,31 @@ class WorkItemsImport implements ToModel, WithHeadingRow, WithValidation, SkipsO
     public function rules(): array
     {
         return [
+            // أعمدة الكود/البند
+            '*.item' => ['nullable', 'string', 'max:50'],
             '*.code' => ['nullable', 'string', 'max:50'],
             '*.كود' => ['nullable', 'string', 'max:50'],
             '*.البند' => ['nullable', 'string', 'max:50'],
-            '*.description' => ['required', 'string', 'max:500'],
-            '*.الوصف' => ['required', 'string', 'max:500'],
-            '*.الوصف الكامل' => ['required', 'string', 'max:500'],
-            '*.الوصف_الكامل' => ['required', 'string', 'max:500'],
-            '*.وصف' => ['required', 'string', 'max:500'],
+            
+            // أعمدة الوصف
+            '*.long_description' => ['nullable', 'string', 'max:1000'],
+            '*.description' => ['nullable', 'string', 'max:1000'],
+            '*.الوصف' => ['nullable', 'string', 'max:1000'],
+            '*.الوصف الكامل' => ['nullable', 'string', 'max:1000'],
+            '*.الوصف_الكامل' => ['nullable', 'string', 'max:1000'],
+            '*.وصف' => ['nullable', 'string', 'max:1000'],
+            
+            // أعمدة الوحدة
+            '*.uom' => ['nullable', 'string', 'max:50'],
             '*.unit' => ['nullable', 'string', 'max:50'],
             '*.الوحدة' => ['nullable', 'string', 'max:50'],
             '*.وحدة' => ['nullable', 'string', 'max:50'],
-            '*.unit_price' => ['nullable', 'numeric', 'min:0'],
-            '*.سعر الوحدة' => ['nullable', 'numeric', 'min:0'],
-            '*.سعر_الوحدة' => ['nullable', 'numeric', 'min:0'],
-            '*.السعر' => ['nullable', 'numeric', 'min:0'],
+            
+            // أعمدة السعر
+            '*.unit_price' => ['nullable'],
+            '*.سعر الوحدة' => ['nullable'],
+            '*.سعر_الوحدة' => ['nullable'],
+            '*.السعر' => ['nullable'],
         ];
     }
 
@@ -93,15 +137,25 @@ class WorkItemsImport implements ToModel, WithHeadingRow, WithValidation, SkipsO
     public function customValidationMessages()
     {
         return [
-            'description.required' => 'وصف العنصر مطلوب',
-            'الوصف.required' => 'وصف العنصر مطلوب',
-            'الوصف الكامل.required' => 'وصف العنصر مطلوب',
-            'الوصف_الكامل.required' => 'وصف العنصر مطلوب',
-            'وصف.required' => 'وصف العنصر مطلوب',
-            'unit_price.numeric' => 'سعر الوحدة يجب أن يكون رقماً',
-            'سعر الوحدة.numeric' => 'سعر الوحدة يجب أن يكون رقماً',
-            'سعر_الوحدة.numeric' => 'سعر الوحدة يجب أن يكون رقماً',
-            'السعر.numeric' => 'سعر الوحدة يجب أن يكون رقماً',
+            // رسائل الكود
+            'item.max' => 'كود العنصر يجب ألا يتجاوز 50 حرف',
+            'code.max' => 'كود العنصر يجب ألا يتجاوز 50 حرف',
+            'كود.max' => 'كود العنصر يجب ألا يتجاوز 50 حرف',
+            'البند.max' => 'كود العنصر يجب ألا يتجاوز 50 حرف',
+            
+            // رسائل الوصف
+            'long_description.max' => 'وصف العنصر يجب ألا يتجاوز 1000 حرف',
+            'description.max' => 'وصف العنصر يجب ألا يتجاوز 1000 حرف',
+            'الوصف.max' => 'وصف العنصر يجب ألا يتجاوز 1000 حرف',
+            'الوصف الكامل.max' => 'وصف العنصر يجب ألا يتجاوز 1000 حرف',
+            'الوصف_الكامل.max' => 'وصف العنصر يجب ألا يتجاوز 1000 حرف',
+            'وصف.max' => 'وصف العنصر يجب ألا يتجاوز 1000 حرف',
+            
+            // رسائل الوحدة
+            'uom.max' => 'الوحدة يجب ألا تتجاوز 50 حرف',
+            'unit.max' => 'الوحدة يجب ألا تتجاوز 50 حرف',
+            'الوحدة.max' => 'الوحدة يجب ألا تتجاوز 50 حرف',
+            'وحدة.max' => 'الوحدة يجب ألا تتجاوز 50 حرف',
         ];
     }
 
