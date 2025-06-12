@@ -163,7 +163,7 @@
                                         <div class="form-group mb-3">
                                             <label for="order_value_with_consultant" class="form-label fw-bold">قيمة أمر العمل المبدئية شامل الاستشاري</label>
                                             <div class="input-group">
-                                                <span class="input-group-text">₪</span>
+                                                <span class="input-group-text">﷼</span>
                                                 <input id="order_value_with_consultant" type="number" step="0.01" class="form-control @error('order_value_with_consultant') is-invalid @enderror" name="order_value_with_consultant" value="{{ old('order_value_with_consultant', $workOrder->order_value_with_consultant) }}">
                                             </div>
                                             @error('order_value_with_consultant')

@@ -326,7 +326,7 @@
                                                     @else
                                                         <div class="text-center py-2">
                                                             <i class="fas fa-file-times text-muted me-2"></i>
-                                                            <span class="text-muted">لا يوجد مرفق احتياطي</span>
+                                                            <span class="text-muted">لا يوجد مرفق</span>
                                                         </div>
                                                     @endif
                                                 </td>
@@ -351,31 +351,31 @@
                                         <tbody>
                                             <tr>
                                                 <th style="width: 40%">قيمة أمر العمل المبدئية شامل الاستشاري</th>
-                                                <td>{{ number_format($workOrder->order_value_with_consultant, 2) }} ريال</td>
+                                                <td>{{ number_format($workOrder->order_value_with_consultant, 2) }} ﷼</td>
                                             </tr>
                                             <tr>
                                                 <th>قيمة أمر العمل المبدئية غير شامل الاستشاري</th>
-                                                <td>{{ number_format($workOrder->order_value_without_consultant, 2) }} ريال</td>
+                                                <td>{{ number_format($workOrder->order_value_without_consultant, 2) }} ﷼</td>
                                             </tr>
                                             <tr>
                                                 <th>قيمة التنفيذ الفعلي شامل الاستشاري</th>
-                                                <td>{{ $workOrder->actual_execution_value_consultant ? number_format($workOrder->actual_execution_value_consultant, 2) . ' ريال' : 'غير متوفر' }}</td>
+                                                <td>{{ $workOrder->actual_execution_value_consultant ? number_format($workOrder->actual_execution_value_consultant, 2) . ' ﷼' : 'غير متوفر' }}</td>
                                             </tr>
                                             <tr>
                                                 <th>قيمة التنفيذ الفعلي غير شامل الاستشاري</th>
-                                                <td>{{ $workOrder->actual_execution_value_without_consultant ? number_format($workOrder->actual_execution_value_without_consultant, 2) . ' ريال' : 'غير متوفر' }}</td>
+                                                <td>{{ $workOrder->actual_execution_value_without_consultant ? number_format($workOrder->actual_execution_value_without_consultant, 2) . ' ﷼' : 'غير متوفر' }}</td>
                                             </tr>
                                             <tr>
                                                 <th>قيمة الدفعة الجزئية الأولى غير شامل الضريبة</th>
-                                                <td>{{ $workOrder->first_partial_payment_without_tax ? number_format($workOrder->first_partial_payment_without_tax, 2, '.', '') . ' ₪' : 'غير متوفر' }}</td>
+                                                <td>{{ $workOrder->first_partial_payment_without_tax ? number_format($workOrder->first_partial_payment_without_tax, 2, '.', '') . ' ﷼' : 'غير متوفر' }}</td>
                                             </tr>
                                             <tr>
                                                 <th>قيمة الدفعة الجزئية الثانية شامل الضريبة الدفعتين</th>
-                                                <td>{{ $workOrder->second_partial_payment_with_tax ? number_format($workOrder->second_partial_payment_with_tax, 2, '.', '') . ' ₪' : 'غير متوفر' }}</td>
+                                                <td>{{ $workOrder->second_partial_payment_with_tax ? number_format($workOrder->second_partial_payment_with_tax, 2, '.', '') . ' ﷼' : 'غير متوفر' }}</td>
                                             </tr>
                                             <tr>
                                                 <th>القيمة الكلية النهائية</th>
-                                                <td>{{ $workOrder->final_total_value ? number_format($workOrder->final_total_value, 2, '.', '') . ' ₪' : 'غير متوفر' }}</td>
+                                                <td>{{ $workOrder->final_total_value ? number_format($workOrder->final_total_value, 2, '.', '') . ' ﷼' : 'غير متوفر' }}</td>
                                             </tr>
                                             <tr>
                                                 <th>تاريخ تسليم إجراء 155</th>
@@ -429,7 +429,7 @@
                                             </tr>
                                             <tr>
                                                 <th>قيمة الضريبة</th>
-                                                <td>{{ $workOrder->tax_value ? number_format($workOrder->tax_value, 2) . ' ₪' : 'غير متوفر' }}</td>
+                                                <td>{{ $workOrder->tax_value ? number_format($workOrder->tax_value, 2) . ' ﷼' : 'غير متوفر' }}</td>
                                             </tr>
                                             <tr>
                                                 <th>رقم أمر الشراء</th>
@@ -442,11 +442,11 @@
                                             @if($workOrder->license)
                                             <tr>
                                                 <th>قيمة رخصة الحفر</th>
-                                                <td>{{ $workOrder->license->license_value ? number_format($workOrder->license->license_value, 2) . ' ريال' : 'غير متوفر' }}</td>
+                                                <td>{{ $workOrder->license->license_value ? number_format($workOrder->license->license_value, 2) . ' ﷼' : 'غير متوفر' }}</td>
                                             </tr>
                                             <tr>
                                                 <th>قيمة التمديد</th>
-                                                <td>{{ $workOrder->license->extension_value ? number_format($workOrder->license->extension_value, 2) . ' ريال' : 'غير متوفر' }}</td>
+                                                <td>{{ $workOrder->license->extension_value ? number_format($workOrder->license->extension_value, 2) . ' ﷼' : 'غير متوفر' }}</td>
                                             </tr>
                                             @endif
                                             <tr>

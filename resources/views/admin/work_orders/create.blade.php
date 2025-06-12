@@ -157,7 +157,7 @@
                                         <div class="form-group mb-3">
                                             <label for="order_value_with_consultant" class="form-label fw-bold">قيمة أمر العمل المبدئية شامل الاستشاري</label>
                                             <div class="input-group">
-                                                <span class="input-group-text">₪</span>
+                                                <span class="input-group-text">﷼</span>
                                                 <input id="order_value_with_consultant" type="number" step="0.01" class="form-control @error('order_value_with_consultant') is-invalid @enderror" name="order_value_with_consultant" value="{{ old('order_value_with_consultant') }}">
                                             </div>
                                             @error('order_value_with_consultant')
@@ -171,7 +171,7 @@
                                         <div class="form-group mb-3">
                                             <label for="order_value_without_consultant" class="form-label fw-bold">قيمة أمر العمل المبدئية بدون استشاري</label>
                                             <div class="input-group">
-                                                <span class="input-group-text">₪</span>
+                                                <span class="input-group-text">﷼</span>
                                                 <input id="order_value_without_consultant" type="number" step="0.01" class="form-control @error('order_value_without_consultant') is-invalid @enderror" name="order_value_without_consultant" value="{{ old('order_value_without_consultant') }}">
                                             </div>
                                             @error('order_value_without_consultant')
@@ -203,7 +203,7 @@
                                         <div class="col-md-6 mb-3">
                                             <label class="form-label fw-bold">
                                                 <i class="fas fa-paperclip text-secondary me-2"></i>
-                                                مرفق احتياطي (اختياري)
+                                                رفع مرفق
                                             </label>
                                             <input type="file" class="form-control @error('files.backup_1') is-invalid @enderror" name="files[backup_1]" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png">
                                             <div class="form-text">
@@ -218,7 +218,7 @@
                                     </div>
                                     <div class="alert alert-info mt-3">
                                         <i class="fas fa-info-circle me-2"></i>
-                                        يمكنك رفع ملفات (PDF, JPG, PNG, DOC, DOCX, XLS, XLSX) - الحد الأقصى 20 ميجابايت لكل ملف
+                                        - الحد الأقصى 20 ميجابايت  
                                     </div>
                                 </div>
 
@@ -953,7 +953,7 @@ function displaySearchResults(items) {
             <td>${item.code}</td>
             <td>${item.description}</td>
             <td>${item.unit}</td>
-            <td>${item.unit_price ? parseFloat(item.unit_price).toFixed(2) + ' ريال' : '-'}</td>
+                            <td>${item.unit_price ? parseFloat(item.unit_price).toFixed(2) + ' ﷼' : '-'}</td>
             <td>
                 <button type="button" class="btn btn-sm btn-primary" 
                         onclick="addWorkItemFromSearch('${item.id}', '${item.code}', '${item.description}', '${item.unit}', '${item.unit_price || 0}')">
