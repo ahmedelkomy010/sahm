@@ -67,14 +67,15 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::post('/settings', [App\Http\Controllers\Admin\SettingsController::class, 'update'])->name('settings.update');
     
     // وحدات التحكم في أوامر العمل والمواد
-    // صفحة المواد ووظائفها (سنضعها قبل resource لأهميتها)
-    Route::get('work-orders/materials/{workOrderNumber?}', [MaterialsController::class, 'index'])->name('work-orders.materials');
-    Route::post('work-orders/materials', [MaterialsController::class, 'store'])->name('work-orders.materials.store');
-    Route::get('work-orders/materials/{material}/edit', [MaterialsController::class, 'edit'])->name('work-orders.materials.edit');
-    Route::put('work-orders/materials/{material}', [MaterialsController::class, 'update'])->name('work-orders.materials.update');
-    Route::delete('work-orders/materials/{material}', [MaterialsController::class, 'destroy'])->name('work-orders.materials.destroy');
-    Route::get('materials/export/excel', [MaterialsController::class, 'exportExcel'])->name('work-orders.materials.export.excel');
-    Route::get('materials/description/{code}', [MaterialsController::class, 'getDescriptionByCode'])->name('materials.description');
+    // صفحة المواد ووظائفها مرتبطة بأمر العمل
+    Route::get('work-orders/{workOrder}/materials', [MaterialsController::class, 'index'])->name('work-orders.materials.index');
+    Route::get('work-orders/{workOrder}/materials/create', [MaterialsController::class, 'create'])->name('work-orders.materials.create');
+    Route::post('work-orders/{workOrder}/materials', [MaterialsController::class, 'store'])->name('work-orders.materials.store');
+    Route::get('work-orders/{workOrder}/materials/{material}', [MaterialsController::class, 'show'])->name('work-orders.materials.show');
+    Route::get('work-orders/{workOrder}/materials/{material}/edit', [MaterialsController::class, 'edit'])->name('work-orders.materials.edit');
+    Route::put('work-orders/{workOrder}/materials/{material}', [MaterialsController::class, 'update'])->name('work-orders.materials.update');
+    Route::delete('work-orders/{workOrder}/materials/{material}', [MaterialsController::class, 'destroy'])->name('work-orders.materials.destroy');
+    Route::get('work-orders/{workOrder}/materials/export/excel', [MaterialsController::class, 'exportExcel'])->name('work-orders.materials.export.excel');
     
     // وظائف أوامر العمل الأخرى
     Route::delete('work-orders/files/{id}', [WorkOrderController::class, 'deleteFile'])->name('work-orders.files.delete');
@@ -128,8 +129,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::put('work-orders/{workOrder}/electrical-works/store', [App\Http\Controllers\ElectricalWorksController::class, 'store'])->name('work-orders.electrical-works.store');
     Route::post('work-orders/{workOrder}/electrical-works/store', [App\Http\Controllers\ElectricalWorksController::class, 'store'])->name('work-orders.electrical-works.store.post');
 
-    // Materials for specific work order
-    Route::get('work-orders/{workOrder}/materials', [WorkOrderController::class, 'materialsForWorkOrder'])->name('work-orders.materials.show');
+
     Route::post('work-orders/{workOrder}/electrical-works/images', [App\Http\Controllers\ElectricalWorksController::class, 'storeImages'])->name('work-orders.electrical-works.images');
     Route::delete('work-orders/{workOrder}/electrical-works/images/{image}', [App\Http\Controllers\ElectricalWorksController::class, 'deleteImage'])->name('work-orders.electrical-works.delete-image');
 
@@ -140,9 +140,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::post('/admin/work-orders/{work_order}/order-entries', [OrderEntryController::class, 'store'])->name('order-entries.store');
     Route::delete('/admin/order-entries/{id}', [OrderEntryController::class, 'destroy'])->name('order-entries.destroy');
 
-    // مسار جلب وصف المادة
-    Route::get('work-orders/materials/get-description/{code}', [MaterialsController::class, 'getDescriptionByCode'])
-        ->name('work-orders.materials.get-description');
+
     
     // مسارات Excel لبنود العمل
     Route::post('work-orders/import-work-items', [WorkOrderController::class, 'importWorkItems'])
@@ -169,7 +167,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::delete('work-orders/installations/images/{imageId}', [App\Http\Controllers\WorkOrderController::class, 'deleteInstallationImage'])->name('work-orders.installations.images.delete');
     Route::post('work-orders/{workOrder}/electrical-works/images', [App\Http\Controllers\WorkOrderController::class, 'uploadElectricalWorksImages'])->name('work-orders.electrical-works.images');
 
-    Route::get('materials/description/{code}', [App\Http\Controllers\WorkOrderController::class, 'getMaterialDescription'])->name('materials.description');
+
 
     // مرفقات الفاتورة
     Route::post('work-orders/{workOrder}/invoice-attachments', [\App\Http\Controllers\Admin\InvoiceAttachmentController::class, 'store'])
@@ -262,13 +260,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-Route::middleware(['auth'])->group(function () {
-    // المسارات المتعلقة بالملف الشخصي ومسارات أخرى...
-    
-    // نحذف مسارات المواد القديمة التي قد تتداخل مع المسارات الجديدة
-    // ونبقي فقط على مسار وصف المواد الذي لا يتعارض
-    Route::get('/materials/descriptions/{code}', [MaterialsController::class, 'getMaterialDescription'])->name('materials.description');
-});
+
 
 // Lab Licenses Web Routes
 Route::get('/lab-licenses', [LabLicenseWebController::class, 'index'])->name('lab-licenses.index');

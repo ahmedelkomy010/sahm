@@ -1156,23 +1156,7 @@ class WorkOrderController extends Controller
         }
     }
 
-    public function materials()
-    {
-        $workOrders = \App\Models\WorkOrder::all();
-        $materials = \App\Models\Material::with('workOrder')->latest()->paginate(15);
-        return view('admin.work_orders.materials', compact('workOrders', 'materials'));
-    }
 
-    public function materialsForWorkOrder(WorkOrder $workOrder)
-    {
-        $workOrder->load('basicAttachments');
-        $workOrders = \App\Models\WorkOrder::all();
-        $materials = \App\Models\Material::with('workOrder')
-            ->where('work_order_number', $workOrder->order_number)
-            ->latest()
-            ->paginate(15);
-        return view('admin.work_orders.materials', compact('workOrders', 'materials', 'workOrder'));
-    }
 
     public function getMaterialDescription($code)
     {

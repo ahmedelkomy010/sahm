@@ -115,7 +115,7 @@
                     <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
                         <h3 class="mb-0 fs-4">تفاصيل أمر العمل</h3>
                         <div class="d-flex flex-wrap justify-content-center gap-2">
-                            <a href="{{ route('admin.work-orders.materials.show', $workOrder) }}" class="custom-btn btn-materials">
+                            <a href="{{ route('admin.work-orders.materials.index', $workOrder) }}" class="custom-btn btn-materials">
                                 <i class="fas fa-boxes me-1"></i> المواد
                             </a>
                             <a href="{{ route('admin.work-orders.survey', $workOrder) }}" class="custom-btn btn-survey">

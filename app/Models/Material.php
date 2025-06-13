@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 class Material extends Model
 {
@@ -11,46 +12,42 @@ class Material extends Model
     
     protected $fillable = [
         'work_order_id',
-        'work_order_number',
+        'work_order_number', 
         'subscriber_name',
         'code',
         'description',
         'planned_quantity',
-        'actual_quantity',
         'spent_quantity',
-        'executed_site_quantity',
         'unit',
         'line',
         'check_in_file',
+        'check_out_file',
         'date_gatepass',
+        'stock_in',
+        'stock_in_file',
+        'stock_out',
+        'stock_out_file',
         'gate_pass_file',
         'store_in_file',
         'store_out_file',
         'ddo_file',
-        'difference',
     ];
     
     protected $casts = [
         'date_gatepass' => 'date',
         'planned_quantity' => 'decimal:2',
-        'actual_quantity' => 'decimal:2',
         'spent_quantity' => 'decimal:2',
-        'executed_site_quantity' => 'decimal:2',
-        'difference' => 'decimal:2',
     ];
 
     protected $attributes = [
         'planned_quantity' => 0,
-        'actual_quantity' => 0,
         'spent_quantity' => 0,
-        'executed_site_quantity' => 0,
-        'difference' => 0,
         'unit' => 'قطعة',
         'line' => '',
     ];
     
     /**
-     * Get the work order that owns the material.
+     * العلاقة مع أمر العمل
      */
     public function workOrder()
     {
@@ -66,14 +63,6 @@ class Material extends Model
     }
 
     /**
-     * Set the actual quantity attribute.
-     */
-    public function setActualQuantityAttribute($value)
-    {
-        $this->attributes['actual_quantity'] = $value ?? 0;
-    }
-
-    /**
      * Set the spent quantity attribute.
      */
     public function setSpentQuantityAttribute($value)
@@ -82,10 +71,184 @@ class Material extends Model
     }
 
     /**
-     * Set the executed site quantity attribute.
+     * نطاق للمواد التي تحتوي على ملفات
      */
-    public function setExecutedSiteQuantityAttribute($value)
+    public function scopeWithFiles($query)
     {
-        $this->attributes['executed_site_quantity'] = $value ?? 0;
+        return $query->where(function($q) {
+            $q->whereNotNull('check_in_file')
+              ->orWhereNotNull('check_out_file')
+              ->orWhereNotNull('stock_in_file')
+              ->orWhereNotNull('stock_out_file')
+              ->orWhereNotNull('gate_pass_file')
+              ->orWhereNotNull('store_in_file')
+              ->orWhereNotNull('store_out_file')
+              ->orWhereNotNull('ddo_file');
+        });
+    }
+
+    /**
+     * نطاق للمواد التي لا تحتوي على ملفات
+     */
+    public function scopeWithoutFiles($query)
+    {
+        return $query->where(function($q) {
+            $q->whereNull('check_in_file')
+              ->whereNull('check_out_file')
+              ->whereNull('stock_in_file')
+              ->whereNull('stock_out_file')
+              ->whereNull('gate_pass_file')
+              ->whereNull('store_in_file')
+              ->whereNull('store_out_file')
+              ->whereNull('ddo_file');
+        });
+    }
+
+    /**
+     * الحصول على رابط ملف الدخول
+     */
+    public function getCheckInFileUrlAttribute()
+    {
+        return $this->check_in_file ? Storage::url($this->check_in_file) : null;
+    }
+
+    /**
+     * الحصول على رابط ملف الخروج
+     */
+    public function getCheckOutFileUrlAttribute()
+    {
+        return $this->check_out_file ? Storage::url($this->check_out_file) : null;
+    }
+
+    /**
+     * الحصول على رابط ملف الدخول للمخزن
+     */
+    public function getStockInFileUrlAttribute()
+    {
+        return $this->stock_in_file ? Storage::url($this->stock_in_file) : null;
+    }
+
+    /**
+     * الحصول على رابط ملف الخروج من المخزن
+     */
+    public function getStockOutFileUrlAttribute()
+    {
+        return $this->stock_out_file ? Storage::url($this->stock_out_file) : null;
+    }
+
+    /**
+     * الحصول على رابط ملف تصريح المرور
+     */
+    public function getGatePassFileUrlAttribute()
+    {
+        return $this->gate_pass_file ? Storage::url($this->gate_pass_file) : null;
+    }
+
+    /**
+     * الحصول على رابط ملف الدخول للمتجر
+     */
+    public function getStoreInFileUrlAttribute()
+    {
+        return $this->store_in_file ? Storage::url($this->store_in_file) : null;
+    }
+
+    /**
+     * الحصول على رابط ملف الخروج من المتجر
+     */
+    public function getStoreOutFileUrlAttribute()
+    {
+        return $this->store_out_file ? Storage::url($this->store_out_file) : null;
+    }
+
+    /**
+     * الحصول على رابط ملف DDO
+     */
+    public function getDdoFileUrlAttribute()
+    {
+        return $this->ddo_file ? Storage::url($this->ddo_file) : null;
+    }
+
+    /**
+     * التحقق من وجود أي ملفات مرفقة
+     */
+    public function hasAttachments()
+    {
+        return $this->check_in_file || $this->check_out_file || $this->stock_in_file || 
+               $this->stock_out_file || $this->gate_pass_file || $this->store_in_file || 
+               $this->store_out_file || $this->ddo_file;
+    }
+
+    /**
+     * الحصول على جميع المرفقات
+     */
+    public function getAttachments()
+    {
+        $attachments = [];
+        
+        if ($this->check_in_file) {
+            $attachments['check_in'] = [
+                'name' => 'ملف الدخول',
+                'url' => $this->check_in_file_url,
+                'file' => $this->check_in_file
+            ];
+        }
+        
+        if ($this->check_out_file) {
+            $attachments['check_out'] = [
+                'name' => 'ملف الخروج', 
+                'url' => $this->check_out_file_url,
+                'file' => $this->check_out_file
+            ];
+        }
+        
+        if ($this->stock_in_file) {
+            $attachments['stock_in'] = [
+                'name' => 'ملف دخول المخزن',
+                'url' => $this->stock_in_file_url,
+                'file' => $this->stock_in_file
+            ];
+        }
+        
+        if ($this->stock_out_file) {
+            $attachments['stock_out'] = [
+                'name' => 'ملف خروج المخزن',
+                'url' => $this->stock_out_file_url,
+                'file' => $this->stock_out_file
+            ];
+        }
+        
+        if ($this->gate_pass_file) {
+            $attachments['gate_pass'] = [
+                'name' => 'ملف تصريح المرور',
+                'url' => $this->gate_pass_file_url,
+                'file' => $this->gate_pass_file
+            ];
+        }
+        
+        if ($this->store_in_file) {
+            $attachments['store_in'] = [
+                'name' => 'ملف دخول المتجر',
+                'url' => $this->store_in_file_url,
+                'file' => $this->store_in_file
+            ];
+        }
+        
+        if ($this->store_out_file) {
+            $attachments['store_out'] = [
+                'name' => 'ملف خروج المتجر',
+                'url' => $this->store_out_file_url,
+                'file' => $this->store_out_file
+            ];
+        }
+        
+        if ($this->ddo_file) {
+            $attachments['ddo'] = [
+                'name' => 'ملف DDO',
+                'url' => $this->ddo_file_url,
+                'file' => $this->ddo_file
+            ];
+        }
+        
+        return $attachments;
     }
 }

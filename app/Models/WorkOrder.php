@@ -152,14 +152,6 @@ class WorkOrder extends Model
         return $this->hasMany(License::class);
     }
 
-    /**
-     * Get the materials for the work order.
-     */
-    public function materials()
-    {
-        return $this->hasMany(Material::class);
-    }
-
     public function invoiceAttachments()
     {
         return $this->hasMany(InvoiceAttachment::class);
@@ -189,6 +181,14 @@ class WorkOrder extends Model
     public function workOrderMaterials()
     {
         return $this->hasMany(WorkOrderMaterial::class);
+    }
+
+    /**
+     * العلاقة مع المواد
+     */
+    public function materials()
+    {
+        return $this->hasMany(Material::class);
     }
 
     // Scopes

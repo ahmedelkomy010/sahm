@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'تعديل المادة - أمر العمل رقم ' . $workOrder->order_number)
+@section('title', 'إضافة مادة جديدة - أمر العمل رقم ' . $workOrder->order_number)
 
 @section('content')
 <div class="container-fluid">
@@ -9,14 +9,14 @@
         <div class="col-12">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
-                    <h1 class="h3 mb-0 text-gray-800">تعديل المادة</h1>
+                    <h1 class="h3 mb-0 text-gray-800">إضافة مادة جديدة</h1>
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb">
                             <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">الرئيسية</a></li>
                             <li class="breadcrumb-item"><a href="{{ route('admin.work-orders.index') }}">أوامر العمل</a></li>
                             <li class="breadcrumb-item"><a href="{{ route('admin.work-orders.show', $workOrder) }}">أمر العمل {{ $workOrder->order_number }}</a></li>
                             <li class="breadcrumb-item"><a href="{{ route('admin.work-orders.materials.index', $workOrder) }}">المواد</a></li>
-                            <li class="breadcrumb-item active" aria-current="page">تعديل المادة</li>
+                            <li class="breadcrumb-item active" aria-current="page">إضافة مادة</li>
                         </ol>
                     </nav>
                 </div>
@@ -54,17 +54,16 @@
         </div>
     </div>
 
-    <!-- Edit Material Form -->
+    <!-- Create Material Form -->
     <div class="row">
         <div class="col-12">
             <div class="card shadow">
                 <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">تعديل بيانات المادة</h6>
+                    <h6 class="m-0 font-weight-bold text-primary">بيانات المادة الجديدة</h6>
                 </div>
                 <div class="card-body">
-                    <form action="{{ route('admin.work-orders.materials.update', [$workOrder, $material]) }}" method="POST" enctype="multipart/form-data">
+                    <form action="{{ route('admin.work-orders.materials.store', $workOrder) }}" method="POST" enctype="multipart/form-data">
                         @csrf
-                        @method('PUT')
                         
                         <!-- معلومات المادة الأساسية -->
                         <div class="row mb-4">
@@ -81,7 +80,7 @@
                                 <label for="code" class="form-label">كود المادة <span class="text-danger">*</span></label>
                                 <div class="input-group">
                                     <input type="text" class="form-control @error('code') is-invalid @enderror" 
-                                           id="code" name="code" value="{{ old('code', $material->code) }}" 
+                                           id="code" name="code" value="{{ old('code') }}" 
                                            placeholder="أدخل كود المادة" required>
                                     <button type="button" class="btn btn-outline-secondary" id="search-material-btn" title="البحث عن وصف المادة">
                                         <i class="fas fa-search"></i>
@@ -96,7 +95,7 @@
                             <div class="col-md-6 mb-3">
                                 <label for="line" class="form-label">الخط</label>
                                 <input type="text" class="form-control @error('line') is-invalid @enderror" 
-                                       id="line" name="line" value="{{ old('line', $material->line) }}" 
+                                       id="line" name="line" value="{{ old('line') }}" 
                                        placeholder="رقم الخط">
                                 @error('line')
                                     <div class="invalid-feedback">{{ $message }}</div>
@@ -109,7 +108,7 @@
                                 <label for="description" class="form-label">وصف المادة <span class="text-danger">*</span></label>
                                 <textarea class="form-control @error('description') is-invalid @enderror" 
                                           id="description" name="description" rows="3" 
-                                          placeholder="وصف المادة" required>{{ old('description', $material->description) }}</textarea>
+                                          placeholder="وصف المادة" required>{{ old('description') }}</textarea>
                                 @error('description')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -120,7 +119,7 @@
                             <div class="col-md-4 mb-3">
                                 <label for="planned_quantity" class="form-label">الكمية المخططة</label>
                                 <input type="number" step="0.01" class="form-control @error('planned_quantity') is-invalid @enderror" 
-                                       id="planned_quantity" name="planned_quantity" value="{{ old('planned_quantity', $material->planned_quantity) }}" 
+                                       id="planned_quantity" name="planned_quantity" value="{{ old('planned_quantity', 0) }}" 
                                        placeholder="0.00" min="0">
                                 @error('planned_quantity')
                                     <div class="invalid-feedback">{{ $message }}</div>
@@ -130,7 +129,7 @@
                             <div class="col-md-4 mb-3">
                                 <label for="spent_quantity" class="form-label">الكمية المستهلكة</label>
                                 <input type="number" step="0.01" class="form-control @error('spent_quantity') is-invalid @enderror" 
-                                       id="spent_quantity" name="spent_quantity" value="{{ old('spent_quantity', $material->spent_quantity) }}" 
+                                       id="spent_quantity" name="spent_quantity" value="{{ old('spent_quantity', 0) }}" 
                                        placeholder="0.00" min="0">
                                 @error('spent_quantity')
                                     <div class="invalid-feedback">{{ $message }}</div>
@@ -141,12 +140,12 @@
                                 <label for="unit" class="form-label">الوحدة</label>
                                 <select class="form-select @error('unit') is-invalid @enderror" id="unit" name="unit">
                                     <option value="">اختر الوحدة</option>
-                                    <option value="قطعة" {{ old('unit', $material->unit) == 'قطعة' ? 'selected' : '' }}>قطعة</option>
-                                    <option value="متر" {{ old('unit', $material->unit) == 'متر' ? 'selected' : '' }}>متر</option>
-                                    <option value="كيلو" {{ old('unit', $material->unit) == 'كيلو' ? 'selected' : '' }}>كيلو</option>
-                                    <option value="L.M" {{ old('unit', $material->unit) == 'L.M' ? 'selected' : '' }}>L.M</option>
-                                    <option value="Ech" {{ old('unit', $material->unit) == 'Ech' ? 'selected' : '' }}>Ech</option>
-                                    <option value="Kit" {{ old('unit', $material->unit) == 'Kit' ? 'selected' : '' }}>Kit</option>
+                                    <option value="قطعة" {{ old('unit') == 'قطعة' ? 'selected' : '' }}>قطعة</option>
+                                    <option value="متر" {{ old('unit') == 'متر' ? 'selected' : '' }}>متر</option>
+                                    <option value="كيلو" {{ old('unit') == 'كيلو' ? 'selected' : '' }}>كيلو</option>
+                                    <option value="L.M" {{ old('unit') == 'L.M' ? 'selected' : '' }}>L.M</option>
+                                    <option value="Ech" {{ old('unit') == 'Ech' ? 'selected' : '' }}>Ech</option>
+                                    <option value="Kit" {{ old('unit') == 'Kit' ? 'selected' : '' }}>Kit</option>
                                 </select>
                                 @error('unit')
                                     <div class="invalid-feedback">{{ $message }}</div>
@@ -167,39 +166,17 @@
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="check_in_file" class="form-label">ملف دخول المواد</label>
-                                @if($material->check_in_file)
-                                    <div class="mb-2">
-                                        <small class="text-success">
-                                            <i class="fas fa-file"></i> 
-                                            الملف الحالي: {{ basename($material->check_in_file) }}
-                                            <a href="{{ asset('storage/' . $material->check_in_file) }}" target="_blank" class="ms-2">
-                                                <i class="fas fa-eye"></i> عرض
-                                            </a>
-                                        </small>
-                                    </div>
-                                @endif
                                 <input type="file" class="form-control @error('check_in_file') is-invalid @enderror" 
                                        id="check_in_file" name="check_in_file" 
                                        accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
                                 @error('check_in_file')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
-                                <small class="text-muted">PDF, JPG, PNG, DOC (حد أقصى 10MB) - اتركه فارغاً للاحتفاظ بالملف الحالي</small>
+                                <small class="text-muted">PDF, JPG, PNG, DOC (حد أقصى 10MB)</small>
                             </div>
                             
                             <div class="col-md-6 mb-3">
                                 <label for="check_out_file" class="form-label">ملف خروج المواد</label>
-                                @if($material->check_out_file)
-                                    <div class="mb-2">
-                                        <small class="text-success">
-                                            <i class="fas fa-file"></i> 
-                                            الملف الحالي: {{ basename($material->check_out_file) }}
-                                            <a href="{{ asset('storage/' . $material->check_out_file) }}" target="_blank" class="ms-2">
-                                                <i class="fas fa-eye"></i> عرض
-                                            </a>
-                                        </small>
-                                    </div>
-                                @endif
                                 <input type="file" class="form-control @error('check_out_file') is-invalid @enderror" 
                                        id="check_out_file" name="check_out_file" 
                                        accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
@@ -213,7 +190,7 @@
                             <div class="col-md-6 mb-3">
                                 <label for="date_gatepass" class="form-label">تاريخ تصريح المرور</label>
                                 <input type="date" class="form-control @error('date_gatepass') is-invalid @enderror" 
-                                       id="date_gatepass" name="date_gatepass" value="{{ old('date_gatepass', $material->date_gatepass) }}">
+                                       id="date_gatepass" name="date_gatepass" value="{{ old('date_gatepass') }}">
                                 @error('date_gatepass')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -221,17 +198,6 @@
                             
                             <div class="col-md-6 mb-3">
                                 <label for="gate_pass_file" class="form-label">ملف تصريح المرور</label>
-                                @if($material->gate_pass_file)
-                                    <div class="mb-2">
-                                        <small class="text-success">
-                                            <i class="fas fa-file"></i> 
-                                            الملف الحالي: {{ basename($material->gate_pass_file) }}
-                                            <a href="{{ asset('storage/' . $material->gate_pass_file) }}" target="_blank" class="ms-2">
-                                                <i class="fas fa-eye"></i> عرض
-                                            </a>
-                                        </small>
-                                    </div>
-                                @endif
                                 <input type="file" class="form-control @error('gate_pass_file') is-invalid @enderror" 
                                        id="gate_pass_file" name="gate_pass_file" 
                                        accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
@@ -245,7 +211,7 @@
                             <div class="col-md-6 mb-3">
                                 <label for="stock_in" class="form-label">دخول المخزن</label>
                                 <input type="text" class="form-control @error('stock_in') is-invalid @enderror" 
-                                       id="stock_in" name="stock_in" value="{{ old('stock_in', $material->stock_in) }}" 
+                                       id="stock_in" name="stock_in" value="{{ old('stock_in') }}" 
                                        placeholder="معلومات دخول المخزن">
                                 @error('stock_in')
                                     <div class="invalid-feedback">{{ $message }}</div>
@@ -254,17 +220,6 @@
                             
                             <div class="col-md-6 mb-3">
                                 <label for="stock_in_file" class="form-label">ملف دخول المخزن</label>
-                                @if($material->stock_in_file)
-                                    <div class="mb-2">
-                                        <small class="text-success">
-                                            <i class="fas fa-file"></i> 
-                                            الملف الحالي: {{ basename($material->stock_in_file) }}
-                                            <a href="{{ asset('storage/' . $material->stock_in_file) }}" target="_blank" class="ms-2">
-                                                <i class="fas fa-eye"></i> عرض
-                                            </a>
-                                        </small>
-                                    </div>
-                                @endif
                                 <input type="file" class="form-control @error('stock_in_file') is-invalid @enderror" 
                                        id="stock_in_file" name="stock_in_file" 
                                        accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
@@ -278,7 +233,7 @@
                             <div class="col-md-6 mb-3">
                                 <label for="stock_out" class="form-label">خروج المخزن</label>
                                 <input type="text" class="form-control @error('stock_out') is-invalid @enderror" 
-                                       id="stock_out" name="stock_out" value="{{ old('stock_out', $material->stock_out) }}" 
+                                       id="stock_out" name="stock_out" value="{{ old('stock_out') }}" 
                                        placeholder="معلومات خروج المخزن">
                                 @error('stock_out')
                                     <div class="invalid-feedback">{{ $message }}</div>
@@ -287,17 +242,6 @@
                             
                             <div class="col-md-6 mb-3">
                                 <label for="stock_out_file" class="form-label">ملف خروج المخزن</label>
-                                @if($material->stock_out_file)
-                                    <div class="mb-2">
-                                        <small class="text-success">
-                                            <i class="fas fa-file"></i> 
-                                            الملف الحالي: {{ basename($material->stock_out_file) }}
-                                            <a href="{{ asset('storage/' . $material->stock_out_file) }}" target="_blank" class="ms-2">
-                                                <i class="fas fa-eye"></i> عرض
-                                            </a>
-                                        </small>
-                                    </div>
-                                @endif
                                 <input type="file" class="form-control @error('stock_out_file') is-invalid @enderror" 
                                        id="stock_out_file" name="stock_out_file" 
                                        accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
@@ -310,17 +254,6 @@
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="store_in_file" class="form-label">ملف دخول المتجر</label>
-                                @if($material->store_in_file)
-                                    <div class="mb-2">
-                                        <small class="text-success">
-                                            <i class="fas fa-file"></i> 
-                                            الملف الحالي: {{ basename($material->store_in_file) }}
-                                            <a href="{{ asset('storage/' . $material->store_in_file) }}" target="_blank" class="ms-2">
-                                                <i class="fas fa-eye"></i> عرض
-                                            </a>
-                                        </small>
-                                    </div>
-                                @endif
                                 <input type="file" class="form-control @error('store_in_file') is-invalid @enderror" 
                                        id="store_in_file" name="store_in_file" 
                                        accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
@@ -331,17 +264,6 @@
                             
                             <div class="col-md-6 mb-3">
                                 <label for="store_out_file" class="form-label">ملف خروج المتجر</label>
-                                @if($material->store_out_file)
-                                    <div class="mb-2">
-                                        <small class="text-success">
-                                            <i class="fas fa-file"></i> 
-                                            الملف الحالي: {{ basename($material->store_out_file) }}
-                                            <a href="{{ asset('storage/' . $material->store_out_file) }}" target="_blank" class="ms-2">
-                                                <i class="fas fa-eye"></i> عرض
-                                            </a>
-                                        </small>
-                                    </div>
-                                @endif
                                 <input type="file" class="form-control @error('store_out_file') is-invalid @enderror" 
                                        id="store_out_file" name="store_out_file" 
                                        accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
@@ -354,17 +276,6 @@
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="ddo_file" class="form-label">ملف DDO</label>
-                                @if($material->ddo_file)
-                                    <div class="mb-2">
-                                        <small class="text-success">
-                                            <i class="fas fa-file"></i> 
-                                            الملف الحالي: {{ basename($material->ddo_file) }}
-                                            <a href="{{ asset('storage/' . $material->ddo_file) }}" target="_blank" class="ms-2">
-                                                <i class="fas fa-eye"></i> عرض
-                                            </a>
-                                        </small>
-                                    </div>
-                                @endif
                                 <input type="file" class="form-control @error('ddo_file') is-invalid @enderror" 
                                        id="ddo_file" name="ddo_file" 
                                        accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
@@ -381,7 +292,7 @@
                                 <div class="text-center">
                                     <button type="submit" class="btn btn-primary btn-lg">
                                         <i class="fas fa-save me-2"></i>
-                                        حفظ التعديلات
+                                        حفظ المادة
                                     </button>
                                     <a href="{{ route('admin.work-orders.materials.index', $workOrder) }}" class="btn btn-secondary btn-lg ms-2">
                                         <i class="fas fa-times me-2"></i>
@@ -428,6 +339,14 @@ $(document).ready(function() {
         }
     });
 
+    // البحث التلقائي عند إدخال الكود
+    $('#code').on('blur', function() {
+        var code = $(this).val();
+        if (code && $('#description').val() === '') {
+            $('#search-material-btn').click();
+        }
+    });
+
     // تحسين تجربة رفع الملفات
     $('input[type="file"]').on('change', function() {
         var file = this.files[0];
@@ -442,7 +361,7 @@ $(document).ready(function() {
             }
             
             var label = $(this).siblings('label').text();
-            toastr.info('تم اختيار ملف جديد ' + label + ': ' + fileName + ' (' + fileSize + ' MB)');
+            toastr.info('تم اختيار ملف ' + label + ': ' + fileName + ' (' + fileSize + ' MB)');
         }
     });
 
@@ -466,9 +385,9 @@ $(document).ready(function() {
         }
         
         // إظهار رسالة تحميل
-        toastr.info('جاري حفظ التعديلات...');
+        toastr.info('جاري حفظ المادة...');
     });
 });
 </script>
 @endpush
-@endsection 
+@endsection
