@@ -254,6 +254,7 @@ class WorkOrderController extends Controller
                 'work_order_id' => 'required|exists:work_orders,id',
                 'work_item_code' => 'required|string|max:255',
                 'work_item_description' => 'required|string|max:500',
+                'unit' => 'required|string|max:50',
                 'unit_price' => 'required|numeric|min:0',
                 'planned_quantity' => 'required|numeric|min:0',
                 'actual_quantity' => 'nullable|numeric|min:0',
@@ -264,7 +265,7 @@ class WorkOrderController extends Controller
                 'code' => $request->work_item_code,
             ], [
                 'description' => $request->work_item_description,
-                'unit' => 'عدد', // قيمة افتراضية
+                'unit' => $request->unit,
                 'unit_price' => $request->unit_price,
             ]);
 

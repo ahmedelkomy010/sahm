@@ -140,6 +140,11 @@
                                 <input type="text" name="work_item_description" class="form-control" placeholder="وصف البند" required>
                             </div>
                             
+                            <div class="col-md-1">
+                                <label class="form-label">الوحدة</label>
+                                <input type="text" name="unit" class="form-control" placeholder="عدد" required>
+                            </div>
+                            
                             <div class="col-md-2">
                                 <label class="form-label">سعر الوحدة</label>
                                 <input type="number" step="0.01" name="unit_price" class="form-control" placeholder="0.00" required>
@@ -175,14 +180,15 @@
                                     <tr>
                                         <th class="text-center" style="width: 5%">#</th>
                                         <th class="text-center" style="width: 10%">رقم البند</th>
-                                        <th style="width: 30%">وصف البند</th>
-                                        <th class="text-center" style="width: 12%">سعر الوحدة</th>
+                                        <th style="width: 25%">وصف البند</th>
+                                        <th class="text-center" style="width: 8%">الوحدة</th>
+                                        <th class="text-center" style="width: 10%">سعر الوحدة</th>
                                         <th class="text-center" style="width: 10%">الكمية المخططة</th>
-                                        <th class="text-center" style="width: 12%">السعر الإجمالي المخطط</th>
+                                        <th class="text-center" style="width: 10%">السعر الإجمالي المخطط</th>
                                         <th class="text-center" style="width: 10%">الكمية المنفذة</th>
-                                        <th class="text-center" style="width: 10%">فرق الكمية</th>
-                                        <th class="text-center" style="width: 12%">السعر الإجمالي المنفذ</th>
-                                        <th class="text-center" style="width: 8%">الإجراءات</th>
+                                        <th class="text-center" style="width: 8%">فرق الكمية</th>
+                                        <th class="text-center" style="width: 10%">السعر الإجمالي المنفذ</th>
+                                        <th class="text-center" style="width: 6%">الإجراءات</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -209,6 +215,9 @@
                                                 <span class="badge bg-primary">{{ $workItem ? ($workItem->code ?? '-') : '-' }}</span>
                                             </td>
                                             <td class="text-start">{{ $workItem ? ($workItem->description ?? '-') : '-' }}</td>
+                                            <td class="text-center">
+                                                <span class="badge bg-info">{{ $workItem ? ($workItem->unit ?? 'عدد') : 'عدد' }}</span>
+                                            </td>
                                             <td class="text-center">
                                                 <span class="text-success fw-bold">{{ number_format($unitPrice, 2) }} ريال</span>
                                             </td>
@@ -247,7 +256,7 @@
                                 </tbody>
                                 <tfoot class="table-light">
                                     <tr class="fw-bold">
-                                        <td colspan="5" class="text-end">الإجمالي:</td>
+                                        <td colspan="6" class="text-end">الإجمالي:</td>
                                         <td class="text-center text-primary" id="totalPlanned">{{ number_format($totalPlannedAmount, 2) }} ريال</td>
                                         <td class="text-center">-</td>
                                         <td class="text-center" id="totalDifference">
