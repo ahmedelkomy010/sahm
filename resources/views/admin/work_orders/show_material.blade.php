@@ -88,21 +88,10 @@
                     </div>
                     
                     <div class="row">
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-12 mb-3">
                             <label class="form-label text-muted small">الوحدة</label>
                             <div class="form-control-plaintext">
                                 <span class="badge badge-light">{{ $material->unit ?: '-' }}</span>
-                            </div>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label text-muted small">DATE GATEPASS</label>
-                            <div class="form-control-plaintext">
-                                @if($material->date_gatepass)
-                                    <i class="fas fa-calendar me-2 text-info"></i>
-                                    {{ $material->date_gatepass->format('Y-m-d') }}
-                                @else
-                                    <span class="text-muted">غير محدد</span>
-                                @endif
                             </div>
                         </div>
                     </div>
@@ -118,8 +107,9 @@
                     </h6>
                 </div>
                 <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-3 mb-3">
+                    <!-- الصف الأول: الكمية المخططة، المصروفة، والفرق بينهما -->
+                    <div class="row mb-4">
+                        <div class="col-md-4 mb-3">
                             <label class="form-label text-muted small">الكمية المخططة</label>
                             <div class="text-center">
                                 <div class="h4 mb-0">
@@ -127,31 +117,31 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-3 mb-3">
-                            <label class="form-label text-muted small">الكمية المنفذة</label>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label text-muted small">الكمية المصروفة</label>
                             <div class="text-center">
                                 <div class="h4 mb-0">
-                                    <span class="badge badge-success badge-lg">{{ number_format($material->executed_quantity ?? 0, 2) }}</span>
+                                    <span class="badge badge-info badge-lg">{{ number_format($material->spent_quantity, 2) }}</span>
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-3 mb-3">
-                            <label class="form-label text-muted small">الفرق</label>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label text-muted small">الفرق (المخططة - المصروفة)</label>
                             <div class="text-center">
                                 @php
-                                    $difference = ($material->planned_quantity ?? 0) - ($material->executed_quantity ?? 0);
+                                    $plannedSpentDiff = ($material->planned_quantity ?? 0) - ($material->spent_quantity ?? 0);
                                 @endphp
                                 <div class="h4 mb-0">
-                                    @if($difference > 0)
-                                        <span class="badge badge-warning badge-lg" title="نقص في التنفيذ">
-                                            +{{ number_format($difference, 2) }}
+                                    @if($plannedSpentDiff > 0)
+                                        <span class="badge badge-warning badge-lg" title="يوجد كمية مخططة لم يتم صرفها">
+                                            +{{ number_format($plannedSpentDiff, 2) }}
                                         </span>
-                                        <small class="d-block text-warning">نقص في التنفيذ</small>
-                                    @elseif($difference < 0)
-                                        <span class="badge badge-danger badge-lg" title="تنفيذ زائد">
-                                            {{ number_format($difference, 2) }}
+                                        <small class="d-block text-warning">كمية لم يتم صرفها</small>
+                                    @elseif($plannedSpentDiff < 0)
+                                        <span class="badge badge-danger badge-lg" title="تم صرف كمية أكثر من المخطط">
+                                            {{ number_format($plannedSpentDiff, 2) }}
                                         </span>
-                                        <small class="d-block text-danger">تنفيذ زائد</small>
+                                        <small class="d-block text-danger">صرف زائد</small>
                                     @else
                                         <span class="badge badge-success badge-lg" title="متطابقة">
                                             <i class="fas fa-check"></i> متطابقة
@@ -161,13 +151,46 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-3 mb-3">
-                            <label class="form-label text-muted small">الكمية المصروفة</label>
+                    </div>
+
+                    <!-- الصف الثاني: الكمية المنفذة والفرق بين المنفذة والمصروفة -->
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label text-muted small">الكمية المنفذة</label>
                             <div class="text-center">
                                 <div class="h4 mb-0">
-                                    <span class="badge badge-info badge-lg">{{ number_format($material->spent_quantity, 2) }}</span>
+                                    <span class="badge badge-success badge-lg">{{ number_format($material->executed_quantity ?? 0, 2) }}</span>
                                 </div>
                             </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label text-muted small">الفرق (المنفذة - المصروفة)</label>
+                            <div class="text-center">
+                                @php
+                                    $executedSpentDiff = ($material->executed_quantity ?? 0) - ($material->spent_quantity ?? 0);
+                                @endphp
+                                <div class="h4 mb-0">
+                                    @if($executedSpentDiff > 0)
+                                        <span class="badge badge-warning badge-lg" title="تم تنفيذ كمية أكثر من المصروفة">
+                                            +{{ number_format($executedSpentDiff, 2) }}
+                                        </span>
+                                        <small class="d-block text-warning">تنفيذ أكثر من المصروف</small>
+                                    @elseif($executedSpentDiff < 0)
+                                        <span class="badge badge-danger badge-lg" title="تم صرف كمية أكثر من المنفذة">
+                                            {{ number_format($executedSpentDiff, 2) }}
+                                        </span>
+                                        <small class="d-block text-danger">صرف أكثر من المنفذ</small>
+                                    @else
+                                        <span class="badge badge-success badge-lg" title="متطابقة">
+                                            <i class="fas fa-check"></i> متطابقة
+                                        </span>
+                                        <small class="d-block text-success">مطابقة للمنفذ</small>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <!-- عمود فارغ للتوازن -->
                         </div>
                     </div>
                 </div>

@@ -142,7 +142,14 @@
                             
                             <div class="col-md-1">
                                 <label class="form-label">الوحدة</label>
-                                <input type="text" name="unit" class="form-control" placeholder="عدد" required>
+                                <select name="unit" class="form-select" required>
+                                    <option value="">اختر الوحدة</option>
+                                    <option value="L.M">L.M</option>
+                                    <option value="متر مربع">متر مربع</option>
+                                    <option value="متر مكعب">متر مكعب</option>
+                                    <option value="Ech">Ech</option>
+                                    <option value="%">%</option>
+                                </select>
                             </div>
                             
                             <div class="col-md-2">

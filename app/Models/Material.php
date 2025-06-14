@@ -20,6 +20,8 @@ class Material extends Model
         'spent_quantity',
         'executed_quantity',
         'quantity_difference',
+        'planned_spent_difference',
+        'executed_spent_difference',
         'unit',
         'line',
         'check_in_file',
@@ -41,6 +43,8 @@ class Material extends Model
         'spent_quantity' => 'decimal:2',
         'executed_quantity' => 'decimal:2',
         'quantity_difference' => 'decimal:2',
+        'planned_spent_difference' => 'decimal:2',
+        'executed_spent_difference' => 'decimal:2',
     ];
 
     protected $attributes = [
@@ -48,6 +52,8 @@ class Material extends Model
         'spent_quantity' => 0,
         'executed_quantity' => 0,
         'quantity_difference' => 0,
+        'planned_spent_difference' => 0,
+        'executed_spent_difference' => 0,
         'unit' => 'قطعة',
         'line' => '',
     ];

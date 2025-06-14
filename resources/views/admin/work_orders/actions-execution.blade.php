@@ -9,6 +9,81 @@
         </h2>
         <a href="{{ route('admin.work-orders.show', $workOrder->id) }}" class="btn btn-outline-secondary">&larr; عودة إلى تفاصيل أمر العمل</a>
     </div>
+
+    <!-- معلومات أمر العمل -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-light border-0 shadow-sm">
+                <div class="card-body py-3">
+                    <div class="row align-items-center">
+                        <div class="col-md-3 col-sm-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-hashtag text-primary me-2 fs-5"></i>
+                                <div>
+                                    <small class="text-muted d-block">رقم الطلب</small>
+                                    <strong class="text-primary fs-6">{{ $workOrder->order_number }}</strong>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-user text-info me-2 fs-5"></i>
+                                <div>
+                                    <small class="text-muted d-block">اسم المشترك</small>
+                                    <strong class="fs-6">{{ $workOrder->subscriber_name }}</strong>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-tools text-warning me-2 fs-5"></i>
+                                <div>
+                                    <small class="text-muted d-block">نوع العمل</small>
+                                    <strong class="fs-6">{{ $workOrder->work_type }}</strong>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-flag-checkered text-success me-2 fs-5"></i>
+                                <div>
+                                    <small class="text-muted d-block">حالة التنفيذ</small>
+                                    <strong class="text-success fs-6">
+                                        @switch($workOrder->execution_status)
+                                            @case(1)
+                                                تم تسليم 155
+                                                @break
+                                            @case(2)
+                                                جاري العمل
+                                                @break
+                                            @case(3)
+                                                صدرت شهادة
+                                                @break
+                                            @case(4)
+                                                تم اعتماد الشهادة
+                                                @break
+                                            @case(5)
+                                                مؤكد
+                                                @break
+                                            @case(6)
+                                                دخل مستخلص
+                                                @break
+                                            @case(7)
+                                                منتهي
+                                                @break
+                                            @default
+                                                غير محدد
+                                        @endswitch
+                                    </strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     {{-- رسائل التنبيه --}}
     @if(session('success'))
         <div class="alert alert-success text-center">{{ session('success') }}</div>

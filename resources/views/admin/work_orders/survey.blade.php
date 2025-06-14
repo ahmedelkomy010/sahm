@@ -13,6 +13,54 @@
                 </div>
 
                 <div class="card-body p-4">
+                    <!-- معلومات أمر العمل -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card bg-light border-0">
+                                <div class="card-body py-3">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-3">
+                                            <div class="d-flex align-items-center">
+                                                <i class="fas fa-hashtag text-primary me-2"></i>
+                                                <div>
+                                                    <small class="text-muted d-block">رقم الطلب</small>
+                                                    <strong class="text-primary">{{ $workOrder->order_number }}</strong>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="d-flex align-items-center">
+                                                <i class="fas fa-user text-info me-2"></i>
+                                                <div>
+                                                    <small class="text-muted d-block">اسم المشترك</small>
+                                                    <strong>{{ $workOrder->subscriber_name }}</strong>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="d-flex align-items-center">
+                                                <i class="fas fa-tools text-warning me-2"></i>
+                                                <div>
+                                                    <small class="text-muted d-block">نوع العمل</small>
+                                                    <strong>{{ $workOrder->work_type }}</strong>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="d-flex align-items-center">
+                                                <i class="fas fa-map-marked-alt text-success me-2"></i>
+                                                <div>
+                                                    <small class="text-muted d-block">عدد المسوحات</small>
+                                                    <strong class="text-success">{{ $workOrder->surveys->count() }}</strong>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     @if (session('success'))
                         <div class="alert alert-success" role="alert">
                             {{ session('success') }}

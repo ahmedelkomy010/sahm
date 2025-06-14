@@ -127,21 +127,25 @@
                                             <i class="fas fa-align-left text-primary me-1"></i>
                                             الوصف
                                         </th>
-                                        <th style="width: 130px">
+                                        <th style="width: 110px">
                                             <i class="fas fa-chart-line text-info me-1"></i>
                                             الكمية المخططة
                                         </th>
-                                        <th style="width: 130px">
+                                        <th style="width: 110px">
+                                            <i class="fas fa-box text-danger me-1"></i>
+                                            الكمية المصروفة
+                                        </th>
+                                        <th style="width: 100px">
+                                            <i class="fas fa-calculator text-warning me-1"></i>
+                                            الفرق (مخططة - مصروفة)
+                                        </th>
+                                        <th style="width: 110px">
                                             <i class="fas fa-tasks text-success me-1"></i>
                                             الكمية المنفذة
                                         </th>
                                         <th style="width: 100px">
-                                            <i class="fas fa-calculator text-warning me-1"></i>
-                                            الفرق
-                                        </th>
-                                        <th style="width: 130px">
-                                            <i class="fas fa-box text-danger me-1"></i>
-                                            الكمية المصروفة
+                                            <i class="fas fa-calculator text-primary me-1"></i>
+                                            الفرق (منفذة - مصروفة)
                                         </th>
                                         <th style="width: 80px">
                                             <i class="fas fa-ruler text-secondary me-1"></i>
@@ -177,27 +181,41 @@
                                                 </div>
                                             </td>
                                             <td class="text-center">
+                                                <div class="quantity-badge spent">
+                                                    {{ number_format($material->spent_quantity, 2) }}
+                                                </div>
+                                            </td>
+                                            <td class="text-center">
+                                                @php
+                                                    $plannedSpentDiff = ($material->planned_quantity ?? 0) - ($material->spent_quantity ?? 0);
+                                                @endphp
+                                                <div class="quantity-badge difference {{ $plannedSpentDiff > 0 ? 'warning' : ($plannedSpentDiff < 0 ? 'danger' : 'success') }}"
+                                                     data-bs-toggle="tooltip" 
+                                                     title="{{ $plannedSpentDiff > 0 ? 'يوجد كمية مخططة لم يتم صرفها' : ($plannedSpentDiff < 0 ? 'تم صرف كمية أكثر من المخطط' : 'متطابقة') }}">
+                                                    @if($plannedSpentDiff == 0)
+                                                        <i class="fas fa-check"></i>
+                                                    @else
+                                                        {{ $plannedSpentDiff > 0 ? '+' : '' }}{{ number_format($plannedSpentDiff, 2) }}
+                                                    @endif
+                                                </div>
+                                            </td>
+                                            <td class="text-center">
                                                 <div class="quantity-badge executed">
                                                     {{ number_format($material->executed_quantity ?? 0, 2) }}
                                                 </div>
                                             </td>
                                             <td class="text-center">
                                                 @php
-                                                    $difference = ($material->planned_quantity ?? 0) - ($material->executed_quantity ?? 0);
+                                                    $executedSpentDiff = ($material->executed_quantity ?? 0) - ($material->spent_quantity ?? 0);
                                                 @endphp
-                                                <div class="quantity-badge difference {{ $difference > 0 ? 'warning' : ($difference < 0 ? 'danger' : 'success') }}"
+                                                <div class="quantity-badge difference {{ $executedSpentDiff > 0 ? 'warning' : ($executedSpentDiff < 0 ? 'danger' : 'success') }}"
                                                      data-bs-toggle="tooltip" 
-                                                     title="{{ $difference > 0 ? 'نقص في التنفيذ' : ($difference < 0 ? 'تنفيذ زائد' : 'متطابقة') }}">
-                                                    @if($difference == 0)
+                                                     title="{{ $executedSpentDiff > 0 ? 'تم تنفيذ كمية أكثر من المصروفة' : ($executedSpentDiff < 0 ? 'تم صرف كمية أكثر من المنفذة' : 'متطابقة') }}">
+                                                    @if($executedSpentDiff == 0)
                                                         <i class="fas fa-check"></i>
                                                     @else
-                                                        {{ $difference > 0 ? '+' : '' }}{{ number_format($difference, 2) }}
+                                                        {{ $executedSpentDiff > 0 ? '+' : '' }}{{ number_format($executedSpentDiff, 2) }}
                                                     @endif
-                                                </div>
-                                            </td>
-                                            <td class="text-center">
-                                                <div class="quantity-badge spent">
-                                                    {{ number_format($material->spent_quantity, 2) }}
                                                 </div>
                                             </td>
                                             <td class="text-center">

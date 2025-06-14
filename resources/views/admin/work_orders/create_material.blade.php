@@ -115,6 +115,7 @@
                             </div>
                         </div>
 
+                        <!-- الصف الأول: الكمية المخططة، المصروفة، والفرق بينهما -->
                         <div class="row">
                             <div class="col-md-4 mb-3">
                                 <label for="planned_quantity" class="form-label">الكمية المخططة</label>
@@ -122,6 +123,40 @@
                                        id="planned_quantity" name="planned_quantity" value="{{ old('planned_quantity', 0) }}" 
                                        placeholder="0.00" min="0">
                                 @error('planned_quantity')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                            
+                            <div class="col-md-4 mb-3">
+                                <label for="spent_quantity" class="form-label">الكمية المصروفة</label>
+                                <input type="number" step="0.01" class="form-control @error('spent_quantity') is-invalid @enderror" 
+                                       id="spent_quantity" name="spent_quantity" value="{{ old('spent_quantity', 0) }}" 
+                                       placeholder="0.00" min="0">
+                                @error('spent_quantity')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                            
+                            <div class="col-md-4 mb-3">
+                                <label for="planned_spent_difference" class="form-label">الفرق (المخططة - المصروفة)</label>
+                                <input type="number" step="0.01" class="form-control" 
+                                       id="planned_spent_difference" name="planned_spent_difference" value="0.00" 
+                                       placeholder="0.00" readonly>
+                                <small class="text-muted">يحسب تلقائياً</small>
+                            </div>
+                        </div>
+
+                        <!-- الصف الثاني: الوحدة، الكمية المنفذة، والفرق بين المنفذة والمصروفة -->
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="unit" class="form-label">الوحدة</label>
+                                <select class="form-select @error('unit') is-invalid @enderror" id="unit" name="unit">
+                                    <option value="">اختر الوحدة</option>
+                                    <option value="L.M" {{ old('unit') == 'L.M' ? 'selected' : '' }}>L.M</option>
+                                    <option value="Ech" {{ old('unit') == 'Ech' ? 'selected' : '' }}>Ech</option>
+                                    <option value="Kit" {{ old('unit') == 'Kit' ? 'selected' : '' }}>Kit</option>
+                                </select>
+                                @error('unit')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
@@ -137,45 +172,11 @@
                             </div>
                             
                             <div class="col-md-4 mb-3">
-                                <label for="quantity_difference" class="form-label">الفرق</label>
+                                <label for="executed_spent_difference" class="form-label">الفرق (المنفذة - المصروفة)</label>
                                 <input type="number" step="0.01" class="form-control" 
-                                       id="quantity_difference" name="quantity_difference" value="0.00" 
+                                       id="executed_spent_difference" name="executed_spent_difference" value="0.00" 
                                        placeholder="0.00" readonly>
-                                <small class="text-muted">يحسب تلقائياً (المخططة - المنفذة)</small>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-4 mb-3">
-                                <label for="spent_quantity" class="form-label">الكمية المصروفة</label>
-                                <input type="number" step="0.01" class="form-control @error('spent_quantity') is-invalid @enderror" 
-                                       id="spent_quantity" name="spent_quantity" value="{{ old('spent_quantity', 0) }}" 
-                                       placeholder="0.00" min="0">
-                                @error('spent_quantity')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                            
-                            <div class="col-md-4 mb-3">
-                                <label for="unit" class="form-label">الوحدة</label>
-                                <select class="form-select @error('unit') is-invalid @enderror" id="unit" name="unit">
-                                    <option value="">اختر الوحدة</option>
-                                    <option value="L.M" {{ old('unit') == 'L.M' ? 'selected' : '' }}>L.M</option>
-                                    <option value="Ech" {{ old('unit') == 'Ech' ? 'selected' : '' }}>Ech</option>
-                                    <option value="Kit" {{ old('unit') == 'Kit' ? 'selected' : '' }}>Kit</option>
-                                </select>
-                                @error('unit')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                            
-                            <div class="col-md-4 mb-3">
-                                <label for="date_gatepass" class="form-label">DATE GATEPASS</label>
-                                <input type="date" class="form-control @error('date_gatepass') is-invalid @enderror" 
-                                       id="date_gatepass" name="date_gatepass" value="{{ old('date_gatepass') }}">
-                                @error('date_gatepass')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
+                                <small class="text-muted">يحسب تلقائياً</small>
                             </div>
                         </div>
 
@@ -341,37 +342,67 @@ $(document).ready(function() {
         }
     });
 
-    // حساب الفرق بين الكمية المخططة والمنفذة
-    function calculateQuantityDifference() {
+    // حساب الفرق بين الكمية المخططة والمصروفة
+    function calculatePlannedSpentDifference() {
         var plannedQuantity = parseFloat($('#planned_quantity').val()) || 0;
-        var executedQuantity = parseFloat($('#executed_quantity').val()) || 0;
-        var difference = plannedQuantity - executedQuantity;
+        var spentQuantity = parseFloat($('#spent_quantity').val()) || 0;
+        var difference = plannedQuantity - spentQuantity;
         
-        $('#quantity_difference').val(difference.toFixed(2));
+        $('#planned_spent_difference').val(difference.toFixed(2));
         
         // تغيير لون الحقل حسب النتيجة
-        var diffField = $('#quantity_difference');
+        var diffField = $('#planned_spent_difference');
         diffField.removeClass('text-success text-warning text-danger');
         
         if (difference > 0) {
             diffField.addClass('text-warning');
-            diffField.attr('title', 'يوجد كمية مخططة لم يتم تنفيذها');
+            diffField.attr('title', 'يوجد كمية مخططة لم يتم صرفها');
         } else if (difference < 0) {
             diffField.addClass('text-danger');
-            diffField.attr('title', 'تم تنفيذ كمية أكثر من المخطط لها');
+            diffField.attr('title', 'تم صرف كمية أكثر من المخطط لها');
         } else {
             diffField.addClass('text-success');
-            diffField.attr('title', 'الكمية المنفذة مطابقة للمخططة');
+            diffField.attr('title', 'الكمية المصروفة مطابقة للمخططة');
         }
     }
 
-    // ربط الأحداث لحساب الفرق عند تغيير القيم
-    $('#planned_quantity, #executed_quantity').on('input change', function() {
-        calculateQuantityDifference();
+    // حساب الفرق بين الكمية المنفذة والمصروفة
+    function calculateExecutedSpentDifference() {
+        var executedQuantity = parseFloat($('#executed_quantity').val()) || 0;
+        var spentQuantity = parseFloat($('#spent_quantity').val()) || 0;
+        var difference = executedQuantity - spentQuantity;
+        
+        $('#executed_spent_difference').val(difference.toFixed(2));
+        
+        // تغيير لون الحقل حسب النتيجة
+        var diffField = $('#executed_spent_difference');
+        diffField.removeClass('text-success text-warning text-danger');
+        
+        if (difference > 0) {
+            diffField.addClass('text-warning');
+            diffField.attr('title', 'تم تنفيذ كمية أكثر من المصروفة');
+        } else if (difference < 0) {
+            diffField.addClass('text-danger');
+            diffField.attr('title', 'تم صرف كمية أكثر من المنفذة');
+        } else {
+            diffField.addClass('text-success');
+            diffField.attr('title', 'الكمية المنفذة مطابقة للمصروفة');
+        }
+    }
+
+    // ربط الأحداث لحساب الفروقات عند تغيير القيم
+    $('#planned_quantity, #spent_quantity').on('input change', function() {
+        calculatePlannedSpentDifference();
+        calculateExecutedSpentDifference();
     });
 
-    // حساب الفرق عند تحميل الصفحة
-    calculateQuantityDifference();
+    $('#executed_quantity').on('input change', function() {
+        calculateExecutedSpentDifference();
+    });
+
+    // حساب الفروقات عند تحميل الصفحة
+    calculatePlannedSpentDifference();
+    calculateExecutedSpentDifference();
 
     // تحسين تجربة رفع الملفات
     $('input[type="file"]').on('change', function() {
