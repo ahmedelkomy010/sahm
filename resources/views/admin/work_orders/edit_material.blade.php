@@ -94,7 +94,7 @@
                             </div>
                             
                             <div class="col-md-6 mb-3">
-                                <label for="line" class="form-label">الخط</label>
+                                <label for="line" class="form-label">السطر </label>
                                 <input type="text" class="form-control @error('line') is-invalid @enderror" 
                                        id="line" name="line" value="{{ old('line', $material->line) }}" 
                                        placeholder="رقم الخط">
@@ -128,7 +128,27 @@
                             </div>
                             
                             <div class="col-md-4 mb-3">
-                                <label for="spent_quantity" class="form-label">الكمية المستهلكة</label>
+                                <label for="executed_quantity" class="form-label">الكمية المنفذة</label>
+                                <input type="number" step="0.01" class="form-control @error('executed_quantity') is-invalid @enderror" 
+                                       id="executed_quantity" name="executed_quantity" value="{{ old('executed_quantity', $material->executed_quantity ?? 0) }}" 
+                                       placeholder="0.00" min="0">
+                                @error('executed_quantity')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                            
+                            <div class="col-md-4 mb-3">
+                                <label for="quantity_difference" class="form-label">الفرق</label>
+                                <input type="number" step="0.01" class="form-control" 
+                                       id="quantity_difference" name="quantity_difference" value="{{ $material->quantity_difference ?? 0 }}" 
+                                       placeholder="0.00" readonly>
+                                <small class="text-muted">يحسب تلقائياً (المخططة - المنفذة)</small>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="spent_quantity" class="form-label">الكمية المصروفة</label>
                                 <input type="number" step="0.01" class="form-control @error('spent_quantity') is-invalid @enderror" 
                                        id="spent_quantity" name="spent_quantity" value="{{ old('spent_quantity', $material->spent_quantity) }}" 
                                        placeholder="0.00" min="0">
@@ -141,9 +161,6 @@
                                 <label for="unit" class="form-label">الوحدة</label>
                                 <select class="form-select @error('unit') is-invalid @enderror" id="unit" name="unit">
                                     <option value="">اختر الوحدة</option>
-                                    <option value="قطعة" {{ old('unit', $material->unit) == 'قطعة' ? 'selected' : '' }}>قطعة</option>
-                                    <option value="متر" {{ old('unit', $material->unit) == 'متر' ? 'selected' : '' }}>متر</option>
-                                    <option value="كيلو" {{ old('unit', $material->unit) == 'كيلو' ? 'selected' : '' }}>كيلو</option>
                                     <option value="L.M" {{ old('unit', $material->unit) == 'L.M' ? 'selected' : '' }}>L.M</option>
                                     <option value="Ech" {{ old('unit', $material->unit) == 'Ech' ? 'selected' : '' }}>Ech</option>
                                     <option value="Kit" {{ old('unit', $material->unit) == 'Kit' ? 'selected' : '' }}>Kit</option>
@@ -164,9 +181,39 @@
                             </div>
                         </div>
 
+                       
+
+                        <!-- تاريخ GATEPASS -->
+                        <div class="row mb-4">
+                            <div class="col-md-6 mb-3">
+                                <label for="date_gatepass" class="form-label">
+                                    <i class="fas fa-calendar me-2 text-info"></i>
+                                    DATE GATEPASS
+                                </label>
+                                <input type="date" class="form-control @error('date_gatepass') is-invalid @enderror" 
+                                       id="date_gatepass" name="date_gatepass" value="{{ old('date_gatepass', $material->date_gatepass) }}">
+                                @error('date_gatepass')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <!-- مرفقات أساسية -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h6 class="text-primary mb-3">
+                                    <i class="fas fa-paperclip me-2"></i>
+                                    مرفقات أساسية
+                                </h6>
+                            </div>
+                        </div>
+
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label for="check_in_file" class="form-label">ملف دخول المواد</label>
+                                <label for="check_in_file" class="form-label">
+                                    <i class="fas fa-list-check me-2 text-primary"></i>
+                                    CHECK LIST
+                                </label>
                                 @if($material->check_in_file)
                                     <div class="mb-2">
                                         <small class="text-success">
@@ -188,39 +235,10 @@
                             </div>
                             
                             <div class="col-md-6 mb-3">
-                                <label for="check_out_file" class="form-label">ملف خروج المواد</label>
-                                @if($material->check_out_file)
-                                    <div class="mb-2">
-                                        <small class="text-success">
-                                            <i class="fas fa-file"></i> 
-                                            الملف الحالي: {{ basename($material->check_out_file) }}
-                                            <a href="{{ asset('storage/' . $material->check_out_file) }}" target="_blank" class="ms-2">
-                                                <i class="fas fa-eye"></i> عرض
-                                            </a>
-                                        </small>
-                                    </div>
-                                @endif
-                                <input type="file" class="form-control @error('check_out_file') is-invalid @enderror" 
-                                       id="check_out_file" name="check_out_file" 
-                                       accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
-                                @error('check_out_file')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="date_gatepass" class="form-label">تاريخ تصريح المرور</label>
-                                <input type="date" class="form-control @error('date_gatepass') is-invalid @enderror" 
-                                       id="date_gatepass" name="date_gatepass" value="{{ old('date_gatepass', $material->date_gatepass) }}">
-                                @error('date_gatepass')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                            
-                            <div class="col-md-6 mb-3">
-                                <label for="gate_pass_file" class="form-label">ملف تصريح المرور</label>
+                                <label for="gate_pass_file" class="form-label">
+                                    <i class="fas fa-id-card me-2 text-success"></i>
+                                    GATE PASS
+                                </label>
                                 @if($material->gate_pass_file)
                                     <div class="mb-2">
                                         <small class="text-success">
@@ -238,22 +256,26 @@
                                 @error('gate_pass_file')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
+                                <small class="text-muted">PDF, JPG, PNG, DOC (حد أقصى 10MB) - اتركه فارغاً للاحتفاظ بالملف الحالي</small>
+                            </div>
+                        </div>
+
+                        <!-- مرفقات المخزن -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h6 class="text-success mb-3">
+                                    <i class="fas fa-warehouse me-2"></i>
+                                    مرفقات المخزن
+                                </h6>
                             </div>
                         </div>
 
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label for="stock_in" class="form-label">دخول المخزن</label>
-                                <input type="text" class="form-control @error('stock_in') is-invalid @enderror" 
-                                       id="stock_in" name="stock_in" value="{{ old('stock_in', $material->stock_in) }}" 
-                                       placeholder="معلومات دخول المخزن">
-                                @error('stock_in')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                            
-                            <div class="col-md-6 mb-3">
-                                <label for="stock_in_file" class="form-label">ملف دخول المخزن</label>
+                                <label for="stock_in_file" class="form-label">
+                                    <i class="fas fa-sign-in-alt me-2 text-info"></i>
+                                    STORE IN
+                                </label>
                                 @if($material->stock_in_file)
                                     <div class="mb-2">
                                         <small class="text-success">
@@ -271,22 +293,14 @@
                                 @error('stock_in_file')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="stock_out" class="form-label">خروج المخزن</label>
-                                <input type="text" class="form-control @error('stock_out') is-invalid @enderror" 
-                                       id="stock_out" name="stock_out" value="{{ old('stock_out', $material->stock_out) }}" 
-                                       placeholder="معلومات خروج المخزن">
-                                @error('stock_out')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
+                                <small class="text-muted">PDF, JPG, PNG, DOC (حد أقصى 10MB) - اتركه فارغاً للاحتفاظ بالملف الحالي</small>
                             </div>
                             
                             <div class="col-md-6 mb-3">
-                                <label for="stock_out_file" class="form-label">ملف خروج المخزن</label>
+                                <label for="stock_out_file" class="form-label">
+                                    <i class="fas fa-sign-out-alt me-2 text-warning"></i>
+                                    STORE OUT
+                                </label>
                                 @if($material->stock_out_file)
                                     <div class="mb-2">
                                         <small class="text-success">
@@ -304,56 +318,26 @@
                                 @error('stock_out_file')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
+                                <small class="text-muted">PDF, JPG, PNG, DOC (حد أقصى 10MB) - اتركه فارغاً للاحتفاظ بالملف الحالي</small>
+                            </div>
+                        </div>
+
+                        <!-- مرفقات إضافية -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h6 class="text-info mb-3">
+                                    <i class="fas fa-folder-plus me-2"></i>
+                                    مرفقات إضافية
+                                </h6>
                             </div>
                         </div>
 
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label for="store_in_file" class="form-label">ملف دخول المتجر</label>
-                                @if($material->store_in_file)
-                                    <div class="mb-2">
-                                        <small class="text-success">
-                                            <i class="fas fa-file"></i> 
-                                            الملف الحالي: {{ basename($material->store_in_file) }}
-                                            <a href="{{ asset('storage/' . $material->store_in_file) }}" target="_blank" class="ms-2">
-                                                <i class="fas fa-eye"></i> عرض
-                                            </a>
-                                        </small>
-                                    </div>
-                                @endif
-                                <input type="file" class="form-control @error('store_in_file') is-invalid @enderror" 
-                                       id="store_in_file" name="store_in_file" 
-                                       accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
-                                @error('store_in_file')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                            
-                            <div class="col-md-6 mb-3">
-                                <label for="store_out_file" class="form-label">ملف خروج المتجر</label>
-                                @if($material->store_out_file)
-                                    <div class="mb-2">
-                                        <small class="text-success">
-                                            <i class="fas fa-file"></i> 
-                                            الملف الحالي: {{ basename($material->store_out_file) }}
-                                            <a href="{{ asset('storage/' . $material->store_out_file) }}" target="_blank" class="ms-2">
-                                                <i class="fas fa-eye"></i> عرض
-                                            </a>
-                                        </small>
-                                    </div>
-                                @endif
-                                <input type="file" class="form-control @error('store_out_file') is-invalid @enderror" 
-                                       id="store_out_file" name="store_out_file" 
-                                       accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
-                                @error('store_out_file')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="ddo_file" class="form-label">ملف DDO</label>
+                                <label for="ddo_file" class="form-label">
+                                    <i class="fas fa-file-alt me-2 text-primary"></i>
+                                    DDO FILE
+                                </label>
                                 @if($material->ddo_file)
                                     <div class="mb-2">
                                         <small class="text-success">
@@ -371,6 +355,18 @@
                                 @error('ddo_file')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
+                                <small class="text-muted">PDF, JPG, PNG, DOC (حد أقصى 10MB) - اتركه فارغاً للاحتفاظ بالملف الحالي</small>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <div class="card h-100">
+                                    <div class="card-body d-flex align-items-center justify-content-center">
+                                        <div class="text-center text-muted">
+                                            <i class="fas fa-info-circle fa-2x mb-2"></i>
+                                            <p class="small mb-0">يمكنك إضافة المزيد من الملفات<br>في أي وقت</p>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -428,23 +424,100 @@ $(document).ready(function() {
         }
     });
 
+    // حساب الفرق بين الكمية المخططة والمنفذة
+    function calculateQuantityDifference() {
+        var plannedQuantity = parseFloat($('#planned_quantity').val()) || 0;
+        var executedQuantity = parseFloat($('#executed_quantity').val()) || 0;
+        var difference = plannedQuantity - executedQuantity;
+        
+        $('#quantity_difference').val(difference.toFixed(2));
+        
+        // تغيير لون الحقل حسب النتيجة
+        var diffField = $('#quantity_difference');
+        diffField.removeClass('text-success text-warning text-danger');
+        
+        if (difference > 0) {
+            diffField.addClass('text-warning');
+            diffField.attr('title', 'يوجد كمية مخططة لم يتم تنفيذها');
+        } else if (difference < 0) {
+            diffField.addClass('text-danger');
+            diffField.attr('title', 'تم تنفيذ كمية أكثر من المخطط لها');
+        } else {
+            diffField.addClass('text-success');
+            diffField.attr('title', 'الكمية المنفذة مطابقة للمخططة');
+        }
+    }
+
+    // ربط الأحداث لحساب الفرق عند تغيير القيم
+    $('#planned_quantity, #executed_quantity').on('input change', function() {
+        calculateQuantityDifference();
+    });
+
+    // حساب الفرق عند تحميل الصفحة
+    calculateQuantityDifference();
+
     // تحسين تجربة رفع الملفات
     $('input[type="file"]').on('change', function() {
         var file = this.files[0];
+        var $input = $(this);
+        var $label = $input.siblings('label');
+        
         if (file) {
             var fileSize = (file.size / 1024 / 1024).toFixed(2);
             var fileName = file.name;
             
             if (fileSize > 10) {
                 toastr.error('حجم الملف كبير جداً. الحد الأقصى 10 ميجابايت');
-                $(this).val('');
+                $input.val('');
+                $input.removeClass('is-valid').addClass('is-invalid');
                 return;
             }
             
-            var label = $(this).siblings('label').text();
-            toastr.info('تم اختيار ملف جديد ' + label + ': ' + fileName + ' (' + fileSize + ' MB)');
+            // تحديد نوع الأيقونة حسب امتداد الملف
+            var extension = fileName.split('.').pop().toLowerCase();
+            var icon = 'fas fa-file';
+            var color = 'text-primary';
+            
+            switch(extension) {
+                case 'pdf':
+                    icon = 'fas fa-file-pdf';
+                    color = 'text-danger';
+                    break;
+                case 'doc':
+                case 'docx':
+                    icon = 'fas fa-file-word';
+                    color = 'text-primary';
+                    break;
+                case 'jpg':
+                case 'jpeg':
+                case 'png':
+                    icon = 'fas fa-file-image';
+                    color = 'text-info';
+                    break;
+            }
+            
+            // تحديث الأيقونة في التسمية
+            $label.find('i').removeClass().addClass(icon + ' me-2 ' + color);
+            
+            var labelText = $label.text().trim();
+            toastr.success('تم اختيار ملف جديد ' + labelText + ': ' + fileName + ' (' + fileSize + ' MB)');
+            
+            $input.removeClass('is-invalid').addClass('is-valid');
+        } else {
+            // إعادة الأيقونة الأصلية عند إلغاء التحديد
+            $input.removeClass('is-valid is-invalid');
         }
     });
+
+    // تحسين عرض منطقة المرفقات
+    $('.card').hover(
+        function() {
+            $(this).addClass('shadow-lg').css('transform', 'translateY(-2px)');
+        },
+        function() {
+            $(this).removeClass('shadow-lg').css('transform', 'translateY(0)');
+        }
+    );
 
     // التحقق من صحة النموذج قبل الإرسال
     $('form').on('submit', function(e) {
@@ -470,5 +543,119 @@ $(document).ready(function() {
     });
 });
 </script>
+
+<style>
+/* تحسين مظهر قسم المرفقات */
+.form-label {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.form-label i {
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.form-control.is-valid {
+    border-color: #28a745;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 8 8'%3e%3cpath fill='%2328a745' d='m2.3 6.73.75-.04L5.95 4.2l-.75-.74L3.33 5.32 2.07 4.07l-.74.75z'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right calc(0.375em + 0.1875rem) center;
+    background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+}
+
+.form-control.is-invalid {
+    border-color: #dc3545;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' stroke='%23dc3545' viewBox='0 0 12 12'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath d='m5.8 4.6 2.4 2.4M5.8 7 8.2 4.6'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right calc(0.375em + 0.1875rem) center;
+    background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+}
+
+.card {
+    transition: all 0.3s ease;
+    border: 1px solid rgba(0,0,0,.125);
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,.1);
+}
+
+/* تحسين عرض منطقة إسقاط الملفات */
+input[type="file"] {
+    transition: all 0.3s ease;
+}
+
+input[type="file"]:hover {
+    background-color: #f8f9fa;
+}
+
+/* تحسين البطاقة المعلوماتية */
+.card-body .text-muted {
+    transition: color 0.3s ease;
+}
+
+.card:hover .text-muted {
+    color: #495057 !important;
+}
+
+/* تحسين الأيقونات */
+.fa-2x {
+    transition: transform 0.3s ease;
+}
+
+.card:hover .fa-2x {
+    transform: scale(1.1);
+}
+
+/* تحسين عرض الملفات الحالية */
+.text-success a {
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.text-success a:hover {
+    color: #198754 !important;
+    transform: scale(1.05);
+}
+
+/* تحسين العناوين الفرعية */
+h6 {
+    border-bottom: 2px solid;
+    padding-bottom: 0.5rem;
+}
+
+h6.text-primary {
+    border-color: #0d6efd;
+}
+
+h6.text-success {
+    border-color: #198754;
+}
+
+h6.text-info {
+    border-color: #0dcaf0;
+}
+
+/* تحسين responsive */
+@media (max-width: 768px) {
+    .form-label {
+        font-size: 0.9rem;
+    }
+    
+    .card-body {
+        padding: 1rem;
+    }
+    
+    h6 {
+        font-size: 1rem;
+    }
+}
+</style>
 @endpush
 @endsection 

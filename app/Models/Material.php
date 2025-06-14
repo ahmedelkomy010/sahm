@@ -18,6 +18,8 @@ class Material extends Model
         'description',
         'planned_quantity',
         'spent_quantity',
+        'executed_quantity',
+        'quantity_difference',
         'unit',
         'line',
         'check_in_file',
@@ -37,11 +39,15 @@ class Material extends Model
         'date_gatepass' => 'date',
         'planned_quantity' => 'decimal:2',
         'spent_quantity' => 'decimal:2',
+        'executed_quantity' => 'decimal:2',
+        'quantity_difference' => 'decimal:2',
     ];
 
     protected $attributes = [
         'planned_quantity' => 0,
         'spent_quantity' => 0,
+        'executed_quantity' => 0,
+        'quantity_difference' => 0,
         'unit' => 'قطعة',
         'line' => '',
     ];
@@ -60,6 +66,7 @@ class Material extends Model
     public function setPlannedQuantityAttribute($value)
     {
         $this->attributes['planned_quantity'] = $value ?? 0;
+        $this->calculateQuantityDifference();
     }
 
     /**
@@ -68,6 +75,40 @@ class Material extends Model
     public function setSpentQuantityAttribute($value)
     {
         $this->attributes['spent_quantity'] = $value ?? 0;
+    }
+
+    /**
+     * Set the executed quantity attribute.
+     */
+    public function setExecutedQuantityAttribute($value)
+    {
+        $this->attributes['executed_quantity'] = $value ?? 0;
+        $this->calculateQuantityDifference();
+    }
+
+    /**
+     * Calculate the quantity difference between planned and executed.
+     */
+    public function calculateQuantityDifference()
+    {
+        $planned = $this->attributes['planned_quantity'] ?? 0;
+        $executed = $this->attributes['executed_quantity'] ?? 0;
+        $this->attributes['quantity_difference'] = $planned - $executed;
+    }
+
+    /**
+     * Get the quantity difference as a formatted string.
+     */
+    public function getQuantityDifferenceFormattedAttribute()
+    {
+        $difference = $this->quantity_difference;
+        if ($difference > 0) {
+            return "زيادة مخططة: " . number_format($difference, 2);
+        } elseif ($difference < 0) {
+            return "تنفيذ زائد: " . number_format(abs($difference), 2);
+        } else {
+            return "متطابقة";
+        }
     }
 
     /**

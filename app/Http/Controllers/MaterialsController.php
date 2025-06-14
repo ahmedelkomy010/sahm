@@ -15,9 +15,27 @@ class MaterialsController extends Controller
     /**
      * Display a listing of the resource for a specific work order.
      */
-    public function index(WorkOrder $workOrder)
+    public function index(WorkOrder $workOrder, Request $request)
     {
-        $materials = $workOrder->materials()->latest()->paginate(15);
+        $query = $workOrder->materials();
+
+        // البحث بالكود
+        if ($request->filled('search_code')) {
+            $query->where('code', 'like', '%' . $request->search_code . '%');
+        }
+
+        // البحث بالوصف
+        if ($request->filled('search_description')) {
+            $query->where('description', 'like', '%' . $request->search_description . '%');
+        }
+
+        // فلتر الوحدة
+        if ($request->filled('unit_filter')) {
+            $query->where('unit', $request->unit_filter);
+        }
+
+        $materials = $query->latest()->paginate(15)->appends($request->query());
+        
         return view('admin.work_orders.materials', compact('workOrder', 'materials'));
     }
 
@@ -34,11 +52,12 @@ class MaterialsController extends Controller
      */
     public function store(Request $request, WorkOrder $workOrder)
     {
-        $validated = $request->validate([
+                $validated = $request->validate([
             'code' => 'required|string|max:255',
             'description' => 'nullable|string',
             'planned_quantity' => 'nullable|numeric|min:0',
             'spent_quantity' => 'nullable|numeric|min:0',
+            'executed_quantity' => 'nullable|numeric|min:0',
             'unit' => 'nullable|string|max:255',
             'line' => 'nullable|string|max:255',
             'check_in_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
@@ -55,13 +74,14 @@ class MaterialsController extends Controller
         ]);
 
         $data = $request->except([
-            'check_in_file', 'check_out_file', 'stock_in_file', 'stock_out_file', 
+            'check_in_file', 'check_out_file', 'stock_in_file', 'stock_out_file',
             'gate_pass_file', 'store_in_file', 'store_out_file', 'ddo_file'
         ]);
 
         // التأكد من أن القيم الرقمية لا تكون null
         $data['planned_quantity'] = $data['planned_quantity'] ?? 0;
         $data['spent_quantity'] = $data['spent_quantity'] ?? 0;
+        $data['executed_quantity'] = $data['executed_quantity'] ?? 0;
         
         // التأكد من أن الحقول النصية لا تكون null
         $data['unit'] = $data['unit'] ?? 'قطعة'; // قيمة افتراضية
@@ -130,11 +150,12 @@ class MaterialsController extends Controller
             abort(404);
         }
         
-        $validated = $request->validate([
+                $validated = $request->validate([
             'code' => 'required|string|max:255',
             'description' => 'nullable|string',
             'planned_quantity' => 'nullable|numeric|min:0',
             'spent_quantity' => 'nullable|numeric|min:0',
+            'executed_quantity' => 'nullable|numeric|min:0',
             'unit' => 'nullable|string|max:255',
             'line' => 'nullable|string|max:255',
             'check_in_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
@@ -151,13 +172,14 @@ class MaterialsController extends Controller
         ]);
 
         $data = $request->except([
-            'check_in_file', 'check_out_file', 'stock_in_file', 'stock_out_file',
+            'check_in_file', 'check_out_file', 'stock_in_file', 'stock_out_file', 
             'gate_pass_file', 'store_in_file', 'store_out_file', 'ddo_file'
         ]);
 
         // التأكد من أن القيم الرقمية لا تكون null
         $data['planned_quantity'] = $data['planned_quantity'] ?? 0;
         $data['spent_quantity'] = $data['spent_quantity'] ?? 0;
+        $data['executed_quantity'] = $data['executed_quantity'] ?? 0;
         
         // إذا كان الوصف فارغًا، نحاول جلب الوصف من جدول المواد المرجعية
         if (empty($data['description'])) {

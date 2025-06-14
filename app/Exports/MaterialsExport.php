@@ -46,26 +46,33 @@ class MaterialsExport implements FromCollection, WithHeadings, WithMapping, With
             'كود المادة',
             'وصف المادة',
             'الكمية المخططة',
-            'الكمية المستهلكة',
+            'الكمية المنفذة',
+            'الفرق',
+            'الكمية المصروفة',
             'الوحدة',
-            'الخط',
-            'تاريخ تصريح المرور',
+            'السطر',
+            'DATE GATEPASS',
+            'GATEPASS متوفر',
             'تاريخ الإنشاء'
         ];
     }
 
     public function map($material): array
     {
+        $difference = ($material->planned_quantity ?? 0) - ($material->executed_quantity ?? 0);
         return [
             $material->work_order_number ?? '',
             $material->subscriber_name ?? '',
             $material->code,
             $material->description,
             $material->planned_quantity,
+            $material->executed_quantity ?? 0,
+            $difference,
             $material->spent_quantity,
             $material->unit,
             $material->line,
             $material->date_gatepass ? $material->date_gatepass->format('Y-m-d') : '',
+            $material->gate_pass_file ? 'نعم' : 'لا',
             $material->created_at->format('Y-m-d H:i:s')
         ];
     }
@@ -78,11 +85,14 @@ class MaterialsExport implements FromCollection, WithHeadings, WithMapping, With
             'C' => 15, // كود المادة
             'D' => 40, // وصف المادة
             'E' => 15, // الكمية المخططة
-            'F' => 15, // الكمية المستهلكة
-            'G' => 10, // الوحدة
-            'H' => 10, // الخط
-            'I' => 15, // تاريخ تصريح المرور
-            'J' => 20, // تاريخ الإنشاء
+            'F' => 15, // الكمية المنفذة
+            'G' => 12, // الفرق
+            'H' => 15, // الكمية المصروفة
+            'I' => 10, // الوحدة
+            'J' => 10, // السطر
+            'K' => 15, // تاريخ GATEPASS
+            'L' => 15, // GATEPASS متوفر
+            'M' => 20, // تاريخ الإنشاء
         ];
     }
 
@@ -105,7 +115,7 @@ class MaterialsExport implements FromCollection, WithHeadings, WithMapping, With
                 ],
             ],
             // تنسيق البيانات
-            'A2:J' . ($sheet->getHighestRow()) => [
+            'A2:M' . ($sheet->getHighestRow()) => [
                 'alignment' => [
                     'horizontal' => Alignment::HORIZONTAL_CENTER,
                     'vertical' => Alignment::VERTICAL_CENTER,
@@ -124,15 +134,15 @@ class MaterialsExport implements FromCollection, WithHeadings, WithMapping, With
     {
         return [
             AfterSheet::class => function(AfterSheet $event) {
-                $event->sheet->getDelegate()->getStyle('A1:J1')->getFont()->setSize(12);
-                $event->sheet->getDelegate()->getStyle('A2:J' . $event->sheet->getHighestRow())->getFont()->setSize(10);
+                $event->sheet->getDelegate()->getStyle('A1:M1')->getFont()->setSize(12);
+                $event->sheet->getDelegate()->getStyle('A2:M' . $event->sheet->getHighestRow())->getFont()->setSize(10);
                 
                 // تنسيق الأرقام
-                $event->sheet->getDelegate()->getStyle('E2:F' . $event->sheet->getHighestRow())->getNumberFormat()->setFormatCode('#,##0.00');
+                $event->sheet->getDelegate()->getStyle('E2:H' . $event->sheet->getHighestRow())->getNumberFormat()->setFormatCode('#,##0.00');
                 
                 // تنسيق التواريخ
-                $event->sheet->getDelegate()->getStyle('I2:I' . $event->sheet->getHighestRow())->getNumberFormat()->setFormatCode('yyyy-mm-dd');
-                $event->sheet->getDelegate()->getStyle('J2:J' . $event->sheet->getHighestRow())->getNumberFormat()->setFormatCode('yyyy-mm-dd hh:mm:ss');
+                $event->sheet->getDelegate()->getStyle('K2:K' . $event->sheet->getHighestRow())->getNumberFormat()->setFormatCode('yyyy-mm-dd');
+                $event->sheet->getDelegate()->getStyle('M2:M' . $event->sheet->getHighestRow())->getNumberFormat()->setFormatCode('yyyy-mm-dd hh:mm:ss');
             },
         ];
     }
