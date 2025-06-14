@@ -233,12 +233,111 @@ class WorkOrderController extends Controller
 
     public function execution(WorkOrder $workOrder)
     {
+        // تحميل بنود العمل مع تفاصيل البند
+        $workOrder->load(['workOrderItems.workItem']);
+        
         // جلب السجلات من جدول work_order_logs
         $logs = \DB::table('work_order_logs')
             ->where('work_order_id', $workOrder->id)
             ->orderByDesc('created_at')
             ->get();
         return view('admin.work_orders.execution', compact('workOrder', 'logs'));
+    }
+
+    /**
+     * إضافة بند عمل جديد
+     */
+    public function addWorkItem(Request $request)
+    {
+        try {
+            $request->validate([
+                'work_order_id' => 'required|exists:work_orders,id',
+                'work_item_code' => 'required|string|max:255',
+                'work_item_description' => 'required|string|max:500',
+                'unit_price' => 'required|numeric|min:0',
+                'planned_quantity' => 'required|numeric|min:0',
+                'actual_quantity' => 'nullable|numeric|min:0',
+            ]);
+
+            // إنشاء أو العثور على بند العمل
+            $workItem = \App\Models\WorkItem::firstOrCreate([
+                'code' => $request->work_item_code,
+            ], [
+                'description' => $request->work_item_description,
+                'unit' => 'عدد', // قيمة افتراضية
+                'unit_price' => $request->unit_price,
+            ]);
+
+            // إنشاء ربط بين أمر العمل وبند العمل
+            $workOrderItem = \App\Models\WorkOrderItem::create([
+                'work_order_id' => $request->work_order_id,
+                'work_item_id' => $workItem->id,
+                'planned_quantity' => $request->planned_quantity,
+                'actual_quantity' => $request->actual_quantity ?? 0,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'تم إضافة بند العمل بنجاح',
+                'data' => $workOrderItem
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء إضافة بند العمل: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * تحديث بند عمل
+     */
+    public function updateWorkItem(Request $request, \App\Models\WorkOrderItem $workOrderItem)
+    {
+        try {
+            $request->validate([
+                'planned_quantity' => 'required|numeric|min:0',
+                'actual_quantity' => 'nullable|numeric|min:0',
+            ]);
+
+            $workOrderItem->update([
+                'planned_quantity' => $request->planned_quantity,
+                'actual_quantity' => $request->actual_quantity ?? 0,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'تم تحديث بند العمل بنجاح'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء تحديث بند العمل: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * حذف بند عمل
+     */
+    public function deleteWorkItem(\App\Models\WorkOrderItem $workOrderItem)
+    {
+        try {
+            $workOrderItem->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'تم حذف بند العمل بنجاح'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء حذف بند العمل: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     public function installations(WorkOrder $workOrder)

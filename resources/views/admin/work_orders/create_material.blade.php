@@ -295,10 +295,7 @@
                                         <i class="fas fa-times me-2"></i>
                                         إلغاء
                                     </a>
-                                    <button type="reset" class="btn btn-outline-secondary btn-lg ms-2">
-                                        <i class="fas fa-undo me-2"></i>
-                                        إعادة تعيين
-                                    </button>
+                                    
                                 </div>
                             </div>
                         </div>

@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('code')->unique(); // كود بند العمل
             $table->string('description'); // وصف بند العمل
             $table->string('unit')->default('عدد'); // وحدة القياس
+            $table->decimal('unit_price', 10, 2)->default(0); // سعر الوحدة
             $table->text('notes')->nullable(); // ملاحظات
             $table->timestamps();
         });

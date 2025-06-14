@@ -228,7 +228,7 @@ class Material extends Model
         
         if ($this->check_in_file) {
             $attachments['check_in'] = [
-                'name' => 'ملف الدخول',
+                'name' => ' CHECK LIST',
                 'url' => $this->check_in_file_url,
                 'file' => $this->check_in_file
             ];
@@ -236,7 +236,7 @@ class Material extends Model
         
         if ($this->check_out_file) {
             $attachments['check_out'] = [
-                'name' => 'ملف الخروج', 
+                'name' => 'STORE OUT', 
                 'url' => $this->check_out_file_url,
                 'file' => $this->check_out_file
             ];
@@ -244,7 +244,7 @@ class Material extends Model
         
         if ($this->stock_in_file) {
             $attachments['stock_in'] = [
-                'name' => 'ملف دخول المخزن',
+                'name' => 'STORE IN',
                 'url' => $this->stock_in_file_url,
                 'file' => $this->stock_in_file
             ];
@@ -252,7 +252,7 @@ class Material extends Model
         
         if ($this->stock_out_file) {
             $attachments['stock_out'] = [
-                'name' => 'ملف خروج المخزن',
+                'name' => 'STORE OUT',
                 'url' => $this->stock_out_file_url,
                 'file' => $this->stock_out_file
             ];
@@ -260,7 +260,7 @@ class Material extends Model
         
         if ($this->gate_pass_file) {
             $attachments['gate_pass'] = [
-                'name' => 'ملف تصريح المرور',
+                'name' => 'GATE PASS',
                 'url' => $this->gate_pass_file_url,
                 'file' => $this->gate_pass_file
             ];
@@ -268,7 +268,7 @@ class Material extends Model
         
         if ($this->store_in_file) {
             $attachments['store_in'] = [
-                'name' => 'ملف دخول المتجر',
+                'name' => 'STORE OUT',
                 'url' => $this->store_in_file_url,
                 'file' => $this->store_in_file
             ];
@@ -276,7 +276,7 @@ class Material extends Model
         
         if ($this->store_out_file) {
             $attachments['store_out'] = [
-                'name' => 'ملف خروج المتجر',
+                'name' => 'STORE IN',
                 'url' => $this->store_out_file_url,
                 'file' => $this->store_out_file
             ];
@@ -284,7 +284,7 @@ class Material extends Model
         
         if ($this->ddo_file) {
             $attachments['ddo'] = [
-                'name' => 'ملف DDO',
+                'name' => ' DDO',
                 'url' => $this->ddo_file_url,
                 'file' => $this->ddo_file
             ];

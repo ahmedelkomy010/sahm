@@ -24,8 +24,8 @@
                         <i class="fas fa-plus"></i> إضافة مادة جديدة
                     </a>
                     @if($materials->count() > 0)
-                        <a href="{{ route('admin.work-orders.materials.export.excel', $workOrder) }}" class="btn btn-success">
-                            <i class="fas fa-file-excel"></i> تصدير Excel
+                        <a href="{{ route('admin.work-orders.show', $workOrder) }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-right"></i> العودة 
                         </a>
                     @endif
                 </div>
@@ -114,160 +114,216 @@
                 </div>
                 <div class="card-body">
                     @if($materials->count() > 0)
-                        <div class="table-responsive">
-                            <table class="table table-bordered table-hover" id="materialsTable">
-                                <thead class="thead-light">
-                                    <tr>
-                                        <th width="4%">#</th>
-                                        <th width="8%">الكود</th>
-                                        <th width="20%">الوصف</th>
-                                        <th width="8%">الكمية المخططة</th>
-                                        <th width="8%">الكمية المنفذة</th>
-                                        <th width="6%">الفرق</th>
-                                        <th width="8%">الكمية المصروفة</th>
-                                        <th width="6%">الوحدة</th>
-                                        <th width="8%">السطر</th>
-                                        <th width="10%">DATE GATEPASS</th>
-                                        <th width="8%">GATEPASS</th>
-                                        <th width="18%">الإجراءات</th>
+                        <div class="table-responsive materials-table-wrapper">
+                            <table class="table table-bordered table-hover align-middle" id="materialsTable">
+                                <thead>
+                                    <tr class="bg-light">
+                                        <th class="text-center" style="width: 50px">#</th>
+                                        <th style="width: 120px">
+                                            <i class="fas fa-barcode text-secondary me-1"></i>
+                                            الكود
+                                        </th>
+                                        <th>
+                                            <i class="fas fa-align-left text-primary me-1"></i>
+                                            الوصف
+                                        </th>
+                                        <th style="width: 130px">
+                                            <i class="fas fa-chart-line text-info me-1"></i>
+                                            الكمية المخططة
+                                        </th>
+                                        <th style="width: 130px">
+                                            <i class="fas fa-tasks text-success me-1"></i>
+                                            الكمية المنفذة
+                                        </th>
+                                        <th style="width: 100px">
+                                            <i class="fas fa-calculator text-warning me-1"></i>
+                                            الفرق
+                                        </th>
+                                        <th style="width: 130px">
+                                            <i class="fas fa-box text-danger me-1"></i>
+                                            الكمية المصروفة
+                                        </th>
+                                        <th style="width: 80px">
+                                            <i class="fas fa-ruler text-secondary me-1"></i>
+                                            الوحدة
+                                        </th>
+                                        <th style="width: 80px">
+                                            <i class="fas fa-hashtag text-muted me-1"></i>
+                                            السطر
+                                        </th>
+                                        <th style="width: 160px" class="text-center">
+                                            <i class="fas fa-cogs text-secondary me-1"></i>
+                                            الإجراءات
+                                        </th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach($materials as $index => $material)
-                                        <tr>
-                                            <td>{{ $materials->firstItem() + $index }}</td>
-                                            <td><span class="badge bg-secondary">{{ $material->code }}</span></td>
-                                            <td class="text-start">{{ $material->description }}</td>
-                                            <td><span class="badge bg-primary">{{ number_format($material->planned_quantity, 2) }}</span></td>
-                                            <td><span class="badge bg-success">{{ number_format($material->executed_quantity ?? 0, 2) }}</span></td>
+                                        <tr class="align-middle">
+                                            <td class="text-center fw-bold">{{ $materials->firstItem() + $index }}</td>
                                             <td>
+                                                <div class="d-flex align-items-center">
+                                                    <span class="badge bg-light text-dark border">{{ $material->code }}</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="text-wrap" style="max-width: 300px;">
+                                                    {{ $material->description }}
+                                                </div>
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="quantity-badge planned">
+                                                    {{ number_format($material->planned_quantity, 2) }}
+                                                </div>
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="quantity-badge executed">
+                                                    {{ number_format($material->executed_quantity ?? 0, 2) }}
+                                                </div>
+                                            </td>
+                                            <td class="text-center">
                                                 @php
                                                     $difference = ($material->planned_quantity ?? 0) - ($material->executed_quantity ?? 0);
                                                 @endphp
-                                                @if($difference > 0)
-                                                    <span class="badge bg-warning text-dark" title="نقص في التنفيذ">
-                                                        +{{ number_format($difference, 2) }}
-                                                    </span>
-                                                @elseif($difference < 0)
-                                                    <span class="badge bg-danger" title="تنفيذ زائد">
-                                                        {{ number_format($difference, 2) }}
-                                                    </span>
-                                                @else
-                                                    <span class="badge bg-success" title="متطابقة">
+                                                <div class="quantity-badge difference {{ $difference > 0 ? 'warning' : ($difference < 0 ? 'danger' : 'success') }}"
+                                                     data-bs-toggle="tooltip" 
+                                                     title="{{ $difference > 0 ? 'نقص في التنفيذ' : ($difference < 0 ? 'تنفيذ زائد' : 'متطابقة') }}">
+                                                    @if($difference == 0)
                                                         <i class="fas fa-check"></i>
-                                                    </span>
-                                                @endif
-                                            </td>
-                                            <td><span class="badge bg-info">{{ number_format($material->spent_quantity, 2) }}</span></td>
-                                            <td><span class="badge bg-light text-dark">{{ $material->unit }}</span></td>
-                                            <td>{{ $material->line ?: '-' }}</td>
-                                            <td>
-                                                @if($material->date_gatepass)
-                                                    <small class="text-muted">{{ $material->date_gatepass->format('Y-m-d') }}</small>
-                                                @else
-                                                    <span class="text-muted">-</span>
-                                                @endif
+                                                    @else
+                                                        {{ $difference > 0 ? '+' : '' }}{{ number_format($difference, 2) }}
+                                                    @endif
+                                                </div>
                                             </td>
                                             <td class="text-center">
-                                                @if($material->gate_pass_file)
-                                                    <a href="{{ asset('storage/' . $material->gate_pass_file) }}" 
-                                                       target="_blank" 
-                                                       class="btn btn-sm btn-outline-success" 
-                                                       title="عرض ملف GATEPASS">
-                                                        <i class="fas fa-file-alt"></i>
-                                                    </a>
-                                                @else
-                                                    <span class="text-muted" title="لا يوجد ملف GATEPASS">
-                                                        <i class="fas fa-file-slash"></i>
-                                                    </span>
-                                                @endif
+                                                <div class="quantity-badge spent">
+                                                    {{ number_format($material->spent_quantity, 2) }}
+                                                </div>
                                             </td>
-                                            <td>
-                                                <div class="btn-toolbar justify-content-center" role="toolbar">
-                                                    <!-- Actions Group -->
-                                                    <div class="btn-group me-2" role="group">
-                                                        <!-- View Button -->
+                                            <td class="text-center">
+                                                <span class="badge bg-light text-dark border">{{ $material->unit }}</span>
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge bg-light text-dark border">{{ $material->line ?: '-' }}</span>
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="action-buttons">
+                                                    <!-- View/Edit/Delete Group -->
+                                                    <div class="btn-group">
                                                         <a href="{{ route('admin.work-orders.materials.show', [$workOrder, $material]) }}" 
-                                                           class="btn btn-sm btn-info" title="عرض التفاصيل">
+                                                           class="btn btn-action btn-view"
+                                                           data-bs-toggle="tooltip"
+                                                           data-bs-placement="top"
+                                                           title="عرض التفاصيل">
                                                             <i class="fas fa-eye"></i>
+                                                            <span class="btn-text">عرض</span>
                                                         </a>
                                                         
-                                                        <!-- Edit Button -->
                                                         <a href="{{ route('admin.work-orders.materials.edit', [$workOrder, $material]) }}" 
-                                                           class="btn btn-sm btn-warning" title="تعديل المادة">
+                                                           class="btn btn-action btn-edit"
+                                                           data-bs-toggle="tooltip"
+                                                           data-bs-placement="top"
+                                                           title="تعديل المادة">
                                                             <i class="fas fa-edit"></i>
+                                                            <span class="btn-text">تعديل</span>
                                                         </a>
+
+                                                        <button type="button" 
+                                                                class="btn btn-action btn-delete"
+                                                                onclick="deleteMaterial({{ $material->id }}, '{{ $material->code }}')"
+                                                                data-bs-toggle="tooltip"
+                                                                data-bs-placement="top"
+                                                                title="حذف المادة">
+                                                            <i class="fas fa-trash-alt"></i>
+                                                            <span class="btn-text">حذف</span>
+                                                        </button>
                                                     </div>
                                                     
-                                                    <!-- Attachments Group -->
-                                                    <div class="btn-group me-2" role="group">
+                                                    <!-- Attachments Button -->
+                                                    <div class="attachments-wrapper">
                                                         @if($material->hasAttachments())
-                                                            <button type="button" class="btn btn-sm btn-success dropdown-toggle" 
-                                                                    data-bs-toggle="dropdown" aria-expanded="false" title="عرض المرفقات ({{ count($material->getAttachments()) }})">
-                                                                <i class="fas fa-paperclip"></i>
-                                                                <span class="badge bg-light text-success ms-1">{{ count($material->getAttachments()) }}</span>
-                                                            </button>
-                                                            <ul class="dropdown-menu dropdown-menu-end">
-                                                                <li><h6 class="dropdown-header">المرفقات المتاحة</h6></li>
-                                                                @foreach($material->getAttachments() as $key => $attachment)
-                                                                    <li>
-                                                                        <a class="dropdown-item d-flex align-items-center" href="{{ $attachment['url'] }}" target="_blank">
-                                                                            @php
-                                                                                $extension = strtolower(pathinfo($attachment['file'], PATHINFO_EXTENSION));
-                                                                                $icon = 'fas fa-file';
-                                                                                $color = 'text-secondary';
-                                                                                
-                                                                                switch($extension) {
-                                                                                    case 'pdf':
-                                                                                        $icon = 'fas fa-file-pdf';
-                                                                                        $color = 'text-danger';
-                                                                                        break;
-                                                                                    case 'doc':
-                                                                                    case 'docx':
-                                                                                        $icon = 'fas fa-file-word';
-                                                                                        $color = 'text-primary';
-                                                                                        break;
-                                                                                    case 'xls':
-                                                                                    case 'xlsx':
-                                                                                        $icon = 'fas fa-file-excel';
-                                                                                        $color = 'text-success';
-                                                                                        break;
-                                                                                    case 'jpg':
-                                                                                    case 'jpeg':
-                                                                                    case 'png':
-                                                                                    case 'gif':
-                                                                                        $icon = 'fas fa-file-image';
-                                                                                        $color = 'text-info';
-                                                                                        break;
-                                                                                }
-                                                                            @endphp
-                                                                            <i class="{{ $icon }} {{ $color }} me-2"></i>
-                                                                            <div>
-                                                                                <div class="fw-bold">{{ $attachment['name'] }}</div>
-                                                                                <small class="text-muted">انقر للعرض</small>
-                                                                            </div>
-                                                                        </a>
+                                                            <div class="dropdown">
+                                                                <button type="button" 
+                                                                        class="btn btn-action btn-attachments" 
+                                                                        data-bs-toggle="dropdown" 
+                                                                        data-bs-auto-close="outside"
+                                                                        aria-expanded="false"
+                                                                        title="المرفقات">
+                                                                    <i class="fas fa-paperclip"></i>
+                                                                    <span class="btn-text">المرفقات</span>
+                                                                    <span class="attachments-count">{{ count($material->getAttachments()) }}</span>
+                                                                </button>
+                                                                <ul class="dropdown-menu dropdown-menu-end shadow-sm py-0" style="min-width: 300px;">
+                                                                    <li class="p-2 bg-light border-bottom">
+                                                                        <h6 class="mb-0">
+                                                                            <i class="fas fa-folder-open text-primary me-1"></i>
+                                                                            المرفقات المتاحة
+                                                                        </h6>
                                                                     </li>
-                                                                    @if(!$loop->last)
-                                                                        <li><hr class="dropdown-divider"></li>
-                                                                    @endif
-                                                                @endforeach
-                                                            </ul>
+                                                                    @foreach($material->getAttachments() as $attachment)
+                                                                        <li>
+                                                                            <a class="dropdown-item py-2 px-3" href="{{ $attachment['url'] }}" target="_blank">
+                                                                                @php
+                                                                                    $extension = strtolower(pathinfo($attachment['file'], PATHINFO_EXTENSION));
+                                                                                    $icon = 'fas fa-file';
+                                                                                    $color = 'text-secondary';
+                                                                                    
+                                                                                    switch($extension) {
+                                                                                        case 'pdf':
+                                                                                            $icon = 'fas fa-file-pdf';
+                                                                                            $color = 'text-danger';
+                                                                                            break;
+                                                                                        case 'doc':
+                                                                                        case 'docx':
+                                                                                            $icon = 'fas fa-file-word';
+                                                                                            $color = 'text-primary';
+                                                                                            break;
+                                                                                        case 'xls':
+                                                                                        case 'xlsx':
+                                                                                            $icon = 'fas fa-file-excel';
+                                                                                            $color = 'text-success';
+                                                                                            break;
+                                                                                        case 'jpg':
+                                                                                        case 'jpeg':
+                                                                                        case 'png':
+                                                                                        case 'gif':
+                                                                                            $icon = 'fas fa-file-image';
+                                                                                            $color = 'text-info';
+                                                                                            break;
+                                                                                    }
+                                                                                @endphp
+                                                                                <div class="d-flex align-items-center">
+                                                                                    <div class="file-icon me-2">
+                                                                                        <i class="{{ $icon }} {{ $color }} fa-lg"></i>
+                                                                                    </div>
+                                                                                    <div class="flex-grow-1">
+                                                                                        <div class="fw-bold text-truncate" style="max-width: 200px;">
+                                                                                            {{ $attachment['name'] }}
+                                                                                        </div>
+                                                                                        <small class="text-muted">انقر للعرض</small>
+                                                                                    </div>
+                                                                                    <div class="ms-2">
+                                                                                        <i class="fas fa-external-link-alt text-muted"></i>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </a>
+                                                                        </li>
+                                                                        @if(!$loop->last)
+                                                                            <li><hr class="dropdown-divider my-0"></li>
+                                                                        @endif
+                                                                    @endforeach
+                                                                </ul>
+                                                            </div>
                                                         @else
-                                                            <button type="button" class="btn btn-sm btn-outline-secondary" disabled title="لا توجد مرفقات">
+                                                            <button type="button" 
+                                                                    class="btn btn-action btn-attachments-empty" 
+                                                                    disabled
+                                                                    data-bs-toggle="tooltip"
+                                                                    title="لا توجد مرفقات">
                                                                 <i class="fas fa-paperclip"></i>
-                                                                <span class="badge bg-secondary ms-1">0</span>
+                                                                <span class="btn-text">لا توجد مرفقات</span>
                                                             </button>
                                                         @endif
-                                                    </div>
-                                                    
-                                                    <!-- Delete Group -->
-                                                    <div class="btn-group" role="group">
-                                                        <button type="button" class="btn btn-sm btn-danger" 
-                                                                onclick="deleteMaterial({{ $material->id }}, '{{ $material->code }}')" 
-                                                                title="حذف المادة">
-                                                            <i class="fas fa-trash"></i>
-                                                        </button>
                                                     </div>
                                                     
                                                     <!-- Hidden Delete Form -->
@@ -305,9 +361,397 @@
     </div>
 </div>
 
+@push('styles')
+<style>
+/* تحسين مظهر الجدول */
+.materials-table-wrapper {
+    border-radius: 0.5rem;
+    box-shadow: 0 0 20px rgba(0,0,0,.05);
+}
+
+#materialsTable {
+    margin-bottom: 0;
+}
+
+#materialsTable thead tr {
+    background: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+}
+
+#materialsTable th {
+    font-weight: 600;
+    text-align: center;
+    padding: 1rem 0.75rem;
+    white-space: nowrap;
+}
+
+#materialsTable td {
+    padding: 0.75rem;
+    vertical-align: middle;
+}
+
+#materialsTable tbody tr {
+    transition: all 0.3s ease;
+}
+
+#materialsTable tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+/* تحسين عرض الكميات */
+.quantity-badge {
+    display: inline-block;
+    padding: 0.4rem 0.8rem;
+    border-radius: 50rem;
+    font-weight: 600;
+    font-size: 0.875rem;
+    line-height: 1;
+    white-space: nowrap;
+    transition: all 0.3s ease;
+}
+
+.quantity-badge.planned {
+    background-color: #e3f2fd;
+    color: #0d6efd;
+    border: 1px solid #90caf9;
+}
+
+.quantity-badge.executed {
+    background-color: #e8f5e9;
+    color: #198754;
+    border: 1px solid #a5d6a7;
+}
+
+.quantity-badge.spent {
+    background-color: #fff3e0;
+    color: #fd7e14;
+    border: 1px solid #ffcc80;
+}
+
+.quantity-badge.difference {
+    padding: 0.35rem 0.7rem;
+}
+
+.quantity-badge.difference.warning {
+    background-color: #fff3cd;
+    color: #997404;
+    border: 1px solid #ffe69c;
+}
+
+.quantity-badge.difference.danger {
+    background-color: #f8d7da;
+    color: #dc3545;
+    border: 1px solid #f5c2c7;
+}
+
+.quantity-badge.difference.success {
+    background-color: #d1e7dd;
+    color: #146c43;
+    border: 1px solid #a3cfbb;
+}
+
+/* تحسين الأزرار */
+.action-buttons-wrapper {
+    position: relative;
+}
+
+.action-buttons {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.btn-action {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    border-radius: 50px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    background: #fff;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-action i {
+    margin-inline-end: 0.5rem;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.btn-action .btn-text {
+    opacity: 0;
+    width: 0;
+    transition: all 0.3s ease;
+}
+
+.btn-action:hover .btn-text {
+    opacity: 1;
+    width: auto;
+    margin-inline-start: 0.5rem;
+}
+
+.btn-action:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.btn-action:active {
+    transform: translateY(0);
+}
+
+/* تنسيق الأزرار */
+.btn-group {
+    display: flex;
+    gap: 0.5rem;
+    margin-inline-end: 0.75rem;
+}
+
+.btn-group .btn-action {
+    border-radius: 50px !important;
+}
+
+/* تنسيق زر العرض */
+.btn-view {
+    color: #0dcaf0;
+    background: rgba(13, 202, 240, 0.1);
+}
+
+.btn-view:hover {
+    color: #fff;
+    background: linear-gradient(135deg, #0dcaf0, #0d6efd);
+}
+
+/* تنسيق زر التعديل */
+.btn-edit {
+    color: #ffc107;
+    background: rgba(255, 193, 7, 0.1);
+}
+
+.btn-edit:hover {
+    color: #fff;
+    background: linear-gradient(135deg, #ffc107, #fd7e14);
+}
+
+/* تنسيق زر المرفقات */
+.btn-attachments {
+    color: #198754;
+    background: rgba(25, 135, 84, 0.1);
+}
+
+.btn-attachments:hover {
+    color: #fff;
+    background: linear-gradient(135deg, #198754, #146c43);
+}
+
+.btn-attachments-empty {
+    color: #6c757d;
+    background: rgba(108, 117, 125, 0.1);
+    cursor: not-allowed;
+}
+
+.btn-attachments-empty:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+.attachments-count {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: #198754;
+    color: #fff;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    font-size: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* تنسيق زر الحذف */
+.btn-delete {
+    color: #dc3545;
+    background: rgba(220, 53, 69, 0.1);
+}
+
+.btn-delete:hover {
+    color: #fff;
+    background: linear-gradient(135deg, #dc3545, #b02a37);
+}
+
+/* تأثيرات إضافية */
+.btn-action::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255,255,255,0.2);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: all 0.5s ease;
+}
+
+.btn-action:hover::before {
+    width: 200%;
+    height: 200%;
+    opacity: 0;
+}
+
+/* تحسين قائمة المرفقات */
+.dropdown-menu {
+    border: none;
+    box-shadow: 0 0.5rem 1rem rgba(0,0,0,.15);
+}
+
+.dropdown-item {
+    transition: all 0.2s ease;
+}
+
+.dropdown-item:hover {
+    background-color: #f8f9fa;
+}
+
+.file-icon {
+    width: 24px;
+    text-align: center;
+}
+
+/* تحسين الشاشات الصغيرة */
+@media (max-width: 768px) {
+    .quantity-badge {
+        padding: 0.3rem 0.6rem;
+        font-size: 0.8125rem;
+    }
+    
+    .action-buttons {
+        flex-wrap: nowrap;
+        gap: 0.35rem;
+    }
+    
+    .btn-action {
+        padding: 0.4rem;
+        min-width: 32px;
+        justify-content: center;
+    }
+    
+    .btn-action i {
+        margin: 0;
+        font-size: 0.9rem;
+    }
+    
+    .btn-action .btn-text {
+        display: none;
+    }
+    
+    .btn-action:hover .btn-text {
+        display: none;
+    }
+    
+    .attachments-count {
+        width: 18px;
+        height: 18px;
+        font-size: 0.7rem;
+        top: -5px;
+        right: -5px;
+    }
+    
+    .dropdown-menu {
+        min-width: 280px !important;
+        max-width: 95vw;
+        margin-top: 0.5rem;
+    }
+}
+
+/* تحسينات إضافية للشاشات الصغيرة جداً */
+@media (max-width: 480px) {
+    .action-buttons {
+        gap: 0.25rem;
+    }
+    
+    .btn-action {
+        padding: 0.35rem;
+        min-width: 28px;
+    }
+    
+    .btn-action i {
+        font-size: 0.8rem;
+    }
+    
+    .attachments-count {
+        width: 16px;
+        height: 16px;
+        font-size: 0.65rem;
+        top: -4px;
+        right: -4px;
+    }
+    
+    .dropdown-menu {
+        min-width: 250px !important;
+    }
+}
+</style>
+@endpush
+
 @push('scripts')
 <script>
 $(document).ready(function() {
+    // تفعيل tooltips بشكل محسن
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl, {
+            trigger: 'hover',
+            animation: true,
+            delay: { show: 100, hide: 100 }
+        });
+    });
+    
+    // تحسين عرض الكميات
+    $('.quantity-badge').each(function() {
+        const $badge = $(this);
+        $badge.hover(
+            function() {
+                $(this).css({
+                    'transform': 'scale(1.05)',
+                    'box-shadow': '0 2px 4px rgba(0,0,0,0.1)'
+                });
+            },
+            function() {
+                $(this).css({
+                    'transform': 'scale(1)',
+                    'box-shadow': 'none'
+                });
+            }
+        );
+    });
+    
+    // تحسين عرض المرفقات
+    $('.dropdown-item').hover(
+        function() {
+            const $icon = $(this).find('.file-icon i');
+            $icon.css({
+                'transform': 'scale(1.2) rotate(5deg)',
+                'transition': 'all 0.2s ease'
+            });
+        },
+        function() {
+            const $icon = $(this).find('.file-icon i');
+            $icon.css({
+                'transform': 'scale(1) rotate(0deg)',
+                'transition': 'all 0.2s ease'
+            });
+        }
+    );
+    
     // تحسين تجربة البحث
     $('#search_code, #search_description').on('keypress', function(e) {
         if (e.which === 13) { // Enter key
@@ -315,12 +759,27 @@ $(document).ready(function() {
         }
     });
 
-    // البحث السريع بالكود
-    $('#search_code').on('input', function() {
-        const value = $(this).val();
-        if (value.length >= 3) {
-            // يمكن إضافة AJAX search هنا للبحث السريع
-            highlightTableRows(value, 'code');
+    // البحث السريع المحسن
+    let searchTimeout;
+    $('#search_code, #search_description').on('input', function() {
+        const $input = $(this);
+        const value = $input.val();
+        const type = $input.attr('id').replace('search_', '');
+        
+        clearTimeout(searchTimeout);
+        
+        if (value.length >= 2) {
+            searchTimeout = setTimeout(() => {
+                highlightTableRows(value, type);
+                
+                // تحريك الشاشة إلى أول نتيجة
+                const $firstHighlight = $('.table-highlight').first();
+                if ($firstHighlight.length) {
+                    $('html, body').animate({
+                        scrollTop: $firstHighlight.offset().top - 200
+                    }, 300);
+                }
+            }, 300);
         } else {
             clearHighlights();
         }
@@ -328,20 +787,55 @@ $(document).ready(function() {
 
     // تحسين عرض الجدول
     if ($('#materialsTable tbody tr').length > 0) {
-        // إضافة hover effects
-        $('#materialsTable tbody tr').hover(
-            function() {
-                $(this).addClass('table-active');
-            },
-            function() {
-                $(this).removeClass('table-active');
-            }
-        );
+        $('#materialsTable tbody tr').each(function(index) {
+            const $row = $(this);
+            
+            // إضافة تأثير ظهور متدرج
+            $row.css({
+                'opacity': 0,
+                'transform': 'translateY(10px)'
+            }).delay(index * 50).animate({
+                'opacity': 1,
+                'transform': 'translateY(0)'
+            }, 300);
+            
+            // تحسين hover effect
+            $row.hover(
+                function() {
+                    $(this).addClass('table-active').css({
+                        'transform': 'translateY(-2px)',
+                        'box-shadow': '0 2px 8px rgba(0,0,0,.1)',
+                        'z-index': 1
+                    });
+                },
+                function() {
+                    $(this).removeClass('table-active').css({
+                        'transform': 'translateY(0)',
+                        'box-shadow': 'none',
+                        'z-index': 'auto'
+                    });
+                }
+            );
+        });
     }
 
     // تحسين dropdown المرفقات
     $('.dropdown-toggle').on('click', function(e) {
         e.stopPropagation();
+        
+        const $button = $(this);
+        const $menu = $button.next('.dropdown-menu');
+        
+        // تأثير ظهور القائمة
+        if (!$menu.hasClass('show')) {
+            $menu.css({
+                'opacity': 0,
+                'transform': 'translateY(-10px)'
+            }).addClass('show').animate({
+                'opacity': 1,
+                'transform': 'translateY(0)'
+            }, 200);
+        }
     });
 });
 
@@ -374,49 +868,138 @@ function deleteMaterial(materialId, materialCode) {
     });
 }
 
-// دالة تمييز الصفوف في البحث
+// دالة تمييز الصفوف في البحث مع تحسينات
 function highlightTableRows(searchTerm, column) {
     clearHighlights();
     
+    if (!searchTerm) return;
+    
+    const searchTermLower = searchTerm.toLowerCase();
+    let matchCount = 0;
+    
     $('#materialsTable tbody tr').each(function() {
-        const row = $(this);
-        let cellIndex;
+        const $row = $(this);
+        let $targetCell;
         
         switch(column) {
             case 'code':
-                cellIndex = 1; // عمود الكود
+                $targetCell = $row.find('td:eq(1) .badge'); // عمود الكود
                 break;
             case 'description':
-                cellIndex = 2; // عمود الوصف
+                $targetCell = $row.find('td:eq(2) .text-wrap'); // عمود الوصف
                 break;
             default:
                 return;
         }
         
-        const cellText = row.find('td').eq(cellIndex).text().toLowerCase();
-        if (cellText.includes(searchTerm.toLowerCase())) {
-            row.addClass('table-warning');
+        const cellText = $targetCell.text().toLowerCase();
+        if (cellText.includes(searchTermLower)) {
+            matchCount++;
+            
+            // إضافة تأثير التمييز
+            $row.addClass('table-highlight').css({
+                'background-color': '#fff9c4',
+                'transition': 'background-color 0.3s ease'
+            });
+            
+            // تمييز النص المطابق
+            const originalText = $targetCell.text();
+            const highlightedText = originalText.replace(
+                new RegExp(searchTerm, 'gi'),
+                match => `<mark class="highlight-text">${match}</mark>`
+            );
+            $targetCell.html(highlightedText);
         }
     });
+    
+    // عرض عدد النتائج
+    if (matchCount > 0) {
+        toastr.info(`تم العثور على ${matchCount} نتيجة`);
+    } else {
+        toastr.warning('لم يتم العثور على نتائج');
+    }
+    
+    return matchCount;
 }
 
-// دالة مسح التمييز
+// دالة مسح التمييز مع تحسينات
 function clearHighlights() {
-    $('#materialsTable tbody tr').removeClass('table-warning');
+    const $rows = $('#materialsTable tbody tr');
+    
+    $rows.removeClass('table-highlight').css({
+        'background-color': '',
+        'transition': 'none'
+    });
+    
+    // إعادة النص الأصلي
+    $rows.find('.highlight-text').each(function() {
+        const $mark = $(this);
+        $mark.replaceWith($mark.text());
+    });
 }
 
 // تحسين عرض الرسائل
 @if(session('success'))
-    toastr.success('{{ session('success') }}');
+    toastr.success('{{ session('success') }}', '', {
+        progressBar: true,
+        closeButton: true,
+        timeOut: 5000,
+        extendedTimeOut: 2000,
+        positionClass: 'toast-top-center',
+        rtl: true
+    });
 @endif
 
 @if(session('error'))
-    toastr.error('{{ session('error') }}');
+        toastr.error('{{ session('error') }}', '', {
+        progressBar: true,
+        closeButton: true,
+        timeOut: 7000,
+        extendedTimeOut: 3000,
+        positionClass: 'toast-top-center',
+        rtl: true
+    });
 @endif
 
-// إضافة tooltips للأزرار
-$(function () {
-    $('[title]').tooltip();
+// إضافة CSS للتمييز
+const style = document.createElement('style');
+style.textContent = `
+    .highlight-text {
+        background-color: #fff176;
+        padding: 2px 0;
+        border-radius: 2px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        animation: highlight-pulse 2s infinite;
+    }
+    
+    @keyframes highlight-pulse {
+        0% { background-color: #fff176; }
+        50% { background-color: #ffeb3b; }
+        100% { background-color: #fff176; }
+    }
+    
+    .table-highlight {
+        position: relative;
+    }
+    
+    .table-highlight::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 100%;
+        width: 4px;
+        background-color: #fbc02d;
+        animation: highlight-border 1s infinite;
+    }
+    
+    @keyframes highlight-border {
+        0% { opacity: 0.4; }
+        50% { opacity: 1; }
+        100% { opacity: 0.4; }
+    }
+`;
+document.head.appendChild(style);
 });
 </script>
 

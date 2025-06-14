@@ -97,6 +97,11 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::put('work-orders/{workOrder}/execution', [WorkOrderController::class, 'updateExecution'])->name('work-orders.update-execution');
     Route::delete('work-orders/{workOrder}/execution-file', [WorkOrderController::class, 'deleteExecutionFile'])->name('work-orders.delete-execution-file');
     
+    // Work Items Management Routes
+    Route::post('work-orders/add-work-item', [WorkOrderController::class, 'addWorkItem'])->name('work-orders.add-work-item');
+    Route::post('work-orders/update-work-item/{workOrderItem}', [WorkOrderController::class, 'updateWorkItem'])->name('work-orders.update-work-item');
+    Route::delete('work-orders/delete-work-item/{workOrderItem}', [WorkOrderController::class, 'deleteWorkItem'])->name('work-orders.delete-work-item');
+    
     Route::get('work-orders/{workOrder}/license', [WorkOrderController::class, 'license'])->name('work-orders.license');
     Route::put('work-orders/{workOrder}/license', [WorkOrderController::class, 'updateLicense'])->name('work-orders.update-license');
     Route::post('work-orders/{workOrder}/upload-license', [WorkOrderController::class, 'uploadLicense'])->name('work-orders.upload-license');
