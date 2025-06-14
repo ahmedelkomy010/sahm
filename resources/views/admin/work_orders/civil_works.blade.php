@@ -2037,17 +2037,176 @@
             }
         });
 
-        // 6. عرض البيانات في الجدول
+        // 6. بيانات الحفريات الدقيقة
+        const preciseExcavationTypes = [
+            { 
+                name: 'excavation_precise[medium]', 
+                label: 'حفر متوسط دقيق', 
+                description: 'حفر دقيق بأبعاد 20 × 80 سم',
+                dimensions: '20 × 80 سم',
+                badge: 'info'
+            },
+            { 
+                name: 'excavation_precise[low]', 
+                label: 'حفر منخفض دقيق', 
+                description: 'حفر دقيق بأبعاد 20 × 56 سم',
+                dimensions: '20 × 56 سم',
+                badge: 'info'
+            }
+        ];
+
+        preciseExcavationTypes.forEach(type => {
+            const input = document.querySelector(`input[name="${type.name}"]`);
+            if (input) {
+                const value = parseFloat(input.value) || 0;
+                if (value > 0) {
+                    excavationData.push({
+                        type: 'الحفريات الدقيقة',
+                        surface: 'دقيق',
+                        description: type.description,
+                        dimensions: type.dimensions,
+                        value: value,
+                        unit: 'متر طولي',
+                        volume: value.toFixed(2),
+                        badge: type.badge
+                    });
+                }
+            }
+        });
+
+        // 7. بيانات أعمال الأسفلت
+        const asphaltTypes = [
+            { 
+                name: 'open_excavation[first_asphalt][length]', 
+                widthName: 'open_excavation[first_asphalt][width]',
+                label: 'أسفلت طبقة أولى', 
+                description: 'عمل سطحي - طبقة أساسية',
+                badge: 'primary'
+            },
+            { 
+                name: 'open_excavation[asphalt_scraping][length]', 
+                widthName: 'open_excavation[asphalt_scraping][width]',
+                label: 'كشط وإعادة السفلتة', 
+                description: 'إصلاح وتجديد السطح',
+                badge: 'warning'
+            }
+        ];
+
+        asphaltTypes.forEach(type => {
+            const lengthInput = document.querySelector(`input[name="${type.name}"]`);
+            const widthInput = document.querySelector(`input[name="${type.widthName}"]`);
+            
+            if (lengthInput && widthInput) {
+                const length = parseFloat(lengthInput.value) || 0;
+                const width = parseFloat(widthInput.value) || 0;
+                const area = length * width;
+                
+                if (area > 0) {
+                    excavationData.push({
+                        type: 'أعمال الأسفلت',
+                        surface: 'سطحي',
+                        description: type.description,
+                        dimensions: `${length} × ${width} متر`,
+                        value: area,
+                        unit: 'متر مربع',
+                        volume: area.toFixed(2),
+                        badge: type.badge
+                    });
+                }
+            }
+        });
+
+        // 8. بيانات الكابلات الكهربائية
+        const electricalTypes = [
+            { 
+                name: 'electrical_items[cable_4x70_low][meters]', 
+                label: 'كيبل 4x70 منخفض', 
+                description: 'جهد منخفض - 4 أسلاك',
+                badge: 'danger'
+            },
+            { 
+                name: 'electrical_items[cable_4x185_low][meters]', 
+                label: 'كيبل 4x185 منخفض', 
+                description: 'جهد منخفض - 4 أسلاك',
+                badge: 'danger'
+            },
+            { 
+                name: 'electrical_items[cable_4x300_low][meters]', 
+                label: 'كيبل 4x300 منخفض', 
+                description: 'جهد منخفض - 4 أسلاك',
+                badge: 'danger'
+            },
+            { 
+                name: 'electrical_items[cable_3x500_med][meters]', 
+                label: 'كيبل 3x500 متوسط', 
+                description: 'جهد متوسط - 3 أسلاك',
+                badge: 'primary'
+            },
+            { 
+                name: 'electrical_items[cable_3x400_med][meters]', 
+                label: 'كيبل 3x400 متوسط', 
+                description: 'جهد متوسط - 3 أسلاك',
+                badge: 'primary'
+            }
+        ];
+
+        electricalTypes.forEach(type => {
+            const input = document.querySelector(`input[name="${type.name}"]`);
+            if (input) {
+                const value = parseFloat(input.value) || 0;
+                if (value > 0) {
+                    excavationData.push({
+                        type: 'الكابلات الكهربائية',
+                        surface: 'كهربائي',
+                        description: type.description,
+                        dimensions: '-',
+                        value: value,
+                        unit: 'متر طولي',
+                        volume: value.toFixed(2),
+                        badge: type.badge
+                    });
+                }
+            }
+        });
+
+        // 9. عرض البيانات في الجدول
         if (excavationData.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4"><i class="fas fa-info-circle me-2"></i>لا توجد بيانات حفريات مدخلة للعرض</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4"><i class="fas fa-info-circle me-2"></i>لا توجد بيانات حفريات مدخلة للعرض</td></tr>';
         } else {
             excavationData.forEach((item, index) => {
+                // تحديد لون وأيقونة القسم
+                let sectionBadge = '';
+                let sectionIcon = '';
+                
+                switch(item.type) {
+                    case 'حفريات التربة الترابية':
+                    case 'حفريات التربة الصخرية':
+                        sectionBadge = 'bg-success';
+                        sectionIcon = 'fa-mountain';
+                        break;
+                    case 'الحفريات الدقيقة':
+                        sectionBadge = 'bg-info';
+                        sectionIcon = 'fa-crosshairs';
+                        break;
+                    case 'أعمال الأسفلت':
+                        sectionBadge = 'bg-warning text-dark';
+                        sectionIcon = 'fa-road';
+                        break;
+                    case 'الكابلات الكهربائية':
+                        sectionBadge = 'bg-danger';
+                        sectionIcon = 'fa-bolt';
+                        break;
+                    default:
+                        sectionBadge = 'bg-secondary';
+                        sectionIcon = 'fa-tools';
+                }
+
                 const row = tbody.insertRow();
                 row.innerHTML = `
                     <td class="text-center fw-bold">${index + 1}</td>
                     <td>
                         <div class="d-flex align-items-center">
-                            <div class="bg-${item.badge} rounded-circle me-2" style="width: 10px; height: 10px;"></div>
+                            <div class="bg-${item.badge} rounded-circle me-2" style="width: 12px; height: 12px;"></div>
                             <div>
                                 <strong class="d-block">${item.type}</strong>
                                 <small class="text-muted">${item.description}</small>
@@ -2059,15 +2218,21 @@
                         <strong class="text-primary fs-5">${item.value.toFixed(2)}</strong>
                     </td>
                     <td class="text-center">
-                        <span class="badge bg-info text-white">${item.unit}</span>
+                        <span class="badge bg-info text-white px-2 py-1">${item.unit}</span>
                     </td>
                     <td class="text-center">
                         <span class="text-success fw-bold fs-6">${item.volume}</span>
                     </td>
                     <td class="text-center">
-                        <span class="badge ${item.surface === 'مسفلت' ? 'bg-danger' : 'bg-success'} text-white px-3 py-2">
-                            <i class="fas ${item.surface === 'مسفلت' ? 'fa-road' : 'fa-mountain'} me-1"></i>
+                        <span class="badge ${item.surface === 'مسفلت' ? 'bg-danger' : item.surface === 'سطحي' ? 'bg-warning text-dark' : item.surface === 'دقيق' ? 'bg-secondary' : item.surface === 'كهربائي' ? 'bg-primary' : 'bg-success'} text-white px-2 py-1">
+                            <i class="fas ${item.surface === 'مسفلت' ? 'fa-road' : item.surface === 'سطحي' ? 'fa-layer-group' : item.surface === 'دقيق' ? 'fa-crosshairs' : item.surface === 'كهربائي' ? 'fa-bolt' : 'fa-mountain'} me-1"></i>
                             ${item.surface}
+                        </span>
+                    </td>
+                    <td class="text-center">
+                        <span class="badge ${sectionBadge} px-2 py-1">
+                            <i class="fas ${sectionIcon} me-1"></i>
+                            ${item.type.split(' ')[0]}
                         </span>
                     </td>
                 `;
@@ -2082,11 +2247,112 @@
         // تحديث الإحصائيات
         updateExcavationStats(excavationData);
         
+        // إفراغ حقول حفريات التربة الترابية المسفلتة بعد العرض
+        clearSurfacedSoilExcavationFields();
+        
         // تحديث الجدول المثبت
         setTimeout(() => {
             loadFixedTableData();
         }, 100);
     };
+
+    // دالة لإفراغ حقول حفريات التربة الترابية المسفلتة
+    function clearSurfacedSoilExcavationFields() {
+        console.log('إفراغ حقول حفريات التربة الترابية المسفلتة');
+        
+        // إفراغ حقول الحفريات العادية المسفلتة
+        const surfacedSoilInputs = document.querySelectorAll('input[name^="excavation_surfaced_soil"]');
+        surfacedSoilInputs.forEach(input => {
+            if (input.type === 'number' || input.type === 'text') {
+                const oldValue = input.value;
+                input.value = '';
+                
+                // إضافة تأثير بصري للإشارة إلى الإفراغ
+                input.style.backgroundColor = '#fff3cd';
+                input.style.border = '2px solid #ffc107';
+                
+                // إزالة التأثير بعد ثانيتين
+                setTimeout(() => {
+                    input.style.backgroundColor = '';
+                    input.style.border = '';
+                }, 2000);
+                
+                console.log(`تم إفراغ الحقل: ${input.name} (القيمة السابقة: ${oldValue})`);
+            }
+        });
+        
+        // إفراغ حقول الحفر المفتوح المسفلت
+        const openSurfacedInputs = [
+            'input[name="excavation_surfaced_soil_open[length]"]',
+            'input[name="excavation_surfaced_soil_open[width]"]',
+            'input[name="excavation_surfaced_soil_open[depth]"]'
+        ];
+        
+        openSurfacedInputs.forEach(selector => {
+            const input = document.querySelector(selector);
+            if (input) {
+                const oldValue = input.value;
+                input.value = '';
+                
+                // إضافة تأثير بصري
+                input.style.backgroundColor = '#fff3cd';
+                input.style.border = '2px solid #ffc107';
+                
+                setTimeout(() => {
+                    input.style.backgroundColor = '';
+                    input.style.border = '';
+                }, 2000);
+                
+                console.log(`تم إفراغ الحقل: ${selector} (القيمة السابقة: ${oldValue})`);
+            }
+        });
+        
+        // إفراغ حقل الإجمالي للحفر المفتوح المسفلت
+        const totalSurfacedOpen = document.getElementById('total_excavation_surfaced_soil_open');
+        if (totalSurfacedOpen) {
+            totalSurfacedOpen.value = '';
+            totalSurfacedOpen.style.backgroundColor = '#fff3cd';
+            totalSurfacedOpen.style.border = '2px solid #ffc107';
+            
+            setTimeout(() => {
+                totalSurfacedOpen.style.backgroundColor = '';
+                totalSurfacedOpen.style.border = '';
+            }, 2000);
+        }
+        
+        // عرض رسالة تأكيد
+        showNotification('تم إفراغ حقول حفريات التربة الترابية المسفلتة بنجاح', 'success');
+    }
+
+    // دالة لعرض الإشعارات
+    function showNotification(message, type = 'info') {
+        // إنشاء عنصر الإشعار
+        const notification = document.createElement('div');
+        notification.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+        notification.style.cssText = `
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            min-width: 300px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        `;
+        
+        notification.innerHTML = `
+            <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'warning' ? 'exclamation-triangle' : 'info-circle'} me-2"></i>
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        // إضافة الإشعار للصفحة
+        document.body.appendChild(notification);
+        
+        // إزالة الإشعار تلقائياً بعد 5 ثوان
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.remove();
+            }
+        }, 5000);
+    }
 
     // عرض البيانات المحفوظة
     function displaySavedData(savedData, tbody) {
@@ -2098,7 +2364,7 @@
                 <td class="text-center fw-bold">${item.index}</td>
                 <td>
                     <div class="d-flex align-items-center">
-                        <div class="bg-success rounded-circle me-2" style="width: 10px; height: 10px;"></div>
+                        <div class="bg-success rounded-circle me-2" style="width: 12px; height: 12px;"></div>
                         <div>
                             <strong class="d-block text-success">${item.type} (محفوظ)</strong>
                             <small class="text-muted">بيانات مثبتة</small>
@@ -2109,15 +2375,21 @@
                     <strong class="text-primary fs-5">${item.quantity}</strong>
                 </td>
                 <td class="text-center">
-                    <span class="badge bg-info text-white">${item.unit}</span>
+                    <span class="badge bg-info text-white px-2 py-1">${item.unit}</span>
                 </td>
                 <td class="text-center">
                     <span class="text-success fw-bold fs-6">${item.volume}</span>
                 </td>
                 <td class="text-center">
-                    <span class="badge bg-success text-white px-3 py-2">
+                    <span class="badge bg-success text-white px-2 py-1">
                         <i class="fas fa-lock me-1"></i>
                         ${item.surface}
+                    </span>
+                </td>
+                <td class="text-center">
+                    <span class="badge bg-success px-2 py-1">
+                        <i class="fas fa-database me-1"></i>
+                        محفوظ
                     </span>
                 </td>
             `;
@@ -2132,6 +2404,8 @@
         let totalSoilLength = 0;
         let totalRockLength = 0;
         let totalVolume = 0;
+        let totalAsphaltArea = 0;
+        let totalPreciseExcavation = 0;
         let totalCount = excavationData.length;
 
         excavationData.forEach(item => {
@@ -2139,6 +2413,10 @@
                 totalSoilLength += item.value;
             } else if (item.type.includes('التربة الصخرية')) {
                 totalRockLength += item.value;
+            } else if (item.type === 'الحفريات الدقيقة') {
+                totalPreciseExcavation += item.value;
+            } else if (item.type === 'أعمال الأسفلت') {
+                totalAsphaltArea += item.value;
             }
             
             if (item.unit === 'متر مكعب') {
@@ -2149,13 +2427,19 @@
         // تحديث الإحصائيات في الكروت
         const soilStat = document.getElementById('total-soil-excavation');
         const rockStat = document.getElementById('total-rock-excavation');
+        const asphaltStat = document.getElementById('total-asphalt-work');
+        const preciseStat = document.getElementById('total-precise-excavation');
         const volumeStat = document.getElementById('final-total-volume');
         const lengthStat = document.getElementById('final-total-length');
+        const areaStat = document.getElementById('final-total-area');
 
         if (soilStat) soilStat.textContent = totalSoilLength.toFixed(2);
         if (rockStat) rockStat.textContent = totalRockLength.toFixed(2);
+        if (asphaltStat) asphaltStat.textContent = totalAsphaltArea.toFixed(2);
+        if (preciseStat) preciseStat.textContent = totalPreciseExcavation.toFixed(2);
         if (volumeStat) volumeStat.textContent = totalVolume.toFixed(2) + ' متر مكعب';
-        if (lengthStat) lengthStat.textContent = (totalSoilLength + totalRockLength).toFixed(2) + ' متر';
+        if (lengthStat) lengthStat.textContent = (totalSoilLength + totalRockLength + totalPreciseExcavation).toFixed(2) + ' متر';
+        if (areaStat) areaStat.textContent = totalAsphaltArea.toFixed(2) + ' متر مربع';
         
         // إضافة إشارة للبيانات المثبتة
         const mainTable = document.querySelector('.excavation-details-container');
