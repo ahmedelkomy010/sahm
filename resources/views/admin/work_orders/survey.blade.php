@@ -78,13 +78,13 @@
                                             <div class="col-md-6">
                                                 <label class="form-label fw-bold">المعوقات</label>
                                                 <div class="form-check">
-                                                    <input class="form-check-input" type="radio" name="has_obstacles" id="obstacles_yes" value="1" {{ old('has_obstacles') == 1 ? 'checked' : '' }}>
+                                                    <input class="form-check-input" type="radio" name="has_obstacles" id="obstacles_yes" value="1" {{ old('has_obstacles') == 1 ? 'checked' : '' }} onchange="toggleObstaclesNotes()">
                                                     <label class="form-check-label" for="obstacles_yes">
                                                         نعم
                                                     </label>
                                                 </div>
                                                 <div class="form-check">
-                                                    <input class="form-check-input" type="radio" name="has_obstacles" id="obstacles_no" value="0" {{ old('has_obstacles') == 0 ? 'checked' : '' }}>
+                                                    <input class="form-check-input" type="radio" name="has_obstacles" id="obstacles_no" value="0" {{ old('has_obstacles') == 0 ? 'checked' : '' }} onchange="toggleObstaclesNotes()">
                                                     <label class="form-check-label" for="obstacles_no">
                                                         لا
                                                     </label>
@@ -95,14 +95,17 @@
                                                     </div>
                                                 @enderror
                                             </div>
-                                            <div class="col-md-6">
-                                                <label for="obstacles_notes" class="form-label fw-bold">ملاحظات</label>
-                                                <textarea class="form-control @error('obstacles_notes') is-invalid @enderror" id="obstacles_notes" name="obstacles_notes" rows="3" placeholder="أدخل أي ملاحظات إضافية هنا...">{{ old('obstacles_notes') }}</textarea>
+                                            <div class="col-md-6" id="obstacles_notes_container" style="display: none;">
+                                                <label for="obstacles_notes" class="form-label fw-bold">ملاحظات  <span class="text-danger">*</span></label>
+                                                <textarea class="form-control @error('obstacles_notes') is-invalid @enderror" id="obstacles_notes" name="obstacles_notes" rows="3" placeholder="يرجى وصف المعوقات الموجودة...">{{ old('obstacles_notes') }}</textarea>
                                                 @error('obstacles_notes')
                                                     <div class="invalid-feedback">
                                                         {{ $message }}
                                                     </div>
                                                 @enderror
+                                                <div class="form-text text-muted">
+                                                    <i class="fas fa-info-circle"></i> يرجى تحديد نوع المعوقات  
+                                                </div>
                                             </div>
                                         </div>
 
@@ -289,6 +292,38 @@ function copyCoordinates(coordinates) {
     });
 }
 
+function toggleObstaclesNotes() {
+    const obstaclesNotesContainer = document.getElementById('obstacles_notes_container');
+    const obstaclesNotesField = document.getElementById('obstacles_notes');
+    
+    if (document.querySelector('input[name="has_obstacles"]:checked')?.value === '1') {
+        obstaclesNotesContainer.style.display = 'block';
+        obstaclesNotesField.required = true;
+    } else {
+        obstaclesNotesContainer.style.display = 'none';
+        obstaclesNotesField.required = false;
+        obstaclesNotesField.value = ''; // مسح المحتوى عند اختيار "لا"
+    }
+}
+
+// تشغيل الوظيفة عند تحميل الصفحة
+document.addEventListener('DOMContentLoaded', function() {
+    toggleObstaclesNotes();
+    
+    // إضافة event listener لحقل الملاحظات لإزالة رسالة الخطأ عند الكتابة
+    const obstaclesNotesField = document.getElementById('obstacles_notes');
+    obstaclesNotesField.addEventListener('input', function() {
+        this.classList.remove('is-invalid');
+        // إزالة أي رسائل خطأ موجودة
+        const errorAlerts = document.querySelectorAll('.modal-body .alert-danger');
+        errorAlerts.forEach(alert => {
+            if (alert.textContent.includes('ملاحظات المعوقات')) {
+                alert.remove();
+            }
+        });
+    });
+});
+
 // Function to reset survey form
 function resetSurveyForm() {
     // Reset form fields
@@ -299,6 +334,8 @@ function resetSurveyForm() {
     document.getElementById('existingImages').style.display = 'none';
     // Update modal title
     document.getElementById('createSurveyModalLabel').textContent = 'إنشاء مسح جديد';
+    // إخفاء حقل الملاحظات عند إعادة تعيين النموذج
+    document.getElementById('obstacles_notes_container').style.display = 'none';
 }
 
 function editSurvey(surveyId) {
@@ -335,6 +372,9 @@ function editSurvey(surveyId) {
             document.getElementById('end_coordinates').value = data.survey.end_coordinates;
             document.querySelector(`input[name="has_obstacles"][value="${data.survey.has_obstacles ? 1 : 0}"]`).checked = true;
             document.getElementById('obstacles_notes').value = data.survey.obstacles_notes || '';
+            
+            // تحديث عرض حقل الملاحظات بناءً على حالة المعوقات
+            toggleObstaclesNotes();
             
             // Show existing images
             const existingImages = document.getElementById('existingImages');
@@ -392,6 +432,39 @@ function editSurvey(surveyId) {
 // Handle form submission
 document.getElementById('surveyForm').addEventListener('submit', function(e) {
     e.preventDefault();
+    
+    // التحقق من صحة البيانات
+    const hasObstacles = document.querySelector('input[name="has_obstacles"]:checked');
+    const obstaclesNotes = document.getElementById('obstacles_notes');
+    
+    if (hasObstacles && hasObstacles.value === '1' && !obstaclesNotes.value.trim()) {
+        // إظهار رسالة خطأ
+        const errorAlert = document.createElement('div');
+        errorAlert.className = 'alert alert-danger alert-dismissible fade show';
+        errorAlert.innerHTML = `
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            يرجى إدخال ملاحظات المعوقات عند اختيار "نعم"
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        `;
+        
+        // إدراج رسالة الخطأ في أعلى النموذج
+        const modalBody = this.querySelector('.modal-body');
+        modalBody.insertBefore(errorAlert, modalBody.firstChild);
+        
+        // التركيز على حقل الملاحظات
+        obstaclesNotes.focus();
+        obstaclesNotes.classList.add('is-invalid');
+        
+        // إزالة رسالة الخطأ بعد 5 ثواني
+        setTimeout(() => {
+            if (errorAlert.parentNode) {
+                errorAlert.remove();
+            }
+            obstaclesNotes.classList.remove('is-invalid');
+        }, 5000);
+        
+        return;
+    }
     
     const formData = new FormData(this);
     const surveyId = document.getElementById('survey_id').value;
