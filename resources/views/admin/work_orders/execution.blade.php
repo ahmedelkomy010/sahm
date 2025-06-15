@@ -7,7 +7,10 @@
             <div class="card shadow-lg border-0">
                 <div class="card-header bg-primary text-white py-3">
                     <div class="d-flex justify-content-between align-items-center">
-                        <h3 class="mb-0 fs-4">صفحة التنفيذ</h3>
+                        <div>
+                            <h3 class="mb-0 fs-4">صفحة التنفيذ</h3>
+                            <small class="text-white-50">أمر العمل رقم: {{ $workOrder->work_order_number ?? $workOrder->order_number }}</small>
+                        </div>
                         <div class="d-flex align-items-center gap-3">
                             @php
                                 $createdDate = $workOrder->created_at;
@@ -52,6 +55,135 @@
                 </div>
 
                 <div class="card-body p-4">
+                    <!-- قسم معلومات أمر العمل -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card border-0 bg-light">
+                                <div class="card-body p-3">
+                                    <h5 class="card-title text-primary mb-3">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        معلومات أمر العمل
+                                    </h5>
+                                    <div class="row g-3">
+                                        <div class="col-md-3">
+                                            <div class="d-flex align-items-center">
+                                                <i class="fas fa-hashtag text-primary me-2"></i>
+                                                <div>
+                                                    <small class="text-muted d-block">رقم الطلب</small>
+                                                    <strong class="text-dark">{{ $workOrder->work_order_number ?? $workOrder->order_number ?? 'غير محدد' }}</strong>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="d-flex align-items-center">
+                                                <i class="fas fa-cogs text-success me-2"></i>
+                                                <div>
+                                                    <small class="text-muted d-block">نوع العمل</small>
+                                                    <strong class="text-dark">{{ $workOrder->work_type ?? $workOrder->type ?? 'غير محدد' }}</strong>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="d-flex align-items-center">
+                                                <i class="fas fa-user text-info me-2"></i>
+                                                <div>
+                                                    <small class="text-muted d-block">اسم المشترك</small>
+                                                    <strong class="text-dark">{{ $workOrder->subscriber_name ?? $workOrder->customer_name ?? 'غير محدد' }}</strong>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="d-flex align-items-center">
+                                                <i class="fas fa-tasks text-warning me-2"></i>
+                                                                                <div>
+                                    <small class="text-muted d-block">حالة التنفيذ</small>
+                                    @php
+                                        $executionStatusValue = $workOrder->execution_status ?? $workOrder->status ?? 'غير محدد';
+                                        
+                                        // تحويل الرقم إلى النص العربي المقابل
+                                        switch($executionStatusValue) {
+                                            case 2:
+                                            case '2':
+                                                $executionStatusText = 'تم تسليم 155 ولم تصدر شهادة انجاز';
+                                                $statusColor = 'info';
+                                                break;
+                                            case 1:
+                                            case '1':
+                                                $executionStatusText = 'جاري العمل ...';
+                                                $statusColor = 'warning';
+                                                break;
+                                            case 3:
+                                            case '3':
+                                                $executionStatusText = 'صدرت شهادة ولم تعتمد';
+                                                $statusColor = 'info';
+                                                break;
+                                            case 4:
+                                            case '4':
+                                                $executionStatusText = 'تم اعتماد شهادة الانجاز';
+                                                $statusColor = 'success';
+                                                break;
+                                            case 5:
+                                            case '5':
+                                                $executionStatusText = 'مؤكد ولم تدخل مستخلص';
+                                                $statusColor = 'primary';
+                                                break;
+                                            case 6:
+                                            case '6':
+                                                $executionStatusText = 'دخلت مستخلص ولم تصرف';
+                                                $statusColor = 'info';
+                                                break;
+                                            case 7:
+                                            case '7':
+                                                $executionStatusText = 'منتهي تم الصرف';
+                                                $statusColor = 'success';
+                                                break;
+                                            default:
+                                                $executionStatusText = $executionStatusValue;
+                                                $statusColor = 'secondary';
+                                        }
+                                    @endphp
+                                    <span class="badge bg-{{ $statusColor }} px-3 py-2 fs-6">
+                                        <i class="fas fa-circle me-1" style="font-size: 0.6em;"></i>
+                                        {{ $executionStatusText }}
+                                    </span>
+                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- معلومات إضافية -->
+                                    @if($workOrder->location || $workOrder->address || $workOrder->description)
+                                    <hr class="my-3">
+                                    <div class="row g-3">
+                                        @if($workOrder->location || $workOrder->address)
+                                        <div class="col-md-6">
+                                            <div class="d-flex align-items-center">
+                                                <i class="fas fa-map-marker-alt text-danger me-2"></i>
+                                                <div>
+                                                    <small class="text-muted d-block">الموقع</small>
+                                                    <strong class="text-dark">{{ $workOrder->location ?? $workOrder->address ?? 'غير محدد' }}</strong>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        @endif
+                                        @if($workOrder->description)
+                                        <div class="col-md-6">
+                                            <div class="d-flex align-items-start">
+                                                <i class="fas fa-file-alt text-secondary me-2 mt-1"></i>
+                                                <div>
+                                                    <small class="text-muted d-block">الوصف</small>
+                                                    <strong class="text-dark">{{ Str::limit($workOrder->description, 50) }}</strong>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        @endif
+                                    </div>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="row g-4">
                         <!-- قسم الأعمال المدنية -->
                         <div class="col-md-4">
@@ -61,7 +193,8 @@
                                         <i class="fas fa-hard-hat fa-3x text-primary"></i>
                                     </div>
                                     <h4 class="card-title mb-3">الأعمال المدنية</h4>
-                                    <p class="card-text text-muted mb-4">إدارة وتوثيق الأعمال المدنية للمشروع</p>
+                                    <p class="card-text text-muted mb-2">إدارة وتوثيق الأعمال المدنية للمشروع</p>
+                                    <small class="text-muted d-block mb-3">أمر العمل: {{ $workOrder->work_order_number ?? $workOrder->order_number }}</small>
                                     <a href="{{ route('admin.work-orders.civil-works', $workOrder) }}" class="btn btn-primary w-100">
                                         <i class="fas fa-arrow-left ml-1"></i>
                                         الانتقال إلى الأعمال المدنية
@@ -78,7 +211,8 @@
                                         <i class="fas fa-tools fa-3x text-primary"></i>
                                     </div>
                                     <h4 class="card-title mb-3">التركيبات</h4>
-                                    <p class="card-text text-muted mb-4">إدارة وتوثيق أعمال التركيبات للمشروع</p>
+                                    <p class="card-text text-muted mb-2">إدارة وتوثيق أعمال التركيبات للمشروع</p>
+                                    <small class="text-muted d-block mb-3">أمر العمل: {{ $workOrder->work_order_number ?? $workOrder->order_number }}</small>
                                     <a href="{{ route('admin.work-orders.installations', $workOrder) }}" class="btn btn-primary w-100">
                                         <i class="fas fa-arrow-left ml-1"></i>
                                         الانتقال إلى التركيبات
@@ -95,7 +229,8 @@
                                         <i class="fas fa-bolt fa-3x text-primary"></i>
                                     </div>
                                     <h4 class="card-title mb-3">أعمال الكهرباء</h4>
-                                    <p class="card-text text-muted mb-4">إدارة وتوثيق أعمال الكهرباء للمشروع</p>
+                                    <p class="card-text text-muted mb-2">إدارة وتوثيق أعمال الكهرباء للمشروع</p>
+                                    <small class="text-muted d-block mb-3">أمر العمل: {{ $workOrder->work_order_number ?? $workOrder->order_number }}</small>
                                     <a href="{{ route('admin.work-orders.electrical-works', $workOrder) }}" class="btn btn-primary w-100">
                                         <i class="fas fa-arrow-left ml-1"></i>
                                         الانتقال إلى أعمال الكهرباء

@@ -30,15 +30,6 @@
                                         </div>
                                         <div class="col-md-3">
                                             <div class="d-flex align-items-center">
-                                                <i class="fas fa-user text-info me-2"></i>
-                                                <div>
-                                                    <small class="text-muted d-block">اسم المشترك</small>
-                                                    <strong>{{ $workOrder->subscriber_name }}</strong>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <div class="d-flex align-items-center">
                                                 <i class="fas fa-tools text-warning me-2"></i>
                                                 <div>
                                                     <small class="text-muted d-block">نوع العمل</small>
@@ -46,6 +37,16 @@
                                                 </div>
                                             </div>
                                         </div>
+                                        <div class="col-md-3">
+                                            <div class="d-flex align-items-center">
+                                                <i class="fas fa-user text-info me-2"></i>
+                                                <div>
+                                                    <small class="text-muted d-block">اسم المشترك</small>
+                                                    <strong>{{ $workOrder->subscriber_name }}</strong>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
                                         <div class="col-md-3">
                                             <div class="d-flex align-items-center">
                                                 <i class="fas fa-map-marked-alt text-success me-2"></i>

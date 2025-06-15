@@ -27,15 +27,6 @@
                         </div>
                         <div class="col-md-3 col-sm-6 mb-2">
                             <div class="d-flex align-items-center">
-                                <i class="fas fa-user text-info me-2 fs-5"></i>
-                                <div>
-                                    <small class="text-muted d-block">اسم المشترك</small>
-                                    <strong class="fs-6">{{ $workOrder->subscriber_name }}</strong>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-3 col-sm-6 mb-2">
-                            <div class="d-flex align-items-center">
                                 <i class="fas fa-tools text-warning me-2 fs-5"></i>
                                 <div>
                                     <small class="text-muted d-block">نوع العمل</small>
@@ -43,6 +34,16 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="col-md-3 col-sm-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-user text-info me-2 fs-5"></i>
+                                <div>
+                                    <small class="text-muted d-block">اسم المشترك</small>
+                                    <strong class="fs-6">{{ $workOrder->subscriber_name }}</strong>
+                                </div>
+                            </div>
+                        </div>
+                        
                         <div class="col-md-3 col-sm-6 mb-2">
                             <div class="d-flex align-items-center">
                                 <i class="fas fa-flag-checkered text-success me-2 fs-5"></i>

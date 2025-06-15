@@ -43,6 +43,9 @@
                             <strong>رقم أمر العمل:</strong> {{ $workOrder->order_number }}
                         </div>
                         <div class="col-md-3">
+                            <strong>نوع العمل:</strong> {{ $workOrder->work_type }}
+                        </div>
+                        <div class="col-md-3">
                             <strong>اسم المشترك:</strong> {{ $workOrder->subscriber_name }}
                         </div>
                         <div class="col-md-3">
@@ -373,6 +376,241 @@
                             </a>
                         </div>
                     @endif
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- قسم الملفات المرفقة -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white py-3">
+                    <h6 class="m-0 font-weight-bold">
+                        <i class="fas fa-paperclip me-2"></i>
+                        الملفات المرفقة للمواد
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <!-- فورم رفع الملفات -->
+                    <form id="uploadMaterialFilesForm" action="{{ route('admin.work-orders.materials.upload-files', $workOrder) }}" method="POST" enctype="multipart/form-data">
+                        @csrf
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="text-primary mb-3">
+                                    <i class="fas fa-upload me-2"></i>
+                                    رفع ملفات جديدة
+                                </h5>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="check_in_file" class="form-label">
+                                    <i class="fas fa-list-check me-2 text-primary"></i>
+                                    CHECK LIST
+                                </label>
+                                <input type="file" class="form-control @error('check_in_file') is-invalid @enderror" 
+                                       id="check_in_file" name="check_in_file" 
+                                       accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                                @error('check_in_file')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                                <small class="text-muted">PDF, JPG, PNG, DOC (حد أقصى 10MB)</small>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="gate_pass_file" class="form-label">
+                                    <i class="fas fa-id-card me-2 text-success"></i>
+                                    GATE PASS
+                                </label>
+                                <input type="file" class="form-control @error('gate_pass_file') is-invalid @enderror" 
+                                       id="gate_pass_file" name="gate_pass_file" 
+                                       accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                                @error('gate_pass_file')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                                <small class="text-muted">PDF, JPG, PNG, DOC (حد أقصى 10MB)</small>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="stock_in_file" class="form-label">
+                                    <i class="fas fa-sign-in-alt me-2 text-info"></i>
+                                    STORE IN
+                                </label>
+                                <input type="file" class="form-control @error('stock_in_file') is-invalid @enderror" 
+                                       id="stock_in_file" name="stock_in_file" 
+                                       accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                                @error('stock_in_file')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                                <small class="text-muted">PDF, JPG, PNG, DOC (حد أقصى 10MB)</small>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="stock_out_file" class="form-label">
+                                    <i class="fas fa-sign-out-alt me-2 text-warning"></i>
+                                    STORE OUT
+                                </label>
+                                <input type="file" class="form-control @error('stock_out_file') is-invalid @enderror" 
+                                       id="stock_out_file" name="stock_out_file" 
+                                       accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                                @error('stock_out_file')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                                <small class="text-muted">PDF, JPG, PNG, DOC (حد أقصى 10MB)</small>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="ddo_file" class="form-label">
+                                    <i class="fas fa-file-alt me-2 text-primary"></i>
+                                    DDO FILE
+                                </label>
+                                <input type="file" class="form-control @error('ddo_file') is-invalid @enderror" 
+                                       id="ddo_file" name="ddo_file" 
+                                       accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                                @error('ddo_file')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                                <small class="text-muted">PDF, JPG, PNG, DOC (حد أقصى 10MB)</small>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="check_out_file" class="form-label">
+                                    <i class="fas fa-check-circle me-2 text-success"></i>
+                                    CHECK OUT FILE
+                                </label>
+                                <input type="file" class="form-control @error('check_out_file') is-invalid @enderror" 
+                                       id="check_out_file" name="check_out_file" 
+                                       accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                                @error('check_out_file')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                                <small class="text-muted">PDF, JPG, PNG, DOC (حد أقصى 10MB)</small>
+                            </div>
+                        </div>
+
+                        <!-- أزرار الحفظ -->
+                        <div class="row">
+                            <div class="col-12">
+                                <hr>
+                                <div class="text-center">
+                                    <button type="submit" class="btn btn-primary btn-lg" id="uploadFilesBtn">
+                                        <i class="fas fa-upload me-2"></i>
+                                        رفع الملفات
+                                    </button>
+
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+
+                    <!-- عرض الملفات المرفوعة -->
+                    <div class="row mt-5">
+                        <div class="col-12">
+                            <h5 class="text-primary mb-3">
+                                <i class="fas fa-folder-open me-2"></i>
+                                الملفات المرفوعة
+                            </h5>
+                                                         <div id="uploadedFilesContainer">
+                                @php
+                                    $fileTypes = [
+                                        'check_in_file' => ['label' => 'CHECK LIST', 'icon' => 'fas fa-list-check', 'color' => 'text-primary'],
+                                        'gate_pass_file' => ['label' => 'GATE PASS', 'icon' => 'fas fa-id-card', 'color' => 'text-success'],
+                                        'stock_in_file' => ['label' => 'STORE IN', 'icon' => 'fas fa-sign-in-alt', 'color' => 'text-info'],
+                                        'stock_out_file' => ['label' => 'STORE OUT', 'icon' => 'fas fa-sign-out-alt', 'color' => 'text-warning'],
+                                        'ddo_file' => ['label' => 'DDO FILE', 'icon' => 'fas fa-file-alt', 'color' => 'text-primary'],
+                                        'check_out_file' => ['label' => 'CHECK OUT FILE', 'icon' => 'fas fa-check-circle', 'color' => 'text-success']
+                                    ];
+                                    
+                                    // جمع جميع الملفات من جميع المواد
+                                    $allFiles = [];
+                                    foreach($materials as $material) {
+                                        foreach($fileTypes as $field => $info) {
+                                            if($material->$field) {
+                                                $allFiles[] = [
+                                                    'material_id' => $material->id,
+                                                    'material_code' => $material->code,
+                                                    'file_type' => $field,
+                                                    'file_path' => $material->$field,
+                                                    'file_name' => basename($material->$field),
+                                                    'file_info' => $info,
+                                                    'created_at' => $material->created_at
+                                                ];
+                                            }
+                                        }
+                                    }
+                                @endphp
+                                
+                                <div class="table-responsive">
+                                    <table class="table table-hover" id="attachmentsTable">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>نوع الملف</th>
+                                                <th>تاريخ الرفع</th>
+                                                <th>الإجراءات</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @if(count($allFiles) > 0)
+                                                @foreach($allFiles as $file)
+                                                    <tr>
+                                                        <td>
+                                                            <div class="d-flex flex-column">
+                                                                <div class="d-flex align-items-center mb-1">
+                                                                    <i class="{{ $file['file_info']['icon'] }} {{ $file['file_info']['color'] }} me-2"></i>
+                                                                    <span class="fw-bold">{{ $file['file_info']['label'] }}</span>
+                                                                </div>
+                                                                <div class="ms-3">
+                                                                    <a href="{{ Storage::url($file['file_path']) }}" target="_blank" class="text-decoration-none text-muted small">
+                                                                        <i class="fas fa-file me-1"></i>
+                                                                        {{ $file['file_name'] }}
+                                                                    </a>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                        <td>
+                                                            <small class="text-muted">{{ $file['created_at']->format('Y-m-d H:i') }}</small>
+                                                        </td>
+                                                        <td>
+                                                            <div class="btn-group" role="group">
+                                                                <a href="{{ Storage::url($file['file_path']) }}" 
+                                                                   target="_blank" 
+                                                                   class="btn btn-sm btn-outline-primary"
+                                                                   data-bs-toggle="tooltip" 
+                                                                   title="عرض الملف">
+                                                                    <i class="fas fa-eye"></i>
+                                                                </a>
+                                                                <button type="button" 
+                                                                        class="btn btn-sm btn-outline-danger"
+                                                                        onclick="deleteMaterialFile({{ $file['material_id'] }}, '{{ $file['file_type'] }}')"
+                                                                        data-bs-toggle="tooltip" 
+                                                                        title="حذف الملف">
+                                                                    <i class="fas fa-trash"></i>
+                                                                </button>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                @endforeach
+                                            @else
+                                                <tr>
+                                                    <td colspan="3" class="text-center py-4">
+                                                        <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
+                                                        <h6 class="text-muted">لا توجد ملفات مرفوعة حتى الآن</h6>
+                                                        <p class="text-muted small">استخدم النموذج أعلاه لرفع الملفات</p>
+                                                    </td>
+                                                </tr>
+                                            @endif
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1019,6 +1257,171 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 });
+
+
+
+// دالة حذف ملف مادة
+function deleteMaterialFile(materialId, fileType) {
+    Swal.fire({
+        title: 'تأكيد الحذف',
+        text: 'هل أنت متأكد من حذف هذا الملف؟',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'نعم، احذف',
+        cancelButtonText: 'إلغاء',
+        reverseButtons: true
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // العثور على الصف وحذفه من الجدول
+            const button = event.target.closest('button');
+            const row = button.closest('tr');
+            
+            // إنشاء فورم مخفي لحذف الملف
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `/admin/work-orders/{{ $workOrder->id }}/materials/${materialId}/delete-file`;
+            
+            // إضافة CSRF token
+            const csrfToken = document.createElement('input');
+            csrfToken.type = 'hidden';
+            csrfToken.name = '_token';
+            csrfToken.value = '{{ csrf_token() }}';
+            form.appendChild(csrfToken);
+            
+            // إضافة method DELETE
+            const methodInput = document.createElement('input');
+            methodInput.type = 'hidden';
+            methodInput.name = '_method';
+            methodInput.value = 'DELETE';
+            form.appendChild(methodInput);
+            
+            // إضافة نوع الملف
+            const fileTypeInput = document.createElement('input');
+            fileTypeInput.type = 'hidden';
+            fileTypeInput.name = 'file_type';
+            fileTypeInput.value = fileType;
+            form.appendChild(fileTypeInput);
+            
+            // حذف الصف من الجدول فوراً
+            if (row) {
+                row.remove();
+                toastr.success('تم حذف الملف بنجاح');
+            }
+            
+            // إضافة الفورم للصفحة وإرساله
+            document.body.appendChild(form);
+            form.submit();
+        }
+    });
+}
+
+// تحسين فورم رفع الملفات
+document.getElementById('uploadMaterialFilesForm').addEventListener('submit', function(e) {
+    const fileInputs = this.querySelectorAll('input[type="file"]');
+    let hasFiles = false;
+    
+    fileInputs.forEach(input => {
+        if (input.files.length > 0) {
+            hasFiles = true;
+        }
+    });
+    
+    if (!hasFiles) {
+        e.preventDefault();
+        toastr.warning('يرجى اختيار ملف واحد على الأقل للرفع');
+        return false;
+    }
+    
+    // تعطيل زر الإرسال لمنع الإرسال المتكرر
+    const submitBtn = document.getElementById('uploadFilesBtn');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>جاري الرفع...';
+});
+
+// دالة إضافة ملف إلى الجدول
+function addFileToTable(fileData) {
+    const tableBody = document.querySelector('#attachmentsTable tbody');
+    const row = document.createElement('tr');
+    
+    const now = new Date();
+    const dateString = now.getFullYear() + '-' + 
+                      String(now.getMonth() + 1).padStart(2, '0') + '-' + 
+                      String(now.getDate()).padStart(2, '0') + ' ' +
+                      String(now.getHours()).padStart(2, '0') + ':' + 
+                      String(now.getMinutes()).padStart(2, '0');
+    
+    row.innerHTML = `
+        <td>
+            <div class="d-flex flex-column">
+                <div class="d-flex align-items-center mb-1">
+                    <i class="${fileData.icon} ${fileData.color} me-2"></i>
+                    <span class="fw-bold">${fileData.label}</span>
+                </div>
+                <div class="ms-3">
+                    <a href="/storage/${fileData.file_path}" target="_blank" class="text-decoration-none text-muted small">
+                        <i class="fas fa-file me-1"></i>
+                        ${fileData.file_name}
+                    </a>
+                </div>
+            </div>
+        </td>
+        <td>
+            <small class="text-muted">${dateString}</small>
+        </td>
+        <td>
+            <div class="btn-group" role="group">
+                <a href="/storage/${fileData.file_path}" 
+                   target="_blank" 
+                   class="btn btn-sm btn-outline-primary"
+                   data-bs-toggle="tooltip" 
+                   title="عرض الملف">
+                    <i class="fas fa-eye"></i>
+                </a>
+                <button type="button" 
+                        class="btn btn-sm btn-outline-danger"
+                        onclick="deleteMaterialFile(${fileData.material_id}, '${fileData.file_type}')"
+                        data-bs-toggle="tooltip" 
+                        title="حذف الملف">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        </td>
+    `;
+    
+    tableBody.appendChild(row);
+}
+
+// التحقق من وجود ملفات مرفوعة جديدة وإضافتها للجدول
+@if(session('uploaded_files'))
+    document.addEventListener('DOMContentLoaded', function() {
+        const uploadedFiles = @json(session('uploaded_files'));
+        uploadedFiles.forEach(file => {
+            addFileToTable({
+                material_id: file.material_id,
+                file_type: file.file_type,
+                file_path: file.file_path,
+                file_name: file.file_name,
+                icon: file.file_info.icon,
+                color: file.file_info.color,
+                label: file.file_info.label
+            });
+        });
+        
+        // مسح حقول الملفات بعد الرفع الناجح
+        document.querySelectorAll('#uploadMaterialFilesForm input[type="file"]').forEach(input => {
+            input.value = '';
+        });
+        
+        // إعادة تمكين زر الرفع
+        const submitBtn = document.getElementById('uploadFilesBtn');
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-upload me-2"></i>رفع الملفات';
+        }
+    });
+@endif
 </script>
 
 <!-- إضافة SweetAlert2 للتأكيدات المحسنة -->
