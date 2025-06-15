@@ -13,7 +13,7 @@
                         <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
                             <h3 class="mb-0 fs-4 text-center text-md-start">
                                 <i class="fas fa-plus-circle me-2"></i>
-                                إنشاء رخصة جديدة - أمر العمل {{ $workOrder->order_number }}
+                                  إدارة الجودة والرخص - أمر العمل {{ $workOrder->order_number }}
                             </h3>
                             <div class="d-flex flex-wrap justify-content-center gap-2">
                                 <a href="{{ route('admin.work-orders.show', $workOrder) }}" class="btn btn-back btn-sm">
@@ -42,11 +42,7 @@
                                             <label class="form-label">مرفق شهادة التنسيق</label>
                                             <input type="file" class="form-control" name="coordination_certificate_path" accept=".pdf,.jpg,.jpeg,.png">
                                             @if(isset($license) && $license->coordination_certificate_path)
-                                                <div class="mt-2">
-                                                    <a href="#" class="btn btn-sm btn-outline-info">
-                                                        <i class="fas fa-eye"></i> عرض الشهادة الحالية
-                                                    </a>
-                                                </div>
+                                               
                                             @endif
                                         </div>
                                         <div class="col-md-6">

@@ -382,7 +382,7 @@
                                                 <td>{{ $workOrder->procedure_155_delivery_date ? $workOrder->procedure_155_delivery_date->format('Y-m-d') : 'غير متوفر' }}</td>
                                             </tr>
                                             <tr>
-                                                <th>مرفق اختبارات ما قبل التشغيل 211</th>
+                                                <th> اختبارات ما قبل التشغيل 211</th>
                                                 <td>
                                                     @php
                                                         $preOperationTestsFile = $workOrder->files()

@@ -24,7 +24,9 @@
                         </a>
                         @endif
                     </div>
-                    <a href="{{ route('admin.work-orders.create') }}" class="btn btn-light btn-sm">إنشاء أمر عمل جديد</a>
+                    <a href="{{ route('project.selection') }}" class="btn btn-outline-light btn-sm">
+                        <i class="fas fa-arrow-left me-1"></i> عودة لاختيار المشروع
+                    </a>
                 </div>
 
                 <div class="card-body">
@@ -46,7 +48,8 @@
                                 <tr>
                                     <th>#</th>
                                     <th>رقم الطلب</th>
-                                    <th>نوع العمل</th>
+                                    <th>رقم نوع العمل</th>
+                                    <th>وصف العمل</th>
                                     <th>اسم المشترك</th>
                                     <th>الحي</th>
                                     <th>المكتب</th>
@@ -54,8 +57,7 @@
                                     <th>رقم المحطة</th>
                                     <th>تاريخ الاعتماد</th>
                                     <th>حالة التنفيذ</th>
-                                    <th>قيمة أمر العمل</th>
-                                    <th>المرفقات</th>
+                                    <th>قيمة أمر العمل المبدئية غير شامل الاستشاري</th>
                                     <th>الإجراءات</th>
                                 </tr>
                             </thead>
@@ -64,6 +66,7 @@
                                     <tr>
                                         <td>{{ $workOrder->id }}</td>
                                         <td>{{ $workOrder->order_number }}</td>
+                                        <td>{{ $workOrder->work_type }}</td>
                                         <td>
                                             @switch($workOrder->work_type)
                                                 @case('409')
@@ -186,10 +189,7 @@
                                                     <span class="badge bg-secondary">{{ $workOrder->execution_status }}</span>
                                             @endswitch
                                         </td>
-                                        <td>{{ number_format($workOrder->order_value_with_consultant, 2) }} ₪</td>
-                                        <td>
-                                            <span class="badge bg-secondary">{{ $workOrder->files->count() }}</span>
-                                        </td>
+                                        <td>{{ number_format($workOrder->order_value_without_consultant ?? 0, 2) }} ₪</td>
                                         <td>
                                             <div class="btn-group" role="group">
                                                 <a href="{{ route('admin.work-orders.show', $workOrder) }}" class="btn btn-sm btn-info">عرض</a>
