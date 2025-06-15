@@ -2,6 +2,10 @@
 
 @section('title', 'مواد أمر العمل رقم ' . $workOrder->order_number)
 
+@push('head')
+<meta name="work-order-id" content="{{ $workOrder->id }}">
+@endpush
+
 @section('content')
 <div class="container-fluid">
     <!-- Header -->
@@ -48,9 +52,7 @@
                         <div class="col-md-3">
                             <strong>اسم المشترك:</strong> {{ $workOrder->subscriber_name }}
                         </div>
-                        <div class="col-md-3">
-                            <strong>نوع العمل:</strong> {{ $workOrder->work_type }}
-                        </div>
+                        
                         <div class="col-md-3">
                             <strong>عدد المواد:</strong> {{ $materials->total() }}
                         </div>
@@ -102,18 +104,28 @@
         </div>
     </div>
 
-    <!-- Materials Table -->
-    <div class="row">
+    <!-- قسم قائمة المواد -->
+    <div class="row mb-5">
         <div class="col-12">
             <div class="card shadow">
-                <div class="card-header py-3 d-flex justify-content-between align-items-center">
-                    <h6 class="m-0 font-weight-bold text-primary">قائمة المواد</h6>
-                    @if(request()->hasAny(['search_code', 'search_description', 'unit_filter']))
-                        <span class="badge badge-info">
-                            <i class="fas fa-filter"></i> 
-                            نتائج البحث: {{ $materials->total() }} مادة
-                        </span>
-                    @endif
+                <div class="card-header py-3 d-flex justify-content-between align-items-center bg-primary text-white">
+                    <h5 class="m-0 font-weight-bold">
+                        <i class="fas fa-boxes me-2"></i>
+                        قائمة المواد
+                        <span class="badge bg-light text-primary ms-2">{{ $materials->total() }} مادة</span>
+                    </h5>
+                    <div class="d-flex align-items-center gap-2">
+                        @if(request()->hasAny(['search_code', 'search_description', 'unit_filter']))
+                            <span class="badge bg-warning text-dark">
+                                <i class="fas fa-filter"></i> 
+                                نتائج البحث: {{ $materials->total() }} من أصل {{ $materials->total() }}
+                            </span>
+                        @endif
+                        <small class="text-light">
+                            <i class="fas fa-info-circle me-1"></i>
+                            نظام إدارة الملفات المستقل متاح في القسم السفلي
+                        </small>
+                    </div>
                 </div>
                 <div class="card-body">
                     @if($materials->count() > 0)
@@ -121,7 +133,10 @@
                             <table class="table table-bordered table-hover align-middle" id="materialsTable">
                                 <thead>
                                     <tr class="bg-light">
-                                        <th class="text-center" style="width: 50px">#</th>
+                                        <th class="text-center" style="width: 50px">
+                                            <i class="fas fa-hashtag text-muted me-1"></i>
+                                            السطر
+                                        </th>
                                         <th style="width: 120px">
                                             <i class="fas fa-barcode text-secondary me-1"></i>
                                             الكود
@@ -129,6 +144,10 @@
                                         <th>
                                             <i class="fas fa-align-left text-primary me-1"></i>
                                             الوصف
+                                        </th>
+                                        <th style="width: 80px">
+                                            <i class="fas fa-ruler text-secondary me-1"></i>
+                                            الوحدة
                                         </th>
                                         <th style="width: 110px">
                                             <i class="fas fa-chart-line text-info me-1"></i>
@@ -150,15 +169,7 @@
                                             <i class="fas fa-calculator text-primary me-1"></i>
                                             الفرق (منفذة - مصروفة)
                                         </th>
-                                        <th style="width: 80px">
-                                            <i class="fas fa-ruler text-secondary me-1"></i>
-                                            الوحدة
-                                        </th>
-                                        <th style="width: 80px">
-                                            <i class="fas fa-hashtag text-muted me-1"></i>
-                                            السطر
-                                        </th>
-                                        <th style="width: 160px" class="text-center">
+                                        <th style="width: 120px" class="text-center">
                                             <i class="fas fa-cogs text-secondary me-1"></i>
                                             الإجراءات
                                         </th>
@@ -167,7 +178,9 @@
                                 <tbody>
                                     @foreach($materials as $index => $material)
                                         <tr class="align-middle">
-                                            <td class="text-center fw-bold">{{ $materials->firstItem() + $index }}</td>
+                                            <td class="text-center">
+                                                <span class="badge bg-light text-dark border">{{ $material->line ?: '-' }}</span>
+                                            </td>
                                             <td>
                                                 <div class="d-flex align-items-center">
                                                     <span class="badge bg-light text-dark border">{{ $material->code }}</span>
@@ -177,6 +190,9 @@
                                                 <div class="text-wrap" style="max-width: 300px;">
                                                     {{ $material->description }}
                                                 </div>
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge bg-light text-dark border">{{ $material->unit }}</span>
                                             </td>
                                             <td class="text-center">
                                                 <div class="quantity-badge planned">
@@ -222,12 +238,6 @@
                                                 </div>
                                             </td>
                                             <td class="text-center">
-                                                <span class="badge bg-light text-dark border">{{ $material->unit }}</span>
-                                            </td>
-                                            <td class="text-center">
-                                                <span class="badge bg-light text-dark border">{{ $material->line ?: '-' }}</span>
-                                            </td>
-                                            <td class="text-center">
                                                 <div class="action-buttons">
                                                     <!-- View/Edit/Delete Group -->
                                                     <div class="btn-group">
@@ -258,93 +268,6 @@
                                                             <i class="fas fa-trash-alt"></i>
                                                             <span class="btn-text">حذف</span>
                                                         </button>
-                                                    </div>
-                                                    
-                                                    <!-- Attachments Button -->
-                                                    <div class="attachments-wrapper">
-                                                        @if($material->hasAttachments())
-                                                            <div class="dropdown">
-                                                                <button type="button" 
-                                                                        class="btn btn-action btn-attachments" 
-                                                                        data-bs-toggle="dropdown" 
-                                                                        data-bs-auto-close="outside"
-                                                                        aria-expanded="false"
-                                                                        title="المرفقات">
-                                                                    <i class="fas fa-paperclip"></i>
-                                                                    <span class="btn-text">المرفقات</span>
-                                                                    <span class="attachments-count">{{ count($material->getAttachments()) }}</span>
-                                                                </button>
-                                                                <ul class="dropdown-menu dropdown-menu-end shadow-sm py-0" style="min-width: 300px;">
-                                                                    <li class="p-2 bg-light border-bottom">
-                                                                        <h6 class="mb-0">
-                                                                            <i class="fas fa-folder-open text-primary me-1"></i>
-                                                                            المرفقات المتاحة
-                                                                        </h6>
-                                                                    </li>
-                                                                    @foreach($material->getAttachments() as $attachment)
-                                                                        <li>
-                                                                            <a class="dropdown-item py-2 px-3" href="{{ $attachment['url'] }}" target="_blank">
-                                                                                @php
-                                                                                    $extension = strtolower(pathinfo($attachment['file'], PATHINFO_EXTENSION));
-                                                                                    $icon = 'fas fa-file';
-                                                                                    $color = 'text-secondary';
-                                                                                    
-                                                                                    switch($extension) {
-                                                                                        case 'pdf':
-                                                                                            $icon = 'fas fa-file-pdf';
-                                                                                            $color = 'text-danger';
-                                                                                            break;
-                                                                                        case 'doc':
-                                                                                        case 'docx':
-                                                                                            $icon = 'fas fa-file-word';
-                                                                                            $color = 'text-primary';
-                                                                                            break;
-                                                                                        case 'xls':
-                                                                                        case 'xlsx':
-                                                                                            $icon = 'fas fa-file-excel';
-                                                                                            $color = 'text-success';
-                                                                                            break;
-                                                                                        case 'jpg':
-                                                                                        case 'jpeg':
-                                                                                        case 'png':
-                                                                                        case 'gif':
-                                                                                            $icon = 'fas fa-file-image';
-                                                                                            $color = 'text-info';
-                                                                                            break;
-                                                                                    }
-                                                                                @endphp
-                                                                                <div class="d-flex align-items-center">
-                                                                                    <div class="file-icon me-2">
-                                                                                        <i class="{{ $icon }} {{ $color }} fa-lg"></i>
-                                                                                    </div>
-                                                                                    <div class="flex-grow-1">
-                                                                                        <div class="fw-bold text-truncate" style="max-width: 200px;">
-                                                                                            {{ $attachment['name'] }}
-                                                                                        </div>
-                                                                                        <small class="text-muted">انقر للعرض</small>
-                                                                                    </div>
-                                                                                    <div class="ms-2">
-                                                                                        <i class="fas fa-external-link-alt text-muted"></i>
-                                                                                    </div>
-                                                                                </div>
-                                                                            </a>
-                                                                        </li>
-                                                                        @if(!$loop->last)
-                                                                            <li><hr class="dropdown-divider my-0"></li>
-                                                                        @endif
-                                                                    @endforeach
-                                                                </ul>
-                                                            </div>
-                                                        @else
-                                                            <button type="button" 
-                                                                    class="btn btn-action btn-attachments-empty" 
-                                                                    disabled
-                                                                    data-bs-toggle="tooltip"
-                                                                    title="لا توجد مرفقات">
-                                                                <i class="fas fa-paperclip"></i>
-                                                                <span class="btn-text">لا توجد مرفقات</span>
-                                                            </button>
-                                                        @endif
                                                     </div>
                                                     
                                                     <!-- Hidden Delete Form -->
@@ -381,26 +304,40 @@
         </div>
     </div>
 
-    <!-- قسم الملفات المرفقة -->
-    <div class="row mt-4">
+    <!-- فاصل بصري بين الأقسام -->
+    <hr class="section-divider">
+    
+    <!-- قسم إدارة الملفات المرفوعة -->
+    <div class="row">
         <div class="col-12">
-            <div class="card shadow">
-                <div class="card-header bg-primary text-white py-3">
-                    <h6 class="m-0 font-weight-bold">
-                        <i class="fas fa-paperclip me-2"></i>
-                        الملفات المرفقة للمواد
-                    </h6>
+            <div class="card shadow border-0">
+                <div class="card-header bg-success text-white py-3">
+                    <h5 class="m-0 font-weight-bold">
+                        <i class="fas fa-file-upload me-2"></i>
+                        إدارة الملفات المستقلة
+                        <span class="badge bg-light text-success ms-2">{{ isset($independentFiles) ? count($independentFiles) : 0 }} ملف</span>
+                    </h5>
                 </div>
                 <div class="card-body">
                     <!-- فورم رفع الملفات -->
                     <form id="uploadMaterialFilesForm" action="{{ route('admin.work-orders.materials.upload-files', $workOrder) }}" method="POST" enctype="multipart/form-data">
                         @csrf
+                        <!-- قسم رفع الملفات الجديدة -->
                         <div class="row mb-4">
                             <div class="col-12">
-                                <h5 class="text-primary mb-3">
-                                    <i class="fas fa-upload me-2"></i>
-                                    رفع ملفات جديدة
-                                </h5>
+                                <div class="alert alert-info border-0 shadow-sm">
+                                    <div class="d-flex align-items-center">
+                                        <div class="me-3">
+                                            <i class="fas fa-cloud-upload-alt fa-2x text-info"></i>
+                                        </div>
+                                        <div>
+                                            <h5 class="alert-heading text-info mb-2">
+                                                رفع ملفات مستقلة
+                                            </h5>
+                                            <p class="mb-0 small">يمكنك رفع الملفات المطلوبة (مستقلة عن بيانات المواد) من خلال النموذج أدناه</p>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         
@@ -509,55 +446,47 @@
                         </div>
                     </form>
 
-                    <!-- عرض الملفات المرفوعة -->
-                    <div class="row mt-5">
+                    <!-- فاصل بصري -->
+                    <hr class="my-5">
+                    
+                    <!-- قسم عرض الملفات المرفوعة -->
+                    <div class="row">
                         <div class="col-12">
-                            <h5 class="text-primary mb-3">
-                                <i class="fas fa-folder-open me-2"></i>
-                                الملفات المرفوعة
-                            </h5>
+                            <div class="alert alert-success border-0 shadow-sm mb-4">
+                                <div class="d-flex align-items-center">
+                                    <div class="me-3">
+                                        <i class="fas fa-folder-open fa-2x text-success"></i>
+                                    </div>
+                                    <div>
+                                                                                    <h5 class="alert-heading text-success mb-2">
+                                                الملفات المستقلة المرفوعة
+                                            </h5>
+                                            <p class="mb-0 small">جميع الملفات المرفوعة (مستقلة عن المواد) في هذا أمر العمل</p>
+                                    </div>
+                                </div>
+                            </div>
                                                          <div id="uploadedFilesContainer">
-                                @php
-                                    $fileTypes = [
-                                        'check_in_file' => ['label' => 'CHECK LIST', 'icon' => 'fas fa-list-check', 'color' => 'text-primary'],
-                                        'gate_pass_file' => ['label' => 'GATE PASS', 'icon' => 'fas fa-id-card', 'color' => 'text-success'],
-                                        'stock_in_file' => ['label' => 'STORE IN', 'icon' => 'fas fa-sign-in-alt', 'color' => 'text-info'],
-                                        'stock_out_file' => ['label' => 'STORE OUT', 'icon' => 'fas fa-sign-out-alt', 'color' => 'text-warning'],
-                                        'ddo_file' => ['label' => 'DDO FILE', 'icon' => 'fas fa-file-alt', 'color' => 'text-primary'],
-                                        'check_out_file' => ['label' => 'CHECK OUT FILE', 'icon' => 'fas fa-check-circle', 'color' => 'text-success']
-                                    ];
-                                    
-                                    // جمع جميع الملفات من جميع المواد
-                                    $allFiles = [];
-                                    foreach($materials as $material) {
-                                        foreach($fileTypes as $field => $info) {
-                                            if($material->$field) {
-                                                $allFiles[] = [
-                                                    'material_id' => $material->id,
-                                                    'material_code' => $material->code,
-                                                    'file_type' => $field,
-                                                    'file_path' => $material->$field,
-                                                    'file_name' => basename($material->$field),
-                                                    'file_info' => $info,
-                                                    'created_at' => $material->created_at
-                                                ];
-                                            }
-                                        }
-                                    }
-                                @endphp
-                                
-                                <div class="table-responsive">
-                                    <table class="table table-hover" id="attachmentsTable">
-                                        <thead class="table-light">
+                                <div class="table-responsive shadow-sm">
+                                    <table class="table table-hover table-striped mb-0" id="independentFilesTable">
+                                        <thead class="table-dark">
                                             <tr>
-                                                <th>نوع الملف</th>
-                                                <th>تاريخ الرفع</th>
-                                                <th>الإجراءات</th>
+                                                <th class="text-center">
+                                                    <i class="fas fa-file-alt me-2"></i>
+                                                    نوع الملف
+                                                </th>
+                                                <th class="text-center">
+                                                    <i class="fas fa-calendar me-2"></i>
+                                                    تاريخ الرفع
+                                                </th>
+                                                <th class="text-center">
+                                                    <i class="fas fa-cogs me-2"></i>
+                                                    الإجراءات
+                                                </th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            @if(count($allFiles) > 0)
-                                                @foreach($allFiles as $file)
+                                            @if(isset($independentFiles) && count($independentFiles) > 0)
+                                                @foreach($independentFiles as $file)
                                                     <tr>
                                                         <td>
                                                             <div class="d-flex flex-column">
@@ -573,10 +502,10 @@
                                                                 </div>
                                                             </div>
                                                         </td>
-                                                        <td>
+                                                        <td class="text-center">
                                                             <small class="text-muted">{{ $file['created_at']->format('Y-m-d H:i') }}</small>
                                                         </td>
-                                                        <td>
+                                                        <td class="text-center">
                                                             <div class="btn-group" role="group">
                                                                 <a href="{{ Storage::url($file['file_path']) }}" 
                                                                    target="_blank" 
@@ -587,7 +516,7 @@
                                                                 </a>
                                                                 <button type="button" 
                                                                         class="btn btn-sm btn-outline-danger"
-                                                                        onclick="deleteMaterialFile({{ $file['material_id'] }}, '{{ $file['file_type'] }}')"
+                                                                        onclick="deleteIndependentFile({{ $file['material_id'] }}, '{{ $file['file_type'] }}', this)"
                                                                         data-bs-toggle="tooltip" 
                                                                         title="حذف الملف">
                                                                     <i class="fas fa-trash"></i>
@@ -598,10 +527,16 @@
                                                 @endforeach
                                             @else
                                                 <tr>
-                                                    <td colspan="3" class="text-center py-4">
-                                                        <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
-                                                        <h6 class="text-muted">لا توجد ملفات مرفوعة حتى الآن</h6>
-                                                        <p class="text-muted small">استخدم النموذج أعلاه لرفع الملفات</p>
+                                                    <td colspan="3" class="text-center py-5">
+                                                        <div class="empty-state">
+                                                            <i class="fas fa-cloud-upload-alt fa-4x text-muted mb-3"></i>
+                                                            <h5 class="text-muted mb-2">لا توجد ملفات مستقلة مرفوعة</h5>
+                                                            <p class="text-muted small mb-3">لم يتم رفع أي ملفات مستقلة حتى الآن</p>
+                                                            <div class="text-muted small">
+                                                                <i class="fas fa-arrow-up me-1"></i>
+                                                                استخدم النموذج أعلاه لرفع الملفات المطلوبة
+                                                            </div>
+                                                        </div>
                                                     </td>
                                                 </tr>
                                             @endif
@@ -764,7 +699,7 @@
 .btn-group {
     display: flex;
     gap: 0.5rem;
-    margin-inline-end: 0.75rem;
+    justify-content: center;
 }
 
 .btn-group .btn-action {
@@ -793,44 +728,7 @@
     background: linear-gradient(135deg, #ffc107, #fd7e14);
 }
 
-/* تنسيق زر المرفقات */
-.btn-attachments {
-    color: #198754;
-    background: rgba(25, 135, 84, 0.1);
-}
 
-.btn-attachments:hover {
-    color: #fff;
-    background: linear-gradient(135deg, #198754, #146c43);
-}
-
-.btn-attachments-empty {
-    color: #6c757d;
-    background: rgba(108, 117, 125, 0.1);
-    cursor: not-allowed;
-}
-
-.btn-attachments-empty:hover {
-    transform: none;
-    box-shadow: none;
-}
-
-.attachments-count {
-    position: absolute;
-    top: -8px;
-    right: -8px;
-    background: #198754;
-    color: #fff;
-    border-radius: 50%;
-    width: 20px;
-    height: 20px;
-    font-size: 0.75rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 2px solid #fff;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
 
 /* تنسيق زر الحذف */
 .btn-delete {
@@ -863,24 +761,7 @@
     opacity: 0;
 }
 
-/* تحسين قائمة المرفقات */
-.dropdown-menu {
-    border: none;
-    box-shadow: 0 0.5rem 1rem rgba(0,0,0,.15);
-}
 
-.dropdown-item {
-    transition: all 0.2s ease;
-}
-
-.dropdown-item:hover {
-    background-color: #f8f9fa;
-}
-
-.file-icon {
-    width: 24px;
-    text-align: center;
-}
 
 /* تحسين الشاشات الصغيرة */
 @media (max-width: 768px) {
@@ -892,6 +773,7 @@
     .action-buttons {
         flex-wrap: nowrap;
         gap: 0.35rem;
+        justify-content: center;
     }
     
     .btn-action {
@@ -913,19 +795,8 @@
         display: none;
     }
     
-    .attachments-count {
-        width: 18px;
-        height: 18px;
-        font-size: 0.7rem;
-        top: -5px;
-        right: -5px;
-    }
-    
-    .dropdown-menu {
-        min-width: 280px !important;
-        max-width: 95vw;
-        margin-top: 0.5rem;
-    }
+
+
 }
 
 /* تحسينات إضافية للشاشات الصغيرة جداً */
@@ -943,17 +814,8 @@
         font-size: 0.8rem;
     }
     
-    .attachments-count {
-        width: 16px;
-        height: 16px;
-        font-size: 0.65rem;
-        top: -4px;
-        right: -4px;
-    }
-    
-    .dropdown-menu {
-        min-width: 250px !important;
-    }
+
+
 }
 </style>
 @endpush
@@ -1256,169 +1118,41 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
-});
 
-
-
-// دالة حذف ملف مادة
-function deleteMaterialFile(materialId, fileType) {
-    Swal.fire({
-        title: 'تأكيد الحذف',
-        text: 'هل أنت متأكد من حذف هذا الملف؟',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6',
-        confirmButtonText: 'نعم، احذف',
-        cancelButtonText: 'إلغاء',
-        reverseButtons: true
-    }).then((result) => {
-        if (result.isConfirmed) {
-            // العثور على الصف وحذفه من الجدول
-            const button = event.target.closest('button');
-            const row = button.closest('tr');
-            
-            // إنشاء فورم مخفي لحذف الملف
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = `/admin/work-orders/{{ $workOrder->id }}/materials/${materialId}/delete-file`;
-            
-            // إضافة CSRF token
-            const csrfToken = document.createElement('input');
-            csrfToken.type = 'hidden';
-            csrfToken.name = '_token';
-            csrfToken.value = '{{ csrf_token() }}';
-            form.appendChild(csrfToken);
-            
-            // إضافة method DELETE
-            const methodInput = document.createElement('input');
-            methodInput.type = 'hidden';
-            methodInput.name = '_method';
-            methodInput.value = 'DELETE';
-            form.appendChild(methodInput);
-            
-            // إضافة نوع الملف
-            const fileTypeInput = document.createElement('input');
-            fileTypeInput.type = 'hidden';
-            fileTypeInput.name = 'file_type';
-            fileTypeInput.value = fileType;
-            form.appendChild(fileTypeInput);
-            
-            // حذف الصف من الجدول فوراً
-            if (row) {
-                row.remove();
-                toastr.success('تم حذف الملف بنجاح');
-            }
-            
-            // إضافة الفورم للصفحة وإرساله
-            document.body.appendChild(form);
-            form.submit();
-        }
-    });
-}
-
-// تحسين فورم رفع الملفات
-document.getElementById('uploadMaterialFilesForm').addEventListener('submit', function(e) {
-    const fileInputs = this.querySelectorAll('input[type="file"]');
-    let hasFiles = false;
-    
-    fileInputs.forEach(input => {
-        if (input.files.length > 0) {
-            hasFiles = true;
-        }
-    });
-    
-    if (!hasFiles) {
-        e.preventDefault();
-        toastr.warning('يرجى اختيار ملف واحد على الأقل للرفع');
-        return false;
-    }
-    
-    // تعطيل زر الإرسال لمنع الإرسال المتكرر
-    const submitBtn = document.getElementById('uploadFilesBtn');
-    submitBtn.disabled = true;
-    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>جاري الرفع...';
-});
-
-// دالة إضافة ملف إلى الجدول
-function addFileToTable(fileData) {
-    const tableBody = document.querySelector('#attachmentsTable tbody');
-    const row = document.createElement('tr');
-    
-    const now = new Date();
-    const dateString = now.getFullYear() + '-' + 
-                      String(now.getMonth() + 1).padStart(2, '0') + '-' + 
-                      String(now.getDate()).padStart(2, '0') + ' ' +
-                      String(now.getHours()).padStart(2, '0') + ':' + 
-                      String(now.getMinutes()).padStart(2, '0');
-    
-    row.innerHTML = `
-        <td>
-            <div class="d-flex flex-column">
-                <div class="d-flex align-items-center mb-1">
-                    <i class="${fileData.icon} ${fileData.color} me-2"></i>
-                    <span class="fw-bold">${fileData.label}</span>
-                </div>
-                <div class="ms-3">
-                    <a href="/storage/${fileData.file_path}" target="_blank" class="text-decoration-none text-muted small">
-                        <i class="fas fa-file me-1"></i>
-                        ${fileData.file_name}
-                    </a>
-                </div>
-            </div>
-        </td>
-        <td>
-            <small class="text-muted">${dateString}</small>
-        </td>
-        <td>
-            <div class="btn-group" role="group">
-                <a href="/storage/${fileData.file_path}" 
-                   target="_blank" 
-                   class="btn btn-sm btn-outline-primary"
-                   data-bs-toggle="tooltip" 
-                   title="عرض الملف">
-                    <i class="fas fa-eye"></i>
-                </a>
-                <button type="button" 
-                        class="btn btn-sm btn-outline-danger"
-                        onclick="deleteMaterialFile(${fileData.material_id}, '${fileData.file_type}')"
-                        data-bs-toggle="tooltip" 
-                        title="حذف الملف">
-                    <i class="fas fa-trash"></i>
-                </button>
-            </div>
-        </td>
-    `;
-    
-    tableBody.appendChild(row);
-}
-
-// التحقق من وجود ملفات مرفوعة جديدة وإضافتها للجدول
+// معالجة الملفات المرفوعة الجديدة
 @if(session('uploaded_files'))
     document.addEventListener('DOMContentLoaded', function() {
-        const uploadedFiles = @json(session('uploaded_files'));
-        uploadedFiles.forEach(file => {
-            addFileToTable({
-                material_id: file.material_id,
-                file_type: file.file_type,
-                file_path: file.file_path,
-                file_name: file.file_name,
-                icon: file.file_info.icon,
-                color: file.file_info.color,
-                label: file.file_info.label
+        try {
+            const uploadedFiles = @json(session('uploaded_files'));
+            if (uploadedFiles && Array.isArray(uploadedFiles)) {
+                uploadedFiles.forEach(file => {
+                    if (file && file.file_info) {
+                        addFileToTable({
+                            material_id: file.material_id,
+                            file_type: file.file_type,
+                            file_path: file.file_path,
+                            file_name: file.file_name,
+                            icon: file.file_info.icon,
+                            color: file.file_info.color,
+                            label: file.file_info.label
+                        });
+                    }
+                });
+            }
+            
+            // مسح حقول الملفات بعد الرفع الناجح
+            document.querySelectorAll('#uploadMaterialFilesForm input[type="file"]').forEach(input => {
+                input.value = '';
             });
-        });
-        
-        // مسح حقول الملفات بعد الرفع الناجح
-        document.querySelectorAll('#uploadMaterialFilesForm input[type="file"]').forEach(input => {
-            input.value = '';
-        });
-        
-        // إعادة تمكين زر الرفع
-        const submitBtn = document.getElementById('uploadFilesBtn');
-        if (submitBtn) {
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = '<i class="fas fa-upload me-2"></i>رفع الملفات';
+            
+            // إعادة تمكين زر الرفع
+            const submitBtn = document.getElementById('uploadFilesBtn');
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-upload me-2"></i>رفع الملفات';
+            }
+        } catch (error) {
+            console.error('خطأ في معالجة الملفات المرفوعة:', error);
         }
     });
 @endif
@@ -1427,7 +1161,88 @@ function addFileToTable(fileData) {
 <!-- إضافة SweetAlert2 للتأكيدات المحسنة -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+<!-- إضافة FontAwesome من CDN محلي أو مختلف -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+
+<!-- إضافة ملف JavaScript المنفصل -->
+<script src="{{ asset('js/materials-page.js') }}"></script>
+
+<script>
+// حذف ملف مستقل
+function deleteIndependentFile(materialId, fileType, button) {
+    Swal.fire({
+        title: 'هل أنت متأكد؟',
+        text: 'سيتم حذف هذا الملف نهائياً',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'نعم، احذف',
+        cancelButtonText: 'إلغاء'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // إنشاء form مخفي للحذف
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `{{ route('admin.work-orders.materials.delete-file', [$workOrder, ':material_id']) }}`.replace(':material_id', materialId);
+            
+            // إضافة CSRF token
+            const csrfToken = document.createElement('input');
+            csrfToken.type = 'hidden';
+            csrfToken.name = '_token';
+            csrfToken.value = '{{ csrf_token() }}';
+            form.appendChild(csrfToken);
+            
+            // إضافة نوع الملف
+            const fileTypeInput = document.createElement('input');
+            fileTypeInput.type = 'hidden';
+            fileTypeInput.name = 'file_type';
+            fileTypeInput.value = fileType;
+            form.appendChild(fileTypeInput);
+            
+            // إضافة الفورم للصفحة وإرساله
+            document.body.appendChild(form);
+            form.submit();
+        }
+    });
+}
+</script>
+
 <style>
+/* تحسين الفصل بين الأقسام */
+.section-divider {
+    border: none;
+    height: 3px;
+    background: linear-gradient(to right, #007bff, #28a745);
+    margin: 3rem 0;
+    border-radius: 2px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* تحسين مظهر الأقسام */
+.card {
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.card-header {
+    border-radius: 15px 15px 0 0 !important;
+}
+
+/* تحسين حالة الفراغ */
+.empty-state {
+    padding: 2rem;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 10px;
+    border: 2px dashed #dee2e6;
+}
+
+/* تحسين الـ alerts */
+.alert {
+    border-radius: 10px;
+    border: none;
+}
+
 /* تحسين مظهر الجدول */
 #materialsTable {
     font-size: 0.9rem;

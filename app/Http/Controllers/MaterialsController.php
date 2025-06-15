@@ -17,7 +17,7 @@ class MaterialsController extends Controller
      */
     public function index(WorkOrder $workOrder, Request $request)
     {
-        $query = $workOrder->materials();
+        $query = $workOrder->materials()->where('code', 'NOT LIKE', 'GENERAL_FILES_%');
 
         // البحث بالكود
         if ($request->filled('search_code')) {
@@ -36,7 +36,37 @@ class MaterialsController extends Controller
 
         $materials = $query->latest()->paginate(15)->appends($request->query());
         
-        return view('admin.work_orders.materials', compact('workOrder', 'materials'));
+        // جلب الملفات المستقلة (الملفات العامة)
+        $generalFiles = $workOrder->materials()
+            ->where('code', 'LIKE', 'GENERAL_FILES_%')
+            ->get();
+            
+        $fileTypes = [
+            'check_in_file' => ['label' => 'CHECK LIST', 'icon' => 'fas fa-list-check', 'color' => 'text-primary'],
+            'check_out_file' => ['label' => 'CHECK OUT FILE', 'icon' => 'fas fa-check-circle', 'color' => 'text-success'],
+            'stock_in_file' => ['label' => 'STORE IN', 'icon' => 'fas fa-sign-in-alt', 'color' => 'text-info'],
+            'stock_out_file' => ['label' => 'STORE OUT', 'icon' => 'fas fa-sign-out-alt', 'color' => 'text-warning'],
+            'gate_pass_file' => ['label' => 'GATE PASS', 'icon' => 'fas fa-id-card', 'color' => 'text-success'],
+            'ddo_file' => ['label' => 'DDO FILE', 'icon' => 'fas fa-file-alt', 'color' => 'text-primary']
+        ];
+        
+        $independentFiles = [];
+        foreach($generalFiles as $generalFile) {
+            foreach($fileTypes as $field => $info) {
+                if($generalFile->$field) {
+                    $independentFiles[] = [
+                        'material_id' => $generalFile->id,
+                        'file_type' => $field,
+                        'file_path' => $generalFile->$field,
+                        'file_name' => basename($generalFile->$field),
+                        'file_info' => $info,
+                        'created_at' => $generalFile->created_at
+                    ];
+                }
+            }
+        }
+        
+        return view('admin.work_orders.materials', compact('workOrder', 'materials', 'independentFiles'));
     }
 
     /**

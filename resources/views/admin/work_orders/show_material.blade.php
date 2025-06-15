@@ -24,6 +24,9 @@
                     <a href="{{ route('admin.work-orders.materials.edit', [$material->workOrder, $material]) }}" class="btn btn-warning">
                         <i class="fas fa-edit"></i> تعديل المادة
                     </a>
+                    <a href="{{ route('admin.work-orders.materials.index', $material->workOrder) }}" class="btn btn-info">
+                        <i class="fas fa-file-upload"></i> إدارة الملفات
+                    </a>
                     <a href="{{ route('admin.work-orders.materials.index', $material->workOrder) }}" class="btn btn-secondary">
                         <i class="fas fa-arrow-left"></i> العودة للقائمة
                     </a>
@@ -57,9 +60,32 @@
         </div>
     </div>
 
+    <!-- تنبيه حول الملفات -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="alert alert-info border-0 shadow-sm">
+                <div class="d-flex align-items-center">
+                    <div class="me-3">
+                        <i class="fas fa-info-circle fa-2x text-info"></i>
+                    </div>
+                    <div>
+                        <h6 class="alert-heading mb-1">إدارة الملفات المرفوعة</h6>
+                        <p class="mb-0 small">لرفع أو عرض الملفات المرفقة بالمواد، يرجى الانتقال إلى صفحة إدارة المواد الرئيسية</p>
+                    </div>
+                    <div class="ms-auto">
+                        <a href="{{ route('admin.work-orders.materials.index', $material->workOrder) }}" class="btn btn-info btn-sm">
+                            <i class="fas fa-file-upload me-1"></i>
+                            إدارة الملفات
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="row">
         <!-- معلومات المادة الأساسية -->
-        <div class="col-xl-8 col-lg-7">
+        <div class="col-12">
             <div class="card shadow mb-4">
                 <div class="card-header py-3 d-flex justify-content-between align-items-center">
                     <h6 class="m-0 font-weight-bold text-primary">
@@ -225,140 +251,7 @@
             </div>
         </div>
         
-        <!-- المرفقات -->
-        <div class="col-xl-4 col-lg-5">
-            <div class="card shadow">
-                <div class="card-header py-3 d-flex justify-content-between align-items-center">
-                    <h6 class="m-0 font-weight-bold text-info">
-                        <i class="fas fa-paperclip me-2"></i>
-                        الملفات المرفقة
-                    </h6>
-                    @if($material->hasAttachments())
-                        <span class="badge badge-info">{{ count($material->getAttachments()) }} ملف</span>
-                    @else
-                        <span class="badge badge-secondary">لا توجد ملفات</span>
-                    @endif
-                </div>
-                <div class="card-body">
-                    @if($material->hasAttachments())
-                        <div class="list-group list-group-flush">
-                            @if($material->check_in_file)
-                                <a href="{{ asset('storage/' . $material->check_in_file) }}" target="_blank" 
-                                   class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <i class="fas fa-list-check me-2 text-primary"></i>
-                                        <strong>CHECK LIST</strong>
-                                        <small class="d-block text-muted">{{ basename($material->check_in_file) }}</small>
-                                    </div>
-                                    <i class="fas fa-external-link-alt text-muted"></i>
-                                </a>
-                            @endif
-                            
-                            @if($material->check_out_file)
-                                <a href="{{ asset('storage/' . $material->check_out_file) }}" target="_blank" 
-                                   class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <i class="fas fa-list-ul me-2 text-secondary"></i>
-                                        <strong>CHECK OUT</strong>
-                                        <small class="d-block text-muted">{{ basename($material->check_out_file) }}</small>
-                                    </div>
-                                    <i class="fas fa-external-link-alt text-muted"></i>
-                                </a>
-                            @endif
-                            
-                            @if($material->gate_pass_file)
-                                <a href="{{ asset('storage/' . $material->gate_pass_file) }}" target="_blank" 
-                                   class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <i class="fas fa-id-card me-2 text-success"></i>
-                                        <strong>GATE PASS</strong>
-                                        <small class="d-block text-muted">{{ basename($material->gate_pass_file) }}</small>
-                                    </div>
-                                    <i class="fas fa-external-link-alt text-muted"></i>
-                                </a>
-                            @endif
-                            
-                            @if($material->stock_in_file)
-                                <a href="{{ asset('storage/' . $material->stock_in_file) }}" target="_blank" 
-                                   class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <i class="fas fa-sign-in-alt me-2 text-info"></i>
-                                        <strong>STORE IN</strong>
-                                        <small class="d-block text-muted">{{ basename($material->stock_in_file) }}</small>
-                                    </div>
-                                    <i class="fas fa-external-link-alt text-muted"></i>
-                                </a>
-                            @endif
-                            
-                            @if($material->stock_out_file)
-                                <a href="{{ asset('storage/' . $material->stock_out_file) }}" target="_blank" 
-                                   class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <i class="fas fa-sign-out-alt me-2 text-warning"></i>
-                                        <strong>STORE OUT</strong>
-                                        <small class="d-block text-muted">{{ basename($material->stock_out_file) }}</small>
-                                    </div>
-                                    <i class="fas fa-external-link-alt text-muted"></i>
-                                </a>
-                            @endif
-                            
-                            @if($material->store_in_file)
-                                <a href="{{ asset('storage/' . $material->store_in_file) }}" target="_blank" 
-                                   class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <i class="fas fa-warehouse me-2 text-success"></i>
-                                        <strong>STORE IN FILE</strong>
-                                        <small class="d-block text-muted">{{ basename($material->store_in_file) }}</small>
-                                    </div>
-                                    <i class="fas fa-external-link-alt text-muted"></i>
-                                </a>
-                            @endif
-                            
-                            @if($material->store_out_file)
-                                <a href="{{ asset('storage/' . $material->store_out_file) }}" target="_blank" 
-                                   class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <i class="fas fa-dolly me-2 text-danger"></i>
-                                        <strong>STORE OUT FILE</strong>
-                                        <small class="d-block text-muted">{{ basename($material->store_out_file) }}</small>
-                                    </div>
-                                    <i class="fas fa-external-link-alt text-muted"></i>
-                                </a>
-                            @endif
-                            
-                            @if($material->ddo_file)
-                                <a href="{{ asset('storage/' . $material->ddo_file) }}" target="_blank" 
-                                   class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <i class="fas fa-file-alt me-2 text-primary"></i>
-                                        <strong>DDO FILE</strong>
-                                        <small class="d-block text-muted">{{ basename($material->ddo_file) }}</small>
-                                    </div>
-                                    <i class="fas fa-external-link-alt text-muted"></i>
-                                </a>
-                            @endif
-                        </div>
-                        
-                        <div class="mt-3 text-center">
-                            <small class="text-muted">
-                                <i class="fas fa-info-circle me-1"></i>
-                                انقر على أي ملف لعرضه في نافذة جديدة
-                            </small>
-                        </div>
-                    @else
-                        <div class="text-center py-4">
-                            <i class="fas fa-file-slash fa-3x text-muted mb-3"></i>
-                            <h6 class="text-muted">لا توجد ملفات مرفقة</h6>
-                            <p class="text-muted small">لا توجد ملفات مرفقة لهذه المادة</p>
-                            <a href="{{ route('admin.work-orders.materials.edit', [$material->workOrder, $material]) }}" 
-                               class="btn btn-sm btn-outline-primary">
-                                <i class="fas fa-plus"></i> إضافة ملفات
-                            </a>
-                        </div>
-                    @endif
-                </div>
-            </div>
-        </div>
+
     </div>
 </div>
 
@@ -369,11 +262,7 @@
     padding: 0.5rem 0.75rem;
 }
 
-.list-group-item-action:hover {
-    background-color: #f8f9fa;
-    transform: translateX(-2px);
-    transition: all 0.3s ease;
-}
+
 
 .card {
     border: none;
@@ -409,15 +298,7 @@
 @push('scripts')
 <script>
 $(document).ready(function() {
-    // تحسين عرض الملفات
-    $('.list-group-item-action').hover(
-        function() {
-            $(this).find('.fa-external-link-alt').addClass('text-primary');
-        },
-        function() {
-            $(this).find('.fa-external-link-alt').removeClass('text-primary').addClass('text-muted');
-        }
-    );
+
     
     // إضافة tooltips
     $('[title]').tooltip();
