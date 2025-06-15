@@ -1146,88 +1146,7 @@
                                     </tbody>
                                 </table>
                             </div>
-                            <div class="subsection mb-3">
-                                <h6 class="subsection-title">حفريات تربة صخرية مسفلتة</h6>
-                                <div class="table-responsive">
-                                    <table class="table table-bordered table-sm align-middle">
-                                        <thead class="table-light">
-                                            <tr>
-                                                <th style="width: 35%">نوع الكابل</th>
-                                                <th style="width: 15%">الطول (متر)</th>
-                                                <th style="width: 15%">العرض (متر)</th>
-                                                <th style="width: 15%">العمق (متر)</th>
-                                                <th style="width: 20%">الإجمالي</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                        @foreach([ 'كابل منخفض', '2 كابل منخفض', '3 كابل منخفض', '4 كابل منخفض', '1 كابل متوسط', '2 كابل متوسط', '3 كابل متوسط', '4 كابل متوسط'] as $cable)
-                                        <tr>
-                                                <td class="align-middle">{{ $cable }}</td>
-                                                <td colspan="4">
-                                                    <div class="input-group input-group-sm">
-                                                        <input type="number" step="0.01" class="form-control dimension-input" 
-                                                               name="excavation_surfaced_rock[{{ $loop->index }}]" 
-                                                               value="{{ old('excavation_surfaced_rock.' . $loop->index) }}"
-                                                               placeholder="0.00">
-                                                        <span class="input-group-text">متر</span>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                            @endforeach
-                                            <!-- حفر مفتوح اكبر من 4 كابلات - حقول منفصلة -->
-                                            <tr class="table-warning">
-                                                <td class="align-middle fw-bold">حفر مفتوح اكبر من 4 كابلات</td>
-                                                <td>
-                                                    <div class="input-group input-group-sm">
-                                                        <input type="number" step="0.01" class="form-control dimension-input excavation-calc" 
-                                                               name="excavation_surfaced_rock_open[length]" 
-                                                               data-type="length"
-                                                               data-target="surfaced_rock_open"
-                                                               value="{{ old('excavation_surfaced_rock_open.length', $workOrder->excavation_surfaced_rock_open['length'] ?? '') }}"
-                                                               placeholder="0.00">
-                                                        <span class="input-group-text">م</span>
-                                                    </div>
-                                                </td>
-                                                <td>
-                                                    <div class="input-group input-group-sm">
-                                                        <input type="number" step="0.01" class="form-control dimension-input excavation-calc" 
-                                                               name="excavation_surfaced_rock_open[width]" 
-                                                               data-type="width"
-                                                               data-target="surfaced_rock_open"
-                                                               value="{{ old('excavation_surfaced_rock_open.width', $workOrder->excavation_surfaced_rock_open['width'] ?? '') }}"
-                                                               placeholder="0.00">
-                                                        <span class="input-group-text">م</span>
-                                                    </div>
-                                                </td>
-                                                <td>
-                                                    <div class="input-group input-group-sm">
-                                                        <input type="number" step="0.01" class="form-control dimension-input excavation-calc" 
-                                                               name="excavation_surfaced_rock_open[depth]" 
-                                                               data-type="depth"
-                                                               data-target="surfaced_rock_open"
-                                                               value="{{ old('excavation_surfaced_rock_open.depth', $workOrder->excavation_surfaced_rock_open['depth'] ?? '') }}"
-                                                               placeholder="0.00">
-                                                        <span class="input-group-text">م</span>
-                                                    </div>
-                                                </td>
-                                                <td>
-                                                    <div class="input-group input-group-sm">
-                                                        <input type="text" class="form-control bg-light fw-bold text-primary" 
-                                                               id="total_surfaced_rock_open" 
-                                                               readonly 
-                                                               value="{{ 
-                                                                   ($workOrder->excavation_surfaced_rock_open['length'] ?? 0) * 
-                                                                   ($workOrder->excavation_surfaced_rock_open['width'] ?? 0) * 
-                                                                   ($workOrder->excavation_surfaced_rock_open['depth'] ?? 0) 
-                                                               }}">
-                                                        <span class="input-group-text bg-primary text-white">م³</span>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
+                            
 
                             <!-- حفريات دقيقة -->
                             <div class="subsection mb-3">
@@ -1329,84 +1248,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="mb-4">
-                                <h6 class="fw-bold mb-2">حفريات تربة صخرية غير مسفلتة</h6>
-                                <div class="table-responsive">
-                                    <table class="table table-bordered table-sm align-middle">
-                                        <thead class="table-light">
-                                            <tr>
-                                                <th style="width: 35%">نوع الكابل</th>
-                                                <th style="width: 15%">الطول (متر)</th>
-                                                <th style="width: 15%">العرض (متر)</th>
-                                                <th style="width: 15%">العمق (متر)</th>
-                                                <th style="width: 20%">الإجمالي</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                        @foreach([ 'كابل منخفض', '2 كابل منخفض', '3 كابل منخفض', '4 كابل منخفض', '1 كابل متوسط', '2 كابل متوسط', '3 كابل متوسط', '4 كابل متوسط'] as $cable)
-                                        <tr>
-                                                <td class="align-middle">{{ $cable }}</td>
-                                                <td colspan="4">
-                                                    <div class="input-group input-group-sm">
-                                                        <input type="number" step="0.01" class="form-control dimension-input" 
-                                                               name="excavation_unsurfaced_rock[{{ $loop->index }}]" 
-                                                               value="{{ old('excavation_unsurfaced_rock.' . $loop->index) }}"
-                                                               placeholder="0.00">
-                                                        <span class="input-group-text">متر</span>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                            @endforeach
-                                            <!-- حفر مفتوح اكبر من 4 كابلات - حقول منفصلة -->
-                                            <tr class="table-warning">
-                                                <td class="align-middle fw-bold">حفر مفتوح اكبر من 4 كابلات</td>
-                                                <td>
-                                                    <div class="input-group input-group-sm">
-                                                        <input type="number" step="0.01" class="form-control dimension-input excavation-calc" 
-                                                               name="excavation_unsurfaced_rock_open[length]" 
-                                                               data-type="length"
-                                                               data-target="unsurfaced_rock_open"
-                                                               value="{{ old('excavation_unsurfaced_rock_open.length') }}"
-                                                               placeholder="0.00">
-                                                        <span class="input-group-text">م</span>
-                                                    </div>
-                                                </td>
-                                                <td>
-                                                    <div class="input-group input-group-sm">
-                                                        <input type="number" step="0.01" class="form-control dimension-input excavation-calc" 
-                                                               name="excavation_unsurfaced_rock_open[width]" 
-                                                               data-type="width"
-                                                               data-target="unsurfaced_rock_open"
-                                                               value="{{ old('excavation_unsurfaced_rock_open.width') }}"
-                                                               placeholder="0.00">
-                                                        <span class="input-group-text">م</span>
-                                                    </div>
-                                                </td>
-                                                <td>
-                                                    <div class="input-group input-group-sm">
-                                                        <input type="number" step="0.01" class="form-control dimension-input excavation-calc" 
-                                                               name="excavation_unsurfaced_rock_open[depth]" 
-                                                               data-type="depth"
-                                                               data-target="unsurfaced_rock_open"
-                                                               value="{{ old('excavation_unsurfaced_rock_open.depth') }}"
-                                                               placeholder="0.00">
-                                                        <span class="input-group-text">م</span>
-                                                    </div>
-                                                </td>
-                                                <td>
-                                                    <div class="input-group input-group-sm">
-                                                        <input type="text" class="form-control bg-light fw-bold text-primary" 
-                                                               id="total_unsurfaced_rock_open" 
-                                                               readonly 
-                                                               value="0.00">
-                                                        <span class="input-group-text bg-primary text-white">م³</span>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
+                    
                             
                 </div>
 
@@ -1656,13 +1498,25 @@
 
                             <!-- عرض المرفقات المرفوعة -->
                             @if(isset($workOrder->civilWorksAttachments) && $workOrder->civilWorksAttachments->count() > 0)
-                                <div class="mt-3">
+                                <div class="uploaded-attachments mt-3">
                                     <h6 class="mb-2">المرفقات المرفوعة</h6>
                                     @foreach($workOrder->civilWorksAttachments as $file)
-                                        <div class="d-flex align-items-center border rounded p-2 mb-2">
-                                            <i class="fas fa-file-pdf text-danger me-2"></i>
-                                            <span class="flex-grow-1">{{ Str::limit($file->original_filename, 30) }}</span>
-                                            <small class="text-muted">{{ round($file->file_size / 1024 / 1024, 2) }} MB</small>
+                                        <div class="d-flex align-items-center border rounded p-2 mb-2 attachment-item" data-attachment-id="{{ $file->id }}">
+                                            <i class="fas fa-file-{{ getFileIcon($file->original_filename) }} text-primary me-2"></i>
+                                            <div class="flex-grow-1">
+                                                <div class="text-truncate" title="{{ $file->original_filename }}">
+                                                    {{ $file->original_filename }}
+                                                </div>
+                                                <small class="text-muted">{{ formatFileSize($file->file_size) }}</small>
+                                            </div>
+                                            <div class="btn-group btn-group-sm ms-2">
+                                                <a href="{{ asset('storage/' . $file->file_path) }}" class="btn btn-outline-primary" target="_blank" title="عرض الملف">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <button type="button" class="btn btn-outline-danger" onclick="deleteAttachment({{ $file->id }})" title="حذف الملف">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
                                         </div>
                                     @endforeach
                                 </div>
@@ -1670,7 +1524,7 @@
 
                             <!-- زر حفظ المرفقات -->
                             <div class="text-center mt-3">
-                                <button type="button" class="btn btn-warning btn-sm" onclick="saveAttachments()">
+                                <button type="button" class="btn btn-warning btn-sm" id="saveAttachmentsBtn">
                                     <i class="fas fa-save me-2"></i>
                                     حفظ المرفقات
                                 </button>
@@ -2410,17 +2264,17 @@
 
         excavationData.forEach(item => {
             if (item.type.includes('التربة الترابية')) {
-                totalSoilLength += item.value;
+                totalSoilLength += parseFloat(item.value) || 0;
             } else if (item.type.includes('التربة الصخرية')) {
-                totalRockLength += item.value;
+                totalRockLength += parseFloat(item.value) || 0;
             } else if (item.type === 'الحفريات الدقيقة') {
-                totalPreciseExcavation += item.value;
+                totalPreciseExcavation += parseFloat(item.value) || 0;
             } else if (item.type === 'أعمال الأسفلت') {
-                totalAsphaltArea += item.value;
+                totalAsphaltArea += parseFloat(item.value) || 0;
             }
             
             if (item.unit === 'متر مكعب') {
-                totalVolume += item.value;
+                totalVolume += parseFloat(item.value) || 0;
             }
         });
 
@@ -2449,6 +2303,144 @@
             if (volumeStat) volumeStat.innerHTML += ' <i class="fas fa-lock text-success ms-1" title="مثبت"></i>';
             if (lengthStat) lengthStat.innerHTML += ' <i class="fas fa-lock text-success ms-1" title="مثبت"></i>';
         }
+
+        // حفظ البيانات في التخزين المحلي
+        const summaryData = {
+            totalSoilLength,
+            totalRockLength,
+            totalVolume,
+            totalAsphaltArea,
+            totalPreciseExcavation,
+            timestamp: new Date().getTime()
+        };
+        localStorage.setItem('excavationSummary_{{ $workOrder->id }}', JSON.stringify(summaryData));
+
+        // حفظ البيانات في قاعدة البيانات
+        const formData = new FormData();
+        formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+        formData.append('_method', 'PUT');
+        formData.append('excavation_summary', JSON.stringify(summaryData));
+
+        fetch(window.location.href, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (!data.success) {
+                console.error('خطأ في حفظ البيانات:', data.message);
+            }
+        })
+        .catch(error => {
+            console.error('خطأ في حفظ البيانات:', error);
+        });
+    }
+
+    // دالة تحميل البيانات المحفوظة
+    function loadSavedExcavationSummary() {
+        const savedData = localStorage.getItem('excavationSummary_{{ $workOrder->id }}');
+        if (savedData) {
+            const data = JSON.parse(savedData);
+            
+            // التحقق من صلاحية البيانات (24 ساعة)
+            const now = new Date().getTime();
+            const hours24 = 24 * 60 * 60 * 1000;
+            if (now - data.timestamp > hours24) {
+                localStorage.removeItem('excavationSummary_{{ $workOrder->id }}');
+                return false;
+            }
+
+            // تحديث الإحصائيات في الكروت
+            const soilStat = document.getElementById('total-soil-excavation');
+            const rockStat = document.getElementById('total-rock-excavation');
+            const asphaltStat = document.getElementById('total-asphalt-work');
+            const preciseStat = document.getElementById('total-precise-excavation');
+            const volumeStat = document.getElementById('final-total-volume');
+            const lengthStat = document.getElementById('final-total-length');
+            const areaStat = document.getElementById('final-total-area');
+
+            if (soilStat) soilStat.textContent = data.totalSoilLength.toFixed(2);
+            if (rockStat) rockStat.textContent = data.totalRockLength.toFixed(2);
+            if (asphaltStat) asphaltStat.textContent = data.totalAsphaltArea.toFixed(2);
+            if (preciseStat) preciseStat.textContent = data.totalPreciseExcavation.toFixed(2);
+            if (volumeStat) volumeStat.textContent = data.totalVolume.toFixed(2) + ' متر مكعب';
+            if (lengthStat) lengthStat.textContent = (data.totalSoilLength + data.totalRockLength + data.totalPreciseExcavation).toFixed(2) + ' متر';
+            if (areaStat) areaStat.textContent = data.totalAsphaltArea.toFixed(2) + ' متر مربع';
+
+            return true;
+        }
+        return false;
+    }
+
+    // تحميل البيانات المحفوظة عند تحميل الصفحة
+    document.addEventListener('DOMContentLoaded', function() {
+        loadSavedExcavationSummary();
+        
+        // إضافة مستمع لتحديث البيانات عند تغيير أي حقل
+        const excavationInputs = document.querySelectorAll('input[type="number"]');
+        excavationInputs.forEach(input => {
+            input.addEventListener('change', function() {
+                const excavationData = collectExcavationData();
+                updateExcavationStats(excavationData);
+            });
+        });
+    });
+
+    // حفظ البيانات قبل مغادرة الصفحة
+    window.addEventListener('beforeunload', function() {
+        const excavationData = collectExcavationData();
+        updateExcavationStats(excavationData);
+    });
+
+    // دالة تجميع بيانات الحفريات
+    function collectExcavationData() {
+        const excavationData = [];
+        
+        // إضافة جميع أنواع الحفريات
+        const inputTypes = [
+            { selector: 'input[name^="excavation_unsurfaced_soil"]', type: 'حفريات التربة الترابية', surface: 'غير مسفلت' },
+            { selector: 'input[name^="excavation_surfaced_soil"]', type: 'حفريات التربة الترابية', surface: 'مسفلت' },
+            { selector: 'input[name^="excavation_unsurfaced_rock"]', type: 'حفريات التربة الصخرية', surface: 'غير مسفلت' },
+            { selector: 'input[name^="excavation_surfaced_rock"]', type: 'حفريات التربة الصخرية', surface: 'مسفلت' }
+        ];
+
+        inputTypes.forEach(type => {
+            document.querySelectorAll(type.selector).forEach((input, index) => {
+                const value = parseFloat(input.value) || 0;
+                if (value > 0) {
+                    excavationData.push({
+                        type: type.type,
+                        surface: type.surface,
+                        value: value,
+                        unit: 'متر طولي'
+                    });
+                }
+            });
+        });
+
+        // إضافة الحفريات الدقيقة
+        const preciseTypes = ['medium', 'low'];
+        preciseTypes.forEach(type => {
+            const input = document.querySelector(`input[name="excavation_precise[${type}]"]`);
+            if (input) {
+                const value = parseFloat(input.value) || 0;
+                if (value > 0) {
+                    excavationData.push({
+                        type: 'الحفريات الدقيقة',
+                        surface: 'دقيق',
+                        value: value,
+                        unit: 'متر طولي'
+                    });
+                }
+            }
+        });
+
+        return excavationData;
     }
 
     window.exportExcavationData = function() {
@@ -2979,26 +2971,68 @@
             });
         }
 
-        // دالة حفظ المرفقات
-        function saveAttachments() {
-            const attachmentsInput = document.getElementById('civil_works_attachments');
-            const files = attachmentsInput.files;
-            
-            if (files.length === 0) {
-                alert('يرجى اختيار مرفقات أولاً');
+        // دالة لتحديد أيقونة الملف بناءً على نوعه
+        function getFileIcon(filename) {
+            const ext = filename.split('.').pop().toLowerCase();
+            switch(ext) {
+                case 'pdf': return 'pdf';
+                case 'doc':
+                case 'docx': return 'word';
+                case 'xls':
+                case 'xlsx': return 'excel';
+                case 'ppt':
+                case 'pptx': return 'powerpoint';
+                case 'txt': return 'text';
+                case 'zip':
+                case 'rar': return 'archive';
+                default: return 'file';
+            }
+        }
+
+        // دالة تنسيق حجم الملف
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // دالة إنشاء حاوية المرفقات المرفوعة
+        function createUploadedAttachmentsContainer() {
+            const container = document.createElement('div');
+            container.className = 'uploaded-attachments mt-3';
+            container.innerHTML = '<h6 class="mb-2">المرفقات المرفوعة</h6>';
+            const attachmentsContainer = document.getElementById('attachments-preview');
+            attachmentsContainer.after(container);
+            return container;
+        }
+
+        // دالة عرض رسائل الخطأ
+        function showError(message) {
+            const errorAlert = document.createElement('div');
+            errorAlert.className = 'alert alert-danger alert-dismissible fade show mt-3';
+            errorAlert.innerHTML = `
+                <i class="fas fa-exclamation-circle me-2"></i>${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            const attachmentsContainer = document.getElementById('attachments-preview');
+            attachmentsContainer.before(errorAlert);
+
+            // إخفاء رسالة الخطأ بعد 5 ثواني
+            setTimeout(() => {
+                errorAlert.remove();
+            }, 5000);
+        }
+
+        // دالة حذف المرفق
+        function deleteAttachment(attachmentId) {
+            if (!confirm('هل أنت متأكد من حذف هذا المرفق؟')) {
                 return;
             }
 
-            const formData = new FormData();
-            formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
-            
-            for (let i = 0; i < files.length; i++) {
-                formData.append('civil_works_attachments[]', files[i]);
-            }
-
-            fetch(`/admin/work-orders/{{ $workOrder->id }}/save-attachments`, {
-                method: 'POST',
-                body: formData,
+            fetch(`/admin/work-orders/attachments/${attachmentId}`, {
+                method: 'DELETE',
                 headers: {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                     'X-Requested-With': 'XMLHttpRequest'
@@ -3007,61 +3041,135 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert('تم حفظ المرفقات بنجاح!');
-                    location.reload();
+                    // حذف العنصر من العرض
+                    const attachmentElement = document.querySelector(`[data-attachment-id="${attachmentId}"]`);
+                    if (attachmentElement) {
+                        attachmentElement.remove();
+                    }
+                    showSuccess('تم حذف المرفق بنجاح');
                 } else {
-                    alert('خطأ: ' + data.message);
+                    showError(data.message);
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('حدث خطأ أثناء حفظ المرفقات');
+                showError('حدث خطأ أثناء حذف المرفق');
             });
         }
 
-        // دالة تثبيت الأعمال المدنية
-        function lockCivilWorksData() {
-            if (confirm('هل أنت متأكد من تثبيت بيانات الأعمال المدنية؟\nلن تتمكن من تعديلها بعد التثبيت.')) {
-                
-                // إرسال طلب POST لتثبيت البيانات
-                const url = `/admin/work-orders/{{ $workOrder->id }}/lock-images`;
-                const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-                
-                const formData = new FormData();
-                formData.append('_token', csrfToken);
-                
-                fetch(url, {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-CSRF-TOKEN': csrfToken,
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'Accept': 'application/json'
+        // دالة عرض رسائل النجاح
+        function showSuccess(message) {
+            const successAlert = document.createElement('div');
+            successAlert.className = 'alert alert-success alert-dismissible fade show mt-3';
+            successAlert.innerHTML = `
+                <i class="fas fa-check-circle me-2"></i>${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            const attachmentsContainer = document.getElementById('attachments-preview');
+            attachmentsContainer.before(successAlert);
+
+            // إخفاء رسالة النجاح بعد 5 ثواني
+            setTimeout(() => {
+                successAlert.remove();
+            }, 5000);
+        }
+    </script>
+
+    <script>
+        // تهيئة معالجات الأحداث عند تحميل الصفحة
+        document.addEventListener('DOMContentLoaded', function() {
+            // معالج حدث زر حفظ المرفقات
+            const saveAttachmentsBtn = document.getElementById('saveAttachmentsBtn');
+            if (saveAttachmentsBtn) {
+                saveAttachmentsBtn.addEventListener('click', function() {
+                    const attachmentsInput = document.getElementById('civil_works_attachments');
+                    if (!attachmentsInput) {
+                        console.error('لم يتم العثور على عنصر إدخال المرفقات');
+                        return;
                     }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert('تم تثبيت الأعمال المدنية بنجاح!');
-                        // تعطيل جميع inputs في الصفحة
-                        document.querySelectorAll('input, textarea, select').forEach(element => {
-                            element.disabled = true;
-                        });
-                        // تغيير النص وحالة الزر
-                        const lockBtn = document.querySelector('[onclick="lockCivilWorksData()"]');
-                        lockBtn.innerHTML = '<i class="fas fa-check me-3"></i>تم التثبيت بنجاح<i class="fas fa-lock ms-3"></i>';
-                        lockBtn.className = 'btn btn-secondary btn-lg px-5 py-3 shadow-lg';
-                        lockBtn.disabled = true;
-                    } else {
-                        alert('خطأ: ' + data.message);
+
+                    const files = attachmentsInput.files;
+                    if (files.length === 0) {
+                        alert('يرجى اختيار مرفقات أولاً');
+                        return;
                     }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('حدث خطأ أثناء التثبيت');
+
+                    const formData = new FormData();
+                    formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+                    
+                    for (let i = 0; i < files.length; i++) {
+                        formData.append('civil_works_attachments[]', files[i]);
+                    }
+
+                    // إظهار مؤشر التحميل
+                    const originalButtonText = saveAttachmentsBtn.innerHTML;
+                    saveAttachmentsBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>جاري الحفظ...';
+                    saveAttachmentsBtn.disabled = true;
+
+                    fetch(`/admin/work-orders/{{ $workOrder->id }}/save-attachments`, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // تحديث عرض المرفقات
+                            const uploadedAttachmentsContainer = document.querySelector('.uploaded-attachments') || createUploadedAttachmentsContainer();
+                            
+                            if (data.attachments && data.attachments.length > 0) {
+                                data.attachments.forEach(attachment => {
+                                    const fileDiv = document.createElement('div');
+                                    fileDiv.className = 'd-flex align-items-center border rounded p-2 mb-2 attachment-item';
+                                    fileDiv.setAttribute('data-attachment-id', attachment.id);
+                                    fileDiv.innerHTML = `
+                                        <i class="fas fa-file-${getFileIcon(attachment.original_filename)} text-primary me-2"></i>
+                                        <div class="flex-grow-1">
+                                            <div class="text-truncate" title="${attachment.original_filename}">
+                                                ${attachment.original_filename}
+                                            </div>
+                                            <small class="text-muted">${formatFileSize(attachment.file_size)}</small>
+                                        </div>
+                                        <div class="btn-group btn-group-sm ms-2">
+                                            <a href="/storage/${attachment.file_path}" class="btn btn-outline-primary" target="_blank" title="عرض الملف">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <button type="button" class="btn btn-outline-danger" onclick="deleteAttachment(${attachment.id})" title="حذف الملف">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    `;
+                                    uploadedAttachmentsContainer.appendChild(fileDiv);
+                                });
+                            }
+
+                            // مسح حقل الإدخال والمعاينة
+                            attachmentsInput.value = '';
+                            const attachmentsPreview = document.getElementById('attachments-preview');
+                            if (attachmentsPreview) {
+                                attachmentsPreview.innerHTML = '';
+                            }
+
+                            // إظهار رسالة نجاح
+                            alert('تم حفظ المرفقات بنجاح');
+                        } else {
+                            alert(data.message || 'حدث خطأ أثناء حفظ المرفقات');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('حدث خطأ أثناء حفظ المرفقات');
+                    })
+                    .finally(() => {
+                        saveAttachmentsBtn.innerHTML = originalButtonText;
+                        saveAttachmentsBtn.disabled = false;
+                    });
                 });
             }
-        }
+        });
     </script>
 </body>
 </html> 

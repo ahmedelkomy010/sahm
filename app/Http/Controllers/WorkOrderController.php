@@ -1680,7 +1680,17 @@ class WorkOrderController extends Controller
                         'file_category' => 'civil_attach' // تقصير الاسم
                     ]);
                     
-                    $savedAttachments[] = $savedFile;
+                    $savedAttachments[] = [
+                        'id' => $savedFile->id,
+                        'filename' => $savedFile->filename,
+                        'original_filename' => $savedFile->original_filename,
+                        'file_path' => $savedFile->file_path,
+                        'file_type' => $savedFile->file_type,
+                        'file_size' => $savedFile->file_size,
+                        'url' => asset('storage/' . $savedFile->file_path),
+                        'icon' => $this->getFileIcon($savedFile->original_filename),
+                        'size_formatted' => $this->formatFileSize($savedFile->file_size)
+                    ];
                     
                     \Log::info('Attachment saved successfully', [
                         'filename' => $filename,
@@ -1693,15 +1703,7 @@ class WorkOrderController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'تم حفظ ' . count($savedAttachments) . ' مرفق بنجاح',
-                'attachments_count' => count($savedAttachments),
-                'attachments' => collect($savedAttachments)->map(function($att) {
-                    return [
-                        'id' => $att->id,
-                        'filename' => $att->filename,
-                        'original_filename' => $att->original_filename,
-                        'url' => asset('storage/' . $att->file_path)
-                    ];
-                })
+                'attachments' => $savedAttachments
             ]);
 
         } catch (\Exception $e) {
@@ -1715,6 +1717,80 @@ class WorkOrderController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'حدث خطأ أثناء حفظ المرفقات: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * تحديد أيقونة الملف بناءً على نوعه
+     */
+    private function getFileIcon($filename)
+    {
+        $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+        switch($ext) {
+            case 'pdf': return 'pdf';
+            case 'doc':
+            case 'docx': return 'word';
+            case 'xls':
+            case 'xlsx': return 'excel';
+            case 'ppt':
+            case 'pptx': return 'powerpoint';
+            case 'txt': return 'text';
+            case 'zip':
+            case 'rar': return 'archive';
+            default: return 'file';
+        }
+    }
+
+    /**
+     * تنسيق حجم الملف
+     */
+    private function formatFileSize($bytes)
+    {
+        if ($bytes === 0) return '0 Bytes';
+        $k = 1024;
+        $sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        $i = floor(log($bytes) / log($k));
+        return round($bytes / pow($k, $i), 2) . ' ' . $sizes[$i];
+    }
+
+    /**
+     * حذف مرفق من الأعمال المدنية
+     */
+    public function deleteAttachment($attachmentId)
+    {
+        try {
+            $attachment = \App\Models\WorkOrderFile::findOrFail($attachmentId);
+            
+            // التحقق من أن المرفق ينتمي لفئة الأعمال المدنية
+            if ($attachment->file_category !== 'civil_attach') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'هذا المرفق لا ينتمي للأعمال المدنية'
+                ], 403);
+            }
+            
+            // حذف الملف من التخزين
+            if (\Storage::disk('public')->exists($attachment->file_path)) {
+                \Storage::disk('public')->delete($attachment->file_path);
+            }
+            
+            // حذف السجل من قاعدة البيانات
+            $attachment->delete();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'تم حذف المرفق بنجاح'
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error deleting attachment', [
+                'error' => $e->getMessage(),
+                'attachment_id' => $attachmentId
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء حذف المرفق'
             ], 500);
         }
     }
