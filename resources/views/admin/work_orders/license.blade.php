@@ -13,7 +13,7 @@
                         <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
                             <h3 class="mb-0 fs-4 text-center text-md-start">
                                 <i class="fas fa-plus-circle me-2"></i>
-                                  إدارة الجودة والرخص - أمر العمل {{ $workOrder->order_number }}
+                                  إدارة الجودة والرخص  {{ $workOrder->order_number }}
                             </h3>
                             <div class="d-flex flex-wrap justify-content-center gap-2">
                                 <a href="{{ route('admin.work-orders.show', $workOrder) }}" class="btn btn-back btn-sm">
@@ -21,7 +21,38 @@
                                 </a>
                             </div>
                         </div>
-                    </div>                        
+                    </div> 
+                    <div class="card-body py-3">
+                    <div class="row align-items-center">
+                        <div class="col-md-3 col-sm-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-hashtag text-primary me-2 fs-5"></i>
+                                <div>
+                                    <small class="text-muted d-block">رقم الطلب</small>
+                                    <strong class="text-primary fs-6">{{ $workOrder->order_number }}</strong>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-tools text-warning me-2 fs-5"></i>
+                                <div>
+                                    <small class="text-muted d-block">نوع العمل</small>
+                                    <strong class="fs-6">{{ $workOrder->work_type }}</strong>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-user text-info me-2 fs-5"></i>
+                                <div>
+                                    <small class="text-muted d-block">اسم المشترك</small>
+                                    <strong class="fs-6">{{ $workOrder->subscriber_name }}</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>                 
                         <!-- شهادة التنسيق والمرفقات -->
                         <div class="card border-0 shadow-sm mb-4">
                             <div class="card-header bg-warning text-dark">

@@ -158,25 +158,35 @@
     <!-- Work Order Info -->
     <div class="row mb-4">
         <div class="col-12">
+        <div class="card-body py-3">
             <div class="card info-card">
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-md-3">
-                            <div class="info-item">
-                                <strong><i class="fas fa-hashtag me-2"></i>رقم أمر العمل:</strong>
-                                <span class="ms-2">{{ $workOrder->order_number }}</span>
+                    <div class="col-md-3 col-sm-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-hashtag text-primary me-2 fs-5"></i>
+                                <div>
+                                    <small class="text-muted d-block">رقم الطلب</small>
+                                    <strong class="text-primary fs-6">{{ $workOrder->order_number }}</strong>
+                                </div>
                             </div>
                         </div>
-                        <div class="col-md-3">
-                            <div class="info-item">
-                                <strong><i class="fas fa-tasks me-2"></i>نوع العمل:</strong>
-                                <span class="ms-2">{{ $workOrder->work_type }}</span>
+                        <div class="col-md-3 col-sm-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-tools text-warning me-2 fs-5"></i>
+                                <div>
+                                    <small class="text-muted d-block">نوع العمل</small>
+                                    <strong class="fs-6">{{ $workOrder->work_type }}</strong>
+                                </div>
                             </div>
                         </div>
-                        <div class="col-md-3">
-                            <div class="info-item">
-                                <strong><i class="fas fa-user me-2"></i>اسم المشترك:</strong>
-                                <span class="ms-2">{{ $workOrder->subscriber_name }}</span>
+                        <div class="col-md-3 col-sm-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-user text-info me-2 fs-5"></i>
+                                <div>
+                                    <small class="text-muted d-block">اسم المشترك</small>
+                                    <strong class="fs-6">{{ $workOrder->subscriber_name }}</strong>
+                                </div>
                             </div>
                         </div>
                         <div class="col-md-3">
