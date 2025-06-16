@@ -139,15 +139,7 @@
         <div class="col-12">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
-                    <h1 class="h3 mb-0 text-gray-800">مواد أمر العمل رقم {{ $workOrder->order_number }}</h1>
-                    <nav aria-label="breadcrumb">
-                        <ol class="breadcrumb">
-                            <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">الرئيسية</a></li>
-                            <li class="breadcrumb-item"><a href="{{ route('admin.work-orders.index') }}">أوامر العمل</a></li>
-                            <li class="breadcrumb-item"><a href="{{ route('admin.work-orders.show', $workOrder) }}">أمر العمل {{ $workOrder->order_number }}</a></li>
-                            <li class="breadcrumb-item active" aria-current="page">المواد</li>
-                        </ol>
-                    </nav>
+                    
                 </div>
                 <div>
                     <a href="{{ route('admin.work-orders.materials.create', $workOrder) }}" class="btn btn-primary">
