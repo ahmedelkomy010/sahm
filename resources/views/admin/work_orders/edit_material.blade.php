@@ -210,28 +210,77 @@
 @push('scripts')
 <script>
 $(document).ready(function() {
-    // البحث عن وصف المادة عند تغيير الكود
-    $('#search-material-btn').click(function() {
-        var code = $('#code').val();
-        if (code) {
+    // البحث الديناميكي عن وصف المادة
+    $('#code').on('input', function() {
+        var code = $(this).val().trim();
+        var $descriptionField = $('#description');
+        
+        if (code.length >= 3) { // البحث عند إدخال 3 أحرف على الأقل
+            // إظهار مؤشر التحميل
+            $(this).addClass('loading');
+            
             $.ajax({
-                url: '/admin/materials/description/' + code,
-                type: 'GET',
+                url: '{{ route("admin.materials.description", ":code") }}'.replace(':code', code),
+                method: 'GET',
                 success: function(response) {
+                    $('#code').removeClass('loading');
+                    
                     if (response.success) {
-                        $('#description').val(response.description);
+                        $descriptionField.val(response.description);
+                        $descriptionField.addClass('is-valid').removeClass('is-invalid');
                         toastr.success('تم العثور على وصف المادة');
                     } else {
-                        toastr.warning('لم يتم العثور على وصف للمادة');
+                        $descriptionField.removeClass('is-valid');
+                        // لا نمسح الوصف إذا لم نجد المادة، قد يكون المستخدم يريد إدخال وصف جديد
                     }
                 },
                 error: function() {
-                    toastr.error('حدث خطأ أثناء البحث عن المادة');
+                    $('#code').removeClass('loading');
+                    toastr.error('حدث خطأ أثناء البحث عن وصف المادة');
                 }
             });
         } else {
-            toastr.warning('يرجى إدخال كود المادة أولاً');
+            // إذا كان الكود أقل من 3 أحرف، لا نبحث
+            $descriptionField.removeClass('is-valid is-invalid');
         }
+    });
+
+    // البحث عند النقر على زر البحث
+    $('#search-material-btn').on('click', function() {
+        var code = $('#code').val().trim();
+        var $descriptionField = $('#description');
+        
+        if (!code) {
+            toastr.warning('يرجى إدخال كود المادة أولاً');
+            $('#code').focus();
+            return;
+        }
+        
+        // إظهار مؤشر التحميل على الزر
+        var $btn = $(this);
+        var originalHtml = $btn.html();
+        $btn.html('<i class="fas fa-spinner fa-spin"></i>').prop('disabled', true);
+        
+        $.ajax({
+            url: '{{ route("admin.materials.description", ":code") }}'.replace(':code', code),
+            method: 'GET',
+            success: function(response) {
+                $btn.html(originalHtml).prop('disabled', false);
+                
+                if (response.success) {
+                    $descriptionField.val(response.description);
+                    $descriptionField.addClass('is-valid').removeClass('is-invalid');
+                    toastr.success('تم العثور على وصف المادة');
+                } else {
+                    $descriptionField.removeClass('is-valid');
+                    toastr.info('لم يتم العثور على المادة في قاعدة البيانات. يمكنك إدخال الوصف يدوياً');
+                }
+            },
+            error: function() {
+                $btn.html(originalHtml).prop('disabled', false);
+                toastr.error('حدث خطأ أثناء البحث عن وصف المادة');
+            }
+        });
     });
 
     // حساب الفرق بين الكمية المخططة والمصروفة
@@ -295,6 +344,50 @@ $(document).ready(function() {
     // حساب الفروقات عند تحميل الصفحة
     calculatePlannedSpentDifference();
     calculateExecutedSpentDifference();
+
+    // البحث الديناميكي عن وصف المادة
+    $('#code').on('input', function() {
+        var code = $(this).val().trim();
+        var $descriptionField = $('#description');
+        
+        if (code.length >= 3) { // البحث عند إدخال 3 أحرف على الأقل
+            $.ajax({
+                url: '{{ route("admin.materials.description", ":code") }}'.replace(':code', code),
+                method: 'GET',
+                success: function(response) {
+                    if (response.success) {
+                        $descriptionField.val(response.description);
+                    }
+                },
+                error: function() {
+                    // تجاهل الأخطاء بصمت
+                }
+            });
+        }
+    });
+
+    // البحث عند النقر على زر البحث
+    $('#search-material-btn').on('click', function() {
+        var code = $('#code').val().trim();
+        var $descriptionField = $('#description');
+        
+        if (!code) {
+            return;
+        }
+        
+        $.ajax({
+            url: '{{ route("admin.materials.description", ":code") }}'.replace(':code', code),
+            method: 'GET',
+            success: function(response) {
+                if (response.success) {
+                    $descriptionField.val(response.description);
+                }
+            },
+            error: function() {
+                // تجاهل الأخطاء بصمت
+            }
+        });
+    });
 
     // تحسين تجربة رفع الملفات
     $('input[type="file"]').on('change', function() {
@@ -480,6 +573,36 @@ h6.text-success {
 
 h6.text-info {
     border-color: #0dcaf0;
+}
+
+/* مؤشر التحميل لحقل الكود */
+.loading {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23007bff' viewBox='0 0 16 16'%3e%3cpath d='M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0zM7 4a1 1 0 1 0 2 0 1 1 0 0 0-2 0zm1.5 2.5a.5.5 0 0 0-1 0v3a.5.5 0 0 0 1 0v-3z'/%3e%3c/svg%3e") !important;
+    background-repeat: no-repeat !important;
+    background-position: right calc(0.375em + 0.1875rem) center !important;
+    background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem) !important;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* تحسين زر البحث */
+#search-material-btn {
+    transition: all 0.3s ease;
+}
+
+#search-material-btn:hover {
+    background-color: #0056b3;
+    border-color: #0056b3;
+    transform: translateY(-1px);
+}
+
+#search-material-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 
 /* تحسين responsive */

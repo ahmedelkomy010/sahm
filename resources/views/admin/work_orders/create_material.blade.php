@@ -303,6 +303,50 @@ $(document).ready(function() {
     calculatePlannedSpentDifference();
     calculateExecutedSpentDifference();
 
+    // البحث الديناميكي عن وصف المادة
+    $('#code').on('input', function() {
+        var code = $(this).val().trim();
+        var $descriptionField = $('#description');
+        
+        if (code.length >= 3) { // البحث عند إدخال 3 أحرف على الأقل
+            $.ajax({
+                url: '{{ route("admin.materials.description", ":code") }}'.replace(':code', code),
+                method: 'GET',
+                success: function(response) {
+                    if (response.success) {
+                        $descriptionField.val(response.description);
+                    }
+                },
+                error: function() {
+                    // تجاهل الأخطاء بصمت
+                }
+            });
+        }
+    });
+
+    // البحث عند النقر على زر البحث
+    $('#search-material-btn').on('click', function() {
+        var code = $('#code').val().trim();
+        var $descriptionField = $('#description');
+        
+        if (!code) {
+            return;
+        }
+        
+        $.ajax({
+            url: '{{ route("admin.materials.description", ":code") }}'.replace(':code', code),
+            method: 'GET',
+            success: function(response) {
+                if (response.success) {
+                    $descriptionField.val(response.description);
+                }
+            },
+            error: function() {
+                // تجاهل الأخطاء بصمت
+            }
+        });
+    });
+
     // تحسين تجربة رفع الملفات
     $('input[type="file"]').on('change', function() {
         var file = this.files[0];
@@ -459,6 +503,36 @@ input[type="file"]:hover {
 
 .card:hover .fa-2x {
     transform: scale(1.1);
+}
+
+/* مؤشر التحميل لحقل الكود */
+.loading {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23007bff' viewBox='0 0 16 16'%3e%3cpath d='M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0zM7 4a1 1 0 1 0 2 0 1 1 0 0 0-2 0zm1.5 2.5a.5.5 0 0 0-1 0v3a.5.5 0 0 0 1 0v-3z'/%3e%3c/svg%3e") !important;
+    background-repeat: no-repeat !important;
+    background-position: right calc(0.375em + 0.1875rem) center !important;
+    background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem) !important;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* تحسين زر البحث */
+#search-material-btn {
+    transition: all 0.3s ease;
+}
+
+#search-material-btn:hover {
+    background-color: #0056b3;
+    border-color: #0056b3;
+    transform: translateY(-1px);
+}
+
+#search-material-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 
 /* تحسين responsive */
