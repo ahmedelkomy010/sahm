@@ -4,6 +4,132 @@
 
 @push('head')
 <meta name="work-order-id" content="{{ $workOrder->id }}">
+<style>
+    /* تنسيق عام */
+    .card {
+        border: none;
+        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+        transition: all 0.3s ease;
+    }
+    .card:hover {
+        transform: translateY(-2px);
+    }
+    
+    /* تنسيق معلومات أمر العمل */
+    .info-card {
+        background: linear-gradient(to right, #f8f9fa, #ffffff);
+        border-radius: 15px;
+        padding: 20px;
+    }
+    .info-item {
+        padding: 10px;
+        border-radius: 8px;
+        background: white;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        margin-bottom: 10px;
+        transition: all 0.3s ease;
+    }
+    .info-item:hover {
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .info-item strong {
+        color: #4e73df;
+        font-size: 0.9rem;
+    }
+    
+    /* تنسيق الجدول */
+    .materials-table-wrapper {
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    .table {
+        margin-bottom: 0;
+    }
+    .table thead th {
+        background: linear-gradient(45deg, #4e73df, #36b9cc);
+        color: white;
+        font-weight: 500;
+        border: none;
+        padding: 15px;
+        white-space: nowrap;
+    }
+    .table tbody tr {
+        transition: all 0.3s ease;
+    }
+    .table tbody tr:hover {
+        background-color: rgba(78, 115, 223, 0.05);
+    }
+    .table td {
+        padding: 15px;
+        vertical-align: middle;
+    }
+    
+    /* تنسيق الأزرار */
+    .btn {
+        border-radius: 8px;
+        padding: 8px 16px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    .btn-primary {
+        background: linear-gradient(45deg, #4e73df, #2e59d9);
+        border: none;
+    }
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(46, 89, 217, 0.2);
+    }
+    
+    /* تنسيق البحث والفلتر */
+    .search-filter-card {
+        background: linear-gradient(to right, #ffffff, #f8f9fa);
+        border-radius: 15px;
+    }
+    .form-control, .form-select {
+        border-radius: 8px;
+        border: 1px solid #e3e6f0;
+        padding: 10px 15px;
+        transition: all 0.3s ease;
+    }
+    .form-control:focus, .form-select:focus {
+        border-color: #4e73df;
+        box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+    }
+    
+    /* تنسيق الكميات */
+    .quantity-badge {
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-weight: 500;
+        background: #f8f9fa;
+    }
+    .quantity-badge.planned {
+        background: rgba(78, 115, 223, 0.1);
+        color: #4e73df;
+    }
+    .quantity-badge.spent {
+        background: rgba(231, 74, 59, 0.1);
+        color: #e74a3b;
+    }
+    .quantity-badge.executed {
+        background: rgba(28, 200, 138, 0.1);
+        color: #1cc88a;
+    }
+    
+    /* تنسيق الفروق */
+    .difference-positive {
+        color: #1cc88a;
+        font-weight: 500;
+    }
+    .difference-negative {
+        color: #e74a3b;
+        font-weight: 500;
+    }
+    .difference-zero {
+        color: #858796;
+        font-weight: 500;
+    }
+</style>
 @endpush
 
 @section('content')
@@ -40,21 +166,32 @@
     <!-- Work Order Info -->
     <div class="row mb-4">
         <div class="col-12">
-            <div class="card">
+            <div class="card info-card">
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-3">
-                            <strong>رقم أمر العمل:</strong> {{ $workOrder->order_number }}
+                            <div class="info-item">
+                                <strong><i class="fas fa-hashtag me-2"></i>رقم أمر العمل:</strong>
+                                <span class="ms-2">{{ $workOrder->order_number }}</span>
+                            </div>
                         </div>
                         <div class="col-md-3">
-                            <strong>نوع العمل:</strong> {{ $workOrder->work_type }}
+                            <div class="info-item">
+                                <strong><i class="fas fa-tasks me-2"></i>نوع العمل:</strong>
+                                <span class="ms-2">{{ $workOrder->work_type }}</span>
+                            </div>
                         </div>
                         <div class="col-md-3">
-                            <strong>اسم المشترك:</strong> {{ $workOrder->subscriber_name }}
+                            <div class="info-item">
+                                <strong><i class="fas fa-user me-2"></i>اسم المشترك:</strong>
+                                <span class="ms-2">{{ $workOrder->subscriber_name }}</span>
+                            </div>
                         </div>
-                        
                         <div class="col-md-3">
-                            <strong>عدد المواد:</strong> {{ $materials->total() }}
+                            <div class="info-item">
+                                <strong><i class="fas fa-boxes me-2"></i>عدد المواد:</strong>
+                                <span class="badge bg-primary ms-2">{{ $materials->total() }}</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -134,6 +271,10 @@
                                 <thead>
                                     <tr class="bg-light">
                                         <th class="text-center" style="width: 50px">
+                                            <i class="fas fa-list-ol text-muted me-1"></i>
+                                            رقم المسلسل
+                                        </th>
+                                        <th class="text-center" style="width: 50px">
                                             <i class="fas fa-hashtag text-muted me-1"></i>
                                             السطر
                                         </th>
@@ -178,6 +319,9 @@
                                 <tbody>
                                     @foreach($materials as $index => $material)
                                         <tr class="align-middle">
+                                            <td class="text-center">
+                                                <span class="badge bg-light text-dark border">{{ $loop->iteration }}</span>
+                                            </td>
                                             <td class="text-center">
                                                 <span class="badge bg-light text-dark border">{{ $material->line ?: '-' }}</span>
                                             </td>

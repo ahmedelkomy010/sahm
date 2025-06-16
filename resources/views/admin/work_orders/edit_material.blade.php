@@ -2,6 +2,122 @@
 
 @section('title', 'تعديل المادة - أمر العمل رقم ' . $workOrder->order_number)
 
+@push('head')
+<style>
+    /* تنسيق عام */
+    .card {
+        border: none;
+        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+        transition: all 0.3s ease;
+    }
+    
+    /* تنسيق معلومات أمر العمل */
+    .info-card {
+        background: linear-gradient(to right, #f8f9fa, #ffffff);
+        border-radius: 15px;
+        padding: 20px;
+    }
+    .info-item {
+        padding: 10px;
+        border-radius: 8px;
+        background: white;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        margin-bottom: 10px;
+    }
+    .info-item strong {
+        color: #4e73df;
+        font-size: 0.9rem;
+    }
+    
+    /* تنسيق النموذج */
+    .form-section {
+        background: #ffffff;
+        border-radius: 15px;
+        padding: 25px;
+        margin-bottom: 20px;
+    }
+    .form-section h5 {
+        color: #4e73df;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #e3e6f0;
+    }
+    .form-label {
+        color: #5a5c69;
+        font-weight: 500;
+    }
+    .form-control, .form-select {
+        border-radius: 8px;
+        border: 1px solid #e3e6f0;
+        padding: 10px 15px;
+        transition: all 0.3s ease;
+    }
+    .form-control:focus, .form-select:focus {
+        border-color: #4e73df;
+        box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+    }
+    
+    /* تنسيق حقول الكميات */
+    .quantity-input {
+        position: relative;
+    }
+    .quantity-input .form-control {
+        padding-right: 60px;
+    }
+    .quantity-input::after {
+        content: attr(data-unit);
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #858796;
+        font-size: 0.9rem;
+    }
+    
+    /* تنسيق حقول الفروق */
+    .difference-field {
+        background-color: #f8f9fa;
+        border: 1px solid #e3e6f0;
+        border-radius: 8px;
+        padding: 10px 15px;
+        color: #858796;
+        font-weight: 500;
+    }
+    .difference-positive {
+        color: #1cc88a;
+    }
+    .difference-negative {
+        color: #e74a3b;
+    }
+    .difference-zero {
+        color: #858796;
+    }
+    
+    /* تنسيق الأزرار */
+    .btn {
+        border-radius: 8px;
+        padding: 12px 24px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    .btn-primary {
+        background: linear-gradient(45deg, #4e73df, #2e59d9);
+        border: none;
+    }
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(46, 89, 217, 0.2);
+    }
+    .btn-secondary {
+        background: #858796;
+        border: none;
+    }
+    .btn-secondary:hover {
+        background: #6e707e;
+    }
+</style>
+@endpush
+
 @section('content')
 <div class="container-fluid">
     <!-- Header -->
@@ -32,21 +148,32 @@
     <!-- Work Order Info -->
     <div class="row mb-4">
         <div class="col-12">
-            <div class="card">
+            <div class="card info-card">
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-3">
-                            <strong>رقم أمر العمل:</strong> {{ $workOrder->order_number }}
+                            <div class="info-item">
+                                <strong><i class="fas fa-hashtag me-2"></i>رقم أمر العمل:</strong>
+                                <span class="ms-2">{{ $workOrder->order_number }}</span>
+                            </div>
                         </div>
                         <div class="col-md-3">
-                            <strong>اسم المشترك:</strong> {{ $workOrder->subscriber_name }}
+                            <div class="info-item">
+                                <strong><i class="fas fa-user me-2"></i>اسم المشترك:</strong>
+                                <span class="ms-2">{{ $workOrder->subscriber_name }}</span>
+                            </div>
                         </div>
                         <div class="col-md-3">
-                            <strong>نوع العمل:</strong> {{ $workOrder->work_type }}
+                            <div class="info-item">
+                                <strong><i class="fas fa-tasks me-2"></i>نوع العمل:</strong>
+                                <span class="ms-2">{{ $workOrder->work_type }}</span>
+                            </div>
                         </div>
                         <div class="col-md-3">
-                            <strong>حالة أمر العمل:</strong> 
-                            <span class="badge badge-primary">{{ $workOrder->status ?? 'نشط' }}</span>
+                            <div class="info-item">
+                                <strong><i class="fas fa-check-circle me-2"></i>حالة أمر العمل:</strong>
+                                <span class="badge bg-primary ms-2">{{ $workOrder->status ?? 'نشط' }}</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -474,151 +601,56 @@ $(document).ready(function() {
         // إظهار رسالة تحميل
         toastr.info('جاري حفظ التعديلات...');
     });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // الحقول المطلوبة للحساب
+        const plannedQuantityInput = document.getElementById('planned_quantity');
+        const spentQuantityInput = document.getElementById('spent_quantity');
+        const executedQuantityInput = document.getElementById('executed_quantity');
+        const plannedSpentDifferenceInput = document.getElementById('planned_spent_difference');
+        const executedSpentDifferenceInput = document.getElementById('executed_spent_difference');
+
+        // دالة لحساب الفروق
+        function calculateDifferences() {
+            // حساب الفرق بين المخططة والمصروفة
+            const plannedQuantity = parseFloat(plannedQuantityInput.value) || 0;
+            const spentQuantity = parseFloat(spentQuantityInput.value) || 0;
+            const plannedSpentDiff = plannedQuantity - spentQuantity;
+            plannedSpentDifferenceInput.value = plannedSpentDiff.toFixed(2);
+
+            // تغيير لون الفرق بين المخططة والمصروفة
+            if (plannedSpentDiff < 0) {
+                plannedSpentDifferenceInput.style.color = 'red';
+            } else if (plannedSpentDiff > 0) {
+                plannedSpentDifferenceInput.style.color = 'green';
+            } else {
+                plannedSpentDifferenceInput.style.color = 'black';
+            }
+
+            // حساب الفرق بين المنفذة والمصروفة
+            const executedQuantity = parseFloat(executedQuantityInput.value) || 0;
+            const executedSpentDiff = executedQuantity - spentQuantity;
+            executedSpentDifferenceInput.value = executedSpentDiff.toFixed(2);
+
+            // تغيير لون الفرق بين المنفذة والمصروفة
+            if (executedSpentDiff < 0) {
+                executedSpentDifferenceInput.style.color = 'red';
+            } else if (executedSpentDiff > 0) {
+                executedSpentDifferenceInput.style.color = 'green';
+            } else {
+                executedSpentDifferenceInput.style.color = 'black';
+            }
+        }
+
+        // إضافة مستمعي الأحداث للحقول
+        plannedQuantityInput.addEventListener('input', calculateDifferences);
+        spentQuantityInput.addEventListener('input', calculateDifferences);
+        executedQuantityInput.addEventListener('input', calculateDifferences);
+
+        // حساب الفروق عند تحميل الصفحة
+        calculateDifferences();
+    });
 });
 </script>
-
-<style>
-/* تحسين مظهر قسم المرفقات */
-.form-label {
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-}
-
-.form-label i {
-    transition: all 0.3s ease;
-}
-
-.form-control:focus {
-    border-color: #80bdff;
-    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
-}
-
-.form-control.is-valid {
-    border-color: #28a745;
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 8 8'%3e%3cpath fill='%2328a745' d='m2.3 6.73.75-.04L5.95 4.2l-.75-.74L3.33 5.32 2.07 4.07l-.74.75z'/%3e%3c/svg%3e");
-    background-repeat: no-repeat;
-    background-position: right calc(0.375em + 0.1875rem) center;
-    background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
-}
-
-.form-control.is-invalid {
-    border-color: #dc3545;
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' stroke='%23dc3545' viewBox='0 0 12 12'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath d='m5.8 4.6 2.4 2.4M5.8 7 8.2 4.6'/%3e%3c/svg%3e");
-    background-repeat: no-repeat;
-    background-position: right calc(0.375em + 0.1875rem) center;
-    background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
-}
-
-.card {
-    transition: all 0.3s ease;
-    border: 1px solid rgba(0,0,0,.125);
-}
-
-.card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,0,0,.1);
-}
-
-/* تحسين عرض منطقة إسقاط الملفات */
-input[type="file"] {
-    transition: all 0.3s ease;
-}
-
-input[type="file"]:hover {
-    background-color: #f8f9fa;
-}
-
-/* تحسين البطاقة المعلوماتية */
-.card-body .text-muted {
-    transition: color 0.3s ease;
-}
-
-.card:hover .text-muted {
-    color: #495057 !important;
-}
-
-/* تحسين الأيقونات */
-.fa-2x {
-    transition: transform 0.3s ease;
-}
-
-.card:hover .fa-2x {
-    transform: scale(1.1);
-}
-
-/* تحسين عرض الملفات الحالية */
-.text-success a {
-    text-decoration: none;
-    transition: all 0.3s ease;
-}
-
-.text-success a:hover {
-    color: #198754 !important;
-    transform: scale(1.05);
-}
-
-/* تحسين العناوين الفرعية */
-h6 {
-    border-bottom: 2px solid;
-    padding-bottom: 0.5rem;
-}
-
-h6.text-primary {
-    border-color: #0d6efd;
-}
-
-h6.text-success {
-    border-color: #198754;
-}
-
-h6.text-info {
-    border-color: #0dcaf0;
-}
-
-/* مؤشر التحميل لحقل الكود */
-.loading {
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23007bff' viewBox='0 0 16 16'%3e%3cpath d='M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0zM7 4a1 1 0 1 0 2 0 1 1 0 0 0-2 0zm1.5 2.5a.5.5 0 0 0-1 0v3a.5.5 0 0 0 1 0v-3z'/%3e%3c/svg%3e") !important;
-    background-repeat: no-repeat !important;
-    background-position: right calc(0.375em + 0.1875rem) center !important;
-    background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem) !important;
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-/* تحسين زر البحث */
-#search-material-btn {
-    transition: all 0.3s ease;
-}
-
-#search-material-btn:hover {
-    background-color: #0056b3;
-    border-color: #0056b3;
-    transform: translateY(-1px);
-}
-
-#search-material-btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
-
-/* تحسين responsive */
-@media (max-width: 768px) {
-    .form-label {
-        font-size: 0.9rem;
-    }
-    
-    .card-body {
-        padding: 1rem;
-    }
-    
-    h6 {
-        font-size: 1rem;
-    }
-}
-</style>
 @endpush
 @endsection 
