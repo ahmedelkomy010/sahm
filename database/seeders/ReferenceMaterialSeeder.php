@@ -458,9 +458,9 @@ class ReferenceMaterialSeeder extends Seeder
             ['code' => '908569104', 'description' => 'TFMR,U/S, 1.5MVA,AL,13.8KV,400/230V,2500AMAINC.B'],
             ['code' => '908569103', 'description' => 'TFMR,U/S, 1.5MVA,AL,33KV,400/230V,10CK,8MCCB400A,CB'],
             ['code' => '908569102', 'description' => 'TFMR,U/S, 1.5MVA,AL,33KV,400/230V,2500AMAINC.B'],
-            ['code' => '908321106', 'description' => 'SWGR,RMU,AUTO,O/D,2LBS+1CB,13.8KV,3  P'],
-            ['code' => '908321101', 'description' => 'SWGR,RMU,AUTO,O/D,3LBS+1CB,13.8KV,3  P'],
-            ['code' => '908321104', 'description' => 'SWGR,RMU,AUTO,O/D,2LBS+2CB,13.8KV,3  P'],
+            ['code' => '908321106', 'description' => 'SWGR,RMU,AUTO,O/D,2LBS+1CB,13.8KV,3 P'],
+            ['code' => '908321101', 'description' => 'SWGR,RMU,AUTO,O/D,3LBS+1CB,13.8KV,3 P'],
+            ['code' => '908321104', 'description' => 'SWGR,RMU,AUTO,O/D,2LBS+2CB,13.8KV,3 P'],
                 ];
 
         foreach ($materials as $material) {

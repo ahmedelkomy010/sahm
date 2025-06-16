@@ -1,0 +1,89 @@
+/* Toastr RTL Support */
+.toast-container.toast-top-right {
+    left: 20px;
+    right: auto;
+}
+
+.toast-container.toast-top-left {
+    right: 20px;
+    left: auto;
+}
+
+.toast-container.toast-bottom-right {
+    left: 20px;
+    right: auto;
+}
+
+.toast-container.toast-bottom-left {
+    right: 20px;
+    left: auto;
+}
+
+.toast {
+    direction: rtl;
+    text-align: right;
+    font-family: 'Tajawal', sans-serif;
+}
+
+.toast-title {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.toast-message {
+    line-height: 1.4;
+}
+
+.toast-close-button {
+    left: 5px;
+    right: auto;
+}
+
+.toast-progress {
+    left: 0;
+    right: auto;
+}
+
+/* Custom colors for better visibility */
+.toast-success {
+    background-color: #51a351;
+}
+
+.toast-error {
+    background-color: #bd362f;
+}
+
+.toast-warning {
+    background-color: #f89406;
+}
+
+.toast-info {
+    background-color: #2f96b4;
+}
+
+/* Enhanced animations */
+@keyframes toast-in-right {
+    from {
+        transform: translateX(-100%);
+    }
+    to {
+        transform: translateX(0);
+    }
+}
+
+@keyframes toast-out-right {
+    from {
+        transform: translateX(0);
+    }
+    to {
+        transform: translateX(-100%);
+    }
+}
+
+.toast {
+    animation: toast-in-right 0.3s ease-out;
+}
+
+.toast.toast-top-right.toast-out {
+    animation: toast-out-right 0.3s ease-in;
+} 

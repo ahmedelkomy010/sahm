@@ -143,7 +143,7 @@ function addFileToTable(fileData) {
 
 // دوال مساعدة
 function getWorkOrderId() {
-    // محاولة الحصول على work order ID من الصفحة
+    // محاولة الحصور على work order ID من الصفحة
     const urlParts = window.location.pathname.split('/');
     const workOrderIndex = urlParts.indexOf('work-orders');
     if (workOrderIndex !== -1 && urlParts[workOrderIndex + 1]) {
@@ -180,6 +180,8 @@ function showSuccessMessage(message) {
         toastr.success(message);
     } else {
         console.log('نجح: ' + message);
+        // Fallback alert
+        alert('نجح: ' + message);
     }
 }
 
@@ -188,7 +190,7 @@ function showErrorMessage(message) {
         toastr.error(message);
     } else {
         console.error('خطأ: ' + message);
-        alert(message);
+        alert('خطأ: ' + message);
     }
 }
 
@@ -197,7 +199,7 @@ function showWarningMessage(message) {
         toastr.warning(message);
     } else {
         console.warn('تحذير: ' + message);
-        alert(message);
+        alert('تحذير: ' + message);
     }
 }
 

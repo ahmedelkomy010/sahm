@@ -10,15 +10,7 @@
             <div class="d-flex justify-content-between align-items-center">
                 <div>
                     <h1 class="h3 mb-0 text-gray-800">تفاصيل المادة: {{ $material->code }}</h1>
-                    <nav aria-label="breadcrumb">
-                        <ol class="breadcrumb">
-                            <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">الرئيسية</a></li>
-                            <li class="breadcrumb-item"><a href="{{ route('admin.work-orders.index') }}">أوامر العمل</a></li>
-                            <li class="breadcrumb-item"><a href="{{ route('admin.work-orders.show', $material->workOrder) }}">أمر العمل {{ $material->work_order_number }}</a></li>
-                            <li class="breadcrumb-item"><a href="{{ route('admin.work-orders.materials.index', $material->workOrder) }}">المواد</a></li>
-                            <li class="breadcrumb-item active" aria-current="page">تفاصيل المادة</li>
-                        </ol>
-                    </nav>
+                    
                 </div>
                 <div>
                     <a href="{{ route('admin.work-orders.materials.edit', [$material->workOrder, $material]) }}" class="btn btn-warning">
@@ -38,25 +30,39 @@
     <!-- Work Order Info -->
     <div class="row mb-4">
         <div class="col-12">
-            <div class="card">
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-3">
-                            <strong>رقم أمر العمل:</strong> {{ $material->work_order_number }}
+        <div class="card-body py-3">
+                    <div class="row align-items-center">
+                        <div class="col-md-3 col-sm-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-hashtag text-primary me-2 fs-5"></i>
+                                <div>
+                                    <small class="text-muted d-block">رقم الطلب</small>
+                                    <strong class="text-primary fs-6">{{ $workOrder->order_number }}</strong>
+                                </div>
+                            </div>
                         </div>
-                        <div class="col-md-3">
-                            <strong>اسم المشترك:</strong> {{ $material->subscriber_name }}
+                        <div class="col-md-3 col-sm-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-tools text-warning me-2 fs-5"></i>
+                                <div>
+                                    <small class="text-muted d-block">نوع العمل</small>
+                                    <strong class="fs-6">{{ $workOrder->work_type }}</strong>
+                                </div>
+                            </div>
                         </div>
-                        <div class="col-md-3">
-                            <strong>نوع العمل:</strong> {{ $material->workOrder->work_type ?? '-' }}
+                        <div class="col-md-3 col-sm-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-user text-info me-2 fs-5"></i>
+                                <div>
+                                    <small class="text-muted d-block">اسم المشترك</small>
+                                    <strong class="fs-6">{{ $workOrder->subscriber_name }}</strong>
+                                </div>
+                            </div>
                         </div>
-                        <div class="col-md-3">
-                            <strong>حالة أمر العمل:</strong> 
-                            <span class="badge badge-primary">{{ $material->workOrder->status ?? 'نشط' }}</span>
-                        </div>
+                        
+                        
                     </div>
                 </div>
-            </div>
         </div>
     </div>
 
