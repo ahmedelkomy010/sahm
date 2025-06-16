@@ -3098,11 +3098,7 @@
                             <i class="fas fa-check-circle me-2"></i>
                             الرخصة النشطة حالياً
                         </h6>
-                        <p class="mb-0">
-                            رقم الرخصة: <strong class="text-primary">#${licenseId}</strong>
-                            <br>
-                            <small class="text-muted">جميع البيانات الجديدة ستُحفظ في هذه الرخصة</small>
-                        </p>
+                        
                     </div>
                     <div>
                         <button type="button" class="btn btn-outline-secondary btn-sm me-2" onclick="viewCurrentLicenseInTable(${licenseId})">
