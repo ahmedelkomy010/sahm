@@ -7,8 +7,9 @@
             <i class="fas fa-tasks me-2" style="color:#007bff;"></i>
             إجراءات ما بعد التنفيذ
         </h2>
-        <a href="{{ route('admin.work-orders.show', $workOrder->id) }}" class="btn btn-outline-secondary">&larr; عودة إلى تفاصيل أمر العمل</a>
-    </div>
+        <a href="{{ route('admin.work-orders.show', $workOrder) }}" class="btn btn-primary">
+                            <i class="fas fa-arrow-right"></i> عودة الي تفاصيل أمر العمل  
+                        </a>    </div>
 
     <!-- معلومات أمر العمل -->
     <div class="row mb-4">

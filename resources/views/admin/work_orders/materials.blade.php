@@ -138,17 +138,21 @@
     <div class="row mb-4">
         <div class="col-12">
             <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    
+                <div class="d-flex align-items-center">
+                    <h3 class="mb-0 fs-4 text-primary">المواد</h3>
                 </div>
                 <div>
-                    <a href="{{ route('admin.work-orders.materials.create', $workOrder) }}" class="btn btn-primary">
+                    
+                    @if($materials->count() > 0)
+                        <a href="{{ route('admin.work-orders.show', $workOrder) }}" class="btn btn-primary">
+                            <i class="fas fa-arrow-right"></i> عودة الي تفاصيل أمر العمل  
+                        </a>
+                        <br>
+                    <br>
+                        <a href="{{ route('admin.work-orders.materials.create', $workOrder) }}" class="btn btn-secondary">
                         <i class="fas fa-plus"></i> إضافة مادة جديدة
                     </a>
-                    @if($materials->count() > 0)
-                        <a href="{{ route('admin.work-orders.show', $workOrder) }}" class="btn btn-secondary">
-                            <i class="fas fa-arrow-right"></i> العودة 
-                        </a>
+                    
                     @endif
                 </div>
             </div>

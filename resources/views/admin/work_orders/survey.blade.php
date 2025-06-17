@@ -7,9 +7,9 @@
             <div class="card shadow-lg border-0">
                 <div class="card-header bg-primary text-white py-3 d-flex justify-content-between align-items-center">
                     <h3 class="mb-0 fs-4">المسح</h3>
-                    <a href="{{ route('admin.work-orders.show', $workOrder) }}" class="btn btn-light btn-sm">
-                        <i class="fas fa-arrow-right"></i> عودة
-                    </a>
+                    <a href="{{ route('admin.work-orders.show', $workOrder) }}" class="btn btn-primary">
+                            <i class="fas fa-arrow-right"></i> عودة الي تفاصيل أمر العمل  
+                        </a>
                 </div>
 
                 <div class="card-body p-4">

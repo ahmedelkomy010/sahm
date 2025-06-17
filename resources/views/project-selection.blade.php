@@ -2,9 +2,18 @@
 
 @section('content')
 <div class="py-12 bg-gray-50 project-selection-container">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+        <!-- Dashboard Link -->
+        <div class="absolute left-4 top-0">
+            <a href="{{ route('admin.dashboard') }}" 
+               class="inline-flex items-center bg-gray-200 hover:bg-gray-300 text-gray-700 py-2 px-4 rounded-lg shadow-sm hover:shadow transition-all duration-200">
+               <i class="fas fa-home ml-2"></i>
+               العودة إلى لوحة التحكم
+            </a>
+        </div>
+
         <!-- Header Section -->
-        <div class="text-center mb-8">
+        <div class="text-center mb-8 pt-12">
             <h1 class="text-3xl font-bold text-gray-800 mb-3">اختيار المشروع</h1>
             <p class="text-gray-600 text-lg mb-4">الرجاء اختيار المشروع الذي ترغب في العمل عليه</p>
             <div class="flex items-center justify-center">
@@ -23,9 +32,9 @@
                         <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mr-4 border border-blue-200">
                             <i class="fas fa-city text-blue-500 text-xl"></i>
                         </div>
-                        <h3 class="text-2xl font-bold text-blue-700">مشروع الرياض</h3>
+                        <h3 class="text-2xl font-bold text-blue-700"> إدارة مدينة الرياض</h3>
                     </div>
-                    <p class="text-gray-600 mb-6">مشروع العقد الموحد في منطقة الرياض لإدارة وتنفيذ أوامر العمل</p>
+                    <p class="text-gray-600 mb-6"> العقد الموحد رقم 4400015737</p>
                     <a href="{{ route('admin.work-orders.index', ['project' => 'riyadh']) }}" 
                         class="block w-full bg-blue-600 hover:bg-blue-700 text-white text-center font-medium py-3 px-4 rounded-lg transition-colors duration-200">
                         <i class="fas fa-arrow-left mr-2"></i>
@@ -41,9 +50,9 @@
                         <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mr-4 border border-green-200">
                             <i class="fas fa-mosque text-green-500 text-xl"></i>
                         </div>
-                        <h3 class="text-2xl font-bold text-green-700">مشروع المدينة المنورة</h3>
+                        <h3 class="text-2xl font-bold text-green-700">إدارة المدينة المنورة</h3>
                     </div>
-                    <p class="text-gray-600 mb-6">مشروع العقد الموحد في المدينة المنورة لإدارة وتنفيذ أوامر العمل</p>
+                    <p class="text-gray-600 mb-6">العقد الموحد رقم 4400019706</p>
                     <a href="{{ route('admin.dashboard', ['project' => 'madinah']) }}" 
                         class="block w-full bg-green-600 hover:bg-green-700 text-white text-center font-medium py-3 px-4 rounded-lg transition-colors duration-200">
                         <i class="fas fa-arrow-left mr-2"></i>
@@ -51,15 +60,6 @@
                     </a>
                 </div>
             </div>
-        </div>
-
-        <!-- Footer Link -->
-        <div class="text-center">
-            <a href="{{ route('admin.dashboard') }}" 
-               class="inline-flex items-center bg-gray-200 hover:bg-gray-300 text-gray-700 py-2 px-6 rounded-lg shadow-sm hover:shadow transition-all duration-200">
-               <i class="fas fa-home ml-2"></i>
-               العودة إلى لوحة التحكم
-            </a>
         </div>
     </div>
 </div>

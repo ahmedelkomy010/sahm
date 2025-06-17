@@ -130,11 +130,9 @@
                             <a href="{{ route('admin.work-orders.actions-execution', $workOrder) }}" class="custom-btn btn-actions">
                                 <i class="fas fa-cogs me-1"></i> إجراءات ما بعد التنفيذ
                             </a>
-                            <a href="{{ route('admin.work-orders.edit', $workOrder) }}" class="custom-btn btn-edit">
-                                <i class="fas fa-edit"></i> تعديل
-                            </a>
+                            
                             <a href="{{ route('admin.work-orders.index') }}" class="custom-btn btn-back">
-                                <i class="fas fa-arrow-right me-1"></i> عودة
+                                <i class="fas fa-arrow-right me-1"></i> عودة لأوامر العمل   
                             </a>
                         </div>
                     </div>

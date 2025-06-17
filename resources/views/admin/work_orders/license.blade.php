@@ -16,9 +16,9 @@
                                   إدارة الجودة والرخص  {{ $workOrder->order_number }}
                             </h3>
                             <div class="d-flex flex-wrap justify-content-center gap-2">
-                                <a href="{{ route('admin.work-orders.show', $workOrder) }}" class="btn btn-back btn-sm">
-                                    <i class="fas fa-arrow-right"></i> عودة لتفاصيل العمل
-                                </a>
+                            <a href="{{ route('admin.work-orders.show', $workOrder) }}" class="btn btn-primary">
+                            <i class="fas fa-arrow-right"></i> عودة الي تفاصيل أمر العمل  
+                        </a>
                             </div>
                         </div>
                     </div> 
