@@ -83,17 +83,7 @@
                                                    placeholder="أدخل رقم شهادة التنسيق">
                                         </div>
 
-                                        <div class="col-12">
-                                            <label class="form-label">مرفق الخطابات والتعهدات</label>
-                                            <input type="file" class="form-control" name="letters_commitments_files[]" multiple accept=".pdf,.jpg,.jpeg,.png">
-                                            @if(isset($license) && $license->letters_commitments_file_path)
-                                                <div class="mt-2">
-                                                    <a href="#" class="btn btn-sm btn-outline-info">
-                                                        <i class="fas fa-eye"></i> عرض الخطابات والتعهدات الحالية
-                                                    </a>
-                                                </div>
-                                            @endif
-                                        </div>
+                                        
                                         <div class="col-md-6">
                                             <label for="has_restriction" class="form-label">يوجد حظر؟</label>
                                             <select class="form-select" name="has_restriction" id="has_restriction">
@@ -106,6 +96,17 @@
                                             <input type="text" class="form-control" id="restriction_authority" name="restriction_authority" 
                                                    value="{{ old('restriction_authority') }}" 
                                                    placeholder="اسم الجهة المسؤولة عن الحظر">
+                                                   <div class="col-12">
+                                            <label class="form-label">مرفق الخطابات والتعهدات</label>
+                                            <input type="file" class="form-control" name="letters_commitments_files[]" multiple accept=".pdf,.jpg,.jpeg,.png">
+                                            @if(isset($license) && $license->letters_commitments_file_path)
+                                                <div class="mt-2">
+                                                    <a href="#" class="btn btn-sm btn-outline-info">
+                                                        <i class="fas fa-eye"></i> عرض الخطابات والتعهدات الحالية
+                                                    </a>
+                                                </div>
+                                            @endif
+                                        </div>
                                         </div>
                                     </div>
                                     
@@ -171,7 +172,7 @@
                                                            value="{{ old('license_number', isset($license) ? $license->license_number : '') }}">
                                                 </div>
                                                 <div class="col-md-6">
-                                                    <label for="license_date" class="form-label">تاريخ الرخصة</label>
+                                                    <label for="license_date" class="form-label"> تاريخ اصدار الرخصة</label>
                                                     <input type="date" class="form-control" id="license_date" name="license_date" 
                                                            value="{{ old('license_date', isset($license) ? $license->license_date : '') }}">
                                                 </div>
@@ -234,7 +235,7 @@
                                         <div class="card-body">
                                             <div class="row g-3">
                                                 <div class="col-md-4">
-                                                    <label class="form-label">تاريخ بداية الرخصة</label>
+                                                    <label class="form-label">تاريخ تفعيل الرخصة</label>
                                                     <input type="date" class="form-control" name="license_start_date" id="dig_license_start_date"
                                                            value="{{ old('license_start_date', isset($license) ? $license->license_start_date : '') }}">
                                                 </div>
@@ -308,13 +309,10 @@
                                                     <input type="file" class="form-control" name="payment_invoices[]" multiple>
                                                 </div>
                                                 <div class="col-md-6">
-                                                    <label class="form-label">إثبات السداد</label>
+                                                    <label class="form-label">إثبات سداد البنك</label>
                                                     <input type="file" class="form-control" name="payment_proof[]" multiple>
                                                 </div>
-                                                <div class="col-md-6">
-                                                    <label class="form-label">تفعيل الرخصة</label>
-                                                    <input type="file" class="form-control" name="license_activation[]" multiple>
-                                                </div>
+                                                
                                             </div>
                                         </div>
                                     </div>
@@ -515,19 +513,7 @@
                                                 <input type="text" class="form-control" name="evac_license_number"
                                                        value="{{ old('evac_license_number') }}">
                                             </div>
-                                            <div class="col-md-4">
-                                                <label class="form-label">قيمة الرخصة</label>
-                                                <div class="input-group">
-                                                    <input type="number" step="0.01" class="form-control" name="evac_license_value"
-                                                           value="{{ old('evac_license_value') }}">
-                                                    <span class="input-group-text">ريال</span>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <label class="form-label">رقم سداد الرخصة</label>
-                                                <input type="text" class="form-control" name="evac_payment_number"
-                                                       value="{{ old('evac_payment_number') }}">
-                                            </div>
+                                        
                                             <div class="col-md-6">
                                                 <label class="form-label">تاريخ الإخلاء</label>
                                                 <input type="date" class="form-control" name="evac_date"
@@ -663,12 +649,12 @@
                                                            value="{{ old('violation_license_number') }}">
                                                 </div>
                                                 <div class="col-md-6">
-                                                    <label class="form-label">قيمة الرخصة</label>
+                                                    <label class="form-label">قيمة المخالفة</label>
                                                     <input type="number" step="0.01" class="form-control" name="violation_license_value"
                                                            value="{{ old('violation_license_value') }}">
                                                 </div>
                                                 <div class="col-md-6">
-                                                    <label class="form-label">تاريخ الرخصة</label>
+                                                    <label class="form-label">تاريخ المخالفة</label>
                                                     <input type="date" class="form-control" name="violation_license_date"
                                                            value="{{ old('violation_license_date') }}">
                                                 </div>
@@ -683,12 +669,17 @@
                                                            value="{{ old('violation_number') }}">
                                                 </div>
                                                 <div class="col-md-6">
-                                                    <label class="form-label">رقم سداد المخالفة</label>
+                                                    <label class="form-label">رقم فاتورة السداد </label>
                                                     <input type="text" class="form-control" name="violation_payment_number"
                                                            value="{{ old('violation_payment_number') }}">
                                                 </div>
-                                                <div class="col-12">
-                                                    <label class="form-label">المسبب</label>
+                                                <div class="col-6">
+                                                    <label class="form-label">المتسبب</label>
+                                                    <input type="text" class="form-control" name="violation_cause"
+                                                           value="{{ old('violation_cause') }}">
+                                                </div>
+                                                <div class="col-6">
+                                                    <label class="form-label">وصف المخالفة </label>
                                                     <input type="text" class="form-control" name="violation_cause"
                                                            value="{{ old('violation_cause') }}">
                                                 </div>
