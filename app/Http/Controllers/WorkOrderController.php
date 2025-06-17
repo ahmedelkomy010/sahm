@@ -1280,16 +1280,63 @@ class WorkOrderController extends Controller
      */
     public function importWorkItems(Request $request)
     {
-        $request->validate([
-            'excel_file' => 'required|file|mimes:xlsx,xls,csv|max:10240', // 10MB max
+        // إضافة logging للتشخيص
+        \Log::info('Import work items started', [
+            'has_file' => $request->hasFile('excel_file'),
+            'file_size' => $request->hasFile('excel_file') ? $request->file('excel_file')->getSize() : 0
         ]);
 
         try {
+            $request->validate([
+                'excel_file' => 'required|file|mimes:xlsx,xls,csv|max:10240', // 10MB max
+            ]);
+
+            \Log::info('Validation passed');
+
+            // التحقق من وجود الملف
+            if (!$request->hasFile('excel_file')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'لم يتم العثور على الملف'
+                ], 400);
+            }
+
+            $file = $request->file('excel_file');
+            \Log::info('File details', [
+                'original_name' => $file->getClientOriginalName(),
+                'mime_type' => $file->getMimeType(),
+                'size' => $file->getSize()
+            ]);
+
+            // التحقق من أن مكتبة Excel متاحة
+            if (!class_exists('\Maatwebsite\Excel\Facades\Excel')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'مكتبة Excel غير متاحة'
+                ], 500);
+            }
+
+            // التحقق من أن كلاس WorkItemsImport يعمل
+            if (!class_exists('\App\Imports\WorkItemsImport')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'كلاس الاستيراد غير متاح'
+                ], 500);
+            }
+
             $import = new \App\Imports\WorkItemsImport(0);
-            \Maatwebsite\Excel\Facades\Excel::import($import, $request->file('excel_file'));
+            \Log::info('Import class created successfully');
+
+            \Maatwebsite\Excel\Facades\Excel::import($import, $file);
+            \Log::info('Excel import completed');
 
             $importedItems = $import->getImportedItems();
             $errors = $import->errors();
+
+            \Log::info('Import results', [
+                'imported_count' => count($importedItems),
+                'errors_count' => count($errors)
+            ]);
 
             return response()->json([
                 'success' => true,
@@ -1300,8 +1347,21 @@ class WorkOrderController extends Controller
                 'imported_items' => $importedItems
             ]);
 
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            \Log::error('Validation error:', $e->errors());
+            return response()->json([
+                'success' => false,
+                'message' => 'خطأ في التحقق من صحة البيانات: ' . implode(', ', $e->errors()['excel_file'] ?? ['خطأ غير محدد'])
+            ], 422);
+
         } catch (\Exception $e) {
-            \Log::error('Error importing work items: ' . $e->getMessage());
+            \Log::error('Error importing work items:', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
             return response()->json([
                 'success' => false,
                 'message' => 'حدث خطأ أثناء استيراد الملف: ' . $e->getMessage()

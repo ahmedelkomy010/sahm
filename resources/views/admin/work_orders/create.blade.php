@@ -327,28 +327,36 @@
                     <div class="row mt-2">
                         <div class="col-md-6">
                             <strong>بالإنجليزية:</strong>
-                            <ul class="mb-0 mt-1">
-                                <li><code>Item</code> - كود/رقم البند</li>
-                                <li><code>Long Description</code> - الوصف الكامل</li>
-                                <li><code>UOM</code> - وحدة القياس</li>
-                                <li><code>Unit Price</code> - سعر الوحدة</li>
+                            <ul class="mb-0 mt-1 small">
+                                <li><code>Item</code> أو <code>Code</code> - كود/رقم البند</li>
+                                <li><code>Long Description</code> أو <code>Description</code> - الوصف الكامل</li>
+                                <li><code>UOM</code> أو <code>Unit</code> - وحدة القياس</li>
+                                <li><code>Unit Price</code> أو <code>Price</code> - سعر الوحدة</li>
                             </ul>
                         </div>
                         <div class="col-md-6">
                             <strong>بالعربية:</strong>
-                            <ul class="mb-0 mt-1">
-                                <li><code>البند</code> أو <code>كود</code></li>
-                                <li><code>الوصف الكامل</code> أو <code>الوصف</code></li>
-                                <li><code>الوحدة</code> أو <code>وحدة</code></li>
-                                <li><code>سعر الوحدة</code> أو <code>السعر</code></li>
+                            <ul class="mb-0 mt-1 small">
+                                <li><code>البند</code> أو <code>كود</code> أو <code>رقم</code></li>
+                                <li><code>الوصف الكامل</code> أو <code>الوصف</code> أو <code>تفاصيل</code></li>
+                                <li><code>الوحدة</code> أو <code>وحدة القياس</code></li>
+                                <li><code>سعر الوحدة</code> أو <code>السعر</code> أو <code>التكلفة</code></li>
                             </ul>
                         </div>
                     </div>
-                    <div class="mt-2">
-                        <small class="text-muted">
-                            <i class="fas fa-lightbulb me-1"></i>
-                            <strong>ملاحظة:</strong> النظام يدعم الأعمدة بأسماء مختلفة وسيتعرف عليها تلقائياً
-                        </small>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <div class="alert alert-success border-success bg-light py-2">
+                                <i class="fas fa-magic me-2"></i>
+                                <strong>ذكي ومرن:</strong> النظام يتعرف تلقائياً على أسماء الأعمدة المختلفة ويدعم:
+                                <ul class="mb-0 mt-1 small">
+                                    <li>الأعمدة باللغة العربية والإنجليزية</li>
+                                    <li>أسماء مختلفة للعمود الواحد (مثل: Item, Code, البند, كود)</li>
+                                    <li>تنظيف البيانات تلقائياً وإزالة الأحرف غير المرغوبة</li>
+                                    <li>تحويل الوحدات الإنجليزية إلى العربية (مثل: Each → عدد)</li>
+                                </ul>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 
@@ -357,9 +365,35 @@
                     <div class="mb-3">
                         <label for="excel_file" class="form-label">اختر ملف Excel</label>
                         <input type="file" class="form-control" id="excel_file" name="excel_file" 
-                               accept=".xlsx,.xls,.csv" required>
+                               accept=".xlsx,.xls,.csv" required onchange="previewExcelFile(this)">
                         <div class="form-text">
                             الأنواع المدعومة: Excel (.xlsx, .xls) أو CSV (.csv) - الحد الأقصى 10 ميجابايت
+                        </div>
+                    </div>
+                    
+                    <!-- معاينة الملف -->
+                    <div id="filePreview" class="d-none">
+                        <div class="card border-info">
+                            <div class="card-header bg-info text-white py-2">
+                                <h6 class="mb-0">
+                                    <i class="fas fa-eye me-2"></i>
+                                    معاينة الملف المحدد
+                                </h6>
+                            </div>
+                            <div class="card-body p-2">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <small><strong>اسم الملف:</strong> <span id="fileName"></span></small>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <small><strong>حجم الملف:</strong> <span id="fileSize"></span></small>
+                                    </div>
+                                </div>
+                                <div class="alert alert-warning py-2 mt-2 mb-0">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    <small>تأكد من أن الملف يحتوي على الأعمدة المطلوبة قبل الرفع</small>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </form>
@@ -398,6 +432,22 @@
                                     <tbody>
                                         <tr>
                                             <td>A1</td>
+                                            <td>إنشاء وصيانة شبكات التوزيع - شامل توفير جميع المعدات والأدوات</td>
+                                            <td>KM</td>
+                                            <td>1527.00</td>
+                                        </tr>
+                                        <tr>
+                                            <td>101000000</td>
+                                            <td>أعمال المسح ورفع المعلومات الجغرافية</td>
+                                            <td>EA</td>
+                                            <td>629.00</td>
+                                        </tr>
+                                        <tr>
+                                            <td>101000001</td>
+                                            <td>أعمال المسح الأرضي للخطوط والمحطات</td>
+                                            <td>KM</td>
+                                            <td>1527.00</td>
+                                        </tr>
                                             <td>CONSTRUCTION AND MAINTENANCE OF DISTRIBUTION NETWORKS</td>
                                             <td>LS</td>
                                             <td>100000000</td>
@@ -844,7 +894,7 @@ function importExcelFile() {
     document.getElementById('importProgress').classList.remove('d-none');
     document.getElementById('importResults').innerHTML = '';
     
-    fetch('{{ route("admin.work-orders.import-work-items") }}', {
+    fetch('/work-orders/import-work-items', {
         method: 'POST',
         body: formData,
         headers: {
@@ -1013,6 +1063,188 @@ function refreshWorkItemsDropdowns(newItems) {
     });
 }
 
+// معاينة الملف المحدد
+function previewExcelFile(input) {
+    const file = input.files[0];
+    const preview = document.getElementById('filePreview');
+    
+    if (file) {
+        // عرض معلومات الملف
+        document.getElementById('fileName').textContent = file.name;
+        document.getElementById('fileSize').textContent = formatFileSize(file.size);
+        preview.classList.remove('d-none');
+        
+        // التحقق من نوع الملف
+        const allowedTypes = [
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
+            'application/vnd.ms-excel', // .xls
+            'text/csv' // .csv
+        ];
+        
+        if (!allowedTypes.includes(file.type)) {
+            showFileError('نوع الملف غير مدعوم. يرجى اختيار ملف Excel أو CSV');
+            return;
+        }
+        
+        // التحقق من حجم الملف (10 ميجابايت)
+        if (file.size > 10 * 1024 * 1024) {
+            showFileError('حجم الملف كبير جداً. الحد الأقصى 10 ميجابايت');
+            return;
+        }
+        
+    } else {
+        preview.classList.add('d-none');
+    }
+}
+
+// عرض خطأ في الملف
+function showFileError(message) {
+    const preview = document.getElementById('filePreview');
+    preview.innerHTML = `
+        <div class="alert alert-danger">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            ${message}
+        </div>
+    `;
+    preview.classList.remove('d-none');
+}
+
+// تنسيق حجم الملف
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 بايت';
+    const k = 1024;
+    const sizes = ['بايت', 'كيلوبايت', 'ميجابايت', 'جيجابايت'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+// تحسين وظيفة الاستيراد
+function importExcelFile() {
+    const fileInput = document.getElementById('excel_file');
+    const file = fileInput.files[0];
+    
+    if (!file) {
+        showImportError('الرجاء اختيار ملف Excel أولاً');
+        return;
+    }
+    
+    // التحقق من نوع الملف مرة أخرى
+    const allowedTypes = [
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'application/vnd.ms-excel',
+        'text/csv'
+    ];
+    
+    if (!allowedTypes.includes(file.type)) {
+        showImportError('نوع الملف غير مدعوم. يرجى اختيار ملف Excel أو CSV');
+        return;
+    }
+    
+    const formData = new FormData();
+    formData.append('excel_file', file);
+    formData.append('_token', document.querySelector('input[name="_token"]').value);
+    
+    // إظهار شريط التقدم
+    showImportProgress('جارٍ رفع الملف...');
+    
+    fetch('/work-orders/import-work-items', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        hideImportProgress();
+        
+        if (data.success) {
+            showImportSuccess(data);
+            
+            // تحديث قائمة بنود العمل في النموذج
+            if (data.imported_items && data.imported_items.length > 0) {
+                refreshWorkItemsDropdowns(data.imported_items);
+            }
+            
+            // إغلاق النافذة بعد 3 ثوان
+            setTimeout(() => {
+                bootstrap.Modal.getInstance(document.getElementById('excelImportModal')).hide();
+            }, 3000);
+            
+        } else {
+            showImportError(data.message || 'حدث خطأ أثناء معالجة الملف');
+        }
+    })
+    .catch(error => {
+        hideImportProgress();
+        console.error('Error:', error);
+        showImportError('حدث خطأ في الاتصال بالخادم. يرجى المحاولة مرة أخرى');
+    });
+}
+
+// إظهار شريط التقدم
+function showImportProgress(message) {
+    const progressDiv = document.getElementById('importProgress');
+    if (progressDiv) {
+        progressDiv.innerHTML = `
+            <div class="d-flex align-items-center">
+                <div class="spinner-border spinner-border-sm text-primary me-2" role="status">
+                    <span class="visually-hidden">جارٍ المعالجة...</span>
+                </div>
+                <span>${message}</span>
+            </div>
+        `;
+        progressDiv.classList.remove('d-none');
+    }
+}
+
+// إخفاء شريط التقدم
+function hideImportProgress() {
+    const progressDiv = document.getElementById('importProgress');
+    if (progressDiv) {
+        progressDiv.classList.add('d-none');
+    }
+}
+
+// إظهار رسالة نجاح
+function showImportSuccess(data) {
+    const resultsDiv = document.getElementById('importResults');
+    if (resultsDiv) {
+        let message = `
+            <div class="alert alert-success">
+                <i class="fas fa-check-circle me-2"></i>
+                <strong>تم الاستيراد بنجاح!</strong>
+                <br><small>تم استيراد ${data.imported_count} عنصر</small>
+        `;
+        
+        if (data.errors_count > 0) {
+            message += `<br><small class="text-warning">تم تجاهل ${data.errors_count} صف بسبب أخطاء في البيانات</small>`;
+        }
+        
+        message += `</div>`;
+        resultsDiv.innerHTML = message;
+    }
+}
+
+// إظهار رسالة خطأ
+function showImportError(message) {
+    const resultsDiv = document.getElementById('importResults');
+    if (resultsDiv) {
+        resultsDiv.innerHTML = `
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <strong>خطأ في الاستيراد:</strong>
+                <br>${message}
+            </div>
+        `;
+    }
+}
+
 // البحث المباشر عند الكتابة
 document.addEventListener('DOMContentLoaded', function() {
     const searchInput = document.getElementById('searchWorkItems');
@@ -1021,6 +1253,22 @@ document.addEventListener('DOMContentLoaded', function() {
             if (e.key === 'Enter') {
                 searchWorkItems();
             }
+        });
+    }
+    
+    // إضافة مستمع لإعادة تعيين النموذج عند إغلاق النافذة
+    const excelModal = document.getElementById('excelImportModal');
+    if (excelModal) {
+        excelModal.addEventListener('hidden.bs.modal', function() {
+            // إعادة تعيين النموذج
+            const form = document.getElementById('excelImportForm');
+            const preview = document.getElementById('filePreview');
+            const results = document.getElementById('importResults');
+            
+            if (form) form.reset();
+            if (preview) preview.classList.add('d-none');
+            if (results) results.innerHTML = '';
+            hideImportProgress();
         });
     }
 });

@@ -6,20 +6,66 @@ use App\Models\WorkItem;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
-use Maatwebsite\Excel\Concerns\SkipsErrors;
 use Maatwebsite\Excel\Concerns\SkipsOnError;
+use Maatwebsite\Excel\Concerns\SkipsErrors;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Str;
 
 class WorkItemsImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnError
 {
     use SkipsErrors;
 
-    protected $workOrderId;
-    protected $importedItems = [];
+    private $workOrderId;
+    private $columnMappings = [];
+    private $importedItems = [];
 
     public function __construct($workOrderId)
     {
         $this->workOrderId = $workOrderId;
+        $this->setupColumnMappings();
+    }
+
+    /**
+     * إعداد خريطة الأعمدة المدعومة
+     */
+    private function setupColumnMappings()
+    {
+        $this->columnMappings = [
+            'code' => ['item', 'code', 'كود', 'البند', 'رقم البند', 'item_code', 'item_no'],
+            'description' => ['description', 'long_description', 'الوصف', 'وصف البند', 'التفاصيل', 'البيان'],
+            'unit' => ['uom', 'unit', 'الوحدة', 'وحدة القياس', 'units'],
+            'unit_price' => ['unit_price', 'price', 'السعر', 'سعر الوحدة', 'التكلفة', 'cost']
+        ];
+    }
+
+    /**
+     * البحث عن قيمة من الصف باستخدام خريطة الأعمدة
+     */
+    private function findValueFromRow(array $row, string $field): string
+    {
+        $possibleKeys = $this->columnMappings[$field] ?? [];
+        
+        foreach ($possibleKeys as $key) {
+            // البحث بالمفتاح الدقيق
+            if (isset($row[$key]) && !empty(trim((string)$row[$key]))) {
+                return trim((string)$row[$key]);
+            }
+            
+            // البحث بالمفتاح بأحرف صغيرة
+            $lowerKey = strtolower($key);
+            if (isset($row[$lowerKey]) && !empty(trim((string)$row[$lowerKey]))) {
+                return trim((string)$row[$lowerKey]);
+            }
+            
+            // البحث في مفاتيح الصف
+            foreach (array_keys($row) as $rowKey) {
+                if (strtolower((string)$rowKey) === $lowerKey && !empty(trim((string)$row[$rowKey]))) {
+                    return trim((string)$row[$rowKey]);
+                }
+            }
+        }
+
+        return '';
     }
 
     /**
@@ -29,37 +75,27 @@ class WorkItemsImport implements ToModel, WithHeadingRow, WithValidation, SkipsO
      */
     public function model(array $row)
     {
-        // تنظيف البيانات - دعم أعمدة متعددة حسب ملف Excel المعروض
-        $code = trim($row['item'] ?? $row['code'] ?? $row['كود'] ?? $row['البند'] ?? '');
-        $description = trim($row['long_description'] ?? $row['description'] ?? $row['الوصف'] ?? $row['وصف'] ?? $row['الوصف الكامل'] ?? $row['الوصف_الكامل'] ?? '');
-        $unit = trim($row['uom'] ?? $row['unit'] ?? $row['الوحدة'] ?? $row['وحدة'] ?? 'عدد');
-        $unitPrice = $this->parsePrice($row['unit_price'] ?? $row['سعر الوحدة'] ?? $row['سعر_الوحدة'] ?? $row['السعر'] ?? 0);
-        $notes = trim($row['notes'] ?? $row['ملاحظات'] ?? '');
+        // تنظيف البيانات باستخدام الخريطة المحسنة
+        $code = $this->findValueFromRow($row, 'code');
+        $description = $this->findValueFromRow($row, 'description');
+        $unit = $this->findValueFromRow($row, 'unit') ?: 'عدد';
+        $unitPrice = $this->parsePrice($this->findValueFromRow($row, 'unit_price'));
 
         // تنظيف الكود - إزالة المسافات والأحرف الغريبة
-        $code = preg_replace('/[^\w\-]/', '', $code);
+        $code = $this->cleanCode($code);
         
-        // إذا كان الكود فارغ، نستخدم رقم تسلسلي من الوصف
+        // إذا كان الكود فارغ، نحاول استخراجه من الوصف أو إنشاء كود فريد
         if (empty($code) && !empty($description)) {
-            // استخراج أي رقم من الوصف أو إنشاء كود فريد
-            preg_match('/\d+/', $description, $matches);
-            if (!empty($matches)) {
-                $code = 'A' . $matches[0];
-            } else {
-                $code = 'WI' . rand(100000000, 999999999);
-            }
+            $code = $this->generateCodeFromDescription($description);
         }
 
-        // تنظيف الوصف من الأحرف غير المرغوبة
-        $description = preg_replace('/[\x00-\x1F\x7F-\xFF]/', ' ', $description);
-        $description = trim(preg_replace('/\s+/', ' ', $description));
+        // تنظيف الوصف
+        $description = $this->cleanDescription($description);
         
         // تنظيف الوحدة
-        $unit = preg_replace('/[\x00-\x1F\x7F-\xFF]/', '', $unit);
-        if (empty($unit)) {
-            $unit = 'عدد';
-        }
+        $unit = $this->cleanUnit($unit);
 
+        // التحقق من وجود البيانات الأساسية
         if (empty($code) || empty($description)) {
             return null;
         }
@@ -71,7 +107,7 @@ class WorkItemsImport implements ToModel, WithHeadingRow, WithValidation, SkipsO
                 'description' => $description,
                 'unit' => $unit,
                 'unit_price' => $unitPrice,
-                'notes' => $notes
+                'notes' => $this->generateNotesFromRow($row)
             ]
         );
 
@@ -80,21 +116,122 @@ class WorkItemsImport implements ToModel, WithHeadingRow, WithValidation, SkipsO
 
         return $workItem;
     }
+
+    /**
+     * تنظيف الكود
+     */
+    private function cleanCode(string $code): string
+    {
+        $code = trim($code);
+        // إزالة الأحرف غير المرغوبة والاحتفاظ بالأرقام والحروف والشرطات
+        $code = preg_replace('/[^\w\-]/', '', $code);
+        return $code;
+    }
+
+    /**
+     * توليد كود من الوصف
+     */
+    private function generateCodeFromDescription(string $description): string
+    {
+        // استخراج أي رقم من الوصف
+        preg_match('/\d+/', $description, $matches);
+        if (!empty($matches)) {
+            return 'A' . $matches[0];
+        }
+        
+        // استخراج أول كلمة من الوصف
+        $words = explode(' ', trim($description));
+        if (!empty($words[0])) {
+            $firstWord = preg_replace('/[^\w]/', '', $words[0]);
+            if (strlen($firstWord) > 0) {
+                return strtoupper(substr($firstWord, 0, 3)) . rand(100, 999);
+            }
+        }
+        
+        // إنشاء كود عشوائي
+        return 'WI' . rand(100000, 999999);
+    }
+
+    /**
+     * تنظيف الوصف
+     */
+    private function cleanDescription(string $description): string
+    {
+        $description = trim($description);
+        // إزالة الأحرف غير المطبوعة
+        $description = preg_replace('/[\x00-\x1F\x7F]/', ' ', $description);
+        // توحيد المسافات
+        $description = preg_replace('/\s+/', ' ', $description);
+        // تنظيف علامات الترقيم المكررة
+        $description = preg_replace('/[,،]{2,}/', '، ', $description);
+        
+        return trim($description);
+    }
+
+    /**
+     * تنظيف الوحدة
+     */
+    private function cleanUnit(string $unit): string
+    {
+        $unit = trim($unit);
+        // إزالة الأحرف غير المطبوعة
+        $unit = preg_replace('/[\x00-\x1F\x7F]/', '', $unit);
+        
+        // خريطة الوحدات الشائعة
+        $unitMappings = [
+            'each' => 'عدد',
+            'ech' => 'عدد',
+            'pcs' => 'قطعة',
+            'piece' => 'قطعة',
+            'meter' => 'متر',
+            'm' => 'متر',
+            'km' => 'كيلومتر',
+            'l.m' => 'متر طولي',
+            'lm' => 'متر طولي',
+            'kit' => 'طقم'
+        ];
+        
+        $lowerUnit = strtolower($unit);
+        return $unitMappings[$lowerUnit] ?? ($unit ?: 'عدد');
+    }
+
+    /**
+     * إنشاء ملاحظات من بيانات الصف
+     */
+    private function generateNotesFromRow(array $row): string
+    {
+        $notes = [];
+        
+        // إضافة أي معلومات إضافية من الصف
+        $additionalFields = ['notes', 'ملاحظات', 'تعليقات', 'remarks'];
+        foreach ($additionalFields as $field) {
+            if (isset($row[$field]) && !empty(trim((string)$row[$field]))) {
+                $notes[] = trim((string)$row[$field]);
+            }
+        }
+        
+        return implode('; ', $notes);
+    }
     
     /**
      * تنظيف وتحويل السعر إلى رقم
      */
-    private function parsePrice($price)
+    private function parsePrice($price): float
     {
         if (is_numeric($price)) {
             return floatval($price);
         }
         
-        // إزالة العملات والفواصل
-        $price = str_replace(['$', '€', '£', '₪', 'ريال', 'درهم', ','], '', $price);
+        if (empty($price)) {
+            return 0.0;
+        }
+        
+        // إزالة العملات والفواصل والنصوص
+        $price = preg_replace('/[^\d.,\-]/', '', (string)$price);
+        $price = str_replace(',', '.', $price);
         $price = trim($price);
         
-        return is_numeric($price) ? floatval($price) : 0;
+        return is_numeric($price) ? floatval($price) : 0.0;
     }
 
     /**
@@ -103,67 +240,36 @@ class WorkItemsImport implements ToModel, WithHeadingRow, WithValidation, SkipsO
     public function rules(): array
     {
         return [
-            // أعمدة الكود/البند
-            '*.item' => ['nullable', 'string', 'max:50'],
-            '*.code' => ['nullable', 'string', 'max:50'],
-            '*.كود' => ['nullable', 'string', 'max:50'],
-            '*.البند' => ['nullable', 'string', 'max:50'],
-            
-            // أعمدة الوصف
-            '*.long_description' => ['nullable', 'string', 'max:1000'],
-            '*.description' => ['nullable', 'string', 'max:1000'],
-            '*.الوصف' => ['nullable', 'string', 'max:1000'],
-            '*.الوصف الكامل' => ['nullable', 'string', 'max:1000'],
-            '*.الوصف_الكامل' => ['nullable', 'string', 'max:1000'],
-            '*.وصف' => ['nullable', 'string', 'max:1000'],
-            
-            // أعمدة الوحدة
-            '*.uom' => ['nullable', 'string', 'max:50'],
-            '*.unit' => ['nullable', 'string', 'max:50'],
-            '*.الوحدة' => ['nullable', 'string', 'max:50'],
-            '*.وحدة' => ['nullable', 'string', 'max:50'],
-            
-            // أعمدة السعر
-            '*.unit_price' => ['nullable'],
-            '*.سعر الوحدة' => ['nullable'],
-            '*.سعر_الوحدة' => ['nullable'],
-            '*.السعر' => ['nullable'],
+            // قواعد مرنة للأعمدة المختلفة
+            '*' => ['nullable']
         ];
     }
 
     /**
      * @return array
      */
-    public function customValidationMessages()
+    public function customValidationMessages(): array
     {
         return [
-            // رسائل الكود
-            'item.max' => 'كود العنصر يجب ألا يتجاوز 50 حرف',
-            'code.max' => 'كود العنصر يجب ألا يتجاوز 50 حرف',
-            'كود.max' => 'كود العنصر يجب ألا يتجاوز 50 حرف',
-            'البند.max' => 'كود العنصر يجب ألا يتجاوز 50 حرف',
-            
-            // رسائل الوصف
-            'long_description.max' => 'وصف العنصر يجب ألا يتجاوز 1000 حرف',
-            'description.max' => 'وصف العنصر يجب ألا يتجاوز 1000 حرف',
-            'الوصف.max' => 'وصف العنصر يجب ألا يتجاوز 1000 حرف',
-            'الوصف الكامل.max' => 'وصف العنصر يجب ألا يتجاوز 1000 حرف',
-            'الوصف_الكامل.max' => 'وصف العنصر يجب ألا يتجاوز 1000 حرف',
-            'وصف.max' => 'وصف العنصر يجب ألا يتجاوز 1000 حرف',
-            
-            // رسائل الوحدة
-            'uom.max' => 'الوحدة يجب ألا تتجاوز 50 حرف',
-            'unit.max' => 'الوحدة يجب ألا تتجاوز 50 حرف',
-            'الوحدة.max' => 'الوحدة يجب ألا تتجاوز 50 حرف',
-            'وحدة.max' => 'الوحدة يجب ألا تتجاوز 50 حرف',
+            'required' => 'هذا الحقل مطلوب',
+            'max' => 'القيمة تتجاوز الحد المسموح',
+            'numeric' => 'يجب أن تكون القيمة رقماً'
         ];
     }
 
     /**
      * Get imported items
      */
-    public function getImportedItems()
+    public function getImportedItems(): array
     {
         return $this->importedItems;
+    }
+
+    /**
+     * Get column mappings for debugging
+     */
+    public function getColumnMappings(): array
+    {
+        return $this->columnMappings;
     }
 } 
