@@ -131,7 +131,7 @@
                     <input type="number" step="0.01" name="first_partial_payment_without_tax" class="form-control" value="{{ old('first_partial_payment_without_tax', $workOrder->first_partial_payment_without_tax) }}">
                 </div>
                 <div class="col-md-4 col-12 mb-2">
-                    <label class="form-label">قيمة الدفعة الجزئية الثانية شامل الضريبة الدفعتين:</label>
+                    <label class="form-label">قيمة الدفعة الجزئية الثانية غير شامل الضريبة:</label>
                     <input type="number" step="0.01" name="second_partial_payment_with_tax" class="form-control" value="{{ old('second_partial_payment_with_tax', $workOrder->second_partial_payment_with_tax) }}">
                 </div>
                 <div class="col-md-4 col-12 mb-2">
@@ -143,8 +143,12 @@
                     <input type="date" name="procedure_155_delivery_date" class="form-control" value="{{ old('procedure_155_delivery_date', $workOrder->procedure_155_delivery_date ? $workOrder->procedure_155_delivery_date->format('Y-m-d') : '') }}">
                 </div>
                 <div class="col-md-4 col-12 mb-2">
-                    <label class="form-label">القيمة الكلية النهائية:</label>
+                    <label class="form-label">القيمة الكلية النهائية غير شامل الضريبة:</label>
                     <input type="number" step="0.01" name="final_total_value" class="form-control" value="{{ old('final_total_value', $workOrder->final_total_value) }}">
+                </div>
+                <div class="col-md-4 col-12 mb-2">
+                    <label class="form-label">اختبارات ما قبل التشغيل:</label>
+                    <input type="text" name="pre_operation_tests" class="form-control" value="{{ old('pre_operation_tests', $workOrder->pre_operation_tests) }}">
                 </div>
                 <div class="form-group mb-3">
                                     <label for="execution_status" class="form-label fw-bold">حالة تنفيذ أمر العمل</label>

@@ -166,6 +166,7 @@ class WorkOrderController extends Controller
                 'procedure_155_delivery_date',
                 'final_total_value',
                 'execution_status',
+                'pre_operation_tests',
             ]));
             return redirect()->route('admin.work-orders.actions-execution', $workOrder->id)->with('success', 'تم تحديث البيانات بنجاح');
         }

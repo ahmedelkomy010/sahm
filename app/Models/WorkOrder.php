@@ -63,6 +63,7 @@ class WorkOrder extends Model
         'installations_locked',
         'installations_locked_at',
         'installations_locked_by',
+        'pre_operation_tests',
     ];
 
     protected $casts = [

@@ -169,6 +169,14 @@
                                                 <td>{{ $workOrder->work_description ?? 'غير متوفر' }}</td>
                                             </tr>
                                             <tr>
+                                                <th>تاريخ تسليم إجراء 155</th>
+                                                <td>{{ $workOrder->procedure_155_delivery_date ? $workOrder->procedure_155_delivery_date->format('Y-m-d') : 'غير متوفر' }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>اختبارات ما قبل التشغيل</th>
+                                                <td>{{ $workOrder->pre_operation_tests ?? 'غير متوفر' }}</td>
+                                            </tr>
+                                            <tr>
                                                 <th>حالة التنفيذ</th>
                                                 <td>
                                                     @switch($workOrder->execution_status)
@@ -249,6 +257,89 @@
                                             <tr>
                                                 <th>اسم الاستشاري</th>
                                                 <td>{{ $workOrder->consultant_name ?? 'غير متوفر' }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>اختبارات ما قبل التشغيل 211</th>
+                                                <td>
+                                                    @php
+                                                        $preOperationTestsFile = $workOrder->files()
+                                                            ->where('file_category', 'post_execution')
+                                                            ->where('attachment_type', 'pre_operation_tests_file')
+                                                            ->first();
+                                                    @endphp
+                                                    @if($preOperationTestsFile)
+                                                        <div class="d-flex align-items-center justify-content-between">
+                                                            <div class="d-flex align-items-center">
+                                                                <i class="fas fa-file-pdf text-danger me-2"></i>
+                                                                <div>
+                                                                    <a href="{{ Storage::url($preOperationTestsFile->file_path) }}" 
+                                                                       target="_blank" 
+                                                                       class="text-decoration-none fw-bold">
+                                                                        {{ $preOperationTestsFile->original_filename }}
+                                                                    </a>
+                                                                    <br>
+                                                                    <small class="text-muted">
+                                                                        <i class="fas fa-calendar me-1"></i>
+                                                                        {{ $preOperationTestsFile->created_at->format('Y-m-d H:i') }}
+                                                                        <span class="mx-2">|</span>
+                                                                        <i class="fas fa-file-archive me-1"></i>
+                                                                        {{ number_format($preOperationTestsFile->file_size / 1024 / 1024, 2) }} MB
+                                                                    </small>
+                                                                </div>
+                                                            </div>
+                                                            <div>
+                                                                <a href="{{ Storage::url($preOperationTestsFile->file_path) }}" 
+                                                                   target="_blank" 
+                                                                   class="btn btn-sm btn-danger">
+                                                                    <i class="fas fa-eye me-1"></i>عرض
+                                                                </a>
+                                                            </div>
+                                                        </div>
+                                                    @else
+                                                        <div class="text-center py-3">
+                                                            <i class="fas fa-file-times fa-2x text-muted mb-2"></i>
+                                                            <br>
+                                                            <span class="text-muted">لا يوجد مرفق 211</span>
+                                                        </div>
+                                                    @endif
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th>مرفقات الفاتورة</th>
+                                                <td>
+                                                    @if($workOrder->invoiceAttachments->count() > 0)
+                                                        <div class="row g-2">
+                                                            @foreach($workOrder->invoiceAttachments as $attachment)
+                                                                <div class="col-12 col-md-6">
+                                                                    <div class="card h-100 border-0 shadow-sm">
+                                                                        <div class="card-body p-2">
+                                                                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                                                                <span class="badge bg-info">{{ $attachment->file_type ?? 'غير محدد' }}</span>
+                                                                                <a href="{{ Storage::url($attachment->file_path) }}" 
+                                                                                   target="_blank" 
+                                                                                   class="btn btn-sm btn-info"
+                                                                                   title="عرض الملف">
+                                                                                    <i class="fas fa-eye"></i>
+                                                                                </a>
+                                                                            </div>
+                                                                            <h6 class="card-title text-truncate mb-1" title="{{ $attachment->original_filename }}">
+                                                                                {{ $attachment->original_filename }}
+                                                                            </h6>
+                                                                            @if($attachment->description)
+                                                                                <p class="card-text small text-muted mb-1">{{ $attachment->description }}</p>
+                                                                            @endif
+                                                                            <small class="text-muted d-block">
+                                                                                {{ $attachment->created_at->format('Y-m-d H:i') }}
+                                                                            </small>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            @endforeach
+                                                        </div>
+                                                    @else
+                                                        <span class="text-muted">لا توجد مرفقات</span>
+                                                    @endif
+                                                </td>
                                             </tr>
                                             <tr>
                                                 <th>المرفق الاحتياطي</th>
@@ -368,62 +459,16 @@
                                                 <td>{{ $workOrder->first_partial_payment_without_tax ? number_format($workOrder->first_partial_payment_without_tax, 2, '.', '') . ' ﷼' : 'غير متوفر' }}</td>
                                             </tr>
                                             <tr>
-                                                <th>قيمة الدفعة الجزئية الثانية شامل الضريبة الدفعتين</th>
+                                                <th>قيمة الدفعة الجزئية الثانية غير شامل الضريبة</th>
                                                 <td>{{ $workOrder->second_partial_payment_with_tax ? number_format($workOrder->second_partial_payment_with_tax, 2, '.', '') . ' ﷼' : 'غير متوفر' }}</td>
                                             </tr>
                                             <tr>
-                                                <th>القيمة الكلية النهائية</th>
+                                                <th>القيمة الكلية النهائية غير شامل الاستشاري</th>
                                                 <td>{{ $workOrder->final_total_value ? number_format($workOrder->final_total_value, 2, '.', '') . ' ﷼' : 'غير متوفر' }}</td>
                                             </tr>
                                             <tr>
-                                                <th>تاريخ تسليم إجراء 155</th>
-                                                <td>{{ $workOrder->procedure_155_delivery_date ? $workOrder->procedure_155_delivery_date->format('Y-m-d') : 'غير متوفر' }}</td>
-                                            </tr>
-                                            <tr>
-                                                <th> اختبارات ما قبل التشغيل 211</th>
-                                                <td>
-                                                    @php
-                                                        $preOperationTestsFile = $workOrder->files()
-                                                            ->where('file_category', 'post_execution')
-                                                            ->where('attachment_type', 'pre_operation_tests_file')
-                                                            ->first();
-                                                    @endphp
-                                                    @if($preOperationTestsFile)
-                                                        <div class="d-flex align-items-center justify-content-between">
-                                                            <div class="d-flex align-items-center">
-                                                                <i class="fas fa-file-pdf text-danger me-2"></i>
-                                                                <div>
-                                                                    <a href="{{ Storage::url($preOperationTestsFile->file_path) }}" 
-                                                                       target="_blank" 
-                                                                       class="text-decoration-none fw-bold">
-                                                                        {{ $preOperationTestsFile->original_filename }}
-                                                                    </a>
-                                                                    <br>
-                                                                    <small class="text-muted">
-                                                                        <i class="fas fa-calendar me-1"></i>
-                                                                        {{ $preOperationTestsFile->created_at->format('Y-m-d H:i') }}
-                                                                        <span class="mx-2">|</span>
-                                                                        <i class="fas fa-file-archive me-1"></i>
-                                                                        {{ number_format($preOperationTestsFile->file_size / 1024 / 1024, 2) }} MB
-                                                                    </small>
-                                                                </div>
-                                                            </div>
-                                                            <div>
-                                                                <a href="{{ Storage::url($preOperationTestsFile->file_path) }}" 
-                                                                   target="_blank" 
-                                                                   class="btn btn-sm btn-danger">
-                                                                    <i class="fas fa-eye me-1"></i>عرض
-                                                                </a>
-                                                            </div>
-                                                        </div>
-                                                    @else
-                                                        <div class="text-center py-3">
-                                                            <i class="fas fa-file-times fa-2x text-muted mb-2"></i>
-                                                            <br>
-                                                            <span class="text-muted">لا يوجد مرفق 211</span>
-                                                        </div>
-                                                    @endif
-                                                </td>
+                                                <th>اختبارات ما قبل التشغيل</th>
+                                                <td>{{ $workOrder->pre_operation_tests ?? 'غير متوفر' }}</td>
                                             </tr>
                                             <tr>
                                                 <th>قيمة الضريبة</th>
@@ -447,43 +492,6 @@
                                                 <td>{{ $workOrder->license->extension_value ? number_format($workOrder->license->extension_value, 2) . ' ﷼' : 'غير متوفر' }}</td>
                                             </tr>
                                             @endif
-                                            <tr>
-                                                <th>مرفقات الفاتورة</th>
-                                                <td>
-                                                    @if($workOrder->invoiceAttachments->count() > 0)
-                                                        <div class="row g-2">
-                                                            @foreach($workOrder->invoiceAttachments as $attachment)
-                                                                <div class="col-12 col-md-6">
-                                                                    <div class="card h-100 border-0 shadow-sm">
-                                                                        <div class="card-body p-2">
-                                                                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                                                                <span class="badge bg-info">{{ $attachment->file_type ?? 'غير محدد' }}</span>
-                                                                                <a href="{{ Storage::url($attachment->file_path) }}" 
-                                                                                   target="_blank" 
-                                                                                   class="btn btn-sm btn-info"
-                                                                                   title="عرض الملف">
-                                                                                    <i class="fas fa-eye"></i>
-                                                                                </a>
-                                                                            </div>
-                                                                            <h6 class="card-title text-truncate mb-1" title="{{ $attachment->original_filename }}">
-                                                                                {{ $attachment->original_filename }}
-                                                                            </h6>
-                                                                            @if($attachment->description)
-                                                                                <p class="card-text small text-muted mb-1">{{ $attachment->description }}</p>
-                                                                            @endif
-                                                                            <small class="text-muted d-block">
-                                                                                {{ $attachment->created_at->format('Y-m-d H:i') }}
-                                                                            </small>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                            @endforeach
-                                                        </div>
-                                                    @else
-                                                        <span class="text-muted">لا توجد مرفقات</span>
-                                                    @endif
-                                                </td>
-                                            </tr>
                                         </tbody>
                                     </table>
                                 </div>
