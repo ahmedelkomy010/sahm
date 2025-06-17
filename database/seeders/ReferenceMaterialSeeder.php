@@ -5,20 +5,60 @@ namespace Database\Seeders;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\ReferenceMaterial;
+use Illuminate\Support\Facades\DB;
 
 class ReferenceMaterialSeeder extends Seeder
 {
     /**
      * Run the database seeds.
+     * تنفيذ عملية إدخال البيانات المرجعية للمواد
      */
     public function run(): void
     {
-        $materials = [
-            // أنابيب ومواسي
+        // تعطيل فحص المفاتيح الخارجية مؤقتاً لتسريع عملية الإدخال
+        DB::statement('SET FOREIGN_KEY_CHECKS=0');
+        
+        try {
+            // حذف كل البيانات القديمة قبل إدخال البيانات الجديدة
+            ReferenceMaterial::truncate();
+            
+            // تجهيز البيانات مع timestamps
+            $now = now();
+            $materials = array_map(function($item) use ($now) {
+                return [
+                    'code' => $item['code'],
+                    'description' => $item['description'],
+                    'created_at' => $now,
+                    'updated_at' => $now
+                ];
+            }, $this->getMaterialsData());
+            
+            // تقسيم البيانات إلى مجموعات للإدخال الجماعي
+            foreach (array_chunk($materials, 100) as $chunk) {
+                ReferenceMaterial::insert($chunk);
+            }
+        } finally {
+            // إعادة تفعيل فحص المفاتيح الخارجية
+            DB::statement('SET FOREIGN_KEY_CHECKS=1');
+        }
+    }
+
+    /**
+     * الحصول على مصفوفة البيانات المرجعية للمواد
+     * @return array
+     */
+    private function getMaterialsData(): array
+    {
+        // تنظيم البيانات في مجموعات منطقية
+        return [
+            // Cables & Power Conductors
+            // Cables & Conductors - Power
             ['code' => '908112050', 'description' => 'CABLE,PWR,600V/1KV,QUADRUPLEX,3X50+1X50'],
             ['code' => '908112120', 'description' => 'CABLE,PWR,600V/1KV,QUADRUPLEX,3X120MM2'],
             ['code' => '908101001', 'description' => 'COND,BR,ACSR,QUAIL (2/0 AWG),6AL,1ALWLD'],
             ['code' => '908101002', 'description' => 'COND,BR,ACSR,MERLIN(336.4MCM)18AL,170MM2'],
+            
+            // Copper Conductors
             ['code' => '908111101', 'description' => 'CNDCTR,BR,CU,35SQMM,7STR,SOFT DRWN'],
             ['code' => '908111102', 'description' => 'CNDCTR,BR,CU,50SQMM,7STR,SOFT DRWN'],
             ['code' => '908111103', 'description' => 'CNDCTR,BR,CU,70SQMM,7STR,SOFT DRWN'],
@@ -29,6 +69,8 @@ class ReferenceMaterialSeeder extends Seeder
             ['code' => '908111108', 'description' => 'CNDCTR,BR,CU,240SQMM,7STR,SOFT DRWN'],
             ['code' => '908111109', 'description' => 'CNDCTR,BR,CU,300SQMM,7STR,SOFT DRWN'],
             ['code' => '908111110', 'description' => 'CNDCTR,BR,CU,400SQMM,7STR,SOFT DRWN'],
+
+            // XLPE Insulated Conductors
             ['code' => '908113101', 'description' => 'CNDCTR,INSUL,XLPE,CU,1C,50MM2,0.6/1KV'],
             ['code' => '908113102', 'description' => 'CNDCTR,INSUL,XLPE,CU,1C,70MM2,0.6/1KV'],
             ['code' => '908113103', 'description' => 'CNDCTR,INSUL,XLPE,CU,1C,95MM2,0.6/1KV'],
@@ -42,6 +84,8 @@ class ReferenceMaterialSeeder extends Seeder
             ['code' => '908113111', 'description' => 'CNDCTR,INSUL,XLPE,CU,1C,630MM2,0.6/1KV'],
             ['code' => '908113112', 'description' => 'CNDCTR,INSUL,XLPE,CU,1C,800MM2,0.6/1KV'],
             ['code' => '908113113', 'description' => 'CNDCTR,INSUL,XLPE,CU,1C,1000MM2,0.6/1KV'],
+
+            // Yellow/Green Conductors
             ['code' => '908115001', 'description' => 'CNDCTR,CU,1C,10MM2,XLPE,0.6/1KV,YELLOW/GREEN'],
             ['code' => '908115002', 'description' => 'CNDCTR,CU,1C,16MM2,XLPE,0.6/1KV,YELLOW/GREEN'],
             ['code' => '908115003', 'description' => 'CNDCTR,CU,1C,25MM2,XLPE,0.6/1KV,YELLOW/GREEN'],
@@ -59,6 +103,8 @@ class ReferenceMaterialSeeder extends Seeder
             ['code' => '908115015', 'description' => 'CNDCTR,CU,1C,630MM2,XLPE,0.6/1KV,YELLOW/GREEN'],
             ['code' => '908115016', 'description' => 'CNDCTR,CU,1C,800MM2,XLPE,0.6/1KV,YELLOW/GREEN'],
             ['code' => '908115017', 'description' => 'CNDCTR,CU,1C,1000MM2,XLPE,0.6/1KV,YELLOW/GREEN'],
+
+            // Black Conductors
             ['code' => '908117001', 'description' => 'CNDCTR,CU,1C,2.5MM2,XLPE,0.6/1KV,BLACK'],
             ['code' => '908117002', 'description' => 'CNDCTR,CU,1C,4MM2,XLPE,0.6/1KV,BLACK'],
             ['code' => '908117003', 'description' => 'CNDCTR,CU,1C,6MM2,XLPE,0.6/1KV,BLACK'],
@@ -79,6 +125,8 @@ class ReferenceMaterialSeeder extends Seeder
             ['code' => '908117018', 'description' => 'CNDCTR,CU,1C,630MM2,XLPE,0.6/1KV,BLACK'],
             ['code' => '908117019', 'description' => 'CNDCTR,CU,1C,800MM2,XLPE,0.6/1KV,BLACK'],
             ['code' => '908117020', 'description' => 'CNDCTR,CU,1C,1000MM2,XLPE,0.6/1KV,BLACK'],
+
+            // Red Conductors
             ['code' => '908119001', 'description' => 'CNDCTR,CU,1C,2.5MM2,XLPE,0.6/1KV,RED'],
             ['code' => '908119002', 'description' => 'CNDCTR,CU,1C,4MM2,XLPE,0.6/1KV,RED'],
             ['code' => '908119003', 'description' => 'CNDCTR,CU,1C,6MM2,XLPE,0.6/1KV,RED'],
@@ -99,6 +147,8 @@ class ReferenceMaterialSeeder extends Seeder
             ['code' => '908119018', 'description' => 'CNDCTR,CU,1C,630MM2,XLPE,0.6/1KV,RED'],
             ['code' => '908119019', 'description' => 'CNDCTR,CU,1C,800MM2,XLPE,0.6/1KV,RED'],
             ['code' => '908119020', 'description' => 'CNDCTR,CU,1C,1000MM2,XLPE,0.6/1KV,RED'],
+
+            // Yellow Conductors
             ['code' => '908121001', 'description' => 'CNDCTR,CU,1C,2.5MM2,XLPE,0.6/1KV,YELLOW'],
             ['code' => '908121002', 'description' => 'CNDCTR,CU,1C,4MM2,XLPE,0.6/1KV,YELLOW'],
             ['code' => '908121003', 'description' => 'CNDCTR,CU,1C,6MM2,XLPE,0.6/1KV,YELLOW'],
@@ -119,6 +169,8 @@ class ReferenceMaterialSeeder extends Seeder
             ['code' => '908121018', 'description' => 'CNDCTR,CU,1C,630MM2,XLPE,0.6/1KV,YELLOW'],
             ['code' => '908121019', 'description' => 'CNDCTR,CU,1C,800MM2,XLPE,0.6/1KV,YELLOW'],
             ['code' => '908121020', 'description' => 'CNDCTR,CU,1C,1000MM2,XLPE,0.6/1KV,YELLOW'],
+
+            // Blue Conductors
             ['code' => '908122001', 'description' => 'CNDCTR,CU,1C,2.5MM2,XLPE,0.6/1KV,BLUE'],
             ['code' => '908122002', 'description' => 'CNDCTR,CU,1C,4MM2,XLPE,0.6/1KV,BLUE'],
             ['code' => '908122003', 'description' => 'CNDCTR,CU,1C,6MM2,XLPE,0.6/1KV,BLUE'],
@@ -139,10 +191,14 @@ class ReferenceMaterialSeeder extends Seeder
             ['code' => '908122018', 'description' => 'CNDCTR,CU,1C,630MM2,XLPE,0.6/1KV,BLUE'],
             ['code' => '908122019', 'description' => 'CNDCTR,CU,1C,800MM2,XLPE,0.6/1KV,BLUE'],
             ['code' => '908122020', 'description' => 'CNDCTR,CU,1C,1000MM2,XLPE,0.6/1KV,BLUE'],
+
+            // Tubing & Sleeves
             ['code' => '116418370', 'description' => 'TUBING,SHRINK,POLYCARB,56.15 MM DIA,#MWT'],
             ['code' => '116418500', 'description' => 'TUBING,SHRINK,POLYCARB,81.55 MM DIA,#MWT'],
             ['code' => '116410990', 'description' => 'SLEEVE:REPAIR,HEAT SHRINK,4 X150 SQM-95'],
             ['code' => '908121031', 'description' => 'SLEEVE,RPR,(4)300SQMM,XLPE/PVC,1500MM LG'],
+
+            // Connectors & Terminals
             ['code' => '116411140', 'description' => 'SLEEVE,RPR,4 X 500 SQMM AL CNDCTR,#20041'],
             ['code' => '908121025', 'description' => 'SLEEVE,REPAIR,1X500/35SQMM,XLPE,UARM'],
             ['code' => '908122002', 'description' => 'CONNECTOR,LUG,35SQMM CU,(1)M10,BLT HL'],
@@ -159,6 +215,7 @@ class ReferenceMaterialSeeder extends Seeder
             ['code' => '908122006', 'description' => 'CONNECTOR,LUG,630MM2 CU,(4)M10 BLT HL'],
             ['code' => '118211290', 'description' => 'FUSE CARRIER: FOR LV DIST BOARD'],
             ['code' => '118144120', 'description' => 'FUSE LINK: HRC 40A 13.8/15KV FOR SF6 INS'],
+
             ['code' => '908342032', 'description' => 'FUSE,POWER,17.5KV,50A'],
             ['code' => '908342033', 'description' => 'FUSE,POWER,17.5KV,80A'],
             ['code' => '908342034', 'description' => 'FUSE,POWER,17.5KV,100A'],
@@ -180,6 +237,7 @@ class ReferenceMaterialSeeder extends Seeder
             ['code' => '115420950', 'description' => 'CONNECTOR, SPLIT BOLT FOR 95MM2 CU'],
             ['code' => '115421850', 'description' => 'CONNECTOR, SPLIT BOLT FOR 185MM2 CU'],
             ['code' => '115432110', 'description' => 'CONNECTOR MECH. TYPE 70-95MM2 AL ST. JOI'],
+
             ['code' => '115431150', 'description' => 'CONNECTOR MECH. TYPE FOR 300MM2 STR'],
             ['code' => '115432140', 'description' => 'CONNECTOR MECHANICAL TYPE FOR 500MM2'],
             ['code' => '115155010', 'description' => 'CABLE BIMETAL CONNECTOR 500MM2 AL/95MM2'],
@@ -201,6 +259,7 @@ class ReferenceMaterialSeeder extends Seeder
             ['code' => '908312001', 'description' => 'PILLAR,DIST,LV,400A,800X310X830MM'],
             ['code' => '908312002', 'description' => 'BASE,PILLAR DIST LV,GLASS REINF'],
             ['code' => '908312003', 'description' => 'PILLAR,DIST,LV,GLASS REINF,400A,NO BASE'],
+
             ['code' => '102015050', 'description' => 'TFMR,DIST,PF,500KVA,33KV,231/133V,170KV'],
             ['code' => '102015170', 'description' => 'TFMR,DIST,PF,500KVA,33KV,231/400,170KV'],
             ['code' => '908511032', 'description' => 'TFMR,PD,1.5MVA,33KX231/133V,170KVB'],
@@ -217,6 +276,7 @@ class ReferenceMaterialSeeder extends Seeder
             ['code' => '908513018', 'description' => 'TFMR,PD,1.5MVA,33KX400/230V,200KVB,AL'],
             ['code' => '908513020', 'description' => 'TFMR,PD,300KVA,33KX400/230V,200KVB,AL'],
             ['code' => '908513021', 'description' => 'TFMR,PF,300KVA,33KX400/230V,200KVB,AL'],
+
             ['code' => '908513022', 'description' => 'TFMR,PD,500KVA,33KX400/230V,200KVB,AL'],
             ['code' => '908514013', 'description' => 'TFMR,PD,1MVA,33KX400/230/133V,200KVB,AL'],
             ['code' => '908514015', 'description' => 'TFMR,PD,300KVA,33KX400/230/133V,200KV,AL'],
@@ -235,6 +295,7 @@ class ReferenceMaterialSeeder extends Seeder
             ['code' => '908122027', 'description' => 'CNDCTR,CU,1C,630MM2,XLPE,0.6/1KV,BLUE'],
             ['code' => '908122028', 'description' => 'CNDCTR,CU,1C,630MM2,XLPE,0.6/1KV,BROWN'],
             ['code' => '908122029', 'description' => 'CNDCTR,CU,1C,630MM2,XLPE,0.6/1KV,BLACK'],
+
             ['code' => '908122030', 'description' => 'CNDCTR,CU,1C,630MM2,XLPE,0.6/1KV,GREEN/YELLOW'],
             ['code' => '908122031', 'description' => 'CNDCTR,CU,1C,800MM2,XLPE,0.6/1KV,BLUE'],
             ['code' => '908122032', 'description' => 'CNDCTR,CU,1C,800MM2,XLPE,0.6/1KV,BROWN'],
@@ -253,6 +314,7 @@ class ReferenceMaterialSeeder extends Seeder
             ['code' => '908202194', 'description' => 'HEAD,SERV ENT,AL,SLIP-ON W/2BLT,76MM OD'],
             ['code' => '908202200', 'description' => 'CONNECTOR,PG,AL,QUAIL/AW,2-BOLTS'],
             ['code' => '908202201', 'description' => 'CLAMP,SUSP,AA,14.31 MM DIA,45KN MIN UTS'],
+
             ['code' => '908202210', 'description' => 'CONNECTOR,PG,AL,120SQMM,50SQMM,COMP'],
             ['code' => '908202228', 'description' => 'BRACE,CROSSARM,GS,BOTH END CLIPPED'],
             ['code' => '908202236', 'description' => 'CONNECTOR,PG,70SQMM CU,70SQMM AL,2-BOLT'],
@@ -270,6 +332,8 @@ class ReferenceMaterialSeeder extends Seeder
             ['code' => '908421010', 'description' => 'BLOCK,200A,PA66,115MMWX150MMLX95MMH,SING'],
             ['code' => '908421011', 'description' => 'BLOCK,200A,PA66,115MMWX150MMLX95MMH,QUAD'],
             ['code' => '908421012', 'description' => 'BLOCK,400A,FRP+CU,230MMWX260MMLX130MMH,Q'],
+
+
             ['code' => '908421013', 'description' => 'BLOCK,200A,PA66,115MMWX150MMLX95MMH,DOUB'],
             ['code' => '908421014', 'description' => 'BLOCK,300A,PA66,170MMWX125MMLGX90MMH,DOU'],
             ['code' => '908421015', 'description' => 'COVER,FIBERGLASS,965X270X4MMTH,SINGLEMET'],
@@ -291,6 +355,8 @@ class ReferenceMaterialSeeder extends Seeder
             ['code' => '908111011', 'description' => 'CABLE,CNTRL,750V,CU,2CORE,2.5SQMM,PVC'],
             ['code' => '908113003', 'description' => 'CABLE,PWR,15KV,AL,3C,300/35MM2,XPLE,ARM'],
             ['code' => '908113004', 'description' => 'CABLE,PWR,15KV,AL,3C,70/16MM2,XPLE,ARM'],
+
+
             ['code' => '908114002', 'description' => 'CABLE,PWR,15K,CU,3X300/35SQMM,XLPE/MDPE'],
             ['code' => '908121006', 'description' => 'JOINT KIT,STR,15KV,3X300/35MM2,AL,AR'],
             ['code' => '908121007', 'description' => 'JOINT KIT,STR,15KV,3X70/16MM2,AL,AR'],
@@ -317,6 +383,8 @@ class ReferenceMaterialSeeder extends Seeder
             ['code' => '908121081', 'description' => 'BOOT,STR,36KV,3X240/35MM2,CU,XLPE'],
             ['code' => '908121083', 'description' => 'BOOT,STR,36KV,1X50/16MM2,CU,XLPE'],
             ['code' => '908121085', 'description' => 'SPLICE KIT,LG,STR,36KV,3X185/35SQMM'],
+
+            
             ['code' => '908121102', 'description' => 'JOINT KIT,STR,PM,15KV,3X185/35MM2,CU'],
             ['code' => '908121103', 'description' => 'JOINT KIT,STR,PM,15KV,3X300/35MM2,CU,AR'],
             ['code' => '908121106', 'description' => 'TERM KIT,STR,PM,1KV,4X70MM2,AL'],
@@ -336,6 +404,8 @@ class ReferenceMaterialSeeder extends Seeder
             ['code' => '908121144', 'description' => 'TERM KIT,L,15KV,600A,3X500MM2,AL,XLPE,AR'],
             ['code' => '908121145', 'description' => 'SLEEVE,RPR,HS,15KV,3X500/35MM2,AL,XLPE'],
             ['code' => '908121148', 'description' => 'TERM KIT,STR,HS,15KV,3X500/35MM2,AL,I/D'],
+
+            
             ['code' => '908121157', 'description' => 'JOINT KIT,TRANS,HS,15KV,500-300/35MM2,AL'],
             ['code' => '908121158', 'description' => 'JOINT KIT,TRANS,PM,15KV,500-300/35MM2,AL'],
             ['code' => '908121173', 'description' => 'JOINT KIT,C/R,15KV,3CX300-500,AL ARM'],
@@ -357,6 +427,8 @@ class ReferenceMaterialSeeder extends Seeder
             ['code' => '908323001', 'description' => 'SWGR,GAS,400A,13.8KV,3PH,2LBS,INDR'],
             ['code' => '908323004', 'description' => 'SWGR,GAS,200A,13.8KV,3PH,1CB,INDR'],
             ['code' => '908323005', 'description' => 'PANEL,METERING-RMU EXT,1120X1600X900MM'],
+
+            
             ['code' => '908327001', 'description' => 'SWGR,RMU,INDR,NE,2LBS+1CB,33KV,3 P,60HZ'],
             ['code' => '908327003', 'description' => 'SWGR,RMU,INDR,NE,2LBS+2CB,33KV,3 P,60HZ'],
             ['code' => '908327005', 'description' => 'SWGR,RMU,ODTR,NE,3LBS+1CB,33KV,3 P,60HZ'],
@@ -378,6 +450,8 @@ class ReferenceMaterialSeeder extends Seeder
             ['code' => '908511013', 'description' => 'TFMR,PF,1000KVA,33KX400/231V,170KVB'],
             ['code' => '908511015', 'description' => 'TFMR,PF,1500KVA,33KX400/231V,170KVB'],
             ['code' => '908511017', 'description' => 'TFMR,PF,2000KVA,33KX400/231V,170KVB'],
+
+
             ['code' => '908511019', 'description' => 'TFMR,PF,2500KVA,33KX400/231V,170KVB'],
             ['code' => '908511021', 'description' => 'TFMR,PF,3000KVA,33KX400/231V,170KVB'],
             ['code' => '908511023', 'description' => 'TFMR,PF,4000KVA,33KX400/231V,170KVB'],
@@ -395,6 +469,8 @@ class ReferenceMaterialSeeder extends Seeder
             ['code' => '908531005', 'description' => 'RMU,5-WAY,630A,33KV,CBL TERM'],
             ['code' => '908531007', 'description' => 'RMU,3-WAY,1250A,33KV,CBL TERM'],
             ['code' => '908531009', 'description' => 'RMU,4-WAY,1250A,33KV,CBL TERM'],
+
+            
             ['code' => '908531011', 'description' => 'RMU,5-WAY,1250A,33KV,CBL TERM'],
             ['code' => '908551001', 'description' => 'CABLE,XLPE,33KV,3CX95MM2,AL,SWB'],
             ['code' => '908551003', 'description' => 'CABLE,XLPE,33KV,3CX150MM2,AL,SWB'],
@@ -406,6 +482,8 @@ class ReferenceMaterialSeeder extends Seeder
             ['code' => '302478544', 'description' => 'TFMR,UNIT SUB,1MVA,11/13.8 KV,400/231V'],
             ['code' => '302728567', 'description' => 'TFMR,UNIT SUB,300KVA,13.8KV,231/133V,#S0'],
             ['code' => '302739119', 'description' => 'TFMR,PWR,5000/6250 KVA KVA,ABS P,66000 V'],
+
+            
             ['code' => '302739127', 'description' => 'TFMR,PWR,5000/6250 KVA KVA,ABS P,69000'],
             ['code' => '302745728', 'description' => 'TFMR,PWR,12000/15000 KVA KVA,ABS P,66 KV'],
             ['code' => '302746021', 'description' => 'TFMR,PWR,7500/9375 KVA KVA,3 P,66 KV,#QA'],
@@ -419,6 +497,8 @@ class ReferenceMaterialSeeder extends Seeder
             ['code' => '908511042', 'description' => 'TFMR,PD,1MVA,13.8KX231/133V,95KVB'],
             ['code' => '908561001', 'description' => 'TFMR,U/S,300KVA,13.8KV-231/133V'],
             ['code' => '908561002', 'description' => 'TFMR,U/S,300KVA,13.8KV-400/231V'],
+
+            
             ['code' => '908561101', 'description' => 'TFMR,U/S,300KVA,13.8/11KV-231/133V'],
             ['code' => '908561104', 'description' => 'TFMR,U/S,500KVA,13.8/11KV-400/231V'],
             ['code' => '908561106', 'description' => 'TFMR,U/S,1MVA,13.8/11KV,400/231V'],
@@ -433,6 +513,8 @@ class ReferenceMaterialSeeder extends Seeder
             ['code' => '908563007', 'description' => 'TFMR,U/S,500KVA,13.8-11KV,400/230V,2CB'],
             ['code' => '908563011', 'description' => 'TFMR,U/S,1MVA,13.8-11KV,400/230V,6CB'],
             ['code' => '30125779A', 'description' => 'TFMR,DIST,PD,500KVA,13.8K V AC,#A81A56FG'],
+
+            
             ['code' => '30226398A', 'description' => 'TFMR,DIST,PF,100KVA,34.5K, 33K V AC'],
             ['code' => '4510BE117', 'description' => 'TFMR,DIST,PL,80 KVA,33K V AC,231 V AC,#P'],
             ['code' => '116418750', 'description' => 'TUBINGS : MEDIUM WALL, 1X630 MM2 CU'],
@@ -442,6 +524,8 @@ class ReferenceMaterialSeeder extends Seeder
             ['code' => '908121065', 'description' => 'TERM KIT,STR,36KV,3X240/35MM2,CU,AR/O/D'],
             ['code' => '103116990', 'description' => 'RECATANGULAR WINDOW WITH O-RING'],
             ['code' => '905010002', 'description' => 'SHOES:SAFETY,39 TO 46,BLACK,LEATHER,ASTM'],
+
+            
             ['code' => '905010061', 'description' => 'MASK:PROTECTION,DUST AND MIST,HALF FACE'],
             ['code' => '905030118', 'description' => 'GLOVES,ELEC,36KV,CL 4,NATURAL RUBBER,8'],
             ['code' => '905020054', 'description' => 'GLOVES:ARC RATED,10 TO 12,LEATHER,ANY,NF'],
@@ -452,6 +536,8 @@ class ReferenceMaterialSeeder extends Seeder
             ['code' => '908569109', 'description' => 'TFMR,U/S,500KVA,AL,33KV,400/230V, 800A MAIN C.B'],
             ['code' => '908569114', 'description' => 'TFMR,U/S,1MVA,AL,13.8KV,400/230V,8CK,6MCCB400A,CB'],
             ['code' => '908569115', 'description' => 'TFMR,U/S,1MVA,AL,13.8KV,400/230V,1600AMAINC.B'],
+
+            
             ['code' => '908569116', 'description' => 'TFMR,U/S,1MVA,AL,33KV,400/230V,8CK,6MCCB 400A,CB'],
             ['code' => '908569117', 'description' => 'TFMR,U/S,1MVA,AL,33KV,400/230V,1600AMAINC.B'],
             ['code' => '908569105', 'description' => 'TFMR,U/S, 1.5MVA,AL,13.8KV,400/230V,10CK,8MCCB400A,CB'],

@@ -447,16 +447,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if (workType) {
             const description = getWorkTypeDescription(workType);
             if (description) {
-                // إذا كان حقل الوصف فارغاً، قم بتعبئته بنوع العمل
-                if (!workDescriptionInput.value.trim()) {
-                    workDescriptionInput.value = description;
-                } else {
-                    // إذا كان الحقل يحتوي على نص، أضف نوع العمل في بداية النص
-                    const currentValue = workDescriptionInput.value.trim();
-                    if (!currentValue.startsWith(description)) {
-                        workDescriptionInput.value = description + '\n' + currentValue;
-                    }
-                }
+                // دائماً قم بتعيين الوصف الجديد مباشرة
+                workDescriptionInput.value = description;
             }
         }
     }
