@@ -94,30 +94,26 @@ use Illuminate\Support\Facades\Route;
                         <!-- Logo and App Name -->
                         <div class="flex items-center">
                             <a href="{{ route('dashboard') }}" class="flex items-center">
-                                <span class="text-xl font-bold text-white">  شركة سهم بلدي للمقاولات</span>
+                                <div class="logo-container bg-white rounded-full p-1 ml-2">
+                                    <img class="h-10 w-auto" src="{{ asset('images/logo-sahm.svg') }}" alt="Sahm Logo">
+                                </div>
+                                <span class="text-xl font-bold text-white">شركة سهم بلدي للمقاولات</span>
                             </a>
                         </div>
                         
                         <!-- Main Navigation -->
-                        <div class="hidden md:flex items-center space-x-4">
-                            <a href="{{ route('dashboard') }}" class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
-                                الرئيسية
-                            </a>
-                            
-                            @if(request()->routeIs('admin.work-orders.*') || session('project'))
-                            <a href="{{ route('admin.work-orders.index') }}" class="nav-item {{ request()->routeIs('admin.work-orders.*') ? 'active' : '' }}">
-                                أوامر العمل
-                            </a>
-                            @endif
-                            
-                            @can('admin')
-                            <a href="{{ route('admin.users.index') }}" class="nav-item {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
-                                إدارة المستخدمين
-                            </a>
-                            <a href="{{ route('admin.settings') }}" class="nav-item {{ request()->routeIs('admin.settings') ? 'active' : '' }}">
-                                الإعدادات
-                            </a>
-                            @endcan
+                        <div class="hidden md:flex md:flex-1 justify-center">
+                            <div class="flex items-center space-x-8 space-x-reverse">
+                                <a href="{{ route('dashboard') }}" class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
+                                    الرئيسية
+                                </a>
+                                
+                                @if(request()->routeIs('admin.work-orders.*') || session('project'))
+                                <a href="{{ route('admin.work-orders.index') }}" class="nav-item {{ request()->routeIs('admin.work-orders.*') ? 'active' : '' }}">
+                                    أوامر العمل
+                                </a>
+                                @endif
+                            </div>
                         </div>
                         
                         <!-- User Menu -->

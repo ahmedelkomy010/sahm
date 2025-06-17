@@ -137,23 +137,23 @@
     <!-- Header -->
     <div class="row mb-4">
         <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center">
-                <div class="d-flex align-items-center">
-                    <h3 class="mb-0 fs-4 text-primary">المواد</h3>
-                </div>
-                <div>
-                    
-                    @if($materials->count() > 0)
-                        <a href="{{ route('admin.work-orders.show', $workOrder) }}" class="btn btn-primary">
-                            <i class="fas fa-arrow-right"></i> عودة الي تفاصيل أمر العمل  
-                        </a>
-                        <br>
-                    <br>
-                        <a href="{{ route('admin.work-orders.materials.create', $workOrder) }}" class="btn btn-secondary">
-                        <i class="fas fa-plus"></i> إضافة مادة جديدة
-                    </a>
-                    
-                    @endif
+            <div class="card shadow">
+                <div class="card-header d-flex justify-content-between align-items-center bg-primary text-white">
+                    <div class="d-flex align-items-center">
+                        <span class="fs-5">المواد</span>
+                        <span class="badge bg-light text-primary ms-2">{{ $materials->total() }} مادة</span>
+                    </div>
+                    <div>
+                        @if($materials->count() > 0)
+                        <a href="{{ route('admin.work-orders.materials.create', $workOrder) }}" class="btn btn-outline-light btn-sm">
+                                <i class="fas fa-plus"></i> إضافة مادة جديدة
+                            </a>
+                            <a href="{{ route('admin.work-orders.show', $workOrder) }}" class="btn btn-outline-light btn-sm ms-2">
+                                <i class="fas fa-arrow-right"></i> عودة الي تفاصيل أمر العمل
+                            </a>
+                            
+                        @endif
+                    </div>
                 </div>
             </div>
         </div>
@@ -389,45 +389,33 @@
                                             </td>
                                             <td class="text-center">
                                                 <div class="action-buttons">
-                                                    <!-- View/Edit/Delete Group -->
+                                                    <!-- Edit/Delete Group -->
                                                     <div class="btn-group">
-                                                        <a href="{{ route('admin.work-orders.materials.show', [$workOrder, $material]) }}" 
-                                                           class="btn btn-action btn-view"
-                                                           data-bs-toggle="tooltip"
-                                                           data-bs-placement="top"
-                                                           title="عرض التفاصيل">
-                                                            <i class="fas fa-eye"></i>
-                                                            <span class="btn-text">عرض</span>
-                                                        </a>
-                                                        
                                                         <a href="{{ route('admin.work-orders.materials.edit', [$workOrder, $material]) }}" 
                                                            class="btn btn-action btn-edit"
                                                            data-bs-toggle="tooltip"
                                                            data-bs-placement="top"
-                                                           title="تعديل المادة">
+                                                           title="تعديل">
                                                             <i class="fas fa-edit"></i>
                                                             <span class="btn-text">تعديل</span>
                                                         </a>
-
-                                                        <button type="button" 
-                                                                class="btn btn-action btn-delete"
-                                                                onclick="deleteMaterial({{ $material->id }}, '{{ $material->code }}')"
-                                                                data-bs-toggle="tooltip"
-                                                                data-bs-placement="top"
-                                                                title="حذف المادة">
-                                                            <i class="fas fa-trash-alt"></i>
-                                                            <span class="btn-text">حذف</span>
-                                                        </button>
+                                                        <form id="delete-form-{{ $material->id }}" 
+                                                              action="{{ route('admin.work-orders.materials.destroy', [$workOrder, $material]) }}" 
+                                                              method="POST" 
+                                                              class="d-inline">
+                                                            @csrf
+                                                            @method('DELETE')
+                                                            <button type="button" 
+                                                                    class="btn btn-action btn-delete"
+                                                                    onclick="deleteMaterial({{ $material->id }}, '{{ $material->code }}')"
+                                                                    data-bs-toggle="tooltip"
+                                                                    data-bs-placement="top"
+                                                                    title="حذف">
+                                                                <i class="fas fa-trash"></i>
+                                                                <span class="btn-text">حذف</span>
+                                                            </button>
+                                                        </form>
                                                     </div>
-                                                    
-                                                    <!-- Hidden Delete Form -->
-                                                    <form id="delete-form-{{ $material->id }}" 
-                                                          method="POST" 
-                                                          action="{{ route('admin.work-orders.materials.destroy', [$workOrder, $material]) }}" 
-                                                          style="display: none;">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                    </form>
                                                 </div>
                                             </td>
                                         </tr>

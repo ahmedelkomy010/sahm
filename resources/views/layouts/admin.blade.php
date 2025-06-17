@@ -163,23 +163,21 @@
                     <div class="flex items-center">
                         <div class="flex-shrink-0 flex items-center">
                             <a href="{{ route('admin.dashboard') }}" class="flex-shrink-0 flex items-center">
-                                <div class="logo-container bg-white rounded-full p-1 mr-2">
-                                    <img class="h-10 w-auto" src="{{ asset('images/logo-sahm.svg') }}" alt="Sahm Blady Logo">
+                                <div class="logo-container bg-white rounded-full p-1 ml-2">
+                                    <img class="h-10 w-auto" src="{{ asset('images/logo-sahm.svg') }}" alt="Sahm Logo">
                                 </div>
-                                <span class="mr-3 text-white font-bold text-xl">سهم بلدي</span>
+                                <span class="mr-3 text-white font-bold text-xl">شركة سهم بلدي للمقاولات</span>
                             </a>
                         </div>
                         
                         <!-- Top Navigation Links -->
-                        <div class="hidden md:mr-8 md:flex md:space-x-8 md:space-x-reverse">
-                            <a href="{{ route('admin.dashboard') }}" class="px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-blue-500">الرئيسية</a>
-                            <a href="{{ route('admin.users.index') }}" class="px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-blue-500">المستخدمين</a>
-                            @if(request()->routeIs('admin.work-orders.*'))
-                            <a href="{{ route('admin.work-orders.index') }}" class="px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-blue-500">أوامر العمل</a>
-                            @endif
-                            @can('admin')
-                            <a href="{{ route('admin.settings') }}" class="px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-blue-500">الإعدادات</a>
-                            @endcan
+                        <div class="hidden md:mr-8 md:flex md:flex-1 justify-center">
+                            <div class="flex items-center space-x-8 space-x-reverse">
+                                <a href="{{ route('admin.dashboard') }}" class="px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-blue-500">الرئيسية</a>
+                                @if(request()->routeIs('admin.work-orders.*'))
+                                <a href="{{ route('admin.work-orders.index') }}" class="px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-blue-500">أوامر العمل</a>
+                                @endif
+                            </div>
                         </div>
                     </div>
 
