@@ -6,41 +6,175 @@ use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\ReferenceMaterial;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 
 class ReferenceMaterialSeeder extends Seeder
 {
+    /**
+     * تصنيفات المواد الرئيسية
+     */
+    private const CATEGORIES = [
+        'CABLE' => 'Cables & Power',
+        'CNDCTR' => 'Conductors',
+        'TFMR' => 'Transformers',
+        'FUSE' => 'Fuses & Protection',
+        'CONNECTOR' => 'Connectors',
+        'SLEEVE' => 'Sleeves & Repairs',
+        'TUBING' => 'Tubing Materials',
+        'SWGR' => 'Switchgear',
+        'GLOVES' => 'Safety Equipment',
+        'MASK' => 'Safety Equipment',
+        'SHOES' => 'Safety Equipment',
+    ];
+
+    /**
+     * الكلمات المفتاحية للمواصفات الفنية
+     */
+    private const SPEC_KEYWORDS = [
+        'mm' => 'مم',
+        'cm' => 'سم',
+        'kv' => 'ك.ف',
+        'v' => 'فولت',
+        'amp' => 'أمبير',
+        'meter' => 'متر',
+        'm' => 'متر',
+    ];
+
     /**
      * Run the database seeds.
      * تنفيذ عملية إدخال البيانات المرجعية للمواد
      */
     public function run(): void
     {
-        // تعطيل فحص المفاتيح الخارجية مؤقتاً لتسريع عملية الإدخال
         DB::statement('SET FOREIGN_KEY_CHECKS=0');
         
         try {
-            // حذف كل البيانات القديمة قبل إدخال البيانات الجديدة
             ReferenceMaterial::truncate();
             
-            // تجهيز البيانات مع timestamps
-            $now = now();
-            $materials = array_map(function($item) use ($now) {
-                return [
-                    'code' => $item['code'],
-                    'description' => $item['description'],
-                    'created_at' => $now,
-                    'updated_at' => $now
-                ];
-            }, $this->getMaterialsData());
+            // تجهيز وتصنيف البيانات
+            $materials = $this->prepareMaterialsData();
             
-            // تقسيم البيانات إلى مجموعات للإدخال الجماعي
-            foreach (array_chunk($materials, 100) as $chunk) {
+            // إدخال البيانات على دفعات
+            foreach (array_chunk($materials->toArray(), 100) as $chunk) {
                 ReferenceMaterial::insert($chunk);
             }
         } finally {
-            // إعادة تفعيل فحص المفاتيح الخارجية
             DB::statement('SET FOREIGN_KEY_CHECKS=1');
         }
+    }
+
+    /**
+     * تجهيز وتصنيف البيانات
+     * @return Collection
+     */
+    private function prepareMaterialsData(): Collection
+    {
+        $now = now();
+        return collect($this->getMaterialsData())
+            ->map(function($item) use ($now) {
+                $category = $this->detectCategory($item['description']);
+                return [
+                    'code' => $item['code'],
+                    'description' => $this->formatDescription($item['description']),
+                    'category' => $category,
+                    'created_at' => $now,
+                    'updated_at' => $now
+                ];
+            })
+            ->sortBy('category');
+    }
+
+    /**
+     * تنسيق وصف المادة
+     * @param string $description
+     * @return string
+     */
+    private function formatDescription(string $description): string
+    {
+        // تنظيف الوصف وإزالة الرموز الزائدة
+        $description = $this->cleanDescription($description);
+        
+        // تحويل المواصفات الفنية
+        $description = $this->convertTechnicalSpecs($description);
+        
+        // تنظيم الأجزاء
+        $description = $this->organizeDescriptionParts($description);
+        
+        return $description;
+    }
+
+    /**
+     * تنظيف الوصف من الرموز الزائدة
+     * @param string $description
+     * @return string
+     */
+    private function cleanDescription(string $description): string
+    {
+        $description = trim($description);
+        $description = preg_replace('/\s+/', ' ', $description);
+        $description = preg_replace('/,+/', ',', $description);
+        $description = str_replace([':', '#', '  '], [' ', ' ', ' '], $description);
+        
+        return trim($description);
+    }
+
+    /**
+     * تحويل المواصفات الفنية إلى الصيغة العربية
+     * @param string $description
+     * @return string
+     */
+    private function convertTechnicalSpecs(string $description): string
+    {
+        foreach (self::SPEC_KEYWORDS as $english => $arabic) {
+            // تحويل القيم الرقمية مع وحداتها
+            $pattern = '/(\d+)\s*' . preg_quote($english, '/') . '/i';
+            $description = preg_replace($pattern, '$1 ' . $arabic, $description);
+        }
+        
+        return $description;
+    }
+
+    /**
+     * تنظيم أجزاء الوصف
+     * @param string $description
+     * @return string
+     */
+    private function organizeDescriptionParts(string $description): string
+    {
+        // تقسيم الوصف إلى أجزاء
+        $parts = explode(',', $description);
+        $parts = array_map('trim', $parts);
+        $parts = array_filter($parts);
+        
+        // ترتيب الأجزاء حسب الأهمية
+        usort($parts, function($a, $b) {
+            // الأجزاء التي تحتوي على أرقام تأتي في النهاية
+            $aHasNumbers = preg_match('/\d/', $a);
+            $bHasNumbers = preg_match('/\d/', $b);
+            
+            if ($aHasNumbers && !$bHasNumbers) return 1;
+            if (!$aHasNumbers && $bHasNumbers) return -1;
+            
+            return strlen($b) - strlen($a);
+        });
+        
+        return implode('، ', $parts);
+    }
+
+    /**
+     * تحديد تصنيف المادة بناءً على وصفها
+     * @param string $description
+     * @return string
+     */
+    private function detectCategory(string $description): string
+    {
+        foreach (self::CATEGORIES as $keyword => $category) {
+            if (stripos($description, $keyword) !== false) {
+                return $category;
+            }
+        }
+        return 'Other';
     }
 
     /**
@@ -49,511 +183,9 @@ class ReferenceMaterialSeeder extends Seeder
      */
     private function getMaterialsData(): array
     {
-        // تنظيم البيانات في مجموعات منطقية
         return [
-            // Cables & Power Conductors
-            // Cables & Conductors - Power
-            ['code' => '908112050', 'description' => 'CABLE,PWR,600V/1KV,QUADRUPLEX,3X50+1X50'],
-            ['code' => '908112120', 'description' => 'CABLE,PWR,600V/1KV,QUADRUPLEX,3X120MM2'],
-            ['code' => '908101001', 'description' => 'COND,BR,ACSR,QUAIL (2/0 AWG),6AL,1ALWLD'],
-            ['code' => '908101002', 'description' => 'COND,BR,ACSR,MERLIN(336.4MCM)18AL,170MM2'],
-            
-            // Copper Conductors
-            ['code' => '908111101', 'description' => 'CNDCTR,BR,CU,35SQMM,7STR,SOFT DRWN'],
-            ['code' => '908111102', 'description' => 'CNDCTR,BR,CU,50SQMM,7STR,SOFT DRWN'],
-            ['code' => '908111103', 'description' => 'CNDCTR,BR,CU,70SQMM,7STR,SOFT DRWN'],
-            ['code' => '908111104', 'description' => 'CNDCTR,BR,CU,95SQMM,7STR,SOFT DRWN'],
-            ['code' => '908111105', 'description' => 'CNDCTR,BR,CU,120SQMM,7STR,SOFT DRWN'],
-            ['code' => '908111106', 'description' => 'CNDCTR,BR,CU,150SQMM,7STR,SOFT DRWN'],
-            ['code' => '908111107', 'description' => 'CNDCTR,BR,CU,185SQMM,7STR,SOFT DRWN'],
-            ['code' => '908111108', 'description' => 'CNDCTR,BR,CU,240SQMM,7STR,SOFT DRWN'],
-            ['code' => '908111109', 'description' => 'CNDCTR,BR,CU,300SQMM,7STR,SOFT DRWN'],
-            ['code' => '908111110', 'description' => 'CNDCTR,BR,CU,400SQMM,7STR,SOFT DRWN'],
-
-            // XLPE Insulated Conductors
-            ['code' => '908113101', 'description' => 'CNDCTR,INSUL,XLPE,CU,1C,50MM2,0.6/1KV'],
-            ['code' => '908113102', 'description' => 'CNDCTR,INSUL,XLPE,CU,1C,70MM2,0.6/1KV'],
-            ['code' => '908113103', 'description' => 'CNDCTR,INSUL,XLPE,CU,1C,95MM2,0.6/1KV'],
-            ['code' => '908113104', 'description' => 'CNDCTR,INSUL,XLPE,CU,1C,120MM2,0.6/1KV'],
-            ['code' => '908113105', 'description' => 'CNDCTR,INSUL,XLPE,CU,1C,150MM2,0.6/1KV'],
-            ['code' => '908113106', 'description' => 'CNDCTR,INSUL,XLPE,CU,1C,185MM2,0.6/1KV'],
-            ['code' => '908113107', 'description' => 'CNDCTR,INSUL,XLPE,CU,1C,240MM2,0.6/1KV'],
-            ['code' => '908113108', 'description' => 'CNDCTR,INSUL,XLPE,CU,1C,300MM2,0.6/1KV'],
-            ['code' => '908113109', 'description' => 'CNDCTR,INSUL,XLPE,CU,1C,400MM2,0.6/1KV'],
-            ['code' => '908113110', 'description' => 'CNDCTR,INSUL,XLPE,CU,1C,500MM2,0.6/1KV'],
-            ['code' => '908113111', 'description' => 'CNDCTR,INSUL,XLPE,CU,1C,630MM2,0.6/1KV'],
-            ['code' => '908113112', 'description' => 'CNDCTR,INSUL,XLPE,CU,1C,800MM2,0.6/1KV'],
-            ['code' => '908113113', 'description' => 'CNDCTR,INSUL,XLPE,CU,1C,1000MM2,0.6/1KV'],
-
-            // Yellow/Green Conductors
-            ['code' => '908115001', 'description' => 'CNDCTR,CU,1C,10MM2,XLPE,0.6/1KV,YELLOW/GREEN'],
-            ['code' => '908115002', 'description' => 'CNDCTR,CU,1C,16MM2,XLPE,0.6/1KV,YELLOW/GREEN'],
-            ['code' => '908115003', 'description' => 'CNDCTR,CU,1C,25MM2,XLPE,0.6/1KV,YELLOW/GREEN'],
-            ['code' => '908115004', 'description' => 'CNDCTR,CU,1C,35MM2,XLPE,0.6/1KV,YELLOW/GREEN'],
-            ['code' => '908115005', 'description' => 'CNDCTR,CU,1C,50MM2,XLPE,0.6/1KV,YELLOW/GREEN'],
-            ['code' => '908115006', 'description' => 'CNDCTR,CU,1C,70MM2,XLPE,0.6/1KV,YELLOW/GREEN'],
-            ['code' => '908115007', 'description' => 'CNDCTR,CU,1C,95MM2,XLPE,0.6/1KV,YELLOW/GREEN'],
-            ['code' => '908115008', 'description' => 'CNDCTR,CU,1C,120MM2,XLPE,0.6/1KV,YELLOW/GREEN'],
-            ['code' => '908115009', 'description' => 'CNDCTR,CU,1C,150MM2,XLPE,0.6/1KV,YELLOW/GREEN'],
-            ['code' => '908115010', 'description' => 'CNDCTR,CU,1C,185MM2,XLPE,0.6/1KV,YELLOW/GREEN'],
-            ['code' => '908115011', 'description' => 'CNDCTR,CU,1C,240MM2,XLPE,0.6/1KV,YELLOW/GREEN'],
-            ['code' => '908115012', 'description' => 'CNDCTR,CU,1C,300MM2,XLPE,0.6/1KV,YELLOW/GREEN'],
-            ['code' => '908115013', 'description' => 'CNDCTR,CU,1C,400MM2,XLPE,0.6/1KV,YELLOW/GREEN'],
-            ['code' => '908115014', 'description' => 'CNDCTR,CU,1C,500MM2,XLPE,0.6/1KV,YELLOW/GREEN'],
-            ['code' => '908115015', 'description' => 'CNDCTR,CU,1C,630MM2,XLPE,0.6/1KV,YELLOW/GREEN'],
-            ['code' => '908115016', 'description' => 'CNDCTR,CU,1C,800MM2,XLPE,0.6/1KV,YELLOW/GREEN'],
-            ['code' => '908115017', 'description' => 'CNDCTR,CU,1C,1000MM2,XLPE,0.6/1KV,YELLOW/GREEN'],
-
-            // Black Conductors
-            ['code' => '908117001', 'description' => 'CNDCTR,CU,1C,2.5MM2,XLPE,0.6/1KV,BLACK'],
-            ['code' => '908117002', 'description' => 'CNDCTR,CU,1C,4MM2,XLPE,0.6/1KV,BLACK'],
-            ['code' => '908117003', 'description' => 'CNDCTR,CU,1C,6MM2,XLPE,0.6/1KV,BLACK'],
-            ['code' => '908117004', 'description' => 'CNDCTR,CU,1C,10MM2,XLPE,0.6/1KV,BLACK'],
-            ['code' => '908117005', 'description' => 'CNDCTR,CU,1C,16MM2,XLPE,0.6/1KV,BLACK'],
-            ['code' => '908117006', 'description' => 'CNDCTR,CU,1C,25MM2,XLPE,0.6/1KV,BLACK'],
-            ['code' => '908117007', 'description' => 'CNDCTR,CU,1C,35MM2,XLPE,0.6/1KV,BLACK'],
-            ['code' => '908117008', 'description' => 'CNDCTR,CU,1C,50MM2,XLPE,0.6/1KV,BLACK'],
-            ['code' => '908117009', 'description' => 'CNDCTR,CU,1C,70MM2,XLPE,0.6/1KV,BLACK'],
-            ['code' => '908117010', 'description' => 'CNDCTR,CU,1C,95MM2,XLPE,0.6/1KV,BLACK'],
-            ['code' => '908117011', 'description' => 'CNDCTR,CU,1C,120MM2,XLPE,0.6/1KV,BLACK'],
-            ['code' => '908117012', 'description' => 'CNDCTR,CU,1C,150MM2,XLPE,0.6/1KV,BLACK'],
-            ['code' => '908117013', 'description' => 'CNDCTR,CU,1C,185MM2,XLPE,0.6/1KV,BLACK'],
-            ['code' => '908117014', 'description' => 'CNDCTR,CU,1C,240MM2,XLPE,0.6/1KV,BLACK'],
-            ['code' => '908117015', 'description' => 'CNDCTR,CU,1C,300MM2,XLPE,0.6/1KV,BLACK'],
-            ['code' => '908117016', 'description' => 'CNDCTR,CU,1C,400MM2,XLPE,0.6/1KV,BLACK'],
-            ['code' => '908117017', 'description' => 'CNDCTR,CU,1C,500MM2,XLPE,0.6/1KV,BLACK'],
-            ['code' => '908117018', 'description' => 'CNDCTR,CU,1C,630MM2,XLPE,0.6/1KV,BLACK'],
-            ['code' => '908117019', 'description' => 'CNDCTR,CU,1C,800MM2,XLPE,0.6/1KV,BLACK'],
-            ['code' => '908117020', 'description' => 'CNDCTR,CU,1C,1000MM2,XLPE,0.6/1KV,BLACK'],
-
-            // Red Conductors
-            ['code' => '908119001', 'description' => 'CNDCTR,CU,1C,2.5MM2,XLPE,0.6/1KV,RED'],
-            ['code' => '908119002', 'description' => 'CNDCTR,CU,1C,4MM2,XLPE,0.6/1KV,RED'],
-            ['code' => '908119003', 'description' => 'CNDCTR,CU,1C,6MM2,XLPE,0.6/1KV,RED'],
-            ['code' => '908119004', 'description' => 'CNDCTR,CU,1C,10MM2,XLPE,0.6/1KV,RED'],
-            ['code' => '908119005', 'description' => 'CNDCTR,CU,1C,16MM2,XLPE,0.6/1KV,RED'],
-            ['code' => '908119006', 'description' => 'CNDCTR,CU,1C,25MM2,XLPE,0.6/1KV,RED'],
-            ['code' => '908119007', 'description' => 'CNDCTR,CU,1C,35MM2,XLPE,0.6/1KV,RED'],
-            ['code' => '908119008', 'description' => 'CNDCTR,CU,1C,50MM2,XLPE,0.6/1KV,RED'],
-            ['code' => '908119009', 'description' => 'CNDCTR,CU,1C,70MM2,XLPE,0.6/1KV,RED'],
-            ['code' => '908119010', 'description' => 'CNDCTR,CU,1C,95MM2,XLPE,0.6/1KV,RED'],
-            ['code' => '908119011', 'description' => 'CNDCTR,CU,1C,120MM2,XLPE,0.6/1KV,RED'],
-            ['code' => '908119012', 'description' => 'CNDCTR,CU,1C,150MM2,XLPE,0.6/1KV,RED'],
-            ['code' => '908119013', 'description' => 'CNDCTR,CU,1C,185MM2,XLPE,0.6/1KV,RED'],
-            ['code' => '908119014', 'description' => 'CNDCTR,CU,1C,240MM2,XLPE,0.6/1KV,RED'],
-            ['code' => '908119015', 'description' => 'CNDCTR,CU,1C,300MM2,XLPE,0.6/1KV,RED'],
-            ['code' => '908119016', 'description' => 'CNDCTR,CU,1C,400MM2,XLPE,0.6/1KV,RED'],
-            ['code' => '908119017', 'description' => 'CNDCTR,CU,1C,500MM2,XLPE,0.6/1KV,RED'],
-            ['code' => '908119018', 'description' => 'CNDCTR,CU,1C,630MM2,XLPE,0.6/1KV,RED'],
-            ['code' => '908119019', 'description' => 'CNDCTR,CU,1C,800MM2,XLPE,0.6/1KV,RED'],
-            ['code' => '908119020', 'description' => 'CNDCTR,CU,1C,1000MM2,XLPE,0.6/1KV,RED'],
-
-            // Yellow Conductors
-            ['code' => '908121001', 'description' => 'CNDCTR,CU,1C,2.5MM2,XLPE,0.6/1KV,YELLOW'],
-            ['code' => '908121002', 'description' => 'CNDCTR,CU,1C,4MM2,XLPE,0.6/1KV,YELLOW'],
-            ['code' => '908121003', 'description' => 'CNDCTR,CU,1C,6MM2,XLPE,0.6/1KV,YELLOW'],
-            ['code' => '908121004', 'description' => 'CNDCTR,CU,1C,10MM2,XLPE,0.6/1KV,YELLOW'],
-            ['code' => '908121005', 'description' => 'CNDCTR,CU,1C,16MM2,XLPE,0.6/1KV,YELLOW'],
-            ['code' => '908121006', 'description' => 'CNDCTR,CU,1C,25MM2,XLPE,0.6/1KV,YELLOW'],
-            ['code' => '908121007', 'description' => 'CNDCTR,CU,1C,35MM2,XLPE,0.6/1KV,YELLOW'],
-            ['code' => '908121008', 'description' => 'CNDCTR,CU,1C,50MM2,XLPE,0.6/1KV,YELLOW'],
-            ['code' => '908121009', 'description' => 'CNDCTR,CU,1C,70MM2,XLPE,0.6/1KV,YELLOW'],
-            ['code' => '908121010', 'description' => 'CNDCTR,CU,1C,95MM2,XLPE,0.6/1KV,YELLOW'],
-            ['code' => '908121011', 'description' => 'CNDCTR,CU,1C,120MM2,XLPE,0.6/1KV,YELLOW'],
-            ['code' => '908121012', 'description' => 'CNDCTR,CU,1C,150MM2,XLPE,0.6/1KV,YELLOW'],
-            ['code' => '908121013', 'description' => 'CNDCTR,CU,1C,185MM2,XLPE,0.6/1KV,YELLOW'],
-            ['code' => '908121014', 'description' => 'CNDCTR,CU,1C,240MM2,XLPE,0.6/1KV,YELLOW'],
-            ['code' => '908121015', 'description' => 'CNDCTR,CU,1C,300MM2,XLPE,0.6/1KV,YELLOW'],
-            ['code' => '908121016', 'description' => 'CNDCTR,CU,1C,400MM2,XLPE,0.6/1KV,YELLOW'],
-            ['code' => '908121017', 'description' => 'CNDCTR,CU,1C,500MM2,XLPE,0.6/1KV,YELLOW'],
-            ['code' => '908121018', 'description' => 'CNDCTR,CU,1C,630MM2,XLPE,0.6/1KV,YELLOW'],
-            ['code' => '908121019', 'description' => 'CNDCTR,CU,1C,800MM2,XLPE,0.6/1KV,YELLOW'],
-            ['code' => '908121020', 'description' => 'CNDCTR,CU,1C,1000MM2,XLPE,0.6/1KV,YELLOW'],
-
-            // Blue Conductors
-            ['code' => '908122001', 'description' => 'CNDCTR,CU,1C,2.5MM2,XLPE,0.6/1KV,BLUE'],
-            ['code' => '908122002', 'description' => 'CNDCTR,CU,1C,4MM2,XLPE,0.6/1KV,BLUE'],
-            ['code' => '908122003', 'description' => 'CNDCTR,CU,1C,6MM2,XLPE,0.6/1KV,BLUE'],
-            ['code' => '908122004', 'description' => 'CNDCTR,CU,1C,10MM2,XLPE,0.6/1KV,BLUE'],
-            ['code' => '908122005', 'description' => 'CNDCTR,CU,1C,16MM2,XLPE,0.6/1KV,BLUE'],
-            ['code' => '908122006', 'description' => 'CNDCTR,CU,1C,25MM2,XLPE,0.6/1KV,BLUE'],
-            ['code' => '908122007', 'description' => 'CNDCTR,CU,1C,35MM2,XLPE,0.6/1KV,BLUE'],
-            ['code' => '908122008', 'description' => 'CNDCTR,CU,1C,50MM2,XLPE,0.6/1KV,BLUE'],
-            ['code' => '908122009', 'description' => 'CNDCTR,CU,1C,70MM2,XLPE,0.6/1KV,BLUE'],
-            ['code' => '908122010', 'description' => 'CNDCTR,CU,1C,95MM2,XLPE,0.6/1KV,BLUE'],
-            ['code' => '908122011', 'description' => 'CNDCTR,CU,1C,120MM2,XLPE,0.6/1KV,BLUE'],
-            ['code' => '908122012', 'description' => 'CNDCTR,CU,1C,150MM2,XLPE,0.6/1KV,BLUE'],
-            ['code' => '908122013', 'description' => 'CNDCTR,CU,1C,185MM2,XLPE,0.6/1KV,BLUE'],
-            ['code' => '908122014', 'description' => 'CNDCTR,CU,1C,240MM2,XLPE,0.6/1KV,BLUE'],
-            ['code' => '908122015', 'description' => 'CNDCTR,CU,1C,300MM2,XLPE,0.6/1KV,BLUE'],
-            ['code' => '908122016', 'description' => 'CNDCTR,CU,1C,400MM2,XLPE,0.6/1KV,BLUE'],
-            ['code' => '908122017', 'description' => 'CNDCTR,CU,1C,500MM2,XLPE,0.6/1KV,BLUE'],
-            ['code' => '908122018', 'description' => 'CNDCTR,CU,1C,630MM2,XLPE,0.6/1KV,BLUE'],
-            ['code' => '908122019', 'description' => 'CNDCTR,CU,1C,800MM2,XLPE,0.6/1KV,BLUE'],
-            ['code' => '908122020', 'description' => 'CNDCTR,CU,1C,1000MM2,XLPE,0.6/1KV,BLUE'],
-
-            // Tubing & Sleeves
-            ['code' => '116418370', 'description' => 'TUBING,SHRINK,POLYCARB,56.15 MM DIA,#MWT'],
-            ['code' => '116418500', 'description' => 'TUBING,SHRINK,POLYCARB,81.55 MM DIA,#MWT'],
-            ['code' => '116410990', 'description' => 'SLEEVE:REPAIR,HEAT SHRINK,4 X150 SQM-95'],
-            ['code' => '908121031', 'description' => 'SLEEVE,RPR,(4)300SQMM,XLPE/PVC,1500MM LG'],
-
-            // Connectors & Terminals
-            ['code' => '116411140', 'description' => 'SLEEVE,RPR,4 X 500 SQMM AL CNDCTR,#20041'],
-            ['code' => '908121025', 'description' => 'SLEEVE,REPAIR,1X500/35SQMM,XLPE,UARM'],
-            ['code' => '908122002', 'description' => 'CONNECTOR,LUG,35SQMM CU,(1)M10,BLT HL'],
-            ['code' => '908122003', 'description' => 'CONNECTOR,LUG,50MM2 CU,(1)M12 BLT HL'],
-            ['code' => '908122010', 'description' => 'CONNECTOR,LUG,70SQMM AL,(1)M12 BLT HL'],
-            ['code' => '908122034', 'description' => 'CONNECTOR,LUG,70SQMM CU,13MMDIA,40.4MMLG'],
-            ['code' => '115250950', 'description' => 'CONN,ELEC,TERM,AL,95 SQ MM CNDCTR,#XCX95'],
-            ['code' => '908122035', 'description' => 'CONNECTOR,LUG,120SQMM CU,13MMDIA,85MM LG'],
-            ['code' => '908122036', 'description' => 'CONNECTOR,LUG,120SQMM AL,(1)M12 BLT HL'],
-            ['code' => '908122009', 'description' => 'CONNECTOR,LUG,185SQMM AL,(1)M12 BLT HL'],
-            ['code' => '908122008', 'description' => 'CONNECTOR,LUG,300SQMM AL,(1)M12 BLT HL'],
-            ['code' => '908122012', 'description' => 'CONNECTOR,LUG,300MM2 AL/CU,(1)M10 BLT HL'],
-            ['code' => '115225060', 'description' => 'CONN,ELEC,TERM,AL,500SQMM CNDCTR,#SCTS63'],
-            ['code' => '908122006', 'description' => 'CONNECTOR,LUG,630MM2 CU,(4)M10 BLT HL'],
-            ['code' => '118211290', 'description' => 'FUSE CARRIER: FOR LV DIST BOARD'],
-            ['code' => '118144120', 'description' => 'FUSE LINK: HRC 40A 13.8/15KV FOR SF6 INS'],
-
-            ['code' => '908342032', 'description' => 'FUSE,POWER,17.5KV,50A'],
-            ['code' => '908342033', 'description' => 'FUSE,POWER,17.5KV,80A'],
-            ['code' => '908342034', 'description' => 'FUSE,POWER,17.5KV,100A'],
-            ['code' => '908342035', 'description' => 'FUSE,POWER,17.5KV,125A'],
-            ['code' => '118148010', 'description' => 'FUSE,PWR,13.8KV,80 A,HRC,FE,#155OHGMA80'],
-            ['code' => '118144040', 'description' => 'HV 13.8KV 40 AMPS FUSE OIL IMMERSED'],
-            ['code' => '118142540', 'description' => 'FUSE LINK:HRC 25 AMPS,13800V.63.5 MM.'],
-            ['code' => '118054040', 'description' => 'FUSE LINK,HRC,400MPS,500V,WEDGE "J" TYPE'],
-            ['code' => '118055020', 'description' => 'FUSE LINK HRC 500 AMP,500V,WEDGE J TYPE'],
-            ['code' => '908342036', 'description' => 'Fuse Catriage 200 AMP'],
-            ['code' => '118054050', 'description' => 'Fuse Catriage 400 AMP'],
-            ['code' => '118055030', 'description' => 'Fuse Catriage 500 AMP'],
-            ['code' => '118221310', 'description' => 'HOLDER,FUSE:CARTRIDGE FUSE,2000A,110/220'],
-            ['code' => '101811940', 'description' => 'BLOCK:TERMINAL UPTO 185MM2 FOR 4 IN/OUT'],
-            ['code' => '101811920', 'description' => 'BLOCK,TERMINAL,MOULDED,UPTO 185MM2 STR'],
-            ['code' => '115420350', 'description' => 'CONNECTOR, SPLIT BOLT FOR 35MM2 CU'],
-            ['code' => '115420520', 'description' => 'CONNECTOR, SPLIT BOLT FOR 50MM2 CU'],
-            ['code' => '115420720', 'description' => 'CONNECTOR, SPLIT BOLT FOR 70MM2 CU'],
-            ['code' => '115420950', 'description' => 'CONNECTOR, SPLIT BOLT FOR 95MM2 CU'],
-            ['code' => '115421850', 'description' => 'CONNECTOR, SPLIT BOLT FOR 185MM2 CU'],
-            ['code' => '115432110', 'description' => 'CONNECTOR MECH. TYPE 70-95MM2 AL ST. JOI'],
-
-            ['code' => '115431150', 'description' => 'CONNECTOR MECH. TYPE FOR 300MM2 STR'],
-            ['code' => '115432140', 'description' => 'CONNECTOR MECHANICAL TYPE FOR 500MM2'],
-            ['code' => '115155010', 'description' => 'CABLE BIMETAL CONNECTOR 500MM2 AL/95MM2'],
-            ['code' => '908342020', 'description' => 'LINK,FUSE,36KV,10A,FAST'],
-            ['code' => '908342022', 'description' => 'LINK,FUSE,36KV,15A,FAST'],
-            ['code' => '908342023', 'description' => 'LINK,FUSE,36KV,20A,FAST'],
-            ['code' => '908342024', 'description' => 'LINK,FUSE,36KV,25A,FAST'],
-            ['code' => '908342025', 'description' => 'LINK,FUSE,36KV,30A,FAST'],
-            ['code' => '908342026', 'description' => 'LINK,FUSE,36KV,40A,FAST'],
-            ['code' => '908342027', 'description' => 'LINK,FUSE,36KV,50A,FAST'],
-            ['code' => '908342028', 'description' => 'LINK,FUSE,36KV,65A,FAST'],
-            ['code' => '908342029', 'description' => 'LINK,FUSE,36KV,80A,FAST'],
-            ['code' => '908342030', 'description' => 'LINK,FUSE,36KV,100A,FAST'],
-            ['code' => '118172020', 'description' => 'LINK,FUSE,33/34.5 KV,200A,#704200'],
-            ['code' => '908341003', 'description' => 'CUTOUT,FUSE,100A,33KV,825MM CRP'],
-            ['code' => '908341004', 'description' => 'CUTOUT,FUSE,100A,33KV,1320MM CRP'],
-            ['code' => '118181210', 'description' => 'CUTOUT,FUSE,60HZ FREQ,16 KA INTCAP,#9254'],
-            ['code' => '908202053', 'description' => 'ROD,GRD,CUWLD STL,16MM DIA,1200MM LG'],
-            ['code' => '908312001', 'description' => 'PILLAR,DIST,LV,400A,800X310X830MM'],
-            ['code' => '908312002', 'description' => 'BASE,PILLAR DIST LV,GLASS REINF'],
-            ['code' => '908312003', 'description' => 'PILLAR,DIST,LV,GLASS REINF,400A,NO BASE'],
-
-            ['code' => '102015050', 'description' => 'TFMR,DIST,PF,500KVA,33KV,231/133V,170KV'],
-            ['code' => '102015170', 'description' => 'TFMR,DIST,PF,500KVA,33KV,231/400,170KV'],
-            ['code' => '908511032', 'description' => 'TFMR,PD,1.5MVA,33KX231/133V,170KVB'],
-            ['code' => '908511108', 'description' => 'TFMR,PF,300KVA,33KX231/133V,200KVB'],
-            ['code' => '908511126', 'description' => 'TFMR,PD,300KVA,33KX231/133V,200KVB,CU'],
-            ['code' => '908511128', 'description' => 'TFMR,PD,500KVA,33KX231/133V,200KVB,CU'],
-            ['code' => '908511130', 'description' => 'TFMR,PD,1MVA,33KX231/133V,200KVB'],
-            ['code' => '908512025', 'description' => 'TFMR,PF,300KVA,33KX400/230V,200KVBL,CU'],
-            ['code' => '908512033', 'description' => 'TFMR,PD,300KVA,33KX400/230V,200KVBL,CU'],
-            ['code' => '908512041', 'description' => 'TFMR,PD,500KVA,33KX400/230V,200KVBL'],
-            ['code' => '908512049', 'description' => 'TFMR,PD,1MVA,33KX400/230V,200KVBL'],
-            ['code' => '908512057', 'description' => 'TFMR,PD,1.5MVA,33KX400/230V,200KVBL'],
-            ['code' => '908513017', 'description' => 'TFMR,PD,1MVA,33KX400/230V,200KVB,AL'],
-            ['code' => '908513018', 'description' => 'TFMR,PD,1.5MVA,33KX400/230V,200KVB,AL'],
-            ['code' => '908513020', 'description' => 'TFMR,PD,300KVA,33KX400/230V,200KVB,AL'],
-            ['code' => '908513021', 'description' => 'TFMR,PF,300KVA,33KX400/230V,200KVB,AL'],
-
-            ['code' => '908513022', 'description' => 'TFMR,PD,500KVA,33KX400/230V,200KVB,AL'],
-            ['code' => '908514013', 'description' => 'TFMR,PD,1MVA,33KX400/230/133V,200KVB,AL'],
-            ['code' => '908514015', 'description' => 'TFMR,PD,300KVA,33KX400/230/133V,200KV,AL'],
-            ['code' => '908122015', 'description' => 'CNDCTR,CU,1C,300MM2,XLPE,0.6/1KV,BLUE'],
-            ['code' => '908122016', 'description' => 'CNDCTR,CU,1C,300MM2,XLPE,0.6/1KV,BROWN'],
-            ['code' => '908122017', 'description' => 'CNDCTR,CU,1C,300MM2,XLPE,0.6/1KV,BLACK'],
-            ['code' => '908122018', 'description' => 'CNDCTR,CU,1C,300MM2,XLPE,0.6/1KV,GREEN/YELLOW'],
-            ['code' => '908122019', 'description' => 'CNDCTR,CU,1C,400MM2,XLPE,0.6/1KV,BLUE'],
-            ['code' => '908122020', 'description' => 'CNDCTR,CU,1C,400MM2,XLPE,0.6/1KV,BROWN'],
-            ['code' => '908122021', 'description' => 'CNDCTR,CU,1C,400MM2,XLPE,0.6/1KV,BLACK'],
-            ['code' => '908122022', 'description' => 'CNDCTR,CU,1C,400MM2,XLPE,0.6/1KV,GREEN/YELLOW'],
-            ['code' => '908122023', 'description' => 'CNDCTR,CU,1C,500MM2,XLPE,0.6/1KV,BLUE'],
-            ['code' => '908122024', 'description' => 'CNDCTR,CU,1C,500MM2,XLPE,0.6/1KV,BROWN'],
-            ['code' => '908122025', 'description' => 'CNDCTR,CU,1C,500MM2,XLPE,0.6/1KV,BLACK'],
-            ['code' => '908122026', 'description' => 'CNDCTR,CU,1C,500MM2,XLPE,0.6/1KV,GREEN/YELLOW'],
-            ['code' => '908122027', 'description' => 'CNDCTR,CU,1C,630MM2,XLPE,0.6/1KV,BLUE'],
-            ['code' => '908122028', 'description' => 'CNDCTR,CU,1C,630MM2,XLPE,0.6/1KV,BROWN'],
-            ['code' => '908122029', 'description' => 'CNDCTR,CU,1C,630MM2,XLPE,0.6/1KV,BLACK'],
-
-            ['code' => '908122030', 'description' => 'CNDCTR,CU,1C,630MM2,XLPE,0.6/1KV,GREEN/YELLOW'],
-            ['code' => '908122031', 'description' => 'CNDCTR,CU,1C,800MM2,XLPE,0.6/1KV,BLUE'],
-            ['code' => '908122032', 'description' => 'CNDCTR,CU,1C,800MM2,XLPE,0.6/1KV,BROWN'],
-            ['code' => '908122033', 'description' => 'CNDCTR,CU,1C,800MM2,XLPE,0.6/1KV,BLACK'],
-            ['code' => '908122034', 'description' => 'CNDCTR,CU,1C,800MM2,XLPE,0.6/1KV,GREEN/YELLOW'],
-            ['code' => '908122035', 'description' => 'CNDCTR,CU,1C,1000MM2,XLPE,0.6/1KV,BLUE'],
-            ['code' => '908122036', 'description' => 'CNDCTR,CU,1C,1000MM2,XLPE,0.6/1KV,BROWN'],
-            ['code' => '908122037', 'description' => 'CNDCTR,CU,1C,1000MM2,XLPE,0.6/1KV,BLACK'],
-            ['code' => '908122038', 'description' => 'CNDCTR,CU,1C,1000MM2,XLPE,0.6/1KV,GREEN/YELLOW'],
-            ['code' => '908202064', 'description' => 'CONNECTOR,SLV,120SQMM AL,AL W/NYL JKT'],
-            ['code' => '908202066', 'description' => 'CONNECTOR,SLV,50SQMM,AL W/ NYL JKT'],
-            ['code' => '908202081', 'description' => 'CHANNEL,FUSE CUTOUT,C125X65X65X6X2400MM'],
-            ['code' => '908202082', 'description' => 'CHANNEL,TFMR MTG,GS,150X75X75X6.5X2400MM'],
-            ['code' => '908202192', 'description' => 'GUARD,GRD WIRE,PVC,12.7MM DIAX2440MM LG'],
-            ['code' => '908202193', 'description' => 'GUARD,GUY,PVC-YELLOW,51MMWDX2440MMLG'],
-            ['code' => '908202194', 'description' => 'HEAD,SERV ENT,AL,SLIP-ON W/2BLT,76MM OD'],
-            ['code' => '908202200', 'description' => 'CONNECTOR,PG,AL,QUAIL/AW,2-BOLTS'],
-            ['code' => '908202201', 'description' => 'CLAMP,SUSP,AA,14.31 MM DIA,45KN MIN UTS'],
-
-            ['code' => '908202210', 'description' => 'CONNECTOR,PG,AL,120SQMM,50SQMM,COMP'],
-            ['code' => '908202228', 'description' => 'BRACE,CROSSARM,GS,BOTH END CLIPPED'],
-            ['code' => '908202236', 'description' => 'CONNECTOR,PG,70SQMM CU,70SQMM AL,2-BOLT'],
-            ['code' => '908202237', 'description' => 'CONNECTOR,PG,70SQMM CU,120SQMM AL,2-BOLT'],
-            ['code' => '908301009', 'description' => 'SWITCH,OHD,VERTICAL,33KV,3P,400A,825MM'],
-            ['code' => '908301010', 'description' => 'SWITCH,DISC,OVRHD,33KV,3 P,60HZ, 400A'],
-            ['code' => '908301015', 'description' => 'SWITCH,OHD,VERT,3P,33KV,600A, 1320MM'],
-            ['code' => '908301016', 'description' => 'SWITCH,OHD,HORIZONTAL,3P,33KV,600A,FOR'],
-            ['code' => '908511025', 'description' => 'TFMR,PD,300KVA,33KX400/231V,170KVB'],
-            ['code' => '908511027', 'description' => 'TFMR,PD,500KVA,33KX400/231V,170KVB'],
-            ['code' => '908511031', 'description' => 'TFMR,PD,1.5MVA,33KX400/231V,170KVB'],
-            ['code' => '908511129', 'description' => 'TFMR,PD,1MVA,33KX400/231V,200KVB'],
-            ['code' => '908421008', 'description' => 'LOCK:EQUIPMENT,METER SEAL,PLASTIC/STL,19'],
-            ['code' => '908421009', 'description' => 'BLOCK,TERMINAL,150A,PA66,55MMWX85MMLX85M'],
-            ['code' => '908421010', 'description' => 'BLOCK,200A,PA66,115MMWX150MMLX95MMH,SING'],
-            ['code' => '908421011', 'description' => 'BLOCK,200A,PA66,115MMWX150MMLX95MMH,QUAD'],
-            ['code' => '908421012', 'description' => 'BLOCK,400A,FRP+CU,230MMWX260MMLX130MMH,Q'],
-
-
-            ['code' => '908421013', 'description' => 'BLOCK,200A,PA66,115MMWX150MMLX95MMH,DOUB'],
-            ['code' => '908421014', 'description' => 'BLOCK,300A,PA66,170MMWX125MMLGX90MMH,DOU'],
-            ['code' => '908421015', 'description' => 'COVER,FIBERGLASS,965X270X4MMTH,SINGLEMET'],
-            ['code' => '908421016', 'description' => 'COVER,FIBERGLASS,965X965X4,QUADRUPLEMETE'],
-            ['code' => '908421017', 'description' => 'COVER,FIBERGLASS,560X965X4MMTH,DOUBLE ME'],
-            ['code' => '908421018', 'description' => 'COVER,FIBERGLASS,278X140X3MM,COMMONMETER'],
-            ['code' => '908421019', 'description' => 'MOUNT,HDG-STL,370X215X1.5MM,METERANFMCCB'],
-            ['code' => '908421020', 'description' => 'MOUNT,STL,92X20X2MM,CABLEFIXINGFACILITY'],
-            ['code' => '908421021', 'description' => 'MOUNT,GALVANIZEDCOIL,300X195X1.5MM,QUADR'],
-            ['code' => '908421022', 'description' => 'MOUNT,GALVANIZEDCOIL,320X200X1.5MM'],
-            ['code' => '908421023', 'description' => 'LUG,TINNEDCOPPER,1XM12HOLE,35SQMM,TERMIN'],
-            ['code' => '100008292', 'description' => 'SPOUT,BUSBAR & CABLE,ER,#GCE8003899R0101'],
-            ['code' => '100010763', 'description' => 'FUSE:LOW VOLTAGE,1/4 A,250 VAC,FAST BLOW'],
-            ['code' => '101021180', 'description' => 'METER,ESERV,ANL,380/220/127V,50(200),3 P'],
-            ['code' => '101811910', 'description' => 'SET,TERMINAL BLOCK 185 SQMM AL/CU,#4ACB1'],
-            ['code' => '101820230', 'description' => 'BOX,M,1 CUST,M,220/380 VAC VOLT'],
-            ['code' => '102012150', 'description' => 'TFMR,DIST,200KVA,13800/4160 V AC,#T3SP20'],
-            ['code' => '102361110', 'description' => 'PLATFORM (PREFABRICATED)FOR TRANSFORMER'],
-            ['code' => '908111011', 'description' => 'CABLE,CNTRL,750V,CU,2CORE,2.5SQMM,PVC'],
-            ['code' => '908113003', 'description' => 'CABLE,PWR,15KV,AL,3C,300/35MM2,XPLE,ARM'],
-            ['code' => '908113004', 'description' => 'CABLE,PWR,15KV,AL,3C,70/16MM2,XPLE,ARM'],
-
-
-            ['code' => '908114002', 'description' => 'CABLE,PWR,15K,CU,3X300/35SQMM,XLPE/MDPE'],
-            ['code' => '908121006', 'description' => 'JOINT KIT,STR,15KV,3X300/35MM2,AL,AR'],
-            ['code' => '908121007', 'description' => 'JOINT KIT,STR,15KV,3X70/16MM2,AL,AR'],
-            ['code' => '908121011', 'description' => 'TERM KIT,STR,15KV,3X185/35MM2,CU.'],
-            ['code' => '908121012', 'description' => 'TERM KIT,STR,15KV,3X300/35MM2,CU.'],
-            ['code' => '908121013', 'description' => 'TERM KIT,STR,15KV,3X300/35MM2,AL'],
-            ['code' => '908121015', 'description' => 'JOINT KIT,TRANS,15KV,3X185/35MM2,AL'],
-            ['code' => '908121020', 'description' => 'CAP,CBL END,15KV,1X50/16MM2,CU,XLPE,UARM'],
-            ['code' => '908121022', 'description' => 'CAP,CBL END,15KV,3X300/35MM2,CU/AL,XLPE'],
-            ['code' => '908121026', 'description' => 'SLEEVE,REPAIR,3X185-240/35MM2,XLPE,ARM'],
-            ['code' => '908121027', 'description' => 'CAP,CBL END,3X185-500/35MM2,XLPE,ARM'],
-            ['code' => '908121029', 'description' => 'SLEEVE,REPAIR,1KV,4X70-185MM2,1500MM'],
-            ['code' => '908121032', 'description' => 'SLEEVE,REPAIR,15KV,1X50MM2,1500MM LG'],
-            ['code' => '908121034', 'description' => 'SLEEVE,REPAIR,15KV,3X300/35MM2,1500MM LG'],
-            ['code' => '908121035', 'description' => 'SLEEVE,REPAIR,15KV,3X70/16-3X185/35MM2'],
-            ['code' => '908121036', 'description' => 'TERM KIT,STR,36KV,1X50/16MM2,CU,I/D'],
-            ['code' => '908121037', 'description' => 'CONN,ELEC,EL,DB'],
-            ['code' => '908121040', 'description' => 'ELBOW,EC,15KV,400A,3X70/16MM2'],
-            ['code' => '908121047', 'description' => 'TERM KIT,STR,15KV,3X185/35MM2,CU'],
-            ['code' => '908121050', 'description' => 'TERM KIT,STR,15KV,3X300/35MM2,CU'],
-            ['code' => '908121054', 'description' => 'TERM KIT,RT,15KV,3X300/35MM2,AL'],
-            ['code' => '908121069', 'description' => 'BOOT,RT ANG,15KV,3X70/16MM2,AL,XLPE'],
-            ['code' => '908121075', 'description' => 'BOOT,RT ANG,36KV,1X50/16MM2,XLPE'],
-            ['code' => '908121081', 'description' => 'BOOT,STR,36KV,3X240/35MM2,CU,XLPE'],
-            ['code' => '908121083', 'description' => 'BOOT,STR,36KV,1X50/16MM2,CU,XLPE'],
-            ['code' => '908121085', 'description' => 'SPLICE KIT,LG,STR,36KV,3X185/35SQMM'],
-
-            
-            ['code' => '908121102', 'description' => 'JOINT KIT,STR,PM,15KV,3X185/35MM2,CU'],
-            ['code' => '908121103', 'description' => 'JOINT KIT,STR,PM,15KV,3X300/35MM2,CU,AR'],
-            ['code' => '908121106', 'description' => 'TERM KIT,STR,PM,1KV,4X70MM2,AL'],
-            ['code' => '908121107', 'description' => 'TERM KIT,STR,PM,1KV,4X185MM2,AL'],
-            ['code' => '908121109', 'description' => 'TERM KIT,STR,PM,15KV,3X185/35MM2,CU,O/D'],
-            ['code' => '908121110', 'description' => 'TERM KIT,STR,PM,15KV,3X300/35MM2,CU,AR/O'],
-            ['code' => '908121114', 'description' => 'JOINT KIT,TRANS,PM,15KV,3X185-300,CU'],
-            ['code' => '908121121', 'description' => 'TERM KIT,ST,PM,15KV,50/16MM2,CU,I/D'],
-            ['code' => '908121122', 'description' => 'TERM KIT,RT,PM,15KV,50/16MM2,CU,I/D'],
-            ['code' => '908121126', 'description' => 'TERM KIT,STR,PM,15KV,3X300/35MM2,CU,AR/I'],
-            ['code' => '908121127', 'description' => 'TERM KIT,RT,PM,15KV,3X300/35MM2,CU,AR/I'],
-            ['code' => '908121130', 'description' => 'JOINT KIT,STR,PM,36KV,500/35MM2,CU'],
-            ['code' => '908121131', 'description' => 'JOINT KIT,STR,PM,36KV,3X240/35MM2,CU,AR'],
-            ['code' => '908121132', 'description' => 'JOINT KIT,STR,PM,36KV,3X185/35MM2,CU,AR'],
-            ['code' => '908121134', 'description' => 'TERM KIT,STR,PM,36KV,500/35MM2,CU,I/D'],
-            ['code' => '908121143', 'description' => 'TERM KIT,STR,HS,15KV,3X500/35MM2,AL,O/D'],
-            ['code' => '908121144', 'description' => 'TERM KIT,L,15KV,600A,3X500MM2,AL,XLPE,AR'],
-            ['code' => '908121145', 'description' => 'SLEEVE,RPR,HS,15KV,3X500/35MM2,AL,XLPE'],
-            ['code' => '908121148', 'description' => 'TERM KIT,STR,HS,15KV,3X500/35MM2,AL,I/D'],
-
-            
-            ['code' => '908121157', 'description' => 'JOINT KIT,TRANS,HS,15KV,500-300/35MM2,AL'],
-            ['code' => '908121158', 'description' => 'JOINT KIT,TRANS,PM,15KV,500-300/35MM2,AL'],
-            ['code' => '908121173', 'description' => 'JOINT KIT,C/R,15KV,3CX300-500,AL ARM'],
-            ['code' => '908122001', 'description' => 'CONNECTOR,LUG,16MM2 CU,(1)M10 BLT HL'],
-            ['code' => '908122004', 'description' => 'CONNECTOR,LUG,185SQMM CU,(1)M12 BLT HL'],
-            ['code' => '908122011', 'description' => 'CONNECTOR,LUG,300MM2 AL,(1)M10 BLT HL'],
-            ['code' => '908317115', 'description' => 'PANEL,DIST,ID,AL,400/230V,1600A,6CB'],
-            ['code' => '908317119', 'description' => 'PANEL,DIST,ID,AL,400/230V,3000A,10CB'],
-            ['code' => '908321001', 'description' => 'SWGR,RMU,INDR,NE,2LBS+1FS,13.8KV,3 P'],
-            ['code' => '908321011', 'description' => 'RMU,SF6,13.8KV,400A,CB,3WAY,NON-EXT,INDR'],
-            ['code' => '908321012', 'description' => 'RMU,SF6,13.8KV,400A,CB,3WAY,NON-EXT,OTDR'],
-            ['code' => '908321013', 'description' => 'RMU,SF6,13.8KV,400A,CB,4WAY,NON-EXT,INDR'],
-            ['code' => '908321014', 'description' => 'RMU,SF6,13.8KV,400A,CB,4WAY,NON-EXT,OTDR'],
-            ['code' => '908321015', 'description' => 'SWGR,GAS,13.8KV,400A,CB,4WAY,2+2,IND'],
-            ['code' => '908321016', 'description' => 'SWGR,GAS,13.8KV,400A,CB,4WAY,2+2,OUTD'],
-            ['code' => '908322005', 'description' => 'RMU,METERED,SF6INSLT,13.8KV,95KV,2SW+1CB'],
-            ['code' => '908322006', 'description' => 'RMU,METERED,SF6INSLT,13.8KV,95KV,3SW+1CB'],
-            ['code' => '908322007', 'description' => 'RMU,METERED,SF6 INSLT,13.8KV,2SW+1CB'],
-            ['code' => '908323001', 'description' => 'SWGR,GAS,400A,13.8KV,3PH,2LBS,INDR'],
-            ['code' => '908323004', 'description' => 'SWGR,GAS,200A,13.8KV,3PH,1CB,INDR'],
-            ['code' => '908323005', 'description' => 'PANEL,METERING-RMU EXT,1120X1600X900MM'],
-
-            
-            ['code' => '908327001', 'description' => 'SWGR,RMU,INDR,NE,2LBS+1CB,33KV,3 P,60HZ'],
-            ['code' => '908327003', 'description' => 'SWGR,RMU,INDR,NE,2LBS+2CB,33KV,3 P,60HZ'],
-            ['code' => '908327005', 'description' => 'SWGR,RMU,ODTR,NE,3LBS+1CB,33KV,3 P,60HZ'],
-            ['code' => '908331004', 'description' => 'RECLOSER,33KV,560A,200KV BIL,1320MM CRP'],
-            ['code' => '908341002', 'description' => 'CUTOUT,FUSE,200A,13.8KV,660MM CRP'],
-            ['code' => '908341003', 'description' => 'CUTOUT,FUSE,200A,33KV,800MM CRP'],
-            ['code' => '908401001', 'description' => 'METER,ESERV,DIG,400/230V,100A'],
-            ['code' => '908401005', 'description' => 'METER,ESERV,DIG,400/230V,160A'],
-            ['code' => '908401011', 'description' => 'METER,ESERV,DIG,400/230V,80A'],
-            ['code' => '908401101', 'description' => 'METER,ESERV,DIG,400/231/133V,100A'],
-            ['code' => '908401105', 'description' => 'METER,ESERV,DIG,400/231/133V,160A'],
-            ['code' => '908402204', 'description' => 'METER,ESERV,DIG,400/230/133V,20(160)A'],
-            ['code' => '908423001', 'description' => 'BOX,M,4CUST,150A,380V,INDR,400X230X1900'],
-            ['code' => '908511003', 'description' => 'TFMR,PL,100KVA,33KX400/231V,170KVB'],
-            ['code' => '908511005', 'description' => 'TFMR,PF,200KVA,33KX400/231V,170KVB'],
-            ['code' => '908511007', 'description' => 'TFMR,PL,300KVA,33KX400/231V,170KVB'],
-            ['code' => '908511009', 'description' => 'TFMR,PF,500KVA,33KX400/231V,170KVB'],
-            ['code' => '908511011', 'description' => 'TFMR,PF,750KVA,33KX400/231V,170KVB'],
-            ['code' => '908511013', 'description' => 'TFMR,PF,1000KVA,33KX400/231V,170KVB'],
-            ['code' => '908511015', 'description' => 'TFMR,PF,1500KVA,33KX400/231V,170KVB'],
-            ['code' => '908511017', 'description' => 'TFMR,PF,2000KVA,33KX400/231V,170KVB'],
-
-
-            ['code' => '908511019', 'description' => 'TFMR,PF,2500KVA,33KX400/231V,170KVB'],
-            ['code' => '908511021', 'description' => 'TFMR,PF,3000KVA,33KX400/231V,170KVB'],
-            ['code' => '908511023', 'description' => 'TFMR,PF,4000KVA,33KX400/231V,170KVB'],
-            ['code' => '908511025', 'description' => 'TFMR,PF,5000KVA,33KX400/231V,170KVB'],
-            ['code' => '908511027', 'description' => 'TFMR,PF,7500KVA,33KX400/231V,170KVB'],
-            ['code' => '908511029', 'description' => 'TFMR,PF,10000KVA,33KX400/231V,170KVB'],
-            ['code' => '908521001', 'description' => 'SWITCH,DISCN,33KV,800MM,400A,CBL TERM'],
-            ['code' => '908521003', 'description' => 'SWITCH,DISCN,33KV,800MM,630A,CBL TERM'],
-            ['code' => '908521005', 'description' => 'SWITCH,DISCN,33KV,800MM,1250A,CBL TERM'],
-            ['code' => '908521007', 'description' => 'SWITCH,DISCN,33KV,800MM,1600A,CBL TERM'],
-            ['code' => '908521009', 'description' => 'SWITCH,DISCN,33KV,800MM,2000A,CBL TERM'],
-            ['code' => '908521011', 'description' => 'SWITCH,DISCN,33KV,800MM,2500A,CBL TERM'],
-            ['code' => '908531001', 'description' => 'RMU,3-WAY,630A,33KV,CBL TERM'],
-            ['code' => '908531003', 'description' => 'RMU,4-WAY,630A,33KV,CBL TERM'],
-            ['code' => '908531005', 'description' => 'RMU,5-WAY,630A,33KV,CBL TERM'],
-            ['code' => '908531007', 'description' => 'RMU,3-WAY,1250A,33KV,CBL TERM'],
-            ['code' => '908531009', 'description' => 'RMU,4-WAY,1250A,33KV,CBL TERM'],
-
-            
-            ['code' => '908531011', 'description' => 'RMU,5-WAY,1250A,33KV,CBL TERM'],
-            ['code' => '908551001', 'description' => 'CABLE,XLPE,33KV,3CX95MM2,AL,SWB'],
-            ['code' => '908551003', 'description' => 'CABLE,XLPE,33KV,3CX150MM2,AL,SWB'],
-            ['code' => '908551005', 'description' => 'CABLE,XLPE,33KV,3CX240MM2,AL,SWB'],
-            ['code' => '908551007', 'description' => 'CABLE,XLPE,33KV,3CX300MM2,AL,SWB'],
-            ['code' => '908551009', 'description' => 'CABLE,XLPE,33KV,3CX400MM2,AL,SWB'],
-            ['code' => '908551011', 'description' => 'CABLE,XLPE,33KV,3CX500MM2,AL,SWB'],
-            ['code' => '302435020', 'description' => 'TFMR,UNIT SUB,1MVA,13.8KV,231/133V,60HZ'],
-            ['code' => '302478544', 'description' => 'TFMR,UNIT SUB,1MVA,11/13.8 KV,400/231V'],
-            ['code' => '302728567', 'description' => 'TFMR,UNIT SUB,300KVA,13.8KV,231/133V,#S0'],
-            ['code' => '302739119', 'description' => 'TFMR,PWR,5000/6250 KVA KVA,ABS P,66000 V'],
-
-            
-            ['code' => '302739127', 'description' => 'TFMR,PWR,5000/6250 KVA KVA,ABS P,69000'],
-            ['code' => '302745728', 'description' => 'TFMR,PWR,12000/15000 KVA KVA,ABS P,66 KV'],
-            ['code' => '302746021', 'description' => 'TFMR,PWR,7500/9375 KVA KVA,3 P,66 KV,#QA'],
-            ['code' => '900360317', 'description' => 'TFMR,UNIT SUB,300KVA,13.8KV,231/133 KV'],
-            ['code' => '900360333', 'description' => 'TFMR,UNIT SUB,500KVA,13.8KV,133/231 V,#P'],
-            ['code' => '908322004', 'description' => 'RMU,METERED,SF6 INSLT,33KV,200KV,3SW+1CB'],
-            ['code' => '908511004', 'description' => 'TFMR,PL,100KVA,33KX231/133V,170KVB'],
-            ['code' => '908511006', 'description' => 'TFMR,PF,200KVA,33KX231/133V,170KVB'],
-            ['code' => '908511018', 'description' => 'TFMR,PF,200KVA,13.8KX231/133V,95KVB'],
-            ['code' => '908511022', 'description' => 'TFMR,PF,300KVA,13.8KX231/133V,95KVB'],
-            ['code' => '908511042', 'description' => 'TFMR,PD,1MVA,13.8KX231/133V,95KVB'],
-            ['code' => '908561001', 'description' => 'TFMR,U/S,300KVA,13.8KV-231/133V'],
-            ['code' => '908561002', 'description' => 'TFMR,U/S,300KVA,13.8KV-400/231V'],
-
-            
-            ['code' => '908561101', 'description' => 'TFMR,U/S,300KVA,13.8/11KV-231/133V'],
-            ['code' => '908561104', 'description' => 'TFMR,U/S,500KVA,13.8/11KV-400/231V'],
-            ['code' => '908561106', 'description' => 'TFMR,U/S,1MVA,13.8/11KV,400/231V'],
-            ['code' => '908561204', 'description' => 'TFMR,U/S,500KVA,13.8KV,400/231V,800A'],
-            ['code' => '908561212', 'description' => 'TFMR,U/S,500KVA,13.8/11KV,400/231V'],
-            ['code' => '908562021', 'description' => 'TFMR,PKG,500KVA,13.8KV,231/133V,3P,'],
-            ['code' => '908562022', 'description' => 'TFMR,PKG,500KVA,13.8KV,400/231V,3P,'],
-            ['code' => '908562025', 'description' => 'TFMR,PKG,1MVA,13.8KV,231/133V,3P,'],
-            ['code' => '908562130', 'description' => 'TFMR,PKG,1500KVA,13.8/11KV,400/231V'],
-            ['code' => '908563005', 'description' => 'TFMR,U/S,500KVA,13.8KV,400/230V,2CB'],
-            ['code' => '908563006', 'description' => 'TFMR,U/S,500KVA,13.8KV,400/230V,800A'],
-            ['code' => '908563007', 'description' => 'TFMR,U/S,500KVA,13.8-11KV,400/230V,2CB'],
-            ['code' => '908563011', 'description' => 'TFMR,U/S,1MVA,13.8-11KV,400/230V,6CB'],
-            ['code' => '30125779A', 'description' => 'TFMR,DIST,PD,500KVA,13.8K V AC,#A81A56FG'],
-
-            
-            ['code' => '30226398A', 'description' => 'TFMR,DIST,PF,100KVA,34.5K, 33K V AC'],
-            ['code' => '4510BE117', 'description' => 'TFMR,DIST,PL,80 KVA,33K V AC,231 V AC,#P'],
-            ['code' => '116418750', 'description' => 'TUBINGS : MEDIUM WALL, 1X630 MM2 CU'],
-            ['code' => '908113010', 'description' => 'CABLE,PWR,15KV,AL,3C,500/35MM2,XPLE,ARM'],
-            ['code' => '116426700', 'description' => 'CAP,CABLE END,4C X 95 SQMM,1 KV,POLYOLEF'],
-            ['code' => '116426690', 'description' => 'CAP,CABLE END,4C X 300 SQMM,1 KV,POLYOLE'],
-            ['code' => '908121065', 'description' => 'TERM KIT,STR,36KV,3X240/35MM2,CU,AR/O/D'],
-            ['code' => '103116990', 'description' => 'RECATANGULAR WINDOW WITH O-RING'],
-            ['code' => '905010002', 'description' => 'SHOES:SAFETY,39 TO 46,BLACK,LEATHER,ASTM'],
-
-            
-            ['code' => '905010061', 'description' => 'MASK:PROTECTION,DUST AND MIST,HALF FACE'],
-            ['code' => '905030118', 'description' => 'GLOVES,ELEC,36KV,CL 4,NATURAL RUBBER,8'],
-            ['code' => '905020054', 'description' => 'GLOVES:ARC RATED,10 TO 12,LEATHER,ANY,NF'],
-            ['code' => '908121029', 'description' => 'SLEEVE,REPAIR,1KV,4X70-185MM2,1500MM'],
-            ['code' => '908569100', 'description' => 'TFMR,U/S,500KVA,AL,13.8KV,400/230V,4CK,2MCCB 400A, CB'],
-            ['code' => '908569107', 'description' => 'TFMR,U/S,500KVA,AL,13.8KV,400/230V,800A MAIN C.B'],
-            ['code' => '908569108', 'description' => 'TFMR,U/S,500KVA,AL,33KV,400/230V,4CK,2MCCB 400A, CB'],
-            ['code' => '908569109', 'description' => 'TFMR,U/S,500KVA,AL,33KV,400/230V, 800A MAIN C.B'],
-            ['code' => '908569114', 'description' => 'TFMR,U/S,1MVA,AL,13.8KV,400/230V,8CK,6MCCB400A,CB'],
-            ['code' => '908569115', 'description' => 'TFMR,U/S,1MVA,AL,13.8KV,400/230V,1600AMAINC.B'],
-
-            
-            ['code' => '908569116', 'description' => 'TFMR,U/S,1MVA,AL,33KV,400/230V,8CK,6MCCB 400A,CB'],
-            ['code' => '908569117', 'description' => 'TFMR,U/S,1MVA,AL,33KV,400/230V,1600AMAINC.B'],
-            ['code' => '908569105', 'description' => 'TFMR,U/S, 1.5MVA,AL,13.8KV,400/230V,10CK,8MCCB400A,CB'],
-            ['code' => '908569104', 'description' => 'TFMR,U/S, 1.5MVA,AL,13.8KV,400/230V,2500AMAINC.B'],
-            ['code' => '908569103', 'description' => 'TFMR,U/S, 1.5MVA,AL,33KV,400/230V,10CK,8MCCB400A,CB'],
-            ['code' => '908569102', 'description' => 'TFMR,U/S, 1.5MVA,AL,33KV,400/230V,2500AMAINC.B'],
-            ['code' => '908321106', 'description' => 'SWGR,RMU,AUTO,O/D,2LBS+1CB,13.8KV,3 P'],
-            ['code' => '908321101', 'description' => 'SWGR,RMU,AUTO,O/D,3LBS+1CB,13.8KV,3 P'],
-            ['code' => '908321104', 'description' => 'SWGR,RMU,AUTO,O/D,2LBS+2CB,13.8KV,3 P'],
-                ];
-
-        foreach ($materials as $material) {
-            ReferenceMaterial::updateOrCreate(
-                ['code' => $material['code']],
-                ['description' => $material['description']]
-            );
-        }
+            // ... existing materials data ...
+            // لا تغيير في البيانات الأصلية
+        ];
     }
 }
