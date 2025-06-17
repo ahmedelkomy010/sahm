@@ -107,6 +107,11 @@ use Illuminate\Support\Facades\Route;
                                 <a href="{{ route('dashboard') }}" class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
                                     الرئيسية
                                 </a>
+
+                                <a href="{{ route('admin.users.index') }}" class="nav-item {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
+                                    <i class="fas fa-users-cog me-1"></i>
+                                    إدارة المستخدمين
+                                </a>
                                 
                                 @if(request()->routeIs('admin.work-orders.*') || session('project'))
                                 <a href="{{ route('admin.work-orders.index') }}" class="nav-item {{ request()->routeIs('admin.work-orders.*') ? 'active' : '' }}">

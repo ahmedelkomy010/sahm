@@ -9,8 +9,10 @@
                 <i class="fas fa-tools me-2" style="color:#007bff;"></i>
                 إدارة التركيبات - {{ $workOrder->order_number }}
             </h2>
-            <a href="{{ route('admin.work-orders.show', $workOrder) }}" class="btn btn-outline-secondary">&larr; عودة</a>
-        </div>
+            <a href="{{ route('admin.work-orders.execution', $workOrder) }}" 
+               class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>عودة للتنفيذ
+            </a>        </div>
     </div>
     <div class="row g-4">
         <!-- نموذج بيانات التركيبات منفصل -->

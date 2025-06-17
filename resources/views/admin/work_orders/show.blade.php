@@ -463,11 +463,11 @@
                                                 <td>{{ $workOrder->second_partial_payment_with_tax ? number_format($workOrder->second_partial_payment_with_tax, 2, '.', '') . ' ﷼' : 'غير متوفر' }}</td>
                                             </tr>
                                             <tr>
-                                                <th>القيمة الكلية النهائية غير شامل الاستشاري</th>
+                                                <th>القيمة الكلية النهائية غير شامل الضريبة</th>
                                                 <td>{{ $workOrder->final_total_value ? number_format($workOrder->final_total_value, 2, '.', '') . ' ﷼' : 'غير متوفر' }}</td>
                                             </tr>
                                             <tr>
-                                                <th>اختبارات ما قبل التشغيل</th>
+                                                <th>قيمة اختبارات ما قبل التشغيل</th>
                                                 <td>{{ $workOrder->pre_operation_tests ?? 'غير متوفر' }}</td>
                                             </tr>
                                             <tr>
@@ -488,7 +488,7 @@
                                                 <td>{{ $workOrder->license->license_value ? number_format($workOrder->license->license_value, 2) . ' ﷼' : 'غير متوفر' }}</td>
                                             </tr>
                                             <tr>
-                                                <th>قيمة التمديد</th>
+                                                <th>قيمة تمديد الرخص</th>
                                                 <td>{{ $workOrder->license->extension_value ? number_format($workOrder->license->extension_value, 2) . ' ﷼' : 'غير متوفر' }}</td>
                                             </tr>
                                             @endif
