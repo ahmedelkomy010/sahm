@@ -482,15 +482,36 @@
                                                 <th>رقم المستخلص</th>
                                                 <td>{{ $workOrder->extract_number ?? 'غير متوفر' }}</td>
                                             </tr>
-                                            @if($workOrder->license)
-                                            <tr>
-                                                <th>قيمة رخصة الحفر</th>
-                                                <td>{{ $workOrder->license->license_value ? number_format($workOrder->license->license_value, 2) . ' ﷼' : 'غير متوفر' }}</td>
-                                            </tr>
-                                            <tr>
-                                                <th>قيمة تمديد الرخص</th>
-                                                <td>{{ $workOrder->license->extension_value ? number_format($workOrder->license->extension_value, 2) . ' ﷼' : 'غير متوفر' }}</td>
-                                            </tr>
+                                            @if($workOrder->licenses->count() > 0)
+                                                @php
+                                                    $totalLicenseValue = 0;
+                                                    $totalExtensionValue = 0;
+                                                    $totalViolationValue = 0;
+                                                    $totalEvacValue = 0;
+
+                                                    foreach($workOrder->licenses as $license) {
+                                                        $totalLicenseValue += $license->license_value ?? 0;
+                                                        $totalExtensionValue += $license->extension_value ?? 0;
+                                                        $totalViolationValue += $license->violation_license_value ?? 0;
+                                                        $totalEvacValue += $license->evac_license_value ?? 0;
+                                                    }
+                                                @endphp
+                                                <tr>
+                                                    <th>قيمة الرخص</th>
+                                                    <td>{{ number_format($totalLicenseValue, 2) }} ﷼</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>قيمة تمديد الرخص</th>
+                                                    <td>{{ number_format($totalExtensionValue, 2) }} ﷼</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>قيمة المخالفات</th>
+                                                    <td>{{ number_format($totalViolationValue, 2) }} ﷼</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>قيمة الإخلاءات</th>
+                                                    <td>{{ number_format($totalEvacValue, 2) }} ﷼</td>
+                                                </tr>
                                             @endif
                                         </tbody>
                                     </table>
