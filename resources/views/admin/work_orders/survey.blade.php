@@ -51,7 +51,7 @@
                                             <div class="d-flex align-items-center">
                                                 <i class="fas fa-map-marked-alt text-success me-2"></i>
                                                 <div>
-                                                    <small class="text-muted d-block">عدد المسوحات</small>
+                                                    <small class="text-muted d-block">عدد مرات المسح </small>
                                                     <strong class="text-success">{{ $workOrder->surveys->count() }}</strong>
                                                 </div>
                                             </div>

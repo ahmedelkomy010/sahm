@@ -7,6 +7,7 @@ use App\Http\Controllers\MaterialsController;
 use Illuminate\Support\Facades\Gate;
 use App\Http\Controllers\OrderEntryController;
 use App\Http\Controllers\LabLicenseWebController;
+use App\Http\Controllers\CableRecordController;
 
 
 /*
@@ -115,15 +116,13 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::get('work-orders/{workOrder}/actions-execution', [WorkOrderController::class, 'actionsExecution'])->name('work-orders.actions-execution');
     Route::post('work-orders/{workOrderId}/upload-post-execution-file', [WorkOrderController::class, 'uploadPostExecutionFile'])->name('work-orders.upload-post-execution-file');
 
-    // Civil Works Routes
-    Route::get('work-orders/{workOrder}/civil-works', [WorkOrderController::class, 'civilWorks'])->name('work-orders.civil-works');
-    Route::put('work-orders/{workOrder}/civil-works', [WorkOrderController::class, 'civilWorks'])->name('work-orders.civil-works.store');
-    Route::post('work-orders/{workOrder}/lock-images', [WorkOrderController::class, 'lockCivilWorksImages'])->name('work-orders.lock-images');
-    Route::post('work-orders/{workOrder}/save-images', [WorkOrderController::class, 'saveCivilWorksImages'])->name('work-orders.save-images');
-    Route::post('work-orders/{workOrder}/save-attachments', [WorkOrderController::class, 'saveCivilWorksAttachments'])->name('work-orders.save-attachments');
-    Route::get('work-orders/{workOrder}/civil-works/excavation-details', [WorkOrderController::class, 'getExcavationDetails'])->name('work-orders.civil-works.excavation-details');
-    Route::delete('work-orders/{workOrder}/civil-works/{file}', [WorkOrderController::class, 'deleteCivilWorksFile'])->name('work-orders.civil-works.delete-file');
-    Route::delete('work-orders/attachments/{attachmentId}', [WorkOrderController::class, 'deleteAttachment'])->name('work-orders.attachments.delete');
+    // Cable Records Routes
+    Route::get('work-orders/{workOrder}/cable-records', [CableRecordController::class, 'index'])->name('work-orders.cable-records');
+    Route::post('work-orders/{workOrder}/cable-records', [CableRecordController::class, 'store'])->name('work-orders.cable-records.store');
+    Route::post('work-orders/{workOrder}/cable-records/bulk-store', [CableRecordController::class, 'bulkStore'])->name('work-orders.cable-records.bulk-store');
+    Route::put('work-orders/{workOrder}/cable-records/{cableRecord}', [CableRecordController::class, 'update'])->name('work-orders.cable-records.update');
+    Route::delete('work-orders/{workOrder}/cable-records/{cableRecord}', [CableRecordController::class, 'destroy'])->name('work-orders.cable-records.destroy');
+    Route::get('work-orders/{workOrder}/cable-records/daily-details', [CableRecordController::class, 'dailyDetails'])->name('work-orders.cable-records.daily-details');
 
     // Survey Routes
     Route::get('work-orders/{workOrder}/survey', [WorkOrderController::class, 'survey'])->name('work-orders.survey');
@@ -174,6 +173,15 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::get('licenses/{license}', [\App\Http\Controllers\Admin\LicenseController::class, 'show'])->name('licenses.show');
     Route::get('licenses/{license}/pdf', [\App\Http\Controllers\Admin\LicenseController::class, 'exportPdf'])->name('licenses.pdf');
 
+    // License Violations routes
+    Route::get('licenses/{license}/violations', [\App\Http\Controllers\Admin\LicenseViolationController::class, 'index'])->name('license-violations.index');
+    Route::post('license-violations', [\App\Http\Controllers\Admin\LicenseViolationController::class, 'store'])->name('license-violations.store');
+    Route::get('license-violations/{violation}', [\App\Http\Controllers\Admin\LicenseViolationController::class, 'show'])->name('license-violations.show');
+    Route::put('license-violations/{violation}', [\App\Http\Controllers\Admin\LicenseViolationController::class, 'update'])->name('license-violations.update');
+    Route::delete('license-violations/{violation}', [\App\Http\Controllers\Admin\LicenseViolationController::class, 'destroy'])->name('license-violations.destroy');
+    Route::patch('license-violations/{violation}/status', [\App\Http\Controllers\Admin\LicenseViolationController::class, 'updateStatus'])->name('license-violations.update-status');
+    Route::delete('license-violations/bulk-destroy', [\App\Http\Controllers\Admin\LicenseViolationController::class, 'bulkDestroy'])->name('license-violations.bulk-destroy');
+
     Route::post('work-orders/{workOrder}/installations/images', [App\Http\Controllers\WorkOrderController::class, 'uploadInstallationsImages'])->name('work-orders.installations.images');
     Route::delete('work-orders/installations/images/{imageId}', [App\Http\Controllers\WorkOrderController::class, 'deleteInstallationImage'])->name('work-orders.installations.images.delete');
     Route::post('work-orders/{workOrder}/electrical-works/images', [App\Http\Controllers\WorkOrderController::class, 'uploadElectricalWorksImages'])->name('work-orders.electrical-works.images');
@@ -189,7 +197,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
 
 // Project Selection Route
 Route::get('/project-selection', function () {
-    return view('project-selection');
+    return view('project-selection', ['hideNavbar' => false]);
 })->middleware('auth')->name('project.selection');
 
 // مسار مؤقت لتعيين المستخدم الحالي كمسؤول - يجب حذفه بعد الاستخدام
@@ -264,6 +272,8 @@ Route::get('/make-elkomy-admin', function () {
 Route::get('/dashboard', function () {
     return redirect()->route('admin.dashboard');
 })->middleware('auth')->name('dashboard');
+
+
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

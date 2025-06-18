@@ -492,7 +492,8 @@
                                                     foreach($workOrder->licenses as $license) {
                                                         $totalLicenseValue += $license->license_value ?? 0;
                                                         $totalExtensionValue += $license->extension_value ?? 0;
-                                                        $totalViolationValue += $license->violation_license_value ?? 0;
+                                                        // استخدام النظام الجديد للمخالفات المتعددة
+                                                        $totalViolationValue += $license->violations ? $license->violations->sum('violation_value') : 0;
                                                         $totalEvacValue += $license->evac_license_value ?? 0;
                                                     }
                                                 @endphp

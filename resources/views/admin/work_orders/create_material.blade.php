@@ -234,18 +234,8 @@
                             </div>
                         </div>
 
-                        <!-- الصف الأول: الكمية المخططة، المصروفة، والفرق بينهما -->
+                        <!-- الصف الأول: الكمية المصروفة، المخططة، والفرق بينهما -->
                         <div class="row">
-                            <div class="col-md-4 mb-3">
-                                <label for="planned_quantity" class="form-label">الكمية المخططة</label>
-                                <input type="number" step="0.01" class="form-control @error('planned_quantity') is-invalid @enderror" 
-                                       id="planned_quantity" name="planned_quantity" value="{{ old('planned_quantity', 0) }}" 
-                                       placeholder="0.00" min="0">
-                                @error('planned_quantity')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                            
                             <div class="col-md-4 mb-3">
                                 <label for="spent_quantity" class="form-label">الكمية المصروفة</label>
                                 <input type="number" step="0.01" class="form-control @error('spent_quantity') is-invalid @enderror" 
@@ -257,7 +247,17 @@
                             </div>
                             
                             <div class="col-md-4 mb-3">
-                                <label for="planned_spent_difference" class="form-label">الفرق (المخططة - المصروفة)</label>
+                                <label for="planned_quantity" class="form-label">الكمية المخططة</label>
+                                <input type="number" step="0.01" class="form-control @error('planned_quantity') is-invalid @enderror" 
+                                       id="planned_quantity" name="planned_quantity" value="{{ old('planned_quantity', 0) }}" 
+                                       placeholder="0.00" min="0">
+                                @error('planned_quantity')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                            
+                            <div class="col-md-4 mb-3">
+                                <label for="planned_spent_difference" class="form-label">الفرق (المصروفة - المخططة)</label>
                                 <input type="number" step="0.01" class="form-control" 
                                        id="planned_spent_difference" name="planned_spent_difference" value="0.00" 
                                        placeholder="0.00" readonly>
@@ -291,7 +291,7 @@
                             </div>
                             
                             <div class="col-md-4 mb-3">
-                                <label for="executed_spent_difference" class="form-label">الفرق (المنفذة - المصروفة)</label>
+                                <label for="executed_spent_difference" class="form-label">الفرق (المصروفة - المنفذه)</label>
                                 <input type="number" step="0.01" class="form-control" 
                                        id="executed_spent_difference" name="executed_spent_difference" value="0.00" 
                                        placeholder="0.00" readonly>

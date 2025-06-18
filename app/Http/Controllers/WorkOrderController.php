@@ -138,7 +138,7 @@ class WorkOrderController extends Controller
     // عرض أمر عمل محدد
     public function show(WorkOrder $workOrder)
     {
-        $workOrder->load(['files', 'basicAttachments', 'invoiceAttachments']);
+        $workOrder->load(['files', 'basicAttachments', 'invoiceAttachments', 'licenses.violations']);
         return view('admin.work_orders.show', compact('workOrder'));
     }
 

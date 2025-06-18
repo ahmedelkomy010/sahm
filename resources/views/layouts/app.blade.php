@@ -27,6 +27,9 @@ use Illuminate\Support\Facades\Route;
 
         <!-- Lightbox -->
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/css/lightbox.min.css">
+        
+        <!-- Toastr CSS -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -34,11 +37,6 @@ use Illuminate\Support\Facades\Route;
         <style>
             body {
                 font-family: 'Tajawal', sans-serif;
-            }
-            .main-header {
-                background: linear-gradient(to left, #3b82f6, #1e40af);
-                color: white;
-                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             }
             .page-header {
                 background-color: #f8fafc;
@@ -49,140 +47,13 @@ use Illuminate\Support\Facades\Route;
                 font-weight: 700;
                 color: #1e3a8a;
             }
-            .nav-item {
-                padding: 0.5rem 1rem;
-                color: rgba(255, 255, 255, 0.9);
-                transition: all 0.2s ease;
-            }
-            .nav-item:hover {
-                color: white;
-                background-color: rgba(255, 255, 255, 0.1);
-                border-radius: 0.25rem;
-            }
-            .nav-item.active {
-                color: white;
-                font-weight: 600;
-                border-bottom: 2px solid white;
-            }
-            .user-menu {
-                display: flex;
-                align-items: center;
-                gap: 0.5rem;
-                color: white;
-                font-size: 0.875rem;
-            }
-            .dropdown-toggle {
-                cursor: pointer;
-            }
-            .dropdown-menu {
-                min-width: 10rem;
-                padding: 0.5rem 0;
-                margin: 0.125rem 0 0;
-                background-color: white;
-                border-radius: 0.25rem;
-                box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-            }
         </style>
     </head>
     <body class="font-sans antialiased">
         <div id="app">
             <!-- Main Header with Navigation -->
             @if (!isset($hideNavbar) || !$hideNavbar)
-            <header class="main-header">
-                <div class="max-w-7xl mx-auto">
-                    <div class="flex justify-between items-center px-4 sm:px-6 lg:px-8 py-2">
-                        <!-- Logo and App Name -->
-                        <div class="flex items-center">
-                            <a href="{{ route('dashboard') }}" class="flex items-center">
-                                <div class="logo-container bg-white rounded-full p-1 ml-2">
-                                    <img class="h-10 w-auto" src="{{ asset('images/logo-sahm.svg') }}" alt="Sahm Logo">
-                                </div>
-                                <span class="text-xl font-bold text-white">شركة سهم بلدي للمقاولات</span>
-                            </a>
-                        </div>
-                        
-                        <!-- Main Navigation -->
-                        <div class="hidden md:flex md:flex-1 justify-center">
-                            <div class="flex items-center space-x-8 space-x-reverse">
-                                <a href="{{ route('dashboard') }}" class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
-                                    الرئيسية
-                                </a>
-
-                                <a href="{{ route('admin.users.index') }}" class="nav-item {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
-                                    <i class="fas fa-users-cog me-1"></i>
-                                    إدارة المستخدمين
-                                </a>
-                                
-                                @if(request()->routeIs('admin.work-orders.*') || session('project'))
-                                <a href="{{ route('admin.work-orders.index') }}" class="nav-item {{ request()->routeIs('admin.work-orders.*') ? 'active' : '' }}">
-                                    أوامر العمل
-                                </a>
-                                @endif
-                            </div>
-                        </div>
-                        
-                        <!-- User Menu -->
-                        @auth
-                        <div class="flex items-center">
-                            <div class="relative" x-data="{ open: false }">
-                                <div class="user-menu" @click="open = !open">
-                                    <span><i class="fas fa-user-circle mr-1"></i>{{ Auth::user()->name }}</span>
-                                    <i class="fas fa-chevron-down text-xs"></i>
-                                </div>
-                                
-                                <div x-show="open" 
-                                     @click.away="open = false"
-                                     class="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10"
-                                     x-transition:enter="transition ease-out duration-100"
-                                     x-transition:enter-start="transform opacity-0 scale-95"
-                                     x-transition:enter-end="transform opacity-100 scale-100"
-                                     x-transition:leave="transition ease-in duration-75"
-                                     x-transition:leave-start="transform opacity-100 scale-100"
-                                     x-transition:leave-end="transform opacity-0 scale-95"
-                                     style="display: none;">
-                                    
-                                    <a href="{{ route('profile.edit') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                        حسابي
-                                    </a>
-                                    
-                                    <form method="POST" action="{{ route('logout') }}">
-                                        @csrf
-                                        <button type="submit" class="block w-full text-right px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                            تسجيل الخروج
-                                        </button>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                        @endauth
-                        
-                        <!-- Mobile menu button -->
-                        <div class="md:hidden flex items-center">
-                            <button 
-                                x-data="{ open: false }"
-                                @click="open = !open"
-                                class="text-white hover:text-gray-300 focus:outline-none">
-                                <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
-                                    <path 
-                                        :class="{'hidden': open, 'inline-flex': !open}" 
-                                        class="inline-flex" 
-                                        stroke-linecap="round" 
-                                        stroke-linejoin="round" 
-                                        stroke-width="2" 
-                                        d="M4 6h16M4 12h16M4 18h16" />
-                                    <path 
-                                        :class="{'hidden': !open, 'inline-flex': open}" 
-                                        class="hidden" 
-                                        stroke-linecap="round" 
-                                        stroke-linejoin="round" 
-                                        stroke-width="2" 
-                                        d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </header>
+                <x-main-header />
             @endif
             
             <div class="min-h-screen bg-gray-100">
@@ -244,6 +115,9 @@ use Illuminate\Support\Facades\Route;
 
         <!-- Lightbox -->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/js/lightbox.min.js"></script>
+        
+        <!-- Toastr JS -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
         <script>
             lightbox.option({
                 'resizeDuration': 200,
@@ -259,6 +133,25 @@ use Illuminate\Support\Facades\Route;
                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                 }
             });
+            
+            // Configure Toastr
+            toastr.options = {
+                "closeButton": true,
+                "debug": false,
+                "newestOnTop": true,
+                "progressBar": true,
+                "positionClass": "toast-top-right",
+                "preventDuplicates": false,
+                "onclick": null,
+                "showDuration": "300",
+                "hideDuration": "1000",
+                "timeOut": "5000",
+                "extendedTimeOut": "1000",
+                "showEasing": "swing",
+                "hideEasing": "linear",
+                "showMethod": "fadeIn",
+                "hideMethod": "fadeOut"
+            };
         </script>
     </body>
 </html>

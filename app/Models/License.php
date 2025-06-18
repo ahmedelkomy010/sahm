@@ -73,14 +73,7 @@ class License extends Model
         'evac_date',
         'evac_amount',
         'evacuations_file_path',
-        'violation_license_number',
-        'violation_license_value',
-        'violation_license_date',
-        'violation_due_date',
-        'violation_number',
-        'violation_payment_number',
-        'violation_cause',
-        'violations_file_path',
+
         'notes_attachments_path',
     ];
 
@@ -103,8 +96,7 @@ class License extends Model
         'extension_start_date' => 'date',
         'extension_end_date' => 'date',
         'evac_date' => 'date',
-        'violation_license_date' => 'date',
-        'violation_due_date' => 'date',
+
         'license_alert_days' => 'integer',
         'license_length' => 'float',
         'license_value' => 'decimal:2',
@@ -119,7 +111,7 @@ class License extends Model
         'invoice_extension_end_date' => 'date',
         'evac_license_value' => 'decimal:2',
         'evac_amount' => 'decimal:2',
-        'violation_license_value' => 'decimal:2',
+
     ];
 
     protected $dates = [
@@ -131,12 +123,43 @@ class License extends Model
         'license_extension_start_date',
         'license_extension_end_date',
         'evac_date',
-        'violation_license_date',
-        'violation_due_date',
     ];
 
     public function workOrder(): BelongsTo
     {
         return $this->belongsTo(WorkOrder::class);
+    }
+
+    /**
+     * Get the violations for the license.
+     */
+    public function violations()
+    {
+        return $this->hasMany(LicenseViolation::class);
+    }
+
+    /**
+     * Update the violations count for this license
+     */
+    public function updateViolationsCount()
+    {
+        $this->violations_count = $this->violations()->count();
+        $this->save();
+    }
+
+    /**
+     * Get total violations value
+     */
+    public function getTotalViolationsValueAttribute()
+    {
+        return $this->violations()->sum('violation_license_value') ?? 0;
+    }
+
+    /**
+     * Get violations count
+     */
+    public function getViolationsCountAttribute()
+    {
+        return $this->violations()->count();
     }
 } 

@@ -16,102 +16,102 @@
                                   إدارة الجودة والرخص  {{ $workOrder->order_number }}
                             </h3>
                             <div class="d-flex flex-wrap justify-content-center gap-2">
-                            <a href="{{ route('admin.work-orders.show', $workOrder) }}" class="btn btn-primary">
-                            <i class="fas fa-arrow-right"></i> عودة الي تفاصيل أمر العمل  
-                        </a>
+                                <a href="{{ route('admin.work-orders.show', $workOrder) }}" class="btn btn-primary">
+                                    <i class="fas fa-arrow-right"></i> عودة الي تفاصيل أمر العمل  
+                                </a>
                             </div>
                         </div>
                     </div> 
                     <div class="card-body py-3">
-                    <div class="row align-items-center">
-                        <div class="col-md-3 col-sm-6 mb-2">
-                            <div class="d-flex align-items-center">
-                                <i class="fas fa-hashtag text-primary me-2 fs-5"></i>
-                                <div>
-                                    <small class="text-muted d-block">رقم الطلب</small>
-                                    <strong class="text-primary fs-6">{{ $workOrder->order_number }}</strong>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-3 col-sm-6 mb-2">
-                            <div class="d-flex align-items-center">
-                                <i class="fas fa-tools text-warning me-2 fs-5"></i>
-                                <div>
-                                    <small class="text-muted d-block">نوع العمل</small>
-                                    <strong class="fs-6">{{ $workOrder->work_type }}</strong>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-3 col-sm-6 mb-2">
-                            <div class="d-flex align-items-center">
-                                <i class="fas fa-user text-info me-2 fs-5"></i>
-                                <div>
-                                    <small class="text-muted d-block">اسم المشترك</small>
-                                    <strong class="fs-6">{{ $workOrder->subscriber_name }}</strong>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>                 
-                        <!-- شهادة التنسيق والمرفقات -->
-                        <div class="card border-0 shadow-sm mb-4">
-                            <div class="card-header bg-warning text-dark">
-                                <h4 class="mb-0 fs-5">
-                                    <i class="fas fa-certificate me-2"></i>
-                                    شهادة التنسيق والمرفقات
-                                </h4>
-                                
-                            </div>
-                            <div class="card-body">
-                                <form id="coordinationForm" class="coordination-form">
-                                    @csrf
-                                    <input type="hidden" name="work_order_id" value="{{ $workOrder->id }}">
-                                    <input type="hidden" name="section_type" value="coordination">
-                                    
-                                    <div class="row g-3">
-                                        <div class="col-md-6">
-                                            <label class="form-label">مرفق شهادة التنسيق</label>
-                                            <input type="file" class="form-control" name="coordination_certificate_path" accept=".pdf,.jpg,.jpeg,.png">
-                                            @if(isset($license) && $license->coordination_certificate_path)
-                                               
-                                            @endif
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label class="form-label">رقم شهادة التنسيق</label>
-                                            <input type="text" class="form-control" name="coordination_certificate_number" 
-                                                   value="{{ old('coordination_certificate_number', isset($license) ? $license->coordination_certificate_number : '') }}"
-                                                   placeholder="أدخل رقم شهادة التنسيق">
-                                        </div>
-
-                                        
-                                        <div class="col-md-6">
-                                            <label for="has_restriction" class="form-label">يوجد حظر؟</label>
-                                            <select class="form-select" name="has_restriction" id="has_restriction">
-                                                <option value="0" {{ old('has_restriction', 0) == 0 ? 'selected' : '' }}>لا</option>
-                                                <option value="1" {{ old('has_restriction', 0) == 1 ? 'selected' : '' }}>نعم</option>
-                                            </select>
-                                        </div>
-                                        <div class="col-md-6" id="restriction_authority_field" style="display: none;">
-                                            <label for="restriction_authority" class="form-label">جهة الحظر</label>
-                                            <input type="text" class="form-control" id="restriction_authority" name="restriction_authority" 
-                                                   value="{{ old('restriction_authority') }}" 
-                                                   placeholder="اسم الجهة المسؤولة عن الحظر">
-                                                   <div class="col-12">
-                                            <label class="form-label">مرفق الخطابات والتعهدات</label>
-                                            <input type="file" class="form-control" name="letters_commitments_files[]" multiple accept=".pdf,.jpg,.jpeg,.png">
-                                            @if(isset($license) && $license->letters_commitments_file_path)
-                                                <div class="mt-2">
-                                                    <a href="#" class="btn btn-sm btn-outline-info">
-                                                        <i class="fas fa-eye"></i> عرض الخطابات والتعهدات الحالية
-                                                    </a>
-                                                </div>
-                                            @endif
-                                        </div>
-                                        </div>
+                        <div class="row align-items-center">
+                            <div class="col-md-3 col-sm-6 mb-2">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-hashtag text-primary me-2 fs-5"></i>
+                                    <div>
+                                        <small class="text-muted d-block">رقم الطلب</small>
+                                        <strong class="text-primary fs-6">{{ $workOrder->order_number }}</strong>
                                     </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6 mb-2">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-tools text-warning me-2 fs-5"></i>
+                                    <div>
+                                        <small class="text-muted d-block">نوع العمل</small>
+                                        <strong class="fs-6">{{ $workOrder->work_type }}</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6 mb-2">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-user text-info me-2 fs-5"></i>
+                                    <div>
+                                        <small class="text-muted d-block">اسم المشترك</small>
+                                        <strong class="fs-6">{{ $workOrder->subscriber_name }}</strong>
+                                    </div>
+                                </div>
+                            </div>
+                                    </div>
+                                </div>
+                    <!-- شهادة التنسيق والمرفقات -->
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-header bg-warning text-dark">
+                            <h4 class="mb-0 fs-5">
+                                <i class="fas fa-certificate me-2"></i>
+                                شهادة التنسيق والمرفقات
+                            </h4>
+                            
+                        </div>
+                        <div class="card-body">
+                            <form id="coordinationForm" class="coordination-form">
+                                @csrf
+                                <input type="hidden" name="work_order_id" value="{{ $workOrder->id }}">
+                                <input type="hidden" name="section_type" value="coordination">
+                                
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label">مرفق شهادة التنسيق</label>
+                                        <input type="file" class="form-control" name="coordination_certificate_path" accept=".pdf,.jpg,.jpeg,.png">
+                                        @if(isset($license) && $license->coordination_certificate_path)
+                                           
+                                        @endif
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">رقم شهادة التنسيق</label>
+                                        <input type="text" class="form-control" name="coordination_certificate_number" 
+                                               value="{{ old('coordination_certificate_number', isset($license) ? $license->coordination_certificate_number : '') }}"
+                                               placeholder="أدخل رقم شهادة التنسيق">
+                                    </div>
+
                                     
-                                    <div class="row mt-3">
-                                        <div class="col-12 text-center">
+                                    <div class="col-md-6">
+                                        <label for="has_restriction" class="form-label">يوجد حظر؟</label>
+                                        <select class="form-select" name="has_restriction" id="has_restriction">
+                                            <option value="0" {{ old('has_restriction', 0) == 0 ? 'selected' : '' }}>لا</option>
+                                            <option value="1" {{ old('has_restriction', 0) == 1 ? 'selected' : '' }}>نعم</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6" id="restriction_authority_field" style="display: none;">
+                                        <label for="restriction_authority" class="form-label">جهة الحظر</label>
+                                        <input type="text" class="form-control" id="restriction_authority" name="restriction_authority" 
+                                               value="{{ old('restriction_authority') }}" 
+                                               placeholder="اسم الجهة المسؤولة عن الحظر">
+                                               <div class="col-12">
+                                        <label class="form-label">مرفق الخطابات والتعهدات</label>
+                                        <input type="file" class="form-control" name="letters_commitments_files[]" multiple accept=".pdf,.jpg,.jpeg,.png">
+                                        @if(isset($license) && $license->letters_commitments_file_path)
+                                            <div class="mt-2">
+                                                <a href="#" class="btn btn-sm btn-outline-info">
+                                                    <i class="fas fa-eye"></i> عرض الخطابات والتعهدات الحالية
+                                                </a>
+                                            </div>
+                                        @endif
+                                    </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mt-3">
+                                    <div class="col-12 text-center">
                                                                                         <div class="d-grid gap-2 d-md-block">
                                                 <button type="button" class="btn btn-success btn-lg px-5 shadow-lg me-2" onclick="saveCoordinationSection(true)">
                                                     <i class="fas fa-file-plus me-2"></i>
@@ -634,20 +634,20 @@
                                     <input type="hidden" name="work_order_id" value="{{ $workOrder->id }}">
                                     <input type="hidden" name="section_type" value="violations">
                                     
-                                    <div class="card border-0 shadow-sm">
-                                        <div class="card-header bg-danger text-white">
-                                            <h4 class="mb-0 fs-5">
-                                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                <div class="card border-0 shadow-sm">
+                                    <div class="card-header bg-danger text-white">
+                                        <h4 class="mb-0 fs-5">
+                                            <i class="fas fa-exclamation-triangle me-2"></i>
                                                 معلومات المخالفات
-                                            </h4>
-                                        </div>
-                                        <div class="card-body">
+                                        </h4>
+                                    </div>
+                                    <div class="card-body">
                                             <div class="row g-3">
                                                 <div class="col-md-6">
                                                     <label class="form-label">رقم الرخصة التي عليها مخالفات</label>
                                                     <input type="text" class="form-control" name="violation_license_number"
                                                            value="{{ old('violation_license_number') }}">
-                                                </div>
+                                                    </div>
                                                 <div class="col-md-6">
                                                     <label class="form-label">قيمة المخالفة</label>
                                                     <input type="number" step="0.01" class="form-control" name="violation_license_value"
@@ -662,7 +662,7 @@
                                                     <label class="form-label">آخر موعد سداد للمخالفة</label>
                                                     <input type="date" class="form-control" name="violation_due_date"
                                                            value="{{ old('violation_due_date') }}">
-                                                </div>
+                                                        </div>
                                                 <div class="col-md-6">
                                                     <label class="form-label">رقم المخالفة</label>
                                                     <input type="text" class="form-control" name="violation_number"
@@ -672,7 +672,7 @@
                                                     <label class="form-label">رقم فاتورة السداد </label>
                                                     <input type="text" class="form-control" name="violation_payment_number"
                                                            value="{{ old('violation_payment_number') }}">
-                                                </div>
+                                                    </div>
                                                 <div class="col-6">
                                                     <label class="form-label">المتسبب</label>
                                                     <input type="text" class="form-control" name="violation_cause"
@@ -682,21 +682,21 @@
                                                     <label class="form-label">وصف المخالفة </label>
                                                     <input type="text" class="form-control" name="violation_cause"
                                                            value="{{ old('violation_cause') }}">
-                                                </div>
+                                                    </div>
                                                 <div class="col-12">
                                                     <label class="form-label">مرفق المخالفات</label>
                                                     <input type="file" class="form-control" name="violations_files[]" multiple accept=".pdf,.jpg,.jpeg,.png">
                                                 </div>
+                                                    </div>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </div>
-                                    
+
                                     <div class="row mt-3">
-                                        <div class="col-12 text-center">
+                                                <div class="col-12 text-center">
                                             <button type="button" class="btn btn-danger btn-lg px-4" onclick="saveViolationsSection()">
                                                 <i class="fas fa-save me-2"></i>
                                                 حفظ المخالفات
-                                            </button>
+                                                    </button>
                                         </div>
                                     </div>
                                 </div>
@@ -1154,8 +1154,12 @@
             
             // إعادة حساب الأيام بعد تحميل التواريخ
             setTimeout(() => {
-                calculateLicenseDays();
-                calculateExtensionDays();
+                    if (typeof calculateLicenseDays === 'function') {
+                        calculateLicenseDays();
+                    }
+                    if (typeof calculateExtensionDays === 'function') {
+                        calculateExtensionDays();
+                    }
             }, 100);
         }
         
@@ -2816,13 +2820,25 @@
             const extensionStartDate = document.getElementById('dig_extension_start_date');
             const extensionEndDate = document.getElementById('dig_extension_end_date');
             
-            if (licenseStartDate) licenseStartDate.addEventListener('change', calculateLicenseDays);
-            if (licenseEndDate) licenseEndDate.addEventListener('change', calculateLicenseDays);
-            if (extensionStartDate) extensionStartDate.addEventListener('change', calculateExtensionDays);
-            if (extensionEndDate) extensionEndDate.addEventListener('change', calculateExtensionDays);
+            if (licenseStartDate && typeof calculateLicenseDays === 'function') {
+                licenseStartDate.addEventListener('change', calculateLicenseDays);
+            }
+            if (licenseEndDate && typeof calculateLicenseDays === 'function') {
+                licenseEndDate.addEventListener('change', calculateLicenseDays);
+            }
+            if (extensionStartDate && typeof calculateExtensionDays === 'function') {
+                extensionStartDate.addEventListener('change', calculateExtensionDays);
+            }
+            if (extensionEndDate && typeof calculateExtensionDays === 'function') {
+                extensionEndDate.addEventListener('change', calculateExtensionDays);
+            }
             
-            calculateLicenseDays();
-            calculateExtensionDays();
+            if (typeof calculateLicenseDays === 'function') {
+                calculateLicenseDays();
+            }
+            if (typeof calculateExtensionDays === 'function') {
+                calculateExtensionDays();
+            }
             
             // تأكيد الحفظ
             const form = document.getElementById('licenseForm');

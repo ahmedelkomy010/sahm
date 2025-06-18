@@ -156,80 +156,10 @@
 </head>
 <body class="font-sans antialiased bg-gray-100">
     <div class="min-h-screen bg-gray-100">
-        <!-- Top Navigation -->
-        <nav class="bg-gradient-to-r from-blue-600 to-indigo-700 shadow-md border-b border-gray-200">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex justify-between h-16">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0 flex items-center">
-                            <a href="{{ route('admin.dashboard') }}" class="flex-shrink-0 flex items-center">
-                                <div class="logo-container bg-white rounded-full p-1 ml-2">
-                                    <img class="h-10 w-auto" src="{{ asset('images/logo-sahm.svg') }}" alt="Sahm Logo">
-                                </div>
-                                <span class="mr-3 text-white font-bold text-xl">شركة سهم بلدي للمقاولات</span>
-                            </a>
-                        </div>
-                        
-                        <!-- Top Navigation Links -->
-                        <div class="hidden md:mr-8 md:flex md:flex-1 justify-center">
-                            <div class="flex items-center space-x-8 space-x-reverse">
-                                <a href="{{ route('admin.dashboard') }}" class="px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-blue-500">الرئيسية</a>
-                                @if(request()->routeIs('admin.work-orders.*'))
-                                <a href="{{ route('admin.work-orders.index') }}" class="px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-blue-500">أوامر العمل</a>
-                                @endif
-                            </div>
-                        </div>
-                    </div>
+        <!-- استخدام الهيدر الموحد -->
+        <x-main-header />
 
-                    <div class="hidden sm:ml-6 sm:flex sm:items-center">
-                        <div class="mr-3 relative flex items-center">
-                            <span class="text-white ml-2">{{ auth()->user()->name ?? 'مدير' }}</span>
-                            <div class="h-9 w-9 rounded-full bg-white flex items-center justify-center text-indigo-700 shadow-md">
-                                {{ substr(auth()->user()->name ?? 'مدير', 0, 1) }}
-                            </div>
-                            
-                            <!-- Logout Button -->
-                            <form method="POST" action="{{ route('logout') }}" class="mr-4">
-                                @csrf
-                                <button type="submit" class="flex items-center text-white text-sm hover:text-indigo-100">
-                                    <i class="fas fa-sign-out-alt ml-1"></i> تسجيل الخروج
-                                </button>
-                            </form>
-                        </div>
-                    </div>
 
-                    <!-- Mobile menu button -->
-                    <div class="-mr-2 flex items-center sm:hidden">
-                        <button type="button" class="bg-white inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" id="mobile-menu-button" aria-expanded="false">
-                            <span class="sr-only">فتح القائمة</span>
-                            <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Mobile menu -->
-            <div class="sm:hidden hidden" id="mobile-menu">
-                <div class="px-2 pt-2 pb-3 space-y-1">
-                    <a href="{{ route('admin.dashboard') }}" class="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-500">الرئيسية</a>
-                    <a href="{{ route('admin.users.index') }}" class="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-500">المستخدمين</a>
-                    @if(request()->routeIs('admin.work-orders.*'))
-                    <a href="{{ route('admin.work-orders.index') }}" class="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-500">أوامر العمل</a>
-                    @endif
-                    @can('admin')
-                    <a href="{{ route('admin.settings') }}" class="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-500">الإعدادات</a>
-                    @endcan
-                    <form method="POST" action="{{ route('logout') }}" class="mt-2">
-                        @csrf
-                        <button type="submit" class="block w-full text-right px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-500">
-                            تسجيل الخروج
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </nav>
 
         <!-- Main Content Container -->
         <div class="py-6">
@@ -285,17 +215,7 @@
         </div>
     </div>
 
-    <!-- JavaScript to handle mobile menu -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const mobileMenuButton = document.getElementById('mobile-menu-button');
-            const mobileMenu = document.getElementById('mobile-menu');
-            
-            mobileMenuButton.addEventListener('click', function() {
-                mobileMenu.classList.toggle('hidden');
-            });
-        });
-    </script>
+
     
     <!-- Stack للسكريبتات -->
     @stack('scripts')

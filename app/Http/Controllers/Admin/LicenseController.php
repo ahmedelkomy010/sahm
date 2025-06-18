@@ -264,13 +264,6 @@ class LicenseController extends Controller
                 'evac_payment_number' => 'nullable|string|max:255',
                 'evac_date' => 'nullable|date',
                 'evac_amount' => 'nullable|numeric|min:0',
-                'violation_license_number' => 'nullable|string|max:255',
-                'violation_license_value' => 'nullable|numeric|min:0',
-                'violation_license_date' => 'nullable|date',
-                'violation_due_date' => 'nullable|date',
-                'violation_number' => 'nullable|string|max:255',
-                'violation_payment_number' => 'nullable|string|max:255',
-                'violation_cause' => 'nullable|string',
                 'coordination_certificate_notes' => 'nullable|string',
                 'lab_table1_data' => 'nullable|string',
                 'lab_table2_data' => 'nullable|string',
@@ -811,26 +804,59 @@ class LicenseController extends Controller
      */
     private function saveViolationsSection(Request $request, License $license)
     {
-        $license->violation_license_number = $request->input('violation_license_number');
-        $license->violation_license_value = $request->input('violation_license_value');
-        $license->violation_license_date = $request->input('violation_license_date');
-        $license->violation_due_date = $request->input('violation_due_date');
-        $license->violation_number = $request->input('violation_number');
-        $license->violation_payment_number = $request->input('violation_payment_number');
-        $license->violation_cause = $request->input('violation_cause');
-        
-        // معالجة ملفات المخالفات
-        if ($request->hasFile('violations_files')) {
-            $files = $request->file('violations_files');
-            $filePaths = [];
-            
-            foreach ($files as $file) {
-                $filename = time() . '_violation_' . $file->getClientOriginalName();
-                $path = $file->storeAs('licenses/violations', $filename, 'public');
-                $filePaths[] = $path;
+        // التحقق من وجود بيانات مخالفات للحفظ
+        $violationData = [
+            'violation_license_number' => $request->input('violation_license_number'),
+            'violation_license_value' => $request->input('violation_license_value'),
+            'violation_license_date' => $request->input('violation_license_date'),
+            'violation_due_date' => $request->input('violation_due_date'),
+            'violation_number' => $request->input('violation_number'),
+            'violation_payment_number' => $request->input('violation_payment_number'),
+            'violation_cause' => $request->input('violation_cause'),
+        ];
+
+        // التحقق من وجود أي بيانات مخالفات
+        $hasViolationData = false;
+        foreach ($violationData as $key => $value) {
+            if (!empty($value)) {
+                $hasViolationData = true;
+                break;
             }
+        }
+
+        // حفظ المخالفة في جدول منفصل إذا كانت هناك بيانات
+        if ($hasViolationData || $request->hasFile('violations_files')) {
+            $violationFilePath = null;
             
-            $license->violations_file_path = json_encode($filePaths);
+            // معالجة ملفات المخالفات
+            if ($request->hasFile('violations_files')) {
+                $files = $request->file('violations_files');
+                $filePaths = [];
+                
+                foreach ($files as $file) {
+                    $filename = time() . '_violation_' . $file->getClientOriginalName();
+                    $path = $file->storeAs('licenses/violations', $filename, 'public');
+                    $filePaths[] = $path;
+                }
+                
+                $violationFilePath = json_encode($filePaths);
+            }
+
+            // إنشاء سجل مخالفة جديد
+            \App\Models\LicenseViolation::create([
+                'license_id' => $license->id,
+                'violation_license_number' => $violationData['violation_license_number'],
+                'violation_license_value' => $violationData['violation_license_value'],
+                'violation_license_date' => $violationData['violation_license_date'],
+                'violation_due_date' => $violationData['violation_due_date'],
+                'violation_number' => $violationData['violation_number'],
+                'violation_payment_number' => $violationData['violation_payment_number'],
+                'violation_cause' => $violationData['violation_cause'],
+                'violations_file_path' => $violationFilePath,
+            ]);
+
+            // تحديث عدد المخالفات في الرخصة
+            $license->updateViolationsCount();
         }
     }
     
