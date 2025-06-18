@@ -134,6 +134,15 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::put('work-orders/{workOrder}/installations', [WorkOrderController::class, 'storeInstallations'])->name('work-orders.installations.store');
     Route::delete('work-orders/{workOrder}/installations/{file}', [WorkOrderController::class, 'deleteInstallationsFile'])->name('work-orders.installations.delete-file');
 
+    // Civil Works Routes
+    Route::get('work-orders/{workOrder}/civil-works', [WorkOrderController::class, 'civilWorks'])->name('work-orders.civil-works');
+    Route::post('work-orders/{workOrder}/civil-works', [WorkOrderController::class, 'civilWorks'])->name('work-orders.civil-works.store');
+    Route::put('work-orders/{workOrder}/civil-works', [WorkOrderController::class, 'civilWorks'])->name('work-orders.civil-works.store');
+    Route::get('work-orders/{workOrder}/civil-works/excavation-details', [WorkOrderController::class, 'getExcavationDetails'])->name('work-orders.civil-works.excavation-details');
+    Route::post('work-orders/{workOrder}/civil-works/images', [WorkOrderController::class, 'saveCivilWorksImages'])->name('work-orders.civil-works.images');
+    Route::post('work-orders/{workOrder}/civil-works/attachments', [WorkOrderController::class, 'saveCivilWorksAttachments'])->name('work-orders.civil-works.attachments');
+    Route::post('work-orders/{workOrder}/civil-works/lock', [WorkOrderController::class, 'lockCivilWorksImages'])->name('work-orders.civil-works.lock');
+
     // Electrical Works Routes
     Route::get('work-orders/{workOrder}/electrical-works', [App\Http\Controllers\ElectricalWorksController::class, 'index'])->name('work-orders.electrical-works');
     Route::put('work-orders/{workOrder}/electrical-works/store', [App\Http\Controllers\ElectricalWorksController::class, 'store'])->name('work-orders.electrical-works.store');
