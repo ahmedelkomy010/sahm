@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Gate;
 use App\Http\Controllers\OrderEntryController;
 use App\Http\Controllers\LabLicenseWebController;
 use App\Http\Controllers\CableRecordController;
+use App\Http\Controllers\LicenseViolationController;
 
 
 /*
@@ -251,31 +252,6 @@ Route::get('/generate-coordination-numbers', function () {
     return $output;
 })->middleware('auth');
 
-// مسار مؤقت لتعيين مستخدم معين كمسؤول - سيتم إزالته لاحقاً
-Route::get('/make-elkomy-admin', function () {
-    $user = \App\Models\User::where('email', 'like', '%ahmedelkomy%')
-                         ->orWhere('email', 'like', '%ahmedprog877@gmail.com%')  
-                         ->orWhere('name', 'like', '%ahmedelkomy%')
-                         ->first();
-    
-    if ($user) {
-        $user->is_admin = true;
-        $user->save();
-        return redirect()->route('admin.users.index')
-            ->with('success', 'تم تعيين المستخدم أحمد الكومي كمسؤول بنجاح!');
-    } else {
-        // إنشاء مستخدم جديد إذا لم يكن موجوداً
-        $newUser = \App\Models\User::create([
-            'name' => 'احمد الكومي',
-            'email' => 'ahmedprog877@gmail.com',
-            'password' => \Illuminate\Support\Facades\Hash::make('123456'),
-            'is_admin' => true,
-        ]);
-        
-        return redirect()->route('admin.users.index')
-            ->with('success', 'تم إنشاء مستخدم احمد الكومي كمسؤول بنجاح! البريد: ahmedprog877@gmail.com، كلمة المرور: 123456');
-    }
-});
 
 // User Dashboard (redirect to admin dashboard)
 Route::get('/dashboard', function () {
@@ -306,3 +282,20 @@ Route::get('files/{path}', function ($path) {
     }
     return response()->file($filePath);
 })->where('path', '.*')->name('files.serve');
+
+Route::middleware(['auth', 'admin'])->group(function () {
+    // License Violations Routes
+    Route::get('/admin/licenses/{license}/violations', [App\Http\Controllers\Admin\LicenseViolationController::class, 'index'])->name('violations.index');
+    Route::post('/admin/violations/store', [App\Http\Controllers\Admin\LicenseViolationController::class, 'store'])->name('violations.store');
+    Route::get('/admin/violations/{violation}', [App\Http\Controllers\Admin\LicenseViolationController::class, 'show'])->name('violations.show');
+    Route::put('/admin/violations/{violation}', [App\Http\Controllers\Admin\LicenseViolationController::class, 'update'])->name('violations.update');
+    Route::delete('/admin/violations/{violation}', [App\Http\Controllers\Admin\LicenseViolationController::class, 'destroy'])->name('violations.destroy');
+});
+
+// مسارات المخالفات
+Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
+    Route::post('/violations', [App\Http\Controllers\Admin\LicenseViolationController::class, 'store'])->name('violations.store');
+    Route::get('/violations/{violation}', [App\Http\Controllers\Admin\LicenseViolationController::class, 'show'])->name('violations.show');
+    Route::put('/violations/{violation}', [App\Http\Controllers\Admin\LicenseViolationController::class, 'update'])->name('violations.update');
+    Route::delete('/violations/{violation}', [App\Http\Controllers\Admin\LicenseViolationController::class, 'destroy'])->name('violations.destroy');
+});

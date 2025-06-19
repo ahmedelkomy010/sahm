@@ -4,33 +4,42 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class LicenseViolation extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'license_id',
-        'violation_license_number',
-        'violation_license_value',
-        'violation_license_date',
-        'violation_due_date',
+        'work_order_id',
+        'license_number',
+        'violation_date',
+        'payment_due_date',
+        'violation_amount',
         'violation_number',
-        'violation_payment_number',
-        'violation_cause',
-        'violations_file_path',
+        'responsible_party',
+        'violation_description',
+        'notes'
     ];
 
     protected $casts = [
-        'violation_license_date' => 'date',
-        'violation_due_date' => 'date',
-        'violation_license_value' => 'decimal:2',
+        'violation_date' => 'date',
+        'payment_due_date' => 'date',
+        'violation_amount' => 'decimal:2'
     ];
+
+    /**
+     * العلاقة مع أمر العمل
+     */
+    public function workOrder()
+    {
+        return $this->belongsTo(WorkOrder::class);
+    }
 
     /**
      * Get the license that owns the violation.
      */
-    public function license()
+    public function license(): BelongsTo
     {
         return $this->belongsTo(License::class);
     }
@@ -40,7 +49,7 @@ class LicenseViolation extends Model
      */
     public function getFormattedViolationValueAttribute()
     {
-        return number_format($this->violation_license_value ?? 0, 2);
+        return number_format($this->violation_amount ?? 0, 2);
     }
 
     /**
@@ -48,11 +57,11 @@ class LicenseViolation extends Model
      */
     public function getStatusAttribute()
     {
-        if (!$this->violation_due_date) {
+        if (!$this->payment_due_date) {
             return 'unknown';
         }
         
-        return now()->isAfter($this->violation_due_date) ? 'overdue' : 'pending';
+        return now()->isAfter($this->payment_due_date) ? 'overdue' : 'pending';
     }
 
     /**
@@ -60,7 +69,7 @@ class LicenseViolation extends Model
      */
     public function scopeOverdue($query)
     {
-        return $query->where('violation_due_date', '<', now());
+        return $query->where('payment_due_date', '<', now());
     }
 
     /**
@@ -68,6 +77,6 @@ class LicenseViolation extends Model
      */
     public function scopePending($query)
     {
-        return $query->where('violation_due_date', '>=', now());
+        return $query->where('payment_due_date', '>=', now());
     }
 } 

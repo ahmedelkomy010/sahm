@@ -696,7 +696,7 @@ class WorkOrderController extends Controller
         $license = \App\Models\License::where('work_order_id', $workOrder->id)->first();
 
         // جلب جميع الرخص الخاصة بأمر العمل هذا فقط
-        $workOrderWithLicenses = $workOrder->load('licenses');
+        $workOrderWithLicenses = $workOrder->load(['licenses', 'violations']);
 
         return view('admin.work_orders.license', compact('workOrder', 'licenseFiles', 'license'));
     }

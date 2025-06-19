@@ -6,159 +6,125 @@ use App\Http\Controllers\Controller;
 use App\Models\License;
 use App\Models\LicenseViolation;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 class LicenseViolationController extends Controller
 {
+    public function index(License $license)
+    {
+        $violations = $license->violations()->orderBy('created_at', 'desc')->get();
+        return view('admin.work_orders.license', compact('license', 'violations'));
+    }
+
     /**
-     * Store a new violation for a license
+     * Store a newly created violation in storage.
      */
     public function store(Request $request)
     {
-        try {
-            Log::info('LicenseViolationController::store called', $request->all());
+        $validator = Validator::make($request->all(), [
+            'work_order_id' => 'required|exists:work_orders,id',
+            'license_number' => 'required|string',
+            'violation_date' => 'required|date',
+            'payment_due_date' => 'required|date',
+            'violation_amount' => 'required|numeric|min:0',
+            'violation_number' => 'required|string',
+            'responsible_party' => 'required|string',
+            'violation_description' => 'nullable|string',
+            'notes' => 'nullable|string',
+        ]);
 
-            $validated = $request->validate([
-                'license_id' => 'required|exists:licenses,id',
-                'violation_license_number' => 'nullable|string|max:255',
-                'violation_license_value' => 'nullable|numeric|min:0',
-                'violation_license_date' => 'nullable|date',
-                'violation_due_date' => 'nullable|date',
-                'violation_number' => 'nullable|string|max:255',
-                'violation_payment_number' => 'nullable|string|max:255',
-                'violation_cause' => 'nullable|string',
-                'violations_file' => 'nullable|file|max:10240|mimes:pdf,doc,docx,jpg,jpeg,png',
-            ]);
-
-            // Handle file upload
-            $filePath = null;
-            if ($request->hasFile('violations_file')) {
-                $file = $request->file('violations_file');
-                $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-                $filePath = $file->storeAs('violations/' . $request->license_id, $filename, 'public');
-            }
-
-            // Create violation
-            $violation = LicenseViolation::create([
-                'license_id' => $validated['license_id'],
-                'violation_license_number' => $validated['violation_license_number'] ?? null,
-                'violation_license_value' => $validated['violation_license_value'] ?? null,
-                'violation_license_date' => $validated['violation_license_date'] ?? null,
-                'violation_due_date' => $validated['violation_due_date'] ?? null,
-                'violation_number' => $validated['violation_number'] ?? null,
-                'violation_payment_number' => $validated['violation_payment_number'] ?? null,
-                'violation_cause' => $validated['violation_cause'] ?? null,
-                'violations_file_path' => $filePath,
-            ]);
-
-            // Update license violations count
-            $license = License::find($validated['license_id']);
-            if ($license) {
-                $license->updateViolationsCount();
-            }
-
-            Log::info('Violation created successfully', ['violation_id' => $violation->id]);
-
-            return response()->json([
-                'success' => true,
-                'message' => 'تم حفظ المخالفة بنجاح',
-                'violation' => $violation,
-                'license_id' => $validated['license_id']
-            ]);
-
-        } catch (\Exception $e) {
-            Log::error('Error creating violation: ' . $e->getMessage(), [
-                'request' => $request->all(),
-                'trace' => $e->getTraceAsString()
-            ]);
-
+        if ($validator->fails()) {
             return response()->json([
                 'success' => false,
-                'message' => 'حدث خطأ أثناء حفظ المخالفة: ' . $e->getMessage()
+                'message' => 'بيانات غير صحيحة',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            $violation = LicenseViolation::create($request->all());
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'تم إضافة المخالفة بنجاح',
+                'violation' => $violation
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء حفظ المخالفة'
             ], 500);
         }
     }
 
     /**
-     * Update an existing violation
+     * Display the specified violation.
+     */
+    public function show(LicenseViolation $violation)
+    {
+        return response()->json([
+            'success' => true,
+            'violation' => $violation
+        ]);
+    }
+
+    /**
+     * Update the specified violation in storage.
      */
     public function update(Request $request, LicenseViolation $violation)
     {
+        $validator = Validator::make($request->all(), [
+            'license_number' => 'required|string',
+            'violation_date' => 'required|date',
+            'payment_due_date' => 'required|date',
+            'violation_amount' => 'required|numeric|min:0',
+            'violation_number' => 'required|string',
+            'responsible_party' => 'required|string',
+            'violation_description' => 'nullable|string',
+            'notes' => 'nullable|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'بيانات غير صحيحة',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
         try {
-            $validated = $request->validate([
-                'violation_license_number' => 'nullable|string|max:255',
-                'violation_license_value' => 'nullable|numeric|min:0',
-                'violation_license_date' => 'nullable|date',
-                'violation_due_date' => 'nullable|date',
-                'violation_number' => 'nullable|string|max:255',
-                'violation_payment_number' => 'nullable|string|max:255',
-                'violation_cause' => 'nullable|string',
-                'violations_file' => 'nullable|file|max:10240|mimes:pdf,doc,docx,jpg,jpeg,png',
-            ]);
-
-            // Handle file upload
-            if ($request->hasFile('violations_file')) {
-                // Delete old file if exists
-                if ($violation->violations_file_path) {
-                    Storage::disk('public')->delete($violation->violations_file_path);
-                }
-
-                $file = $request->file('violations_file');
-                $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-                $validated['violations_file_path'] = $file->storeAs('violations/' . $violation->license_id, $filename, 'public');
-            }
-
-            $violation->update($validated);
-
+            $violation->update($request->all());
+            
             return response()->json([
                 'success' => true,
                 'message' => 'تم تحديث المخالفة بنجاح',
                 'violation' => $violation
             ]);
-
         } catch (\Exception $e) {
-            Log::error('Error updating violation: ' . $e->getMessage());
-
             return response()->json([
                 'success' => false,
-                'message' => 'حدث خطأ أثناء تحديث المخالفة: ' . $e->getMessage()
+                'message' => 'حدث خطأ أثناء تحديث المخالفة'
             ], 500);
         }
     }
 
     /**
-     * Delete a violation
+     * Remove the specified violation from storage.
      */
     public function destroy(LicenseViolation $violation)
     {
         try {
-            $licenseId = $violation->license_id;
-
-            // Delete file if exists
-            if ($violation->violations_file_path) {
-                Storage::disk('public')->delete($violation->violations_file_path);
-            }
-
             $violation->delete();
-
-            // Update license violations count
-            $license = License::find($licenseId);
-            if ($license) {
-                $license->updateViolationsCount();
-            }
-
+            
             return response()->json([
                 'success' => true,
                 'message' => 'تم حذف المخالفة بنجاح'
             ]);
-
         } catch (\Exception $e) {
-            Log::error('Error deleting violation: ' . $e->getMessage());
-
             return response()->json([
                 'success' => false,
-                'message' => 'حدث خطأ أثناء حذف المخالفة: ' . $e->getMessage()
+                'message' => 'حدث خطأ أثناء حذف المخالفة'
             ], 500);
         }
     }

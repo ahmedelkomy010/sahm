@@ -192,6 +192,14 @@ class WorkOrder extends Model
         return $this->hasMany(Material::class);
     }
 
+    /**
+     * العلاقة مع المخالفات
+     */
+    public function violations()
+    {
+        return $this->hasMany(LicenseViolation::class);
+    }
+
     // Scopes
     public function scopeActive($query)
     {

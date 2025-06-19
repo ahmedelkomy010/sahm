@@ -4,6 +4,11 @@
 <!-- إضافة CSRF token -->
 <meta name="csrf-token" content="{{ csrf_token() }}">
 
+<!-- تضمين مكتبات JavaScript -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
 <div id="app">
     <div class="container-fluid py-4">
         <div class="row justify-content-center">
@@ -145,6 +150,293 @@
                                 </div>
                             </div>
                         </div>
+
+                        <script>
+                        // تهيئة التبويبات عند تحميل الصفحة
+                        document.addEventListener('DOMContentLoaded', function() {
+                            // إظهار التبويب الأول افتراضياً
+                            showSection('dig-license-section');
+                        });
+
+                        // دالة إظهار/إخفاء الأقسام
+                        function showSection(sectionId) {
+                            // إخفاء جميع الأقسام
+                            document.querySelectorAll('.tab-section').forEach(section => {
+                                section.style.display = 'none';
+                            });
+                            
+                            // إظهار القسم المطلوب
+                            const selectedSection = document.getElementById(sectionId);
+                            if (selectedSection) {
+                                selectedSection.style.display = 'block';
+                            }
+                            
+                            // تحديث الزر النشط
+                            document.querySelectorAll('.tab-btn').forEach(link => {
+                                link.classList.remove('active');
+                            });
+                            document.querySelector(`[data-target="${sectionId}"]`).classList.add('active');
+                        }
+
+                        // إضافة صف جديد للمخالفات
+                        function addNewViolationRow() {
+                            console.log('Adding new violation row...');
+                            console.log('Work Order ID: {{ $workOrder->id }}');
+                            console.log('Current violations count: {{ isset($workOrder) && $workOrder->violations ? $workOrder->violations->count() : 0 }}');
+                            
+                            const tbody = document.querySelector('#violationsTable tbody');
+                            if (!tbody) {
+                                console.error('Violations table body not found');
+                                alert('خطأ: لم يتم العثور على جدول المخالفات');
+                                return;
+                            }
+                            
+                            const newRow = document.createElement('tr');
+                            newRow.setAttribute('data-id', 'new');
+                            
+                            newRow.innerHTML = `
+                                <td><input type="text" class="form-control form-control-sm" name="license_number" required></td>
+                                <td><input type="date" class="form-control form-control-sm" name="violation_date" required></td>
+                                <td><input type="date" class="form-control form-control-sm" name="payment_due_date" required></td>
+                                <td><input type="number" class="form-control form-control-sm" name="violation_amount" step="0.01" required></td>
+                                <td><input type="text" class="form-control form-control-sm" name="violation_number" required></td>
+                                <td><input type="text" class="form-control form-control-sm" name="responsible_party" required></td>
+                                <td><input type="text" class="form-control form-control-sm" name="violation_description"></td>
+                                <td><input type="text" class="form-control form-control-sm" name="notes"></td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <button type="button" class="btn btn-success" onclick="saveViolationRow(this)">
+                                            <i class="fas fa-save"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-danger" onclick="deleteViolationRow(this)">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            `;
+                            
+                            // إزالة صف "لا توجد مخالفات" إذا كان موجوداً
+                            const noViolationsRow = document.getElementById('no-violations-row');
+                            if (noViolationsRow) {
+                                noViolationsRow.remove();
+                            }
+                            
+                            tbody.appendChild(newRow);
+                            console.log('New violation row added successfully');
+                        }
+
+                        // حفظ صف مخالفة جديد
+                        function saveViolationRow(button) {
+                            console.log('Saving violation row...');
+                            const row = button.closest('tr');
+                            const formData = new FormData();
+                            
+                            // إضافة معرف أمر العمل
+                            formData.append('work_order_id', '{{ $workOrder->id }}');
+                            
+                            // جمع بيانات المخالفة
+                            row.querySelectorAll('input').forEach(input => {
+                                if (input.name) {
+                                    formData.append(input.name, input.value);
+                                }
+                            });
+                            
+                            // إضافة رمز CSRF
+                            formData.append('_token', '{{ csrf_token() }}');
+
+                            // إرسال البيانات إلى الخادم
+                            fetch('{{ route("violations.store") }}', {
+                                method: 'POST',
+                                body: formData
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    const violation = data.violation;
+                                    row.setAttribute('data-id', violation.id);
+                                    row.innerHTML = getViolationRowHtml(violation);
+                                    
+                                    // إظهار رسالة نجاح
+                                    if (typeof toastr !== 'undefined') {
+                                        toastr.success('تم حفظ المخالفة بنجاح');
+                                    } else {
+                                        alert('تم حفظ المخالفة بنجاح');
+                                    }
+                                } else {
+                                    console.error('Error saving violation:', data);
+                                    if (typeof toastr !== 'undefined') {
+                                        toastr.error(data.message || 'حدث خطأ أثناء حفظ المخالفة');
+                                    } else {
+                                        alert(data.message || 'حدث خطأ أثناء حفظ المخالفة');
+                                    }
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                                if (typeof toastr !== 'undefined') {
+                                    toastr.error('حدث خطأ أثناء حفظ المخالفة');
+                                } else {
+                                    alert('حدث خطأ أثناء حفظ المخالفة');
+                                }
+                            });
+                        }
+
+                        // تحرير صف مخالفة
+                        function editViolationRow(button, violationId) {
+                            const row = button.closest('tr');
+                            const cells = row.cells;
+                            
+                            row.innerHTML = `
+                                <td><input type="text" class="form-control form-control-sm" name="license_number" value="${cells[0].textContent}" required></td>
+                                <td><input type="date" class="form-control form-control-sm" name="violation_date" value="${cells[1].textContent}" required></td>
+                                <td><input type="date" class="form-control form-control-sm" name="payment_due_date" value="${cells[2].textContent}" required></td>
+                                <td><input type="number" class="form-control form-control-sm" name="violation_amount" value="${cells[3].textContent.replace(/,/g, '')}" step="0.01" required></td>
+                                <td><input type="text" class="form-control form-control-sm" name="violation_number" value="${cells[4].textContent}" required></td>
+                                <td><input type="text" class="form-control form-control-sm" name="responsible_party" value="${cells[5].textContent}" required></td>
+                                <td><input type="text" class="form-control form-control-sm" name="violation_description" value="${cells[6].textContent}"></td>
+                                <td><input type="text" class="form-control form-control-sm" name="notes" value="${cells[7].textContent}"></td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <button type="button" class="btn btn-success" onclick="updateViolationRow(this, ${violationId})">
+                                            <i class="fas fa-save"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-danger" onclick="cancelViolationEdit(this, ${violationId})">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            `;
+                        }
+
+                        // تحديث صف مخالفة
+                        function updateViolationRow(button, violationId) {
+                            const row = button.closest('tr');
+                            const formData = new FormData();
+                            
+                            // جمع البيانات المحدثة
+                            row.querySelectorAll('input').forEach(input => {
+                                if (input.name) {
+                                    formData.append(input.name, input.value);
+                                }
+                            });
+                            
+                            formData.append('_token', '{{ csrf_token() }}');
+                            formData.append('_method', 'PUT');
+
+                            // إرسال البيانات المحدثة
+                            fetch(`/admin/violations/${violationId}`, {
+                                method: 'POST',
+                                body: formData
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    row.innerHTML = getViolationRowHtml(data.violation);
+                                    if (typeof toastr !== 'undefined') {
+                                        toastr.success('تم تحديث المخالفة بنجاح');
+                                    } else {
+                                        alert('تم تحديث المخالفة بنجاح');
+                                    }
+                                } else {
+                                    if (typeof toastr !== 'undefined') {
+                                        toastr.error(data.message || 'حدث خطأ أثناء تحديث المخالفة');
+                                    } else {
+                                        alert(data.message || 'حدث خطأ أثناء تحديث المخالفة');
+                                    }
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                                if (typeof toastr !== 'undefined') {
+                                    toastr.error('حدث خطأ أثناء تحديث المخالفة');
+                                } else {
+                                    alert('حدث خطأ أثناء تحديث المخالفة');
+                                }
+                            });
+                        }
+
+                        // إلغاء تحرير المخالفة
+                        function cancelViolationEdit(button, violationId) {
+                            const row = button.closest('tr');
+                            fetch(`/admin/violations/${violationId}`)
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (data.success) {
+                                        row.innerHTML = getViolationRowHtml(data.violation);
+                                    }
+                                });
+                        }
+
+                        // حذف صف مخالفة
+                        function deleteViolationRow(button, violationId = null) {
+                            if (!confirm('هل أنت متأكد من حذف هذه المخالفة؟')) {
+                                return;
+                            }
+
+                            const row = button.closest('tr');
+
+                            if (violationId) {
+                                fetch(`/admin/violations/${violationId}`, {
+                                    method: 'DELETE',
+                                    headers: {
+                                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                        'Content-Type': 'application/json'
+                                    }
+                                })
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (data.success) {
+                                        row.remove();
+                                        if (typeof toastr !== 'undefined') {
+                                            toastr.success('تم حذف المخالفة بنجاح');
+                                        } else {
+                                            alert('تم حذف المخالفة بنجاح');
+                                        }
+                                    } else {
+                                        if (typeof toastr !== 'undefined') {
+                                            toastr.error(data.message || 'حدث خطأ أثناء حذف المخالفة');
+                                        } else {
+                                            alert(data.message || 'حدث خطأ أثناء حذف المخالفة');
+                                        }
+                                    }
+                                })
+                                .catch(error => {
+                                    console.error('Error:', error);
+                                    if (typeof toastr !== 'undefined') {
+                                        toastr.error('حدث خطأ أثناء حذف المخالفة');
+                                    } else {
+                                        alert('حدث خطأ أثناء حذف المخالفة');
+                                    }
+                                });
+                            } else {
+                                row.remove();
+                            }
+                        }
+
+                        // دالة مساعدة لإنشاء HTML للصف
+                        function getViolationRowHtml(violation) {
+                            return `
+                                <td>${violation.license_number}</td>
+                                <td>${violation.violation_date}</td>
+                                <td>${violation.payment_due_date}</td>
+                                <td>${new Intl.NumberFormat('ar-SA', { minimumFractionDigits: 2 }).format(violation.violation_amount)}</td>
+                                <td>${violation.violation_number}</td>
+                                <td>${violation.responsible_party}</td>
+                                <td>${violation.violation_description || ''}</td>
+                                <td>${violation.notes || ''}</td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <button type="button" class="btn btn-primary" onclick="editViolationRow(this, ${violation.id})">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-danger" onclick="deleteViolationRow(this, ${violation.id})">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            `;
+                        }
+                        </script>
 
                         <form action="{{ route('admin.licenses.store') }}" method="POST" enctype="multipart/form-data" id="licenseForm">
                             @csrf
@@ -628,81 +920,77 @@
                                 </div>
                             </div>
 
-                            <!-- قسم المخالفات -->
+                            <!-- جدول المخالفات -->
                             <div id="violations-section" class="tab-section" style="display: none;">
-                                <div id="violationsForm" class="violations-form">
-                                    <input type="hidden" name="work_order_id" value="{{ $workOrder->id }}">
-                                    <input type="hidden" name="section_type" value="violations">
-                                    
-                                <div class="card border-0 shadow-sm">
-                                    <div class="card-header bg-danger text-white">
-                                        <h4 class="mb-0 fs-5">
-                                            <i class="fas fa-exclamation-triangle me-2"></i>
-                                                معلومات المخالفات
-                                        </h4>
+                                <div class="card border-0 shadow-sm mb-4">
+                                    <div class="card-header bg-primary text-white">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <h4 class="mb-0 fs-5">
+                                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                                سجل المخالفات
+                                            </h4>
+                                            <button type="button" class="btn btn-light btn-sm" onclick="addNewViolationRow()">
+                                                <i class="fas fa-plus me-1"></i>
+                                                إضافة مخالفة جديدة
+                                            </button>
+                                        </div>
                                     </div>
                                     <div class="card-body">
-                                            <div class="row g-3">
-                                                <div class="col-md-6">
-                                                    <label class="form-label">رقم الرخصة التي عليها مخالفات</label>
-                                                    <input type="text" class="form-control" name="violation_license_number"
-                                                           value="{{ old('violation_license_number') }}">
-                                                    </div>
-                                                <div class="col-md-6">
-                                                    <label class="form-label">قيمة المخالفة</label>
-                                                    <input type="number" step="0.01" class="form-control" name="violation_license_value"
-                                                           value="{{ old('violation_license_value') }}">
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <label class="form-label">تاريخ المخالفة</label>
-                                                    <input type="date" class="form-control" name="violation_license_date"
-                                                           value="{{ old('violation_license_date') }}">
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <label class="form-label">آخر موعد سداد للمخالفة</label>
-                                                    <input type="date" class="form-control" name="violation_due_date"
-                                                           value="{{ old('violation_due_date') }}">
-                                                        </div>
-                                                <div class="col-md-6">
-                                                    <label class="form-label">رقم المخالفة</label>
-                                                    <input type="text" class="form-control" name="violation_number"
-                                                           value="{{ old('violation_number') }}">
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <label class="form-label">رقم فاتورة السداد </label>
-                                                    <input type="text" class="form-control" name="violation_payment_number"
-                                                           value="{{ old('violation_payment_number') }}">
-                                                    </div>
-                                                <div class="col-6">
-                                                    <label class="form-label">المتسبب</label>
-                                                    <input type="text" class="form-control" name="violation_cause"
-                                                           value="{{ old('violation_cause') }}">
-                                                </div>
-                                                <div class="col-6">
-                                                    <label class="form-label">وصف المخالفة </label>
-                                                    <input type="text" class="form-control" name="violation_cause"
-                                                           value="{{ old('violation_cause') }}">
-                                                    </div>
-                                                <div class="col-12">
-                                                    <label class="form-label">مرفق المخالفات</label>
-                                                    <input type="file" class="form-control" name="violations_files[]" multiple accept=".pdf,.jpg,.jpeg,.png">
-                                                </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                    <div class="row mt-3">
-                                                <div class="col-12 text-center">
-                                            <button type="button" class="btn btn-danger btn-lg px-4" onclick="saveViolationsSection()">
-                                                <i class="fas fa-save me-2"></i>
-                                                حفظ المخالفات
-                                                    </button>
+                                        <div class="table-responsive">
+                                            <table class="table table-bordered table-striped" id="violationsTable">
+                                                <thead class="bg-primary text-white">
+                                                    <tr>
+                                                        <th>رقم الرخصة</th>
+                                                        <th>تاريخ المخالفة</th>
+                                                        <th>تاريخ السداد</th>
+                                                        <th>قيمة المخالفة</th>
+                                                        <th>رقم المخالفة</th>
+                                                        <th>المتسبب</th>
+                                                        <th>وصف المخالفة</th>
+                                                        <th>ملاحظات</th>
+                                                        <th>الإجراءات</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @if(isset($workOrder) && $workOrder->violations && $workOrder->violations->count() > 0)
+                                                        @foreach($workOrder->violations as $violation)
+                                                        <tr data-id="{{ $violation->id }}">
+                                                            <td>{{ $violation->license_number }}</td>
+                                                            <td>{{ $violation->violation_date ? $violation->violation_date->format('Y-m-d') : '' }}</td>
+                                                            <td>{{ $violation->payment_due_date ? $violation->payment_due_date->format('Y-m-d') : '' }}</td>
+                                                            <td>{{ number_format($violation->violation_amount, 2) }}</td>
+                                                            <td>{{ $violation->violation_number }}</td>
+                                                            <td>{{ $violation->responsible_party }}</td>
+                                                            <td>{{ $violation->violation_description }}</td>
+                                                            <td>{{ $violation->notes }}</td>
+                                                            <td>
+                                                                <div class="btn-group btn-group-sm">
+                                                                    <button type="button" class="btn btn-primary" onclick="editViolationRow(this, {{ $violation->id }})">
+                                                                        <i class="fas fa-edit"></i>
+                                                                    </button>
+                                                                    <button type="button" class="btn btn-danger" onclick="deleteViolationRow(this, {{ $violation->id }})">
+                                                                        <i class="fas fa-trash"></i>
+                                                                    </button>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                        @endforeach
+                                                    @else
+                                                        <tr id="no-violations-row">
+                                                            <td colspan="9" class="text-center text-muted py-4">
+                                                                <i class="fas fa-info-circle me-2"></i>
+                                                                لا توجد مخالفات مسجلة حتى الآن
+                                                                <br>
+                                                                <small class="text-muted">انقر على "إضافة مخالفة جديدة" لإضافة مخالفة</small>
+                                                            </td>
+                                                        </tr>
+                                                    @endif
+                                                </tbody>
+                                            </table>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-
-
 
                             <!-- ملاحظات إضافية -->
                             <div class="card border-0 shadow-sm mt-4">
@@ -757,72 +1045,79 @@
                         <div class="card border-0 shadow-sm mt-5">
                             <div class="card-header bg-gradient-secondary text-white">
                                 <div class="d-flex justify-content-between align-items-center">
-                                    <h4 class="mb-0 fs-5">
-                                        <i class="fas fa-table me-2"></i>
-                                        جدول الرخص المحفوظة لأمر العمل {{ $workOrder->order_number }}
-                                    </h4>
-                                    <div class="d-flex gap-2 flex-wrap">
+                                                                          <div class="d-flex justify-content-between align-items-center">
+                                          <h4 class="mb-0 fs-5">
+                                              <i class="fas fa-table me-2"></i>
+                                              جدول الرخص المحفوظة  للرخص {{ $workOrder->order_number }}
+                                          </h4>
+                                      </div>
+                                      <div class="d-flex gap-2 flex-wrap">
                                         <span class="badge bg-primary">
                                             <i class="fas fa-list-ol me-1"></i>
                                             إجمالي الرخص: <span id="totalLicensesCount">{{ $workOrder->licenses->count() ?? 0 }}</span>
                                         </span>
-
-                                        <button type="button" class="btn btn-info btn-sm" onclick="exportLicensesTable()">
-                                            <i class="fas fa-download me-1"></i>
-                                            تصدير
-                                        </button>
                                     </div>
                                 </div>
                             </div>
                             <div class="card-body p-0">
                                 <div class="table-responsive">
-                                    <table class="table table-hover table-striped mb-0" id="licensesTable">
-                                        <thead class="table-dark sticky-top">
+                                    <table class="table table-hover table-striped mb-0 licenses-table" id="licensesTable">
+                                        <thead class="table-dark">
                                             <tr>
-                                                <th style="min-width: 60px;">#</th>
-                                                <th style="min-width: 120px;">رقم الرخصة</th>
-                                                <th style="min-width: 120px;">تاريخ الرخصة</th>
-                                                <th style="min-width: 100px;">نوع الرخصة</th>
-                                                <th style="min-width: 120px;">قيمة الرخصة</th>
-                                                <th style="min-width: 120px;">قيمة التمديد</th>
-                                                <th style="min-width: 120px;">رقم شهادة التنسيق</th>
-                                                <th style="min-width: 120px;">تاريخ البداية</th>
-                                                <th style="min-width: 120px;">تاريخ النهاية</th>
-                                                <th style="min-width: 100px;">أبعاد الحفر</th>
-                                                <!-- التمديدات -->
-                                                <th style="min-width: 120px;">بداية التمديد</th>
-                                                <th style="min-width: 120px;">نهاية التمديد</th>
-                                                <th style="min-width: 80px;">حظر</th>
-                                                <th style="min-width: 100px;">جهة الحظر</th>
+                                                <th colspan="4" class="header-group group-basic">معلومات أساسية</th>
+                                                <th colspan="2" class="header-group group-financial">معلومات مالية</th>
+                                                <th colspan="4" class="header-group group-coordination">معلومات التنسيق</th>
+                                                <th colspan="2" class="header-group group-extension">معلومات التمديد</th>
+                                                <th colspan="2" class="header-group group-restriction">معلومات الحظر</th>
+                                                <th colspan="6" class="header-group group-lab">اختبارات المختبر</th>
+                                                <th colspan="6" class="header-group group-evacuation">معلومات الإخلاء</th>
+                                                <th colspan="3" class="header-group group-additional">معلومات إضافية</th>
+                                            </tr>
+                                            <tr>
+                                                <!-- معلومات أساسية -->
+                                                <th class="group-basic">#</th>
+                                                <th class="group-basic">رقم الرخصة</th>
+                                                <th class="group-basic">تاريخ الرخصة</th>
+                                                <th class="group-basic">نوع الرخصة</th>
+                                                
+                                                <!-- معلومات مالية -->
+                                                <th class="group-financial">قيمة الرخصة</th>
+                                                <th class="group-financial">قيمة التمديد</th>
+                                                
+                                                <!-- معلومات التنسيق -->
+                                                <th class="group-coordination">رقم شهادة التنسيق</th>
+                                                <th class="group-coordination">تاريخ البداية</th>
+                                                <th class="group-coordination">تاريخ النهاية</th>
+                                                <th class="group-coordination">أبعاد الحفر</th>
+                                                
+                                                <!-- معلومات التمديد -->
+                                                <th class="group-extension">بداية التمديد</th>
+                                                <th class="group-extension">نهاية التمديد</th>
+                                                
+                                                <!-- معلومات الحظر -->
+                                                <th class="group-restriction">حظر</th>
+                                                <th class="group-restriction">جهة الحظر</th>
+                                                
                                                 <!-- اختبارات المختبر -->
-                                                <th style="min-width: 80px;">اختبار العمق</th>
-                                                <th style="min-width: 80px;">اختبار التربة</th>
-                                                <th style="min-width: 80px;">اختبار الأسفلت</th>
-                                                <th style="min-width: 80px;">اختبار الدك</th>
-                                                <th style="min-width: 80px;">اختبار RC1/MC1</th>
-                                                <th style="min-width: 80px;">اختبار انترلوك</th>
-                                                <!-- الإخلاءات -->
-                                                <th style="min-width: 80px;">تم الإخلاء</th>
-                                                <th style="min-width: 120px;">رقم رخصة الإخلاء</th>
-                                                <th style="min-width: 120px;">قيمة رخصة الإخلاء</th>
-                                                <th style="min-width: 120px;">رقم سداد الإخلاء</th>
-                                                <th style="min-width: 120px;">تاريخ الإخلاء</th>
-                                                <th style="min-width: 120px;">مبلغ الإخلاء</th>
-                                                <!-- المخالفات -->
-                                                <th style="min-width: 120px;">رقم رخصة المخالفة</th>
-                                                <th style="min-width: 120px;">قيمة رخصة المخالفة</th>
-                                                <th style="min-width: 120px;">تاريخ رخصة المخالفة</th>
-                                                <th style="min-width: 120px;">آخر موعد سداد المخالفة</th>
-                                                <th style="min-width: 120px;">رقم المخالفة</th>
-                                                <th style="min-width: 120px;">رقم سداد المخالفة</th>
-                                                <th style="min-width: 150px;">مسبب المخالفة</th>
-                                                <!-- جداول المختبر -->
-                                                <th style="min-width: 120px;">جداول المختبر الأول</th>
-                                                <th style="min-width: 120px;">جداول المختبر الثاني</th>
-                                                <!-- عام -->
-                                                <th style="min-width: 150px;">ملاحظات</th>
-                                                <th style="min-width: 100px;">تاريخ الإنشاء</th>
-                                                <th style="min-width: 150px;" class="text-center">الإجراءات</th>
+                                                <th class="group-lab">اختبار العمق</th>
+                                                <th class="group-lab">اختبار التربة</th>
+                                                <th class="group-lab">اختبار الأسفلت</th>
+                                                <th class="group-lab">اختبار الدك</th>
+                                                <th class="group-lab">اختبار RC1/MC1</th>
+                                                <th class="group-lab">اختبار انترلوك</th>
+                                                
+                                                <!-- معلومات الإخلاء -->
+                                                <th class="group-evacuation">تم الإخلاء</th>
+                                                <th class="group-evacuation">رقم رخصة الإخلاء</th>
+                                                <th class="group-evacuation">قيمة رخصة الإخلاء</th>
+                                                <th class="group-evacuation">رقم سداد الإخلاء</th>
+                                                <th class="group-evacuation">تاريخ الإخلاء</th>
+                                                <th class="group-evacuation">مبلغ الإخلاء</th>
+                                                
+                                                <!-- معلومات إضافية -->
+                                                <th class="group-additional">ملاحظات</th>
+                                                <th class="group-additional">تاريخ الإنشاء</th>
+                                                <th class="group-additional">الإجراءات</th>
                                             </tr>
                                         </thead>
                                         <tbody id="licensesTableBody">
@@ -913,40 +1208,11 @@
                                                         <span class="text-info fw-bold">{{ $license->evac_amount ? number_format($license->evac_amount, 2) . ' ر.س' : 'غير محدد' }}</span>
                                                     </td>
                                                     <td>{{ $license->violation_license_number ?? 'لا يوجد' }}</td>
-                                                    <td>
-                                                        <span class="text-danger fw-bold">{{ $license->violation_license_value ? number_format($license->violation_license_value, 2) . ' ر.س' : 'لا يوجد' }}</span>
-                                                    </td>
-                                                    <td>{{ $license->violation_license_date ? $license->violation_license_date->format('Y-m-d') : 'لا يوجد' }}</td>
-                                                    <td>{{ $license->violation_due_date ? $license->violation_due_date->format('Y-m-d') : 'لا يوجد' }}</td>
-                                                    <td>{{ $license->violation_number ?? 'لا يوجد' }}</td>
-                                                    <td>{{ $license->violation_payment_number ?? 'لا يوجد' }}</td>
-                                                    <td>
-                                                        @if($license->violation_cause)
-                                                            <div class="text-truncate" style="max-width: 150px;" title="{{ $license->violation_cause }}">
-                                                                {{ $license->violation_cause }}
-                                                            </div>
-                                                        @else
-                                                            <span class="text-muted">لا يوجد</span>
-                                                        @endif
-                                                    </td>
-                                                    <td>
-                                                        @if($license->lab_table1_data)
-                                                            <button type="button" class="btn btn-sm btn-info" onclick="viewLabTable1({{ $license->id }})" title="عرض جدول الفسح">
-                                                                <i class="fas fa-table"></i> عرض الجدول الأول
-                                                            </button>
-                                                        @else
-                                                            <span class="text-muted">لا يوجد</span>
-                                                        @endif
-                                                    </td>
-                                                    <td>
-                                                        @if($license->lab_table2_data)
-                                                            <button type="button" class="btn btn-sm btn-info" onclick="viewLabTable2({{ $license->id }})" title="عرض جدول التفاصيل الفنية">
-                                                                <i class="fas fa-table"></i> عرض الجدول الثاني
-                                                            </button>
-                                                        @else
-                                                            <span class="text-muted">لا يوجد</span>
-                                                        @endif
-                                                    </td>
+                                                   
+                                                    
+                                                   
+                                                   
+                                                    
                                                     <td>
                                                         @if($license->notes)
                                                             <div class="text-truncate" style="max-width: 150px;" title="{{ $license->notes }}">
@@ -955,9 +1221,6 @@
                                                         @else
                                                             <span class="text-muted">لا توجد ملاحظات</span>
                                                         @endif
-                                                    </td>
-                                                    <td>
-                                                        <small class="text-muted">{{ $license->created_at->format('Y-m-d H:i') }}</small>
                                                     </td>
                                                     <td class="text-center">
                                                         <div class="btn-group btn-group-sm" role="group">
@@ -976,11 +1239,10 @@
                                                 @endforeach
                                             @else
                                                 <tr id="noLicensesRow">
-                                                    <td colspan="32" class="text-center py-4">
+                                                    <td colspan="12" class="text-center py-4">
                                                         <div class="text-muted">
                                                             <i class="fas fa-inbox fa-3x mb-3"></i>
                                                             <h5>لا توجد رخص محفوظة بعد</h5>
-                                                            <p>قم بملء النموذج أعلاه وحفظ رخصة جديدة لعرضها هنا</p>
                                                         </div>
                                                     </td>
                                                 </tr>
@@ -1011,7 +1273,21 @@
         </div>
 
         @push('scripts')
-        <script>
+<script>
+// تهيئة toastr
+toastr.options = {
+    "closeButton": true,
+    "progressBar": true,
+    "positionClass": "toast-top-right",
+    "timeOut": "5000",
+};
+
+// تهيئة CSRF token
+$.ajaxSetup({
+    headers: {
+        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+    }
+});
         // متغير عام لتتبع الرخصة الحالية
         let currentLicenseId = null;
         let isNewLicenseCreated = false;
@@ -3664,6 +3940,93 @@
             console.log(`Collected data from ${tableBodyId}:`, data);
             return data;
         }
+
+        function addNewRow() {
+            const newRow = `
+                <tr>
+                    <td><input type="text" class="form-control form-control-sm" name="license_number[]"></td>
+                    <td><input type="date" class="form-control form-control-sm" name="violation_date[]"></td>
+                    <td><input type="date" class="form-control form-control-sm" name="payment_due_date[]"></td>
+                    <td><input type="number" class="form-control form-control-sm" name="violation_amount[]" step="0.01"></td>
+                    <td><input type="text" class="form-control form-control-sm" name="violation_number[]"></td>
+                    <td><input type="text" class="form-control form-control-sm" name="responsible_party[]"></td>
+                    <td><input type="text" class="form-control form-control-sm" name="violation_description[]"></td>
+                    <td><input type="text" class="form-control form-control-sm" name="notes[]"></td>
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            <button type="button" class="btn btn-success" onclick="saveRow(this)">
+                                <i class="fas fa-save"></i>
+                            </button>
+                            <button type="button" class="btn btn-danger" onclick="deleteRow(this)">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+            document.querySelector('#violationsTable tbody').insertAdjacentHTML('beforeend', newRow);
+        }
+
+        function saveRow(button) {
+            const row = button.closest('tr');
+            const data = {
+                license_number: row.querySelector('[name="license_number[]"]').value,
+                violation_date: row.querySelector('[name="violation_date[]"]').value,
+                payment_due_date: row.querySelector('[name="payment_due_date[]"]').value,
+                violation_amount: row.querySelector('[name="violation_amount[]"]').value,
+                violation_number: row.querySelector('[name="violation_number[]"]').value,
+                responsible_party: row.querySelector('[name="responsible_party[]"]').value,
+                violation_description: row.querySelector('[name="violation_description[]"]').value,
+                notes: row.querySelector('[name="notes[]"]').value,
+                _token: '{{ csrf_token() }}'
+            };
+
+            // إرسال البيانات إلى الخادم
+            fetch('{{ route("violations.store") }}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // تحويل الصف إلى نص عادي بعد الحفظ
+                    const savedRow = `
+                        <tr>
+                            <td>${data.violation.license_number}</td>
+                            <td>${data.violation.violation_date}</td>
+                            <td>${data.violation.payment_due_date}</td>
+                            <td>${data.violation.violation_amount}</td>
+                            <td>${data.violation.violation_number}</td>
+                            <td>${data.violation.responsible_party}</td>
+                            <td>${data.violation.violation_description}</td>
+                            <td>${data.violation.notes}</td>
+                            <td>
+                                <button class="btn btn-sm btn-danger" onclick="deleteRow(this)">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                    row.outerHTML = savedRow;
+                    toastr.success('تم حفظ المخالفة بنجاح');
+                } else {
+                    toastr.error('حدث خطأ أثناء حفظ المخالفة');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                toastr.error('حدث خطأ أثناء حفظ المخالفة');
+            });
+        }
+
+        function deleteRow(button) {
+            if (confirm('هل أنت متأكد من حذف هذا الصف؟')) {
+                button.closest('tr').remove();
+            }
+        }
         </script>
         @endpush
 
@@ -4458,8 +4821,122 @@
                 font-size: 0.75rem;
             }
         }
+
+        .licenses-table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 0;
+            table-layout: fixed;
+        }
+        .licenses-table th {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            white-space: nowrap;
+            padding: 12px 8px;
+            font-size: 13px;
+            font-weight: 600;
+            text-align: center;
+            vertical-align: middle;
+            border: 1px solid rgba(255,255,255,0.2);
+            min-width: 80px;
+        }
+        .licenses-table td {
+            padding: 8px;
+            text-align: center;
+            vertical-align: middle;
+            border: 1px solid #dee2e6;
+            font-size: 12px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .licenses-table tbody tr:hover {
+            background-color: rgba(0,0,0,0.02);
+        }
+        .header-group {
+            border-bottom: 2px solid rgba(255,255,255,0.3);
+            font-size: 12px;
+            padding: 8px 4px;
+        }
+        .group-basic { 
+            background-color: #1a237e !important; 
+            min-width: 100px;
+        }
+        .group-financial { 
+            background-color: #004d40 !important;
+            min-width: 100px;
+        }
+        .group-coordination { 
+            background-color: #0d47a1 !important;
+            min-width: 100px;
+        }
+        .group-extension { 
+            background-color: #1b5e20 !important;
+            min-width: 100px;
+        }
+        .group-restriction { 
+            background-color: #b71c1c !important;
+            min-width: 80px;
+        }
+        .group-lab { 
+            background-color: #4a148c !important;
+            min-width: 80px;
+        }
+        .group-evacuation { 
+            background-color: #e65100 !important;
+            min-width: 100px;
+        }
+        .group-additional { 
+            background-color: #263238 !important;
+            min-width: 100px;
+        }
+
+        .table-responsive {
+            margin: 0;
+            padding: 0;
+            border: none;
+        }
+
+        .card-body {
+            padding: 0 !important;
+        }
+
+        #licensesTable {
+            margin-bottom: 0;
+        }
+
+        .btn-group-sm > .btn {
+            padding: 0.25rem 0.5rem;
+            font-size: 12px;
+        }
+
+        .text-truncate {
+            max-width: 150px;
+            display: inline-block;
+        }
+
+        /* تعديل عرض الأعمدة */
+        .licenses-table th:first-child { min-width: 50px; }
+        .licenses-table th[data-field="license_number"] { min-width: 120px; }
+        .licenses-table th[data-field="license_date"] { min-width: 100px; }
+        .licenses-table th[data-field="license_type"] { min-width: 100px; }
+        .licenses-table th[data-field="license_value"] { min-width: 100px; }
+        .licenses-table th[data-field="extension_value"] { min-width: 100px; }
+        .licenses-table th[data-field="coordination_number"] { min-width: 120px; }
+        .licenses-table th[data-field="start_date"] { min-width: 100px; }
+        .licenses-table th[data-field="end_date"] { min-width: 100px; }
+        .licenses-table th[data-field="dimensions"] { min-width: 120px; }
+        .licenses-table th[data-field="extension_start"] { min-width: 100px; }
+        .licenses-table th[data-field="extension_end"] { min-width: 100px; }
+        .licenses-table th[data-field="restriction"] { min-width: 80px; }
+        .licenses-table th[data-field="restriction_authority"] { min-width: 100px; }
+        .licenses-table th[data-field="lab_tests"] { min-width: 80px; }
+        .licenses-table th[data-field="evacuation"] { min-width: 100px; }
+        .licenses-table th[data-field="notes"] { min-width: 150px; }
+        .licenses-table th[data-field="actions"] { min-width: 120px; }
         </style>
-        
+
         <script>
         // استدعاء تحديث آخر رخصة عند تحميل الصفحة
         document.addEventListener('DOMContentLoaded', function() {
