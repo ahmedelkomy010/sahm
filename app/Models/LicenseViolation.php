@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Storage;
 
 class LicenseViolation extends Model
 {
@@ -19,6 +20,7 @@ class LicenseViolation extends Model
         'violation_number',
         'responsible_party',
         'violation_description',
+        'attachment_path',
         'notes'
     ];
 
@@ -78,5 +80,13 @@ class LicenseViolation extends Model
     public function scopePending($query)
     {
         return $query->where('payment_due_date', '>=', now());
+    }
+
+    /**
+     * Get the full URL for the attachment file
+     */
+    public function getAttachmentUrlAttribute()
+    {
+        return $this->attachment_path ? Storage::url($this->attachment_path) : null;
     }
 } 

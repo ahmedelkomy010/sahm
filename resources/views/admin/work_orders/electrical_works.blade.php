@@ -46,14 +46,14 @@
                                                        id="{{ $key }}_completed" 
                                                        value="completed" 
                                                        {{ old('electrical_works.' . $key . '.status', isset($workOrder->electrical_works[$key]['status']) ? $workOrder->electrical_works[$key]['status'] : '') == 'completed' ? 'checked' : '' }}>
-                                                <label class="btn btn-outline-success" for="{{ $key }}_completed">تم</label>
+                                                <label class="btn btn-outline-success" for="{{ $key }}_completed">نعم</label>
                                                 
                                                 <input type="radio" class="btn-check electrical-status" 
                                                        name="electrical_works[{{ $key }}][status]" 
                                                        id="{{ $key }}_pending" 
                                                        value="pending" 
                                                        {{ old('electrical_works.' . $key . '.status', isset($workOrder->electrical_works[$key]['status']) ? $workOrder->electrical_works[$key]['status'] : '') == 'pending' ? 'checked' : '' }}>
-                                                <label class="btn btn-outline-warning" for="{{ $key }}_pending">قيد التنفيذ</label>
+                                                <label class="btn btn-outline-warning" for="{{ $key }}_pending"> لا</label>
                                                 
                                                 <input type="radio" class="btn-check electrical-status" 
                                                        name="electrical_works[{{ $key }}][status]" 
@@ -78,12 +78,7 @@
                                 </tbody>
                             </table>
                                                             </div>
-                        <div class="text-center">
-                            <button type="submit" class="btn btn-warning px-4">
-                                <i class="fas fa-save me-2"></i>
-                                حفظ الأعمال الكهربائية
-                            </button>
-                        </div>
+                        
                         
                         <div id="auto-save-indicator" class="text-center mt-2" style="display: none;">
                             <small class="text-success">
@@ -93,10 +88,7 @@
                         </div>
                         
                         @if($workOrder->electrical_works && count($workOrder->electrical_works) > 0)
-                            <div class="alert alert-info mt-3 text-center">
-                                <i class="fas fa-info-circle me-2"></i>
-                                تم استرداد البيانات المحفوظة سابقاً - يمكنك تعديلها وحفظها مرة أخرى
-                            </div>
+                            
                         @endif
                         
                         <!-- تشخيص مؤقت -->
@@ -129,7 +121,7 @@
                                 <div class="card-body text-center p-3">
                                     <i class="fas fa-check-circle fa-2x mb-2"></i>
                                     <h3 class="mb-1" id="total-completed">0</h3>
-                                    <small>تم التنفيذ</small>
+                                    <small> نعم</small>
                                                                 </div>
                                                             </div>
                                                             </div>
@@ -138,7 +130,7 @@
                                 <div class="card-body text-center p-3">
                                     <i class="fas fa-clock fa-2x mb-2"></i>
                                     <h3 class="mb-1" id="total-pending">0</h3>
-                                    <small>قيد التنفيذ</small>
+                                    <small> لا</small>
                                                                 </div>
                                                             </div>
                                                             </div>

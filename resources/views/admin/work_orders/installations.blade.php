@@ -54,12 +54,7 @@
                                 </tbody>
                             </table>
                         </div>
-                        <div class="text-center">
-                            <button type="submit" class="btn btn-primary px-4">
-                                <i class="fas fa-save me-2"></i>
-                                حفظ بيانات التركيبات
-                            </button>
-                        </div>
+                       
                         
                         <div id="auto-save-indicator" class="text-center mt-2" style="display: none;">
                             <small class="text-success">
@@ -69,10 +64,7 @@
                         </div>
                         
                         @if($workOrder->installations && count($workOrder->installations) > 0)
-                            <div class="alert alert-info mt-3 text-center">
-                                <i class="fas fa-info-circle me-2"></i>
-                                تم استرداد البيانات المحفوظة سابقاً - يمكنك تعديلها وحفظها مرة أخرى
-                            </div>
+                          
                         @endif
                         
                         <!-- تشخيص مؤقت -->
@@ -91,10 +83,7 @@
                             <i class="fas fa-clipboard-list me-2"></i>
                             ملخص التركيبات
                         </h5>
-                        <button type="button" class="btn btn-light btn-sm" onclick="printSummary()">
-                            <i class="fas fa-print me-1"></i>
-                            طباعة الملخص
-                        </button>
+                       
                     </div>
                 </div>
                 <div class="card-body">
@@ -105,7 +94,7 @@
                                 <div class="card-body text-center p-3">
                                     <i class="fas fa-check-circle fa-2x mb-2"></i>
                                     <h3 class="mb-1" id="total-completed">0</h3>
-                                    <small>تم التركيب</small>
+                                    <small> نعم</small>
                                 </div>
                             </div>
                         </div>
@@ -114,7 +103,7 @@
                                 <div class="card-body text-center p-3">
                                     <i class="fas fa-times-circle fa-2x mb-2"></i>
                                     <h3 class="mb-1" id="total-pending">0</h3>
-                                    <small>لم يتم التركيب</small>
+                                    <small> لا</small>
                                 </div>
                             </div>
                         </div>

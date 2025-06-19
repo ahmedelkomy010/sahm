@@ -7,6 +7,7 @@ use App\Models\License;
 use App\Models\LicenseViolation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
 class LicenseViolationController extends Controller
@@ -31,6 +32,7 @@ class LicenseViolationController extends Controller
             'violation_number' => 'required|string',
             'responsible_party' => 'required|string',
             'violation_description' => 'nullable|string',
+            'violation_attachment' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:10240',
             'notes' => 'nullable|string',
         ]);
 
@@ -43,14 +45,28 @@ class LicenseViolationController extends Controller
         }
 
         try {
-            $violation = LicenseViolation::create($request->all());
+            DB::beginTransaction();
+
+            $data = $request->except('violation_attachment');
+
+            // Handle file upload if present
+            if ($request->hasFile('violation_attachment')) {
+                $file = $request->file('violation_attachment');
+                $path = $file->store('violations', 'public');
+                $data['attachment_path'] = $path;
+            }
+
+            $violation = LicenseViolation::create($data);
             
+            DB::commit();
+
             return response()->json([
                 'success' => true,
                 'message' => 'تم إضافة المخالفة بنجاح',
                 'violation' => $violation
             ]);
         } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json([
                 'success' => false,
                 'message' => 'حدث خطأ أثناء حفظ المخالفة'
@@ -82,6 +98,7 @@ class LicenseViolationController extends Controller
             'violation_number' => 'required|string',
             'responsible_party' => 'required|string',
             'violation_description' => 'nullable|string',
+            'violation_attachment' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:10240',
             'notes' => 'nullable|string',
         ]);
 
@@ -94,14 +111,33 @@ class LicenseViolationController extends Controller
         }
 
         try {
-            $violation->update($request->all());
+            DB::beginTransaction();
+
+            $data = $request->except('violation_attachment');
+
+            // Handle file upload if present
+            if ($request->hasFile('violation_attachment')) {
+                // Delete old file if exists
+                if ($violation->attachment_path) {
+                    Storage::disk('public')->delete($violation->attachment_path);
+                }
+
+                $file = $request->file('violation_attachment');
+                $path = $file->store('violations', 'public');
+                $data['attachment_path'] = $path;
+            }
+
+            $violation->update($data);
             
+            DB::commit();
+
             return response()->json([
                 'success' => true,
                 'message' => 'تم تحديث المخالفة بنجاح',
                 'violation' => $violation
             ]);
         } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json([
                 'success' => false,
                 'message' => 'حدث خطأ أثناء تحديث المخالفة'
@@ -115,13 +151,23 @@ class LicenseViolationController extends Controller
     public function destroy(LicenseViolation $violation)
     {
         try {
+            DB::beginTransaction();
+
+            // Delete the attachment file if exists
+            if ($violation->attachment_path) {
+                Storage::disk('public')->delete($violation->attachment_path);
+            }
+
             $violation->delete();
             
+            DB::commit();
+
             return response()->json([
                 'success' => true,
                 'message' => 'تم حذف المخالفة بنجاح'
             ]);
         } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json([
                 'success' => false,
                 'message' => 'حدث خطأ أثناء حذف المخالفة'

@@ -194,7 +194,12 @@
                             const newRow = document.createElement('tr');
                             newRow.setAttribute('data-id', 'new');
                             
+                            // Get the current number of rows to set the serial number
+                            const currentRowCount = document.querySelectorAll('#violationsTable tbody tr').length;
+                            const serialNumber = currentRowCount + 1;
+                            
                             newRow.innerHTML = `
+                                <td>${serialNumber}</td>
                                 <td><input type="text" class="form-control form-control-sm" name="license_number" required></td>
                                 <td><input type="date" class="form-control form-control-sm" name="violation_date" required></td>
                                 <td><input type="date" class="form-control form-control-sm" name="payment_due_date" required></td>
@@ -202,6 +207,9 @@
                                 <td><input type="text" class="form-control form-control-sm" name="violation_number" required></td>
                                 <td><input type="text" class="form-control form-control-sm" name="responsible_party" required></td>
                                 <td><input type="text" class="form-control form-control-sm" name="violation_description"></td>
+                                <td>
+                                    <input type="file" class="form-control form-control-sm" name="violation_attachment" accept="image/*,application/pdf">
+                                </td>
                                 <td><input type="text" class="form-control form-control-sm" name="notes"></td>
                                 <td>
                                     <div class="btn-group btn-group-sm">
@@ -237,7 +245,11 @@
                             // جمع بيانات المخالفة
                             row.querySelectorAll('input').forEach(input => {
                                 if (input.name) {
-                                    formData.append(input.name, input.value);
+                                    if (input.type === 'file' && input.files.length > 0) {
+                                        formData.append(input.name, input.files[0]);
+                                    } else if (input.type !== 'file') {
+                                        formData.append(input.name, input.value);
+                                    }
                                 }
                             });
                             
@@ -251,10 +263,12 @@
                             })
                             .then(response => response.json())
                             .then(data => {
-                                if (data.success) {
+                                                                    if (data.success) {
                                     const violation = data.violation;
                                     row.setAttribute('data-id', violation.id);
-                                    row.innerHTML = getViolationRowHtml(violation);
+                                    // Get the current row index
+                                    const index = Array.from(row.parentNode.children).indexOf(row);
+                                    row.innerHTML = getViolationRowHtml(violation, index);
                                     
                                     // إظهار رسالة نجاح
                                     if (typeof toastr !== 'undefined') {
@@ -285,16 +299,31 @@
                         function editViolationRow(button, violationId) {
                             const row = button.closest('tr');
                             const cells = row.cells;
+                            const serialNumber = cells[0].textContent; // Keep the serial number
+                            
+                            // Get the current attachment link if it exists
+                            const currentAttachment = cells[8].querySelector('a') ? cells[8].querySelector('a').href : '';
                             
                             row.innerHTML = `
-                                <td><input type="text" class="form-control form-control-sm" name="license_number" value="${cells[0].textContent}" required></td>
-                                <td><input type="date" class="form-control form-control-sm" name="violation_date" value="${cells[1].textContent}" required></td>
-                                <td><input type="date" class="form-control form-control-sm" name="payment_due_date" value="${cells[2].textContent}" required></td>
-                                <td><input type="number" class="form-control form-control-sm" name="violation_amount" value="${cells[3].textContent.replace(/,/g, '')}" step="0.01" required></td>
-                                <td><input type="text" class="form-control form-control-sm" name="violation_number" value="${cells[4].textContent}" required></td>
-                                <td><input type="text" class="form-control form-control-sm" name="responsible_party" value="${cells[5].textContent}" required></td>
-                                <td><input type="text" class="form-control form-control-sm" name="violation_description" value="${cells[6].textContent}"></td>
-                                <td><input type="text" class="form-control form-control-sm" name="notes" value="${cells[7].textContent}"></td>
+                                <td>${serialNumber}</td>
+                                <td><input type="text" class="form-control form-control-sm" name="license_number" value="${cells[1].textContent}" required></td>
+                                <td><input type="date" class="form-control form-control-sm" name="violation_date" value="${cells[2].textContent}" required></td>
+                                <td><input type="date" class="form-control form-control-sm" name="payment_due_date" value="${cells[3].textContent}" required></td>
+                                <td><input type="number" class="form-control form-control-sm" name="violation_amount" value="${cells[4].textContent.replace(/,/g, '')}" step="0.01" required></td>
+                                <td><input type="text" class="form-control form-control-sm" name="violation_number" value="${cells[5].textContent}" required></td>
+                                <td><input type="text" class="form-control form-control-sm" name="responsible_party" value="${cells[6].textContent}" required></td>
+                                <td><input type="text" class="form-control form-control-sm" name="violation_description" value="${cells[7].textContent}"></td>
+                                <td>
+                                    <div class="d-flex flex-column gap-2">
+                                        ${currentAttachment ? `
+                                            <a href="${currentAttachment}" target="_blank" class="btn btn-sm btn-info mb-1">
+                                                <i class="fas fa-eye"></i> عرض المرفق الحالي
+                                            </a>
+                                        ` : ''}
+                                        <input type="file" class="form-control form-control-sm" name="violation_attachment" accept="image/*,application/pdf">
+                                    </div>
+                                </td>
+                                <td><input type="text" class="form-control form-control-sm" name="notes" value="${cells[9].textContent}"></td>
                                 <td>
                                     <div class="btn-group btn-group-sm">
                                         <button type="button" class="btn btn-success" onclick="updateViolationRow(this, ${violationId})">
@@ -316,7 +345,11 @@
                             // جمع البيانات المحدثة
                             row.querySelectorAll('input').forEach(input => {
                                 if (input.name) {
-                                    formData.append(input.name, input.value);
+                                    if (input.type === 'file' && input.files.length > 0) {
+                                        formData.append(input.name, input.files[0]);
+                                    } else if (input.type !== 'file') {
+                                        formData.append(input.name, input.value);
+                                    }
                                 }
                             });
                             
@@ -331,7 +364,9 @@
                             .then(response => response.json())
                             .then(data => {
                                 if (data.success) {
-                                    row.innerHTML = getViolationRowHtml(data.violation);
+                                    // Get the current row index
+                                    const index = Array.from(row.parentNode.children).indexOf(row);
+                                    row.innerHTML = getViolationRowHtml(data.violation, index);
                                     if (typeof toastr !== 'undefined') {
                                         toastr.success('تم تحديث المخالفة بنجاح');
                                     } else {
@@ -362,7 +397,9 @@
                                 .then(response => response.json())
                                 .then(data => {
                                     if (data.success) {
-                                        row.innerHTML = getViolationRowHtml(data.violation);
+                                        // Get the current row index
+                                        const index = Array.from(row.parentNode.children).indexOf(row);
+                                        row.innerHTML = getViolationRowHtml(data.violation, index);
                                     }
                                 });
                         }
@@ -414,8 +451,9 @@
                         }
 
                         // دالة مساعدة لإنشاء HTML للصف
-                        function getViolationRowHtml(violation) {
+                        function getViolationRowHtml(violation, index) {
                             return `
+                                <td>${index + 1}</td>
                                 <td>${violation.license_number}</td>
                                 <td>${violation.violation_date}</td>
                                 <td>${violation.payment_due_date}</td>
@@ -423,6 +461,13 @@
                                 <td>${violation.violation_number}</td>
                                 <td>${violation.responsible_party}</td>
                                 <td>${violation.violation_description || ''}</td>
+                                <td>
+                                    ${violation.attachment_path ? `
+                                        <a href="${violation.attachment_path}" target="_blank" class="btn btn-sm btn-info">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    ` : '<span class="text-muted">-</span>'}
+                                </td>
                                 <td>${violation.notes || ''}</td>
                                 <td>
                                     <div class="btn-group btn-group-sm">
@@ -940,6 +985,7 @@
                                             <table class="table table-bordered table-striped" id="violationsTable">
                                                 <thead class="bg-primary text-white">
                                                     <tr>
+                                                        <th>#</th>
                                                         <th>رقم الرخصة</th>
                                                         <th>تاريخ المخالفة</th>
                                                         <th>تاريخ السداد</th>
@@ -947,14 +993,16 @@
                                                         <th>رقم المخالفة</th>
                                                         <th>المتسبب</th>
                                                         <th>وصف المخالفة</th>
+                                                        <th>مرفق المخالفة</th>
                                                         <th>ملاحظات</th>
                                                         <th>الإجراءات</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
                                                     @if(isset($workOrder) && $workOrder->violations && $workOrder->violations->count() > 0)
-                                                        @foreach($workOrder->violations as $violation)
+                                                        @foreach($workOrder->violations as $index => $violation)
                                                         <tr data-id="{{ $violation->id }}">
+                                                            <td>{{ $index + 1 }}</td>
                                                             <td>{{ $violation->license_number }}</td>
                                                             <td>{{ $violation->violation_date ? $violation->violation_date->format('Y-m-d') : '' }}</td>
                                                             <td>{{ $violation->payment_due_date ? $violation->payment_due_date->format('Y-m-d') : '' }}</td>
@@ -962,6 +1010,15 @@
                                                             <td>{{ $violation->violation_number }}</td>
                                                             <td>{{ $violation->responsible_party }}</td>
                                                             <td>{{ $violation->violation_description }}</td>
+                                                            <td>
+                                                                @if($violation->attachment_path)
+                                                                    <a href="{{ Storage::url($violation->attachment_path) }}" target="_blank" class="btn btn-sm btn-info">
+                                                                        <i class="fas fa-eye"></i>
+                                                                    </a>
+                                                                @else
+                                                                    <span class="text-muted">-</span>
+                                                                @endif
+                                                            </td>
                                                             <td>{{ $violation->notes }}</td>
                                                             <td>
                                                                 <div class="btn-group btn-group-sm">
