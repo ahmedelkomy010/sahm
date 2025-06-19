@@ -431,13 +431,33 @@
                             <div class="custom-card">
                                 <div class="card-header">
                                     <h4>
-                                        <i class="fas fa-money-bill-wave text-primary me-2"></i>
+                                        <i class="fas fa-money-bill text-success me-2"></i>
                                         المعلومات المالية
                                     </h4>
                                 </div>
                                 <div class="card-body p-0">
                                     <table class="custom-table">
                                         <tbody>
+                                            @php
+                                                $license = $workOrder->licenses()->latest()->first();
+                                                $totalTestsValue = 0;
+                                                $totalLicenseValue = 0;
+                                                
+                                                if ($license) {
+                                                    // قيمة الاختبارات
+                                                    $successfulTests = $license->successful_tests_value ?? 0;
+                                                    $failedTests = $license->failed_tests_value ?? 0;
+                                                    $totalTestsValue = $successfulTests + $failedTests;
+                                                    
+                                                    // قيمة الرخص
+                                                    $licenseValue = $license->license_value ?? 0;
+                                                    $extensionValue = $license->extension_value ?? 0;
+                                                    $evacuationValue = $license->evac_license_value ?? 0;
+                                                    $totalLicenseValue = $licenseValue + $extensionValue + $evacuationValue;
+                                                }
+                                            @endphp
+                                            
+                                            <!-- قيم الاختبارات -->
                                             <tr>
                                                 <th style="width: 40%">قيمة أمر العمل المبدئية شامل الاستشاري</th>
                                                 <td>{{ number_format($workOrder->order_value_with_consultant, 2) }} ﷼</td>
@@ -512,6 +532,22 @@
                                                 <tr>
                                                     <th>قيمة الإخلاءات</th>
                                                     <td>{{ number_format($totalEvacValue, 2) }} ﷼</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>قيمة الاختبارات الناجحة</th>
+                                                    <td>
+                                                        <span class="text-success">
+                                                            {{ number_format($license->successful_tests_value ?? 0, 2) }} ﷼
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <th>قيمة الاختبارات الراسبة</th>
+                                                    <td>
+                                                        <span class="text-danger">
+                                                            {{ number_format($license->failed_tests_value ?? 0, 2) }} ﷼
+                                                        </span>
+                                                    </td>
                                                 </tr>
                                             @endif
                                         </tbody>
