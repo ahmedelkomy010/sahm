@@ -297,6 +297,8 @@
                                 معلومات المخالفات
                             </h5>
                         </div>
+                        
+                        <!-- معلومات المخالفة العامة -->
                         @if($license->violation_number || $license->violation_license_number)
                         <div class="col-md-3">
                             <strong>رقم رخصة المخالفة:</strong>
@@ -323,7 +325,7 @@
                             <p class="text-muted">{{ $license->violation_due_date ? $license->violation_due_date->format('Y-m-d') : 'غير محدد' }}</p>
                         </div>
                         @if($license->violation_cause)
-                        <div class="col-12">
+                        <div class="col-12 mb-3">
                             <strong>مسبب المخالفة:</strong>
                             <div class="card bg-light">
                                 <div class="card-body">
@@ -332,14 +334,64 @@
                             </div>
                         </div>
                         @endif
-                        @else
+                        @endif
+
+                        <!-- جدول سجل المخالفات -->
                         <div class="col-12">
+                            <h6 class="text-danger mb-2">
+                                <i class="fas fa-list me-2"></i>
+                                سجل المخالفات
+                            </h6>
+                            @if($license->violations && $license->violations->count() > 0)
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-striped">
+                                    <thead class="bg-danger text-white">
+                                        <tr>
+                                            <th>#</th>
+                                            <th>رقم الرخصة</th>
+                                            <th>تاريخ المخالفة</th>
+                                            <th>تاريخ السداد</th>
+                                            <th>قيمة المخالفة</th>
+                                            <th>رقم المخالفة</th>
+                                            <th>المتسبب</th>
+                                            <th>وصف المخالفة</th>
+                                            <th>مرفق المخالفة</th>
+                                            <th>ملاحظات</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach($license->violations as $index => $violation)
+                                        <tr>
+                                            <td>{{ $index + 1 }}</td>
+                                            <td>{{ $violation->license_number }}</td>
+                                            <td>{{ $violation->violation_date ? $violation->violation_date->format('Y-m-d') : '-' }}</td>
+                                            <td>{{ $violation->payment_due_date ? $violation->payment_due_date->format('Y-m-d') : '-' }}</td>
+                                            <td class="text-danger fw-bold">{{ number_format($violation->violation_amount, 2) }} ر.س</td>
+                                            <td>{{ $violation->violation_number }}</td>
+                                            <td>{{ $violation->responsible_party }}</td>
+                                            <td>{{ $violation->violation_description ?? '-' }}</td>
+                                            <td class="text-center">
+                                                @if($violation->attachment_path)
+                                                    <a href="{{ Storage::url($violation->attachment_path) }}" target="_blank" class="btn btn-sm btn-info">
+                                                        <i class="fas fa-eye"></i> عرض
+                                                    </a>
+                                                @else
+                                                    <span class="text-muted">-</span>
+                                                @endif
+                                            </td>
+                                            <td>{{ $violation->notes ?? '-' }}</td>
+                                        </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                            @else
                             <div class="alert alert-success">
                                 <i class="fas fa-check-circle me-2"></i>
-                                لا توجد مخالفات مسجلة لهذه الرخصة
+                                لا توجد مخالفات مسجلة في سجل المخالفات
                             </div>
+                            @endif
                         </div>
-                        @endif
                     </div>
 
                     <!-- جداول المختبر -->

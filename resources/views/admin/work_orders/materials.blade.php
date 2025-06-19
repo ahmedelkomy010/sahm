@@ -144,15 +144,12 @@
                         <span class="badge bg-light text-primary ms-2">{{ $materials->total() }} مادة</span>
                     </div>
                     <div>
-                        @if($materials->count() > 0)
                         <a href="{{ route('admin.work-orders.materials.create', $workOrder) }}" class="btn btn-outline-light btn-sm">
-                                <i class="fas fa-plus"></i> إضافة مادة جديدة
-                            </a>
-                            <a href="{{ route('admin.work-orders.show', $workOrder) }}" class="btn btn-outline-light btn-sm ms-2">
-                                <i class="fas fa-arrow-right"></i> عودة الي تفاصيل أمر العمل
-                            </a>
-                            
-                        @endif
+                            <i class="fas fa-plus"></i> إضافة مادة جديدة
+                        </a>
+                        <a href="{{ route('admin.work-orders.show', $workOrder) }}" class="btn btn-outline-light btn-sm ms-2">
+                            <i class="fas fa-arrow-right"></i> عودة الي تفاصيل أمر العمل
+                        </a>
                     </div>
                 </div>
             </div>

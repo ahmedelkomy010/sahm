@@ -234,14 +234,25 @@ class WorkOrderController extends Controller
 
     public function execution(WorkOrder $workOrder)
     {
-        // تحميل بنود العمل مع تفاصيل البند
-        $workOrder->load(['workOrderItems.workItem']);
+        try {
+            // تحميل بنود العمل مع تفاصيل البند
+            $workOrder->load(['workOrderItems.workItem']);
+        } catch (\Exception $e) {
+            // في حالة عدم وجود بنود عمل، نتجاهل الخطأ ونكمل
+            \Log::warning('Could not load work order items: ' . $e->getMessage());
+        }
         
         // جلب السجلات من جدول work_order_logs
-        $logs = \DB::table('work_order_logs')
-            ->where('work_order_id', $workOrder->id)
-            ->orderByDesc('created_at')
-            ->get();
+        try {
+            $logs = \DB::table('work_order_logs')
+                ->where('work_order_id', $workOrder->id)
+                ->orderByDesc('created_at')
+                ->get();
+        } catch (\Exception $e) {
+            \Log::warning('Could not load work order logs: ' . $e->getMessage());
+            $logs = collect(); // مجموعة فارغة
+        }
+        
         return view('admin.work_orders.execution', compact('workOrder', 'logs'));
     }
 

@@ -47,7 +47,7 @@
                                 </small>
                             </div>
                             
-                            <a href="{{ route('admin.work-orders.show', $workOrder) }}" class="btn btn-primary">
+                            <a href="{{ route('admin.work-orders.show', $workOrder) }}" class="btn btn-success">
                             <i class="fas fa-arrow-right"></i> عودة الي تفاصيل أمر العمل  
                         </a>
                         </div>
