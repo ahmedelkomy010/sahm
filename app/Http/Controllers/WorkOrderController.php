@@ -1453,11 +1453,21 @@ class WorkOrderController extends Controller
                 'evac_payment_number' => 'nullable|string|max:255',
                 'evac_date' => 'nullable|date',
                 'evac_amount' => 'nullable|numeric|min:0',
+                'successful_tests_value' => 'nullable|numeric|min:0',
+                'failed_tests_value' => 'nullable|numeric|min:0',
+                'test_failure_reasons' => 'nullable|string',
                 'lab_table1_data' => 'nullable|string',
                 'lab_table2_data' => 'nullable|string',
             ]);
 
             \Log::info('Validation passed');
+            
+            // تسجيل قيم نتائج الاختبارات للتحقق
+            \Log::info('Test results values from request:', [
+                'successful_tests_value' => $validatedData['successful_tests_value'] ?? null,
+                'failed_tests_value' => $validatedData['failed_tests_value'] ?? null,
+                'test_failure_reasons' => $validatedData['test_failure_reasons'] ?? null
+            ]);
 
             // تحديث أو إنشاء سجل الرخصة
             $license = \App\Models\License::updateOrCreate(
@@ -1493,6 +1503,9 @@ class WorkOrderController extends Controller
                     'evac_payment_number' => $validatedData['evac_payment_number'] ?? null,
                     'evac_date' => $validatedData['evac_date'] ?? null,
                     'evac_amount' => $validatedData['evac_amount'] ?? null,
+                    'successful_tests_value' => $validatedData['successful_tests_value'] ?? null,
+                    'failed_tests_value' => $validatedData['failed_tests_value'] ?? null,
+                    'test_failure_reasons' => $validatedData['test_failure_reasons'] ?? null,
                 ]
             );
 

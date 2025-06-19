@@ -73,6 +73,9 @@ class License extends Model
         'evac_date',
         'evac_amount',
         'evacuations_file_path',
+        'successful_tests_value',
+        'failed_tests_value',
+        'test_failure_reasons',
 
         'notes_attachments_path',
     ];
@@ -111,6 +114,8 @@ class License extends Model
         'invoice_extension_end_date' => 'date',
         'evac_license_value' => 'decimal:2',
         'evac_amount' => 'decimal:2',
+        'successful_tests_value' => 'decimal:2',
+        'failed_tests_value' => 'decimal:2',
 
     ];
 

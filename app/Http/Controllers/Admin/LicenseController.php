@@ -99,6 +99,9 @@ class LicenseController extends Controller
                 'violation_license_date' => 'nullable|date',
                 'violation_due_date' => 'nullable|date',
                 'violation_cause' => 'nullable|string',
+                'successful_tests_value' => 'nullable|numeric|min:0',
+                'failed_tests_value' => 'nullable|numeric|min:0',
+                'test_failure_reasons' => 'nullable|string',
                 'notes' => 'nullable|string',
             ]);
 
@@ -540,7 +543,9 @@ class LicenseController extends Controller
                     ], 400);
             }
             
+            \Log::info('About to save license with ID: ' . ($license->id ?? 'new'));
             $license->save();
+            \Log::info('License saved successfully with ID: ' . $license->id);
             
             // جلب آخر رخصة للعمل لضمان إرجاع آخر رقم رخصة
             $latestLicense = License::where('work_order_id', $workOrderId)
@@ -668,12 +673,35 @@ class LicenseController extends Controller
      */
     private function saveLabSection(Request $request, License $license)
     {
+        // تسجيل جميع البيانات المُرسلة
+        \Log::info('saveLabSection - All request data:', $request->all());
+        
         $license->has_depth_test = $request->input('has_depth_test', 0) == '1';
         $license->has_soil_compaction_test = $request->input('has_soil_compaction_test', 0) == '1';
         $license->has_rc1_mc1_test = $request->input('has_rc1_mc1_test', 0) == '1';
         $license->has_asphalt_test = $request->input('has_asphalt_test', 0) == '1';
         $license->has_soil_test = $request->input('has_soil_test', 0) == '1';
         $license->has_interlock_test = $request->input('has_interlock_test', 0) == '1';
+        
+        // حفظ نتائج الاختبارات الجديدة
+        $license->successful_tests_value = $request->input('successful_tests_value');
+        $license->failed_tests_value = $request->input('failed_tests_value');
+        $license->test_failure_reasons = $request->input('test_failure_reasons');
+        
+        // تسجيل القيم للتحقق من الحفظ
+        \Log::info('Saving test results values:', [
+            'successful_tests_value' => $request->input('successful_tests_value'),
+            'failed_tests_value' => $request->input('failed_tests_value'),
+            'test_failure_reasons' => $request->input('test_failure_reasons'),
+            'license_id' => $license->id ?? 'new'
+        ]);
+        
+        // تسجيل القيم بعد التعيين
+        \Log::info('License values after assignment:', [
+            'successful_tests_value' => $license->successful_tests_value,
+            'failed_tests_value' => $license->failed_tests_value,
+            'test_failure_reasons' => $license->test_failure_reasons,
+        ]);
         
         // معالجة بيانات جدول المختبر الأول
         if ($request->has('lab_table1')) {

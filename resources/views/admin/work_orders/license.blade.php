@@ -810,7 +810,70 @@
                                         </div>
                                     </div>
 
-                                    
+                                    <!-- نتائج الاختبارات -->
+                                    <div class="card border-0 shadow-sm mb-4">
+                                        <div class="card-header bg-info text-white">
+                                            <h4 class="mb-0 fs-5">
+                                                <i class="fas fa-chart-line me-2"></i>
+                                                نتائج الاختبارات
+                                            </h4>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row g-3">
+                                                <!-- قيمة الاختبارات الناجحة -->
+                                                <div class="col-md-4">
+                                                    <div class="card h-100 border-0 bg-light">
+                                                        <div class="card-body">
+                                                            <div class="form-group">
+                                                                <label class="form-label d-flex align-items-center">
+                                                                    <i class="fas fa-check-circle text-success me-2"></i>
+                                                                    قيمة الاختبارات الناجحة
+                                                                </label>
+                                                                <input type="number" step="0.01" class="form-control" 
+                                                                       name="successful_tests_value" 
+                                                                       value="{{ old('successful_tests_value', $license->successful_tests_value ?? '') }}"
+                                                                       placeholder="أدخل قيمة الاختبارات الناجحة">
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- قيمة الاختبارات الراسبة -->
+                                                <div class="col-md-4">
+                                                    <div class="card h-100 border-0 bg-light">
+                                                        <div class="card-body">
+                                                            <div class="form-group">
+                                                                <label class="form-label d-flex align-items-center">
+                                                                    <i class="fas fa-times-circle text-danger me-2"></i>
+                                                                    قيمة الاختبارات الراسبة
+                                                                </label>
+                                                                <input type="number" step="0.01" class="form-control" 
+                                                                       name="failed_tests_value" 
+                                                                       value="{{ old('failed_tests_value', $license->failed_tests_value ?? '') }}"
+                                                                       placeholder="أدخل قيمة الاختبارات الراسبة">
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- أسباب الرسوب -->
+                                                <div class="col-md-4">
+                                                    <div class="card h-100 border-0 bg-light">
+                                                        <div class="card-body">
+                                                            <div class="form-group">
+                                                                <label class="form-label d-flex align-items-center">
+                                                                    <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                                                                    أسباب الرسوب
+                                                                </label>
+                                                                <textarea class="form-control" name="test_failure_reasons" rows="3"
+                                                                          placeholder="أدخل أسباب رسوب الاختبارات">{{ old('test_failure_reasons', $license->test_failure_reasons ?? '') }}</textarea>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
 
                                     <div class="row mt-3">
                                         <div class="col-12 text-center">
@@ -2187,6 +2250,8 @@ $.ajaxSetup({
             
             // جمع البيانات من جميع العناصر في قسم المختبر
             const inputs = labSection.querySelectorAll('input, select, textarea');
+            console.log('Found inputs in lab section:', inputs.length);
+            
             inputs.forEach(input => {
                 if (input.type === 'file') {
                     if (input.files.length > 0) {
@@ -2206,8 +2271,12 @@ $.ajaxSetup({
                     if (input.checked) {
                         formData.append(input.name, input.value);
                     }
-                } else if (input.value && input.value.trim() !== '') {
-                    formData.append(input.name, input.value);
+                } else {
+                    // إضافة جميع الحقول حتى لو كانت فارغة (لحقول نتائج الاختبارات)
+                    if (input.name && (input.value || input.name.includes('test'))) {
+                        formData.append(input.name, input.value || '');
+                        console.log('Added field:', input.name, '=', input.value);
+                    }
                 }
             });
             
@@ -2230,6 +2299,12 @@ $.ajaxSetup({
             
             if (labTable2Data.length > 0) {
                 formData.append('lab_table2_data', JSON.stringify(labTable2Data));
+            }
+            
+            // طباعة محتويات FormData للتحقق
+            console.log('FormData contents:');
+            for (let [key, value] of formData.entries()) {
+                console.log(key, ':', value);
             }
             
             try {

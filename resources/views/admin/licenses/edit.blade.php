@@ -211,6 +211,33 @@
                             </div>
                         </div>
 
+                        <!-- نتائج الاختبارات -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="text-info mb-3">
+                                    <i class="fas fa-chart-line me-2"></i>
+                                    نتائج الاختبارات
+                                </h5>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">قيمة الاختبارات الناجحة</label>
+                                <input type="number" step="0.01" class="form-control" name="successful_tests_value" 
+                                       value="{{ old('successful_tests_value', $license->successful_tests_value) }}"
+                                       placeholder="أدخل قيمة الاختبارات الناجحة">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">قيمة الاختبارات الراسبة</label>
+                                <input type="number" step="0.01" class="form-control" name="failed_tests_value" 
+                                       value="{{ old('failed_tests_value', $license->failed_tests_value) }}"
+                                       placeholder="أدخل قيمة الاختبارات الراسبة">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">أسباب الرسوب</label>
+                                <textarea class="form-control" name="test_failure_reasons" rows="3"
+                                          placeholder="أدخل أسباب رسوب الاختبارات">{{ old('test_failure_reasons', $license->test_failure_reasons) }}</textarea>
+                            </div>
+                        </div>
+
                         <!-- الإخلاءات -->
                         <div class="row mb-4">
                             <div class="col-12">

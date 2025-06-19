@@ -862,6 +862,176 @@
                             </div>
                         </div>
                         @endif
+
+                        <!-- نتائج الاختبارات -->
+                        @if($license->successful_tests_value || $license->failed_tests_value || $license->test_failure_reasons)
+                        <div class="col-12 mb-4">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-header bg-gradient-info text-white py-3">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-chart-line me-2"></i>
+                                        نتائج الاختبارات المطلوبة
+                                    </h5>
+                                </div>
+                                <div class="card-body p-4">
+                                    <div class="row g-4">
+                                        @if($license->successful_tests_value)
+                                        <div class="col-lg-4 col-md-6">
+                                            <div class="card test-results-card success border-0 bg-success bg-opacity-10 h-100 shadow-sm">
+                                                <div class="card-body text-center p-4">
+                                                    <div class="mb-3">
+                                                        <div class="rounded-circle bg-success bg-opacity-20 d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                                                            <i class="fas fa-check-circle text-success" style="font-size: 2.5rem;"></i>
+                                                        </div>
+                                                    </div>
+                                                    <h6 class="text-success mb-2 fw-bold">الاختبارات الناجحة</h6>
+                                                    <h3 class="text-success fw-bold mb-2">{{ number_format($license->successful_tests_value, 2) }}</h3>
+                                                    <span class="badge bg-success bg-opacity-25 text-success px-3 py-2">ريال سعودي</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        @endif
+
+                                        @if($license->failed_tests_value)
+                                        <div class="col-lg-4 col-md-6">
+                                            <div class="card test-results-card danger border-0 bg-danger bg-opacity-10 h-100 shadow-sm">
+                                                <div class="card-body text-center p-4">
+                                                    <div class="mb-3">
+                                                        <div class="rounded-circle bg-danger bg-opacity-20 d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                                                            <i class="fas fa-times-circle text-danger" style="font-size: 2.5rem;"></i>
+                                                        </div>
+                                                    </div>
+                                                    <h6 class="text-danger mb-2 fw-bold">الاختبارات الراسبة</h6>
+                                                    <h3 class="text-danger fw-bold mb-2">{{ number_format($license->failed_tests_value, 2) }}</h3>
+                                                    <span class="badge bg-danger bg-opacity-25 text-danger px-3 py-2">ريال سعودي</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        @endif
+
+                                        @if($license->test_failure_reasons)
+                                        <div class="col-lg-4 col-md-12">
+                                            <div class="card test-results-card warning border-0 bg-warning bg-opacity-10 h-100 shadow-sm">
+                                                <div class="card-body p-4">
+                                                    <div class="d-flex align-items-start mb-3">
+                                                        <div class="rounded-circle bg-warning bg-opacity-20 d-inline-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px; min-width: 50px;">
+                                                            <i class="fas fa-exclamation-triangle text-warning" style="font-size: 1.3rem;"></i>
+                                                        </div>
+                                                        <h6 class="text-warning mb-0 fw-bold">أسباب رسوب الاختبارات</h6>
+                                                    </div>
+                                                    <div class="bg-white rounded p-3 border border-warning border-opacity-25 shadow-sm">
+                                                        <p class="text-dark mb-0 lh-base">{{ $license->test_failure_reasons }}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        @endif
+                                    </div>
+
+                                    <!-- إجمالي النتائج -->
+                                    @if($license->successful_tests_value && $license->failed_tests_value)
+                                    <div class="row mt-4">
+                                        <div class="col-12">
+                                            <div class="card border-0 bg-primary bg-opacity-10">
+                                                <div class="card-body text-center py-3">
+                                                    <div class="row align-items-center">
+                                                        <div class="col-md-4">
+                                                            <h6 class="text-primary mb-1 fw-bold">إجمالي قيمة الاختبارات</h6>
+                                                            <h5 class="text-primary fw-bold mb-0">{{ number_format($license->successful_tests_value + $license->failed_tests_value, 2) }} ر.س</h5>
+                                                        </div>
+                                                        <div class="col-md-4">
+                                                            <h6 class="text-success mb-1 fw-bold">نسبة النجاح</h6>
+                                                            @php
+                                                                $total = $license->successful_tests_value + $license->failed_tests_value;
+                                                                $successRate = $total > 0 ? ($license->successful_tests_value / $total) * 100 : 0;
+                                                            @endphp
+                                                            <h5 class="text-success fw-bold mb-0">{{ number_format($successRate, 1) }}%</h5>
+                                                        </div>
+                                                        <div class="col-md-4">
+                                                            <h6 class="text-danger mb-1 fw-bold">نسبة الرسوب</h6>
+                                                            @php
+                                                                $failureRate = $total > 0 ? ($license->failed_tests_value / $total) * 100 : 0;
+                                                            @endphp
+                                                            <h5 class="text-danger fw-bold mb-0">{{ number_format($failureRate, 1) }}%</h5>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    @endif
+
+                                    <!-- أنواع الاختبارات المطلوبة -->
+                                    @if($license->has_depth_test || $license->has_soil_test || $license->has_asphalt_test || $license->has_soil_compaction_test || $license->has_rc1_mc1_test || $license->has_interlock_test)
+                                    <div class="row mt-4">
+                                        <div class="col-12">
+                                            <div class="card border-0 bg-light">
+                                                <div class="card-header bg-secondary text-white py-2">
+                                                    <h6 class="mb-0">
+                                                        <i class="fas fa-list-check me-2"></i>
+                                                        الاختبارات المطلوبة لهذه الرخصة
+                                                    </h6>
+                                                </div>
+                                                <div class="card-body py-3">
+                                                    <div class="row g-2">
+                                                        @if($license->has_depth_test)
+                                                        <div class="col-md-4 col-sm-6">
+                                                            <div class="d-flex align-items-center p-2 bg-primary bg-opacity-10 rounded">
+                                                                <i class="fas fa-ruler-vertical text-primary me-2"></i>
+                                                                <small class="text-primary fw-bold">اختبار العمق</small>
+                                                            </div>
+                                                        </div>
+                                                        @endif
+                                                        @if($license->has_soil_test)
+                                                        <div class="col-md-4 col-sm-6">
+                                                            <div class="d-flex align-items-center p-2 bg-primary bg-opacity-10 rounded">
+                                                                <i class="fas fa-mountain text-primary me-2"></i>
+                                                                <small class="text-primary fw-bold">اختبار التربة</small>
+                                                            </div>
+                                                        </div>
+                                                        @endif
+                                                        @if($license->has_asphalt_test)
+                                                        <div class="col-md-4 col-sm-6">
+                                                            <div class="d-flex align-items-center p-2 bg-primary bg-opacity-10 rounded">
+                                                                <i class="fas fa-road text-primary me-2"></i>
+                                                                <small class="text-primary fw-bold">اختبار الأسفلت</small>
+                                                            </div>
+                                                        </div>
+                                                        @endif
+                                                        @if($license->has_soil_compaction_test)
+                                                        <div class="col-md-4 col-sm-6">
+                                                            <div class="d-flex align-items-center p-2 bg-primary bg-opacity-10 rounded">
+                                                                <i class="fas fa-layer-group text-primary me-2"></i>
+                                                                <small class="text-primary fw-bold">اختبار دك التربة</small>
+                                                            </div>
+                                                        </div>
+                                                        @endif
+                                                        @if($license->has_rc1_mc1_test)
+                                                        <div class="col-md-4 col-sm-6">
+                                                            <div class="d-flex align-items-center p-2 bg-primary bg-opacity-10 rounded">
+                                                                <i class="fas fa-flask text-primary me-2"></i>
+                                                                <small class="text-primary fw-bold">اختبار RC1/MC1</small>
+                                                            </div>
+                                                        </div>
+                                                        @endif
+                                                        @if($license->has_interlock_test)
+                                                        <div class="col-md-4 col-sm-6">
+                                                            <div class="d-flex align-items-center p-2 bg-primary bg-opacity-10 rounded">
+                                                                <i class="fas fa-th text-primary me-2"></i>
+                                                                <small class="text-primary fw-bold">اختبار الانترلوك</small>
+                                                            </div>
+                                                        </div>
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                        @endif
                         
                         <!-- ملفات الإخلاءات -->
                         @if($license->evacuations_file_path)
@@ -1006,6 +1176,58 @@
 <style>
 .bg-gradient-primary {
     background: linear-gradient(135deg, #1976D2, #2196F3, #42A5F5);
+}
+
+.bg-gradient-info {
+    background: linear-gradient(135deg, #17a2b8, #20c997, #6f42c1);
+}
+
+.card {
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+.test-results-card {
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.test-results-card .card-body {
+    position: relative;
+}
+
+.test-results-card .card-body::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+}
+
+.test-results-card.success .card-body::before {
+    background: linear-gradient(90deg, #28a745, #20c997);
+}
+
+.test-results-card.danger .card-body::before {
+    background: linear-gradient(90deg, #dc3545, #fd7e14);
+}
+
+.test-results-card.warning .card-body::before {
+    background: linear-gradient(90deg, #ffc107, #fd7e14);
+}
+
+.badge {
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.lh-base {
+    line-height: 1.6;
 }
 
 .card {
