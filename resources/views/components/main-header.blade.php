@@ -23,13 +23,11 @@
                     </a>
 
                     @auth
-                        @if(auth()->user()->is_admin)
                         <a href="{{ route('admin.users.index') }}" 
                            class="nav-item nav-link px-3 py-2 rounded {{ $isUsersPage ? 'active' : '' }}">
                             <i class="fas fa-users-cog me-1"></i>
                             إدارة المستخدمين
                         </a>
-                        @endif
 
                         <a href="{{ route('admin.work-orders.index') }}" 
                            class="nav-item nav-link px-3 py-2 rounded {{ $isWorkOrdersPage ? 'active' : '' }}">
@@ -161,13 +159,11 @@
             </a>
 
             @auth
-                @if(auth()->user()->is_admin)
                 <a href="{{ route('admin.users.index') }}" 
                    class="nav-link {{ $isUsersPage ? 'active fw-bold text-primary' : 'text-dark' }}">
                     <i class="fas fa-users-cog me-2"></i>
                     إدارة المستخدمين
                 </a>
-                @endif
 
                 <a href="{{ route('admin.work-orders.index') }}" 
                    class="nav-link {{ $isWorkOrdersPage ? 'active fw-bold text-primary' : 'text-dark' }}">
