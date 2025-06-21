@@ -4,7 +4,7 @@
 <div class="py-12 bg-gray-50 project-selection-container">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         <!-- Dashboard Link -->
-        <div class="absolute left-4 top-0">
+        <div class="absolute right-4 top-0">
             <a href="{{ route('admin.dashboard') }}" 
                class="inline-flex items-center bg-gray-200 hover:bg-gray-300 text-gray-700 py-2 px-4 rounded-lg shadow-sm hover:shadow transition-all duration-200">
                <i class="fas fa-home ml-2"></i>
