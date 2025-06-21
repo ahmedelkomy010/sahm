@@ -1031,82 +1031,161 @@
                             <!-- جدول المخالفات -->
                             <div id="violations-section" class="tab-section" style="display: none;">
                                 <div class="card border-0 shadow-sm mb-4">
-                                    <div class="card-header bg-primary text-white">
+                                    <div class="card-header bg-danger text-white">
                                         <div class="d-flex justify-content-between align-items-center">
                                             <h4 class="mb-0 fs-5">
                                                 <i class="fas fa-exclamation-triangle me-2"></i>
                                                 سجل المخالفات
                                             </h4>
-                                            <button type="button" class="btn btn-light btn-sm" onclick="addNewViolationRow()">
-                                                <i class="fas fa-plus me-1"></i>
-                                                إضافة مخالفة جديدة
-                                            </button>
+                                            <div>
+                                                <span class="badge bg-light text-dark me-2" id="violations-count">
+                                                    عدد المخالفات: <span>0</span>
+                                                </span>
+                                                <button type="button" class="btn btn-light btn-sm" onclick="addNewViolationRow()">
+                                                    <i class="fas fa-plus me-1"></i>
+                                                    إضافة مخالفة جديدة
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                     <div class="card-body">
+                                        <!-- ملخص المخالفات -->
+                                        <div class="row mb-4" id="violations-summary">
+                                            <div class="col-md-3">
+                                                <div class="card bg-light">
+                                                    <div class="card-body text-center">
+                                                        <h5 class="text-danger mb-1" id="total-violations">0</h5>
+                                                        <small class="text-muted">إجمالي المخالفات</small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="card bg-light">
+                                                    <div class="card-body text-center">
+                                                        <h5 class="text-warning mb-1" id="pending-violations">0</h5>
+                                                        <small class="text-muted">مخالفات معلقة</small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="card bg-light">
+                                                    <div class="card-body text-center">
+                                                        <h5 class="text-success mb-1" id="paid-violations">0</h5>
+                                                        <small class="text-muted">مخالفات مدفوعة</small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="card bg-light">
+                                                    <div class="card-body text-center">
+                                                        <h5 class="text-danger mb-1" id="total-amount">0 ر.س</h5>
+                                                        <small class="text-muted">إجمالي المبالغ</small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- جدول المخالفات -->
                                         <div class="table-responsive">
-                                            <table class="table table-bordered table-striped" id="violationsTable">
-                                                <thead class="bg-primary text-white">
+                                            <table class="table table-bordered table-hover" id="violationsTable">
+                                                <thead class="table-danger text-dark">
                                                     <tr>
                                                         <th>#</th>
-                                                        <th>رقم الرخصة</th>
-                                                        <th>تاريخ المخالفة</th>
-                                                        <th>تاريخ السداد</th>
-                                                        <th>قيمة المخالفة</th>
                                                         <th>رقم المخالفة</th>
+                                                        <th>تاريخ المخالفة</th>
+                                                        <th>نوع المخالفة</th>
+                                                        <th>قيمة المخالفة</th>
                                                         <th>المتسبب</th>
-                                                        <th>وصف المخالفة</th>
-                                                        <th>مرفق المخالفة</th>
-                                                        <th>ملاحظات</th>
+                                                        <th>حالة الدفع</th>
+                                                        <th>تاريخ الاستحقاق</th>
+                                                        <th>المرفقات</th>
                                                         <th>الإجراءات</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                    @if(isset($workOrder) && $workOrder->violations && $workOrder->violations->count() > 0)
-                                                        @foreach($workOrder->violations as $index => $violation)
-                                                        <tr data-id="{{ $violation->id }}">
-                                                            <td>{{ $index + 1 }}</td>
-                                                            <td>{{ $violation->license_number }}</td>
-                                                            <td>{{ $violation->violation_date ? $violation->violation_date->format('Y-m-d') : '' }}</td>
-                                                            <td>{{ $violation->payment_due_date ? $violation->payment_due_date->format('Y-m-d') : '' }}</td>
-                                                            <td>{{ number_format($violation->violation_amount, 2) }}</td>
-                                                            <td>{{ $violation->violation_number }}</td>
-                                                            <td>{{ $violation->responsible_party }}</td>
-                                                            <td>{{ $violation->violation_description }}</td>
-                                                            <td>
-                                                                @if($violation->attachment_path)
-                                                                    <a href="{{ Storage::url($violation->attachment_path) }}" target="_blank" class="btn btn-sm btn-info">
-                                                                        <i class="fas fa-eye"></i>
-                                                                    </a>
-                                                                @else
-                                                                    <span class="text-muted">-</span>
-                                                                @endif
-                                                            </td>
-                                                            <td>{{ $violation->notes }}</td>
-                                                            <td>
-                                                                <div class="btn-group btn-group-sm">
-                                                                    <button type="button" class="btn btn-primary" onclick="editViolationRow(this, {{ $violation->id }})">
-                                                                        <i class="fas fa-edit"></i>
-                                                                    </button>
-                                                                    <button type="button" class="btn btn-danger" onclick="deleteViolationRow(this, {{ $violation->id }})">
-                                                                        <i class="fas fa-trash"></i>
-                                                                    </button>
-                                                                </div>
-                                                            </td>
-                                                        </tr>
-                                                        @endforeach
-                                                    @else
-                                                        <tr id="no-violations-row">
-                                                            <td colspan="9" class="text-center text-muted py-4">
-                                                                <i class="fas fa-info-circle me-2"></i>
-                                                                لا توجد مخالفات مسجلة حتى الآن
-                                                                <br>
-                                                                <small class="text-muted">انقر على "إضافة مخالفة جديدة" لإضافة مخالفة</small>
-                                                            </td>
-                                                        </tr>
-                                                    @endif
+                                                    <tr id="no-violations-row">
+                                                        <td colspan="10" class="text-center py-4">
+                                                            <div class="text-muted">
+                                                                <i class="fas fa-info-circle fa-2x mb-3"></i>
+                                                                <p class="mb-1">لا توجد مخالفات مسجلة حتى الآن</p>
+                                                                <small>يمكنك إضافة مخالفة جديدة بالنقر على زر "إضافة مخالفة جديدة"</small>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
                                                 </tbody>
                                             </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- نموذج إضافة/تعديل المخالفة -->
+                            <div class="modal fade" id="violationModal" tabindex="-1" aria-labelledby="violationModalLabel" aria-hidden="true">
+                                <div class="modal-dialog modal-lg">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="violationModalLabel">إضافة مخالفة جديدة</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <form id="violationForm">
+                                                <input type="hidden" id="violation_id" name="id">
+                                                <!-- حقول النموذج -->
+                                                <div class="row">
+                                                    <div class="col-md-6 mb-3">
+                                                        <label for="violation_number" class="form-label">رقم المخالفة</label>
+                                                        <input type="text" class="form-control" id="violation_number" name="violation_number" required>
+                                                    </div>
+                                                    <div class="col-md-6 mb-3">
+                                                        <label for="violation_date" class="form-label">تاريخ المخالفة</label>
+                                                        <input type="date" class="form-control" id="violation_date" name="violation_date" required>
+                                                    </div>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-md-6 mb-3">
+                                                        <label for="violation_type" class="form-label">نوع المخالفة</label>
+                                                        <input type="text" class="form-control" id="violation_type" name="violation_type" required>
+                                                    </div>
+                                                    <div class="col-md-6 mb-3">
+                                                        <label for="violation_amount" class="form-label">مبلغ المخالفة</label>
+                                                        <input type="number" class="form-control" id="violation_amount" name="violation_amount" required>
+                                                    </div>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-md-6 mb-3">
+                                                        <label for="responsible_party" class="form-label">الطرف المسؤول</label>
+                                                        <input type="text" class="form-control" id="responsible_party" name="responsible_party" required>
+                                                    </div>
+                                                    <div class="col-md-6 mb-3">
+                                                        <label for="payment_status" class="form-label">حالة الدفع</label>
+                                                        <select class="form-select" id="payment_status" name="payment_status" required>
+                                                            <option value="pending">معلق</option>
+                                                            <option value="paid">مدفوع</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-md-6 mb-3">
+                                                        <label for="payment_due_date" class="form-label">تاريخ استحقاق الدفع</label>
+                                                        <input type="date" class="form-control" id="payment_due_date" name="payment_due_date" required>
+                                                    </div>
+                                                    <div class="col-md-6 mb-3">
+                                                        <label for="attachment" class="form-label">المرفقات</label>
+                                                        <input type="file" class="form-control" id="attachment" name="attachment">
+                                                    </div>
+                                                </div>
+                                            </form>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
+                                            <button type="button" class="btn btn-success" onclick="saveViolation()">
+                                                <i class="fas fa-save me-1"></i>
+                                                حفظ
+                                            </button>
+                                            <button type="button" class="btn btn-primary" onclick="saveAndViewViolations()">
+                                                <i class="fas fa-external-link-alt me-1"></i>
+                                                حفظ وعرض في تفاصيل الرخصة
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -1158,8 +1237,6 @@
 
                             
                         </form>
-
-
 
                         <!-- جدول الرخص المحفوظة -->
                         <div class="card border-0 shadow-sm mt-5">
@@ -4159,6 +4236,200 @@ $.ajaxSetup({
                 button.closest('tr').remove();
             }
         }
+
+        // دالة حفظ المخالفة
+        function saveViolation() {
+            const form = document.getElementById('violationForm');
+            const formData = new FormData(form);
+            const violationId = document.getElementById('violation_id').value;
+            
+            // إضافة معرف أمر العمل
+            formData.append('work_order_id', '{{ $workOrder->id }}');
+            
+            // إضافة CSRF token
+            formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+            
+            // إذا كان تحديث لمخالفة موجودة
+            if (violationId) {
+                formData.append('_method', 'PUT');
+            }
+            
+            // تعطيل زر الحفظ وإظهار حالة التحميل
+            const saveButton = document.querySelector('#violationModal .modal-footer button:last-child');
+            const originalButtonText = saveButton.innerHTML;
+            saveButton.disabled = true;
+            saveButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>جاري الحفظ...';
+            
+            // إرسال البيانات
+            fetch(violationId ? `/admin/violations/${violationId}` : '/admin/violations', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    // تحديث الجدول
+                    if (violationId) {
+                        // تحديث المخالفة الموجودة
+                        const row = document.querySelector(`#violationsTable tr[data-violation-id="${violationId}"]`);
+                        if (row) {
+                            updateViolationRow(row, result.data);
+                        }
+                    } else {
+                        // إضافة مخالفة جديدة
+                        addViolationToTable(result.data);
+                    }
+                    
+                    // تحديث الإحصائيات
+                    updateViolationStats();
+                    
+                    // إغلاق النافذة المنبثقة
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('violationModal'));
+                    modal.hide();
+                    
+                    // عرض رسالة النجاح
+                    toastr.success('تم حفظ المخالفة بنجاح');
+                } else {
+                    toastr.error(result.message || 'حدث خطأ أثناء حفظ المخالفة');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                toastr.error('حدث خطأ أثناء حفظ المخالفة');
+            })
+            .finally(() => {
+                // إعادة تفعيل زر الحفظ
+                saveButton.disabled = false;
+                saveButton.innerHTML = originalButtonText;
+            });
+        }
+
+        // دالة تحديث صف المخالفة في الجدول
+        function updateViolationRow(row, violation) {
+            row.innerHTML = `
+                <td>${row.dataset.index}</td>
+                <td>${violation.violation_number}</td>
+                <td>${violation.violation_date}</td>
+                <td>${violation.violation_type}</td>
+                <td>${new Intl.NumberFormat('ar-SA').format(violation.violation_amount)} ر.س</td>
+                <td>${violation.responsible_party}</td>
+                <td>
+                    <span class="badge ${violation.payment_status === 'paid' ? 'bg-success' : 'bg-warning'}">
+                        ${violation.payment_status === 'paid' ? 'مدفوع' : 'معلق'}
+                    </span>
+                </td>
+                <td>${violation.payment_due_date}</td>
+                <td>
+                    ${violation.attachment_path ? `
+                        <a href="${violation.attachment_url}" target="_blank" class="btn btn-sm btn-info">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                    ` : '-'}
+                </td>
+                <td>
+                    <div class="btn-group btn-group-sm">
+                        <button type="button" class="btn btn-primary" onclick="editViolation(${violation.id})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button type="button" class="btn btn-danger" onclick="deleteViolation(${violation.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </td>
+            `;
+        }
+
+        // دالة إضافة مخالفة جديدة للجدول
+        function addViolationToTable(violation) {
+            const tbody = document.querySelector('#violationsTable tbody');
+            const noViolationsRow = document.getElementById('no-violations-row');
+            
+            if (noViolationsRow) {
+                noViolationsRow.remove();
+            }
+            
+            const row = document.createElement('tr');
+            row.dataset.violationId = violation.id;
+            row.dataset.index = document.querySelectorAll('#violationsTable tbody tr').length + 1;
+            
+            updateViolationRow(row, violation);
+            tbody.appendChild(row);
+        }
+
+        // دالة تحديث إحصائيات المخالفات
+        function updateViolationStats() {
+            const violations = Array.from(document.querySelectorAll('#violationsTable tbody tr')).filter(row => !row.id.includes('no-violations'));
+            const totalViolations = violations.length;
+            const paidViolations = violations.filter(row => row.querySelector('td:nth-child(7) .badge').classList.contains('bg-success')).length;
+            const pendingViolations = totalViolations - paidViolations;
+            
+            let totalAmount = 0;
+            violations.forEach(row => {
+                const amount = parseFloat(row.querySelector('td:nth-child(5)').textContent.replace(/[^\d.-]/g, ''));
+                if (!isNaN(amount)) {
+                    totalAmount += amount;
+                }
+            });
+            
+            document.getElementById('total-violations').textContent = totalViolations;
+            document.getElementById('pending-violations').textContent = pendingViolations;
+            document.getElementById('paid-violations').textContent = paidViolations;
+            document.getElementById('total-amount').textContent = new Intl.NumberFormat('ar-SA').format(totalAmount) + ' ر.س';
+            document.getElementById('violations-count').querySelector('span').textContent = totalViolations;
+        }
+
+        // دالة الحفظ والعرض في صفحة تفاصيل الرخصة
+        function saveAndViewViolations() {
+            const form = document.getElementById('violationForm');
+            const formData = new FormData(form);
+            const violationId = document.getElementById('violation_id').value;
+            
+            // إضافة معرف أمر العمل
+            formData.append('work_order_id', '{{ $workOrder->id }}');
+            formData.append('redirect_to_license', '1');
+            
+            // إضافة CSRF token
+            formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+            
+            // إذا كان تحديث لمخالفة موجودة
+            if (violationId) {
+                formData.append('_method', 'PUT');
+            }
+            
+            // تعطيل زر الحفظ وإظهار حالة التحميل
+            const saveButton = document.querySelector('.btn-primary');
+            const originalButtonText = saveButton.innerHTML;
+            saveButton.disabled = true;
+            saveButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>جاري الحفظ...';
+            
+            // إرسال البيانات
+            fetch(violationId ? `/admin/violations/${violationId}?redirect=1` : '/admin/violations?redirect=1', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    toastr.success('تم حفظ المخالفة بنجاح');
+                    // التوجيه إلى صفحة تفاصيل الرخصة
+                    if (result.redirect_url) {
+                        window.location.href = result.redirect_url;
+                    } else {
+                        window.location.href = `/admin/licenses/${result.license_id}#violations`;
+                    }
+                } else {
+                    toastr.error(result.message || 'حدث خطأ أثناء حفظ المخالفة');
+                    saveButton.disabled = false;
+                    saveButton.innerHTML = originalButtonText;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                toastr.error('حدث خطأ أثناء حفظ المخالفة');
+                saveButton.disabled = false;
+                saveButton.innerHTML = originalButtonText;
+            });
+        }
         </script>
         @endpush
 
@@ -4577,7 +4848,7 @@ $.ajaxSetup({
 
         .btn-group-sm > .btn {
             padding: 0.25rem 0.5rem;
-            font-size: 0.75rem;
+            font-size: 12px;
         }
 
         .bg-gradient-secondary {
