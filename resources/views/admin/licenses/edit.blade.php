@@ -278,6 +278,48 @@
                             </div>
                         </div>
 
+                        <!-- صف إضافي للحقول الجديدة -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label">مبلغ الإخلاء</label>
+                                <div class="input-group">
+                                    <input type="number" step="0.01" class="form-control" name="evac_amount"
+                                           value="{{ old('evac_amount', $license->evac_amount) }}">
+                                    <span class="input-group-text">ريال</span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">مرفقات الإخلاءات</label>
+                                <input type="file" class="form-control" name="evacuations_files[]" multiple accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                                <small class="text-muted">يمكنك رفع عدة ملفات (PDF, صور, مستندات)</small>
+                                
+                                @if($license->evacuations_file_path)
+                                    <div class="mt-2">
+                                        <strong>الملفات المرفوعة:</strong>
+                                        @php
+                                            $evacuationFiles = json_decode($license->evacuations_file_path, true) ?? [];
+                                        @endphp
+                                        @if(is_array($evacuationFiles) && count($evacuationFiles) > 0)
+                                            <ul class="list-unstyled mt-2">
+                                                @foreach($evacuationFiles as $index => $file)
+                                                    <li class="mb-1">
+                                                        <a href="{{ route('admin.serve-file', ['path' => $file]) }}" 
+                                                           target="_blank" class="text-primary">
+                                                            <i class="fas fa-file"></i> {{ basename($file) }}
+                                                        </a>
+                                                        <button type="button" class="btn btn-sm btn-outline-danger ms-2" 
+                                                                onclick="removeEvacuationFile({{ $index }})">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </li>
+                                                @endforeach
+                                            </ul>
+                                        @endif
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+
                         <!-- جداول الإخلاءات -->
                         <div class="row mb-4">
                             <div class="col-12">
@@ -582,6 +624,30 @@ function addRowToEvacTable2Edit() {
 
 function removeRowEdit(button) {
     button.closest('tr').remove();
+}
+
+// دالة حذف ملف الإخلاءات
+function removeEvacuationFile(index) {
+    if (confirm('هل أنت متأكد من حذف هذا الملف؟')) {
+        // إرسال طلب حذف الملف للخادم
+        $.ajax({
+            url: '{{ route("admin.licenses.remove-evacuation-file", $license->id) }}',
+            type: 'POST',
+            data: {
+                _token: $('meta[name="csrf-token"]').attr('content'),
+                file_index: index
+            },
+            success: function(response) {
+                if (response.success) {
+                    toastr.success('تم حذف الملف بنجاح');
+                    location.reload(); // إعادة تحميل الصفحة لتحديث قائمة الملفات
+                }
+            },
+            error: function() {
+                toastr.error('حدث خطأ أثناء حذف الملف');
+            }
+        });
+    }
 }
 </script>
 @endpush

@@ -1014,4 +1014,72 @@ class LicenseController extends Controller
             return redirect()->back()->with('error', 'حدث خطأ أثناء تصدير ملف PDF: ' . $e->getMessage());
         }
     }
+
+    /**
+     * حذف ملف إخلاءات محدد
+     */
+    public function removeEvacuationFile(Request $request, License $license)
+    {
+        try {
+            $fileIndex = $request->input('file_index');
+            
+            if (!is_numeric($fileIndex)) {
+                return response()->json(['success' => false, 'message' => 'فهرس الملف غير صحيح']);
+            }
+            
+            $evacuationFiles = json_decode($license->evacuations_file_path, true) ?? [];
+            
+            if (!isset($evacuationFiles[$fileIndex])) {
+                return response()->json(['success' => false, 'message' => 'الملف غير موجود']);
+            }
+            
+            // حذف الملف من التخزين
+            $filePath = $evacuationFiles[$fileIndex];
+            if (\Storage::disk('public')->exists($filePath)) {
+                \Storage::disk('public')->delete($filePath);
+            }
+            
+            // إزالة الملف من المصفوفة
+            unset($evacuationFiles[$fileIndex]);
+            
+            // إعادة ترقيم المصفوفة
+            $evacuationFiles = array_values($evacuationFiles);
+            
+            // تحديث قاعدة البيانات
+            $license->evacuations_file_path = count($evacuationFiles) > 0 ? json_encode($evacuationFiles) : null;
+            $license->save();
+            
+            return response()->json(['success' => true, 'message' => 'تم حذف الملف بنجاح']);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error removing evacuation file: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'حدث خطأ أثناء حذف الملف']);
+        }
+    }
+
+    /**
+     * تحديث بيانات الفسح للإخلاء
+     */
+    public function updateEvacStreets(Request $request, WorkOrder $workOrder)
+    {
+        try {
+            $license = $workOrder->license;
+            if (!$license) {
+                return response()->json(['message' => 'لم يتم العثور على الرخصة'], 404);
+            }
+
+            $evacStreetsData = $request->input('evac_streets');
+            if (is_array($evacStreetsData)) {
+                $license->evac_table1_data = json_encode($evacStreetsData);
+                $license->save();
+                
+                return response()->json(['message' => 'تم تحديث بيانات الفسح بنجاح']);
+            }
+
+            return response()->json(['message' => 'البيانات المرسلة غير صحيحة'], 400);
+        } catch (\Exception $e) {
+            \Log::error('Error updating evacuation streets: ' . $e->getMessage());
+            return response()->json(['message' => 'حدث خطأ أثناء تحديث بيانات الفسح'], 500);
+        }
+    }
 } 

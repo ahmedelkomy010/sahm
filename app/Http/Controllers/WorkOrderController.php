@@ -1530,6 +1530,25 @@ class WorkOrderController extends Controller
                 }
             }
 
+            // معالجة بيانات جداول الإخلاءات
+            if ($request->has('evac_table1')) {
+                $evacTable1Data = $request->input('evac_table1');
+                if (is_array($evacTable1Data) && !empty($evacTable1Data)) {
+                    $license->evac_table1_data = $evacTable1Data;
+                    $license->save();
+                    \Log::info('Evacuation table 1 data processed');
+                }
+            }
+            
+            if ($request->has('evac_table2')) {
+                $evacTable2Data = $request->input('evac_table2');
+                if (is_array($evacTable2Data) && !empty($evacTable2Data)) {
+                    $license->evac_table2_data = $evacTable2Data;
+                    $license->save();
+                    \Log::info('Evacuation table 2 data processed');
+                }
+            }
+
             // معالجة الملفات
             $fileFields = [
                 'coordination_certificate_path' => 'coordination_certificate_path',
@@ -1539,7 +1558,7 @@ class WorkOrderController extends Controller
                 'license_activation' => 'activation_file_path',
                 'extension_invoice' => 'invoice_extension_file_path',
                 'soil_test_images' => 'soil_test_images_path',
-                'evacuations_files' => 'evac_files_path',
+                'evacuations_files' => 'evacuations_file_path',
                 'violations_files' => 'violation_files_path'
             ];
 

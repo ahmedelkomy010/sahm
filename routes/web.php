@@ -117,13 +117,13 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::get('work-orders/{workOrder}/actions-execution', [WorkOrderController::class, 'actionsExecution'])->name('work-orders.actions-execution');
     Route::post('work-orders/{workOrderId}/upload-post-execution-file', [WorkOrderController::class, 'uploadPostExecutionFile'])->name('work-orders.upload-post-execution-file');
 
-    // Cable Records Routes
-    Route::get('work-orders/{workOrder}/cable-records', [CableRecordController::class, 'index'])->name('work-orders.cable-records');
-    Route::post('work-orders/{workOrder}/cable-records', [CableRecordController::class, 'store'])->name('work-orders.cable-records.store');
-    Route::post('work-orders/{workOrder}/cable-records/bulk-store', [CableRecordController::class, 'bulkStore'])->name('work-orders.cable-records.bulk-store');
-    Route::put('work-orders/{workOrder}/cable-records/{cableRecord}', [CableRecordController::class, 'update'])->name('work-orders.cable-records.update');
-    Route::delete('work-orders/{workOrder}/cable-records/{cableRecord}', [CableRecordController::class, 'destroy'])->name('work-orders.cable-records.destroy');
-    Route::get('work-orders/{workOrder}/cable-records/daily-details', [CableRecordController::class, 'dailyDetails'])->name('work-orders.cable-records.daily-details');
+    // Cable Records Routes - تم تعطيلها مؤقتاً
+    // Route::get('work-orders/{workOrder}/cable-records', [CableRecordController::class, 'index'])->name('work-orders.cable-records');
+    // Route::post('work-orders/{workOrder}/cable-records', [CableRecordController::class, 'store'])->name('work-orders.cable-records.store');
+    // Route::post('work-orders/{workOrder}/cable-records/bulk-store', [CableRecordController::class, 'bulkStore'])->name('work-orders.cable-records.bulk-store');
+    // Route::put('work-orders/{workOrder}/cable-records/{cableRecord}', [CableRecordController::class, 'update'])->name('work-orders.cable-records.update');
+    // Route::delete('work-orders/{workOrder}/cable-records/{cableRecord}', [CableRecordController::class, 'destroy'])->name('work-orders.cable-records.destroy');
+    // Route::get('work-orders/{workOrder}/cable-records/daily-details', [CableRecordController::class, 'dailyDetails'])->name('work-orders.cable-records.daily-details');
 
     // Survey Routes
     Route::get('work-orders/{workOrder}/survey', [WorkOrderController::class, 'survey'])->name('work-orders.survey');
@@ -181,7 +181,11 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::get('licenses/{license}/edit', [\App\Http\Controllers\Admin\LicenseController::class, 'edit'])->name('licenses.edit');
     Route::put('licenses/{license}', [\App\Http\Controllers\Admin\LicenseController::class, 'update'])->name('licenses.update');
     Route::get('licenses/{license}', [\App\Http\Controllers\Admin\LicenseController::class, 'show'])->name('licenses.show');
-    Route::get('licenses/{license}/pdf', [\App\Http\Controllers\Admin\LicenseController::class, 'exportPdf'])->name('licenses.pdf');
+            Route::get('licenses/{license}/pdf', [\App\Http\Controllers\Admin\LicenseController::class, 'exportPdf'])->name('licenses.pdf');
+        Route::post('licenses/{license}/remove-evacuation-file', [\App\Http\Controllers\Admin\LicenseController::class, 'removeEvacuationFile'])->name('licenses.remove-evacuation-file');
+
+    // تحديث بيانات الفسح للإخلاء
+    Route::post('licenses/update-evac-streets/{workOrder}', [\App\Http\Controllers\Admin\LicenseController::class, 'updateEvacStreets'])->name('admin.licenses.update-evac-streets');
 
     // License Violations routes
     Route::get('licenses/{license}/violations', [\App\Http\Controllers\Admin\LicenseViolationController::class, 'index'])->name('license-violations.index');
@@ -191,6 +195,13 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::delete('license-violations/{violation}', [\App\Http\Controllers\Admin\LicenseViolationController::class, 'destroy'])->name('license-violations.destroy');
     Route::patch('license-violations/{violation}/status', [\App\Http\Controllers\Admin\LicenseViolationController::class, 'updateStatus'])->name('license-violations.update-status');
     Route::delete('license-violations/bulk-destroy', [\App\Http\Controllers\Admin\LicenseViolationController::class, 'bulkDestroy'])->name('license-violations.bulk-destroy');
+
+    // Streets routes - تم تعطينها مؤقتاً
+    // Route::post('streets', [\App\Http\Controllers\Admin\StreetController::class, 'store'])->name('streets.store');
+    // Route::put('streets/{street}', [\App\Http\Controllers\Admin\StreetController::class, 'update'])->name('streets.update');
+    // Route::delete('streets/{street}', [\App\Http\Controllers\Admin\StreetController::class, 'destroy'])->name('streets.destroy');
+
+
 
     Route::post('work-orders/{workOrder}/installations/images', [App\Http\Controllers\WorkOrderController::class, 'uploadInstallationsImages'])->name('work-orders.installations.images');
     Route::delete('work-orders/installations/images/{imageId}', [App\Http\Controllers\WorkOrderController::class, 'deleteInstallationImage'])->name('work-orders.installations.images.delete');
@@ -283,19 +294,11 @@ Route::get('files/{path}', function ($path) {
     return response()->file($filePath);
 })->where('path', '.*')->name('files.serve');
 
-Route::middleware(['auth', 'admin'])->group(function () {
-    // License Violations Routes
-    Route::get('/admin/licenses/{license}/violations', [App\Http\Controllers\Admin\LicenseViolationController::class, 'index'])->name('violations.index');
-    Route::post('/admin/violations/store', [App\Http\Controllers\Admin\LicenseViolationController::class, 'store'])->name('violations.store');
-    Route::get('/admin/violations/{violation}', [App\Http\Controllers\Admin\LicenseViolationController::class, 'show'])->name('violations.show');
-    Route::put('/admin/violations/{violation}', [App\Http\Controllers\Admin\LicenseViolationController::class, 'update'])->name('violations.update');
-    Route::delete('/admin/violations/{violation}', [App\Http\Controllers\Admin\LicenseViolationController::class, 'destroy'])->name('violations.destroy');
-});
-
 // مسارات المخالفات
-Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
-    Route::post('/violations', [App\Http\Controllers\Admin\LicenseViolationController::class, 'store'])->name('violations.store');
-    Route::get('/violations/{violation}', [App\Http\Controllers\Admin\LicenseViolationController::class, 'show'])->name('violations.show');
-    Route::put('/violations/{violation}', [App\Http\Controllers\Admin\LicenseViolationController::class, 'update'])->name('violations.update');
-    Route::delete('/violations/{violation}', [App\Http\Controllers\Admin\LicenseViolationController::class, 'destroy'])->name('violations.destroy');
+Route::prefix('admin')->middleware(['auth'])->group(function () {
+    Route::get('/violations', [App\Http\Controllers\Admin\ViolationController::class, 'index'])->name('violations.index');
+    Route::post('/violations', [App\Http\Controllers\Admin\ViolationController::class, 'store'])->name('violations.store');
+    Route::get('/violations/{violation}', [App\Http\Controllers\Admin\ViolationController::class, 'show'])->name('violations.show');
+    Route::put('/violations/{violation}', [App\Http\Controllers\Admin\ViolationController::class, 'update'])->name('violations.update');
+    Route::delete('/violations/{violation}', [App\Http\Controllers\Admin\ViolationController::class, 'destroy'])->name('violations.destroy');
 });

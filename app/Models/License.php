@@ -167,4 +167,12 @@ class License extends Model
     {
         return $this->violations()->count();
     }
+
+    /**
+     * Get the streets for the license.
+     */
+    public function streets()
+    {
+        return $this->hasMany(Street::class);
+    }
 } 
