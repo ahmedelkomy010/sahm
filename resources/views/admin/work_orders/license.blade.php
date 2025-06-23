@@ -226,11 +226,75 @@
         toastr.success('تم حفظ بيانات الإخلاء بنجاح');
     }
 
+    function loadViolations() {
+        $.ajax({
+            url: `/admin/violations/by-work-order/{{ $workOrder->id }}`,
+            type: 'GET',
+            success: function(response) {
+                const tbody = document.getElementById('violations-table-body');
+                if (!tbody) return;
+                
+                tbody.innerHTML = '';
+
+                if (!response.violations || response.violations.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="9" class="text-center">لا توجد مخالفات</td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                response.violations.forEach((violation, index) => {
+                    // تحويل التاريخ إلى التقويم الميلادي
+                    const violationDate = violation.violation_date ? 
+                        new Date(violation.violation_date).toLocaleDateString('en-GB') : '';
+                    const dueDate = violation.payment_due_date ? 
+                        new Date(violation.payment_due_date).toLocaleDateString('en-GB') : '';
+
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td>${violation.violation_number || ''}</td>
+                            <td>${violationDate}</td>
+                            <td>${violation.violation_type || ''}</td>
+                            <td>${violation.responsible_party || ''}</td>
+                            <td>${violation.payment_status || ''}</td>
+                            <td>${violation.violation_amount || ''} ريال</td>
+                            <td>${dueDate}</td>
+                            <td>
+                                <button class="btn btn-danger btn-sm" onclick="deleteViolation(${violation.id})">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            },
+            error: function(xhr) {
+                console.error('Error loading violations:', xhr);
+                toastr.error('حدث خطأ في تحميل المخالفات');
+            }
+        });
+    }
+
     function saveViolationSection() {
-        const formData = new FormData(document.getElementById('violationForm'));
+        const form = document.getElementById('violationForm');
+        if (!form) {
+            toastr.error('لم يتم العثور على نموذج المخالفة');
+            return;
+        }
+
+        const formData = new FormData(form);
+        
+        // إضافة logging للبيانات المرسلة
+        console.log('Sending violation data:');
+        for (let [key, value] of formData.entries()) {
+            console.log(key + ': ' + value);
+        }
         
         $.ajax({
-            url: '{{ route("violations.store") }}',
+            url: '{{ route("admin.license-violations.store") }}',
             type: 'POST',
             data: formData,
             processData: false,
@@ -239,86 +303,37 @@
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             },
             success: function(response) {
+                console.log('Success response:', response);
                 toastr.success('تم حفظ المخالفة بنجاح');
-                document.getElementById('violationForm').reset();
+                form.reset();
                 loadViolations();
             },
             error: function(xhr) {
+                console.error('Error saving violation:', xhr);
+                console.error('Response text:', xhr.responseText);
+                console.error('Status:', xhr.status);
+                console.error('Status text:', xhr.statusText);
+                
                 const errors = xhr.responseJSON?.errors || {};
-                Object.values(errors).forEach(error => {
-                    toastr.error(error[0]);
-                });
-            }
-        });
-    }
-
-    function loadViolations() {
-        $.ajax({
-            url: `/admin/violations?work_order_id={{ $workOrder->id }}`,
-            type: 'GET',
-            success: function(response) {
-                const tbody = document.getElementById('violations-table-body');
-                tbody.innerHTML = '';
-
-                if (response.violations.length === 0) {
-                    tbody.innerHTML = `
-                        <tr>
-                            <td colspan="8" class="text-center">لا توجد مخالفات</td>
-                        </tr>
-                    `;
-                    return;
+                if (Object.keys(errors).length > 0) {
+                    Object.values(errors).forEach(error => {
+                        toastr.error(error[0]);
+                    });
+                } else {
+                    const message = xhr.responseJSON?.message || 'حدث خطأ في حفظ المخالفة';
+                    toastr.error(message);
                 }
-
-                response.violations.forEach((violation, index) => {
-                    tbody.innerHTML += `
-                        <tr>
-                            <td>${index + 1}</td>
-                            <td>${violation.violation_number || ''}</td>
-                            <td>${violation.violation_type || ''}</td>
-                            <td>${violation.responsible_party || ''}</td>
-                            <td>${violation.payment_status || ''}</td>
-                            <td>${violation.violation_value ? violation.violation_value.toLocaleString('ar-SA') + ' ريال' : ''}</td>
-                            <td>${violation.due_date ? new Date(violation.due_date).toLocaleDateString('ar-SA') : ''}</td>
-                            <td>
-                                <div class="btn-group btn-group-sm">
-                                    <button type="button" class="btn btn-info" onclick="viewViolation(${violation.id})">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
-                                    <button type="button" class="btn btn-primary" onclick="editViolation(${violation.id})">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button type="button" class="btn btn-danger" onclick="deleteViolation(${violation.id})">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    `;
-                });
-            },
-            error: function(xhr) {
-                toastr.error('حدث خطأ أثناء تحميل المخالفات');
             }
         });
     }
 
-    function viewViolation(id) {
-        // Implementation will be added later
-        console.log('View violation:', id);
-    }
-
-    function editViolation(id) {
-        // Implementation will be added later
-        console.log('Edit violation:', id);
-    }
-
-    function deleteViolation(id) {
+    function deleteViolation(violationId) {
         if (!confirm('هل أنت متأكد من حذف هذه المخالفة؟')) {
             return;
         }
 
         $.ajax({
-            url: `/admin/violations/${id}`,
+            url: `/admin/license-violations/${violationId}`,
             type: 'DELETE',
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -328,7 +343,8 @@
                 loadViolations();
             },
             error: function(xhr) {
-                toastr.error('حدث خطأ أثناء حذف المخالفة');
+                console.error('Error deleting violation:', xhr);
+                toastr.error('حدث خطأ في حذف المخالفة');
             }
         });
     }
@@ -432,7 +448,7 @@
         </div>
 
         <!-- قسم رخصة الحفر -->
-        <div id="dig-license-section" class="tab-section">
+        <div id="dig-license-section" class="tab-section" style="display: none;">
             <div class="section-card">
                 <div class="section-header">
                     <h3 class="mb-0">
@@ -575,7 +591,7 @@
                                             <div class="form-check">
                                                 <input class="form-check-input test-radio" type="radio" name="has_depth_test" value="1" id="depth_test_yes" data-test="depth_test">
                                                 <label class="form-check-label" for="depth_test_yes">نعم</label>
-                                            </div>
+                            </div>
                                             <div class="form-check">
                                                 <input class="form-check-input test-radio" type="radio" name="has_depth_test" value="0" id="depth_test_no" data-test="depth_test" checked>
                                                 <label class="form-check-label" for="depth_test_no">لا</label>
@@ -927,6 +943,10 @@
                                 <input type="text" class="form-control" name="violation_number" required>
                             </div>
                             <div class="col-md-3">
+                                <label class="form-label fw-bold">تاريخ المخالفة</label>
+                                <input type="date" class="form-control" name="violation_date" required>
+                            </div>
+                            <div class="col-md-3">
                                 <label class="form-label fw-bold">نوع المخالفة</label>
                                 <input type="text" class="form-control" name="violation_type" required>
                             </div>
@@ -934,21 +954,21 @@
                                 <label class="form-label fw-bold">المتسبب</label>
                                 <input type="text" class="form-control" name="responsible_party" required>
                             </div>
-                            <div class="col-md-3">
-                                <label class="form-label fw-bold">حالة الدفع</label>
-                                <input type="number" class="form-control" name="payment_status" required>
-                            </div>
                         </div>
 
                         <div class="row g-3 mb-4">
-                            <div class="col-md-6">
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">حالة الدفع</label>
+                                <input type="number" class="form-control" name="payment_status" required>
+                            </div>
+                            <div class="col-md-4">
                                 <label class="form-label fw-bold">قيمة المخالفة</label>
                                 <div class="input-group">
                                     <input type="number" class="form-control" name="violation_value" step="0.01" required>
                                     <span class="input-group-text">ريال</span>
-                                </div>
                             </div>
-                            <div class="col-md-6">
+                            </div>
+                            <div class="col-md-4">
                                 <label class="form-label fw-bold">تاريخ الاستحقاق</label>
                                 <input type="date" class="form-control" name="due_date" required>
                             </div>
@@ -965,30 +985,27 @@
                     </form>
 
                     <!-- جدول المخالفات -->
-                    <div class="mt-5">
-                        <h4 class="mb-3">
-                            <i class="fas fa-list me-2"></i>
-                            قائمة المخالفات
-                        </h4>
-                        <div class="table-responsive">
-                            <table class="table table-bordered table-hover">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>#</th>
-                                        <th>رقم المخالفة</th>
+                    <div class="table-responsive mt-4">
+                        <table class="table table-striped table-hover">
+                            <thead class="table-warning">
+                                <tr>
+                                    <th>#</th>
+                                    <th>رقم المخالفة</th>
+                                    <th>تاريخ المخالفة</th>
                                         <th>نوع المخالفة</th>
                                         <th>المتسبب</th>
                                         <th>حالة الدفع</th>
                                         <th>القيمة</th>
-                                        <th>تاريخ الاستحقاق</th>
-                                        <th>الإجراءات</th>
-                                    </tr>
-                                </thead>
+                                    <th>تاريخ الاستحقاق</th>
+                                    <th>الإجراءات</th>
+                                </tr>
+                            </thead>
                                 <tbody id="violations-table-body">
-                                    <!-- سيتم تعبئة البيانات هنا عن طريق JavaScript -->
-                                </tbody>
-                            </table>
-                        </div>
+                                <tr>
+                                    <td colspan="9" class="text-center">لا توجد مخالفات</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -999,31 +1016,46 @@
 <script>
 // تحديث دالة إظهار الأقسام لتشمل جدول الفسح للإخلاء
 function showSection(sectionId) {
+    // إخفاء جميع الأقسام أولاً
     document.querySelectorAll('.tab-section').forEach(section => {
         section.style.display = 'none';
     });
     
-    // إخفاء جدول الفسح للإخلاء
-    const evacStreetsSection = document.getElementById('evacuation-streets-section');
-    if (evacStreetsSection) {
-        evacStreetsSection.style.display = 'none';
-    }
+    // إزالة الفئة النشطة من جميع الأزرار
+    document.querySelectorAll('.nav-tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
     
+    // إظهار القسم المحدد
     const selectedSection = document.getElementById(sectionId);
     if (selectedSection) {
         selectedSection.style.display = 'block';
         
-        // إظهار جدول الفسح للإخلاء إذا كان القسم المحدد هو الإخلاءات
-        if (sectionId === 'evacuations-section' && evacStreetsSection) {
-            evacStreetsSection.style.display = 'block';
+        // تحميل المخالفات عند إظهار قسم المخالفات
+        if (sectionId === 'violations-section') {
+            loadViolations();
         }
     }
     
+    // إضافة الفئة النشطة للزر المحدد
+    const clickedButton = document.querySelector(`button[onclick="showSection('${sectionId}')"]`);
+    if (clickedButton) {
+        clickedButton.classList.add('active');
+    }
+}
+
+// تهيئة الصفحة عند التحميل
+document.addEventListener('DOMContentLoaded', function() {
+    // إخفاء جميع الأقسام عند بداية التحميل
+    document.querySelectorAll('.tab-section').forEach(section => {
+        section.style.display = 'none';
+    });
+    
+    // إزالة الفئة النشطة من جميع الأزرار
     document.querySelectorAll('.nav-tab-btn').forEach(btn => {
         btn.classList.remove('active');
     });
-    event.target.classList.add('active');
-}
+});
 
 // دوال الحفظ
 function saveCoordinationSection() {

@@ -19,24 +19,56 @@ class LicenseViolationController extends Controller
     }
 
     /**
+     * Get violations by work order ID
+     */
+    public function getByWorkOrder($workOrderId)
+    {
+        try {
+            // Find the license associated with this work order
+            $license = License::where('work_order_id', $workOrderId)->first();
+            
+            if (!$license) {
+                return response()->json([
+                    'success' => true,
+                    'violations' => []
+                ]);
+            }
+
+            $violations = $license->violations()->orderBy('created_at', 'desc')->get();
+            
+            return response()->json([
+                'success' => true,
+                'violations' => $violations
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ في تحميل المخالفات',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Store a newly created violation in storage.
      */
     public function store(Request $request)
     {
+        \Log::info('Violation store request received', $request->all());
+        
         $validator = Validator::make($request->all(), [
             'work_order_id' => 'required|exists:work_orders,id',
-            'license_number' => 'required|string',
-            'violation_date' => 'required|date',
-            'payment_due_date' => 'required|date',
-            'violation_amount' => 'required|numeric|min:0',
             'violation_number' => 'required|string',
+            'violation_date' => 'required|date',
+            'violation_type' => 'required|string',
             'responsible_party' => 'required|string',
-            'violation_description' => 'nullable|string',
-            'violation_attachment' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:10240',
-            'notes' => 'nullable|string',
+            'payment_status' => 'required|numeric',
+            'violation_value' => 'required|numeric|min:0',
+            'due_date' => 'required|date',
         ]);
 
         if ($validator->fails()) {
+            \Log::error('Validation failed for violation', $validator->errors()->toArray());
             return response()->json([
                 'success' => false,
                 'message' => 'بيانات غير صحيحة',
@@ -47,16 +79,44 @@ class LicenseViolationController extends Controller
         try {
             DB::beginTransaction();
 
-            $data = $request->except('violation_attachment');
+            // Find or create license for this work order
+            $license = License::firstOrCreate(
+                ['work_order_id' => $request->work_order_id],
+                [
+                    'work_order_id' => $request->work_order_id,
+                    'license_number' => 'AUTO-WO-' . $request->work_order_id . '-' . time()
+                ]
+            );
 
-            // Handle file upload if present
-            if ($request->hasFile('violation_attachment')) {
-                $file = $request->file('violation_attachment');
-                $path = $file->store('violations', 'public');
-                $data['attachment_path'] = $path;
+            \Log::info('License found/created', ['license_id' => $license->id]);
+
+            // Generate license number if not exists
+            $licenseNumber = $license->license_number ?? 'AUTO-' . $license->id . '-' . time();
+            
+            // Update license with license number if it doesn't have one
+            if (!$license->license_number) {
+                $license->update(['license_number' => $licenseNumber]);
             }
 
-            $violation = LicenseViolation::create($data);
+            // Create the violation
+            $violationData = [
+                'license_id' => $license->id,
+                'work_order_id' => $request->work_order_id,
+                'license_number' => $licenseNumber,
+                'violation_number' => $request->violation_number,
+                'violation_date' => $request->violation_date,
+                'violation_type' => $request->violation_type,
+                'responsible_party' => $request->responsible_party,
+                'payment_status' => $request->payment_status,
+                'violation_amount' => $request->violation_value,
+                'payment_due_date' => $request->due_date,
+            ];
+            
+            \Log::info('Creating violation with data', $violationData);
+            
+            $violation = LicenseViolation::create($violationData);
+            
+            \Log::info('Violation created successfully', ['violation_id' => $violation->id]);
             
             DB::commit();
 
@@ -67,9 +127,13 @@ class LicenseViolationController extends Controller
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
+            \Log::error('Error storing violation: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'request_data' => $request->all()
+            ]);
             return response()->json([
                 'success' => false,
-                'message' => 'حدث خطأ أثناء حفظ المخالفة'
+                'message' => 'حدث خطأ أثناء حفظ المخالفة: ' . $e->getMessage()
             ], 500);
         }
     }

@@ -189,6 +189,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
 
     // License Violations routes
     Route::get('licenses/{license}/violations', [\App\Http\Controllers\Admin\LicenseViolationController::class, 'index'])->name('license-violations.index');
+    Route::get('violations/by-work-order/{workOrder}', [\App\Http\Controllers\Admin\LicenseViolationController::class, 'getByWorkOrder'])->name('violations.by-work-order');
     Route::post('license-violations', [\App\Http\Controllers\Admin\LicenseViolationController::class, 'store'])->name('license-violations.store');
     Route::get('license-violations/{violation}', [\App\Http\Controllers\Admin\LicenseViolationController::class, 'show'])->name('license-violations.show');
     Route::put('license-violations/{violation}', [\App\Http\Controllers\Admin\LicenseViolationController::class, 'update'])->name('license-violations.update');
@@ -302,3 +303,136 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
     Route::put('/violations/{violation}', [App\Http\Controllers\Admin\ViolationController::class, 'update'])->name('violations.update');
     Route::delete('/violations/{violation}', [App\Http\Controllers\Admin\ViolationController::class, 'destroy'])->name('violations.destroy');
 });
+
+// مسار مؤقت لتشغيل الهجرة وإصلاح جدول المخالفات
+Route::get('/run-migration', function () {
+    try {
+        \Artisan::call('migrate', [
+            '--path' => 'database/migrations/2025_06_23_060459_add_new_fields_to_license_violations_table.php'
+        ]);
+        
+        return '<h2>✓ تم تشغيل الهجرة بنجاح!</h2><p>الآن يمكنك إضافة المخالفات بدون مشاكل.</p>';
+    } catch (\Exception $e) {
+        return '<h2>❌ خطأ في تشغيل الهجرة:</h2><p>' . $e->getMessage() . '</p>';
+    }
+});
+
+// مسار مؤقت لإصلاح جدول المخالفات
+Route::get('/fix-violations-table', function () {
+    $output = "<h2>إصلاح جدول المخالفات</h2>";
+    
+    try {
+        // استخدام SQL مباشر بدلاً من Schema Builder
+        $output .= "<p>1. جعل license_number اختيارياً...</p>";
+        \DB::statement('ALTER TABLE license_violations MODIFY license_number VARCHAR(255) NULL');
+        $output .= "<p style='color: green;'>✓ تم بنجاح</p>";
+        
+        // إضافة الحقول بـ SQL مباشر
+        $fields = [
+            'violation_type' => 'VARCHAR(255) NULL',
+            'payment_status' => 'INT NULL',
+            'violation_value' => 'DECIMAL(10,2) NULL',
+            'due_date' => 'DATE NULL',
+            'work_order_id' => 'BIGINT UNSIGNED NULL'
+        ];
+        
+        foreach ($fields as $fieldName => $fieldType) {
+            try {
+                // تحقق من وجود الحقل
+                $exists = \DB::select("SHOW COLUMNS FROM license_violations LIKE '{$fieldName}'");
+                
+                if (empty($exists)) {
+                    $output .= "<p>2. إضافة حقل {$fieldName}...</p>";
+                    \DB::statement("ALTER TABLE license_violations ADD COLUMN {$fieldName} {$fieldType}");
+                    $output .= "<p style='color: green;'>✓ تم بنجاح</p>";
+                } else {
+                    $output .= "<p style='color: blue;'>- حقل {$fieldName} موجود بالفعل</p>";
+                }
+            } catch (\Exception $e) {
+                $output .= "<p style='color: orange;'>⚠️ تحذير للحقل {$fieldName}: " . $e->getMessage() . "</p>";
+            }
+        }
+        
+        // إضافة العلاقة الخارجية
+        try {
+            $foreignKeyExists = \DB::select("
+                SELECT CONSTRAINT_NAME 
+                FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE 
+                WHERE TABLE_NAME = 'license_violations' 
+                AND COLUMN_NAME = 'work_order_id' 
+                AND CONSTRAINT_NAME LIKE '%foreign%'
+            ");
+            
+            if (empty($foreignKeyExists)) {
+                $output .= "<p>3. إضافة العلاقة الخارجية...</p>";
+                \DB::statement("ALTER TABLE license_violations ADD CONSTRAINT license_violations_work_order_id_foreign FOREIGN KEY (work_order_id) REFERENCES work_orders(id) ON DELETE CASCADE");
+                $output .= "<p style='color: green;'>✓ تم بنجاح</p>";
+            } else {
+                $output .= "<p style='color: blue;'>- العلاقة الخارجية موجودة بالفعل</p>";
+            }
+        } catch (\Exception $e) {
+            $output .= "<p style='color: orange;'>⚠️ تحذير للعلاقة الخارجية: " . $e->getMessage() . "</p>";
+        }
+        
+        // عرض هيكل الجدول
+        $output .= "<h3>هيكل جدول license_violations الحالي:</h3>";
+        $columns = \DB::select("DESCRIBE license_violations");
+        
+        $output .= "<table border='1' style='border-collapse: collapse; width: 100%; margin: 10px 0;'>";
+        $output .= "<tr style='background-color: #f0f0f0;'><th>الحقل</th><th>النوع</th><th>Null</th><th>مفتاح</th><th>افتراضي</th></tr>";
+        
+        foreach ($columns as $column) {
+            $output .= "<tr>";
+            $output .= "<td>{$column->Field}</td>";
+            $output .= "<td>{$column->Type}</td>";
+            $output .= "<td>{$column->Null}</td>";
+            $output .= "<td>{$column->Key}</td>";
+            $output .= "<td>{$column->Default}</td>";
+            $output .= "</tr>";
+        }
+        $output .= "</table>";
+        
+        $output .= "<h2 style='color: green;'>🎉 تم إصلاح قاعدة البيانات بنجاح!</h2>";
+        $output .= "<p><strong>يمكنك الآن إضافة المخالفات بدون مشاكل.</strong></p>";
+        $output .= "<p><a href='javascript:history.back()'>العودة للصفحة السابقة</a></p>";
+        
+        return $output;
+        
+    } catch (\Exception $e) {
+        return "<h2 style='color: red;'>❌ حدث خطأ:</h2><p>" . $e->getMessage() . "</p><p>تفاصيل الخطأ:</p><pre>" . $e->getTraceAsString() . "</pre>";
+    }
+});
+
+// مسار مؤقت لاختبار إنشاء المخالفات
+Route::get('/test-violation', function () {
+    try {
+        // إنشاء أو العثور على work order
+        $workOrder = \App\Models\WorkOrder::first();
+        if (!$workOrder) {
+            return 'No work orders found in database';
+        }
+
+        // إنشاء أو العثور على license
+        $license = \App\Models\License::firstOrCreate(
+            ['work_order_id' => $workOrder->id],
+            ['work_order_id' => $workOrder->id]
+        );
+
+        // إنشاء مخالفة تجريبية
+        $violation = \App\Models\LicenseViolation::create([
+            'license_id' => $license->id,
+            'work_order_id' => $workOrder->id,
+            'violation_number' => 'TEST-' . time(),
+            'violation_date' => now(),
+            'violation_type' => 'Test Violation',
+            'responsible_party' => 'Test Party',
+            'payment_status' => 1,
+            'violation_amount' => 100.50,
+            'payment_due_date' => now()->addDays(30),
+        ]);
+
+        return 'Violation created successfully with ID: ' . $violation->id;
+    } catch (\Exception $e) {
+        return 'Error: ' . $e->getMessage() . '<br>Trace: ' . $e->getTraceAsString();
+    }
+})->middleware('auth');

@@ -12,13 +12,16 @@ class LicenseViolation extends Model
     use HasFactory;
 
     protected $fillable = [
+        'license_id',
         'work_order_id',
         'license_number',
-        'violation_date',
-        'payment_due_date',
-        'violation_amount',
         'violation_number',
+        'violation_date',
+        'violation_type',
         'responsible_party',
+        'payment_status',
+        'violation_amount',
+        'payment_due_date',
         'violation_description',
         'attachment_path',
         'notes'
