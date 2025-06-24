@@ -23,6 +23,7 @@ class LicenseViolation extends Model
         'violation_amount',
         'payment_due_date',
         'violation_description',
+        'payment_invoice_number',
         'attachment_path',
         'notes'
     ];

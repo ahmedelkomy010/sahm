@@ -239,7 +239,7 @@
                 if (!response.violations || response.violations.length === 0) {
                     tbody.innerHTML = `
                         <tr>
-                            <td colspan="9" class="text-center">لا توجد مخالفات</td>
+                            <td colspan="11" class="text-center">لا توجد مخالفات</td>
                         </tr>
                     `;
                     return;
@@ -251,21 +251,33 @@
                         new Date(violation.violation_date).toLocaleDateString('en-GB') : '';
                     const dueDate = violation.payment_due_date ? 
                         new Date(violation.payment_due_date).toLocaleDateString('en-GB') : '';
+                    
+                    // تحديد حالة السداد
+                    const paymentStatusBadge = violation.payment_status == 1 ? 
+                        '<span class="badge bg-success"><i class="fas fa-check-circle me-1"></i>مسددة</span>' : 
+                        '<span class="badge bg-danger"><i class="fas fa-times-circle me-1"></i>غير مسددة</span>';
 
                     tbody.innerHTML += `
                         <tr>
                             <td>${index + 1}</td>
-                            <td>${violation.violation_number || ''}</td>
+                            <td><strong class="text-primary">${violation.violation_number || ''}</strong></td>
                             <td>${violationDate}</td>
-                            <td>${violation.violation_type || ''}</td>
+                            <td><span class="badge bg-info">${violation.violation_type || ''}</span></td>
                             <td>${violation.responsible_party || ''}</td>
-                            <td>${violation.payment_status || ''}</td>
-                            <td>${violation.violation_amount || ''} ريال</td>
+                            <td>${violation.violation_description || '-'}</td>
+                            <td><strong class="text-success">${violation.violation_amount || '0'} ريال</strong></td>
                             <td>${dueDate}</td>
+                            <td>${violation.payment_invoice_number || '-'}</td>
+                            <td>${paymentStatusBadge}</td>
                             <td>
-                                <button class="btn btn-danger btn-sm" onclick="deleteViolation(${violation.id})">
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-info" onclick="viewViolation(${violation.id})" title="عرض">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-outline-danger" onclick="deleteViolation(${violation.id})" title="حذف">
                                         <i class="fas fa-trash"></i>
                                     </button>
+                                </div>
                             </td>
                         </tr>
                     `;
@@ -305,7 +317,7 @@
             success: function(response) {
                 console.log('Success response:', response);
                 toastr.success('تم حفظ المخالفة بنجاح');
-                form.reset();
+                resetViolationForm();
                 loadViolations();
             },
             error: function(xhr) {
@@ -325,6 +337,25 @@
                 }
             }
         });
+    }
+
+    function viewViolation(violationId) {
+        // يمكن إضافة modal لعرض تفاصيل المخالفة
+        toastr.info('سيتم إضافة عرض التفاصيل قريباً');
+    }
+
+    function resetViolationForm() {
+        const form = document.getElementById('violationForm');
+        if (form) {
+            form.reset();
+            
+            // إعادة تعيين القيم الافتراضية
+            document.querySelector('[name="violation_date"]').value = '{{ date("Y-m-d") }}';
+            document.querySelector('[name="payment_due_date"]').value = '{{ date("Y-m-d", strtotime("+30 days")) }}';
+            document.querySelector('[name="payment_status"][value="0"]').checked = true;
+            
+            toastr.info('تم إعادة تعيين النموذج');
+        }
     }
 
     function deleteViolation(violationId) {
@@ -936,77 +967,109 @@
                         @csrf
                         <input type="hidden" name="work_order_id" value="{{ $workOrder->id }}">
                         
-                        <!-- معلومات المخالفة -->
-                        <div class="row g-3 mb-4">
-                            <div class="col-md-3">
-                                <label class="form-label fw-bold">رقم المخالفة</label>
-                                <input type="text" class="form-control" name="violation_number" required>
-                            </div>
-                            <div class="col-md-3">
-                                <label class="form-label fw-bold">تاريخ المخالفة</label>
-                                <input type="date" class="form-control" name="violation_date" required>
-                            </div>
-                            <div class="col-md-3">
-                                <label class="form-label fw-bold">نوع المخالفة</label>
-                                <input type="text" class="form-control" name="violation_type" required>
-                            </div>
-                            <div class="col-md-3">
-                                <label class="form-label fw-bold">المتسبب</label>
-                                <input type="text" class="form-control" name="responsible_party" required>
-                            </div>
-                        </div>
+                                                 <!-- معلومات المخالفة -->
+                         <div class="row g-3 mb-4">
+                             <div class="col-md-3">
+                                 <label class="form-label fw-bold">رقم المخالفة</label>
+                                 <input type="text" class="form-control" name="violation_number" required>
+                             </div>
+                             <div class="col-md-3">
+                                 <label class="form-label fw-bold">تاريخ المخالفة</label>
+                                 <input type="date" class="form-control" name="violation_date" value="{{ date('Y-m-d') }}" required>
+                             </div>
+                             <div class="col-md-3">
+                                 <label class="form-label fw-bold">نوع المخالفة</label>
+                                 <input type="text" class="form-control" name="violation_type" required>
+                             </div>
+                             <div class="col-md-3">
+                                 <label class="form-label fw-bold">المتسبب</label>
+                                 <input type="text" class="form-control" name="responsible_party" required>
+                             </div>
+                         </div>
 
-                        <div class="row g-3 mb-4">
-                            <div class="col-md-4">
-                                <label class="form-label fw-bold">حالة الدفع</label>
-                                <input type="number" class="form-control" name="payment_status" required>
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label fw-bold">قيمة المخالفة</label>
-                                <div class="input-group">
-                                    <input type="number" class="form-control" name="violation_value" step="0.01" required>
-                                    <span class="input-group-text">ريال</span>
-                            </div>
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label fw-bold">تاريخ الاستحقاق</label>
-                                <input type="date" class="form-control" name="due_date" required>
-                            </div>
-                        </div>
+                         <div class="row g-3 mb-4">
+                             <div class="col-md-4">
+                                 <label class="form-label fw-bold">قيمة المخالفة</label>
+                                 <div class="input-group">
+                                     <input type="number" class="form-control" name="violation_amount" step="0.01" required>
+                                     <span class="input-group-text">ريال</span>
+                                 </div>
+                             </div>
+                             <div class="col-md-4">
+                                 <label class="form-label fw-bold">تاريخ الاستحقاق</label>
+                                 <input type="date" class="form-control" name="payment_due_date" value="{{ date('Y-m-d', strtotime('+30 days')) }}" required>
+                             </div>
+                             <div class="col-md-4">
+                                 <label class="form-label fw-bold">رقم سداد المخالفة</label>
+                                 <input type="text" class="form-control" name="payment_invoice_number" placeholder="رقم الفاتورة">
+                             </div>
+                         </div>
 
-                        <div class="row mt-4">
-                            <div class="col-12 text-center">
-                                <button type="button" class="btn btn-primary-custom btn-lg" onclick="saveViolationSection()">
-                                    <i class="fas fa-save me-2"></i>
-                                    حفظ المخالفة
-                                </button>
-                            </div>
-                        </div>
+                         <div class="row g-3 mb-4">
+                             <div class="col-md-8">
+                                 <label class="form-label fw-bold">وصف المخالفة</label>
+                                 <textarea class="form-control" name="violation_description" rows="3" placeholder="اكتب وصف المخالفة هنا..."></textarea>
+                             </div>
+                             <div class="col-md-4">
+                                 <label class="form-label fw-bold">حالة الفاتورة</label>
+                                 <div class="mt-2">
+                                     <div class="form-check mb-2">
+                                         <input class="form-check-input" type="radio" name="payment_status" id="payment_unpaid" value="0" checked>
+                                         <label class="form-check-label fw-bold text-danger" for="payment_unpaid">
+                                             <i class="fas fa-times-circle me-1"></i>
+                                             غير مسددة
+                                         </label>
+                                     </div>
+                                     <div class="form-check">
+                                         <input class="form-check-input" type="radio" name="payment_status" id="payment_paid" value="1">
+                                         <label class="form-check-label fw-bold text-success" for="payment_paid">
+                                             <i class="fas fa-check-circle me-1"></i>
+                                             مسددة
+                                         </label>
+                                     </div>
+                                 </div>
+                             </div>
+                         </div>
+
+                                                 <div class="row mt-4">
+                             <div class="col-12 text-center">
+                                 <button type="button" class="btn btn-primary-custom btn-lg me-2" onclick="saveViolationSection()">
+                                     <i class="fas fa-save me-2"></i>
+                                     حفظ المخالفة
+                                 </button>
+                                 <button type="button" class="btn btn-secondary btn-lg" onclick="resetViolationForm()">
+                                     <i class="fas fa-undo me-2"></i>
+                                     إعادة تعيين
+                                 </button>
+                             </div>
+                         </div>
                     </form>
 
-                    <!-- جدول المخالفات -->
-                    <div class="table-responsive mt-4">
-                        <table class="table table-striped table-hover">
-                            <thead class="table-warning">
-                                <tr>
-                                    <th>#</th>
-                                    <th>رقم المخالفة</th>
-                                    <th>تاريخ المخالفة</th>
-                                        <th>نوع المخالفة</th>
-                                        <th>المتسبب</th>
-                                        <th>حالة الدفع</th>
-                                        <th>القيمة</th>
-                                    <th>تاريخ الاستحقاق</th>
-                                    <th>الإجراءات</th>
-                                </tr>
-                            </thead>
-                                <tbody id="violations-table-body">
-                                <tr>
-                                    <td colspan="9" class="text-center">لا توجد مخالفات</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+                                         <!-- جدول المخالفات -->
+                     <div class="table-responsive mt-4">
+                         <table class="table table-striped table-hover">
+                             <thead class="table-warning">
+                                 <tr>
+                                     <th>#</th>
+                                     <th>رقم المخالفة</th>
+                                     <th>تاريخ المخالفة</th>
+                                     <th>نوع المخالفة</th>
+                                     <th>المتسبب</th>
+                                     <th>وصف المخالفة</th>
+                                     <th>القيمة</th>
+                                     <th>تاريخ الاستحقاق</th>
+                                     <th>رقم السداد</th>
+                                     <th>حالة الدفع</th>
+                                     <th>الإجراءات</th>
+                                 </tr>
+                             </thead>
+                             <tbody id="violations-table-body">
+                                 <tr>
+                                     <td colspan="11" class="text-center">لا توجد مخالفات</td>
+                                 </tr>
+                             </tbody>
+                         </table>
+                     </div>
                 </div>
             </div>
         </div>
