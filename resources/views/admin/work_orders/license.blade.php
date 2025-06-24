@@ -74,6 +74,228 @@
         box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
         color: white;
     }
+    
+    /* أنماط النظام التفاعلي للمختبر */
+    .test-card {
+        transition: all 0.3s ease;
+        border: 2px solid #e9ecef;
+    }
+
+    .test-card:hover {
+        border-color: #007bff;
+        box-shadow: 0 4px 8px rgba(0,123,255,0.1);
+    }
+
+    .test-calculation {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 8px;
+        padding: 15px;
+        margin-top: 10px;
+        border: 1px solid #dee2e6;
+    }
+
+    .form-control-sm:focus, .form-select-sm:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.25);
+    }
+
+    .bg-light {
+        background-color: #f8f9fa !important;
+    }
+
+    .text-primary {
+        color: #007bff !important;
+    }
+
+    .badge {
+        font-size: 0.875em;
+    }
+
+    .fs-2 {
+        font-size: 1.5rem !important;
+    }
+
+    .fs-4 {
+        font-size: 1.25rem !important;
+    }
+
+    .fs-6 {
+        font-size: 1rem !important;
+    }
+
+    .bg-opacity-10 {
+        background-color: rgba(var(--bs-success-rgb), 0.1) !important;
+    }
+
+    .bg-danger.bg-opacity-10 {
+        background-color: rgba(var(--bs-danger-rgb), 0.1) !important;
+    }
+
+    .bg-warning.bg-opacity-10 {
+        background-color: rgba(var(--bs-warning-rgb), 0.1) !important;
+    }
+
+    .border-info {
+        border-color: #0dcaf0 !important;
+    }
+
+    .card-header.bg-info {
+        background-color: #0dcaf0 !important;
+    }
+
+    .test-calculation .row {
+        align-items: end;
+    }
+
+    .form-check-input:checked {
+        background-color: #007bff;
+        border-color: #007bff;
+    }
+
+    .test-card .card-body {
+        padding: 1.25rem;
+    }
+
+    .small {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #6c757d;
+    }
+
+    /* أنماط النظام الجديد مع التكرار */
+    .test-row {
+        background: rgba(255, 255, 255, 0.9);
+        transition: all 0.3s ease;
+        position: relative;
+        border: 1px solid #e9ecef !important;
+    }
+    
+    .test-row:hover {
+        background: rgba(255, 255, 255, 1);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,123,255,0.15);
+        border-color: #007bff !important;
+    }
+    
+    .test-row .badge {
+        animation: pulse 2s infinite;
+        font-weight: 600;
+    }
+    
+    @keyframes pulse {
+        0% { transform: scale(1); opacity: 0.8; }
+        50% { transform: scale(1.05); opacity: 1; }
+        100% { transform: scale(1); opacity: 0.8; }
+    }
+    
+    .btn-primary {
+        background: linear-gradient(45deg, #007bff, #0056b3);
+        border: none;
+        transition: all 0.3s ease;
+        font-weight: 600;
+    }
+    
+    .btn-primary:hover {
+        background: linear-gradient(45deg, #0056b3, #004085);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(0,123,255,0.4);
+    }
+    
+    .btn-danger {
+        background: linear-gradient(45deg, #dc3545, #c82333);
+        border: none;
+        transition: all 0.3s ease;
+        font-weight: 600;
+    }
+    
+    .btn-danger:hover {
+        background: linear-gradient(45deg, #c82333, #bd2130);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(220,53,69,0.4);
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.25);
+        transform: scale(1.02);
+        transition: all 0.3s ease;
+    }
+    
+    .form-check-input:checked {
+        background-color: #007bff;
+        border-color: #007bff;
+    }
+    
+    .form-check-label {
+        font-weight: 600;
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+    
+    .form-check-label:hover {
+        transform: scale(1.1);
+    }
+    
+    .text-success {
+        color: #28a745 !important;
+    }
+    
+    .text-danger {
+        color: #dc3545 !important;
+    }
+    
+    .bg-light {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
+    }
+    
+    .test-row .col-md-3 {
+        padding: 0.25rem;
+    }
+    
+    .test-row .form-label {
+        margin-bottom: 0.25rem;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #495057;
+    }
+    
+    .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+        border-radius: 0.375rem;
+    }
+    
+    .btn-outline-secondary {
+        color: #6c757d;
+        border-color: #6c757d;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-outline-secondary:hover {
+        color: #fff;
+        background-color: #6c757d;
+        border-color: #6c757d;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(108, 117, 125, 0.3);
+    }
+    
+    .test-row .d-flex.gap-2 {
+        flex-wrap: nowrap;
+    }
+    
+    .btn-outline-warning {
+        color: #ffc107;
+        border-color: #ffc107;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-outline-warning:hover {
+        color: #212529;
+        background-color: #ffc107;
+        border-color: #ffc107;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(255, 193, 7, 0.3);
+    }
 </style>
 
 <script>
@@ -239,7 +461,7 @@
                 if (!response.violations || response.violations.length === 0) {
                     tbody.innerHTML = `
                         <tr>
-                            <td colspan="9" class="text-center">لا توجد مخالفات</td>
+                            <td colspan="11" class="text-center">لا توجد مخالفات</td>
                         </tr>
                     `;
                     return;
@@ -251,21 +473,33 @@
                         new Date(violation.violation_date).toLocaleDateString('en-GB') : '';
                     const dueDate = violation.payment_due_date ? 
                         new Date(violation.payment_due_date).toLocaleDateString('en-GB') : '';
+                    
+                    // تحديد حالة السداد
+                    const paymentStatusBadge = violation.payment_status == 1 ? 
+                        '<span class="badge bg-success"><i class="fas fa-check-circle me-1"></i>مسددة</span>' : 
+                        '<span class="badge bg-danger"><i class="fas fa-times-circle me-1"></i>غير مسددة</span>';
 
                     tbody.innerHTML += `
                         <tr>
                             <td>${index + 1}</td>
-                            <td>${violation.violation_number || ''}</td>
+                            <td><strong class="text-primary">${violation.violation_number || ''}</strong></td>
                             <td>${violationDate}</td>
-                            <td>${violation.violation_type || ''}</td>
+                            <td><span class="badge bg-info">${violation.violation_type || ''}</span></td>
                             <td>${violation.responsible_party || ''}</td>
-                            <td>${violation.payment_status || ''}</td>
-                            <td>${violation.violation_amount || ''} ريال</td>
+                            <td>${violation.violation_description || '-'}</td>
+                            <td><strong class="text-success">${violation.violation_amount || '0'} ريال</strong></td>
                             <td>${dueDate}</td>
+                            <td>${violation.payment_invoice_number || '-'}</td>
+                            <td>${paymentStatusBadge}</td>
                             <td>
-                                <button class="btn btn-danger btn-sm" onclick="deleteViolation(${violation.id})">
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-info" onclick="viewViolation(${violation.id})" title="عرض">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-outline-danger" onclick="deleteViolation(${violation.id})" title="حذف">
                                         <i class="fas fa-trash"></i>
                                     </button>
+                                </div>
                             </td>
                         </tr>
                     `;
@@ -305,7 +539,7 @@
             success: function(response) {
                 console.log('Success response:', response);
                 toastr.success('تم حفظ المخالفة بنجاح');
-                form.reset();
+                resetViolationForm();
                 loadViolations();
             },
             error: function(xhr) {
@@ -325,6 +559,25 @@
                 }
             }
         });
+    }
+
+    function viewViolation(violationId) {
+        // يمكن إضافة modal لعرض تفاصيل المخالفة
+        toastr.info('سيتم إضافة عرض التفاصيل قريباً');
+    }
+
+    function resetViolationForm() {
+        const form = document.getElementById('violationForm');
+        if (form) {
+            form.reset();
+            
+            // إعادة تعيين القيم الافتراضية
+            document.querySelector('[name="violation_date"]').value = '{{ date("Y-m-d") }}';
+            document.querySelector('[name="payment_due_date"]').value = '{{ date("Y-m-d", strtotime("+30 days")) }}';
+            document.querySelector('[name="payment_status"][value="0"]').checked = true;
+            
+            toastr.info('تم إعادة تعيين النموذج');
+        }
     }
 
     function deleteViolation(violationId) {
@@ -581,170 +834,565 @@
                         @csrf
                         <input type="hidden" name="work_order_id" value="{{ $workOrder->id }}">
                         
-                        <!-- اختبارات المختبر -->
+                        <!-- اختبارات المختبر مع النظام التفاعلي -->
                         <div class="row g-3 mb-4">
+                            <!-- اختبار العمق -->
                             <div class="col-md-6">
-                                <div class="card">
+                                <div class="card test-card">
                                     <div class="card-body">
-                                        <label class="form-label fw-bold">اختبار العمق</label>
-                                        <div class="d-flex gap-3 align-items-center mb-2">
+                                        <label class="form-label fw-bold text-primary">
+                                            <i class="fas fa-ruler-vertical me-2"></i>اختبار العمق
+                                        </label>
+                                        <div class="d-flex gap-3 align-items-center mb-3">
                                             <div class="form-check">
-                                                <input class="form-check-input test-radio" type="radio" name="has_depth_test" value="1" id="depth_test_yes" data-test="depth_test">
+                                                <input class="form-check-input test-radio" type="radio" name="has_depth_test" value="1" id="depth_test_yes" data-test="depth_test" onchange="toggleTestCalculation('depth_test')">
                                                 <label class="form-check-label" for="depth_test_yes">نعم</label>
-                            </div>
+                                            </div>
                                             <div class="form-check">
-                                                <input class="form-check-input test-radio" type="radio" name="has_depth_test" value="0" id="depth_test_no" data-test="depth_test" checked>
+                                                <input class="form-check-input test-radio" type="radio" name="has_depth_test" value="0" id="depth_test_no" data-test="depth_test" checked onchange="toggleTestCalculation('depth_test')">
                                                 <label class="form-check-label" for="depth_test_no">لا</label>
                                             </div>
                                         </div>
-                                        <div class="test-uploads depth_test-upload" style="display: none;">
-                                            <div class="mb-2">
-                                                <label class="form-label">مرفق الاختبار</label>
-                                                <input type="file" class="form-control" name="depth_test_file_path">
+                                        
+                                                                <div class="test-calculation depth_test-calculation" style="display: none;">
+                            <div class="mb-3 d-flex gap-2 flex-wrap">
+                                <button type="button" class="btn btn-primary btn-sm" onclick="addTestRow('depth_test')">
+                                    <i class="fas fa-plus me-1"></i>إضافة قيمة جديدة
+                                </button>
+                                <button type="button" class="btn btn-outline-warning btn-sm" onclick="clearAllTestRows('depth_test')">
+                                    <i class="fas fa-eraser me-1"></i>مسح جميع القيم
+                                </button>
+                            </div>
+                            
+                            <div id="depth_test_rows_container">
+                                <div class="test-row border rounded p-3 mb-3" data-row="1">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="badge bg-info">القيمة #1</span>
+                                        <button type="button" class="btn btn-danger btn-sm" onclick="removeTestRow('depth_test', 1)" style="display: none;">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                    <div class="row g-2 mb-3">
+                                        <div class="col-md-3">
+                                            <label class="form-label small"> النقاط</label>
+                                            <input type="number" class="form-control form-control-sm" name="depth_test_input_1" step="0.01" onchange="calculateTestRow('depth_test', 1)" placeholder="أدخل عدد النقاط">
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label small">السعر</label>
+                                            <select class="form-select form-select-sm" name="depth_test_factor_1" onchange="calculateTestRow('depth_test', 1)">
+                                                <option value="46">46</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label small">النتيجة</label>
+                                            <input type="number" class="form-control form-control-sm bg-light" name="depth_test_result_1" readonly>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label small">الحالة</label>
+                                            <div class="d-flex gap-2">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="depth_test_status_1" value="pass" id="depth_test_pass_1" onchange="updateTestTotals()">
+                                                    <label class="form-check-label text-success" for="depth_test_pass_1">
+                                                        <i class="fas fa-check"></i>
+                                                    </label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="depth_test_status_1" value="fail" id="depth_test_fail_1" onchange="updateTestTotals()">
+                                                    <label class="form-check-label text-danger" for="depth_test_fail_1">
+                                                        <i class="fas fa-times"></i>
+                                                    </label>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
+                            
+                            <div class="mb-2">
+                                <label class="form-label small">مرفق الاختبار</label>
+                                <input type="file" class="form-control form-control-sm" name="depth_test_file_path">
+                            </div>
+                        </div>
+                                    </div>
+                                </div>
+                            </div>
 
+                            <!-- اختبار دك التربة -->
                             <div class="col-md-6">
-                                <div class="card">
+                                <div class="card test-card">
                                     <div class="card-body">
-                                        <label class="form-label fw-bold">اختبار دك التربة</label>
-                                        <div class="d-flex gap-3 align-items-center mb-2">
+                                        <label class="form-label fw-bold text-primary">
+                                            <i class="fas fa-hammer me-2"></i>اختبار دك التربة
+                                        </label>
+                                        <div class="d-flex gap-3 align-items-center mb-3">
                                             <div class="form-check">
-                                                <input class="form-check-input test-radio" type="radio" name="has_soil_compaction_test" value="1" id="soil_compaction_test_yes" data-test="soil_compaction_test">
+                                                <input class="form-check-input test-radio" type="radio" name="has_soil_compaction_test" value="1" id="soil_compaction_test_yes" data-test="soil_compaction_test" onchange="toggleTestCalculation('soil_compaction_test')">
                                                 <label class="form-check-label" for="soil_compaction_test_yes">نعم</label>
                                             </div>
                                             <div class="form-check">
-                                                <input class="form-check-input test-radio" type="radio" name="has_soil_compaction_test" value="0" id="soil_compaction_test_no" data-test="soil_compaction_test" checked>
+                                                <input class="form-check-input test-radio" type="radio" name="has_soil_compaction_test" value="0" id="soil_compaction_test_no" data-test="soil_compaction_test" checked onchange="toggleTestCalculation('soil_compaction_test')">
                                                 <label class="form-check-label" for="soil_compaction_test_no">لا</label>
                                             </div>
                                         </div>
-                                        <div class="test-uploads soil_compaction_test-upload" style="display: none;">
-                                            <div class="mb-2">
-                                                <label class="form-label">مرفق الاختبار</label>
-                                                <input type="file" class="form-control" name="soil_compaction_file_path">
+                                        
+                                                                <div class="test-calculation soil_compaction_test-calculation" style="display: none;">
+                            <div class="mb-3 d-flex gap-2 flex-wrap">
+                                <button type="button" class="btn btn-primary btn-sm" onclick="addTestRow('soil_compaction_test')">
+                                    <i class="fas fa-plus me-1"></i>إضافة قيمة جديدة
+                                </button>
+                                <button type="button" class="btn btn-outline-warning btn-sm" onclick="clearAllTestRows('soil_compaction_test')">
+                                    <i class="fas fa-eraser me-1"></i>مسح جميع القيم
+                                </button>
+                            </div>
+                            
+                            <div id="soil_compaction_test_rows_container">
+                                <div class="test-row border rounded p-3 mb-3" data-row="1">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="badge bg-info">القيمة #1</span>
+                                        <button type="button" class="btn btn-danger btn-sm" onclick="removeTestRow('soil_compaction_test', 1)" style="display: none;">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                    <div class="row g-2 mb-3">
+                                        <div class="col-md-3">
+                                            <label class="form-label small"> النقاط</label>
+                                            <input type="number" class="form-control form-control-sm" name="soil_compaction_test_input_1" step="0.01" onchange="calculateTestRow('soil_compaction_test', 1)" placeholder="أدخل عدد النقاط">
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label small">السعر</label>
+                                            <select class="form-select form-select-sm" name="soil_compaction_test_factor_1" onchange="calculateTestRow('soil_compaction_test', 1)">
+                                                <option value="90">90</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label small">النتيجة</label>
+                                            <input type="number" class="form-control form-control-sm bg-light" name="soil_compaction_test_result_1" readonly>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label small">الحالة</label>
+                                            <div class="d-flex gap-2">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="soil_compaction_test_status_1" value="pass" id="soil_compaction_test_pass_1" onchange="updateTestTotals()">
+                                                    <label class="form-check-label text-success" for="soil_compaction_test_pass_1">
+                                                        <i class="fas fa-check"></i>
+                                                    </label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="soil_compaction_test_status_1" value="fail" id="soil_compaction_test_fail_1" onchange="updateTestTotals()">
+                                                    <label class="form-check-label text-danger" for="soil_compaction_test_fail_1">
+                                                        <i class="fas fa-times"></i>
+                                                    </label>
+                                                </div>
                                             </div>
                                         </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-2">
+                                <label class="form-label small">مرفق الاختبار</label>
+                                <input type="file" class="form-control form-control-sm" name="soil_compaction_file_path">
+                            </div>
+                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
                         <div class="row g-3 mb-4">
+                            <!-- اختبار MC1, RC2 -->
                             <div class="col-md-6">
-                                <div class="card">
+                                <div class="card test-card">
                                     <div class="card-body">
-                                        <label class="form-label fw-bold">اختبار MC1, RC2</label>
-                                        <div class="d-flex gap-3 align-items-center mb-2">
+                                        <label class="form-label fw-bold text-primary">
+                                            <i class="fas fa-vial me-2"></i>اختبار تقيم رش  MC1, RC2
+                                        </label>
+                                        <div class="d-flex gap-3 align-items-center mb-3">
                                             <div class="form-check">
-                                                <input class="form-check-input test-radio" type="radio" name="has_rc1_mc1_test" value="1" id="rc1_mc1_test_yes" data-test="rc1_mc1_test">
+                                                <input class="form-check-input test-radio" type="radio" name="has_rc1_mc1_test" value="1" id="rc1_mc1_test_yes" data-test="rc1_mc1_test" onchange="toggleTestCalculation('rc1_mc1_test')">
                                                 <label class="form-check-label" for="rc1_mc1_test_yes">نعم</label>
                                             </div>
                                             <div class="form-check">
-                                                <input class="form-check-input test-radio" type="radio" name="has_rc1_mc1_test" value="0" id="rc1_mc1_test_no" data-test="rc1_mc1_test" checked>
+                                                <input class="form-check-input test-radio" type="radio" name="has_rc1_mc1_test" value="0" id="rc1_mc1_test_no" data-test="rc1_mc1_test" checked onchange="toggleTestCalculation('rc1_mc1_test')">
                                                 <label class="form-check-label" for="rc1_mc1_test_no">لا</label>
                                             </div>
                                         </div>
-                                        <div class="test-uploads rc1_mc1_test-upload" style="display: none;">
-                                            <div class="mb-2">
-                                                <label class="form-label">مرفق الاختبار</label>
-                                                <input type="file" class="form-control" name="rc1_mc1_file_path">
+                                        
+                                                                <div class="test-calculation rc1_mc1_test-calculation" style="display: none;">
+                            <div class="mb-3 d-flex gap-2 flex-wrap">
+                                <button type="button" class="btn btn-primary btn-sm" onclick="addTestRow('rc1_mc1_test')">
+                                    <i class="fas fa-plus me-1"></i>إضافة قيمة جديدة
+                                </button>
+                                <button type="button" class="btn btn-outline-warning btn-sm" onclick="clearAllTestRows('rc1_mc1_test')">
+                                    <i class="fas fa-eraser me-1"></i>مسح جميع القيم
+                                </button>
+                            </div>
+                            
+                            <div id="rc1_mc1_test_rows_container">
+                                <div class="test-row border rounded p-3 mb-3" data-row="1">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="badge bg-info">القيمة #1</span>
+                                        <button type="button" class="btn btn-danger btn-sm" onclick="removeTestRow('rc1_mc1_test', 1)" style="display: none;">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                    <div class="row g-2 mb-3">
+                                        <div class="col-md-3">
+                                            <label class="form-label small"> النقاط</label>
+                                            <input type="number" class="form-control form-control-sm" name="rc1_mc1_test_input_1" step="0.01" onchange="calculateTestRow('rc1_mc1_test', 1)" placeholder="أدخل عدد النقاط">
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label small">السعر</label>
+                                            <select class="form-select form-select-sm" name="rc1_mc1_test_factor_1" onchange="calculateTestRow('rc1_mc1_test', 1)">
+                                                <option value="38">38</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label small">النتيجة</label>
+                                            <input type="number" class="form-control form-control-sm bg-light" name="rc1_mc1_test_result_1" readonly>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label small">الحالة</label>
+                                            <div class="d-flex gap-2">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="rc1_mc1_test_status_1" value="pass" id="rc1_mc1_test_pass_1" onchange="updateTestTotals()">
+                                                    <label class="form-check-label text-success" for="rc1_mc1_test_pass_1">
+                                                        <i class="fas fa-check"></i>
+                                                    </label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="rc1_mc1_test_status_1" value="fail" id="rc1_mc1_test_fail_1" onchange="updateTestTotals()">
+                                                    <label class="form-check-label text-danger" for="rc1_mc1_test_fail_1">
+                                                        <i class="fas fa-times"></i>
+                                                    </label>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
+                            
+                            <div class="mb-2">
+                                <label class="form-label small">مرفق الاختبار</label>
+                                <input type="file" class="form-control form-control-sm" name="rc1_mc1_file_path">
+                            </div>
+                        </div>
+                                    </div>
+                                </div>
+                            </div>
 
+                            <!-- اختبار أسفلت -->
                             <div class="col-md-6">
-                                <div class="card">
+                                <div class="card test-card">
                                     <div class="card-body">
-                                        <label class="form-label fw-bold">اختبار أسفلت</label>
-                                        <div class="d-flex gap-3 align-items-center mb-2">
+                                        <label class="form-label fw-bold text-primary">
+                                            <i class="fas fa-road me-2"></i>اختبار دك أسفلت
+                                        </label>
+                                        <div class="d-flex gap-3 align-items-center mb-3">
                                             <div class="form-check">
-                                                <input class="form-check-input test-radio" type="radio" name="has_asphalt_test" value="1" id="asphalt_test_yes" data-test="asphalt_test">
+                                                <input class="form-check-input test-radio" type="radio" name="has_asphalt_test" value="1" id="asphalt_test_yes" data-test="asphalt_test" onchange="toggleTestCalculation('asphalt_test')">
                                                 <label class="form-check-label" for="asphalt_test_yes">نعم</label>
                                             </div>
                                             <div class="form-check">
-                                                <input class="form-check-input test-radio" type="radio" name="has_asphalt_test" value="0" id="asphalt_test_no" data-test="asphalt_test" checked>
+                                                <input class="form-check-input test-radio" type="radio" name="has_asphalt_test" value="0" id="asphalt_test_no" data-test="asphalt_test" checked onchange="toggleTestCalculation('asphalt_test')">
                                                 <label class="form-check-label" for="asphalt_test_no">لا</label>
                                             </div>
                                         </div>
-                                        <div class="test-uploads asphalt_test-upload" style="display: none;">
-                                            <div class="mb-2">
-                                                <label class="form-label">مرفق الاختبار</label>
-                                                <input type="file" class="form-control" name="asphalt_test_file_path">
+                                        
+                                                                <div class="test-calculation asphalt_test-calculation" style="display: none;">
+                            <div class="mb-3 d-flex gap-2 flex-wrap">
+                                <button type="button" class="btn btn-primary btn-sm" onclick="addTestRow('asphalt_test')">
+                                    <i class="fas fa-plus me-1"></i>إضافة قيمة جديدة
+                                </button>
+                                <button type="button" class="btn btn-outline-warning btn-sm" onclick="clearAllTestRows('asphalt_test')">
+                                    <i class="fas fa-eraser me-1"></i>مسح جميع القيم
+                                </button>
+                            </div>
+                            
+                            <div id="asphalt_test_rows_container">
+                                <div class="test-row border rounded p-3 mb-3" data-row="1">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="badge bg-info">القيمة #1</span>
+                                        <button type="button" class="btn btn-danger btn-sm" onclick="removeTestRow('asphalt_test', 1)" style="display: none;">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                    <div class="row g-2 mb-3">
+                                        <div class="col-md-3">
+                                            <label class="form-label small"> النقاط</label>
+                                            <input type="number" class="form-control form-control-sm" name="asphalt_test_input_1" step="0.01" onchange="calculateTestRow('asphalt_test', 1)" placeholder="أدخل عدد النقاط">
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label small">السعر</label>
+                                            <select class="form-select form-select-sm" name="asphalt_test_factor_1" onchange="calculateTestRow('asphalt_test', 1)">
+                                                <option value="84">84</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label small">النتيجة</label>
+                                            <input type="number" class="form-control form-control-sm bg-light" name="asphalt_test_result_1" readonly>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label small">الحالة</label>
+                                            <div class="d-flex gap-2">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="asphalt_test_status_1" value="pass" id="asphalt_test_pass_1" onchange="updateTestTotals()">
+                                                    <label class="form-check-label text-success" for="asphalt_test_pass_1">
+                                                        <i class="fas fa-check"></i>
+                                                    </label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="asphalt_test_status_1" value="fail" id="asphalt_test_fail_1" onchange="updateTestTotals()">
+                                                    <label class="form-check-label text-danger" for="asphalt_test_fail_1">
+                                                        <i class="fas fa-times"></i>
+                                                    </label>
+                                                </div>
                                             </div>
                                         </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-2">
+                                <label class="form-label small">مرفق الاختبار</label>
+                                <input type="file" class="form-control form-control-sm" name="asphalt_test_file_path">
+                            </div>
+                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
                         <div class="row g-3 mb-4">
+                            <!-- اختبار تربة -->
                             <div class="col-md-6">
-                                <div class="card">
+                                <div class="card test-card">
                                     <div class="card-body">
-                                        <label class="form-label fw-bold">اختبار تربة</label>
-                                        <div class="d-flex gap-3 align-items-center mb-2">
+                                        <label class="form-label fw-bold text-primary">
+                                            <i class="fas fa-seedling me-2"></i>اختبار تربة
+                                        </label>
+                                        <div class="d-flex gap-3 align-items-center mb-3">
                                             <div class="form-check">
-                                                <input class="form-check-input test-radio" type="radio" name="has_soil_test" value="1" id="soil_test_yes" data-test="soil_test">
+                                                <input class="form-check-input test-radio" type="radio" name="has_soil_test" value="1" id="soil_test_yes" data-test="soil_test" onchange="toggleTestCalculation('soil_test')">
                                                 <label class="form-check-label" for="soil_test_yes">نعم</label>
                                             </div>
                                             <div class="form-check">
-                                                <input class="form-check-input test-radio" type="radio" name="has_soil_test" value="0" id="soil_test_no" data-test="soil_test" checked>
+                                                <input class="form-check-input test-radio" type="radio" name="has_soil_test" value="0" id="soil_test_no" data-test="soil_test" checked onchange="toggleTestCalculation('soil_test')">
                                                 <label class="form-check-label" for="soil_test_no">لا</label>
                                             </div>
                                         </div>
-                                        <div class="test-uploads soil_test-upload" style="display: none;">
-                                            <div class="mb-2">
-                                                <label class="form-label">مرفق الاختبار</label>
-                                                <input type="file" class="form-control" name="soil_test_file_path">
+                                        
+                                                                <div class="test-calculation soil_test-calculation" style="display: none;">
+                            <div class="mb-3 d-flex gap-2 flex-wrap">
+                                <button type="button" class="btn btn-primary btn-sm" onclick="addTestRow('soil_test')">
+                                    <i class="fas fa-plus me-1"></i>إضافة قيمة جديدة
+                                </button>
+                                <button type="button" class="btn btn-outline-warning btn-sm" onclick="clearAllTestRows('soil_test')">
+                                    <i class="fas fa-eraser me-1"></i>مسح جميع القيم
+                                </button>
+                            </div>
+                            
+                            <div id="soil_test_rows_container">
+                                <div class="test-row border rounded p-3 mb-3" data-row="1">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="badge bg-info">القيمة #1</span>
+                                        <button type="button" class="btn btn-danger btn-sm" onclick="removeTestRow('soil_test', 1)" style="display: none;">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                    <div class="row g-2 mb-3">
+                                        <div class="col-md-3">
+                                            <label class="form-label small"> النقاط</label>
+                                            <input type="number" class="form-control form-control-sm" name="soil_test_input_1" step="0.01" onchange="calculateTestRow('soil_test', 1)" placeholder="أدخل عدد النقاط ">
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label small">السعر</label>
+                                            <select class="form-select form-select-sm" name="soil_test_factor_1" onchange="calculateTestRow('soil_test', 1)">
+                                                <option value="178">178</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label small">النتيجة</label>
+                                            <input type="number" class="form-control form-control-sm bg-light" name="soil_test_result_1" readonly>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label small">الحالة</label>
+                                            <div class="d-flex gap-2">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="soil_test_status_1" value="pass" id="soil_test_pass_1" onchange="updateTestTotals()">
+                                                    <label class="form-check-label text-success" for="soil_test_pass_1">
+                                                        <i class="fas fa-check"></i>
+                                                    </label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="soil_test_status_1" value="fail" id="soil_test_fail_1" onchange="updateTestTotals()">
+                                                    <label class="form-check-label text-danger" for="soil_test_fail_1">
+                                                        <i class="fas fa-times"></i>
+                                                    </label>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
+                            
+                            <div class="mb-2">
+                                <label class="form-label small">مرفق الاختبار</label>
+                                <input type="file" class="form-control form-control-sm" name="soil_test_file_path">
+                            </div>
+                        </div>
+                                    </div>
+                                </div>
+                            </div>
 
+                            <!-- اختبار بلاط وانترلوك -->
                             <div class="col-md-6">
-                                <div class="card">
+                                <div class="card test-card">
                                     <div class="card-body">
-                                        <label class="form-label fw-bold">اختبار بلاط وانترلوك</label>
-                                        <div class="d-flex gap-3 align-items-center mb-2">
+                                        <label class="form-label fw-bold text-primary">
+                                            <i class="fas fa-th me-2"></i>اختبار بلاط وانترلوك
+                                        </label>
+                                        <div class="d-flex gap-3 align-items-center mb-3">
                                             <div class="form-check">
-                                                <input class="form-check-input test-radio" type="radio" name="has_interlock_test" value="1" id="interlock_test_yes" data-test="interlock_test">
+                                                <input class="form-check-input test-radio" type="radio" name="has_interlock_test" value="1" id="interlock_test_yes" data-test="interlock_test" onchange="toggleTestCalculation('interlock_test')">
                                                 <label class="form-check-label" for="interlock_test_yes">نعم</label>
                                             </div>
                                             <div class="form-check">
-                                                <input class="form-check-input test-radio" type="radio" name="has_interlock_test" value="0" id="interlock_test_no" data-test="interlock_test" checked>
+                                                <input class="form-check-input test-radio" type="radio" name="has_interlock_test" value="0" id="interlock_test_no" data-test="interlock_test" checked onchange="toggleTestCalculation('interlock_test')">
                                                 <label class="form-check-label" for="interlock_test_no">لا</label>
                                             </div>
                                         </div>
-                                        <div class="test-uploads interlock_test-upload" style="display: none;">
-                                            <div class="mb-2">
-                                                <label class="form-label">مرفق الاختبار</label>
-                                                <input type="file" class="form-control" name="interlock_test_file_path">
+                                        
+                                                                <div class="test-calculation interlock_test-calculation" style="display: none;">
+                            <div class="mb-3 d-flex gap-2 flex-wrap">
+                                <button type="button" class="btn btn-primary btn-sm" onclick="addTestRow('interlock_test')">
+                                    <i class="fas fa-plus me-1"></i>إضافة قيمة جديدة
+                                </button>
+                                <button type="button" class="btn btn-outline-warning btn-sm" onclick="clearAllTestRows('interlock_test')">
+                                    <i class="fas fa-eraser me-1"></i>مسح جميع القيم
+                                </button>
+                            </div>
+                            
+                            <div id="interlock_test_rows_container">
+                                <div class="test-row border rounded p-3 mb-3" data-row="1">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="badge bg-info">القيمة #1</span>
+                                        <button type="button" class="btn btn-danger btn-sm" onclick="removeTestRow('interlock_test', 1)" style="display: none;">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                    <div class="row g-2 mb-3">
+                                        <div class="col-md-3">
+                                            <label class="form-label small">النقاط</label>
+                                            <input type="number" class="form-control form-control-sm" name="interlock_test_input_1" step="0.01" onchange="calculateTestRow('interlock_test', 1)" placeholder="أدخل عدد النقاط">
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label small">السعر</label>
+                                            <select class="form-select form-select-sm" name="interlock_test_factor_1" onchange="calculateTestRow('interlock_test', 1)">
+                                                <option value="34">34</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label small">النتيجة</label>
+                                            <input type="number" class="form-control form-control-sm bg-light" name="interlock_test_result_1" readonly>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label small">الحالة</label>
+                                            <div class="d-flex gap-2">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="interlock_test_status_1" value="pass" id="interlock_test_pass_1" onchange="updateTestTotals()">
+                                                    <label class="form-check-label text-success" for="interlock_test_pass_1">
+                                                        <i class="fas fa-check"></i>
+                                                    </label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="interlock_test_status_1" value="fail" id="interlock_test_fail_1" onchange="updateTestTotals()">
+                                                    <label class="form-check-label text-danger" for="interlock_test_fail_1">
+                                                        <i class="fas fa-times"></i>
+                                                    </label>
+                                                </div>
                                             </div>
                                         </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-2">
+                                <label class="form-label small">مرفق الاختبار</label>
+                                <input type="file" class="form-control form-control-sm" name="interlock_test_file_path">
+                            </div>
+                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- نتائج الاختبارات -->
+                        <!-- نتائج الاختبارات التفاعلية -->
                         <div class="row g-3 mb-4">
-                            <div class="col-md-4">
-                                <label class="form-label fw-bold">قيمة الاختبارات الناجحة</label>
-                                <input type="number" step="0.01" class="form-control" name="successful_tests_value">
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label fw-bold">قيمة الاختبارات الراسبة</label>
-                                <input type="number" step="0.01" class="form-control" name="failed_tests_value">
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label fw-bold">أسباب الرسوب</label>
-                                <textarea class="form-control" name="test_failure_reasons" rows="3"></textarea>
+                            <div class="col-12">
+                                <div class="card border-info">
+                                    <div class="card-header bg-info text-white">
+                                        <h5 class="mb-0">
+                                            <i class="fas fa-chart-bar me-2"></i>
+                                            ملخص نتائج الاختبارات
+                                        </h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row g-3">
+                                            <div class="col-md-3">
+                                                <div class="text-center p-3 border rounded bg-light">
+                                                    <i class="fas fa-calculator text-primary fs-2 mb-2"></i>
+                                                    <h6 class="fw-bold">إجمالي نتائج الاختبارات</h6>
+                                                    <span class="fs-4 fw-bold text-primary" id="total_tests_sum">0.00</span>
+                                                    <input type="hidden" name="total_tests_value" id="total_tests_value" value="0">
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="text-center p-3 border rounded bg-success bg-opacity-10">
+                                                    <i class="fas fa-check-circle text-success fs-2 mb-2"></i>
+                                                    <h6 class="fw-bold text-success">الاختبارات الناجحة</h6>
+                                                    <span class="fs-4 fw-bold text-success" id="passed_tests_sum">0.00</span>
+                                                    <input type="hidden" name="successful_tests_value" id="successful_tests_value" value="0">
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="text-center p-3 border rounded bg-danger bg-opacity-10">
+                                                    <i class="fas fa-times-circle text-danger fs-2 mb-2"></i>
+                                                    <h6 class="fw-bold text-danger">الاختبارات الراسبة</h6>
+                                                    <span class="fs-4 fw-bold text-danger" id="failed_tests_sum">0.00</span>
+                                                    <input type="hidden" name="failed_tests_value" id="failed_tests_value" value="0">
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="text-center p-3 border rounded bg-warning bg-opacity-10">
+                                                    <i class="fas fa-percentage text-warning fs-2 mb-2"></i>
+                                                    <h6 class="fw-bold text-warning">نسبة النجاح</h6>
+                                                    <span class="fs-4 fw-bold text-warning" id="success_percentage">0%</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="row mt-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label fw-bold">عدد الاختبارات المفعلة</label>
+                                                <input type="number" class="form-control bg-light" id="active_tests_count" readonly value="0">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label fw-bold">الحالة العامة للمختبر</label>
+                                                <div class="mt-2">
+                                                    <span class="badge fs-6 p-2" id="overall_lab_status">غير محدد</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="row mt-3">
+                                            <div class="col-12">
+                                                <label class="form-label fw-bold">أسباب الرسوب والملاحظات</label>
+                                                <textarea class="form-control" name="test_failure_reasons" id="test_failure_reasons" rows="3" placeholder="سيتم تعبئة أسباب الرسوب تلقائياً عند وجود اختبارات راسبة..."></textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -936,77 +1584,106 @@
                         @csrf
                         <input type="hidden" name="work_order_id" value="{{ $workOrder->id }}">
                         
-                        <!-- معلومات المخالفة -->
-                        <div class="row g-3 mb-4">
-                            <div class="col-md-3">
-                                <label class="form-label fw-bold">رقم المخالفة</label>
-                                <input type="text" class="form-control" name="violation_number" required>
-                            </div>
-                            <div class="col-md-3">
-                                <label class="form-label fw-bold">تاريخ المخالفة</label>
-                                <input type="date" class="form-control" name="violation_date" required>
-                            </div>
-                            <div class="col-md-3">
-                                <label class="form-label fw-bold">نوع المخالفة</label>
-                                <input type="text" class="form-control" name="violation_type" required>
-                            </div>
-                            <div class="col-md-3">
-                                <label class="form-label fw-bold">المتسبب</label>
-                                <input type="text" class="form-control" name="responsible_party" required>
-                            </div>
-                        </div>
+                                                 <!-- معلومات المخالفة -->
+                         <div class="row g-3 mb-4">
+                             <div class="col-md-3">
+                                 <label class="form-label fw-bold">رقم المخالفة</label>
+                                 <input type="text" class="form-control" name="violation_number" required>
+                             </div>
+                             <div class="col-md-3">
+                                 <label class="form-label fw-bold">تاريخ المخالفة</label>
+                                 <input type="date" class="form-control" name="violation_date" value="{{ date('Y-m-d') }}" required>
+                             </div>
+                             <div class="col-md-3">
+                                 <label class="form-label fw-bold">نوع المخالفة</label>
+                                 <input type="text" class="form-control" name="violation_type" required>
+                             </div>
+                             <div class="col-md-3">
+                                 <label class="form-label fw-bold">المتسبب</label>
+                                 <input type="text" class="form-control" name="responsible_party" required>
+                             </div>
+                         </div>
 
-                        <div class="row g-3 mb-4">
-                            <div class="col-md-4">
-                                <label class="form-label fw-bold">حالة الدفع</label>
-                                <input type="number" class="form-control" name="payment_status" required>
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label fw-bold">قيمة المخالفة</label>
-                                <div class="input-group">
-                                    <input type="number" class="form-control" name="violation_value" step="0.01" required>
-                                    <span class="input-group-text">ريال</span>
-                            </div>
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label fw-bold">تاريخ الاستحقاق</label>
-                                <input type="date" class="form-control" name="due_date" required>
-                            </div>
-                        </div>
+                         <div class="row g-3 mb-4">
+                             <div class="col-md-4">
+                                 <label class="form-label fw-bold">قيمة المخالفة</label>
+                                 <div class="input-group">
+                                     <input type="number" class="form-control" name="violation_amount" step="0.01" required>
+                                     <span class="input-group-text">ريال</span>
+                                 </div>
+                             </div>
+                             <div class="col-md-4">
+                                 <label class="form-label fw-bold">تاريخ الاستحقاق</label>
+                                 <input type="date" class="form-control" name="payment_due_date" value="{{ date('Y-m-d', strtotime('+30 days')) }}" required>
+                             </div>
+                             <div class="col-md-4">
+                                 <label class="form-label fw-bold">رقم سداد المخالفة</label>
+                                 <input type="text" class="form-control" name="payment_invoice_number" placeholder="رقم الفاتورة">
+                             </div>
+                         </div>
 
-                        <div class="row mt-4">
-                            <div class="col-12 text-center">
-                                <button type="button" class="btn btn-primary-custom btn-lg" onclick="saveViolationSection()">
-                                    <i class="fas fa-save me-2"></i>
-                                    حفظ المخالفة
-                                </button>
-                            </div>
-                        </div>
+                         <div class="row g-3 mb-4">
+                             <div class="col-md-8">
+                                 <label class="form-label fw-bold">وصف المخالفة</label>
+                                 <textarea class="form-control" name="violation_description" rows="3" placeholder="اكتب وصف المخالفة هنا..."></textarea>
+                             </div>
+                             <div class="col-md-4">
+                                 <label class="form-label fw-bold">حالة الفاتورة</label>
+                                 <div class="mt-2">
+                                     <div class="form-check mb-2">
+                                         <input class="form-check-input" type="radio" name="payment_status" id="payment_unpaid" value="0" checked>
+                                         <label class="form-check-label fw-bold text-danger" for="payment_unpaid">
+                                             <i class="fas fa-times-circle me-1"></i>
+                                             غير مسددة
+                                         </label>
+                                     </div>
+                                     <div class="form-check">
+                                         <input class="form-check-input" type="radio" name="payment_status" id="payment_paid" value="1">
+                                         <label class="form-check-label fw-bold text-success" for="payment_paid">
+                                             <i class="fas fa-check-circle me-1"></i>
+                                             مسددة
+                                         </label>
+                                     </div>
+                                 </div>
+                             </div>
+                         </div>
+
+                            <div class="row mt-4">
+                             <div class="col-12 text-center">
+                                 <button type="button" class="btn btn-primary-custom btn-lg me-2" onclick="saveViolationSection()">
+                                     <i class="fas fa-save me-2"></i>
+                                     حفظ المخالفة
+                                 </button>
+                                 
+                             </div>
+                         </div>
                     </form>
 
-                    <!-- جدول المخالفات -->
-                    <div class="table-responsive mt-4">
-                        <table class="table table-striped table-hover">
-                            <thead class="table-warning">
-                                <tr>
-                                    <th>#</th>
-                                    <th>رقم المخالفة</th>
-                                    <th>تاريخ المخالفة</th>
-                                        <th>نوع المخالفة</th>
-                                        <th>المتسبب</th>
-                                        <th>حالة الدفع</th>
-                                        <th>القيمة</th>
-                                    <th>تاريخ الاستحقاق</th>
-                                    <th>الإجراءات</th>
-                                </tr>
-                            </thead>
-                                <tbody id="violations-table-body">
-                                <tr>
-                                    <td colspan="9" class="text-center">لا توجد مخالفات</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+                                         <!-- جدول المخالفات -->
+                     <div class="table-responsive mt-4">
+                         <table class="table table-striped table-hover">
+                             <thead class="table-warning">
+                                 <tr>
+                                     <th>#</th>
+                                     <th>رقم المخالفة</th>
+                                     <th>تاريخ المخالفة</th>
+                                     <th>نوع المخالفة</th>
+                                     <th>المتسبب</th>
+                                     <th>وصف المخالفة</th>
+                                     <th>القيمة</th>
+                                     <th>تاريخ الاستحقاق</th>
+                                     <th>رقم السداد</th>
+                                     <th>حالة الدفع</th>
+                                     <th>الإجراءات</th>
+                                 </tr>
+                             </thead>
+                             <tbody id="violations-table-body">
+                                 <tr>
+                                     <td colspan="11" class="text-center">لا توجد مخالفات</td>
+                                 </tr>
+                             </tbody>
+                         </table>
+                     </div>
                 </div>
             </div>
         </div>
@@ -1331,6 +2008,382 @@ function saveAllEvacStreets() {
         }
     });
 }
+
+// ==================== دوال النظام التفاعلي للمختبر مع التكرار ====================
+
+// متغير لتتبع عدد الصفوف لكل اختبار
+let testRowCounters = {
+    'depth_test': 1,
+    'soil_compaction_test': 1,
+    'rc1_mc1_test': 1,
+    'asphalt_test': 1,
+    'soil_test': 1,
+    'interlock_test': 1
+};
+
+// دالة لإظهار/إخفاء حقول الحساب عند تفعيل الاختبار
+function toggleTestCalculation(testName) {
+    const calculationDiv = document.querySelector(`.${testName}-calculation`);
+    const testRadio = document.querySelector(`input[name="has_${testName}"][value="1"]`);
+    
+    if (calculationDiv) {
+        calculationDiv.style.display = testRadio.checked ? 'block' : 'none';
+        
+        // إذا تم إلغاء تفعيل الاختبار، نظف القيم وأعد حساب الإجماليات
+        if (!testRadio.checked) {
+            clearTestRows(testName);
+            updateTestTotals();
+        }
+    }
+}
+
+// دالة لإضافة صف جديد لاختبار معين
+function addTestRow(testName) {
+    testRowCounters[testName]++;
+    const rowNumber = testRowCounters[testName];
+    const container = document.getElementById(`${testName}_rows_container`);
+    
+    // الحصول على جميع خيارات المعامل من الصف الأول
+    const firstFactorSelect = container.querySelector(`select[name="${testName}_factor_1"]`);
+    let factorOptions = '';
+    
+    if (firstFactorSelect) {
+        Array.from(firstFactorSelect.options).forEach(option => {
+            factorOptions += `<option value="${option.value}">${option.text}</option>`;
+        });
+    } else {
+        factorOptions = '<option value="1">1</option>';
+    }
+    
+    const newRow = document.createElement('div');
+    newRow.className = 'test-row border rounded p-3 mb-3';
+    newRow.setAttribute('data-row', rowNumber);
+    
+    newRow.innerHTML = `
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="badge bg-info">القيمة #${rowNumber}</span>
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="copyFromFirstRow('${testName}', ${rowNumber})" title="نسخ من الصف الأول">
+                    <i class="fas fa-copy"></i>
+                </button>
+                <button type="button" class="btn btn-danger btn-sm" onclick="removeTestRow('${testName}', ${rowNumber})">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        </div>
+        <div class="row g-2 mb-3">
+            <div class="col-md-3">
+                <label class="form-label small"> النقاط</label>
+                <input type="number" class="form-control form-control-sm" name="${testName}_input_${rowNumber}" step="0.01" onchange="calculateTestRow('${testName}', ${rowNumber})" placeholder="أدخل عدد النقاط">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small">السعر</label>
+                <select class="form-select form-select-sm" name="${testName}_factor_${rowNumber}" onchange="calculateTestRow('${testName}', ${rowNumber})">
+                    ${factorOptions}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small">النتيجة</label>
+                <input type="number" class="form-control form-control-sm bg-light" name="${testName}_result_${rowNumber}" readonly>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small">الحالة</label>
+                <div class="d-flex gap-2">
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="${testName}_status_${rowNumber}" value="pass" id="${testName}_pass_${rowNumber}" onchange="updateTestTotals()">
+                        <label class="form-check-label text-success" for="${testName}_pass_${rowNumber}" title="ناجح">
+                            <i class="fas fa-check"></i>
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="${testName}_status_${rowNumber}" value="fail" id="${testName}_fail_${rowNumber}" onchange="updateTestTotals()">
+                        <label class="form-check-label text-danger" for="${testName}_fail_${rowNumber}" title="راسب">
+                            <i class="fas fa-times"></i>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    container.appendChild(newRow);
+    
+    // إظهار أزرار الحذف إذا كان هناك أكثر من صف واحد
+    updateDeleteButtons(testName);
+    
+    // إضافة تأثير بصري للصف الجديد
+    newRow.style.opacity = '0';
+    newRow.style.transform = 'translateY(20px)';
+    setTimeout(() => {
+        newRow.style.transition = 'all 0.5s ease';
+        newRow.style.opacity = '1';
+        newRow.style.transform = 'translateY(0)';
+    }, 100);
+}
+
+// دالة لنسخ القيم من الصف الأول
+function copyFromFirstRow(testName, targetRowNumber) {
+    const container = document.getElementById(`${testName}_rows_container`);
+    
+    // الحصول على قيم الصف الأول
+    const firstInput = container.querySelector(`input[name="${testName}_input_1"]`);
+    const firstFactor = container.querySelector(`select[name="${testName}_factor_1"]`);
+    const firstStatus = container.querySelector(`input[name="${testName}_status_1"]:checked`);
+    
+    // تطبيق القيم على الصف المستهدف
+    const targetInput = container.querySelector(`input[name="${testName}_input_${targetRowNumber}"]`);
+    const targetFactor = container.querySelector(`select[name="${testName}_factor_${targetRowNumber}"]`);
+    
+    if (firstInput && targetInput) {
+        targetInput.value = firstInput.value;
+    }
+    
+    if (firstFactor && targetFactor) {
+        targetFactor.value = firstFactor.value;
+    }
+    
+    // نسخ حالة النجاح/الرسوب
+    if (firstStatus) {
+        const targetStatus = container.querySelector(`input[name="${testName}_status_${targetRowNumber}"][value="${firstStatus.value}"]`);
+        if (targetStatus) {
+            targetStatus.checked = true;
+        }
+    }
+    
+    // حساب النتيجة للصف الجديد
+    calculateTestRow(testName, targetRowNumber);
+    
+    // إشعار المستخدم
+    toastr.success('تم نسخ القيم من الصف الأول بنجاح');
+}
+
+// دالة لحذف صف اختبار
+function removeTestRow(testName, rowNumber) {
+    const container = document.getElementById(`${testName}_rows_container`);
+    const rowToRemove = container.querySelector(`[data-row="${rowNumber}"]`);
+    
+    if (rowToRemove) {
+        rowToRemove.remove();
+        updateTestTotals();
+        updateDeleteButtons(testName);
+    }
+}
+
+// دالة لتحديث ظهور أزرار الحذف
+function updateDeleteButtons(testName) {
+    const container = document.getElementById(`${testName}_rows_container`);
+    const rows = container.querySelectorAll('.test-row');
+    
+    rows.forEach((row, index) => {
+        const deleteButton = row.querySelector('.btn-danger');
+        if (deleteButton) {
+            deleteButton.style.display = rows.length > 1 ? 'inline-block' : 'none';
+        }
+    });
+}
+
+// دالة لحساب نتيجة صف اختبار معين
+function calculateTestRow(testName, rowNumber) {
+    const inputField = document.querySelector(`input[name="${testName}_input_${rowNumber}"]`);
+    const factorField = document.querySelector(`select[name="${testName}_factor_${rowNumber}"]`);
+    const resultField = document.querySelector(`input[name="${testName}_result_${rowNumber}"]`);
+    
+    if (inputField && factorField && resultField) {
+        const inputValue = parseFloat(inputField.value) || 0;
+        const factorValue = parseFloat(factorField.value) || 1;
+        const result = inputValue * factorValue;
+        
+        resultField.value = result.toFixed(2);
+        
+        // تحديث الإجماليات
+        updateTestTotals();
+    }
+}
+
+// دالة لتنظيف جميع صفوف اختبار معين
+function clearTestRows(testName) {
+    const container = document.getElementById(`${testName}_rows_container`);
+    const rows = container.querySelectorAll('.test-row');
+    
+    rows.forEach(row => {
+        const inputs = row.querySelectorAll('input');
+        const radios = row.querySelectorAll('input[type="radio"]');
+        
+        inputs.forEach(input => {
+            if (input.type !== 'radio') {
+                input.value = '';
+            }
+        });
+        
+        radios.forEach(radio => {
+            radio.checked = false;
+        });
+    });
+}
+
+// دالة لمسح جميع القيم مع تأكيد المستخدم
+function clearAllTestRows(testName) {
+    if (confirm('هل أنت متأكد من مسح جميع القيم لهذا الاختبار؟')) {
+        clearTestRows(testName);
+        updateTestTotals();
+        
+        // إضافة تأثير بصري
+        const container = document.getElementById(`${testName}_rows_container`);
+        const rows = container.querySelectorAll('.test-row');
+        
+        rows.forEach((row, index) => {
+            setTimeout(() => {
+                row.style.transition = 'all 0.3s ease';
+                row.style.transform = 'scale(0.95)';
+                row.style.opacity = '0.7';
+                
+                setTimeout(() => {
+                    row.style.transform = 'scale(1)';
+                    row.style.opacity = '1';
+                }, 200);
+            }, index * 100);
+        });
+        
+        toastr.success('تم مسح جميع القيم بنجاح');
+    }
+}
+
+// دالة لتحديث الإجماليات مع دعم التكرار
+function updateTestTotals() {
+    const testNames = ['depth_test', 'soil_compaction_test', 'rc1_mc1_test', 'asphalt_test', 'soil_test', 'interlock_test'];
+    
+    let totalSum = 0;
+    let passedSum = 0;
+    let failedSum = 0;
+    let activeTestsCount = 0;
+    let passedRowsCount = 0;
+    let failedRowsCount = 0;
+    let totalRowsCount = 0;
+    let failureReasons = [];
+    
+    testNames.forEach(testName => {
+        const testRadio = document.querySelector(`input[name="has_${testName}"][value="1"]`);
+        
+        // تحقق من أن الاختبار مفعل
+        if (testRadio && testRadio.checked) {
+            activeTestsCount++;
+            
+            // البحث عن جميع صفوف هذا الاختبار
+            const container = document.getElementById(`${testName}_rows_container`);
+            const rows = container.querySelectorAll('.test-row');
+            
+            rows.forEach(row => {
+                const rowNumber = row.getAttribute('data-row');
+                const resultField = row.querySelector(`input[name="${testName}_result_${rowNumber}"]`);
+                const passRadio = row.querySelector(`input[name="${testName}_status_${rowNumber}"][value="pass"]`);
+                const failRadio = row.querySelector(`input[name="${testName}_status_${rowNumber}"][value="fail"]`);
+                
+                const result = parseFloat(resultField?.value) || 0;
+                
+                // إضافة النتيجة للإجمالي إذا كانت موجودة
+                if (result > 0) {
+                    totalSum += result;
+                    totalRowsCount++;
+                    
+                    if (passRadio && passRadio.checked) {
+                        passedSum += result;
+                        passedRowsCount++;
+                    } else if (failRadio && failRadio.checked) {
+                        failedSum += result;
+                        failedRowsCount++;
+                        
+                        // إضافة سبب الرسوب
+                        const testLabel = getTestLabel(testName);
+                        failureReasons.push(`${testLabel} (القيمة #${rowNumber}): نتيجة ${result.toFixed(2)}`);
+                    }
+                }
+            });
+        }
+    });
+    
+    // تحديث العرض
+    document.getElementById('total_tests_sum').textContent = totalSum.toFixed(2);
+    document.getElementById('passed_tests_sum').textContent = passedSum.toFixed(2);
+    document.getElementById('failed_tests_sum').textContent = failedSum.toFixed(2);
+    document.getElementById('active_tests_count').value = activeTestsCount;
+    
+    // تحديث الحقول المخفية
+    document.getElementById('total_tests_value').value = totalSum.toFixed(2);
+    document.getElementById('successful_tests_value').value = passedSum.toFixed(2);
+    document.getElementById('failed_tests_value').value = failedSum.toFixed(2);
+    
+    // حساب نسبة النجاح بناءً على الصفوف المكتملة
+    let successPercentage = 0;
+    if (totalRowsCount > 0) {
+        successPercentage = (passedRowsCount / totalRowsCount) * 100;
+    }
+    document.getElementById('success_percentage').textContent = successPercentage.toFixed(1) + '%';
+    
+    // تحديث الحالة العامة
+    updateOverallLabStatus(activeTestsCount, passedRowsCount, failedRowsCount, totalRowsCount);
+    
+    // تحديث أسباب الرسوب
+    const failureReasonsTextarea = document.getElementById('test_failure_reasons');
+    if (failureReasons.length > 0) {
+        failureReasonsTextarea.value = 'أسباب الرسوب:\n' + failureReasons.join('\n');
+    } else if (totalRowsCount > 0 && failedRowsCount === 0) {
+        failureReasonsTextarea.value = 'جميع القيم ناجحة - لا توجد أسباب رسوب';
+    } else {
+        failureReasonsTextarea.value = '';
+    }
+}
+
+// دالة للحصول على اسم الاختبار بالعربية
+function getTestLabel(testName) {
+    const labels = {
+        'depth_test': 'اختبار العمق',
+        'soil_compaction_test': 'اختبار دك التربة',
+        'rc1_mc1_test': 'اختبار MC1, RC2',
+        'asphalt_test': 'اختبار أسفلت',
+        'soil_test': 'اختبار تربة',
+        'interlock_test': 'اختبار بلاط وانترلوك'
+    };
+    return labels[testName] || testName;
+}
+
+// دالة لتحديث الحالة العامة للمختبر
+function updateOverallLabStatus(activeTests, passedRows, failedRows, totalRows) {
+    const statusElement = document.getElementById('overall_lab_status');
+    
+    if (activeTests === 0) {
+        statusElement.textContent = 'لم يتم تفعيل أي اختبارات';
+        statusElement.className = 'badge fs-6 p-2 bg-secondary';
+    } else if (totalRows === 0) {
+        statusElement.textContent = 'لا توجد قيم مدخلة';
+        statusElement.className = 'badge fs-6 p-2 bg-secondary';
+    } else if (failedRows === 0 && passedRows > 0) {
+        statusElement.textContent = `جميع القيم ناجحة (${passedRows} قيمة)`;
+        statusElement.className = 'badge fs-6 p-2 bg-success';
+    } else if (failedRows > 0 && passedRows > 0) {
+        statusElement.textContent = `نجاح جزئي - ${passedRows} ناجح، ${failedRows} راسب`;
+        statusElement.className = 'badge fs-6 p-2 bg-warning';
+    } else if (failedRows > 0 && passedRows === 0) {
+        statusElement.textContent = `جميع القيم راسبة (${failedRows} قيمة)`;
+        statusElement.className = 'badge fs-6 p-2 bg-danger';
+    } else {
+        statusElement.textContent = 'قيد التقييم';
+        statusElement.className = 'badge fs-6 p-2 bg-info';
+    }
+}
+
+// تهيئة النظام عند تحميل الصفحة
+document.addEventListener('DOMContentLoaded', function() {
+    // تهيئة أزرار الحذف لجميع الاختبارات
+    const testNames = ['depth_test', 'soil_compaction_test', 'rc1_mc1_test', 'asphalt_test', 'soil_test', 'interlock_test'];
+    testNames.forEach(testName => {
+        updateDeleteButtons(testName);
+    });
+    
+    // تهيئة الإجماليات عند تحميل الصفحة
+    setTimeout(() => {
+        updateTestTotals();
+    }, 500);
+});
 </script>
 
 @endsection 

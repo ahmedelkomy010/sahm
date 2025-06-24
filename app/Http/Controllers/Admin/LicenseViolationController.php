@@ -62,9 +62,11 @@ class LicenseViolationController extends Controller
             'violation_date' => 'required|date',
             'violation_type' => 'required|string',
             'responsible_party' => 'required|string',
-            'payment_status' => 'required|numeric',
-            'violation_value' => 'required|numeric|min:0',
-            'due_date' => 'required|date',
+            'payment_status' => 'nullable|numeric|in:0,1',
+            'violation_amount' => 'required|numeric|min:0',
+            'payment_due_date' => 'required|date',
+            'violation_description' => 'nullable|string',
+            'payment_invoice_number' => 'nullable|string|max:255',
         ]);
 
         if ($validator->fails()) {
@@ -107,9 +109,11 @@ class LicenseViolationController extends Controller
                 'violation_date' => $request->violation_date,
                 'violation_type' => $request->violation_type,
                 'responsible_party' => $request->responsible_party,
-                'payment_status' => $request->payment_status,
-                'violation_amount' => $request->violation_value,
-                'payment_due_date' => $request->due_date,
+                'payment_status' => $request->payment_status ?? 0,
+                'violation_amount' => $request->violation_amount,
+                'payment_due_date' => $request->payment_due_date,
+                'violation_description' => $request->violation_description,
+                'payment_invoice_number' => $request->payment_invoice_number,
             ];
             
             \Log::info('Creating violation with data', $violationData);
