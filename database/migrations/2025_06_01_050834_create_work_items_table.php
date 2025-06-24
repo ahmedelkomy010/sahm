@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('work_items', function (Blueprint $table) {
             $table->id();
             $table->string('code')->unique(); // كود بند العمل
-            $table->string('description'); // وصف بند العمل
+            $table->text('description'); // وصف بند العمل
             $table->string('unit')->default('عدد'); // وحدة القياس
             $table->decimal('unit_price', 10, 2)->default(0); // سعر الوحدة
             $table->text('notes')->nullable(); // ملاحظات
@@ -27,6 +27,10 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::table('work_order_items', function (Blueprint $table) {
+            $table->dropForeign(['work_item_id']);
+        });
+        
         Schema::dropIfExists('work_items');
     }
 };

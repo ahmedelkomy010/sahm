@@ -25,11 +25,11 @@ class DatabaseSeeder extends Seeder
         
         $this->call([
             AdminSeeder::class,
-            WorkOrderSeeder::class,
+            // WorkOrderSeeder::class,
         ]);
 
         // استدعاء Seeder المواد المرجعية
-        $this->call(ReferenceMaterialsSeeder::class);
+        // $this->call(ReferenceMaterialsSeeder::class);
         
         // إنشاء أرقام شهادات التنسيق للرخص الموجودة
         $this->call(CoordinationCertificateNumberSeeder::class);

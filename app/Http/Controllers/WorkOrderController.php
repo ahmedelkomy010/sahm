@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Storage;
 use App\Models\License;
 use App\Models\Material;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class WorkOrderController extends Controller
 {
@@ -239,7 +240,7 @@ class WorkOrderController extends Controller
             $workOrder->load(['workOrderItems.workItem']);
         } catch (\Exception $e) {
             // في حالة عدم وجود بنود عمل، نتجاهل الخطأ ونكمل
-            \Log::warning('Could not load work order items: ' . $e->getMessage());
+            Log::warning('Could not load work order items: ' . $e->getMessage());
         }
         
         // جلب السجلات من جدول work_order_logs
@@ -249,7 +250,7 @@ class WorkOrderController extends Controller
                 ->orderByDesc('created_at')
                 ->get();
         } catch (\Exception $e) {
-            \Log::warning('Could not load work order logs: ' . $e->getMessage());
+            Log::warning('Could not load work order logs: ' . $e->getMessage());
             $logs = collect(); // مجموعة فارغة
         }
         
@@ -361,16 +362,16 @@ class WorkOrderController extends Controller
         $workOrder = $workOrder->fresh();
         
         // تسجيل البيانات المسترجعة للتشخيص
-        \Log::info('Retrieved installations data for work order ' . $workOrder->id);
-        \Log::info('Raw from DB:', ['data' => $workOrder->getOriginal('installations_data')]);
-        \Log::info('Cast data:', ['data' => $workOrder->installations_data]);
-        \Log::info('Accessor data:', ['data' => $workOrder->installations]);
+        Log::info('Retrieved installations data for work order ' . $workOrder->id);
+        Log::info('Raw from DB:', ['data' => $workOrder->getOriginal('installations_data')]);
+        Log::info('Cast data:', ['data' => $workOrder->installations_data]);
+        Log::info('Accessor data:', ['data' => $workOrder->installations]);
         
         // أيضاً تحقق من نوع البيانات
-        \Log::info('Data types:');
-        \Log::info('Raw type:', ['type' => gettype($workOrder->getOriginal('installations_data'))]);
-        \Log::info('Cast type:', ['type' => gettype($workOrder->installations_data)]);
-        \Log::info('Accessor type:', ['type' => gettype($workOrder->installations)]);
+        Log::info('Data types:');
+        Log::info('Raw type:', ['type' => gettype($workOrder->getOriginal('installations_data'))]);
+        Log::info('Cast type:', ['type' => gettype($workOrder->installations_data)]);
+        Log::info('Accessor type:', ['type' => gettype($workOrder->installations)]);
         
         $installations = [
             'single_meter_box' => 'تركيب صندوق ومفرد بعداد واحد',
@@ -599,7 +600,7 @@ class WorkOrderController extends Controller
                 return back()->with('success', 'تم رفع الصور بنجاح');
             }
         } catch (\Exception $e) {
-            \Log::error('Error uploading installations images: ' . $e->getMessage());
+            Log::error('Error uploading installations images: ' . $e->getMessage());
             if ($request->ajax()) {
                 return response()->json([
                     'success' => false,
@@ -621,8 +622,8 @@ class WorkOrderController extends Controller
 
             // حفظ بيانات التركيبات
             $installationsData = $request->input('installations', []);
-            \Log::info('Saving installations data:', ['data' => $installationsData]);
-            \Log::info('Full request data:', ['data' => $request->all()]);
+            Log::info('Saving installations data:', ['data' => $installationsData]);
+            Log::info('Full request data:', ['data' => $request->all()]);
             
             // تنظيف البيانات وضمان وجود quantity مع الحفاظ على القيم الرقمية
             foreach ($installationsData as $key => $data) {
@@ -644,7 +645,7 @@ class WorkOrderController extends Controller
                     }
                 }
                 
-                \Log::info("Installation $key:", ['data' => $installationsData[$key]]);
+                Log::info("Installation $key:", ['data' => $installationsData[$key]]);
             }
             
             $workOrder->update([
@@ -653,10 +654,10 @@ class WorkOrderController extends Controller
             
             // التحقق من الحفظ
             $workOrder = $workOrder->fresh();
-            \Log::info('Saved installations data verified:');
-            \Log::info('Raw data from DB:', ['data' => $workOrder->getOriginal('installations_data')]);
-            \Log::info('Cast data:', ['data' => $workOrder->installations_data]);
-            \Log::info('Accessor data:', ['data' => $workOrder->installations]);
+            Log::info('Saved installations data verified:');
+            Log::info('Raw data from DB:', ['data' => $workOrder->getOriginal('installations_data')]);
+            Log::info('Cast data:', ['data' => $workOrder->installations_data]);
+            Log::info('Accessor data:', ['data' => $workOrder->installations]);
 
             // إذا كان الطلب AJAX، إرجاع استجابة JSON
             if ($request->ajax()) {
@@ -670,7 +671,7 @@ class WorkOrderController extends Controller
                 ->with('success', 'تم حفظ بيانات التركيبات بنجاح');
                 
         } catch (\Exception $e) {
-            \Log::error('Error saving installations: ' . $e->getMessage());
+            Log::error('Error saving installations: ' . $e->getMessage());
             
             if ($request->ajax()) {
                 return response()->json([
@@ -794,7 +795,7 @@ class WorkOrderController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            \Log::error('Error saving survey: ' . $e->getMessage());
+            Log::error('Error saving survey: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'حدث خطأ أثناء حفظ بيانات المسح: ' . $e->getMessage()
@@ -960,7 +961,7 @@ class WorkOrderController extends Controller
             return redirect()->route('admin.licenses.show', $license->id)
                 ->with('success', 'تم حفظ بيانات الرخصة بنجاح');
         } catch (\Exception $e) {
-            \Log::error('Error saving license: ' . $e->getMessage());
+            Log::error('Error saving license: ' . $e->getMessage());
             return redirect()->back()
                 ->with('error', 'حدث خطأ أثناء حفظ بيانات الرخصة: ' . $e->getMessage())
                 ->withInput();
@@ -987,7 +988,7 @@ class WorkOrderController extends Controller
 
             return back()->with('success', 'تم حذف ملف الرخصة بنجاح');
         } catch (\Exception $e) {
-            \Log::error('Error deleting license file: ' . $e->getMessage());
+            Log::error('Error deleting license file: ' . $e->getMessage());
             return back()->with('error', 'حدث خطأ أثناء حذف ملف الرخصة');
         }
     }
@@ -996,8 +997,8 @@ class WorkOrderController extends Controller
     public function uploadPostExecutionFile(Request $request, $workOrderId)
     {
         try {
-            \Log::info('Starting file upload process for work order: ' . $workOrderId);
-            \Log::info('Request data:', $request->all());
+            Log::info('Starting file upload process for work order: ' . $workOrderId);
+            Log::info('Request data:', $request->all());
             
             $workOrder = WorkOrder::findOrFail($workOrderId);
             
@@ -1020,12 +1021,12 @@ class WorkOrderController extends Controller
                 'invoice_images.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
             ]);
 
-            \Log::info('Validation passed');
+            Log::info('Validation passed');
 
             // Update final total value if provided
             if ($request->has('final_total_value')) {
                 $workOrder->final_total_value = $request->final_total_value;
-                \Log::info('Updated final total value: ' . $request->final_total_value);
+                Log::info('Updated final total value: ' . $request->final_total_value);
             }
 
             // Define all file fields that need to be processed
@@ -1048,13 +1049,13 @@ class WorkOrderController extends Controller
             // Process each file field
             foreach ($fileFields as $field) {
                 if ($request->hasFile($field)) {
-                    \Log::info('Processing file field: ' . $field);
+                    Log::info('Processing file field: ' . $field);
                     $file = $request->file($field);
                     $originalName = $file->getClientOriginalName();
                     $filename = time() . '_' . uniqid() . '_' . $field . '.' . $file->getClientOriginalExtension();
                     $path = 'work_orders/' . $workOrder->id . '/post_execution';
                     
-                    \Log::info('File details:', [
+                    Log::info('File details:', [
                         'original_name' => $originalName,
                         'filename' => $filename,
                         'path' => $path,
@@ -1063,11 +1064,11 @@ class WorkOrderController extends Controller
                     
                     if (!Storage::disk('public')->exists($path)) {
                         Storage::disk('public')->makeDirectory($path);
-                        \Log::info('Created directory: ' . $path);
+                        Log::info('Created directory: ' . $path);
                     }
                     
                     $filePath = $file->storeAs($path, $filename, 'public');
-                    \Log::info('File stored at: ' . $filePath);
+                    Log::info('File stored at: ' . $filePath);
                     
                     // Create file record in database
                     $workOrderFile = WorkOrderFile::create([
@@ -1081,7 +1082,7 @@ class WorkOrderController extends Controller
                         'attachment_type' => $field,
                     ]);
                     
-                    \Log::info('Created work order file record:', [
+                    Log::info('Created work order file record:', [
                         'id' => $workOrderFile->id,
                         'file_path' => $filePath,
                         'field' => $field
@@ -1091,13 +1092,13 @@ class WorkOrderController extends Controller
 
             // Handle invoice images
             if ($request->hasFile('invoice_images')) {
-                \Log::info('Processing invoice images');
+                Log::info('Processing invoice images');
                 foreach ($request->file('invoice_images') as $file) {
                     $originalName = $file->getClientOriginalName();
                     $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
                     $path = 'work_orders/' . $workOrder->id . '/invoice_images';
                     
-                    \Log::info('Invoice image details:', [
+                    Log::info('Invoice image details:', [
                         'original_name' => $originalName,
                         'filename' => $filename,
                         'path' => $path
@@ -1105,11 +1106,11 @@ class WorkOrderController extends Controller
                     
                     if (!Storage::disk('public')->exists($path)) {
                         Storage::disk('public')->makeDirectory($path);
-                        \Log::info('Created directory for invoice images: ' . $path);
+                        Log::info('Created directory for invoice images: ' . $path);
                     }
                     
                     $filePath = $file->storeAs($path, $filename, 'public');
-                    \Log::info('Invoice image stored at: ' . $filePath);
+                    Log::info('Invoice image stored at: ' . $filePath);
                     
                     // Create file record in database
                     $workOrderFile = WorkOrderFile::create([
@@ -1122,7 +1123,7 @@ class WorkOrderController extends Controller
                         'file_category' => 'invoice'
                     ]);
                     
-                    \Log::info('Created invoice file record:', [
+                    Log::info('Created invoice file record:', [
                         'id' => $workOrderFile->id,
                         'file_path' => $filePath
                     ]);
@@ -1131,7 +1132,7 @@ class WorkOrderController extends Controller
 
             // Save work order changes
             $workOrder->save();
-            \Log::info('Work order updated successfully');
+            Log::info('Work order updated successfully');
 
             if ($request->ajax()) {
                 return response()->json(['success' => true, 'message' => 'تم رفع الملفات بنجاح']);
@@ -1139,8 +1140,8 @@ class WorkOrderController extends Controller
             return redirect()->route('admin.work-orders.actions-execution', $workOrder->id)
                 ->with('success', 'تم تحديث البيانات ورفع الملفات بنجاح');
         } catch (\Exception $e) {
-            \Log::error('Error in uploadPostExecutionFile: ' . $e->getMessage());
-            \Log::error('Stack trace: ' . $e->getTraceAsString());
+            Log::error('Error in uploadPostExecutionFile: ' . $e->getMessage());
+            Log::error('Stack trace: ' . $e->getTraceAsString());
             if ($request->ajax()) {
                 return response()->json(['success' => false, 'message' => 'حدث خطأ أثناء رفع الملفات: ' . $e->getMessage()], 500);
             }
@@ -1230,7 +1231,7 @@ class WorkOrderController extends Controller
                 return back()->with('success', 'تم رفع الصور بنجاح');
             }
         } catch (\Exception $e) {
-            \Log::error('Error uploading electrical works images: ' . $e->getMessage());
+            Log::error('Error uploading electrical works images: ' . $e->getMessage());
             if ($request->ajax()) {
                 return response()->json([
                     'success' => false,
@@ -1263,7 +1264,7 @@ class WorkOrderController extends Controller
 
             return back()->with('success', 'تم حذف الصورة بنجاح');
         } catch (\Exception $e) {
-            \Log::error('Error deleting installation image: ' . $e->getMessage());
+            Log::error('Error deleting installation image: ' . $e->getMessage());
             return back()->with('error', 'حدث خطأ أثناء حذف الصورة');
         }
     }
@@ -1292,29 +1293,11 @@ class WorkOrderController extends Controller
      */
     public function importWorkItems(Request $request)
     {
-        // إضافة logging للتشخيص
-        \Log::info('Import work items started', [
-            'has_file' => $request->hasFile('excel_file'),
-            'file_size' => $request->hasFile('excel_file') ? $request->file('excel_file')->getSize() : 0
-        ]);
-
+        ini_set('memory_limit', '2G');
+        
         try {
-            $request->validate([
-                'excel_file' => 'required|file|mimes:xlsx,xls,csv|max:10240', // 10MB max
-            ]);
-
-            \Log::info('Validation passed');
-
-            // التحقق من وجود الملف
-            if (!$request->hasFile('excel_file')) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'لم يتم العثور على الملف'
-                ], 400);
-            }
-
-            $file = $request->file('excel_file');
-            \Log::info('File details', [
+            $file = $request->file('file');
+            Log::info('File details', [
                 'original_name' => $file->getClientOriginalName(),
                 'mime_type' => $file->getMimeType(),
                 'size' => $file->getSize()
@@ -1337,15 +1320,15 @@ class WorkOrderController extends Controller
             }
 
             $import = new \App\Imports\WorkItemsImport(0);
-            \Log::info('Import class created successfully');
+            Log::info('Import class created successfully');
 
             \Maatwebsite\Excel\Facades\Excel::import($import, $file);
-            \Log::info('Excel import completed');
+            Log::info('Excel import completed');
 
             $importedItems = $import->getImportedItems();
             $errors = $import->errors();
 
-            \Log::info('Import results', [
+            Log::info('Import results', [
                 'imported_count' => count($importedItems),
                 'errors_count' => count($errors)
             ]);
@@ -1360,14 +1343,14 @@ class WorkOrderController extends Controller
             ]);
 
         } catch (\Illuminate\Validation\ValidationException $e) {
-            \Log::error('Validation error:', $e->errors());
+            Log::error('Validation error:', $e->errors());
             return response()->json([
                 'success' => false,
-                'message' => 'خطأ في التحقق من صحة البيانات: ' . implode(', ', $e->errors()['excel_file'] ?? ['خطأ غير محدد'])
+                'message' => 'خطأ في التحقق من صحة البيانات: ' . implode(', ', $e->errors()['file'] ?? ['خطأ غير محدد'])
             ], 422);
 
         } catch (\Exception $e) {
-            \Log::error('Error importing work items:', [
+            Log::error('Error importing work items:', [
                 'message' => $e->getMessage(),
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
@@ -1420,7 +1403,7 @@ class WorkOrderController extends Controller
     public function updateLicense(Request $request, WorkOrder $workOrder)
     {
         try {
-            \Log::info('Received license update request:', $request->all());
+            Log::info('Received license update request:', $request->all());
 
             $validatedData = $request->validate([
                 'license_number' => 'nullable|string|max:255',
@@ -1460,10 +1443,10 @@ class WorkOrderController extends Controller
                 'lab_table2_data' => 'nullable|string',
             ]);
 
-            \Log::info('Validation passed');
+            Log::info('Validation passed');
             
             // تسجيل قيم نتائج الاختبارات للتحقق
-            \Log::info('Test results values from request:', [
+            Log::info('Test results values from request:', [
                 'successful_tests_value' => $validatedData['successful_tests_value'] ?? null,
                 'failed_tests_value' => $validatedData['failed_tests_value'] ?? null,
                 'test_failure_reasons' => $validatedData['test_failure_reasons'] ?? null
@@ -1509,7 +1492,7 @@ class WorkOrderController extends Controller
                 ]
             );
 
-            \Log::info('License record created/updated:', ['license_id' => $license->id]);
+            Log::info('License record created/updated:', ['license_id' => $license->id]);
 
             // معالجة بيانات الجداول
             if ($request->has('lab_table1_data')) {
@@ -1517,7 +1500,7 @@ class WorkOrderController extends Controller
                 if (json_last_error() === JSON_ERROR_NONE) {
                     $license->lab_table1_data = $table1Data;
                     $license->save();
-                    \Log::info('Lab table 1 data processed');
+                    Log::info('Lab table 1 data processed');
                 }
             }
             
@@ -1526,7 +1509,7 @@ class WorkOrderController extends Controller
                 if (json_last_error() === JSON_ERROR_NONE) {
                     $license->lab_table2_data = $table2Data;
                     $license->save();
-                    \Log::info('Lab table 2 data processed');
+                    Log::info('Lab table 2 data processed');
                 }
             }
 
@@ -1536,7 +1519,7 @@ class WorkOrderController extends Controller
                 if (is_array($evacTable1Data) && !empty($evacTable1Data)) {
                     $license->evac_table1_data = $evacTable1Data;
                     $license->save();
-                    \Log::info('Evacuation table 1 data processed');
+                    Log::info('Evacuation table 1 data processed');
                 }
             }
             
@@ -1545,7 +1528,7 @@ class WorkOrderController extends Controller
                 if (is_array($evacTable2Data) && !empty($evacTable2Data)) {
                     $license->evac_table2_data = $evacTable2Data;
                     $license->save();
-                    \Log::info('Evacuation table 2 data processed');
+                    Log::info('Evacuation table 2 data processed');
                 }
             }
 
@@ -1575,7 +1558,7 @@ class WorkOrderController extends Controller
                             $filename = time() . '_' . $file->getClientOriginalName();
                             $path = $file->storeAs("work_orders/{$workOrder->id}/licenses", $filename, 'public');
                             $filePaths[] = $path;
-                            \Log::info('File uploaded:', ['field' => $requestField, 'path' => $path]);
+                            Log::info('File uploaded:', ['field' => $requestField, 'path' => $path]);
                         }
                     }
                     
@@ -1592,13 +1575,13 @@ class WorkOrderController extends Controller
                 foreach ($request->file('notes_attachments') as $file) {
                     $path = $file->store('licenses/notes_attachments', 'public');
                     $paths[] = $path;
-                    \Log::info('Notes attachment uploaded:', ['path' => $path]);
+                    Log::info('Notes attachment uploaded:', ['path' => $path]);
                 }
                 $license->notes_attachments_path = json_encode($paths, JSON_UNESCAPED_UNICODE);
                 $license->save();
             }
 
-            \Log::info('License update completed successfully');
+            Log::info('License update completed successfully');
 
             return response()->json([
                 'success' => true,
@@ -1607,8 +1590,8 @@ class WorkOrderController extends Controller
             ], 200, [], JSON_UNESCAPED_UNICODE);
 
         } catch (\Exception $e) {
-            \Log::error('Error updating license: ' . $e->getMessage());
-            \Log::error('Stack trace: ' . $e->getTraceAsString());
+            Log::error('Error updating license: ' . $e->getMessage());
+            Log::error('Stack trace: ' . $e->getTraceAsString());
 
             return response()->json([
                 'success' => false,
@@ -1623,7 +1606,7 @@ class WorkOrderController extends Controller
     public function lockCivilWorksImages(Request $request, WorkOrder $workOrder)
     {
         try {
-            \Log::info('Locking civil works data', [
+            Log::info('Locking civil works data', [
                 'work_order_id' => $workOrder->id,
                 'user_id' => auth()->id()
             ]);
@@ -1641,7 +1624,7 @@ class WorkOrderController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            \Log::error('Error locking civil works data', [
+            Log::error('Error locking civil works data', [
                 'error' => $e->getMessage(),
                 'work_order_id' => $workOrder->id
             ]);
@@ -1659,7 +1642,7 @@ class WorkOrderController extends Controller
     public function saveCivilWorksImages(Request $request, WorkOrder $workOrder)
     {
         try {
-            \Log::info('Saving civil works images', [
+            Log::info('Saving civil works images', [
                 'work_order_id' => $workOrder->id,
                 'user_id' => auth()->id()
             ]);
@@ -1701,7 +1684,7 @@ class WorkOrderController extends Controller
                     
                     $savedImages[] = $savedFile;
                     
-                    \Log::info('Image saved successfully', [
+                    Log::info('Image saved successfully', [
                         'filename' => $filename,
                         'path' => $filePath,
                         'size' => $file->getSize()
@@ -1724,7 +1707,7 @@ class WorkOrderController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            \Log::error('Error saving civil works images', [
+            Log::error('Error saving civil works images', [
                 'error' => $e->getMessage(),
                 'line' => $e->getLine(),
                 'file' => $e->getFile(),
@@ -1744,7 +1727,7 @@ class WorkOrderController extends Controller
     public function saveCivilWorksAttachments(Request $request, WorkOrder $workOrder)
     {
         try {
-            \Log::info('Saving civil works attachments', [
+            Log::info('Saving civil works attachments', [
                 'work_order_id' => $workOrder->id,
                 'user_id' => auth()->id()
             ]);
@@ -1796,7 +1779,7 @@ class WorkOrderController extends Controller
                         'size_formatted' => $this->formatFileSize($savedFile->file_size)
                     ];
                     
-                    \Log::info('Attachment saved successfully', [
+                    Log::info('Attachment saved successfully', [
                         'filename' => $filename,
                         'path' => $filePath,
                         'size' => $file->getSize()
@@ -1811,7 +1794,7 @@ class WorkOrderController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            \Log::error('Error saving civil works attachments', [
+            Log::error('Error saving civil works attachments', [
                 'error' => $e->getMessage(),
                 'line' => $e->getLine(),
                 'file' => $e->getFile(),
@@ -1887,7 +1870,7 @@ class WorkOrderController extends Controller
                 'message' => 'تم حذف المرفق بنجاح'
             ]);
         } catch (\Exception $e) {
-            \Log::error('Error deleting attachment', [
+            Log::error('Error deleting attachment', [
                 'error' => $e->getMessage(),
                 'attachment_id' => $attachmentId
             ]);

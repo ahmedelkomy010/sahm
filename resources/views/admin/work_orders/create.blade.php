@@ -229,15 +229,17 @@
                                             <i class="fas fa-tasks me-2 text-primary"></i>
                                             مقايسة الأعمال
                                         </h4>
-                                        <div class="btn-group">
-                                            <button type="button" class="btn btn-outline-success btn-sm me-2" onclick="showExcelImportModal()">
-                                                <i class="fas fa-file-excel"></i> رفع ملف Excel
-                                            </button>
-                                            <button type="button" class="btn btn-outline-info btn-sm me-2" onclick="showWorkItemsSearch()">
-                                                <i class="fas fa-search"></i> البحث في البنود
-                                            </button>
-                                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="addWorkItem()">
-                                                <i class="fas fa-plus"></i> إضافة بند عمل
+                                        <div class="d-flex justify-content-between mb-3">
+                                            <div>
+                                                <button type="button" class="btn btn-primary me-2" onclick="addNewRow()">
+                                                    <i class="fas fa-plus"></i> إضافة بند عمل
+                                                </button>
+                                                <button type="button" class="btn btn-success" onclick="showWorkItemsSearch()">
+                                                    <i class="fas fa-search"></i> البحث في البنود
+                                                </button>
+                                            </div>
+                                            <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#excelImportModal">
+                                                <i class="fas fa-file-excel"></i> استيراد من Excel
                                             </button>
                                         </div>
                                     </div>
@@ -308,168 +310,28 @@
     </div>
 </div>
 
-<!-- Modal رفع ملف Excel -->
-<div class="modal fade" id="excelImportModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
+<!-- Modal for Excel Import -->
+<div class="modal fade" id="excelImportModal" tabindex="-1" aria-labelledby="excelImportModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">
-                    <i class="fas fa-file-excel text-success me-2"></i>
-                    رفع ملف Excel لبنود العمل
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <h5 class="modal-title" id="excelImportModalLabel">استيراد بنود العمل من ملف Excel</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <div class="alert alert-info">
-                    <i class="fas fa-info-circle me-2"></i>
-                    <strong>تنسيق الملف المطلوب:</strong>
-                    <br>
-                    <div class="row mt-2">
-                        <div class="col-md-6">
-                            <strong>بالإنجليزية:</strong>
-                            <ul class="mb-0 mt-1 small">
-                                <li><code>Item</code> أو <code>Code</code> - كود/رقم البند</li>
-                                <li><code>Long Description</code> أو <code>Description</code> - الوصف الكامل</li>
-                                <li><code>UOM</code> أو <code>Unit</code> - وحدة القياس</li>
-                                <li><code>Unit Price</code> أو <code>Price</code> - سعر الوحدة</li>
-                            </ul>
-                        </div>
-                        <div class="col-md-6">
-                            <strong>بالعربية:</strong>
-                            <ul class="mb-0 mt-1 small">
-                                <li><code>البند</code> أو <code>كود</code> أو <code>رقم</code></li>
-                                <li><code>الوصف الكامل</code> أو <code>الوصف</code> أو <code>تفاصيل</code></li>
-                                <li><code>الوحدة</code> أو <code>وحدة القياس</code></li>
-                                <li><code>سعر الوحدة</code> أو <code>السعر</code> أو <code>التكلفة</code></li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div class="row mt-3">
-                        <div class="col-12">
-                            <div class="alert alert-success border-success bg-light py-2">
-                                <i class="fas fa-magic me-2"></i>
-                                <strong>ذكي ومرن:</strong> النظام يتعرف تلقائياً على أسماء الأعمدة المختلفة ويدعم:
-                                <ul class="mb-0 mt-1 small">
-                                    <li>الأعمدة باللغة العربية والإنجليزية</li>
-                                    <li>أسماء مختلفة للعمود الواحد (مثل: Item, Code, البند, كود)</li>
-                                    <li>تنظيف البيانات تلقائياً وإزالة الأحرف غير المرغوبة</li>
-                                    <li>تحويل الوحدات الإنجليزية إلى العربية (مثل: Each → عدد)</li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
                 <form id="excelImportForm" enctype="multipart/form-data">
                     @csrf
                     <div class="mb-3">
-                        <label for="excel_file" class="form-label">اختر ملف Excel</label>
-                        <input type="file" class="form-control" id="excel_file" name="excel_file" 
-                               accept=".xlsx,.xls,.csv" required onchange="previewExcelFile(this)">
-                        <div class="form-text">
-                            الأنواع المدعومة: Excel (.xlsx, .xls) أو CSV (.csv) - الحد الأقصى 10 ميجابايت
-                        </div>
+                        <label for="file" class="form-label">اختر ملف Excel</label>
+                        <input type="file" class="form-control" id="file" name="file" accept=".xlsx,.xls,.csv">
+                        <div class="form-text">يجب أن يحتوي الملف على الأعمدة التالية: الكود، الوصف، الوحدة، السعر</div>
                     </div>
-                    
-                    <!-- معاينة الملف -->
-                    <div id="filePreview" class="d-none">
-                        <div class="card border-info">
-                            <div class="card-header bg-info text-white py-2">
-                                <h6 class="mb-0">
-                                    <i class="fas fa-eye me-2"></i>
-                                    معاينة الملف المحدد
-                                </h6>
-                            </div>
-                            <div class="card-body p-2">
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <small><strong>اسم الملف:</strong> <span id="fileName"></span></small>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <small><strong>حجم الملف:</strong> <span id="fileSize"></span></small>
-                                    </div>
-                                </div>
-                                <div class="alert alert-warning py-2 mt-2 mb-0">
-                                    <i class="fas fa-info-circle me-1"></i>
-                                    <small>تأكد من أن الملف يحتوي على الأعمدة المطلوبة قبل الرفع</small>
-                                </div>
-                            </div>
-                        </div>
+                    <div id="uploadProgress" class="progress mb-3 d-none">
+                        <div class="progress-bar" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
                     </div>
+                    <div id="importResults"></div>
+                    <button type="submit" class="btn btn-primary">رفع الملف</button>
                 </form>
-                
-                <div id="importProgress" class="d-none">
-                    <div class="d-flex align-items-center">
-                        <div class="spinner-border spinner-border-sm text-primary me-2" role="status">
-                            <span class="visually-hidden">جارٍ المعالجة...</span>
-                        </div>
-                        <span>جارٍ معالجة الملف...</span>
-                    </div>
-                </div>
-                
-                <div id="importResults" class="mt-3"></div>
-                
-                <!-- مثال توضيحي -->
-                <div class="mt-3">
-                    <div class="card border-light">
-                        <div class="card-header bg-light py-2">
-                            <h6 class="mb-0">
-                                <i class="fas fa-table text-success me-2"></i>
-                                مثال على بنية الملف:
-                            </h6>
-                        </div>
-                        <div class="card-body p-2">
-                            <div class="table-responsive">
-                                <table class="table table-sm table-bordered mb-0">
-                                    <thead class="table-primary">
-                                        <tr>
-                                            <th>Item</th>
-                                            <th>Long Description</th>
-                                            <th>UOM</th>
-                                            <th>Unit Price</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td>A1</td>
-                                            <td>إنشاء وصيانة شبكات التوزيع - شامل توفير جميع المعدات والأدوات</td>
-                                            <td>KM</td>
-                                            <td>1527.00</td>
-                                        </tr>
-                                        <tr>
-                                            <td>101000000</td>
-                                            <td>أعمال المسح ورفع المعلومات الجغرافية</td>
-                                            <td>EA</td>
-                                            <td>629.00</td>
-                                        </tr>
-                                        <tr>
-                                            <td>101000001</td>
-                                            <td>أعمال المسح الأرضي للخطوط والمحطات</td>
-                                            <td>KM</td>
-                                            <td>1527.00</td>
-                                        </tr>
-                                            <td>CONSTRUCTION AND MAINTENANCE OF DISTRIBUTION NETWORKS</td>
-                                            <td>LS</td>
-                                            <td>100000000</td>
-                                        </tr>
-                                        <tr>
-                                            <td>101000000</td>
-                                            <td>SURVEYING AND GEOGRAPHICAL INFORMATION SYSTEM (GIS) WORKS</td>
-                                            <td>LS</td>
-                                            <td>-</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-                <button type="button" class="btn btn-success" onclick="importExcelFile()">
-                    <i class="fas fa-upload me-1"></i>رفع ومعالجة
-                </button>
             </div>
         </div>
     </div>
@@ -877,24 +739,36 @@ function showExcelImportModal() {
     modal.show();
 }
 
-function importExcelFile() {
-    const fileInput = document.getElementById('excel_file');
-    const file = fileInput.files[0];
+function previewExcelFile(input) {
+    const filePreview = document.getElementById('filePreview');
+    const fileName = document.getElementById('fileName');
+    const fileSize = document.getElementById('fileSize');
     
-    if (!file) {
-        alert('الرجاء اختيار ملف Excel أولاً');
-        return;
+    if (input.files && input.files[0]) {
+        const file = input.files[0];
+        fileName.textContent = file.name;
+        fileSize.textContent = formatFileSize(file.size);
+        filePreview.classList.remove('d-none');
+    } else {
+        filePreview.classList.add('d-none');
     }
+}
+
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+// تحميل ملف Excel
+document.getElementById('excelImportForm').addEventListener('submit', function(e) {
+    e.preventDefault();
     
-    const formData = new FormData();
-    formData.append('excel_file', file);
-    formData.append('_token', document.querySelector('input[name="_token"]').value);
+    const formData = new FormData(this);
     
-    // إظهار شريط التقدم
-    document.getElementById('importProgress').classList.remove('d-none');
-    document.getElementById('importResults').innerHTML = '';
-    
-    fetch('/work-orders/import-work-items', {
+    fetch('{{ route("admin.work-orders.import-work-items") }}', {
         method: 'POST',
         body: formData,
         headers: {
@@ -902,40 +776,58 @@ function importExcelFile() {
         }
     })
     .then(response => response.json())
-    .then(data => {
-        document.getElementById('importProgress').classList.add('d-none');
-        
-        if (data.success) {
-            document.getElementById('importResults').innerHTML = `
-                <div class="alert alert-success">
-                    <i class="fas fa-check-circle me-2"></i>
-                    ${data.message}
-                    <br><small>تم استيراد ${data.imported_count} عنصر</small>
-                </div>
-            `;
+    .then(response => {
+        if (response.success) {
+            toastr.success(response.message);
+            const modal = bootstrap.Modal.getInstance(document.getElementById('excelImportModal'));
+            modal.hide();
             
-            // تحديث قائمة بنود العمل في النموذج
-            refreshWorkItemsDropdowns(data.imported_items);
-            
+            // إضافة البنود المستوردة للجدول
+            if (response.imported_items && response.imported_items.length > 0) {
+                response.imported_items.forEach(function(item) {
+                    addWorkItemToTable(item);
+                });
+            }
         } else {
-            document.getElementById('importResults').innerHTML = `
-                <div class="alert alert-danger">
-                    <i class="fas fa-exclamation-triangle me-2"></i>
-                    ${data.message}
-                </div>
-            `;
+            toastr.error(response.message);
         }
     })
     .catch(error => {
-        document.getElementById('importProgress').classList.add('d-none');
-        document.getElementById('importResults').innerHTML = `
-            <div class="alert alert-danger">
-                <i class="fas fa-exclamation-triangle me-2"></i>
-                حدث خطأ أثناء رفع الملف
-            </div>
-        `;
         console.error('Error:', error);
+        toastr.error('حدث خطأ أثناء رفع الملف');
     });
+});
+
+function addWorkItemToTable(item) {
+    const tbody = document.getElementById('workItemsBody');
+    const row = document.createElement('tr');
+    
+    row.innerHTML = `
+        <td>
+            <input type="hidden" name="work_items[${tbody.children.length}][work_item_id]" value="${item.id}">
+            <div class="d-flex align-items-center">
+                <span class="badge bg-primary me-2">${item.code}</span>
+                ${item.description}
+            </div>
+        </td>
+        <td>
+            <input type="number" class="form-control" name="work_items[${tbody.children.length}][planned_quantity]" 
+                   value="1" min="0" step="0.01" required>
+        </td>
+        <td>
+            <span class="badge bg-secondary">${item.unit}</span>
+        </td>
+        <td>
+            <span class="badge bg-info">${item.unit_price}</span>
+        </td>
+        <td>
+            <button type="button" class="btn btn-sm btn-outline-danger" onclick="this.closest('tr').remove()">
+                <i class="fas fa-trash"></i>
+            </button>
+        </td>
+    `;
+    
+    tbody.appendChild(row);
 }
 
 // وظائف البحث في البنود
@@ -1063,188 +955,6 @@ function refreshWorkItemsDropdowns(newItems) {
     });
 }
 
-// معاينة الملف المحدد
-function previewExcelFile(input) {
-    const file = input.files[0];
-    const preview = document.getElementById('filePreview');
-    
-    if (file) {
-        // عرض معلومات الملف
-        document.getElementById('fileName').textContent = file.name;
-        document.getElementById('fileSize').textContent = formatFileSize(file.size);
-        preview.classList.remove('d-none');
-        
-        // التحقق من نوع الملف
-        const allowedTypes = [
-            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
-            'application/vnd.ms-excel', // .xls
-            'text/csv' // .csv
-        ];
-        
-        if (!allowedTypes.includes(file.type)) {
-            showFileError('نوع الملف غير مدعوم. يرجى اختيار ملف Excel أو CSV');
-            return;
-        }
-        
-        // التحقق من حجم الملف (10 ميجابايت)
-        if (file.size > 10 * 1024 * 1024) {
-            showFileError('حجم الملف كبير جداً. الحد الأقصى 10 ميجابايت');
-            return;
-        }
-        
-    } else {
-        preview.classList.add('d-none');
-    }
-}
-
-// عرض خطأ في الملف
-function showFileError(message) {
-    const preview = document.getElementById('filePreview');
-    preview.innerHTML = `
-        <div class="alert alert-danger">
-            <i class="fas fa-exclamation-triangle me-2"></i>
-            ${message}
-        </div>
-    `;
-    preview.classList.remove('d-none');
-}
-
-// تنسيق حجم الملف
-function formatFileSize(bytes) {
-    if (bytes === 0) return '0 بايت';
-    const k = 1024;
-    const sizes = ['بايت', 'كيلوبايت', 'ميجابايت', 'جيجابايت'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-}
-
-// تحسين وظيفة الاستيراد
-function importExcelFile() {
-    const fileInput = document.getElementById('excel_file');
-    const file = fileInput.files[0];
-    
-    if (!file) {
-        showImportError('الرجاء اختيار ملف Excel أولاً');
-        return;
-    }
-    
-    // التحقق من نوع الملف مرة أخرى
-    const allowedTypes = [
-        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        'application/vnd.ms-excel',
-        'text/csv'
-    ];
-    
-    if (!allowedTypes.includes(file.type)) {
-        showImportError('نوع الملف غير مدعوم. يرجى اختيار ملف Excel أو CSV');
-        return;
-    }
-    
-    const formData = new FormData();
-    formData.append('excel_file', file);
-    formData.append('_token', document.querySelector('input[name="_token"]').value);
-    
-    // إظهار شريط التقدم
-    showImportProgress('جارٍ رفع الملف...');
-    
-    fetch('/work-orders/import-work-items', {
-        method: 'POST',
-        body: formData,
-        headers: {
-            'X-Requested-With': 'XMLHttpRequest'
-        }
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.json();
-    })
-    .then(data => {
-        hideImportProgress();
-        
-        if (data.success) {
-            showImportSuccess(data);
-            
-            // تحديث قائمة بنود العمل في النموذج
-            if (data.imported_items && data.imported_items.length > 0) {
-                refreshWorkItemsDropdowns(data.imported_items);
-            }
-            
-            // إغلاق النافذة بعد 3 ثوان
-            setTimeout(() => {
-                bootstrap.Modal.getInstance(document.getElementById('excelImportModal')).hide();
-            }, 3000);
-            
-        } else {
-            showImportError(data.message || 'حدث خطأ أثناء معالجة الملف');
-        }
-    })
-    .catch(error => {
-        hideImportProgress();
-        console.error('Error:', error);
-        showImportError('حدث خطأ في الاتصال بالخادم. يرجى المحاولة مرة أخرى');
-    });
-}
-
-// إظهار شريط التقدم
-function showImportProgress(message) {
-    const progressDiv = document.getElementById('importProgress');
-    if (progressDiv) {
-        progressDiv.innerHTML = `
-            <div class="d-flex align-items-center">
-                <div class="spinner-border spinner-border-sm text-primary me-2" role="status">
-                    <span class="visually-hidden">جارٍ المعالجة...</span>
-                </div>
-                <span>${message}</span>
-            </div>
-        `;
-        progressDiv.classList.remove('d-none');
-    }
-}
-
-// إخفاء شريط التقدم
-function hideImportProgress() {
-    const progressDiv = document.getElementById('importProgress');
-    if (progressDiv) {
-        progressDiv.classList.add('d-none');
-    }
-}
-
-// إظهار رسالة نجاح
-function showImportSuccess(data) {
-    const resultsDiv = document.getElementById('importResults');
-    if (resultsDiv) {
-        let message = `
-            <div class="alert alert-success">
-                <i class="fas fa-check-circle me-2"></i>
-                <strong>تم الاستيراد بنجاح!</strong>
-                <br><small>تم استيراد ${data.imported_count} عنصر</small>
-        `;
-        
-        if (data.errors_count > 0) {
-            message += `<br><small class="text-warning">تم تجاهل ${data.errors_count} صف بسبب أخطاء في البيانات</small>`;
-        }
-        
-        message += `</div>`;
-        resultsDiv.innerHTML = message;
-    }
-}
-
-// إظهار رسالة خطأ
-function showImportError(message) {
-    const resultsDiv = document.getElementById('importResults');
-    if (resultsDiv) {
-        resultsDiv.innerHTML = `
-            <div class="alert alert-danger">
-                <i class="fas fa-exclamation-triangle me-2"></i>
-                <strong>خطأ في الاستيراد:</strong>
-                <br>${message}
-            </div>
-        `;
-    }
-}
-
 // البحث المباشر عند الكتابة
 document.addEventListener('DOMContentLoaded', function() {
     const searchInput = document.getElementById('searchWorkItems');
@@ -1273,5 +983,13 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
+
+@section('scripts')
+<script>
+    // تهيئة بيانات بنود العمل
+    window.workItems = @json($workItems);
+</script>
+<script src="{{ asset('js/work-items-import.js') }}"></script>
+@endsection
 
 @endsection 

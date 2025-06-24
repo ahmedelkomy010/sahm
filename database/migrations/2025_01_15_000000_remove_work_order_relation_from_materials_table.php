@@ -11,6 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (!Schema::hasTable('materials')) {
+            return;
+        }
+
         Schema::table('materials', function (Blueprint $table) {
             // حذف المفتاح الأجنبي أولاً
             try {
@@ -29,6 +33,10 @@ return new class extends Migration
      */
     public function down(): void
     {
+        if (!Schema::hasTable('materials')) {
+            return;
+        }
+
         Schema::table('materials', function (Blueprint $table) {
             // إعادة إضافة الأعمدة
             $table->unsignedBigInteger('work_order_id')->nullable();

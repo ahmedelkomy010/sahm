@@ -89,11 +89,11 @@ class WorkItemsImport implements ToModel, WithHeadingRow, WithValidation, SkipsO
             $code = $this->generateCodeFromDescription($description);
         }
 
-        // تنظيف الوصف
-        $description = $this->cleanDescription($description);
+        // تنظيف الوصف والتأكد من الـ encoding
+        $description = $this->ensureUtf8($this->cleanDescription($description));
         
         // تنظيف الوحدة
-        $unit = $this->cleanUnit($unit);
+        $unit = $this->ensureUtf8($this->cleanUnit($unit));
 
         // التحقق من وجود البيانات الأساسية
         if (empty($code) || empty($description)) {
@@ -115,6 +115,28 @@ class WorkItemsImport implements ToModel, WithHeadingRow, WithValidation, SkipsO
         $this->importedItems[] = $workItem;
 
         return $workItem;
+    }
+
+    /**
+     * التأكد من أن النص بترميز UTF-8 صحيح
+     */
+    private function ensureUtf8($text): string
+    {
+        if (!is_string($text)) {
+            return '';
+        }
+
+        // تحويل الترميز إلى UTF-8 إذا كان مختلفًا
+        if (!mb_check_encoding($text, 'UTF-8')) {
+            $text = mb_convert_encoding($text, 'UTF-8', mb_detect_encoding($text, ['UTF-8', 'Windows-1256', 'ISO-8859-6', 'ASCII'], true));
+        }
+
+        // تنظيف أي أحرف غير صالحة
+        $text = preg_replace('/[\x00-\x08\x10\x0B\x0C\x0E-\x19\x7F]|[\x00-\x7F][\x80-\xBF]+|([\xC0\xC1]|[\xF0-\xFF])[\x80-\xBF]*'.
+                           '|[\xC2-\xDF]((?![\x80-\xBF])|[\x80-\xBF]{2,})|[\xE0-\xEF](([\x80-\xBF](?![\x80-\xBF]))|(?![\x80-\xBF]{2})|[\x80-\xBF]{3,})/S',
+                           '', $text);
+
+        return trim($text);
     }
 
     /**

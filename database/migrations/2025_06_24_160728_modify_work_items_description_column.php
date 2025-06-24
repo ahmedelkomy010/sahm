@@ -12,9 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('work_items', function (Blueprint $table) {
-            if (!Schema::hasColumn('work_items', 'unit_price')) {
-                $table->decimal('unit_price', 10, 2)->default(0)->after('unit'); // سعر الوحدة
-            }
+            $table->text('description')->change();
         });
     }
 
@@ -24,9 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('work_items', function (Blueprint $table) {
-            if (Schema::hasColumn('work_items', 'unit_price')) {
-                $table->dropColumn('unit_price');
-            }
+            $table->string('description')->change();
         });
     }
 };
