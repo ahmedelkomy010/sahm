@@ -255,64 +255,31 @@
                     </h4>
                 </div>
                 <div class="card-body p-0">
-                    <!-- نموذج إضافة بند عمل جديد -->
+                    <!-- معلومات حول بنود العمل -->
                     <div class="p-4 border-bottom bg-light">
-                        <h5 class="mb-3">
-                            <i class="fas fa-plus-circle text-success me-2"></i>
-                            إضافة بند عمل جديد
-                        </h5>
-                        <form id="addWorkItemForm" class="row g-3">
-                            @csrf
-                            <input type="hidden" name="work_order_id" value="{{ $workOrder->id }}">
-                            
-                            <div class="col-md-2">
-                                <label class="form-label">رقم البند</label>
-                                <input type="text" name="work_item_code" class="form-control" placeholder="مثال: 001" required>
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <h5 class="mb-2">
+                                    <i class="fas fa-info-circle text-info me-2"></i>
+                                    بنود العمل من مقايسة الأعمال
+                                </h5>
+                                
                             </div>
-                            
-                            <div class="col-md-3">
-                                <label class="form-label">وصف البند</label>
-                                <input type="text" name="work_item_description" class="form-control" placeholder="وصف البند" required>
+                            <div class="col-md-4 text-end">
+                                <div class="d-flex align-items-center justify-content-end gap-3">
+                                    <div class="text-center">
+                                        <div class="fw-bold text-primary fs-4">{{ $workOrder->workOrderItems->count() }}</div>
+                                        <small class="text-muted">إجمالي البنود</small>
+                                    </div>
+                                    <div class="text-center">
+                                        <div class="fw-bold text-success fs-4">
+                                            {{ $workOrder->workOrderItems->where('actual_quantity', '>', 0)->count() }}
+                                        </div>
+                                        <small class="text-muted">البنود المنفذة</small>
+                                    </div>
+                                </div>
                             </div>
-                            
-                            <div class="col-md-1">
-                                <label class="form-label">الوحدة</label>
-                                <select name="unit" class="form-select" required>
-                                    <option value="">اختر الوحدة</option>
-                                    <option value="L.M">L.M</option>
-                                    <option value="متر مربع">متر مربع</option>
-                                    <option value="متر مكعب">متر مكعب</option>
-                                    <option value="Ech">Ech</option>
-                                    <option value="%">%</option>
-                                </select>
-                            </div>
-                            
-                            <div class="col-md-2">
-                                <label class="form-label">سعر الوحدة</label>
-                                <input type="number" step="0.01" name="unit_price" class="form-control" placeholder="0.00" required>
-                            </div>
-                            
-                            <div class="col-md-2">
-                                <label class="form-label">الكمية المخططة</label>
-                                <input type="number" step="0.01" name="planned_quantity" class="form-control" placeholder="0.00" required>
-                            </div>
-                            
-                            <div class="col-md-3">
-                                <label class="form-label">الكمية المنفذة</label>
-                                <input type="number" step="0.01" name="actual_quantity" class="form-control" placeholder="0.00">
-                            </div>
-                            
-                            <div class="col-12">
-                                <button type="submit" class="btn btn-success">
-                                    <i class="fas fa-plus me-1"></i>
-                                    إضافة البند
-                                </button>
-                                <button type="reset" class="btn btn-secondary">
-                                    <i class="fas fa-times me-1"></i>
-                                    مسح
-                                </button>
-                            </div>
-                        </form>
+                        </div>
                     </div>
 
                     @if($workOrder->workOrderItems && $workOrder->workOrderItems->count() > 0)
@@ -423,7 +390,11 @@
                         <div class="text-center py-5">
                             <i class="fas fa-clipboard-list fa-3x text-muted mb-3"></i>
                             <h5 class="text-muted">لا توجد بنود عمل مضافة لهذا الأمر</h5>
-                            <p class="text-muted">استخدم النموذج أعلاه لإضافة بنود العمل</p>
+                            <p class="text-muted">لم يتم إضافة بنود عمل في مقايسة الأعمال عند إنشاء أمر العمل</p>
+                            <p class="text-muted small">
+                                <i class="fas fa-lightbulb text-warning me-1"></i>
+                                يجب إضافة بنود العمل من صفحة إنشاء أمر العمل في قسم "مقايسة الأعمال"
+                            </p>
                         </div>
                     @endif
                 </div>
