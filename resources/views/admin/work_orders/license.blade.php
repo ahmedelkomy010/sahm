@@ -1452,10 +1452,17 @@
                         <!-- تواريخ الإخلاء -->
                         <div class="row g-3 mb-4">
                             <div class="col-md-6">
-                                <label class="form-label fw-bold">تاريخ الإخلاء</label>
-                                <input type="date" class="form-control" name="evacuation_start_date">
+                                <label class="form-label fw-bold">تاريخ ووقت الإخلاء</label>
+                                <input type="datetime-local" class="form-control" name="evacuation_start_date">
                             </div>
-                            
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">رقم سداد الإخلاء</label>
+                                <input type="text" class="form-control" name="evac_payment_number" placeholder="رقم سداد الإخلاء">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-bold">ملاحظات الإخلاء</label>
+                                <textarea class="form-control" name="evac_notes" rows="3" placeholder="أدخل الملاحظات هنا..."></textarea>
+                            </div>
                         </div>
 
                         <!-- جدول الفسح للإخلاء -->

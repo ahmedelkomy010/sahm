@@ -1,10 +1,9 @@
-// تهيئة متغيرات عامة
-let workItemRowIndex = 0;
-
 // عند تحميل الصفحة
 document.addEventListener('DOMContentLoaded', function() {
-    // تهيئة عداد الصفوف
-    workItemRowIndex = document.querySelectorAll('#workItemsBody tr').length;
+    // التأكد من وجود المتغير العام أو تهيئته
+    if (typeof window.workItemRowIndex === 'undefined') {
+        window.workItemRowIndex = document.querySelectorAll('#workItemsBody tr').length;
+    }
 
     // تهيئة نموذج استيراد Excel
     initializeExcelImport();
@@ -123,7 +122,7 @@ function addWorkItemToTable(item) {
 
     row.innerHTML = `
         <td>
-            <input type="hidden" name="work_items[${workItemRowIndex}][work_item_id]" value="${item.id}">
+            <input type="hidden" name="work_items[${window.workItemRowIndex}][work_item_id]" value="${item.id}">
             <div class="d-flex align-items-center">
                 <span class="badge bg-primary me-2">${item.code}</span>
                 ${item.description}
@@ -131,7 +130,7 @@ function addWorkItemToTable(item) {
         </td>
         <td>
             <input type="number" class="form-control form-control-sm" 
-                   name="work_items[${workItemRowIndex}][planned_quantity]" 
+                   name="work_items[${window.workItemRowIndex}][planned_quantity]" 
                    value="1" min="0" step="0.01" required>
         </td>
         <td>
@@ -139,7 +138,7 @@ function addWorkItemToTable(item) {
         </td>
         <td>
             <input type="text" class="form-control form-control-sm" 
-                   name="work_items[${workItemRowIndex}][notes]" 
+                   name="work_items[${window.workItemRowIndex}][notes]" 
                    placeholder="ملاحظات">
         </td>
         <td>
@@ -150,7 +149,7 @@ function addWorkItemToTable(item) {
     `;
 
     tbody.appendChild(row);
-    workItemRowIndex++;
+    window.workItemRowIndex++;
 }
 
 // دالة إضافة صف جديد
@@ -161,20 +160,20 @@ function addNewRow() {
     const row = document.createElement('tr');
     row.innerHTML = `
         <td>
-            <select name="work_items[${workItemRowIndex}][work_item_id]" class="form-select form-select-sm" required>
+            <select name="work_items[${window.workItemRowIndex}][work_item_id]" class="form-select form-select-sm" required>
                 <option value="">اختر بند العمل</option>
                 ${getWorkItemsOptions()}
             </select>
         </td>
         <td>
-            <input type="number" name="work_items[${workItemRowIndex}][planned_quantity]" 
+            <input type="number" name="work_items[${window.workItemRowIndex}][planned_quantity]" 
                    class="form-control form-control-sm" step="0.01" min="0" placeholder="الكمية" required>
         </td>
         <td>
             <span class="text-muted unit-display"></span>
         </td>
         <td>
-            <input type="text" name="work_items[${workItemRowIndex}][notes]" 
+            <input type="text" name="work_items[${window.workItemRowIndex}][notes]" 
                    class="form-control form-control-sm" placeholder="ملاحظات">
         </td>
         <td>
@@ -194,7 +193,7 @@ function addNewRow() {
         row.querySelector('.unit-display').textContent = unit || '';
     });
 
-    workItemRowIndex++;
+    window.workItemRowIndex++;
 }
 
 // دالة حذف صف

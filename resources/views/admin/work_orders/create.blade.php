@@ -623,7 +623,7 @@ const workItems = @json($workItems ?? []);
 // بيانات المواد المرجعية - من قاعدة البيانات  
 const referenceMaterials = @json($referenceMaterials ?? []);
 
-let workItemRowIndex = 0;
+// استخدام المتغير العام المعرف أعلاه
 let materialRowIndex = 0;
 
 // إضافة بند عمل جديد
@@ -632,19 +632,19 @@ function addWorkItem() {
     const row = document.createElement('tr');
     row.innerHTML = `
         <td>
-            <select name="work_items[${workItemRowIndex}][work_item_id]" class="form-select form-select-sm" onchange="updateWorkItemUnit(this, ${workItemRowIndex})" required>
+            <select name="work_items[${window.workItemRowIndex}][work_item_id]" class="form-select form-select-sm" onchange="updateWorkItemUnit(this, ${window.workItemRowIndex})" required>
                 <option value="">اختر بند العمل</option>
                 ${workItems.map(item => `<option value="${item.id}" data-unit="${item.unit}">${item.code} - ${item.description}</option>`).join('')}
             </select>
         </td>
         <td>
-            <input type="number" name="work_items[${workItemRowIndex}][planned_quantity]" class="form-control form-control-sm" step="0.01" min="0" placeholder="الكمية" required>
+            <input type="number" name="work_items[${window.workItemRowIndex}][planned_quantity]" class="form-control form-control-sm" step="0.01" min="0" placeholder="الكمية" required>
         </td>
         <td>
-            <span id="workItemUnit_${workItemRowIndex}" class="text-muted">-</span>
+            <span id="workItemUnit_${window.workItemRowIndex}" class="text-muted">-</span>
         </td>
         <td>
-            <input type="text" name="work_items[${workItemRowIndex}][notes]" class="form-control form-control-sm" placeholder="ملاحظات">
+            <input type="text" name="work_items[${window.workItemRowIndex}][notes]" class="form-control form-control-sm" placeholder="ملاحظات">
         </td>
         <td>
             <button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">
@@ -653,7 +653,7 @@ function addWorkItem() {
         </td>
     `;
     tbody.appendChild(row);
-    workItemRowIndex++;
+    window.workItemRowIndex++;
 }
 
 // تحديث وحدة بند العمل
@@ -913,19 +913,19 @@ function addWorkItemFromSearch(id, code, description, unit, price) {
     const row = document.createElement('tr');
     row.innerHTML = `
         <td>
-            <select name="work_items[${workItemRowIndex}][work_item_id]" class="form-select form-select-sm" required>
+            <select name="work_items[${window.workItemRowIndex}][work_item_id]" class="form-select form-select-sm" required>
                 <option value="${id}" selected>${code} - ${description}</option>
             </select>
         </td>
         <td>
-            <input type="number" name="work_items[${workItemRowIndex}][planned_quantity]" 
+            <input type="number" name="work_items[${window.workItemRowIndex}][planned_quantity]" 
                    class="form-control form-control-sm" step="0.01" min="0" placeholder="الكمية" required>
         </td>
         <td>
             <span class="text-muted">${unit}</span>
         </td>
         <td>
-            <input type="text" name="work_items[${workItemRowIndex}][notes]" 
+            <input type="text" name="work_items[${window.workItemRowIndex}][notes]" 
                    class="form-control form-control-sm" placeholder="ملاحظات">
         </td>
         <td>
@@ -935,7 +935,7 @@ function addWorkItemFromSearch(id, code, description, unit, price) {
         </td>
     `;
     tbody.appendChild(row);
-    workItemRowIndex++;
+    window.workItemRowIndex++;
     
     // إغلاق نافذة البحث
     bootstrap.Modal.getInstance(document.getElementById('workItemsSearchModal')).hide();
@@ -978,7 +978,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (form) form.reset();
             if (preview) preview.classList.add('d-none');
             if (results) results.innerHTML = '';
-            hideImportProgress();
+            // تم حذف hideImportProgress لأنها غير موجودة
         });
     }
 });
@@ -988,6 +988,8 @@ document.addEventListener('DOMContentLoaded', function() {
 <script>
     // تهيئة بيانات بنود العمل
     window.workItems = @json($workItems);
+    // تهيئة متغير المؤشر العام
+    window.workItemRowIndex = 0;
 </script>
 <script src="{{ asset('js/work-items-import.js') }}"></script>
 @endsection

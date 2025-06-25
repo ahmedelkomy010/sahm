@@ -62,7 +62,7 @@ return new class extends Migration
             }
             
             if (!Schema::hasColumn('licenses', 'evac_date')) {
-                $table->date('evac_date')->nullable()->after('evac_payment_number');
+                $table->datetime('evac_date')->nullable()->after('evac_payment_number');
             }
             
             if (!Schema::hasColumn('licenses', 'evac_amount')) {
@@ -71,6 +71,10 @@ return new class extends Migration
             
             if (!Schema::hasColumn('licenses', 'evac_files_path')) {
                 $table->text('evac_files_path')->nullable()->after('evac_amount');
+            }
+            
+            if (!Schema::hasColumn('licenses', 'evac_notes')) {
+                $table->text('evac_notes')->nullable()->after('evac_files_path');
             }
             
             // حقول المخالفات المحدثة
@@ -130,6 +134,7 @@ return new class extends Migration
                 'evac_date',
                 'evac_amount',
                 'evac_files_path',
+                'evac_notes',
                 'violation_license_number',
                 'violation_license_value',
                 'violation_license_date',
