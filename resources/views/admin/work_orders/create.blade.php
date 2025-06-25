@@ -221,8 +221,12 @@
                                         - الحد الأقصى 20 ميجابايت  
                                     </div>
                                 </div>
-
-                                <!-- قسم مقايسة الأعمال -->
+                            </div>
+                        </div>
+                        
+                        <!-- قسم مقايسة الأعمال - بعرض كامل -->
+                        <div class="row mt-4">
+                            <div class="col-12">
                                 <div class="form-section mb-4">
                                     <div class="d-flex justify-content-between align-items-center mb-3">
                                         <h4 class="section-title mb-0">
@@ -231,11 +235,8 @@
                                         </h4>
                                         <div class="d-flex justify-content-between mb-3">
                                             <div>
-                                                <button type="button" class="btn btn-primary me-2" onclick="addNewRow()">
+                                                <button type="button" class="btn btn-primary me-2" onclick="addWorkItem()">
                                                     <i class="fas fa-plus"></i> إضافة بند عمل
-                                                </button>
-                                                <button type="button" class="btn btn-success" onclick="showWorkItemsSearch()">
-                                                    <i class="fas fa-search"></i> البحث في البنود
                                                 </button>
                                             </div>
                                             <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#excelImportModal">
@@ -244,16 +245,39 @@
                                         </div>
                                     </div>
                                     
+                                    <!-- حقل البحث عن بند العقد -->
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <div class="input-group">
+                                                <input type="text" class="form-control" id="searchContractItem" 
+                                                       placeholder="البحث عن بند العقد بالكود أو الوصف..." 
+                                                       onkeyup="searchContractItems(this.value)">
+                                                <button class="btn btn-outline-secondary" type="button" onclick="clearContractSearch()">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                                <button class="btn btn-outline-primary" type="button" onclick="searchContractItems(document.getElementById('searchContractItem').value)">
+                                                    <i class="fas fa-search"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div id="searchResults" class="text-muted small">
+                                                <!-- نتائج البحث ستظهر هنا -->
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
                                     <!-- جدول بنود العمل -->
                                     <div class="table-responsive">
                                         <table class="table table-bordered" id="workItemsTable">
                                             <thead class="table-light">
                                                 <tr>
-                                                    <th style="width: 40%">بند العقد</th>
-                                                    <th style="width: 25%">الكمية المخططة</th>
-                                                    <th style="width: 15%">الوحدة</th>
-                                                    <th style="width: 15%">سعر الوحدة</th>
-                                                    
+                                                    <th style="width: 25%">بند العقد</th>
+                                                    <th style="width: 30%">الوصف</th>
+                                                    <th style="width: 15%">الكمية المخططة</th>
+                                                    <th style="width: 10%">الوحدة</th>
+                                                    <th style="width: 10%">سعر الوحدة</th>
+                                                    <th style="width: 10%">إجراءات</th>
                                                 </tr>
                                             </thead>
                                             <tbody id="workItemsBody">
@@ -632,19 +656,31 @@ function addWorkItem() {
     const row = document.createElement('tr');
     row.innerHTML = `
         <td>
-            <select name="work_items[${window.workItemRowIndex}][work_item_id]" class="form-select form-select-sm" onchange="updateWorkItemUnit(this, ${window.workItemRowIndex})" required>
-                <option value="">اختر بند العمل</option>
-                ${workItems.map(item => `<option value="${item.id}" data-unit="${item.unit}">${item.code} - ${item.description}</option>`).join('')}
-            </select>
+            <div class="position-relative">
+                <input type="text" class="form-control form-control-sm work-item-search" 
+                       placeholder="ابحث عن بند العمل..." 
+                       onkeyup="searchWorkItem(this, ${window.workItemRowIndex})"
+                       onclick="showWorkItemDropdown(this, ${window.workItemRowIndex})">
+                <input type="hidden" name="work_items[${window.workItemRowIndex}][work_item_id]" class="work-item-id">
+                <div class="dropdown-menu work-item-dropdown" id="dropdown_${window.workItemRowIndex}" style="display: none; position: absolute; top: 100%; left: 0; right: 0; z-index: 1000; max-height: 200px; overflow-y: auto;">
+                </div>
+            </div>
         </td>
         <td>
-            <input type="number" name="work_items[${window.workItemRowIndex}][planned_quantity]" class="form-control form-control-sm" step="0.01" min="0" placeholder="الكمية" required>
+            <input type="text" class="form-control form-control-sm work-item-description" 
+                   name="work_items[${window.workItemRowIndex}][description]" readonly>
         </td>
         <td>
-            <span id="workItemUnit_${window.workItemRowIndex}" class="text-muted">-</span>
+            <input type="number" name="work_items[${window.workItemRowIndex}][planned_quantity]" 
+                   class="form-control form-control-sm" step="0.01" min="0" placeholder="الكمية" required>
         </td>
         <td>
-            <input type="text" name="work_items[${window.workItemRowIndex}][notes]" class="form-control form-control-sm" placeholder="ملاحظات">
+            <input type="text" class="form-control form-control-sm work-item-unit" 
+                   name="work_items[${window.workItemRowIndex}][unit]" readonly>
+        </td>
+        <td>
+            <input type="text" class="form-control form-control-sm work-item-price" 
+                   name="work_items[${window.workItemRowIndex}][unit_price]" readonly>
         </td>
         <td>
             <button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">
@@ -656,11 +692,67 @@ function addWorkItem() {
     window.workItemRowIndex++;
 }
 
-// تحديث وحدة بند العمل
-function updateWorkItemUnit(select, index) {
-    const selectedOption = select.options[select.selectedIndex];
-    const unit = selectedOption.getAttribute('data-unit');
-    document.getElementById(`workItemUnit_${index}`).textContent = unit || '-';
+// البحث في بنود العمل
+function searchWorkItem(input, index) {
+    const searchTerm = input.value.toLowerCase();
+    const dropdown = document.getElementById(`dropdown_${index}`);
+    
+    if (searchTerm.length < 2) {
+        dropdown.style.display = 'none';
+        return;
+    }
+    
+    const filteredItems = workItems.filter(item => 
+        item.code.toLowerCase().includes(searchTerm) || 
+        item.description.toLowerCase().includes(searchTerm)
+    );
+    
+    if (filteredItems.length > 0) {
+        dropdown.innerHTML = filteredItems.map(item => `
+            <div class="dropdown-item" style="cursor: pointer; padding: 8px 12px; border-bottom: 1px solid #eee;" 
+                 onclick="selectWorkItem(${index}, '${item.id}', '${item.code}', '${item.description}', '${item.unit}', '${item.unit_price || 0}')">
+                <div><strong>${item.code}</strong></div>
+                <div style="font-size: 0.9em; color: #666;">${item.description}</div>
+                <div style="font-size: 0.8em; color: #888;">${item.unit} - ${item.unit_price ? parseFloat(item.unit_price).toFixed(2) + ' ﷼' : 'غير محدد'}</div>
+            </div>
+        `).join('');
+        dropdown.style.display = 'block';
+    } else {
+        dropdown.innerHTML = '<div class="dropdown-item" style="padding: 8px 12px; color: #999;">لا توجد نتائج</div>';
+        dropdown.style.display = 'block';
+    }
+}
+
+// إظهار قائمة بنود العمل
+function showWorkItemDropdown(input, index) {
+    const dropdown = document.getElementById(`dropdown_${index}`);
+    
+    if (workItems.length > 0) {
+        dropdown.innerHTML = workItems.slice(0, 10).map(item => `
+            <div class="dropdown-item" style="cursor: pointer; padding: 8px 12px; border-bottom: 1px solid #eee;" 
+                 onclick="selectWorkItem(${index}, '${item.id}', '${item.code}', '${item.description}', '${item.unit}', '${item.unit_price || 0}')">
+                <div><strong>${item.code}</strong></div>
+                <div style="font-size: 0.9em; color: #666;">${item.description}</div>
+                <div style="font-size: 0.8em; color: #888;">${item.unit} - ${item.unit_price ? parseFloat(item.unit_price).toFixed(2) + ' ﷼' : 'غير محدد'}</div>
+            </div>
+        `).join('');
+        dropdown.style.display = 'block';
+    }
+}
+
+// اختيار بند العمل
+function selectWorkItem(index, id, code, description, unit, price) {
+    const row = document.querySelector(`#dropdown_${index}`).closest('tr');
+    
+    // تحديث الحقول
+    row.querySelector('.work-item-search').value = code;
+    row.querySelector('.work-item-id').value = id;
+    row.querySelector('.work-item-description').value = description;
+    row.querySelector('.work-item-unit').value = unit;
+    row.querySelector('.work-item-price').value = price ? parseFloat(price).toFixed(2) + ' ﷼' : '';
+    
+    // إخفاء القائمة
+    document.getElementById(`dropdown_${index}`).style.display = 'none';
 }
 
 // إضافة مادة جديدة
@@ -982,6 +1074,139 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+// إضافة مستمع الأحداث للبحث في البنود المستوردة
+document.addEventListener('keyup', function(e) {
+    if (e.target.id === 'searchImportedItems' && e.key === 'Enter') {
+        searchInImportedItems();
+    }
+});
+
+// إضافة مستمع لإغلاق النافذة المنبثقة للاستيراد
+$('#excelImportModal').on('hidden.bs.modal', function() {
+    resetImportModal();
+});
+
+// إضافة مستمع لإغلاق قوائم البحث عند النقر خارجها
+document.addEventListener('click', function(e) {
+    // إغلاق جميع قوائم البحث في بنود العمل
+    const dropdowns = document.querySelectorAll('.work-item-dropdown');
+    dropdowns.forEach(dropdown => {
+        if (!dropdown.contains(e.target) && !dropdown.previousElementSibling.contains(e.target)) {
+            dropdown.style.display = 'none';
+        }
+    });
+});
+
+// منع إغلاق القائمة عند النقر داخلها
+document.addEventListener('click', function(e) {
+    if (e.target.closest('.work-item-dropdown')) {
+        e.stopPropagation();
+    }
+});
+
+// وظائف البحث في بنود العقد
+function searchContractItems(searchTerm) {
+    const resultsDiv = document.getElementById('searchResults');
+    
+    if (!searchTerm || searchTerm.length < 2) {
+        resultsDiv.innerHTML = '';
+        return;
+    }
+    
+    // البحث في بنود العمل المتاحة
+    const filteredItems = workItems.filter(item => 
+        item.code.toLowerCase().includes(searchTerm.toLowerCase()) || 
+        item.description.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    
+    if (filteredItems.length > 0) {
+        resultsDiv.innerHTML = `
+            <div class="search-results-container">
+                <div class="mb-2"><strong>نتائج البحث (${filteredItems.length} عنصر):</strong></div>
+                <div class="search-results-list" style="max-height: 200px; overflow-y: auto; border: 1px solid #ddd; border-radius: 4px; background: white;">
+                    ${filteredItems.slice(0, 10).map(item => `
+                        <div class="search-result-item p-2 border-bottom" style="cursor: pointer;" 
+                             onclick="addItemFromSearch('${item.id}', '${item.code}', '${item.description}', '${item.unit}', '${item.unit_price || 0}')"
+                             onmouseover="this.style.backgroundColor='#f8f9fa'" 
+                             onmouseout="this.style.backgroundColor='white'">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong class="text-primary">${item.code}</strong>
+                                    <div class="text-muted small">${item.description}</div>
+                                </div>
+                                <div class="text-end">
+                                    <div class="badge bg-secondary">${item.unit}</div>
+                                    <div class="text-success small">${item.unit_price ? parseFloat(item.unit_price).toFixed(2) + ' ﷼' : 'غير محدد'}</div>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                    ${filteredItems.length > 10 ? `<div class="p-2 text-center text-muted small">وعرض ${filteredItems.length - 10} نتيجة أخرى...</div>` : ''}
+                </div>
+            </div>
+        `;
+    } else {
+        resultsDiv.innerHTML = `
+            <div class="alert alert-info small mb-0">
+                <i class="fas fa-info-circle me-1"></i>
+                لا توجد نتائج للبحث عن "${searchTerm}"
+            </div>
+        `;
+    }
+}
+
+// إضافة بند من نتائج البحث
+function addItemFromSearch(id, code, description, unit, price) {
+    const tbody = document.getElementById('workItemsBody');
+    const row = document.createElement('tr');
+    
+    row.innerHTML = `
+        <td>
+            <div class="position-relative">
+                <input type="text" class="form-control form-control-sm work-item-search" 
+                       value="${code}" readonly>
+                <input type="hidden" name="work_items[${window.workItemRowIndex}][work_item_id]" class="work-item-id" value="${id}">
+            </div>
+        </td>
+        <td>
+            <input type="text" class="form-control form-control-sm work-item-description" 
+                   name="work_items[${window.workItemRowIndex}][description]" value="${description}" readonly>
+        </td>
+        <td>
+            <input type="number" name="work_items[${window.workItemRowIndex}][planned_quantity]" 
+                   class="form-control form-control-sm" step="0.01" min="0" placeholder="الكمية" required>
+        </td>
+        <td>
+            <input type="text" class="form-control form-control-sm work-item-unit" 
+                   name="work_items[${window.workItemRowIndex}][unit]" value="${unit}" readonly>
+        </td>
+        <td>
+            <input type="text" class="form-control form-control-sm work-item-price" 
+                   name="work_items[${window.workItemRowIndex}][unit_price]" value="${price ? parseFloat(price).toFixed(2) + ' ﷼' : ''}" readonly>
+        </td>
+        <td>
+            <button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">
+                <i class="fas fa-trash"></i>
+            </button>
+        </td>
+    `;
+    
+    tbody.appendChild(row);
+    window.workItemRowIndex++;
+    
+    // إظهار رسالة نجاح
+    toastr.success(`تم إضافة البند: ${code}`);
+    
+    // مسح البحث
+    clearContractSearch();
+}
+
+// مسح البحث
+function clearContractSearch() {
+    document.getElementById('searchContractItem').value = '';
+    document.getElementById('searchResults').innerHTML = '';
+}
 </script>
 
 @section('scripts')
