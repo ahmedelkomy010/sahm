@@ -76,8 +76,13 @@ class License extends Model
         'successful_tests_value',
         'failed_tests_value',
         'test_failure_reasons',
-
         'notes_attachments_path',
+        
+        // حقول مرفقات التمديد
+        'extension_attachment_1',
+        'extension_attachment_3',
+        'extension_attachment_4',
+        'extension_alert_days',
     ];
 
     protected $casts = [
@@ -116,6 +121,7 @@ class License extends Model
         'evac_amount' => 'decimal:2',
         'successful_tests_value' => 'decimal:2',
         'failed_tests_value' => 'decimal:2',
+        'extension_alert_days' => 'integer',
 
     ];
 

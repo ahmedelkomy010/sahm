@@ -757,37 +757,80 @@
 
                         <!-- تواريخ الرخصة -->
                         <div class="row g-3 mb-4">
-                            <div class="col-md-3">
+                            <div class="col-md-4">
                                 <label class="form-label fw-bold">تاريخ تفعيل الرخصة</label>
                                 <input type="date" class="form-control" name="license_start_date" id="license_start_date" required>
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-md-4">
                                 <label class="form-label fw-bold">تاريخ نهاية الرخصة</label>
                                 <input type="date" class="form-control" name="license_end_date" id="license_end_date" required>
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-md-4">
                                 <label class="form-label fw-bold">عدد أيام الرخصة</label>
                                 <input type="number" class="form-control" name="license_alert_days" id="license_days" readonly>
                             </div>
-                            <div class="col-md-3">
-                                <label class="form-label fw-bold">قيمة التمديد</label>
-                                <input type="number" step="0.01" class="form-control" name="extension_value">
+                        </div>
+
+                        <!-- زر إظهار حقول التمديد -->
+                        <div class="row g-3 mb-4">
+                            <div class="col-12">
+                                <button type="button" class="btn btn-outline-warning" onclick="toggleExtensionFields()" id="extensionToggleBtn">
+                                    <i class="fas fa-calendar-plus me-2"></i>
+                                    إظهار التمديد
+                                </button>
                             </div>
                         </div>
 
-                        <!-- تواريخ التمديد -->
-                        <div class="row g-3 mb-4">
-                            <div class="col-md-4">
-                                <label class="form-label fw-bold">تاريخ بداية التمديد</label>
-                                <input type="date" class="form-control" name="extension_start_date" id="extension_start_date">
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label fw-bold">تاريخ نهاية التمديد</label>
-                                <input type="date" class="form-control" name="extension_end_date" id="extension_end_date">
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label fw-bold">عدد أيام التمديد</label>
-                                <input type="number" class="form-control" name="extension_alert_days" id="extension_days" readonly>
+                        <!-- حقول التمديد (مخفية افتراضياً) -->
+                        <div id="extensionFields" style="display: none;">
+                            <div class="card border-warning">
+                                <div class="card-header bg-warning text-dark">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-calendar-plus me-2"></i>
+                                        بيانات التمديد
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <!-- تواريخ التمديد -->
+                                    <div class="row g-3 mb-4">
+                                        <div class="col-md-3">
+                                            <label class="form-label fw-bold">قيمة التمديد</label>
+                                            <input type="number" step="0.01" class="form-control" name="extension_value" placeholder="أدخل قيمة التمديد">
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label fw-bold">تاريخ بداية التمديد</label>
+                                            <input type="date" class="form-control" name="extension_start_date" id="extension_start_date">
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label fw-bold">تاريخ نهاية التمديد</label>
+                                            <input type="date" class="form-control" name="extension_end_date" id="extension_end_date">
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label fw-bold">عدد أيام التمديد</label>
+                                            <input type="number" class="form-control" name="extension_alert_days" id="extension_days" readonly>
+                                        </div>
+                                    </div>
+
+                                    <!-- مرفقات التمديد -->
+                                    <h6 class="mb-3 text-warning">
+                                        <i class="fas fa-paperclip me-2"></i>
+                                        مرفقات التمديد
+                                    </h6>
+                                    <div class="row g-3 mb-3">
+                                        <div class="col-md-4">
+                                            <label class="form-label fw-bold"> ملف الرخصة </label>
+                                            <input type="file" class="form-control" name="extension_attachment_1" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label fw-bold"> إثبات السداد</label>
+                                            <input type="file" class="form-control" name="extension_attachment_3" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label fw-bold"> إثبات سداد البنك </label>
+                                            <input type="file" class="form-control" name="extension_attachment_4" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -841,7 +884,7 @@
                                 <div class="card test-card">
                                     <div class="card-body">
                                         <label class="form-label fw-bold text-primary">
-                                            <i class="fas fa-ruler-vertical me-2"></i>اختبار العمق
+                                            <i class="fas fa-ruler-vertical me-2"></i>اختبار العمق (مراجعة البيانات العامة للحفريات)
                                         </label>
                                         <div class="d-flex gap-3 align-items-center mb-3">
                                             <div class="form-check">
@@ -1250,7 +1293,7 @@
                                 <div class="card test-card">
                                     <div class="card-body">
                                         <label class="form-label fw-bold text-primary">
-                                            <i class="fas fa-th me-2"></i>اختبار بلاط وانترلوك
+                                            <i class="fas fa-th me-2"></i>اختبار تقيم بلاط والارصفة والبردورات
                                         </label>
                                         <div class="d-flex gap-3 align-items-center mb-3">
                                             <div class="form-check">
@@ -1593,25 +1636,23 @@
                         
                                                  <!-- معلومات المخالفة -->
                          <div class="row g-3 mb-4">
-                             <div class="col-md-3">
+                             <div class="col-md-4">
                                  <label class="form-label fw-bold">رقم المخالفة</label>
                                  <input type="text" class="form-control" name="violation_number" required>
                              </div>
-                             <div class="col-md-3">
-                                 <label class="form-label fw-bold">تاريخ المخالفة</label>
+                             <div class="col-md-4">
+                                 <label class="form-label fw-bold">تصنيف المخالفة</label>
+                                 <input type="text" class="form-control" name="violation_type" required>
+                             </div>
+                             <div class="col-md-6">
+                                 <label class="form-label fw-bold">تاريخ رصد المخالفة</label>
                                  <input type="date" class="form-control" name="violation_date" value="{{ date('Y-m-d') }}" required>
                              </div>
                              <div class="col-md-3">
-                                 <label class="form-label fw-bold">نوع المخالفة</label>
-                                 <input type="text" class="form-control" name="violation_type" required>
+                                 <label class="form-label fw-bold">تاريخ الاستحقاق</label>
+                                 <input type="date" class="form-control" name="payment_due_date" value="{{ date('Y-m-d', strtotime('+30 days')) }}" required>
                              </div>
-                             <div class="col-md-3">
-                                 <label class="form-label fw-bold">المتسبب</label>
-                                 <input type="text" class="form-control" name="responsible_party" required>
-                             </div>
-                         </div>
-
-                         <div class="row g-3 mb-4">
+                             <div class="row g-3 mb-4">
                              <div class="col-md-4">
                                  <label class="form-label fw-bold">قيمة المخالفة</label>
                                  <div class="input-group">
@@ -1619,15 +1660,22 @@
                                      <span class="input-group-text">ريال</span>
                                  </div>
                              </div>
+                             
                              <div class="col-md-4">
-                                 <label class="form-label fw-bold">تاريخ الاستحقاق</label>
-                                 <input type="date" class="form-control" name="payment_due_date" value="{{ date('Y-m-d', strtotime('+30 days')) }}" required>
-                             </div>
-                             <div class="col-md-4">
-                                 <label class="form-label fw-bold">رقم سداد المخالفة</label>
+                                 <label class="form-label fw-bold">رقم فاتورة السداد</label>
                                  <input type="text" class="form-control" name="payment_invoice_number" placeholder="رقم الفاتورة">
                              </div>
                          </div>
+                             
+                             
+                             
+                         </div>
+
+                         
+                         <div class="col-md-3">
+                                 <label class="form-label fw-bold">المتسبب</label>
+                                 <input type="text" class="form-control" name="responsible_party" required>
+                             </div>
 
                          <div class="row g-3 mb-4">
                              <div class="col-md-8">
@@ -1673,13 +1721,13 @@
                                  <tr>
                                      <th>#</th>
                                      <th>رقم المخالفة</th>
-                                     <th>تاريخ المخالفة</th>
-                                     <th>نوع المخالفة</th>
+                                     <th>تاريخ رصد المخالفة</th>
+                                     <th>تاريخ الاستحقاق</th>
+                                     <th>تصنيف المخالفة</th>
                                      <th>المتسبب</th>
                                      <th>وصف المخالفة</th>
                                      <th>القيمة</th>
-                                     <th>تاريخ الاستحقاق</th>
-                                     <th>رقم السداد</th>
+                                     <th>رقم فاتورة السداد</th>
                                      <th>حالة الدفع</th>
                                      <th>الإجراءات</th>
                                  </tr>
@@ -2378,6 +2426,62 @@ function updateOverallLabStatus(activeTests, passedRows, failedRows, totalRows) 
     }
 }
 
+// دالة إظهار وإخفاء حقول التمديد
+function toggleExtensionFields() {
+    const extensionFields = document.getElementById('extensionFields');
+    const toggleBtn = document.getElementById('extensionToggleBtn');
+    
+    if (extensionFields.style.display === 'none' || extensionFields.style.display === '') {
+        extensionFields.style.display = 'block';
+        toggleBtn.innerHTML = '<i class="fas fa-calendar-minus me-2"></i>إخفاء التمديد';
+        toggleBtn.classList.remove('btn-outline-warning');
+        toggleBtn.classList.add('btn-warning');
+        
+        // تأثير انيميشن
+        extensionFields.style.opacity = '0';
+        extensionFields.style.transform = 'translateY(-20px)';
+        setTimeout(() => {
+            extensionFields.style.transition = 'all 0.3s ease';
+            extensionFields.style.opacity = '1';
+            extensionFields.style.transform = 'translateY(0)';
+        }, 50);
+    } else {
+        extensionFields.style.transition = 'all 0.3s ease';
+        extensionFields.style.opacity = '0';
+        extensionFields.style.transform = 'translateY(-20px)';
+        
+        setTimeout(() => {
+            extensionFields.style.display = 'none';
+            toggleBtn.innerHTML = '<i class="fas fa-calendar-plus me-2"></i>إظهار التمديد';
+            toggleBtn.classList.remove('btn-warning');
+            toggleBtn.classList.add('btn-outline-warning');
+        }, 300);
+    }
+}
+
+// دالة حساب أيام التمديد تلقائياً
+function calculateExtensionDays() {
+    const startDate = document.getElementById('extension_start_date').value;
+    const endDate = document.getElementById('extension_end_date').value;
+    const daysField = document.getElementById('extension_days');
+    
+    if (startDate && endDate) {
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        
+        if (end >= start) {
+            const timeDifference = end.getTime() - start.getTime();
+            const daysDifference = Math.ceil(timeDifference / (1000 * 3600 * 24));
+            daysField.value = daysDifference;
+        } else {
+            daysField.value = '';
+            toastr.warning('تاريخ نهاية التمديد يجب أن يكون بعد تاريخ البداية');
+        }
+    } else {
+        daysField.value = '';
+    }
+}
+
 // تهيئة النظام عند تحميل الصفحة
 document.addEventListener('DOMContentLoaded', function() {
     // تهيئة أزرار الحذف لجميع الاختبارات
@@ -2390,6 +2494,18 @@ document.addEventListener('DOMContentLoaded', function() {
     setTimeout(() => {
         updateTestTotals();
     }, 500);
+    
+    // إضافة مستمعين لتواريخ التمديد
+    const extensionStartDate = document.getElementById('extension_start_date');
+    const extensionEndDate = document.getElementById('extension_end_date');
+    
+    if (extensionStartDate) {
+        extensionStartDate.addEventListener('change', calculateExtensionDays);
+    }
+    
+    if (extensionEndDate) {
+        extensionEndDate.addEventListener('change', calculateExtensionDays);
+    }
 });
 </script>
 
