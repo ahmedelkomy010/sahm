@@ -655,9 +655,9 @@ function updateElectricalWorksSummary() {
 function getStatusBadge(status) {
     switch(status) {
         case 'completed':
-            return '<span class="badge bg-success">تم التنفيذ</span>';
+            return '<span class="badge bg-success"> نعم</span>';
         case 'pending':
-            return '<span class="badge bg-warning text-dark">قيد التنفيذ</span>';
+            return '<span class="badge bg-warning text-dark">لا </span>';
         case 'na':
             return '<span class="badge bg-secondary">لا ينطبق</span>';
         default:
@@ -689,10 +689,10 @@ function printSummary() {
                 ${document.getElementById('summary-table').outerHTML}
                 <div class="row mt-4">
                     <div class="col-4 text-center">
-                        <h5>تم التنفيذ: ${document.getElementById('total-completed').textContent}</h5>
+                        <h5> نعم: ${document.getElementById('total-completed').textContent}</h5>
                     </div>
                     <div class="col-4 text-center">
-                        <h5>قيد التنفيذ: ${document.getElementById('total-pending').textContent}</h5>
+                        <h5>لا : ${document.getElementById('total-pending').textContent}</h5>
                     </div>
                     <div class="col-4 text-center">
                         <h5>لا ينطبق: ${document.getElementById('total-na').textContent}</h5>

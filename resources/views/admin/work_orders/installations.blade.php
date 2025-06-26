@@ -577,9 +577,9 @@ function updateInstallationsSummary() {
 function getStatusBadge(status) {
     switch(status) {
         case 'yes':
-            return '<span class="badge bg-success">تم التركيب</span>';
+            return '<span class="badge bg-success">نعم</span>';
         case 'no':
-            return '<span class="badge bg-danger">لم يتم التركيب</span>';
+            return '<span class="badge bg-danger">لا</span>';
         case 'na':
             return '<span class="badge bg-secondary">لا ينطبق</span>';
         default:
@@ -611,10 +611,10 @@ function printSummary() {
                 ${document.getElementById('summary-table').outerHTML}
                 <div class="row mt-4">
                     <div class="col-4 text-center">
-                        <h5>تم التركيب: ${document.getElementById('total-completed').textContent}</h5>
+                        <h5>نعم : ${document.getElementById('total-completed').textContent}</h5>
                     </div>
                     <div class="col-4 text-center">
-                        <h5>لم يتم التركيب: ${document.getElementById('total-pending').textContent}</h5>
+                        <h5> لا: ${document.getElementById('total-pending').textContent}</h5>
                     </div>
                     <div class="col-4 text-center">
                         <h5>لا ينطبق: ${document.getElementById('total-na').textContent}</h5>

@@ -348,28 +348,46 @@ class LicenseController extends Controller
     public function destroy(License $license)
     {
         try {
-            $workOrderId = $license->work_order_id;
             $license->delete();
-
-            if (request()->expectsJson()) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'تم حذف الرخصة بنجاح'
-                ]);
-            }
-
-            return redirect()->route('admin.work-orders.show', $workOrderId)
-                ->with('success', 'تم حذف الرخصة بنجاح');
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'تم حذف الرخصة بنجاح'
+            ]);
+            
         } catch (\Exception $e) {
-            if (request()->expectsJson()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'حدث خطأ أثناء حذف الرخصة'
-                ], 500);
-            }
+            \Log::error('License deletion error: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء حذف الرخصة'
+            ], 500);
+        }
+    }
 
-            return redirect()->back()
-                ->with('error', 'حدث خطأ أثناء حذف الرخصة');
+    /**
+     * الحصول على الرخص حسب أمر العمل
+     */
+    public function getByWorkOrder($workOrderId)
+    {
+        try {
+            $licenses = License::where('work_order_id', $workOrderId)
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'licenses' => $licenses
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Get licenses by work order error: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ في جلب الرخص',
+                'licenses' => []
+            ], 500);
         }
     }
 

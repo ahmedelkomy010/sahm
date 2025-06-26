@@ -355,6 +355,15 @@
 
         // Load violations on page load
         loadViolations();
+        
+        // تحميل رخص الحفر عند تحميل الصفحة
+        loadDigLicenses();
+        
+        // منع الإرسال العادي للنموذج
+        $('#digLicenseForm').on('submit', function(e) {
+            e.preventDefault();
+            return false;
+        });
     });
 
     function saveCoordinationSection() {
@@ -387,7 +396,22 @@
     }
 
     function saveDigLicenseSection() {
-        const formData = new FormData(document.getElementById('digLicenseForm'));
+        // منع الإرسال العادي للنموذج
+        event.preventDefault();
+        
+        const form = document.getElementById('digLicenseForm');
+        if (!form) {
+            toastr.error('لم يتم العثور على نموذج رخصة الحفر');
+            return false;
+        }
+
+        const formData = new FormData(form);
+        
+        // إظهار loading على الزر
+        const saveBtn = event.target;
+        const originalText = saveBtn.innerHTML;
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>جاري الحفظ...';
         
         $.ajax({
             url: '{{ route("admin.licenses.store") }}',
@@ -401,16 +425,153 @@
             success: function(response) {
                 toastr.success('تم حفظ رخصة الحفر بنجاح');
                 
-                // Refresh the page after a short delay
-                setTimeout(() => {
-                    window.location.reload();
-                }, 1500);
+                // إعادة تعيين النموذج
+                form.reset();
+                
+                // تحديث جدول رخص الحفر
+                loadDigLicenses();
+                
+                // إعادة تفعيل الزر
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = originalText;
             },
             error: function(xhr) {
-                const errors = xhr.responseJSON?.errors || {};
-                Object.values(errors).forEach(error => {
-                    toastr.error(error[0]);
+                console.error('Error saving dig license:', xhr);
+                
+                // إعادة تفعيل الزر
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = originalText;
+                
+                if (xhr.responseJSON && xhr.responseJSON.errors) {
+                    const errors = xhr.responseJSON.errors;
+                    Object.values(errors).forEach(error => {
+                        toastr.error(error[0]);
+                    });
+                } else {
+                    const message = xhr.responseJSON?.message || 'حدث خطأ في حفظ رخصة الحفر';
+                    toastr.error(message);
+                }
+            }
+        });
+        
+        return false;
+    }
+
+    // دالة تحميل جدول رخص الحفر
+    function loadDigLicenses() {
+        $.ajax({
+            url: `/admin/licenses/by-work-order/{{ $workOrder->id }}`,
+            type: 'GET',
+            success: function(response) {
+                const tbody = document.getElementById('dig-licenses-table-body');
+                if (!tbody) return;
+                
+                tbody.innerHTML = '';
+
+                if (!response.licenses || response.licenses.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="10" class="text-center">لا توجد رخص حفر</td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                response.licenses.forEach((license, index) => {
+                    const licenseDate = license.license_date ? 
+                        new Date(license.license_date).toLocaleDateString('ar-SA') : '';
+                    const startDate = license.license_start_date ? 
+                        new Date(license.license_start_date).toLocaleDateString('ar-SA') : '';
+                    const endDate = license.license_end_date ? 
+                        new Date(license.license_end_date).toLocaleDateString('ar-SA') : '';
+                    
+                    const licenseTypeBadge = getLicenseTypeBadge(license.license_type);
+                    const dimensions = `${license.excavation_length || 0} × ${license.excavation_width || 0} × ${license.excavation_depth || 0} م`;
+                    const period = startDate && endDate ? `${startDate} - ${endDate}` : '-';
+                    
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td><strong class="text-primary">${license.license_number || ''}</strong></td>
+                            <td>${licenseDate}</td>
+                            <td>${licenseTypeBadge}</td>
+                            <td><strong class="text-success">${formatCurrency(license.license_value)}</strong></td>
+                            <td><small>${dimensions}</small></td>
+                            <td><small>${period}</small></td>
+                            <td><span class="badge bg-info">${license.license_alert_days || 0} يوم</span></td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    ${license.license_file_path ? `<a href="${license.license_file_path}" target="_blank" class="btn btn-outline-primary" title="ملف الرخصة"><i class="fas fa-file-pdf"></i></a>` : ''}
+                                    ${license.payment_proof_path ? `<a href="${license.payment_proof_path}" target="_blank" class="btn btn-outline-success" title="إثبات السداد"><i class="fas fa-receipt"></i></a>` : ''}
+                                </div>
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-info" onclick="viewLicense(${license.id})" title="عرض">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-outline-warning" onclick="editLicense(${license.id})" title="تعديل">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-outline-danger" onclick="deleteLicense(${license.id})" title="حذف">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
                 });
+            },
+            error: function(xhr) {
+                console.error('Error loading dig licenses:', xhr);
+                toastr.error('حدث خطأ في تحميل رخص الحفر');
+            }
+        });
+    }
+
+    // دالة للحصول على badge نوع الرخصة
+    function getLicenseTypeBadge(type) {
+        switch(type) {
+            case 'emergency':
+                return '<span class="badge bg-danger">طوارئ</span>';
+            case 'project':
+                return '<span class="badge bg-info">مشروع</span>';
+            case 'normal':
+                return '<span class="badge bg-success">عادي</span>';
+            default:
+                return '<span class="badge bg-secondary">غير محدد</span>';
+        }
+    }
+
+    // دوال إضافية لإدارة الرخص
+    function viewLicense(licenseId) {
+        // يمكن إضافة modal لعرض تفاصيل الرخصة
+        toastr.info('سيتم إضافة عرض التفاصيل قريباً');
+    }
+
+    function editLicense(licenseId) {
+        // يمكن إضافة تعديل الرخصة
+        toastr.info('سيتم إضافة التعديل قريباً');
+    }
+
+    function deleteLicense(licenseId) {
+        if (!confirm('هل أنت متأكد من حذف هذه الرخصة؟')) {
+            return;
+        }
+
+        $.ajax({
+            url: `/admin/licenses/${licenseId}`,
+            type: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function(response) {
+                toastr.success('تم حذف الرخصة بنجاح');
+                loadDigLicenses();
+            },
+            error: function(xhr) {
+                console.error('Error deleting license:', xhr);
+                toastr.error('حدث خطأ في حذف الرخصة');
             }
         });
     }
@@ -457,6 +618,7 @@
                 if (!tbody) return;
                 
                 tbody.innerHTML = '';
+                let totalAmount = 0;
 
                 if (!response.violations || response.violations.length === 0) {
                     tbody.innerHTML = `
@@ -464,20 +626,22 @@
                             <td colspan="11" class="text-center">لا توجد مخالفات</td>
                         </tr>
                     `;
+                    updateTotalAmount(0);
                     return;
                 }
 
                 response.violations.forEach((violation, index) => {
-                    // تحويل التاريخ إلى التقويم الميلادي
                     const violationDate = violation.violation_date ? 
                         new Date(violation.violation_date).toLocaleDateString('en-GB') : '';
                     const dueDate = violation.payment_due_date ? 
                         new Date(violation.payment_due_date).toLocaleDateString('en-GB') : '';
                     
-                    // تحديد حالة السداد
                     const paymentStatusBadge = violation.payment_status == 1 ? 
                         '<span class="badge bg-success"><i class="fas fa-check-circle me-1"></i>مسددة</span>' : 
                         '<span class="badge bg-danger"><i class="fas fa-times-circle me-1"></i>غير مسددة</span>';
+
+                    // تحديث إجمالي المبلغ
+                    totalAmount += parseFloat(violation.violation_amount || 0);
 
                     tbody.innerHTML += `
                         <tr>
@@ -487,7 +651,7 @@
                             <td><span class="badge bg-info">${violation.violation_type || ''}</span></td>
                             <td>${violation.responsible_party || ''}</td>
                             <td>${violation.violation_description || '-'}</td>
-                            <td><strong class="text-success">${violation.violation_amount || '0'} ريال</strong></td>
+                            <td><strong class="text-success">${formatCurrency(violation.violation_amount)}</strong></td>
                             <td>${dueDate}</td>
                             <td>${violation.payment_invoice_number || '-'}</td>
                             <td>${paymentStatusBadge}</td>
@@ -504,12 +668,31 @@
                         </tr>
                     `;
                 });
+
+                // تحديث إجمالي المبلغ في النهاية
+                updateTotalAmount(totalAmount);
             },
             error: function(xhr) {
                 console.error('Error loading violations:', xhr);
                 toastr.error('حدث خطأ في تحميل المخالفات');
             }
         });
+    }
+
+    // دالة لتنسيق المبالغ
+    function formatCurrency(amount) {
+        return parseFloat(amount || 0).toLocaleString('ar-SA', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }) + ' ريال';
+    }
+
+    // دالة لتحديث إجمالي المبلغ
+    function updateTotalAmount(amount) {
+        const totalElement = document.getElementById('total-violations-amount');
+        if (totalElement) {
+            totalElement.innerHTML = `<strong>${formatCurrency(amount)}</strong>`;
+        }
     }
 
     function saveViolationSection() {
@@ -521,12 +704,6 @@
 
         const formData = new FormData(form);
         
-        // إضافة logging للبيانات المرسلة
-        console.log('Sending violation data:');
-        for (let [key, value] of formData.entries()) {
-            console.log(key + ': ' + value);
-        }
-        
         $.ajax({
             url: '{{ route("admin.license-violations.store") }}',
             type: 'POST',
@@ -537,26 +714,15 @@
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             },
             success: function(response) {
-                console.log('Success response:', response);
                 toastr.success('تم حفظ المخالفة بنجاح');
                 resetViolationForm();
-                loadViolations();
+                loadViolations(); // سيقوم بتحديث الجدول والإجمالي
             },
             error: function(xhr) {
-                console.error('Error saving violation:', xhr);
-                console.error('Response text:', xhr.responseText);
-                console.error('Status:', xhr.status);
-                console.error('Status text:', xhr.statusText);
-                
                 const errors = xhr.responseJSON?.errors || {};
-                if (Object.keys(errors).length > 0) {
-                    Object.values(errors).forEach(error => {
-                        toastr.error(error[0]);
-                    });
-                } else {
-                    const message = xhr.responseJSON?.message || 'حدث خطأ في حفظ المخالفة';
-                    toastr.error(message);
-                }
+                Object.values(errors).forEach(error => {
+                    toastr.error(error[0]);
+                });
             }
         });
     }
@@ -593,7 +759,7 @@
             },
             success: function(response) {
                 toastr.success('تم حذف المخالفة بنجاح');
-                loadViolations();
+                loadViolations(); // سيقوم بتحديث الجدول والإجمالي
             },
             error: function(xhr) {
                 console.error('Error deleting violation:', xhr);
@@ -609,14 +775,13 @@
         <div class="license-header">
             <div class="row align-items-center">
                 <div class="col-lg-8">
-                    <h1 class="mb-2 display-6 fw-bold">
-                        <i class="fas fa-certificate me-3"></i>
+                    <h1 class="mb-1 display-6 fw-bold">
+                        <i class="fas fa-certificate me-2"></i>
                         إدارة الجودة والرخص
                     </h1>
-                    <p class="mb-0 fs-5 opacity-90">
-                        أمر العمل رقم: <span class="fw-bold">{{ $workOrder->order_number }}</span>
-                    </p>
+                    
                 </div>
+                
                 <div class="col-lg-4 text-end">
                     <a href="{{ route('admin.work-orders.show', $workOrder) }}" class="btn btn-light btn-lg">
                         <i class="fas fa-arrow-right me-2"></i>
@@ -625,6 +790,71 @@
                 </div>
             </div>
         </div>
+        <div class="row align-items-center">
+                        <div class="col-md-3 col-sm-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-hashtag text-primary me-2 fs-5"></i>
+                                <div>
+                                    <small class="text-muted d-block">رقم الطلب</small>
+                                    <strong class="text-primary fs-6">{{ $workOrder->order_number }}</strong>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-tools text-warning me-2 fs-5"></i>
+                                <div>
+                                    <small class="text-muted d-block">نوع العمل</small>
+                                    <strong class="fs-6">{{ $workOrder->work_type }}</strong>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-user text-info me-2 fs-5"></i>
+                                <div>
+                                    <small class="text-muted d-block">اسم المشترك</small>
+                                    <strong class="fs-6">{{ $workOrder->subscriber_name }}</strong>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-3 col-sm-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-flag-checkered text-success me-2 fs-5"></i>
+                                <div>
+                                    <small class="text-muted d-block">حالة التنفيذ</small>
+                                    <strong class="text-success fs-6">
+                                        @switch($workOrder->execution_status)
+                                            @case(2)
+                                                تم تسليم 155
+                                                @break
+                                            @case(1)
+                                                جاري العمل
+                                                @break
+                                            @case(3)
+                                                صدرت شهادة
+                                                @break
+                                            @case(4)
+                                                تم اعتماد الشهادة
+                                                @break
+                                            @case(5)
+                                                مؤكد
+                                                @break
+                                            @case(6)
+                                                دخل مستخلص
+                                                @break
+                                            @case(7)
+                                                منتهي
+                                                @break
+                                            @default
+                                                غير محدد
+                                        @endswitch
+                                    </strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
         <!-- شهادة التنسيق -->
         <div class="section-card">
@@ -710,155 +940,204 @@
                     </h3>
                 </div>
                 <div class="section-body">
-                    <form id="digLicenseForm" enctype="multipart/form-data">
-                        @csrf
-                        <input type="hidden" name="work_order_id" value="{{ $workOrder->id }}">
-                        
-                        <!-- معلومات الرخصة الأساسية -->
-                        <div class="row g-3 mb-4">
-                            <div class="col-md-3">
-                                <label class="form-label fw-bold">رقم الرخصة</label>
-                                <input type="text" class="form-control" name="license_number" required>
-                            </div>
-                            <div class="col-md-3">
-                                <label class="form-label fw-bold">تاريخ إصدار الرخصة</label>
-                                <input type="date" class="form-control" name="license_date" required>
-                            </div>
-                            <div class="col-md-3">
-                                <label class="form-label fw-bold">نوع الرخصة</label>
-                                <select class="form-select" name="license_type" required>
-                                    <option value="">اختر نوع الرخصة</option>
-                                    <option value="emergency">طوارئ</option>
-                                    <option value="project">مشروع</option>
-                                    <option value="normal">عادي</option>
-                                </select>
-                            </div>
-                            <div class="col-md-3">
-                                <label class="form-label fw-bold">قيمة الرخصة</label>
-                                <input type="number" step="0.01" class="form-control" name="license_value" required>
+                    <!-- نموذج إضافة رخصة الحفر -->
+                    <div class="card border-primary mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-plus me-2"></i>
+                                إضافة رخصة حفر جديدة
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <form id="digLicenseForm" enctype="multipart/form-data">
+                                @csrf
+                                <input type="hidden" name="work_order_id" value="{{ $workOrder->id }}">
+                                
+                                <!-- معلومات الرخصة الأساسية -->
+                                <div class="row g-3 mb-4">
+                                    <div class="col-md-3">
+                                        <label class="form-label fw-bold">رقم الرخصة</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fas fa-hashtag"></i></span>
+                                            <input type="text" class="form-control" name="license_number">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label fw-bold">تاريخ إصدار الرخصة</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fas fa-calendar"></i></span>
+                                            <input type="date" class="form-control" name="license_date">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label fw-bold">نوع الرخصة</label>
+                                        <select class="form-select" name="license_type">
+                                            <option value="">اختر نوع الرخصة</option>
+                                            <option value="emergency">طوارئ</option>
+                                            <option value="project">مشروع</option>
+                                            <option value="normal">عادي</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label fw-bold">قيمة الرخصة</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fas fa-money-bill"></i></span>
+                                            <input type="number" step="0.01" class="form-control" name="license_value">
+                                            <span class="input-group-text">ريال</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- أبعاد الحفر -->
+                                <div class="row g-3 mb-4">
+                                    <div class="col-md-4">
+                                        <label class="form-label fw-bold">طول الحفر (متر)</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fas fa-ruler-horizontal"></i></span>
+                                            <input type="number" step="0.01" class="form-control" name="excavation_length">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label fw-bold">عرض الحفر (متر)</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fas fa-arrows-alt-h"></i></span>
+                                            <input type="number" step="0.01" class="form-control" name="excavation_width">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label fw-bold">عمق الحفر (متر)</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fas fa-ruler-vertical"></i></span>
+                                            <input type="number" step="0.01" class="form-control" name="excavation_depth">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- تواريخ الرخصة -->
+                                <div class="row g-3 mb-4">
+                                    <div class="col-md-4">
+                                        <label class="form-label fw-bold">تاريخ تفعيل الرخصة</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fas fa-play"></i></span>
+                                            <input type="date" class="form-control" name="license_start_date" id="license_start_date">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label fw-bold">تاريخ نهاية الرخصة</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fas fa-stop"></i></span>
+                                            <input type="date" class="form-control" name="license_end_date" id="license_end_date">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label fw-bold">عدد أيام الرخصة</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fas fa-clock"></i></span>
+                                            <input type="number" class="form-control bg-light" name="license_alert_days" id="license_days" readonly>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- المرفقات -->
+                                <div class="row g-3 mb-4">
+                                    <div class="col-md-4">
+                                        <label class="form-label fw-bold">ملف الرخصة</label>
+                                        <input type="file" class="form-control" name="license_file_path" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label fw-bold">إثبات سداد البنك</label>
+                                        <input type="file" class="form-control" name="payment_proof_path" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label fw-bold">فواتير السداد</label>
+                                        <input type="file" class="form-control" name="payment_invoices_path" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" multiple>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="card-footer text-center">
+                            <button type="button" class="btn btn-primary" onclick="saveDigLicenseSection()">
+                                <i class="fas fa-save me-2"></i>
+                                حفظ رخصة الحفر
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- جدول رخص الحفر -->
+                    <div class="card">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-list me-2"></i>
+                                سجل رخص الحفر
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped table-hover">
+                                    <thead class="table-info">
+                                        <tr>
+                                            <th>#</th>
+                                            <th>رقم الرخصة</th>
+                                            <th>تاريخ الإصدار</th>
+                                            <th>نوع الرخصة</th>
+                                            <th>قيمة الرخصة</th>
+                                            <th>أبعاد الحفر</th>
+                                            <th>فترة الرخصة</th>
+                                            <th>عدد الأيام</th>
+                                            <th>المرفقات</th>
+                                            <th>الإجراءات</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="dig-licenses-table-body">
+                                        <tr>
+                                            <td colspan="10" class="text-center">لا توجد رخص حفر</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
+                    </div>
 
-                        <!-- أبعاد الحفر -->
-                        <div class="row g-3 mb-4">
-                            <div class="col-md-4">
-                                <label class="form-label fw-bold">طول الحفر (متر)</label>
-                                <input type="number" step="0.01" class="form-control" name="excavation_length" required>
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label fw-bold">عرض الحفر (متر)</label>
-                                <input type="number" step="0.01" class="form-control" name="excavation_width" required>
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label fw-bold">عمق الحفر (متر)</label>
-                                <input type="number" step="0.01" class="form-control" name="excavation_depth" required>
-                            </div>
-                        </div>
-
-                        <!-- تواريخ الرخصة -->
-                        <div class="row g-3 mb-4">
-                            <div class="col-md-4">
-                                <label class="form-label fw-bold">تاريخ تفعيل الرخصة</label>
-                                <input type="date" class="form-control" name="license_start_date" id="license_start_date" required>
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label fw-bold">تاريخ نهاية الرخصة</label>
-                                <input type="date" class="form-control" name="license_end_date" id="license_end_date" required>
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label fw-bold">عدد أيام الرخصة</label>
-                                <input type="number" class="form-control" name="license_alert_days" id="license_days" readonly>
-                            </div>
-                        </div>
-
-                        <!-- زر إظهار حقول التمديد -->
-                        <div class="row g-3 mb-4">
-                            <div class="col-12">
-                                <button type="button" class="btn btn-outline-warning" onclick="toggleExtensionFields()" id="extensionToggleBtn">
+                    <!-- قسم التمديدات -->
+                    <div class="card mt-4">
+                        <div class="card-header bg-warning text-dark">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">
                                     <i class="fas fa-calendar-plus me-2"></i>
-                                    إظهار التمديد
+                                    تمديدات الرخص
+                                </h5>
+                                <button type="button" class="btn btn-success btn-sm" onclick="addNewExtension()">
+                                    <i class="fas fa-plus me-1"></i>
+                                    إضافة تمديد
                                 </button>
                             </div>
                         </div>
-
-                        <!-- حقول التمديد (مخفية افتراضياً) -->
-                        <div id="extensionFields" style="display: none;">
-                            <div class="card border-warning">
-                                <div class="card-header bg-warning text-dark">
-                                    <h5 class="mb-0">
-                                        <i class="fas fa-calendar-plus me-2"></i>
-                                        بيانات التمديد
-                                    </h5>
-                                </div>
-                                <div class="card-body">
-                                    <!-- تواريخ التمديد -->
-                                    <div class="row g-3 mb-4">
-                                        <div class="col-md-3">
-                                            <label class="form-label fw-bold">قيمة التمديد</label>
-                                            <input type="number" step="0.01" class="form-control" name="extension_value" placeholder="أدخل قيمة التمديد">
-                                        </div>
-                                        <div class="col-md-3">
-                                            <label class="form-label fw-bold">تاريخ بداية التمديد</label>
-                                            <input type="date" class="form-control" name="extension_start_date" id="extension_start_date">
-                                        </div>
-                                        <div class="col-md-3">
-                                            <label class="form-label fw-bold">تاريخ نهاية التمديد</label>
-                                            <input type="date" class="form-control" name="extension_end_date" id="extension_end_date">
-                                        </div>
-                                        <div class="col-md-3">
-                                            <label class="form-label fw-bold">عدد أيام التمديد</label>
-                                            <input type="number" class="form-control" name="extension_alert_days" id="extension_days" readonly>
-                                        </div>
-                                    </div>
-
-                                    <!-- مرفقات التمديد -->
-                                    <h6 class="mb-3 text-warning">
-                                        <i class="fas fa-paperclip me-2"></i>
-                                        مرفقات التمديد
-                                    </h6>
-                                    <div class="row g-3 mb-3">
-                                        <div class="col-md-4">
-                                            <label class="form-label fw-bold"> ملف الرخصة </label>
-                                            <input type="file" class="form-control" name="extension_attachment_1" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
-                                        </div>
-                                        <div class="col-md-4">
-                                            <label class="form-label fw-bold"> إثبات السداد</label>
-                                            <input type="file" class="form-control" name="extension_attachment_3" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
-                                        </div>
-                                        <div class="col-md-4">
-                                            <label class="form-label fw-bold"> إثبات سداد البنك </label>
-                                            <input type="file" class="form-control" name="extension_attachment_4" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
-                                        </div>
-                                    </div>
-                                </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-bordered" id="extensionsTable">
+                                    <thead class="table-warning">
+                                        <tr>
+                                            <th>#</th>
+                                            <th>رقم الرخصة</th>
+                                            <th>قيمة التمديد</th>
+                                            <th>تاريخ البداية</th>
+                                            <th>تاريخ النهاية</th>
+                                            <th>عدد الأيام</th>
+                                            <th>ملف الرخصة</th>
+                                            <th>إثبات السداد</th>
+                                            <th>إثبات سداد البنك</th>
+                                            <th>الإجراءات</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="extensions-table-body">
+                                        <tr id="no-extensions-row">
+                                            <td colspan="10" class="text-center">لا توجد تمديدات</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
-
-                        <!-- المرفقات -->
-                        <div class="row g-3 mb-4">
-                            <div class="col-md-4">
-                                <label class="form-label fw-bold">ملف الرخصة</label>
-                                <input type="file" class="form-control" name="license_file_path" required>
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label fw-bold">إثبات سداد البنك</label>
-                                <input type="file" class="form-control" name="payment_proof_path" required>
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label fw-bold">فواتير السداد</label>
-                                <input type="file" class="form-control" name="payment_invoices_path" multiple>
-                            </div>
-                        </div>
-
-                        <div class="row mt-4">
-                            <div class="col-12 text-center">
-                                <button type="button" class="btn btn-primary-custom btn-lg" onclick="saveDigLicenseSection()">
-                                    <i class="fas fa-save me-2"></i>
-                                    حفظ رخصة الحفر
-                                </button>
-                            </div>
-                        </div>
-                    </form>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1634,111 +1913,149 @@
                         @csrf
                         <input type="hidden" name="work_order_id" value="{{ $workOrder->id }}">
                         
-                                                 <!-- معلومات المخالفة -->
-                         <div class="row g-3 mb-4">
-                             <div class="col-md-4">
-                                 <label class="form-label fw-bold">رقم المخالفة</label>
-                                 <input type="text" class="form-control" name="violation_number" required>
-                             </div>
-                             <div class="col-md-4">
-                                 <label class="form-label fw-bold">تصنيف المخالفة</label>
-                                 <input type="text" class="form-control" name="violation_type" required>
-                             </div>
-                             <div class="col-md-6">
-                                 <label class="form-label fw-bold">تاريخ رصد المخالفة</label>
-                                 <input type="date" class="form-control" name="violation_date" value="{{ date('Y-m-d') }}" required>
-                             </div>
-                             <div class="col-md-3">
-                                 <label class="form-label fw-bold">تاريخ الاستحقاق</label>
-                                 <input type="date" class="form-control" name="payment_due_date" value="{{ date('Y-m-d', strtotime('+30 days')) }}" required>
-                             </div>
-                             <div class="row g-3 mb-4">
-                             <div class="col-md-4">
-                                 <label class="form-label fw-bold">قيمة المخالفة</label>
-                                 <div class="input-group">
-                                     <input type="number" class="form-control" name="violation_amount" step="0.01" required>
-                                     <span class="input-group-text">ريال</span>
-                                 </div>
-                             </div>
-                             
-                             <div class="col-md-4">
-                                 <label class="form-label fw-bold">رقم فاتورة السداد</label>
-                                 <input type="text" class="form-control" name="payment_invoice_number" placeholder="رقم الفاتورة">
-                             </div>
-                         </div>
-                             
-                             
-                             
-                         </div>
+                        <!-- معلومات المخالفة -->
+                        <div class="card border-danger mb-4">
+                            <div class="card-header bg-danger text-white">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    تسجيل مخالفة جديدة
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <!-- معلومات المخالفة الأساسية -->
+                                <div class="row g-3 mb-4">
+                                    <div class="col-md-3">
+                                        <label class="form-label fw-bold">رقم المخالفة</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fas fa-hashtag"></i></span>
+                                            <input type="text" class="form-control" name="violation_number" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label fw-bold">تصنيف المخالفة</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fas fa-tag"></i></span>
+                                            <input type="text" class="form-control" name="violation_type" required placeholder="أدخل تصنيف المخالفة">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label fw-bold">تاريخ رصد المخالفة</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fas fa-calendar"></i></span>
+                                            <input type="date" class="form-control" name="violation_date" value="{{ date('Y-m-d') }}" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label fw-bold">تاريخ الاستحقاق</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                                            <input type="date" class="form-control" name="payment_due_date" value="{{ date('Y-m-d', strtotime('+30 days')) }}" required>
+                                        </div>
+                                    </div>
+                                </div>
 
-                         
-                         <div class="col-md-3">
-                                 <label class="form-label fw-bold">المتسبب</label>
-                                 <input type="text" class="form-control" name="responsible_party" required>
-                             </div>
+                                <!-- تفاصيل المخالفة -->
+                                <div class="row g-3 mb-4">
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold">وصف المخالفة</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fas fa-align-left"></i></span>
+                                            <textarea class="form-control" name="violation_description" rows="3" required placeholder="اكتب وصفاً تفصيلياً للمخالفة"></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold">المتسبب</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                            <input type="text" class="form-control" name="responsible_party" required placeholder="اسم الشخص أو الجهة المتسببة">
+                                        </div>
+                                    </div>
+                                </div>
 
-                         <div class="row g-3 mb-4">
-                             <div class="col-md-8">
-                                 <label class="form-label fw-bold">وصف المخالفة</label>
-                                 <textarea class="form-control" name="violation_description" rows="3" placeholder="اكتب وصف المخالفة هنا..."></textarea>
-                             </div>
-                             <div class="col-md-4">
-                                 <label class="form-label fw-bold">حالة الفاتورة</label>
-                                 <div class="mt-2">
-                                     <div class="form-check mb-2">
-                                         <input class="form-check-input" type="radio" name="payment_status" id="payment_unpaid" value="0" checked>
-                                         <label class="form-check-label fw-bold text-danger" for="payment_unpaid">
-                                             <i class="fas fa-times-circle me-1"></i>
-                                             غير مسددة
-                                         </label>
-                                     </div>
-                                     <div class="form-check">
-                                         <input class="form-check-input" type="radio" name="payment_status" id="payment_paid" value="1">
-                                         <label class="form-check-label fw-bold text-success" for="payment_paid">
-                                             <i class="fas fa-check-circle me-1"></i>
-                                             مسددة
-                                         </label>
-                                     </div>
-                                 </div>
-                             </div>
-                         </div>
+                                <!-- معلومات السداد -->
+                                <div class="row g-3">
+                                    <div class="col-md-4">
+                                        <label class="form-label fw-bold">قيمة المخالفة</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fas fa-money-bill"></i></span>
+                                            <input type="number" class="form-control" name="violation_amount" step="0.01" required>
+                                            <span class="input-group-text">ريال</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label fw-bold">رقم فاتورة السداد</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fas fa-receipt"></i></span>
+                                            <input type="text" class="form-control" name="payment_invoice_number" placeholder="في حالة السداد">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label fw-bold">حالة السداد</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fas fa-check-circle"></i></span>
+                                            <select class="form-select" name="payment_status">
+                                                <option value="0">في انتظار السداد</option>
+                                                <option value="1">تم السداد</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-footer text-center">
+                                <button type="button" class="btn btn-danger" onclick="saveViolationSection()">
+                                    <i class="fas fa-save me-2"></i>
+                                    حفظ المخالفة
+                                </button>
+                            </div>
+                        </div>
 
-                            <div class="row mt-4">
-                             <div class="col-12 text-center">
-                                 <button type="button" class="btn btn-primary-custom btn-lg me-2" onclick="saveViolationSection()">
-                                     <i class="fas fa-save me-2"></i>
-                                     حفظ المخالفة
-                                 </button>
-                                 
-                             </div>
-                         </div>
+                        <!-- جدول المخالفات -->
+                        <div class="card">
+                            <div class="card-header bg-warning text-dark">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-list me-2"></i>
+                                    سجل المخالفات
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-hover">
+                                        <thead class="table-warning">
+                                            <tr>
+                                                <th>#</th>
+                                                <th>رقم المخالفة</th>
+                                                <th>تاريخ رصد المخالفة</th>
+                                                <th>تصنيف المخالفة</th>
+                                                <th>المتسبب</th>
+                                                <th>وصف المخالفة </th>
+                                                <th> قيمة المخالفة</th>
+                                                <th>تاريخ الاستحقاق</th>
+                                                <th>رقم فاتورة السداد</th>
+                                                <th>حالة الدفع</th>
+                                                <th>الإجراءات</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="violations-table-body">
+                                            <tr>
+                                                <td colspan="11" class="text-center">لا توجد مخالفات</td>
+                                            </tr>
+                                        </tbody>
+                                        <tfoot class="table-info">
+                                            <tr>
+                                                <td colspan="6" class="text-start">
+                                                    <strong>إجمالي قيمة المخالفات:</strong>
+                                                </td>
+                                                <td class="text-start" id="total-violations-amount">
+                                                    <strong>0.00 ريال</strong>
+                                                </td>
+                                                <td colspan="4"></td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
                     </form>
-
-                                         <!-- جدول المخالفات -->
-                     <div class="table-responsive mt-4">
-                         <table class="table table-striped table-hover">
-                             <thead class="table-warning">
-                                 <tr>
-                                     <th>#</th>
-                                     <th>رقم المخالفة</th>
-                                     <th>تاريخ رصد المخالفة</th>
-                                     <th>تاريخ الاستحقاق</th>
-                                     <th>تصنيف المخالفة</th>
-                                     <th>المتسبب</th>
-                                     <th>وصف المخالفة</th>
-                                     <th>القيمة</th>
-                                     <th>رقم فاتورة السداد</th>
-                                     <th>حالة الدفع</th>
-                                     <th>الإجراءات</th>
-                                 </tr>
-                             </thead>
-                             <tbody id="violations-table-body">
-                                 <tr>
-                                     <td colspan="11" class="text-center">لا توجد مخالفات</td>
-                                 </tr>
-                             </tbody>
-                         </table>
-                     </div>
                 </div>
             </div>
         </div>
@@ -1820,7 +2137,22 @@ function saveCoordinationSection() {
 }
 
 function saveDigLicenseSection() {
-    const formData = new FormData(document.getElementById('digLicenseForm'));
+    // منع الإرسال العادي للنموذج
+    event.preventDefault();
+    
+    const form = document.getElementById('digLicenseForm');
+    if (!form) {
+        toastr.error('لم يتم العثور على نموذج رخصة الحفر');
+        return false;
+    }
+
+    const formData = new FormData(form);
+    
+    // إظهار loading على الزر
+    const saveBtn = event.target;
+    const originalText = saveBtn.innerHTML;
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>جاري الحفظ...';
     
     $.ajax({
         url: '{{ route("admin.licenses.store") }}',
@@ -1832,20 +2164,38 @@ function saveDigLicenseSection() {
             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
         },
         success: function(response) {
-    toastr.success('تم حفظ رخصة الحفر بنجاح');
+            toastr.success('تم حفظ رخصة الحفر بنجاح');
             
-            // Refresh the page after a short delay
-            setTimeout(() => {
-                window.location.reload();
-            }, 1500);
+            // إعادة تعيين النموذج
+            form.reset();
+            
+            // تحديث جدول رخص الحفر
+            loadDigLicenses();
+            
+            // إعادة تفعيل الزر
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = originalText;
         },
         error: function(xhr) {
-            const errors = xhr.responseJSON?.errors || {};
-            Object.values(errors).forEach(error => {
-                toastr.error(error[0]);
-            });
+            console.error('Error saving dig license:', xhr);
+            
+            // إعادة تفعيل الزر
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = originalText;
+            
+            if (xhr.responseJSON && xhr.responseJSON.errors) {
+                const errors = xhr.responseJSON.errors;
+                Object.values(errors).forEach(error => {
+                    toastr.error(error[0]);
+                });
+            } else {
+                const message = xhr.responseJSON?.message || 'حدث خطأ في حفظ رخصة الحفر';
+                toastr.error(message);
+            }
         }
     });
+    
+    return false;
 }
 
 function saveLabSection() {
@@ -1861,7 +2211,7 @@ function saveLabSection() {
             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
         },
         success: function(response) {
-    toastr.success('تم حفظ بيانات المختبر بنجاح');
+            toastr.success('تم حفظ بيانات المختبر بنجاح');
             
             // Refresh the page after a short delay
             setTimeout(() => {
@@ -2507,6 +2857,148 @@ document.addEventListener('DOMContentLoaded', function() {
         extensionEndDate.addEventListener('change', calculateExtensionDays);
     }
 });
+
+let extensionCounter = 0;
+
+// دالة إضافة تمديد جديد
+function addNewExtension() {
+    extensionCounter++;
+    const tbody = document.getElementById('extensions-table-body');
+    const noExtensionsRow = document.getElementById('no-extensions-row');
+    
+    if (noExtensionsRow) {
+        noExtensionsRow.style.display = 'none';
+    }
+
+    const newRow = document.createElement('tr');
+    newRow.id = `extension-row-${extensionCounter}`;
+    newRow.innerHTML = `
+        <td>${extensionCounter}</td>
+        <td>
+            <select class="form-select form-select-sm" name="extensions[${extensionCounter}][license_id]" required>
+                <option value="">اختر الرخصة</option>
+                <!-- سيتم تعبئتها من JavaScript -->
+            </select>
+        </td>
+        <td>
+            <div class="input-group input-group-sm">
+                <input type="number" class="form-control" name="extensions[${extensionCounter}][extension_value]" step="0.01" required>
+                <span class="input-group-text">ريال</span>
+            </div>
+        </td>
+        <td>
+            <input type="date" class="form-control form-control-sm" name="extensions[${extensionCounter}][extension_start_date]" onchange="calculateExtensionDays(${extensionCounter})" required>
+        </td>
+        <td>
+            <input type="date" class="form-control form-control-sm" name="extensions[${extensionCounter}][extension_end_date]" onchange="calculateExtensionDays(${extensionCounter})" required>
+        </td>
+        <td>
+            <input type="number" class="form-control form-control-sm bg-light" name="extensions[${extensionCounter}][extension_days]" id="extension-days-${extensionCounter}" readonly>
+        </td>
+        <td>
+            <input type="file" class="form-control form-control-sm" name="extensions[${extensionCounter}][extension_attachment_1]" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+        </td>
+        <td>
+            <input type="file" class="form-control form-control-sm" name="extensions[${extensionCounter}][extension_attachment_3]" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+        </td>
+        <td>
+            <input type="file" class="form-control form-control-sm" name="extensions[${extensionCounter}][extension_attachment_4]" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+        </td>
+        <td>
+            <div class="btn-group btn-group-sm">
+                <button type="button" class="btn btn-success" onclick="saveExtension(${extensionCounter})" title="حفظ">
+                    <i class="fas fa-save"></i>
+                </button>
+                <button type="button" class="btn btn-danger" onclick="removeExtensionRow(${extensionCounter})" title="حذف">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        </td>
+    `;
+
+    tbody.appendChild(newRow);
+    
+    // تحديث قائمة الرخص في الصف الجديد
+    loadLicensesForExtension(extensionCounter);
+}
+
+// دالة حذف صف التمديد
+function removeExtensionRow(rowId) {
+    if (confirm('هل أنت متأكد من حذف هذا التمديد؟')) {
+        const row = document.getElementById(`extension-row-${rowId}`);
+        if (row) {
+            row.remove();
+            
+            // إذا لم تعد هناك صفوف، أظهر رسالة "لا توجد تمديدات"
+            const tbody = document.getElementById('extensions-table-body');
+            if (tbody.children.length === 1) { // فقط صف "لا توجد تمديدات"
+                document.getElementById('no-extensions-row').style.display = '';
+            }
+        }
+    }
+}
+
+// دالة حساب أيام التمديد
+function calculateExtensionDays(extensionId) {
+    const startDate = document.querySelector(`input[name="extensions[${extensionId}][extension_start_date]"]`).value;
+    const endDate = document.querySelector(`input[name="extensions[${extensionId}][extension_end_date]"]`).value;
+    
+    if (startDate && endDate) {
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        const diffTime = Math.abs(end - start);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        
+        document.getElementById(`extension-days-${extensionId}`).value = diffDays;
+    }
+}
+
+// دالة تحميل الرخص للتمديد
+function loadLicensesForExtension(extensionId) {
+    // هذه الدالة ستحمل قائمة الرخص المتاحة من الخادم
+    // يمكن تنفيذها لاحقاً عند توفر API للرخص
+    console.log(`Loading licenses for extension ${extensionId}`);
+}
+
+// دالة حفظ التمديد
+function saveExtension(extensionId) {
+    const formData = new FormData();
+    const row = document.getElementById(`extension-row-${extensionId}`);
+    
+    // جمع بيانات التمديد من الصف
+    const inputs = row.querySelectorAll('input, select');
+    inputs.forEach(input => {
+        if (input.name && input.value) {
+            if (input.type === 'file') {
+                if (input.files.length > 0) {
+                    formData.append(input.name, input.files[0]);
+                }
+            } else {
+                formData.append(input.name, input.value);
+            }
+        }
+    });
+
+    formData.append('work_order_id', '{{ $workOrder->id }}');
+    formData.append('_token', '{{ csrf_token() }}');
+
+    $.ajax({
+        url: '{{ route("admin.licenses.store") }}',
+        type: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function(response) {
+            toastr.success('تم حفظ التمديد بنجاح');
+        },
+        error: function(xhr) {
+            const errors = xhr.responseJSON?.errors || {};
+            Object.values(errors).forEach(error => {
+                toastr.error(error[0]);
+            });
+        }
+    });
+}
 </script>
 
 @endsection 

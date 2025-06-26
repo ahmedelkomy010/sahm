@@ -259,10 +259,7 @@
                     <div class="p-4 border-bottom bg-light">
                         <div class="row align-items-center">
                             <div class="col-md-8">
-                                <h5 class="mb-2">
-                                    <i class="fas fa-info-circle text-info me-2"></i>
-                                    بنود العمل من مقايسة الأعمال
-                                </h5>
+                               
                                 
                             </div>
                             <div class="col-md-4 text-end">
@@ -390,11 +387,7 @@
                         <div class="text-center py-5">
                             <i class="fas fa-clipboard-list fa-3x text-muted mb-3"></i>
                             <h5 class="text-muted">لا توجد بنود عمل مضافة لهذا الأمر</h5>
-                            <p class="text-muted">لم يتم إضافة بنود عمل في مقايسة الأعمال عند إنشاء أمر العمل</p>
-                            <p class="text-muted small">
-                                <i class="fas fa-lightbulb text-warning me-1"></i>
-                                يجب إضافة بنود العمل من صفحة إنشاء أمر العمل في قسم "مقايسة الأعمال"
-                            </p>
+                            
                         </div>
                     @endif
                 </div>

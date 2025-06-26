@@ -668,7 +668,7 @@ function addWorkItem() {
         </td>
         <td>
             <input type="text" class="form-control form-control-sm work-item-description" 
-                   name="work_items[${window.workItemRowIndex}][description]" readonly>
+                   name="work_items[${window.workItemRowIndex}][description]" placeholder="وصف العمل">
         </td>
         <td>
             <input type="number" name="work_items[${window.workItemRowIndex}][planned_quantity]" 
@@ -676,11 +676,11 @@ function addWorkItem() {
         </td>
         <td>
             <input type="text" class="form-control form-control-sm work-item-unit" 
-                   name="work_items[${window.workItemRowIndex}][unit]" readonly>
+                   name="work_items[${window.workItemRowIndex}][unit]" placeholder="الوحدة">
         </td>
         <td>
-            <input type="text" class="form-control form-control-sm work-item-price" 
-                   name="work_items[${window.workItemRowIndex}][unit_price]" readonly>
+            <input type="number" class="form-control form-control-sm work-item-price" 
+                   name="work_items[${window.workItemRowIndex}][unit_price]" step="0.01" min="0" placeholder="سعر الوحدة">
         </td>
         <td>
             <button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">
@@ -749,7 +749,7 @@ function selectWorkItem(index, id, code, description, unit, price) {
     row.querySelector('.work-item-id').value = id;
     row.querySelector('.work-item-description').value = description;
     row.querySelector('.work-item-unit').value = unit;
-    row.querySelector('.work-item-price').value = price ? parseFloat(price).toFixed(2) + ' ﷼' : '';
+    row.querySelector('.work-item-price').value = price ? parseFloat(price).toFixed(2) : '';
     
     // إخفاء القائمة
     document.getElementById(`dropdown_${index}`).style.display = 'none';
@@ -896,24 +896,30 @@ function addWorkItemToTable(item) {
     
     row.innerHTML = `
         <td>
-            <input type="hidden" name="work_items[${tbody.children.length}][work_item_id]" value="${item.id}">
-            <div class="d-flex align-items-center">
-                <span class="badge bg-primary me-2">${item.code}</span>
-                ${item.description}
+            <div class="position-relative">
+                <input type="text" class="form-control form-control-sm work-item-search" 
+                       value="${item.code}">
+                <input type="hidden" name="work_items[${tbody.children.length}][work_item_id]" class="work-item-id" value="${item.id}">
             </div>
         </td>
         <td>
-            <input type="number" class="form-control" name="work_items[${tbody.children.length}][planned_quantity]" 
-                   value="1" min="0" step="0.01" required>
+            <input type="text" class="form-control form-control-sm work-item-description" 
+                   name="work_items[${tbody.children.length}][description]" value="${item.description}" placeholder="وصف العمل">
         </td>
         <td>
-            <span class="badge bg-secondary">${item.unit}</span>
+            <input type="number" name="work_items[${tbody.children.length}][planned_quantity]" 
+                   class="form-control form-control-sm" step="0.01" min="0" placeholder="الكمية" required>
         </td>
         <td>
-            <span class="badge bg-info">${item.unit_price}</span>
+            <input type="text" class="form-control form-control-sm work-item-unit" 
+                   name="work_items[${tbody.children.length}][unit]" value="${item.unit}" placeholder="الوحدة">
         </td>
         <td>
-            <button type="button" class="btn btn-sm btn-outline-danger" onclick="this.closest('tr').remove()">
+            <input type="number" class="form-control form-control-sm work-item-price" 
+                   name="work_items[${tbody.children.length}][unit_price]" value="${item.unit_price || ''}" step="0.01" min="0" placeholder="سعر الوحدة">
+        </td>
+        <td>
+            <button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">
                 <i class="fas fa-trash"></i>
             </button>
         </td>
@@ -1005,20 +1011,27 @@ function addWorkItemFromSearch(id, code, description, unit, price) {
     const row = document.createElement('tr');
     row.innerHTML = `
         <td>
-            <select name="work_items[${window.workItemRowIndex}][work_item_id]" class="form-select form-select-sm" required>
-                <option value="${id}" selected>${code} - ${description}</option>
-            </select>
+            <div class="position-relative">
+                <input type="text" class="form-control form-control-sm work-item-search" 
+                       value="${code}">
+                <input type="hidden" name="work_items[${window.workItemRowIndex}][work_item_id]" class="work-item-id" value="${id}">
+            </div>
+        </td>
+        <td>
+            <input type="text" class="form-control form-control-sm work-item-description" 
+                   name="work_items[${window.workItemRowIndex}][description]" value="${description}" placeholder="وصف العمل">
         </td>
         <td>
             <input type="number" name="work_items[${window.workItemRowIndex}][planned_quantity]" 
                    class="form-control form-control-sm" step="0.01" min="0" placeholder="الكمية" required>
         </td>
         <td>
-            <span class="text-muted">${unit}</span>
+            <input type="text" class="form-control form-control-sm work-item-unit" 
+                   name="work_items[${window.workItemRowIndex}][unit]" value="${unit}" placeholder="الوحدة">
         </td>
         <td>
-            <input type="text" name="work_items[${window.workItemRowIndex}][notes]" 
-                   class="form-control form-control-sm" placeholder="ملاحظات">
+            <input type="number" class="form-control form-control-sm work-item-price" 
+                   name="work_items[${window.workItemRowIndex}][unit_price]" value="${price || ''}" step="0.01" min="0" placeholder="سعر الوحدة">
         </td>
         <td>
             <button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">
@@ -1171,7 +1184,7 @@ function addItemFromSearch(id, code, description, unit, price) {
         </td>
         <td>
             <input type="text" class="form-control form-control-sm work-item-description" 
-                   name="work_items[${window.workItemRowIndex}][description]" value="${description}" readonly>
+                   name="work_items[${window.workItemRowIndex}][description]" value="${description}" placeholder="وصف العمل">
         </td>
         <td>
             <input type="number" name="work_items[${window.workItemRowIndex}][planned_quantity]" 
@@ -1179,11 +1192,11 @@ function addItemFromSearch(id, code, description, unit, price) {
         </td>
         <td>
             <input type="text" class="form-control form-control-sm work-item-unit" 
-                   name="work_items[${window.workItemRowIndex}][unit]" value="${unit}" readonly>
+                   name="work_items[${window.workItemRowIndex}][unit]" value="${unit}" placeholder="الوحدة">
         </td>
         <td>
-            <input type="text" class="form-control form-control-sm work-item-price" 
-                   name="work_items[${window.workItemRowIndex}][unit_price]" value="${price ? parseFloat(price).toFixed(2) + ' ﷼' : ''}" readonly>
+            <input type="number" class="form-control form-control-sm work-item-price" 
+                   name="work_items[${window.workItemRowIndex}][unit_price]" value="${price || ''}" step="0.01" min="0" placeholder="سعر الوحدة">
         </td>
         <td>
             <button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">
