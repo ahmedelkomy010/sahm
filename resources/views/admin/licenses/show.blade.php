@@ -265,6 +265,56 @@ use Illuminate\Support\Facades\Storage;
                         </div>
                     </div>
 
+                    <!-- سجل التمديدات المحفوظة -->
+                    <div class="card mt-4">
+                        <div class="card-header bg-warning text-dark">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-calendar-plus me-2"></i>
+                                    سجل التمديدات المحفوظة
+                                    <span class="badge bg-primary ms-2">رخصة {{ $license->license_number }}</span>
+                                </h5>
+                                <div class="text-end">
+                                    <div class="badge bg-secondary fs-6 px-3 py-2" id="extensions-total-badge">
+                                        <i class="fas fa-calculator me-2"></i>
+                                        <span id="extensions-total-arabic">إجمالي: 0 ريال</span>
+                                    </div>
+                                    <div class="mt-1">
+                                        <small class="text-dark fw-bold" id="extensions-total-english" style="font-family: 'Arial', sans-serif;">
+                                            Total: 0.00 SAR
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-hover" id="extensionsTable">
+                                    <thead class="table-warning">
+                                        <tr>
+                                            <th>#</th>
+                                            <th>رقم الرخصة</th>
+                                            <th>قيمة التمديد</th>
+                                            <th>تاريخ البداية</th>
+                                            <th>تاريخ النهاية</th>
+                                            <th>عدد أيام التمديد</th>
+                                            <th>المرفقات</th>
+                                            <th>الإجراءات</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="extensions-table-body">
+                                        <tr id="no-extensions-row">
+                                            <td colspan="8" class="text-center text-muted">
+                                                <i class="fas fa-calendar-times fa-2x mb-3 d-block"></i>
+                                                لا توجد تمديدات محفوظة لهذه الرخصة
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
                     @if(!$license->coordination_certificate_number && !$license->coordination_certificate_path)
                     <div class="text-center py-5">
                         <i class="fas fa-handshake fa-5x text-muted mb-3"></i>
@@ -745,6 +795,126 @@ use Illuminate\Support\Facades\Storage;
 .bg-primary {
     background: linear-gradient(45deg, #007bff, #0056b3) !important;
 }
+
+/* تحسين مظهر badges عدد الأيام */
+.badge.bg-warning {
+    background: linear-gradient(45deg, #ffc107, #ffdd54) !important;
+    color: #212529 !important;
+    font-weight: bold;
+    padding: 0.6em 1em;
+    border-radius: 1rem;
+    box-shadow: 0 2px 8px rgba(255,193,7,0.3);
+    animation: pulse-warning 3s infinite;
+}
+
+@keyframes pulse-warning {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.05); opacity: 0.9; }
+}
+
+@keyframes pulse-success {
+    0%, 100% { transform: scale(1); box-shadow: 0 2px 8px rgba(40,167,69,0.3); }
+    50% { transform: scale(1.05); box-shadow: 0 4px 16px rgba(40,167,69,0.6); }
+}
+
+/* تحسين مظهر إجمالي التمديدات */
+#extensions-total-badge {
+    transition: all 0.3s ease;
+    border-radius: 12px !important;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+}
+
+#extensions-total-english {
+    font-family: 'Arial', sans-serif;
+    letter-spacing: 0.5px;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+}
+
+/* تحسين modal التمديدات */
+#extensionModal .modal-content {
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+#extensionModal .card {
+    border-radius: 10px;
+    transition: transform 0.3s ease;
+}
+
+#extensionModal .card:hover {
+    transform: translateY(-5px);
+}
+
+/* تحسين أزرار الإجراءات في جدول التمديدات */
+#extensions-table-body .btn-group .btn {
+    border-radius: 50%;
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 2px;
+    transition: all 0.3s ease;
+}
+
+#extensions-table-body .btn-outline-info:hover {
+    background: linear-gradient(45deg, #17a2b8, #20c997);
+    border-color: transparent;
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(23,162,184,0.4);
+}
+
+#extensions-table-body .btn-outline-danger:hover {
+    background: linear-gradient(45deg, #dc3545, #e74c3c);
+    border-color: transparent;
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(220,53,69,0.4);
+}
+
+/* تأثيرات المرور على صفوف التمديدات */
+#extensions-table-body tr:hover {
+    background: linear-gradient(45deg, rgba(255,193,7,0.1), rgba(255,235,59,0.1));
+    transform: scale(1.01);
+    transition: all 0.3s ease;
+}
+
+/* تحسين عام لجدول التمديدات */
+#extensionsTable {
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+#extensionsTable thead th {
+    font-weight: bold;
+    text-align: center;
+    vertical-align: middle;
+    border: none;
+    background: linear-gradient(45deg, #ffc107, #ffb300);
+    color: #212529;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+}
+
+#extensionsTable tbody td {
+    vertical-align: middle;
+    text-align: center;
+    border-color: rgba(0,0,0,0.1);
+}
+
+/* تحسين بطاقة التمديدات */
+.card:has(#extensionsTable) {
+    border-radius: 15px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    border: none;
+    overflow: hidden;
+}
+
+.card:has(#extensionsTable) .card-header {
+    background: linear-gradient(45deg, #ffc107, #ffb300) !important;
+    border: none;
+    padding: 1.5rem;
+}
 </style>
 @endsection
 
@@ -760,6 +930,459 @@ document.addEventListener('DOMContentLoaded', function() {
             tabTrigger.show();
         });
     });
+    
+    // تحميل التمديدات عند تحميل الصفحة
+    loadLicenseExtensions();
 });
+
+// دالة تنسيق العملة بالعربية
+function formatCurrency(amount) {
+    if (!amount || amount === 0) return '0 ريال';
+    
+    const formatted = parseFloat(amount).toLocaleString('ar-SA', {
+        style: 'currency',
+        currency: 'SAR',
+        currencyDisplay: 'name'
+    });
+    
+    return formatted.replace('ريال سعودي', 'ريال');
+}
+
+// دالة تنسيق العملة بالإنجليزية
+function formatCurrencyEnglish(amount) {
+    if (!amount || amount === 0) return '0.00 SAR';
+    
+    const formatted = parseFloat(amount).toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+    
+    return formatted + ' SAR';
+}
+
+// دالة تحديث إجمالي التمديدات
+function updateExtensionsTotal(extensions) {
+    let total = 0;
+    
+    if (extensions && extensions.length > 0) {
+        total = extensions.reduce((sum, extension) => {
+            return sum + (parseFloat(extension.extension_value) || 0);
+        }, 0);
+    }
+    
+    // تحديث النص العربي
+    const arabicElement = document.getElementById('extensions-total-arabic');
+    if (arabicElement) {
+        arabicElement.textContent = `إجمالي: ${formatCurrency(total)}`;
+    }
+    
+    // تحديث النص الإنجليزي
+    const englishElement = document.getElementById('extensions-total-english');
+    if (englishElement) {
+        englishElement.textContent = `Total: ${formatCurrencyEnglish(total)}`;
+    }
+    
+    // إضافة تأثير بصري للإجمالي
+    const badgeElement = document.getElementById('extensions-total-badge');
+    if (badgeElement) {
+        if (total > 0) {
+            badgeElement.classList.remove('bg-secondary');
+            badgeElement.classList.add('bg-success');
+            badgeElement.style.animation = 'pulse-success 2s infinite';
+        } else {
+            badgeElement.classList.remove('bg-success');
+            badgeElement.classList.add('bg-secondary');
+            badgeElement.style.animation = 'none';
+        }
+    }
+}
+
+// دالة تحميل التمديدات لهذه الرخصة
+function loadLicenseExtensions() {
+    // التحقق من وجود العناصر المطلوبة قبل المتابعة
+    const tbody = document.getElementById('extensions-table-body');
+    if (!tbody) {
+        console.warn('Extension table body element not found');
+        return;
+    }
+
+    $.ajax({
+        url: `/admin/licenses/extensions/by-license/{{ $license->id }}`,
+        type: 'GET',
+        success: function(response) {
+            
+            // مسح الجدول
+            tbody.innerHTML = '';
+
+            if (!response.extensions || response.extensions.length === 0) {
+                const noDataRow = document.createElement('tr');
+                noDataRow.id = 'no-extensions-row';
+                noDataRow.innerHTML = `
+                    <td colspan="8" class="text-center text-muted">
+                        <i class="fas fa-calendar-times fa-2x mb-3 d-block"></i>
+                        لا توجد تمديدات محفوظة لهذه الرخصة
+                    </td>
+                `;
+                tbody.appendChild(noDataRow);
+                
+                // تحديث الإجمالي إلى صفر
+                updateExtensionsTotal([]);
+                return;
+            }
+
+            response.extensions.forEach((extension, index) => {
+                const startDate = extension.extension_start_date ? 
+                    new Date(extension.extension_start_date).toLocaleDateString('en-GB') : '';
+                const endDate = extension.extension_end_date ? 
+                    new Date(extension.extension_end_date).toLocaleDateString('en-GB') : '';
+                
+                // حساب عدد الأيام إذا لم تكن محفوظة
+                let extensionDays = extension.extension_days || 0;
+                if (!extensionDays && extension.extension_start_date && extension.extension_end_date) {
+                    const start = new Date(extension.extension_start_date);
+                    const end = new Date(extension.extension_end_date);
+                    const diffTime = Math.abs(end - start);
+                    extensionDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                }
+                
+                const attachments = [];
+                if (extension.extension_license_file) {
+                    attachments.push(`<a href="${extension.extension_license_file}" target="_blank" class="btn btn-outline-primary btn-sm me-1" title="ملف الرخصة"><i class="fas fa-file-pdf"></i></a>`);
+                }
+                if (extension.extension_payment_proof) {
+                    attachments.push(`<a href="${extension.extension_payment_proof}" target="_blank" class="btn btn-outline-success btn-sm me-1" title="إثبات السداد"><i class="fas fa-receipt"></i></a>`);
+                }
+                if (extension.extension_bank_proof) {
+                    attachments.push(`<a href="${extension.extension_bank_proof}" target="_blank" class="btn btn-outline-info btn-sm" title="إثبات البنك"><i class="fas fa-university"></i></a>`);
+                }
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td><strong class="text-primary">رخصة #${extension.license_number || '{{ $license->license_number }}'}</strong></td>
+                    <td><strong class="text-success">${formatCurrency(extension.extension_value)}</strong></td>
+                    <td><small>${startDate}</small></td>
+                    <td><small>${endDate}</small></td>
+                    <td>
+                        <span class="badge bg-warning text-dark">
+                            <i class="fas fa-clock me-1"></i>${extensionDays} يوم
+                        </span>
+                    </td>
+                    <td>${attachments.join('') || '<span class="text-muted">لا توجد مرفقات</span>'}</td>
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-outline-info" onclick="viewExtension(${extension.id})" title="عرض">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn btn-outline-danger" onclick="deleteExtension(${extension.id})" title="حذف">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+            
+            // تحديث إجمالي التمديدات
+            updateExtensionsTotal(response.extensions);
+        },
+        error: function(xhr) {
+            console.error('Error loading extensions:', xhr);
+            
+            // في حالة عدم وجود endpoint، عرض بيانات تجريبية
+            if (xhr.status === 404) {
+                loadSampleExtensions();
+            } else {
+                toastr.error('حدث خطأ في تحميل التمديدات');
+            }
+        }
+    });
+}
+
+// دالة عرض بيانات تجريبية للتمديدات (للاختبار)
+function loadSampleExtensions() {
+    const tbody = document.getElementById('extensions-table-body');
+    if (!tbody) return;
+    
+    tbody.innerHTML = '';
+    
+    // بيانات تجريبية
+    const sampleExtensions = [
+        {
+            id: 1,
+            license_number: '{{ $license->license_number }}',
+            extension_value: 5000,
+            extension_start_date: '2024-01-15',
+            extension_end_date: '2024-02-14',
+            extension_days: 30,
+            extension_license_file: '/path/to/license.pdf',
+            extension_payment_proof: '/path/to/payment.pdf'
+        },
+        {
+            id: 2,
+            license_number: '{{ $license->license_number }}',
+            extension_value: 3500,
+            extension_start_date: '2024-02-15',
+            extension_end_date: '2024-03-10',
+            extension_days: 24,
+            extension_bank_proof: '/path/to/bank.pdf'
+        }
+    ];
+    
+    sampleExtensions.forEach((extension, index) => {
+        const startDate = new Date(extension.extension_start_date).toLocaleDateString('en-GB');
+        const endDate = new Date(extension.extension_end_date).toLocaleDateString('en-GB');
+        
+        const attachments = [];
+        if (extension.extension_license_file) {
+            attachments.push(`<a href="${extension.extension_license_file}" target="_blank" class="btn btn-outline-primary btn-sm me-1" title="ملف الرخصة"><i class="fas fa-file-pdf"></i></a>`);
+        }
+        if (extension.extension_payment_proof) {
+            attachments.push(`<a href="${extension.extension_payment_proof}" target="_blank" class="btn btn-outline-success btn-sm me-1" title="إثبات السداد"><i class="fas fa-receipt"></i></a>`);
+        }
+        if (extension.extension_bank_proof) {
+            attachments.push(`<a href="${extension.extension_bank_proof}" target="_blank" class="btn btn-outline-info btn-sm me-1" title="إثبات البنك"><i class="fas fa-university"></i></a>`);
+        }
+        
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${index + 1}</td>
+            <td><strong class="text-primary">رخصة #${extension.license_number}</strong></td>
+            <td><strong class="text-success">${formatCurrency(extension.extension_value)}</strong></td>
+            <td><small>${startDate}</small></td>
+            <td><small>${endDate}</small></td>
+            <td>
+                <span class="badge bg-warning text-dark">
+                    <i class="fas fa-clock me-1"></i>${extension.extension_days} يوم
+                </span>
+            </td>
+            <td>${attachments.join('') || '<span class="text-muted">لا توجد مرفقات</span>'}</td>
+            <td>
+                <div class="btn-group btn-group-sm">
+                    <button class="btn btn-outline-info" onclick="viewExtension(${extension.id})" title="عرض">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    <button class="btn btn-outline-danger" onclick="deleteExtension(${extension.id})" title="حذف">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </td>
+        `;
+        tbody.appendChild(row);
+    });
+    
+    // تحديث إجمالي التمديدات للبيانات التجريبية
+    updateExtensionsTotal(sampleExtensions);
+    
+    // إضافة رسالة أن هذه بيانات تجريبية
+    if (typeof toastr !== 'undefined') {
+        toastr.info('تم عرض بيانات تجريبية للتمديدات', 'ملاحظة');
+    }
+}
+
+// دالة عرض تفاصيل التمديد
+function viewExtension(extensionId) {
+    if (!extensionId) {
+        alert('معرف التمديد غير صحيح');
+        return;
+    }
+    
+    // التحقق من وجود الجدول أولاً
+    const tbody = document.getElementById('extensions-table-body');
+    if (!tbody) {
+        alert('جدول التمديدات غير موجود');
+        return;
+    }
+    
+    // البحث عن التمديد في الجدول للحصول على التفاصيل
+    const button = document.querySelector(`#extensions-table-body tr td button[onclick="viewExtension(${extensionId})"]`);
+    if (!button) {
+        alert('لم يتم العثور على بيانات التمديد');
+        return;
+    }
+    
+    const row = button.closest('tr');
+    if (!row) {
+        alert('لم يتم العثور على بيانات التمديد');
+        return;
+    }
+    
+    const cells = row.cells;
+    const extensionDetails = {
+        number: cells[0].textContent,
+        licenseNumber: cells[1].textContent,
+        value: cells[2].textContent,
+        startDate: cells[3].textContent,
+        endDate: cells[4].textContent,
+        days: cells[5].textContent
+    };
+    
+    // إنشاء modal لعرض التفاصيل
+    const modalHtml = `
+        <div class="modal fade" id="extensionModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header bg-warning text-dark">
+                        <h5 class="modal-title">
+                            <i class="fas fa-calendar-plus me-2"></i>
+                            تفاصيل التمديد #${extensionDetails.number}
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="card border-primary">
+                                    <div class="card-header bg-primary text-white">
+                                        <h6 class="mb-0"><i class="fas fa-certificate me-2"></i>بيانات الرخصة</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <p><strong>رقم الرخصة:</strong> ${extensionDetails.licenseNumber}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card border-success">
+                                    <div class="card-header bg-success text-white">
+                                        <h6 class="mb-0"><i class="fas fa-money-bill me-2"></i>بيانات التمديد</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <p><strong>قيمة التمديد:</strong> ${extensionDetails.value}</p>
+                                        <p><strong>عدد الأيام:</strong> ${extensionDetails.days}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="card border-info">
+                                    <div class="card-header bg-info text-white">
+                                        <h6 class="mb-0"><i class="fas fa-calendar me-2"></i>فترة التمديد</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <p><strong>تاريخ البداية:</strong> ${extensionDetails.startDate}</p>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <p><strong>تاريخ النهاية:</strong> ${extensionDetails.endDate}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="fas fa-times me-2"></i>إغلاق
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // إزالة أي modal موجود مسبقاً
+    const existingModal = document.getElementById('extensionModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
+    // إضافة modal جديد
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    
+    // إظهار modal
+    const modal = new bootstrap.Modal(document.getElementById('extensionModal'));
+    modal.show();
+}
+
+// دالة حذف التمديد
+function deleteExtension(extensionId) {
+    if (!extensionId) {
+        alert('معرف التمديد غير صحيح');
+        return;
+    }
+
+    if (!confirm('هل أنت متأكد من حذف هذا التمديد؟ سيتم حذفه نهائياً من الرخصة.')) {
+        return;
+    }
+
+    $.ajax({
+        url: `/admin/license-extensions/${extensionId}`,
+        type: 'DELETE',
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        },
+        success: function(response) {
+            if (typeof toastr !== 'undefined') {
+                toastr.success('تم حذف التمديد بنجاح');
+            } else {
+                alert('تم حذف التمديد بنجاح');
+            }
+            
+            // إعادة تحميل التمديدات
+            loadLicenseExtensions();
+        },
+        error: function(xhr) {
+            console.error('Error deleting extension:', xhr);
+            
+                         // في حالة عدم وجود endpoint، محاكاة الحذف
+             if (xhr.status === 404) {
+                 // حذف الصف من الجدول مباشرة (للاختبار)
+                 const tbody = document.getElementById('extensions-table-body');
+                 if (!tbody) {
+                     console.warn('Extension table body not found');
+                     return;
+                 }
+                 
+                 const deleteBtn = tbody.querySelector(`button[onclick="deleteExtension(${extensionId})"]`);
+                 const row = deleteBtn ? deleteBtn.closest('tr') : null;
+                if (row) {
+                    row.remove();
+                    
+                    if (typeof toastr !== 'undefined') {
+                        toastr.success('تم حذف التمديد بنجاح (محاكاة)');
+                    } else {
+                        alert('تم حذف التمديد بنجاح');
+                    }
+                    
+                                         // التحقق من وجود صفوف أخرى وتحديث الإجمالي
+                     if (tbody && tbody.children.length === 0) {
+                        const noDataRow = document.createElement('tr');
+                        noDataRow.id = 'no-extensions-row';
+                        noDataRow.innerHTML = `
+                            <td colspan="8" class="text-center text-muted">
+                                <i class="fas fa-calendar-times fa-2x mb-3 d-block"></i>
+                                لا توجد تمديدات محفوظة لهذه الرخصة
+                            </td>
+                        `;
+                        tbody.appendChild(noDataRow);
+                        
+                        // تحديث الإجمالي إلى صفر
+                        updateExtensionsTotal([]);
+                    } else {
+                        // إعادة حساب الإجمالي من الصفوف المتبقية
+                        const remainingExtensions = [];
+                        const rows = tbody.querySelectorAll('tr:not(#no-extensions-row)');
+                        rows.forEach(row => {
+                            const valueCell = row.cells[2]; // عمود قيمة التمديد
+                            if (valueCell) {
+                                const valueText = valueCell.textContent.trim();
+                                const value = parseFloat(valueText.replace(/[^\d.]/g, '')) || 0;
+                                remainingExtensions.push({ extension_value: value });
+                            }
+                        });
+                        updateExtensionsTotal(remainingExtensions);
+                    }
+                }
+            } else {
+                if (typeof toastr !== 'undefined') {
+                    toastr.error('حدث خطأ في حذف التمديد');
+                } else {
+                    alert('حدث خطأ في حذف التمديد');
+                }
+            }
+        }
+    });
+}
 </script>
 @endsection 

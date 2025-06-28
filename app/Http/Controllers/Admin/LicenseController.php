@@ -392,6 +392,89 @@ class LicenseController extends Controller
     }
 
     /**
+     * الحصول على التمديدات الخاصة بأمر عمل محدد
+     */
+    public function getExtensionsByWorkOrder($workOrderId)
+    {
+        try {
+            $licenses = License::where('work_order_id', $workOrderId)->get();
+            $extensions = [];
+            
+            foreach ($licenses as $license) {
+                // التحقق من وجود تمديد في الرخصة
+                if ($license->extension_value && $license->extension_value > 0) {
+                    $extensions[] = [
+                        'id' => $license->id,
+                        'license_id' => $license->id,
+                        'license_number' => $license->license_number,
+                        'extension_value' => $license->extension_value,
+                        'extension_start_date' => $license->license_extension_start_date,
+                        'extension_end_date' => $license->license_extension_end_date,
+                        'extension_days' => $this->calculateExtensionDays($license->license_extension_start_date, $license->license_extension_end_date),
+                        'extension_license_file' => $license->extension_license_file_path ? Storage::url($license->extension_license_file_path) : null,
+                        'extension_payment_proof' => $license->extension_payment_proof_path ? Storage::url($license->extension_payment_proof_path) : null,
+                        'extension_bank_proof' => $license->extension_bank_proof_path ? Storage::url($license->extension_bank_proof_path) : null,
+                    ];
+                }
+            }
+            
+            return response()->json(['extensions' => $extensions], 200);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error getting extensions by work order: ' . $e->getMessage());
+            return response()->json(['error' => 'حدث خطأ في تحميل التمديدات'], 500);
+        }
+    }
+
+    /**
+     * الحصول على التمديدات الخاصة برخصة محددة
+     */
+    public function getExtensionsByLicense($licenseId)
+    {
+        try {
+            $license = License::findOrFail($licenseId);
+            $extensions = [];
+            
+            // التحقق من وجود تمديد في الرخصة
+            if ($license->extension_value && $license->extension_value > 0) {
+                $extensions[] = [
+                    'id' => $license->id,
+                    'license_id' => $license->id,
+                    'license_number' => $license->license_number,
+                    'extension_value' => $license->extension_value,
+                    'extension_start_date' => $license->license_extension_start_date,
+                    'extension_end_date' => $license->license_extension_end_date,
+                    'extension_days' => $this->calculateExtensionDays($license->license_extension_start_date, $license->license_extension_end_date),
+                    'extension_license_file' => $license->extension_license_file_path ? Storage::url($license->extension_license_file_path) : null,
+                    'extension_payment_proof' => $license->extension_payment_proof_path ? Storage::url($license->extension_payment_proof_path) : null,
+                    'extension_bank_proof' => $license->extension_bank_proof_path ? Storage::url($license->extension_bank_proof_path) : null,
+                ];
+            }
+            
+            return response()->json(['extensions' => $extensions], 200);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error getting extensions by license: ' . $e->getMessage());
+            return response()->json(['error' => 'حدث خطأ في تحميل التمديدات'], 500);
+        }
+    }
+
+    /**
+     * حساب عدد أيام التمديد
+     */
+    private function calculateExtensionDays($startDate, $endDate)
+    {
+        if (!$startDate || !$endDate) {
+            return 0;
+        }
+        
+        $start = \Carbon\Carbon::parse($startDate);
+        $end = \Carbon\Carbon::parse($endDate);
+        
+        return $start->diffInDays($end) + 1; // +1 لتشمل اليوم الأخير
+    }
+
+    /**
      * تصدير البيانات إلى Excel
      */
     public function exportExcel()
@@ -555,6 +638,10 @@ class LicenseController extends Controller
                 case 'violations':
                     \Log::info('Processing violations section');
                     $this->saveViolationsSection($request, $license);
+                    break;
+                case 'extension':
+                    \Log::info('Processing extension section');
+                    $this->saveExtensionSection($request, $license);
                     break;
                 case 'notes':
                     \Log::info('Processing notes section');
@@ -965,6 +1052,52 @@ class LicenseController extends Controller
         }
     }
     
+    /**
+     * حفظ قسم التمديدات
+     */
+    private function saveExtensionSection(Request $request, License $license)
+    {
+        // حفظ بيانات التمديد
+        if ($request->has('extension_value')) {
+            $license->extension_value = $request->input('extension_value');
+        }
+        
+        if ($request->has('extension_start_date')) {
+            $license->license_extension_start_date = $request->input('extension_start_date');
+        }
+        
+        if ($request->has('extension_end_date')) {
+            $license->license_extension_end_date = $request->input('extension_end_date');
+        }
+        
+        // معالجة ملفات التمديد
+        if ($request->hasFile('extension_license_file')) {
+            $extensionLicenseFile = $request->file('extension_license_file');
+            $extensionLicensePath = $extensionLicenseFile->store('licenses/extensions/license_files', 'public');
+            $license->extension_license_file_path = $extensionLicensePath;
+        }
+        
+        if ($request->hasFile('extension_payment_proof')) {
+            $paymentProofFile = $request->file('extension_payment_proof');
+            $paymentProofPath = $paymentProofFile->store('licenses/extensions/payment_proofs', 'public');
+            $license->extension_payment_proof_path = $paymentProofPath;
+        }
+        
+        if ($request->hasFile('extension_bank_proof')) {
+            $bankProofFile = $request->file('extension_bank_proof');
+            $bankProofPath = $bankProofFile->store('licenses/extensions/bank_proofs', 'public');
+            $license->extension_bank_proof_path = $bankProofPath;
+        }
+        
+        // حفظ الرخصة
+        $license->save();
+        
+        \Log::info('Extension section saved', [
+            'license_id' => $license->id,
+            'extension_value' => $license->extension_value
+        ]);
+    }
+
     /**
      * حفظ قسم الملاحظات الإضافية
      */
