@@ -299,6 +299,8 @@
 </style>
 
 <script>
+
+    
     $(document).ready(function() {
         // Handle restriction fields visibility
         $('#has_restriction').change(function() {
@@ -359,6 +361,9 @@
         // تحميل رخص الحفر عند تحميل الصفحة
         loadDigLicenses();
         
+        // تحميل قوائم الرخص في جميع التبويبات
+        loadLicensesForSelectors();
+        
         // منع الإرسال العادي للنموذج
         $('#digLicenseForm').on('submit', function(e) {
             e.preventDefault();
@@ -381,9 +386,13 @@
             success: function(response) {
                 toastr.success('تم حفظ شهادة التنسيق بنجاح');
                 
-                // Refresh the page after a short delay
+                // Redirect to license details page
                 setTimeout(() => {
-                    window.location.reload();
+                    if (response.license_id) {
+                        window.location.href = `/admin/licenses/${response.license_id}`;
+                    } else {
+                        window.location.reload();
+                    }
                 }, 1500);
             },
             error: function(xhr) {
@@ -474,8 +483,11 @@
                             <td colspan="10" class="text-center">لا توجد رخص حفر</td>
                         </tr>
                     `;
+
                     return;
                 }
+
+
 
                 response.licenses.forEach((license, index) => {
                     const licenseDate = license.license_date ? 
@@ -521,15 +533,20 @@
                         </tr>
                     `;
                 });
+                
+                // تحديث قوائم الرخص في التبويبات الأخرى
+                loadLicensesForSelectors();
             },
             error: function(xhr) {
                 console.error('Error loading dig licenses:', xhr);
                 toastr.error('حدث خطأ في تحميل رخص الحفر');
             }
-        });
-    }
+                  });
+      }
 
-    // دالة للحصول على badge نوع الرخصة
+
+
+      // دالة للحصول على badge نوع الرخصة
     function getLicenseTypeBadge(type) {
         switch(type) {
             case 'emergency':
@@ -545,8 +562,12 @@
 
     // دوال إضافية لإدارة الرخص
     function viewLicense(licenseId) {
-        // يمكن إضافة modal لعرض تفاصيل الرخصة
-        toastr.info('سيتم إضافة عرض التفاصيل قريباً');
+        // التوجه إلى صفحة تفاصيل الرخصة المحددة
+        if (licenseId) {
+            window.location.href = `/admin/licenses/${licenseId}`;
+        } else {
+            toastr.error('معرف الرخصة غير صحيح');
+        }
     }
 
     function editLicense(licenseId) {
@@ -577,6 +598,13 @@
     }
 
     function saveLabSection() {
+        // التحقق من اختيار الرخصة
+        const licenseId = document.getElementById('lab-license-id').value;
+        if (!licenseId) {
+            toastr.warning('يجب اختيار رخصة قبل حفظ بيانات المختبر');
+            return;
+        }
+        
         const formData = new FormData(document.getElementById('labForm'));
         
         $.ajax({
@@ -696,6 +724,13 @@
     }
 
     function saveViolationSection() {
+        // التحقق من اختيار الرخصة
+        const licenseId = document.getElementById('violation-license-id').value;
+        if (!licenseId) {
+            toastr.warning('يجب اختيار رخصة قبل حفظ بيانات المخالفات');
+            return;
+        }
+        
         const form = document.getElementById('violationForm');
         if (!form) {
             toastr.error('لم يتم العثور على نموذج المخالفة');
@@ -765,8 +800,122 @@
                 console.error('Error deleting violation:', xhr);
                 toastr.error('حدث خطأ في حذف المخالفة');
             }
-        });
+            });
+}
+
+// دوال إدارة اختيار الرخص في التبويبات المختلفة
+function loadLicensesForSelectors() {
+    $.ajax({
+        url: `/admin/licenses/by-work-order/{{ $workOrder->id }}`,
+        type: 'GET',
+        success: function(response) {
+            if (response.licenses && response.licenses.length > 0) {
+                const labSelector = document.getElementById('lab-license-selector');
+                const evacuationSelector = document.getElementById('evacuation-license-selector');
+                const violationSelector = document.getElementById('violation-license-selector');
+                
+                // مسح الخيارات الحالية (عدا الخيار الافتراضي)
+                [labSelector, evacuationSelector, violationSelector].forEach(selector => {
+                    if (selector) {
+                        // حفظ الخيار الافتراضي
+                        const defaultOption = selector.querySelector('option[value=""]');
+                        selector.innerHTML = '';
+                        if (defaultOption) {
+                            selector.appendChild(defaultOption.cloneNode(true));
+                        }
+                    }
+                });
+                
+                // إضافة الرخص لكل قائمة
+                response.licenses.forEach(license => {
+                    const optionText = `رخصة #${license.license_number} - ${license.license_type || 'غير محدد'}`;
+                    
+                    [labSelector, evacuationSelector, violationSelector].forEach(selector => {
+                        if (selector) {
+                            const option = document.createElement('option');
+                            option.value = license.id;
+                            option.textContent = optionText;
+                            selector.appendChild(option);
+                        }
+                    });
+                });
+                
+                // إذا كان هناك رخصة واحدة فقط، اختارها تلقائياً
+                if (response.licenses.length === 1) {
+                    const licenseId = response.licenses[0].id;
+                    const licenseText = `رخصة #${response.licenses[0].license_number}`;
+                    
+                    [labSelector, evacuationSelector, violationSelector].forEach(selector => {
+                        if (selector) {
+                            selector.value = licenseId;
+                            // تشغيل دالة التحديد
+                            if (selector.id === 'lab-license-selector') selectLabLicense();
+                            else if (selector.id === 'evacuation-license-selector') selectEvacuationLicense();
+                            else if (selector.id === 'violation-license-selector') selectViolationLicense();
+                        }
+                    });
+                }
+            }
+        },
+        error: function(xhr) {
+            console.error('Error loading licenses for selectors:', xhr);
+        }
+    });
+}
+
+// دالة اختيار الرخصة للمختبر
+function selectLabLicense() {
+    const selector = document.getElementById('lab-license-selector');
+    const licenseIdField = document.getElementById('lab-license-id');
+    const infoDiv = document.getElementById('selected-lab-license-info');
+    const displayElement = document.getElementById('lab-license-display');
+    
+    if (selector.value) {
+        licenseIdField.value = selector.value;
+        const selectedText = selector.options[selector.selectedIndex].text;
+        displayElement.textContent = selectedText;
+        infoDiv.style.display = 'block';
+    } else {
+        licenseIdField.value = '';
+        infoDiv.style.display = 'none';
     }
+}
+
+// دالة اختيار الرخصة للإخلاءات
+function selectEvacuationLicense() {
+    const selector = document.getElementById('evacuation-license-selector');
+    const licenseIdField = document.getElementById('evacuation-license-id');
+    const infoDiv = document.getElementById('selected-evacuation-license-info');
+    const displayElement = document.getElementById('evacuation-license-display');
+    
+    if (selector.value) {
+        licenseIdField.value = selector.value;
+        const selectedText = selector.options[selector.selectedIndex].text;
+        displayElement.textContent = selectedText;
+        infoDiv.style.display = 'block';
+    } else {
+        licenseIdField.value = '';
+        infoDiv.style.display = 'none';
+    }
+}
+
+// دالة اختيار الرخصة للمخالفات
+function selectViolationLicense() {
+    const selector = document.getElementById('violation-license-selector');
+    const licenseIdField = document.getElementById('violation-license-id');
+    const infoDiv = document.getElementById('selected-violation-license-info');
+    const displayElement = document.getElementById('violation-license-display');
+    
+    if (selector.value) {
+        licenseIdField.value = selector.value;
+        const selectedText = selector.options[selector.selectedIndex].text;
+        displayElement.textContent = selectedText;
+        infoDiv.style.display = 'block';
+    } else {
+        licenseIdField.value = '';
+        infoDiv.style.display = 'none';
+    }
+}
 </script>
 
 <div id="app">
@@ -1152,9 +1301,44 @@
                     </h3>
                 </div>
                 <div class="section-body">
+                    <!-- اختيار الرخصة للمختبر -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card border-success">
+                                <div class="card-header bg-success text-white">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-clipboard-list me-2"></i>
+                                        اختيار الرخصة للعمل عليها
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <label class="form-label fw-bold">
+                                        <i class="fas fa-search me-2"></i>اختر الرخصة:
+                                    </label>
+                                    <select class="form-select" id="lab-license-selector" onchange="selectLabLicense()">
+                                        <option value="">-- اختر الرخصة للعمل عليها --</option>
+                                    </select>
+                                    <div class="mt-2">
+                                        <small class="text-muted">
+                                            <i class="fas fa-info-circle me-1"></i>
+                                            يجب اختيار رخصة قبل إدخال بيانات المختبر
+                                        </small>
+                                    </div>
+                                    <div id="selected-lab-license-info" class="mt-2" style="display: none;">
+                                        <div class="alert alert-info mb-0">
+                                            <i class="fas fa-certificate me-2"></i>
+                                            الرخصة المختارة: <strong id="lab-license-display"></strong>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <form id="labForm" enctype="multipart/form-data">
                         @csrf
                         <input type="hidden" name="work_order_id" value="{{ $workOrder->id }}">
+                        <input type="hidden" name="license_id" id="lab-license-id" value="">
                         
                         <!-- اختبارات المختبر مع النظام التفاعلي -->
                         <div class="row g-3 mb-4">
@@ -3964,9 +4148,44 @@
                     </h3>
                 </div>
                 <div class="section-body">
+                    <!-- اختيار الرخصة للإخلاءات -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card border-warning">
+                                <div class="card-header bg-warning text-dark">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-clipboard-list me-2"></i>
+                                        اختيار الرخصة للعمل عليها
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <label class="form-label fw-bold">
+                                        <i class="fas fa-search me-2"></i>اختر الرخصة:
+                                    </label>
+                                    <select class="form-select" id="evacuation-license-selector" onchange="selectEvacuationLicense()">
+                                        <option value="">-- اختر الرخصة للعمل عليها --</option>
+                                    </select>
+                                    <div class="mt-2">
+                                        <small class="text-muted">
+                                            <i class="fas fa-info-circle me-1"></i>
+                                            يجب اختيار رخصة قبل إدخال بيانات الإخلاءات
+                                        </small>
+                                    </div>
+                                    <div id="selected-evacuation-license-info" class="mt-2" style="display: none;">
+                                        <div class="alert alert-warning mb-0">
+                                            <i class="fas fa-certificate me-2"></i>
+                                            الرخصة المختارة: <strong id="evacuation-license-display"></strong>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <form id="evacuationForm">
                         @csrf
                         <input type="hidden" name="work_order_id" value="{{ $workOrder->id }}">
+                        <input type="hidden" name="license_id" id="evacuation-license-id" value="">
                         
                         <!-- معلومات الإخلاء الأساسية -->
                         <div class="row g-3 mb-4">
@@ -4132,9 +4351,44 @@
                     </h3>
                 </div>
                 <div class="section-body">
+                    <!-- اختيار الرخصة للمخالفات -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card border-danger">
+                                <div class="card-header bg-danger text-white">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-clipboard-list me-2"></i>
+                                        اختيار الرخصة للعمل عليها
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <label class="form-label fw-bold">
+                                        <i class="fas fa-search me-2"></i>اختر الرخصة:
+                                    </label>
+                                    <select class="form-select" id="violation-license-selector" onchange="selectViolationLicense()">
+                                        <option value="">-- اختر الرخصة للعمل عليها --</option>
+                                    </select>
+                                    <div class="mt-2">
+                                        <small class="text-muted">
+                                            <i class="fas fa-info-circle me-1"></i>
+                                            يجب اختيار رخصة قبل إدخال بيانات المخالفات
+                                        </small>
+                                    </div>
+                                    <div id="selected-violation-license-info" class="mt-2" style="display: none;">
+                                        <div class="alert alert-danger mb-0">
+                                            <i class="fas fa-certificate me-2"></i>
+                                            الرخصة المختارة: <strong id="violation-license-display"></strong>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <form id="violationForm" enctype="multipart/form-data">
                         @csrf
                         <input type="hidden" name="work_order_id" value="{{ $workOrder->id }}">
+                        <input type="hidden" name="license_id" id="violation-license-id" value="">
                         
                         <!-- معلومات المخالفة -->
                         <div class="card border-danger mb-4">
@@ -4451,7 +4705,34 @@ function saveLabSection() {
 }
 
 function saveEvacuationSection() {
-    toastr.success('تم حفظ بيانات الإخلاء بنجاح');
+    // التحقق من اختيار الرخصة
+    const licenseId = document.getElementById('evacuation-license-id').value;
+    if (!licenseId) {
+        toastr.warning('يجب اختيار رخصة قبل حفظ بيانات الإخلاءات');
+        return;
+    }
+    
+    const formData = new FormData(document.getElementById('evacuationForm'));
+    
+    $.ajax({
+        url: '{{ route("admin.licenses.store") }}',
+        type: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        },
+        success: function(response) {
+            toastr.success('تم حفظ بيانات الإخلاء بنجاح');
+        },
+        error: function(xhr) {
+            const errors = xhr.responseJSON?.errors || {};
+            Object.values(errors).forEach(error => {
+                toastr.error(error[0]);
+            });
+        }
+    });
 }
 
 // وظائف جدول التفاصيل الفنية للمختبر
