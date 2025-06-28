@@ -5934,6 +5934,15 @@ function deleteLabDetailsRow(button) {
 }
 
 function saveAllLabDetails() {
+    // التحقق من اختيار الرخصة
+    const licenseId = document.getElementById('evacuation-license-id').value;
+    const licenseSelector = document.getElementById('evacuation-license-selector');
+    
+    if (!licenseId) {
+        toastr.warning('يجب اختيار رخصة قبل حفظ التفاصيل الفنية');
+        return;
+    }
+
     const rows = document.querySelectorAll('#labDetailsTable tbody tr:not(#no-lab-details-row)');
     if (rows.length === 0) {
         toastr.warning('لا توجد بيانات للحفظ');
@@ -5946,7 +5955,9 @@ function saveAllLabDetails() {
         const rowData = {};
         inputs.forEach(input => {
             if (input.name && input.value) {
-                rowData[input.name] = input.value;
+                // تحويل أسماء الحقول لتتطابق مع قاعدة البيانات
+                const fieldName = input.name.replace('lab_', '');
+                rowData[fieldName] = input.value;
             }
         });
         if (Object.keys(rowData).length > 0) {
@@ -5954,13 +5965,47 @@ function saveAllLabDetails() {
         }
     });
     
-    if (labDetailsData.length > 0) {
-        // هنا يمكن إرسال البيانات للخادم
-        console.log('Lab Details Data:', labDetailsData);
-        toastr.success('تم حفظ التفاصيل الفنية بنجاح');
-    } else {
+    if (labDetailsData.length === 0) {
         toastr.warning('لا توجد بيانات صحيحة للحفظ');
+        return;
     }
+    
+    // الحصول على اسم الرخصة المختارة
+    const selectedLicenseName = licenseSelector.options[licenseSelector.selectedIndex].text;
+    
+    // إظهار رسالة تأكيد
+    if (!confirm(`هل أنت متأكد من حفظ التفاصيل الفنية في ${selectedLicenseName}؟`)) {
+        return;
+    }
+    
+    // إرسال البيانات للخادم
+    $.ajax({
+        url: '{{ route("admin.licenses.save-section") }}',
+        type: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        },
+        data: {
+            license_id: licenseId,
+            section_type: 'evac_table2',
+            data: labDetailsData
+        },
+        success: function(response) {
+            toastr.success(`تم حفظ التفاصيل الفنية بنجاح في ${selectedLicenseName}`);
+            console.log('Lab Details saved successfully:', response);
+        },
+        error: function(xhr) {
+            console.error('خطأ في حفظ التفاصيل الفنية:', xhr);
+            const errors = xhr.responseJSON?.errors || {};
+            if (Object.keys(errors).length > 0) {
+                Object.values(errors).forEach(error => {
+                    toastr.error(error[0]);
+                });
+            } else {
+                toastr.error('حدث خطأ أثناء حفظ التفاصيل الفنية');
+            }
+        }
+    });
 }
 
 function addNewEvacStreetRow() {
@@ -6013,6 +6058,15 @@ function deleteEvacStreetRow(button) {
 }
 
 function saveAllEvacStreets() {
+    // التحقق من اختيار الرخصة
+    const licenseId = document.getElementById('evacuation-license-id').value;
+    const licenseSelector = document.getElementById('evacuation-license-selector');
+    
+    if (!licenseId) {
+        toastr.warning('يجب اختيار رخصة قبل حفظ جميع الفسح');
+        return;
+    }
+
     // تجميع بيانات الجدول
     const rows = document.getElementById('evacStreetTable').getElementsByTagName('tbody')[0].rows;
     const data = [];
@@ -6021,36 +6075,66 @@ function saveAllEvacStreets() {
         if (rows[i].id !== 'no-evac-streets-row') {
             const row = rows[i];
             const rowData = {
-                clearance_number: row.querySelector('[name$="[clearance_number]"]').value,
-                clearance_date: row.querySelector('[name$="[clearance_date]"]').value,
-                length: row.querySelector('[name$="[length]"]').value,
-                lab_length: row.querySelector('[name$="[lab_length]"]').value,
-                street_type: row.querySelector('[name$="[street_type]"]').value,
-                soil_quantity: row.querySelector('[name$="[soil_quantity]"]').value,
-                asphalt_quantity: row.querySelector('[name$="[asphalt_quantity]"]').value,
-                tile_quantity: row.querySelector('[name$="[tile_quantity]"]').value,
-                soil_test: row.querySelector('[name$="[soil_test]"]').value,
-                mc1_test: row.querySelector('[name$="[mc1_test]"]').value,
-                asphalt_test: row.querySelector('[name$="[asphalt_test]"]').value,
-                notes: row.querySelector('[name$="[notes]"]').value
+                clearance_number: row.querySelector('[name$="[clearance_number]"]')?.value || '',
+                clearance_date: row.querySelector('[name$="[clearance_date]"]')?.value || '',
+                length: row.querySelector('[name$="[length]"]')?.value || '',
+                lab_length: row.querySelector('[name$="[lab_length]"]')?.value || '',
+                street_type: row.querySelector('[name$="[street_type]"]')?.value || '',
+                soil_quantity: row.querySelector('[name$="[soil_quantity]"]')?.value || '',
+                asphalt_quantity: row.querySelector('[name$="[asphalt_quantity]"]')?.value || '',
+                tile_quantity: row.querySelector('[name$="[tile_quantity]"]')?.value || '',
+                soil_test: row.querySelector('[name$="[soil_test]"]')?.value || '',
+                mc1_test: row.querySelector('[name$="[mc1_test]"]')?.value || '',
+                asphalt_test: row.querySelector('[name$="[asphalt_test]"]')?.value || '',
+                notes: row.querySelector('[name$="[notes]"]')?.value || ''
             };
-            data.push(rowData);
+            
+            // إضافة الصف فقط إذا كان يحتوي على بيانات
+            if (Object.values(rowData).some(value => value !== '')) {
+                data.push(rowData);
+            }
         }
     }
 
-    // إرسال البيانات إلى الخادم
+    if (data.length === 0) {
+        toastr.warning('لا توجد بيانات فسح للحفظ');
+        return;
+    }
+
+    // الحصول على اسم الرخصة المختارة
+    const selectedLicenseName = licenseSelector.options[licenseSelector.selectedIndex].text;
+    
+    // إظهار رسالة تأكيد
+    if (!confirm(`هل أنت متأكد من حفظ جميع الفسح في ${selectedLicenseName}؟`)) {
+        return;
+    }
+
+    // إرسال البيانات للخادم
     $.ajax({
-        url: '/admin/licenses/update-evac-streets/{{ $workOrder->id }}',
+        url: '{{ route("admin.licenses.save-section") }}',
         type: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        },
         data: {
-            _token: '{{ csrf_token() }}',
-            evac_streets: data
+            license_id: licenseId,
+            section_type: 'evac_table1',
+            data: data
         },
         success: function(response) {
-            toastr.success('تم حفظ بيانات الفسح بنجاح');
+            toastr.success(`تم حفظ جميع الفسح بنجاح في ${selectedLicenseName}`);
+            console.log('Evac streets saved successfully:', response);
         },
         error: function(xhr) {
-            toastr.error('حدث خطأ أثناء حفظ بيانات الفسح');
+            console.error('خطأ في حفظ بيانات الفسح:', xhr);
+            const errors = xhr.responseJSON?.errors || {};
+            if (Object.keys(errors).length > 0) {
+                Object.values(errors).forEach(error => {
+                    toastr.error(error[0]);
+                });
+            } else {
+                toastr.error('حدث خطأ أثناء حفظ بيانات الفسح');
+            }
         }
     });
 }

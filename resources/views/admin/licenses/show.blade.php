@@ -1015,117 +1015,9 @@ use Illuminate\Support\Facades\Storage;
                         </div>
                     </div>
 
-                    <!-- جدول الفسح ونوع الشارع - قابل للتحرير -->
-                    <div class="card mb-4">
-                        <div class="card-header bg-light d-flex justify-content-between align-items-center">
-                            <h6 class="mb-0"><i class="fas fa-table me-2"></i>جدول الفسح ونوع الشارع</h6>
-                            <div>
-                                <button type="button" class="btn btn-success btn-sm me-2" onclick="addLabTable1Row()">
-                                    <i class="fas fa-plus me-1"></i>إضافة صف
-                                </button>
-                                <button type="button" class="btn btn-primary btn-sm" onclick="saveLabTable1Data()">
-                                    <i class="fas fa-save me-1"></i>حفظ الجدول
-                                </button>
-                            </div>
-                        </div>
-                        <div class="card-body">
-                            <div class="table-responsive">
-                                <table class="table table-bordered table-striped" id="labTable1">
-                                    <thead class="table-success">
-                                        <tr>
-                                            <th>رقم الفسح</th>
-                                            <th>تاريخ الفسح</th>
-                                            <th>طول الفسح</th>
-                                            <th>طول المختبر</th>
-                                            <th>نوع الشارع</th>
-                                            <th>ترابي</th>
-                                            <th>أسفلت</th>
-                                            <th>بلاط</th>
-                                            <th>إجراءات</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @php $table1Data = is_string($license->lab_table1_data) ? json_decode($license->lab_table1_data, true) : $license->lab_table1_data; @endphp
-                                        @if($table1Data && is_array($table1Data))
-                                            @foreach($table1Data as $index => $row)
-                                            <tr>
-                                                <td><input type="text" class="form-control form-control-sm" name="clearance_number" value="{{ $row['clearance_number'] ?? '' }}"></td>
-                                                <td><input type="date" class="form-control form-control-sm" name="clearance_date" value="{{ $row['clearance_date'] ?? '' }}"></td>
-                                                <td><input type="number" step="0.01" class="form-control form-control-sm" name="clearance_length" value="{{ $row['clearance_length'] ?? '' }}"></td>
-                                                <td><input type="number" step="0.01" class="form-control form-control-sm" name="lab_length" value="{{ $row['lab_length'] ?? '' }}"></td>
-                                                <td><input type="text" class="form-control form-control-sm" name="street_type" value="{{ $row['street_type'] ?? '' }}"></td>
-                                                <td><input type="checkbox" class="form-check-input" name="is_dirt" {{ isset($row['is_dirt']) && $row['is_dirt'] ? 'checked' : '' }}></td>
-                                                <td><input type="checkbox" class="form-check-input" name="is_asphalt" {{ isset($row['is_asphalt']) && $row['is_asphalt'] ? 'checked' : '' }}></td>
-                                                <td><input type="checkbox" class="form-check-input" name="is_tile" {{ isset($row['is_tile']) && $row['is_tile'] ? 'checked' : '' }}></td>
-                                                <td><button type="button" class="btn btn-danger btn-sm" onclick="deleteTableRow(this)"><i class="fas fa-trash"></i></button></td>
-                                            </tr>
-                                            @endforeach
-                                        @else
-                                            <tr id="no-lab-table1-data">
-                                                <td colspan="9" class="text-center">لا توجد بيانات - اضغط "إضافة صف" لإضافة بيانات جديدة</td>
-                                            </tr>
-                                        @endif
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
 
-                    <!-- جدول التفاصيل الفنية للمختبر - قابل للتحرير -->
-                    <div class="card">
-                        <div class="card-header bg-light d-flex justify-content-between align-items-center">
-                            <h6 class="mb-0"><i class="fas fa-table me-2"></i>جدول التفاصيل الفنية للمختبر</h6>
-                            <div>
-                                <button type="button" class="btn btn-success btn-sm me-2" onclick="addLabTable2Row()">
-                                    <i class="fas fa-plus me-1"></i>إضافة صف
-                                </button>
-                                <button type="button" class="btn btn-primary btn-sm" onclick="saveLabTable2Data()">
-                                    <i class="fas fa-save me-1"></i>حفظ الجدول
-                                </button>
-                            </div>
-                        </div>
-                        <div class="card-body">
-                            <div class="table-responsive">
-                                <table class="table table-bordered table-striped" id="labTable2">
-                                    <thead class="table-success">
-                                        <tr>
-                                            <th>السنة</th>
-                                            <th>نوع العمل</th>
-                                            <th>العمق</th>
-                                            <th>دك التربة</th>
-                                            <th>MC1-RC2</th>
-                                            <th>دك أسفلت</th>
-                                            <th>ترابي</th>
-                                            <th>إجراءات</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @php $table2Data = is_string($license->lab_table2_data) ? json_decode($license->lab_table2_data, true) : $license->lab_table2_data; @endphp
-                                        @if($table2Data && is_array($table2Data))
-                                            @foreach($table2Data as $index => $row)
-                                            <tr>
-                                                <td><input type="number" class="form-control form-control-sm" name="year" value="{{ $row['year'] ?? '' }}"></td>
-                                                <td><input type="text" class="form-control form-control-sm" name="work_type" value="{{ $row['work_type'] ?? '' }}"></td>
-                                                <td><input type="number" step="0.01" class="form-control form-control-sm" name="depth" value="{{ $row['depth'] ?? '' }}"></td>
-                                                <td><input type="number" step="0.01" class="form-control form-control-sm" name="soil_compaction" value="{{ $row['soil_compaction'] ?? '' }}"></td>
-                                                <td><input type="text" class="form-control form-control-sm" name="mc1rc2" value="{{ $row['mc1rc2'] ?? '' }}"></td>
-                                                <td><input type="number" step="0.01" class="form-control form-control-sm" name="asphalt_compaction" value="{{ $row['asphalt_compaction'] ?? '' }}"></td>
-                                                <td><input type="checkbox" class="form-check-input" name="is_dirt" {{ isset($row['is_dirt']) && $row['is_dirt'] ? 'checked' : '' }}></td>
-                                                <td><button type="button" class="btn btn-danger btn-sm" onclick="deleteTableRow(this)"><i class="fas fa-trash"></i></button></td>
-                                            </tr>
-                                            @endforeach
-                                        @else
-                                            <tr id="no-lab-table2-data">
-                                                <td colspan="8" class="text-center">لا توجد بيانات - اضغط "إضافة صف" لإضافة بيانات جديدة</td>
-                                            </tr>
-                                        @endif
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
 
-                    @if(!$license->lab_table1_data && !$license->lab_table2_data && !$license->successful_tests_value && !$license->failed_tests_value)
+                    @if(!$license->successful_tests_value && !$license->failed_tests_value)
                     <div class="text-center py-5">
                         <i class="fas fa-flask fa-5x text-muted mb-3"></i>
                         <h4 class="text-muted">لا توجد بيانات مختبر مسجلة</h4>
@@ -1589,7 +1481,7 @@ use Illuminate\Support\Facades\Storage;
     text-align: center;
     vertical-align: middle;
     border: none;
-    background: linear-gradient(45deg, #ffc107, #ffb300);
+    background: linear-gradient(45deg,rgb(199, 195, 183),rgb(180, 177, 171));
     color: #212529;
     text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
 }
@@ -1609,7 +1501,7 @@ use Illuminate\Support\Facades\Storage;
 }
 
 .card:has(#extensionsTable) .card-header {
-    background: linear-gradient(45deg, #ffc107, #ffb300) !important;
+    background: linear-gradient(45deg,rgb(126, 186, 226),rgb(143, 162, 204)) !important;
     border: none;
     padding: 1.5rem;
 }
@@ -2085,52 +1977,7 @@ function deleteExtension(extensionId) {
 
 // ==================== دوال إدارة الجداول ====================
 
-// دالة إضافة صف جديد لجدول الفسح ونوع الشارع للمختبر
-function addLabTable1Row() {
-    const tbody = document.querySelector('#labTable1 tbody');
-    const noDataRow = document.getElementById('no-lab-table1-data');
-    
-    if (noDataRow) {
-        noDataRow.remove();
-    }
-    
-    const newRow = document.createElement('tr');
-    newRow.innerHTML = `
-        <td><input type="text" class="form-control form-control-sm" name="clearance_number" placeholder="رقم الفسح"></td>
-        <td><input type="date" class="form-control form-control-sm" name="clearance_date"></td>
-        <td><input type="number" step="0.01" class="form-control form-control-sm" name="clearance_length" placeholder="طول الفسح"></td>
-        <td><input type="number" step="0.01" class="form-control form-control-sm" name="lab_length" placeholder="طول المختبر"></td>
-        <td><input type="text" class="form-control form-control-sm" name="street_type" placeholder="نوع الشارع"></td>
-        <td><input type="checkbox" class="form-check-input" name="is_dirt"></td>
-        <td><input type="checkbox" class="form-check-input" name="is_asphalt"></td>
-        <td><input type="checkbox" class="form-check-input" name="is_tile"></td>
-        <td><button type="button" class="btn btn-danger btn-sm" onclick="deleteTableRow(this)"><i class="fas fa-trash"></i></button></td>
-    `;
-    tbody.appendChild(newRow);
-}
 
-// دالة إضافة صف جديد لجدول التفاصيل الفنية للمختبر
-function addLabTable2Row() {
-    const tbody = document.querySelector('#labTable2 tbody');
-    const noDataRow = document.getElementById('no-lab-table2-data');
-    
-    if (noDataRow) {
-        noDataRow.remove();
-    }
-    
-    const newRow = document.createElement('tr');
-    newRow.innerHTML = `
-        <td><input type="number" class="form-control form-control-sm" name="year" placeholder="السنة"></td>
-        <td><input type="text" class="form-control form-control-sm" name="work_type" placeholder="نوع العمل"></td>
-        <td><input type="number" step="0.01" class="form-control form-control-sm" name="depth" placeholder="العمق"></td>
-        <td><input type="number" step="0.01" class="form-control form-control-sm" name="soil_compaction" placeholder="دك التربة"></td>
-        <td><input type="text" class="form-control form-control-sm" name="mc1rc2" placeholder="MC1-RC2"></td>
-        <td><input type="number" step="0.01" class="form-control form-control-sm" name="asphalt_compaction" placeholder="دك أسفلت"></td>
-        <td><input type="checkbox" class="form-check-input" name="is_dirt"></td>
-        <td><button type="button" class="btn btn-danger btn-sm" onclick="deleteTableRow(this)"><i class="fas fa-trash"></i></button></td>
-    `;
-    tbody.appendChild(newRow);
-}
 
 // دالة إضافة صف جديد لجدول فسح الإخلاءات
 function addEvacTable1Row() {
@@ -2192,14 +2039,6 @@ function deleteTableRow(button) {
             let noDataId, colSpan;
             
             switch(tableId) {
-                case 'labTable1':
-                    noDataId = 'no-lab-table1-data';
-                    colSpan = 9;
-                    break;
-                case 'labTable2':
-                    noDataId = 'no-lab-table2-data';
-                    colSpan = 8;
-                    break;
                 case 'evacTable1':
                     noDataId = 'no-evac-table1-data';
                     colSpan = 9;
@@ -2222,111 +2061,7 @@ function deleteTableRow(button) {
     }
 }
 
-// دالة حفظ بيانات جدول الفسح ونوع الشارع للمختبر
-function saveLabTable1Data() {
-    const rows = document.querySelectorAll('#labTable1 tbody tr:not(#no-lab-table1-data)');
-    if (rows.length === 0) {
-        toastr.warning('لا توجد بيانات للحفظ');
-        return;
-    }
-    
-    const tableData = [];
-    rows.forEach(row => {
-        const inputs = row.querySelectorAll('input');
-        const rowData = {};
-        
-        inputs.forEach(input => {
-            if (input.type === 'checkbox') {
-                rowData[input.name] = input.checked;
-            } else if (input.value) {
-                rowData[input.name] = input.value;
-            }
-        });
-        
-        if (Object.keys(rowData).length > 0) {
-            tableData.push(rowData);
-        }
-    });
-    
-    if (tableData.length === 0) {
-        toastr.warning('لا توجد بيانات صحيحة للحفظ');
-        return;
-    }
-    
-    // إرسال البيانات للخادم
-    $.ajax({
-        url: '{{ route("admin.licenses.save-section") }}',
-        type: 'POST',
-        headers: {
-            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-        },
-        data: {
-            license_id: {{ $license->id }},
-            section: 'lab_table1',
-            data: tableData
-        },
-        success: function(response) {
-            toastr.success('تم حفظ جدول الفسح ونوع الشارع للمختبر بنجاح');
-        },
-        error: function(xhr) {
-            console.error('خطأ في حفظ البيانات:', xhr);
-            toastr.error('حدث خطأ أثناء حفظ البيانات');
-        }
-    });
-}
 
-// دالة حفظ بيانات جدول التفاصيل الفنية للمختبر
-function saveLabTable2Data() {
-    const rows = document.querySelectorAll('#labTable2 tbody tr:not(#no-lab-table2-data)');
-    if (rows.length === 0) {
-        toastr.warning('لا توجد بيانات للحفظ');
-        return;
-    }
-    
-    const tableData = [];
-    rows.forEach(row => {
-        const inputs = row.querySelectorAll('input');
-        const rowData = {};
-        
-        inputs.forEach(input => {
-            if (input.type === 'checkbox') {
-                rowData[input.name] = input.checked;
-            } else if (input.value) {
-                rowData[input.name] = input.value;
-            }
-        });
-        
-        if (Object.keys(rowData).length > 0) {
-            tableData.push(rowData);
-        }
-    });
-    
-    if (tableData.length === 0) {
-        toastr.warning('لا توجد بيانات صحيحة للحفظ');
-        return;
-    }
-    
-    // إرسال البيانات للخادم
-    $.ajax({
-        url: '{{ route("admin.licenses.save-section") }}',
-        type: 'POST',
-        headers: {
-            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-        },
-        data: {
-            license_id: {{ $license->id }},
-            section: 'lab_table2',
-            data: tableData
-        },
-        success: function(response) {
-            toastr.success('تم حفظ جدول التفاصيل الفنية للمختبر بنجاح');
-        },
-        error: function(xhr) {
-            console.error('خطأ في حفظ البيانات:', xhr);
-            toastr.error('حدث خطأ أثناء حفظ البيانات');
-        }
-    });
-}
 
 // دالة حفظ بيانات جدول فسح الإخلاءات
 function saveEvacTable1Data() {
