@@ -305,10 +305,12 @@
         // Handle restriction fields visibility
         $('#has_restriction').change(function() {
             const hasRestriction = $(this).val() === '1';
-            $('#restriction_authority_field, #letters_commitments_field').toggle(hasRestriction);
+            $('#restriction_authority_field, #letters_commitments_field, #restriction_details_fields').toggle(hasRestriction);
             
             if (!hasRestriction) {
                 $('#restriction_authority').val('');
+                $('#restriction_reason').val('');
+                $('#restriction_notes').val('');
                 $('input[name="letters_commitments_files[]"]').val('');
             }
         });
@@ -372,10 +374,35 @@
     });
 
     function saveCoordinationSection() {
+        // التحقق من إدخال البيانات الأساسية
+        const coordinationNumber = document.querySelector('input[name="coordination_certificate_number"]').value;
+        
+        if (!coordinationNumber) {
+            toastr.warning('يجب إدخال رقم شهادة التنسيق قبل الحفظ');
+            return;
+        }
+        
+        // تأكيد من المستخدم قبل إنشاء رخصة جديدة
+        if (!confirm('         بيانات شهادة التنسيق فيها. هل تريد المتابعة؟')) {
+            return;
+        }
+        
         const formData = new FormData(document.getElementById('coordinationForm'));
         
+        // إضافة معلومات القسم
+        formData.set('section_type', 'coordination');
+        formData.set('work_order_id', {{ $workOrder->id }});
+        formData.set('force_new', true); // إجبار إنشاء رخصة جديدة
+        
+        // إظهار مؤشر التحميل
+        const saveBtn = document.querySelector('button[onclick="saveCoordinationSection()"]');
+        if (saveBtn) {
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>جاري إنشاء الرخصة الجديدة...';
+        }
+        
         $.ajax({
-            url: '{{ route("admin.licenses.store") }}',
+            url: '{{ route("admin.licenses.save-section") }}',
             type: 'POST',
             data: formData,
             processData: false,
@@ -384,22 +411,49 @@
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             },
             success: function(response) {
-                toastr.success('تم حفظ شهادة التنسيق بنجاح');
+                console.log('License created successfully:', response);
                 
-                // Redirect to license details page
+                // إعادة تفعيل الزر
+                if (saveBtn) {
+                    saveBtn.disabled = false;
+                    saveBtn.innerHTML = '<i class="fas fa-plus-circle me-2"></i>   بشهادة التنسيق';
+                }
+                
+                // رسالة نجاح مفصلة
+                toastr.success(`تم إنشاء رخصة جديدة برقم ${response.license_id} وحفظ شهادة التنسيق بنجاح!`);
+                
+                // تحديث جدول رخص الحفر
+                loadDigLicenses();
+                
+                // إعادة تعيين النموذج
+                document.getElementById('coordinationForm').reset();
+                
+                // التوجه لصفحة تفاصيل الرخصة الجديدة
                 setTimeout(() => {
-                    if (response.license_id) {
+                    toastr.info('سيتم توجيهك لعرض تفاصيل الرخصة الجديدة...');
+                    setTimeout(() => {
                         window.location.href = `/admin/licenses/${response.license_id}`;
-                    } else {
-                        window.location.reload();
-                    }
+                    }, 1000);
                 }, 1500);
             },
             error: function(xhr) {
+                console.error('Error saving coordination:', xhr);
+                
+                // إعادة تفعيل الزر
+                if (saveBtn) {
+                    saveBtn.disabled = false;
+                    saveBtn.innerHTML = '<i class="fas fa-plus-circle me-2"></i> بشهادة التنسيق';
+                }
+                
                 const errors = xhr.responseJSON?.errors || {};
-                Object.values(errors).forEach(error => {
-                    toastr.error(error[0]);
-                });
+                if (Object.keys(errors).length > 0) {
+                    Object.values(errors).forEach(error => {
+                        toastr.error(error[0]);
+                    });
+                } else {
+                    const message = xhr.responseJSON?.message || 'حدث خطأ في إنشاء الرخصة ';
+                    toastr.error(message);
+                }
             }
         });
     }
@@ -571,8 +625,12 @@
     }
 
     function editLicense(licenseId) {
-        // يمكن إضافة تعديل الرخصة
-        toastr.info('سيتم إضافة التعديل قريباً');
+        // التوجه إلى صفحة تعديل الرخصة المحددة
+        if (licenseId) {
+            window.location.href = `/admin/licenses/${licenseId}/edit`;
+        } else {
+            toastr.error('معرف الرخصة غير صحيح');
+        }
     }
 
     function deleteLicense(licenseId) {
@@ -600,15 +658,43 @@
     function saveLabSection() {
         // التحقق من اختيار الرخصة
         const licenseId = document.getElementById('lab-license-id').value;
+        const licenseSelector = document.getElementById('lab-license-selector');
+        
         if (!licenseId) {
             toastr.warning('يجب اختيار رخصة قبل حفظ بيانات المختبر');
+            return;
+        }
+
+        // الحصول على اسم الرخصة المختارة
+        const selectedLicenseName = licenseSelector.options[licenseSelector.selectedIndex].text;
+        
+        // إظهار رسالة تأكيد
+        if (!confirm(`هل أنت متأكد من حفظ بيانات المختبر في ${selectedLicenseName}؟`)) {
             return;
         }
         
         const formData = new FormData(document.getElementById('labForm'));
         
+        // إضافة معلومات القسم والرخصة
+        formData.set('section_type', 'lab');
+        formData.set('license_id', licenseId);
+        
+        // تسجيل البيانات المرسلة للتحقق
+        console.log('=== Lab Data Being Sent ===');
+        for (let pair of formData.entries()) {
+            console.log(pair[0] + ': ' + pair[1]);
+        }
+        console.log('========================');
+        
+        // إظهار مؤشر التحميل
+        const saveBtn = document.getElementById('save-lab-btn');
+        if (saveBtn) {
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>جاري الحفظ...';
+        }
+        
         $.ajax({
-            url: '{{ route("admin.licenses.store") }}',
+            url: '{{ route("admin.licenses.save-section") }}',
             type: 'POST',
             data: formData,
             processData: false,
@@ -617,18 +703,35 @@
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             },
             success: function(response) {
-                toastr.success('تم حفظ بيانات المختبر بنجاح');
+                console.log('Lab data saved successfully:', response);
+                toastr.success(`تم حفظ بيانات المختبر بنجاح في ${selectedLicenseName}`);
                 
-                // Refresh the page after a short delay
+                // إعادة تفعيل الزر
+                if (saveBtn) {
+                    saveBtn.disabled = false;
+                    saveBtn.innerHTML = '<i class="fas fa-save me-2"></i>حفظ بيانات المختبر';
+                }
+                
+                // تحديث البيانات بدلاً من إعادة تحميل الصفحة
                 setTimeout(() => {
-                    window.location.reload();
-                }, 1500);
+                    toastr.info('تم حفظ البيانات في الرخصة المختارة');
+                }, 1000);
             },
             error: function(xhr) {
+                // إعادة تفعيل الزر
+                if (saveBtn) {
+                    saveBtn.disabled = false;
+                    saveBtn.innerHTML = '<i class="fas fa-save me-2"></i>حفظ بيانات المختبر';
+                }
+                
                 const errors = xhr.responseJSON?.errors || {};
-                Object.values(errors).forEach(error => {
-                    toastr.error(error[0]);
-                });
+                if (Object.keys(errors).length > 0) {
+                    Object.values(errors).forEach(error => {
+                        toastr.error(error[0]);
+                    });
+                } else {
+                    toastr.error('حدث خطأ في حفظ بيانات المختبر');
+                }
             }
         });
     }
@@ -1047,12 +1150,27 @@ function selectViolationLicense() {
                         </div>
                     </div>
 
+                    <!-- حقول إضافية للقيود -->
+                    <div class="row g-3 mb-3" id="restriction_details_fields" style="display: none;">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">سبب الحظر</label>
+                            <input type="text" class="form-control" name="restriction_reason" id="restriction_reason" placeholder="اذكر سبب الحظر...">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">ملاحظات الحظر</label>
+                            <textarea class="form-control" name="restriction_notes" id="restriction_notes" rows="2" placeholder="أي ملاحظات إضافية حول الحظر..."></textarea>
+                        </div>
+                    </div>
+
                     <div class="row mt-4">
                         <div class="col-12 text-center">
-                            <button type="button" class="btn btn-primary-custom btn-lg" onclick="saveCoordinationSection()">
-                                <i class="fas fa-save me-2"></i>
-                                حفظ شهادة التنسيق
+                            <button type="button" class="btn btn-success btn-lg fw-bold" onclick="saveCoordinationSection()">
+                                <i class="fas fa-plus-circle me-2"></i>
+                                حفظ شهادة التنسيق 
                             </button>
+                            <div class="mt-2">
+                                
+                            </div>
                         </div>
                     </div>
                 </form>
@@ -4127,7 +4245,7 @@ function selectViolationLicense() {
 
                         <div class="row mt-4">
                             <div class="col-12 text-center">
-                                <button type="button" class="btn btn-primary-custom btn-lg" onclick="saveLabSection()">
+                                <button type="button" id="save-lab-btn" class="btn btn-primary-custom btn-lg" onclick="saveLabSection()">
                                     <i class="fas fa-save me-2"></i>
                                     حفظ بيانات المختبر
                                 </button>
@@ -4584,34 +4702,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // دوال الحفظ
-function saveCoordinationSection() {
-    const formData = new FormData(document.getElementById('coordinationForm'));
-    
-    $.ajax({
-        url: '{{ route("admin.licenses.store") }}',
-        type: 'POST',
-        data: formData,
-        processData: false,
-        contentType: false,
-        headers: {
-            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-        },
-        success: function(response) {
-            toastr.success('تم حفظ شهادة التنسيق بنجاح');
-            
-            // Refresh the page after a short delay
-            setTimeout(() => {
-                window.location.reload();
-            }, 1500);
-        },
-        error: function(xhr) {
-            const errors = xhr.responseJSON?.errors || {};
-            Object.values(errors).forEach(error => {
-                toastr.error(error[0]);
-            });
-        }
-    });
-}
+// تم نقل دالة saveCoordinationSection إلى أعلى الملف
 
 function saveDigLicenseSection() {
     // منع الإرسال العادي للنموذج
@@ -4625,6 +4716,9 @@ function saveDigLicenseSection() {
 
     const formData = new FormData(form);
     
+    // إضافة معلومات القسم
+    formData.set('section_type', 'dig_license');
+    
     // إظهار loading على الزر
     const saveBtn = event.target;
     const originalText = saveBtn.innerHTML;
@@ -4632,7 +4726,7 @@ function saveDigLicenseSection() {
     saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>جاري الحفظ...';
     
     $.ajax({
-        url: '{{ route("admin.licenses.store") }}',
+        url: '{{ route("admin.licenses.save-section") }}',
         type: 'POST',
         data: formData,
         processData: false,
@@ -4675,65 +4769,57 @@ function saveDigLicenseSection() {
     return false;
 }
 
-function saveLabSection() {
-    const formData = new FormData(document.getElementById('labForm'));
-    
-    $.ajax({
-        url: '{{ route("admin.licenses.store") }}',
-        type: 'POST',
-        data: formData,
-        processData: false,
-        contentType: false,
-        headers: {
-            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-        },
-        success: function(response) {
-            toastr.success('تم حفظ بيانات المختبر بنجاح');
-            
-            // Refresh the page after a short delay
-            setTimeout(() => {
-                window.location.reload();
-            }, 1500);
-        },
-        error: function(xhr) {
-            const errors = xhr.responseJSON?.errors || {};
-            Object.values(errors).forEach(error => {
-                toastr.error(error[0]);
-            });
-        }
-    });
-}
 
-function saveEvacuationSection() {
-    // التحقق من اختيار الرخصة
-    const licenseId = document.getElementById('evacuation-license-id').value;
-    if (!licenseId) {
-        toastr.warning('يجب اختيار رخصة قبل حفظ بيانات الإخلاءات');
-        return;
-    }
-    
-    const formData = new FormData(document.getElementById('evacuationForm'));
-    
-    $.ajax({
-        url: '{{ route("admin.licenses.store") }}',
-        type: 'POST',
-        data: formData,
-        processData: false,
-        contentType: false,
-        headers: {
-            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-        },
-        success: function(response) {
-            toastr.success('تم حفظ بيانات الإخلاء بنجاح');
-        },
-        error: function(xhr) {
-            const errors = xhr.responseJSON?.errors || {};
-            Object.values(errors).forEach(error => {
-                toastr.error(error[0]);
-            });
+
+    function saveEvacuationSection() {
+        // التحقق من اختيار الرخصة
+        const licenseId = document.getElementById('evacuation-license-id').value;
+        const licenseSelector = document.getElementById('evacuation-license-selector');
+        
+        if (!licenseId) {
+            toastr.warning('يجب اختيار رخصة قبل حفظ بيانات الإخلاءات');
+            return;
         }
-    });
-}
+
+        // الحصول على اسم الرخصة المختارة
+        const selectedLicenseName = licenseSelector.options[licenseSelector.selectedIndex].text;
+        
+        // إظهار رسالة تأكيد
+        if (!confirm(`هل أنت متأكد من حفظ بيانات الإخلاءات في ${selectedLicenseName}؟`)) {
+            return;
+        }
+        
+        const formData = new FormData(document.getElementById('evacuationForm'));
+        
+        // إضافة معلومات القسم والرخصة
+        formData.set('section_type', 'evacuations');
+        formData.set('license_id', licenseId);
+        
+        $.ajax({
+            url: '{{ route("admin.licenses.save-section") }}',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function(response) {
+                toastr.success(`تم حفظ بيانات الإخلاءات بنجاح في ${selectedLicenseName}`);
+            },
+            error: function(xhr) {
+                console.error('Error saving evacuation:', xhr);
+                const errors = xhr.responseJSON?.errors || {};
+                if (Object.keys(errors).length > 0) {
+                    Object.values(errors).forEach(error => {
+                        toastr.error(error[0]);
+                    });
+                } else {
+                    toastr.error('حدث خطأ في حفظ بيانات الإخلاءات');
+                }
+            }
+        });
+    }
 
 // وظائف جدول التفاصيل الفنية للمختبر
 function addNewLabDetailsRow() {
@@ -5228,8 +5314,15 @@ function updateTestTotals() {
     
     // تحديث الحقول المخفية
     document.getElementById('total_tests_value').value = totalSum.toFixed(2);
-    document.getElementById('successful_tests_value').value = passedSum.toFixed(2);
-    document.getElementById('failed_tests_value').value = failedSum.toFixed(2);
+            document.getElementById('successful_tests_value').value = passedSum.toFixed(2);
+        document.getElementById('failed_tests_value').value = failedSum.toFixed(2);
+        
+        // تسجيل القيم للتحقق
+        console.log('Test Totals Updated:', {
+            passedSum: passedSum.toFixed(2),
+            failedSum: failedSum.toFixed(2),
+            failureReasons: failureReasons
+        });
     
     // حساب نسبة النجاح بناءً على الصفوف المكتملة
     let successPercentage = 0;
@@ -5353,24 +5446,36 @@ function toggleExtensionFields() {
 
 // دالة حساب أيام التمديد تلقائياً
 function calculateExtensionDays() {
-    const startDate = document.getElementById('extension_start_date').value;
-    const endDate = document.getElementById('extension_end_date').value;
-    const daysField = document.getElementById('extension_days');
-    
-    if (startDate && endDate) {
-        const start = new Date(startDate);
-        const end = new Date(endDate);
+    try {
+        const startDateInput = document.getElementById('extension_start_date');
+        const endDateInput = document.getElementById('extension_end_date');
+        const daysField = document.getElementById('extension_days');
         
-        if (end >= start) {
-            const timeDifference = end.getTime() - start.getTime();
-            const daysDifference = Math.ceil(timeDifference / (1000 * 3600 * 24));
-            daysField.value = daysDifference;
-        } else {
-            daysField.value = '';
-            toastr.warning('تاريخ نهاية التمديد يجب أن يكون بعد تاريخ البداية');
+        if (!startDateInput || !endDateInput || !daysField) {
+            console.warn('Extension date inputs not found');
+            return;
         }
-    } else {
-        daysField.value = '';
+        
+        const startDate = startDateInput.value;
+        const endDate = endDateInput.value;
+        
+        if (startDate && endDate) {
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            
+            if (end >= start) {
+                const timeDifference = end.getTime() - start.getTime();
+                const daysDifference = Math.ceil(timeDifference / (1000 * 3600 * 24));
+                daysField.value = daysDifference;
+            } else {
+                daysField.value = '';
+                toastr.warning('تاريخ نهاية التمديد يجب أن يكون بعد تاريخ البداية');
+            }
+        } else {
+            if (daysField) daysField.value = '';
+        }
+    } catch (error) {
+        console.error('Error calculating extension days:', error);
     }
 }
 
@@ -5417,6 +5522,12 @@ function addNewExtension() {
     extensionCounter++;
     const tbody = document.getElementById('extensions-table-body');
     const noExtensionsRow = document.getElementById('no-extensions-row');
+    
+    if (!tbody) {
+        console.error('Extensions table body not found');
+        toastr.error('خطأ: لم يتم العثور على جدول التمديدات');
+        return;
+    }
     
     if (noExtensionsRow) {
         noExtensionsRow.style.display = 'none';
@@ -5478,30 +5589,59 @@ function addNewExtension() {
 function removeExtensionRow(rowId) {
     if (confirm('هل أنت متأكد من حذف هذا التمديد؟')) {
         const row = document.getElementById(`extension-row-${rowId}`);
-        if (row) {
-            row.remove();
-            
-            // إذا لم تعد هناك صفوف، أظهر رسالة "لا توجد تمديدات"
-            const tbody = document.getElementById('extensions-table-body');
-            if (tbody.children.length === 1) { // فقط صف "لا توجد تمديدات"
-                document.getElementById('no-extensions-row').style.display = '';
-            }
+        if (!row) {
+            console.error(`Row with ID extension-row-${rowId} not found`);
+            toastr.error('خطأ: لم يتم العثور على الصف المطلوب حذفه');
+            return;
         }
+        
+        row.remove();
+        
+        // إذا لم تعد هناك صفوف، أظهر رسالة "لا توجد تمديدات"
+        const tbody = document.getElementById('extensions-table-body');
+        const noExtensionsRow = document.getElementById('no-extensions-row');
+        
+        if (tbody && tbody.children.length === 1 && noExtensionsRow) {
+            noExtensionsRow.style.display = '';
+        }
+        
+        toastr.success('تم حذف التمديد بنجاح');
     }
 }
 
 // دالة حساب أيام التمديد
 function calculateExtensionDays(extensionId) {
-    const startDate = document.querySelector(`input[name="extensions[${extensionId}][extension_start_date]"]`).value;
-    const endDate = document.querySelector(`input[name="extensions[${extensionId}][extension_end_date]"]`).value;
-    
-    if (startDate && endDate) {
-        const start = new Date(startDate);
-        const end = new Date(endDate);
-        const diffTime = Math.abs(end - start);
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    try {
+        const startDateInput = document.querySelector(`input[name="extensions[${extensionId}][extension_start_date]"]`);
+        const endDateInput = document.querySelector(`input[name="extensions[${extensionId}][extension_end_date]"]`);
+        const daysInput = document.getElementById(`extension-days-${extensionId}`);
         
-        document.getElementById(`extension-days-${extensionId}`).value = diffDays;
+        if (!startDateInput || !endDateInput || !daysInput) {
+            console.warn(`Extension inputs not found for ID: ${extensionId}`);
+            return;
+        }
+        
+        const startDate = startDateInput.value;
+        const endDate = endDateInput.value;
+        
+        if (startDate && endDate) {
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            
+            if (end >= start) {
+                const diffTime = Math.abs(end - start);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                daysInput.value = diffDays;
+            } else {
+                daysInput.value = '';
+                toastr.warning('تاريخ نهاية التمديد يجب أن يكون بعد تاريخ البداية');
+            }
+        } else {
+            daysInput.value = '';
+        }
+    } catch (error) {
+        console.error('Error calculating extension days:', error);
+        toastr.error('خطأ في حساب أيام التمديد');
     }
 }
 
@@ -5517,8 +5657,20 @@ function saveExtension(extensionId) {
     const formData = new FormData();
     const row = document.getElementById(`extension-row-${extensionId}`);
     
+    // التحقق من وجود الصف
+    if (!row) {
+        console.error(`Row with ID extension-row-${extensionId} not found`);
+        toastr.error('خطأ: لم يتم العثور على بيانات التمديد');
+        return;
+    }
+    
     // جمع بيانات التمديد من الصف
     const inputs = row.querySelectorAll('input, select');
+    if (inputs.length === 0) {
+        toastr.warning('لا توجد بيانات للحفظ');
+        return;
+    }
+    
     inputs.forEach(input => {
         if (input.name && input.value) {
             if (input.type === 'file') {
@@ -5540,14 +5692,22 @@ function saveExtension(extensionId) {
         data: formData,
         processData: false,
         contentType: false,
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        },
         success: function(response) {
             toastr.success('تم حفظ التمديد بنجاح');
         },
         error: function(xhr) {
+            console.error('Error saving extension:', xhr);
             const errors = xhr.responseJSON?.errors || {};
-            Object.values(errors).forEach(error => {
-                toastr.error(error[0]);
-            });
+            if (Object.keys(errors).length > 0) {
+                Object.values(errors).forEach(error => {
+                    toastr.error(error[0]);
+                });
+            } else {
+                toastr.error('حدث خطأ في حفظ التمديد');
+            }
         }
     });
 }

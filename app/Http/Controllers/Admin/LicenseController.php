@@ -462,6 +462,7 @@ class LicenseController extends Controller
         try {
             $sectionType = $request->input('section_type');
             $workOrderId = $request->input('work_order_id');
+            $licenseId = $request->input('license_id'); // معرف الرخصة المحدد
             $forceNew = $request->input('force_new', false); // إجبار إنشاء رخصة جديدة
             
             // التحقق من صحة المعاملات الأساسية
@@ -472,7 +473,7 @@ class LicenseController extends Controller
                 ], 400);
             }
             
-            // إنشاء رخصة جديدة دائماً أو البحث عن واحدة موجودة
+            // تحديد الرخصة المراد العمل عليها
             if ($forceNew || $sectionType === 'complete_license') {
                 // إنشاء رخصة جديدة دائماً - لا تحديث على رخصة موجودة
                 $license = new License();
@@ -482,6 +483,32 @@ class LicenseController extends Controller
                 \Log::info('Creating NEW license (force_new = true)', [
                     'work_order_id' => $workOrderId,
                     'force_new' => $forceNew
+                ]);
+            } elseif ($licenseId) {
+                // البحث عن الرخصة المحددة بالـ ID
+                $license = License::find($licenseId);
+                
+                if (!$license) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'الرخصة المحددة غير موجودة'
+                    ], 404);
+                }
+                
+                // التحقق من أن الرخصة تنتمي لنفس أمر العمل
+                if ($license->work_order_id != $workOrderId) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'الرخصة المحددة لا تنتمي لأمر العمل المحدد'
+                    ], 400);
+                }
+                
+                $isNewLicense = false;
+                
+                \Log::info('Updating SPECIFIC license', [
+                    'license_id' => $license->id,
+                    'work_order_id' => $workOrderId,
+                    'section_type' => $sectionType
                 ]);
             } else {
                 // البحث عن آخر رخصة تم إنشاؤها أو إنشاء واحدة جديدة
@@ -605,10 +632,32 @@ class LicenseController extends Controller
     private function saveCoordinationSection(Request $request, License $license)
     {
         try {
+            \Log::info('=== saveCoordinationSection started ===', [
+                'license_id' => $license->id ?? 'new',
+                'coordination_number' => $request->input('coordination_certificate_number'),
+                'force_new' => $request->input('force_new', false)
+            ]);
+            
+            // تعيين رقم الرخصة التلقائي إذا لم يكن موجوداً
+            if (!$license->license_number) {
+                $workOrderId = $license->work_order_id ?: $request->input('work_order_id');
+                $licenseCount = License::where('work_order_id', $workOrderId)->count() + 1;
+                $license->license_number = 'LIC-' . $workOrderId . '-' . str_pad($licenseCount, 3, '0', STR_PAD_LEFT);
+            }
+            
+            // حفظ بيانات شهادة التنسيق
             $license->coordination_certificate_number = $request->input('coordination_certificate_number');
             $license->coordination_certificate_notes = $request->input('coordination_certificate_notes');
             $license->has_restriction = $request->input('has_restriction', 0) == '1';
             $license->restriction_authority = $request->input('restriction_authority');
+            $license->restriction_reason = $request->input('restriction_reason');
+            $license->restriction_notes = $request->input('restriction_notes');
+            
+            \Log::info('Coordination data set successfully', [
+                'license_number' => $license->license_number,
+                'coordination_certificate_number' => $license->coordination_certificate_number,
+                'has_restriction' => $license->has_restriction
+            ]);
             
             // معالجة ملفات شهادة التنسيق
             if ($request->hasFile('coordination_certificate_path')) {
@@ -616,6 +665,8 @@ class LicenseController extends Controller
                 $filename = time() . '_coordination_cert_' . $file->getClientOriginalName();
                 $path = $file->storeAs('licenses/coordination', $filename, 'public');
                 $license->coordination_certificate_path = $path;
+                
+                \Log::info('Coordination certificate file uploaded', ['path' => $path]);
             }
             
             // معالجة ملفات الخطابات والتعهدات
@@ -630,11 +681,19 @@ class LicenseController extends Controller
                 }
                 
                 $license->letters_commitments_file_path = json_encode($filePaths);
+                
+                \Log::info('Letters and commitments files uploaded', ['count' => count($filePaths)]);
+            }
+            
+            // تعيين تاريخ إنشاء الرخصة إذا لم يكن موجوداً
+            if (!$license->license_date) {
+                $license->license_date = now()->format('Y-m-d');
             }
             
             \Log::info('Coordination section saved successfully', [
                 'license_id' => $license->id ?? 'new',
-                'work_order_id' => $license->work_order_id
+                'work_order_id' => $license->work_order_id,
+                'license_date' => $license->license_date
             ]);
             
         } catch (\Exception $e) {
