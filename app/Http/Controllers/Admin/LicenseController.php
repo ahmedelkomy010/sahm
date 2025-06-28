@@ -543,16 +543,16 @@ class LicenseController extends Controller
     public function saveSection(Request $request)
     {
         try {
-            $sectionType = $request->input('section_type');
+            $sectionType = $request->input('section_type') ?: $request->input('section');
             $workOrderId = $request->input('work_order_id');
             $licenseId = $request->input('license_id'); // معرف الرخصة المحدد
             $forceNew = $request->input('force_new', false); // إجبار إنشاء رخصة جديدة
             
             // التحقق من صحة المعاملات الأساسية
-            if (!$sectionType || !$workOrderId) {
+            if (!$sectionType || (!$workOrderId && !$licenseId)) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'نوع القسم أو معرف أمر العمل مفقود'
+                    'message' => 'نوع القسم أو معرف أمر العمل/الرخصة مفقود'
                 ], 400);
             }
             
@@ -578,8 +578,13 @@ class LicenseController extends Controller
                     ], 404);
                 }
                 
+                // استخدام work_order_id من الرخصة إذا لم يكن موجوداً في الطلب
+                if (!$workOrderId) {
+                    $workOrderId = $license->work_order_id;
+                }
+                
                 // التحقق من أن الرخصة تنتمي لنفس أمر العمل
-                if ($license->work_order_id != $workOrderId) {
+                if ($workOrderId && $license->work_order_id != $workOrderId) {
                     return response()->json([
                         'success' => false,
                         'message' => 'الرخصة المحددة لا تنتمي لأمر العمل المحدد'
@@ -666,6 +671,26 @@ class LicenseController extends Controller
                     $this->saveEvacuationsSection($request, $license);
                     $this->saveViolationsSection($request, $license);
                     $this->saveNotesSection($request, $license);
+                    break;
+                case 'lab_table1':
+                    // حفظ جدول الفسح ونوع الشارع للمختبر
+                    \Log::info('Processing lab_table1 section');
+                    $this->saveLabTable1Data($request, $license);
+                    break;
+                case 'lab_table2':
+                    // حفظ جدول التفاصيل الفنية للمختبر
+                    \Log::info('Processing lab_table2 section');
+                    $this->saveLabTable2Data($request, $license);
+                    break;
+                case 'evac_table1':
+                    // حفظ جدول فسح الإخلاءات
+                    \Log::info('Processing evac_table1 section');
+                    $this->saveEvacTable1Data($request, $license);
+                    break;
+                case 'evac_table2':
+                    // حفظ جدول التفاصيل الفنية للإخلاءات
+                    \Log::info('Processing evac_table2 section');
+                    $this->saveEvacTable2Data($request, $license);
                     break;
                 default:
                     \Log::error('Unknown section type: ' . $sectionType);
@@ -1273,9 +1298,12 @@ class LicenseController extends Controller
     public function updateEvacStreets(Request $request, WorkOrder $workOrder)
     {
         try {
-            $license = $workOrder->license;
+            // البحث عن آخر رخصة للعمل أو إنشاء واحدة جديدة
+            $license = $workOrder->licenses()->latest()->first();
             if (!$license) {
-                return response()->json(['message' => 'لم يتم العثور على الرخصة'], 404);
+                $license = new License();
+                $license->work_order_id = $workOrder->id;
+                $license->save();
             }
 
             $evacStreetsData = $request->input('evac_streets');
@@ -1290,6 +1318,179 @@ class LicenseController extends Controller
         } catch (\Exception $e) {
             \Log::error('Error updating evacuation streets: ' . $e->getMessage());
             return response()->json(['message' => 'حدث خطأ أثناء تحديث بيانات الفسح'], 500);
+        }
+    }
+
+    /**
+     * حفظ بيانات الإخلاءات التفصيلية
+     */
+    public function saveEvacuationData(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'work_order_id' => 'required|exists:work_orders,id',
+                'license_id' => 'required|exists:licenses,id',
+                'evacuation_data' => 'required|array',
+                'evacuation_data.*.is_evacuated' => 'required|in:0,1',
+                'evacuation_data.*.evacuation_date' => 'required|date',
+                'evacuation_data.*.evacuation_amount' => 'required|numeric|min:0',
+                'evacuation_data.*.evacuation_datetime' => 'required|date',
+                'evacuation_data.*.payment_number' => 'required|string|max:255',
+                'evacuation_data.*.notes' => 'nullable|string'
+            ]);
+
+            $license = License::findOrFail($validated['license_id']);
+            
+            // حفظ بيانات الإخلاءات في حقل JSON
+            $license->evacuation_data = json_encode($validated['evacuation_data'], JSON_UNESCAPED_UNICODE);
+            $license->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'تم حفظ بيانات الإخلاءات بنجاح',
+                'license_name' => $license->license_number
+            ]);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'بيانات غير صحيحة',
+                'errors' => $e->errors()
+            ], 422);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error saving evacuation data: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'request' => $request->all()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء حفظ بيانات الإخلاءات: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * استرجاع بيانات الإخلاءات التفصيلية
+     */
+    public function getEvacuationData($licenseId)
+    {
+        try {
+            $license = License::findOrFail($licenseId);
+            
+            $evacuationData = [];
+            if ($license->evacuation_data) {
+                $evacuationData = json_decode($license->evacuation_data, true);
+                
+                // التأكد من أن البيانات في تنسيق مصفوفة
+                if (!is_array($evacuationData)) {
+                    $evacuationData = [];
+                }
+            }
+
+            return response()->json([
+                'success' => true,
+                'evacuation_data' => $evacuationData,
+                'license_number' => $license->license_number
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error getting evacuation data: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ في استرجاع بيانات الإخلاءات',
+                'evacuation_data' => []
+            ], 500);
+        }
+    }
+
+    /**
+     * حفظ بيانات جدول الفسح ونوع الشارع للمختبر
+     */
+    private function saveLabTable1Data(Request $request, License $license)
+    {
+        try {
+            $tableData = $request->input('data');
+            
+            if (is_array($tableData) && count($tableData) > 0) {
+                $license->lab_table1_data = json_encode($tableData, JSON_UNESCAPED_UNICODE);
+                \Log::info('Lab table1 data saved', ['license_id' => $license->id, 'data_count' => count($tableData)]);
+            } else {
+                $license->lab_table1_data = null;
+                \Log::info('Lab table1 data cleared', ['license_id' => $license->id]);
+            }
+            
+        } catch (\Exception $e) {
+            \Log::error('Error saving lab table1 data: ' . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    /**
+     * حفظ بيانات جدول التفاصيل الفنية للمختبر
+     */
+    private function saveLabTable2Data(Request $request, License $license)
+    {
+        try {
+            $tableData = $request->input('data');
+            
+            if (is_array($tableData) && count($tableData) > 0) {
+                $license->lab_table2_data = json_encode($tableData, JSON_UNESCAPED_UNICODE);
+                \Log::info('Lab table2 data saved', ['license_id' => $license->id, 'data_count' => count($tableData)]);
+            } else {
+                $license->lab_table2_data = null;
+                \Log::info('Lab table2 data cleared', ['license_id' => $license->id]);
+            }
+            
+        } catch (\Exception $e) {
+            \Log::error('Error saving lab table2 data: ' . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    /**
+     * حفظ بيانات جدول فسح الإخلاءات
+     */
+    private function saveEvacTable1Data(Request $request, License $license)
+    {
+        try {
+            $tableData = $request->input('data');
+            
+            if (is_array($tableData) && count($tableData) > 0) {
+                $license->evac_table1_data = json_encode($tableData, JSON_UNESCAPED_UNICODE);
+                \Log::info('Evac table1 data saved', ['license_id' => $license->id, 'data_count' => count($tableData)]);
+            } else {
+                $license->evac_table1_data = null;
+                \Log::info('Evac table1 data cleared', ['license_id' => $license->id]);
+            }
+            
+        } catch (\Exception $e) {
+            \Log::error('Error saving evac table1 data: ' . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    /**
+     * حفظ بيانات جدول التفاصيل الفنية للإخلاءات
+     */
+    private function saveEvacTable2Data(Request $request, License $license)
+    {
+        try {
+            $tableData = $request->input('data');
+            
+            if (is_array($tableData) && count($tableData) > 0) {
+                $license->evac_table2_data = json_encode($tableData, JSON_UNESCAPED_UNICODE);
+                \Log::info('Evac table2 data saved', ['license_id' => $license->id, 'data_count' => count($tableData)]);
+            } else {
+                $license->evac_table2_data = null;
+                \Log::info('Evac table2 data cleared', ['license_id' => $license->id]);
+            }
+            
+        } catch (\Exception $e) {
+            \Log::error('Error saving evac table2 data: ' . $e->getMessage());
+            throw $e;
         }
     }
 } 

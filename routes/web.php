@@ -185,7 +185,11 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         Route::post('licenses/{license}/remove-evacuation-file', [\App\Http\Controllers\Admin\LicenseController::class, 'removeEvacuationFile'])->name('licenses.remove-evacuation-file');
 
     // تحديث بيانات الفسح للإخلاء
-    Route::post('licenses/update-evac-streets/{workOrder}', [\App\Http\Controllers\Admin\LicenseController::class, 'updateEvacStreets'])->name('admin.licenses.update-evac-streets');
+    Route::post('licenses/update-evac-streets/{workOrder}', [\App\Http\Controllers\Admin\LicenseController::class, 'updateEvacStreets'])->name('licenses.update-evac-streets');
+    
+    // بيانات الإخلاءات التفصيلية
+    Route::post('licenses/save-evacuation-data', [\App\Http\Controllers\Admin\LicenseController::class, 'saveEvacuationData'])->name('licenses.save-evacuation-data');
+    Route::get('licenses/get-evacuation-data/{license}', [\App\Http\Controllers\Admin\LicenseController::class, 'getEvacuationData'])->name('licenses.get-evacuation-data');
 
     // مسارات التمديدات
     Route::get('licenses/extensions/by-work-order/{workOrder}', [\App\Http\Controllers\Admin\LicenseController::class, 'getExtensionsByWorkOrder'])->name('licenses.extensions.by-work-order');

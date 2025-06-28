@@ -55,6 +55,7 @@ class License extends Model
         'lab_table2_data',
         'evac_table1_data',
         'evac_table2_data',
+        'evacuation_data',
         'soil_test_images_path',
         'test_results_file_path',
         'final_inspection_file_path',
@@ -211,6 +212,7 @@ class License extends Model
         'has_stability_deficiency_test' => 'boolean',
         'has_stability_degree_test' => 'boolean',
         'has_backup_test' => 'boolean',
+        'evacuation_data' => 'array',
     ];
 
     protected $dates = [

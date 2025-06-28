@@ -1258,9 +1258,23 @@ function selectEvacuationLicense() {
         const selectedText = selector.options[selector.selectedIndex].text;
         displayElement.textContent = selectedText;
         infoDiv.style.display = 'block';
+        
+        // تحميل بيانات الإخلاءات للرخصة المختارة
+        loadEvacuationDataForLicense(selector.value);
     } else {
         licenseIdField.value = '';
         infoDiv.style.display = 'none';
+        
+        // مسح الجدول عند عدم اختيار رخصة
+        const tbody = document.getElementById('evacuationDataTable').getElementsByTagName('tbody')[0];
+        tbody.innerHTML = `
+            <tr id="no-evacuation-data-row">
+                <td colspan="9" class="text-center text-muted py-4">
+                    <i class="fas fa-truck fa-2x mb-2"></i>
+                    <br>لا توجد بيانات إخلاء مسجلة
+                </td>
+            </tr>
+        `;
     }
 }
 
@@ -5340,50 +5354,57 @@ function deleteExtension(extensionId) {
                         <input type="hidden" name="work_order_id" value="{{ $workOrder->id }}">
                         <input type="hidden" name="license_id" id="evacuation-license-id" value="">
                         
-                        <!-- معلومات الإخلاء الأساسية -->
-                        <div class="row g-3 mb-4">
-                            <div class="col-md-3">
-                                <label class="form-label fw-bold">تم الإخلاء؟</label>
-                                <select class="form-select" name="is_evacuated">
-                                    <option value="0">لا</option>
-                                    <option value="1">نعم</option>
-                                </select>
-                            </div>
-                            <div class="col-md-3">
-                                <label class="form-label fw-bold">رقم رخصة الإخلاء</label>
-                                <input type="text" class="form-control" name="evac_license_number" placeholder="رقم رخصة الإخلاء">
-                            </div>
-                            <div class="col-md-3">
-                                <label class="form-label fw-bold">مبلغ الإخلاء</label>
-                                <div class="input-group">
-                                    <input type="number" step="0.01" class="form-control" name="evac_amount" placeholder="0.00">
-                                    <span class="input-group-text">ريال</span>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <label class="form-label fw-bold">مرفقات الإخلاءات</label>
-                                <input type="file" class="form-control" name="evacuations_files[]" multiple accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                        
+
+                        <!-- جدول بيانات الإخلاءات التفصيلي -->
+                        <div class="row mb-4 mt-4">
+                            <div class="col-12">
+                                <h5 class="text-success mb-3">
+                                    <i class="fas fa-clipboard-list me-2"></i>
+                                    جدول بيانات الإخلاءات التفصيلي
+                                </h5>
                             </div>
                         </div>
 
-                        <!-- تواريخ الإخلاء -->
-                        <div class="row g-3 mb-4">
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold">تاريخ ووقت الإخلاء</label>
-                                <input type="datetime-local" class="form-control" name="evacuation_start_date">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold">رقم سداد الإخلاء</label>
-                                <input type="text" class="form-control" name="evac_payment_number" placeholder="رقم سداد الإخلاء">
-                            </div>
-                            <div class="col-12">
-                                <label class="form-label fw-bold">ملاحظات الإخلاء</label>
-                                <textarea class="form-control" name="evac_notes" rows="3" placeholder="أدخل الملاحظات هنا..."></textarea>
-                            </div>
+                        <div class="d-flex justify-content-between mb-3">
+                            <button type="button" class="btn btn-success btn-sm" onclick="addNewEvacuationRow()">
+                                <i class="fas fa-plus me-1"></i>
+                                إضافة بيانات إخلاء جديدة
+                            </button>
+                            <button type="button" class="btn btn-primary btn-sm" onclick="saveAllEvacuationData()">
+                                <i class="fas fa-save me-1"></i>
+                                حفظ جميع بيانات الإخلاء
+                            </button>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-striped" id="evacuationDataTable">
+                                <thead class="table-success">
+                                    <tr>
+                                        <th style="min-width: 60px;">#</th>
+                                        <th style="min-width: 120px;">تم الإخلاء؟</th>
+                                        <th style="min-width: 120px;">تاريخ الإخلاء</th>
+                                        <th style="min-width: 120px;">مبلغ الإخلاء (ريال)</th>
+                                        <th style="min-width: 150px;">تاريخ ووقت الإخلاء</th>
+                                        <th style="min-width: 130px;">رقم سداد الإخلاء</th>
+                                        <th style="min-width: 200px;">ملاحظات</th>
+                                        <th style="min-width: 120px;">المرفقات</th>
+                                        <th style="min-width: 100px;">الإجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr id="no-evacuation-data-row">
+                                        <td colspan="9" class="text-center text-muted py-4">
+                                            <i class="fas fa-truck fa-2x mb-2"></i>
+                                            <br>لا توجد بيانات إخلاء مسجلة
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
 
                         <!-- جدول الفسح للإخلاء -->
-                        <div class="row mb-4 mt-4">
+                        <div class="row mb-4 mt-5">
                             <div class="col-12">
                                 <h5 class="text-primary mb-3">
                                     <i class="fas fa-road me-2"></i>
@@ -5482,12 +5503,7 @@ function deleteExtension(extensionId) {
                         </div>
 
                         <div class="row mt-4">
-                            <div class="col-12 text-center">
-                                <button type="button" class="btn btn-primary-custom btn-lg" onclick="saveEvacuationSection()">
-                                    <i class="fas fa-save me-2"></i>
-                                    حفظ بيانات الإخلاء
-                                </button>
-                            </div>
+                           
                         </div>
                     </form>
                 </div>
@@ -6551,6 +6567,259 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // ========== دوال التمديدات تم نقلها للأعلى ==========
+
+// ========== دوال جدول بيانات الإخلاءات التفصيلي ==========
+
+function addNewEvacuationRow() {
+    const tbody = document.getElementById('evacuationDataTable').getElementsByTagName('tbody')[0];
+    const noRowsMessage = document.getElementById('no-evacuation-data-row');
+    
+    if (noRowsMessage) {
+        noRowsMessage.remove();
+    }
+
+    const rowCount = tbody.rows.length + 1;
+    const newRow = document.createElement('tr');
+    
+    newRow.innerHTML = `
+        <td class="text-center fw-bold">${rowCount}</td>
+        <td>
+            <select class="form-select form-select-sm" name="evacuation_data[${rowCount}][is_evacuated]" required>
+                <option value="">-- اختر --</option>
+                <option value="1">نعم</option>
+                <option value="0">لا</option>
+            </select>
+        </td>
+        <td>
+            <input type="date" class="form-control form-control-sm" name="evacuation_data[${rowCount}][evacuation_date]" required>
+        </td>
+        <td>
+            <input type="number" step="0.01" class="form-control form-control-sm" name="evacuation_data[${rowCount}][evacuation_amount]" placeholder="0.00" required>
+        </td>
+        <td>
+            <input type="datetime-local" class="form-control form-control-sm" name="evacuation_data[${rowCount}][evacuation_datetime]" required>
+        </td>
+        <td>
+            <input type="text" class="form-control form-control-sm" name="evacuation_data[${rowCount}][payment_number]" placeholder="رقم سداد الإخلاء" required>
+        </td>
+        <td>
+            <textarea class="form-control form-control-sm" name="evacuation_data[${rowCount}][notes]" rows="2" placeholder="ملاحظات الإخلاء"></textarea>
+        </td>
+        <td>
+            <input type="file" class="form-control form-control-sm" name="evacuation_data[${rowCount}][attachments][]" multiple accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+        </td>
+        <td class="text-center">
+            <button type="button" class="btn btn-danger btn-sm" onclick="deleteEvacuationRow(this)" title="حذف الصف">
+                <i class="fas fa-trash"></i>
+            </button>
+        </td>
+    `;
+    
+    tbody.appendChild(newRow);
+    
+    // تطبيق تأثير بصري للصف الجديد
+    newRow.style.opacity = '0';
+    newRow.style.transform = 'translateY(20px)';
+    setTimeout(() => {
+        newRow.style.transition = 'all 0.5s ease';
+        newRow.style.opacity = '1';
+        newRow.style.transform = 'translateY(0)';
+    }, 50);
+    
+    // تحديث أرقام الصفوف
+    updateEvacuationRowNumbers();
+}
+
+function deleteEvacuationRow(button) {
+    const row = button.closest('tr');
+    
+    // تأثير بصري للحذف
+    row.style.transition = 'all 0.3s ease';
+    row.style.opacity = '0';
+    row.style.transform = 'translateX(100px)';
+    
+    setTimeout(() => {
+        row.remove();
+        updateEvacuationRowNumbers();
+        
+        const tbody = document.getElementById('evacuationDataTable').getElementsByTagName('tbody')[0];
+        if (tbody.rows.length === 0) {
+            tbody.innerHTML = `
+                <tr id="no-evacuation-data-row">
+                    <td colspan="9" class="text-center text-muted py-4">
+                        <i class="fas fa-truck fa-2x mb-2"></i>
+                        <br>لا توجد بيانات إخلاء مسجلة
+                    </td>
+                </tr>
+            `;
+        }
+    }, 300);
+}
+
+function updateEvacuationRowNumbers() {
+    const tbody = document.getElementById('evacuationDataTable').getElementsByTagName('tbody')[0];
+    const rows = tbody.querySelectorAll('tr:not(#no-evacuation-data-row)');
+    
+    rows.forEach((row, index) => {
+        const firstCell = row.cells[0];
+        firstCell.textContent = index + 1;
+    });
+}
+
+function saveAllEvacuationData() {
+    // التحقق من اختيار الرخصة
+    const licenseId = document.getElementById('evacuation-license-id').value;
+    if (!licenseId) {
+        toastr.error('يجب اختيار الرخصة أولاً');
+        return;
+    }
+
+    // تجميع بيانات الجدول
+    const rows = document.getElementById('evacuationDataTable').getElementsByTagName('tbody')[0].rows;
+    const data = [];
+    let hasValidData = false;
+    
+    for (let i = 0; i < rows.length; i++) {
+        if (rows[i].id !== 'no-evacuation-data-row') {
+            const row = rows[i];
+            const rowData = {
+                is_evacuated: row.querySelector('[name*="[is_evacuated]"]').value,
+                evacuation_date: row.querySelector('[name*="[evacuation_date]"]').value,
+                evacuation_amount: row.querySelector('[name*="[evacuation_amount]"]').value,
+                evacuation_datetime: row.querySelector('[name*="[evacuation_datetime]"]').value,
+                payment_number: row.querySelector('[name*="[payment_number]"]').value,
+                notes: row.querySelector('[name*="[notes]"]').value
+            };
+            
+            // التحقق من وجود بيانات مطلوبة
+            if (rowData.is_evacuated && rowData.evacuation_date && rowData.evacuation_amount && rowData.evacuation_datetime && rowData.payment_number) {
+                data.push(rowData);
+                hasValidData = true;
+            }
+        }
+    }
+
+    if (!hasValidData) {
+        toastr.warning('لا توجد بيانات صالحة للحفظ. تأكد من ملء الحقول المطلوبة.');
+        return;
+    }
+
+    // عرض مؤشر التحميل
+    const saveButton = document.querySelector('button[onclick="saveAllEvacuationData()"]');
+    const originalText = saveButton.innerHTML;
+    saveButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>جاري الحفظ...';
+    saveButton.disabled = true;
+
+    // إرسال البيانات إلى الخادم
+    fetch(`/admin/licenses/save-evacuation-data`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify({
+            work_order_id: {{ $workOrder->id }},
+            license_id: licenseId,
+            evacuation_data: data
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            toastr.success(`تم حفظ بيانات الإخلاءات بنجاح للرخصة: ${data.license_name || licenseId}`);
+        } else {
+            toastr.error(data.message || 'حدث خطأ أثناء حفظ البيانات');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        toastr.error('حدث خطأ أثناء حفظ بيانات الإخلاءات');
+    })
+    .finally(() => {
+        // إعادة تعيين زر الحفظ
+        saveButton.innerHTML = originalText;
+        saveButton.disabled = false;
+    });
+}
+
+// دالة لتحميل بيانات الإخلاءات الموجودة للرخصة المختارة
+function loadEvacuationDataForLicense(licenseId) {
+    if (!licenseId) return;
+    
+    fetch(`/admin/licenses/get-evacuation-data/${licenseId}`)
+        .then(response => response.json())
+        .then(data => {
+            const tbody = document.getElementById('evacuationDataTable').getElementsByTagName('tbody')[0];
+            tbody.innerHTML = '';
+            
+            if (data.evacuation_data && data.evacuation_data.length > 0) {
+                data.evacuation_data.forEach((item, index) => {
+                    addEvacuationRowWithData(item, index + 1);
+                });
+            } else {
+                tbody.innerHTML = `
+                    <tr id="no-evacuation-data-row">
+                        <td colspan="9" class="text-center text-muted py-4">
+                            <i class="fas fa-truck fa-2x mb-2"></i>
+                            <br>لا توجد بيانات إخلاء مسجلة لهذه الرخصة
+                        </td>
+                    </tr>
+                `;
+            }
+        })
+        .catch(error => {
+            console.error('Error loading evacuation data:', error);
+        });
+}
+
+function addEvacuationRowWithData(data, rowNumber) {
+    const tbody = document.getElementById('evacuationDataTable').getElementsByTagName('tbody')[0];
+    const noRowsMessage = document.getElementById('no-evacuation-data-row');
+    
+    if (noRowsMessage) {
+        noRowsMessage.remove();
+    }
+
+    const newRow = document.createElement('tr');
+    
+    newRow.innerHTML = `
+        <td class="text-center fw-bold">${rowNumber}</td>
+        <td>
+            <select class="form-select form-select-sm" name="evacuation_data[${rowNumber}][is_evacuated]" required>
+                <option value="">-- اختر --</option>
+                <option value="1" ${data.is_evacuated == '1' ? 'selected' : ''}>نعم</option>
+                <option value="0" ${data.is_evacuated == '0' ? 'selected' : ''}>لا</option>
+            </select>
+        </td>
+        <td>
+            <input type="date" class="form-control form-control-sm" name="evacuation_data[${rowNumber}][evacuation_date]" value="${data.evacuation_date || ''}" required>
+        </td>
+        <td>
+            <input type="number" step="0.01" class="form-control form-control-sm" name="evacuation_data[${rowNumber}][evacuation_amount]" value="${data.evacuation_amount || ''}" placeholder="0.00" required>
+        </td>
+        <td>
+            <input type="datetime-local" class="form-control form-control-sm" name="evacuation_data[${rowNumber}][evacuation_datetime]" value="${data.evacuation_datetime || ''}" required>
+        </td>
+        <td>
+            <input type="text" class="form-control form-control-sm" name="evacuation_data[${rowNumber}][payment_number]" value="${data.payment_number || ''}" placeholder="رقم سداد الإخلاء" required>
+        </td>
+        <td>
+            <textarea class="form-control form-control-sm" name="evacuation_data[${rowNumber}][notes]" rows="2" placeholder="ملاحظات الإخلاء">${data.notes || ''}</textarea>
+        </td>
+        <td>
+            <input type="file" class="form-control form-control-sm" name="evacuation_data[${rowNumber}][attachments][]" multiple accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+            ${data.attachments ? `<small class="text-muted">ملفات موجودة: ${data.attachments}</small>` : ''}
+        </td>
+        <td class="text-center">
+            <button type="button" class="btn btn-danger btn-sm" onclick="deleteEvacuationRow(this)" title="حذف الصف">
+                <i class="fas fa-trash"></i>
+            </button>
+        </td>
+    `;
+    
+    tbody.appendChild(newRow);
+}
+
 </script>
 
 @endsection 
