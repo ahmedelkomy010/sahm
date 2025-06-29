@@ -6824,6 +6824,13 @@ function removeTestRow(testName, rowNumber) {
 // دالة لتحديث ظهور أزرار الحذف
 function updateDeleteButtons(testName) {
     const container = document.getElementById(`${testName}_rows_container`);
+    
+    // التحقق من وجود العنصر قبل المتابعة
+    if (!container) {
+        console.warn(`Container not found for test: ${testName}`);
+        return;
+    }
+    
     const rows = container.querySelectorAll('.test-row');
     
     rows.forEach((row, index) => {
@@ -6855,6 +6862,13 @@ function calculateTestRow(testName, rowNumber) {
 // دالة لتنظيف جميع صفوف اختبار معين
 function clearTestRows(testName) {
     const container = document.getElementById(`${testName}_rows_container`);
+    
+    // التحقق من وجود العنصر قبل المتابعة
+    if (!container) {
+        console.warn(`Container not found for test: ${testName}`);
+        return;
+    }
+    
     const rows = container.querySelectorAll('.test-row');
     
     rows.forEach(row => {
@@ -6881,6 +6895,13 @@ function clearAllTestRows(testName) {
         
         // إضافة تأثير بصري
         const container = document.getElementById(`${testName}_rows_container`);
+        
+        // التحقق من وجود الحاوية
+        if (!container) {
+            console.warn(`Container not found for test: ${testName}`);
+            return;
+        }
+        
         const rows = container.querySelectorAll('.test-row');
         
         rows.forEach((row, index) => {
@@ -6932,6 +6953,13 @@ function updateTestTotals() {
             
             // البحث عن جميع صفوف هذا الاختبار
             const container = document.getElementById(`${testName}_rows_container`);
+            
+            // التحقق من وجود الحاوية قبل المتابعة
+            if (!container) {
+                console.warn(`Container not found for test: ${testName}`);
+                return;
+            }
+            
             const rows = container.querySelectorAll('.test-row');
             
             rows.forEach(row => {
@@ -6964,15 +6992,24 @@ function updateTestTotals() {
     });
     
     // تحديث العرض
-    document.getElementById('total_tests_sum').textContent = totalSum.toFixed(2);
-    document.getElementById('passed_tests_sum').textContent = passedSum.toFixed(2);
-    document.getElementById('failed_tests_sum').textContent = failedSum.toFixed(2);
-    document.getElementById('active_tests_count').value = activeTestsCount;
+    const totalTestsSumEl = document.getElementById('total_tests_sum');
+    const passedTestsSumEl = document.getElementById('passed_tests_sum');
+    const failedTestsSumEl = document.getElementById('failed_tests_sum');
+    const activeTestsCountEl = document.getElementById('active_tests_count');
+    
+    if (totalTestsSumEl) totalTestsSumEl.textContent = totalSum.toFixed(2);
+    if (passedTestsSumEl) passedTestsSumEl.textContent = passedSum.toFixed(2);
+    if (failedTestsSumEl) failedTestsSumEl.textContent = failedSum.toFixed(2);
+    if (activeTestsCountEl) activeTestsCountEl.value = activeTestsCount;
     
     // تحديث الحقول المخفية
-    document.getElementById('total_tests_value').value = totalSum.toFixed(2);
-            document.getElementById('successful_tests_value').value = passedSum.toFixed(2);
-        document.getElementById('failed_tests_value').value = failedSum.toFixed(2);
+    const totalTestsValueEl = document.getElementById('total_tests_value');
+    const successfulTestsValueEl = document.getElementById('successful_tests_value');
+    const failedTestsValueEl = document.getElementById('failed_tests_value');
+    
+    if (totalTestsValueEl) totalTestsValueEl.value = totalSum.toFixed(2);
+    if (successfulTestsValueEl) successfulTestsValueEl.value = passedSum.toFixed(2);
+    if (failedTestsValueEl) failedTestsValueEl.value = failedSum.toFixed(2);
         
         // تسجيل القيم للتحقق
         console.log('Test Totals Updated:', {
@@ -6986,19 +7023,25 @@ function updateTestTotals() {
     if (totalRowsCount > 0) {
         successPercentage = (passedRowsCount / totalRowsCount) * 100;
     }
-    document.getElementById('success_percentage').textContent = successPercentage.toFixed(1) + '%';
+    
+    const successPercentageEl = document.getElementById('success_percentage');
+    if (successPercentageEl) {
+        successPercentageEl.textContent = successPercentage.toFixed(1) + '%';
+    }
     
     // تحديث الحالة العامة
     updateOverallLabStatus(activeTestsCount, passedRowsCount, failedRowsCount, totalRowsCount);
     
     // تحديث أسباب الرسوب
     const failureReasonsTextarea = document.getElementById('test_failure_reasons');
-    if (failureReasons.length > 0) {
-        failureReasonsTextarea.value = 'أسباب الرسوب:\n' + failureReasons.join('\n');
-    } else if (totalRowsCount > 0 && failedRowsCount === 0) {
-        failureReasonsTextarea.value = 'جميع القيم ناجحة - لا توجد أسباب رسوب';
-    } else {
-        failureReasonsTextarea.value = '';
+    if (failureReasonsTextarea) {
+        if (failureReasons.length > 0) {
+            failureReasonsTextarea.value = 'أسباب الرسوب:\n' + failureReasons.join('\n');
+        } else if (totalRowsCount > 0 && failedRowsCount === 0) {
+            failureReasonsTextarea.value = 'جميع القيم ناجحة - لا توجد أسباب رسوب';
+        } else {
+            failureReasonsTextarea.value = '';
+        }
     }
 }
 
@@ -7046,6 +7089,12 @@ function getTestLabel(testName) {
 // دالة لتحديث الحالة العامة للمختبر
 function updateOverallLabStatus(activeTests, passedRows, failedRows, totalRows) {
     const statusElement = document.getElementById('overall_lab_status');
+    
+    // التحقق من وجود العنصر
+    if (!statusElement) {
+        console.warn('Overall lab status element not found');
+        return;
+    }
     
     if (activeTests === 0) {
         statusElement.textContent = 'لم يتم تفعيل أي اختبارات';
@@ -7142,7 +7191,7 @@ document.addEventListener('DOMContentLoaded', function() {
     loadLicenses();
     loadViolations();
     
-    // تهيئة أزرار الحذف لجميع الاختبارات
+    // تهيئة أزرار الحذف لجميع الاختبارات الموجودة
     const testNames = [
         'depth_test', 'soil_compaction_test', 'rc1_mc1_test', 'asphalt_test', 'soil_test', 'interlock_test',
         'max_dry_density_pro_test', 'asphalt_ratio_gradation_test', 'marshall_test', 'concrete_molds_test',
@@ -7154,8 +7203,13 @@ document.addEventListener('DOMContentLoaded', function() {
         'marshall_density_test', 'aggregate_ratio_test', 'stability_deficiency_test', 'stability_degree_test',
         'backup_test'
     ];
+    
+    // تحديث أزرار الحذف فقط للاختبارات الموجودة
     testNames.forEach(testName => {
-        updateDeleteButtons(testName);
+        const container = document.getElementById(`${testName}_rows_container`);
+        if (container) {
+            updateDeleteButtons(testName);
+        }
     });
     
     // تهيئة الإجماليات عند تحميل الصفحة

@@ -826,10 +826,11 @@
                                                 </td>
                                                 <td>
                                                     <div class="input-group input-group-sm">
-                                                        <input type="number" step="0.01" class="form-control dimension-input excavation-calc" 
+                                                        <input type="number" step="0.01" class="form-control dimension-input excavation-calc calc-volume-width" 
                                                                name="excavation_unsurfaced_soil_open[width]" 
                                                                data-type="width"
                                                                data-target="unsurfaced_soil_open"
+                                                               data-table="unsurfaced_soil_open"
                                                                value="{{ old('excavation_unsurfaced_soil_open.width') }}"
                                                                placeholder="0.00">
                                                         <span class="input-group-text">م</span>
@@ -837,10 +838,11 @@
                                                 </td>
                                                 <td>
                                                     <div class="input-group input-group-sm">
-                                                        <input type="number" step="0.01" class="form-control dimension-input excavation-calc" 
+                                                        <input type="number" step="0.01" class="form-control dimension-input excavation-calc calc-volume-depth" 
                                                                name="excavation_unsurfaced_soil_open[depth]" 
                                                                data-type="depth"
                                                                data-target="unsurfaced_soil_open"
+                                                               data-table="unsurfaced_soil_open"
                                                                value="{{ old('excavation_unsurfaced_soil_open.depth') }}"
                                                                placeholder="0.00">
                                                         <span class="input-group-text">م</span>
@@ -952,10 +954,11 @@
                                                 </td>
                                                 <td>
                                                     <div class="input-group input-group-sm">
-                                                        <input type="number" step="0.01" class="form-control dimension-input excavation-calc" 
+                                                        <input type="number" step="0.01" class="form-control dimension-input excavation-calc calc-volume-width" 
                                                                name="excavation_surfaced_soil_open[width]" 
                                                                data-type="width"
                                                                data-target="surfaced_soil_open"
+                                                               data-table="surfaced_soil_open"
                                                                value="{{ old('excavation_surfaced_soil_open.width') }}"
                                                                placeholder="0.00">
                                                         <span class="input-group-text">م</span>
@@ -963,10 +966,11 @@
                                                 </td>
                                                 <td>
                                                     <div class="input-group input-group-sm">
-                                                        <input type="number" step="0.01" class="form-control dimension-input excavation-calc" 
+                                                        <input type="number" step="0.01" class="form-control dimension-input excavation-calc calc-volume-depth" 
                                                                name="excavation_surfaced_soil_open[depth]" 
                                                                data-type="depth"
                                                                data-target="surfaced_soil_open"
+                                                               data-table="surfaced_soil_open"
                                                                value="{{ old('excavation_surfaced_soil_open.depth') }}"
                                                                placeholder="0.00">
                                                         <span class="input-group-text">م</span>
@@ -1078,10 +1082,11 @@
                                                 </td>
                                                 <td>
                                                     <div class="input-group input-group-sm">
-                                                        <input type="number" step="0.01" class="form-control dimension-input excavation-calc" 
+                                                        <input type="number" step="0.01" class="form-control dimension-input excavation-calc calc-volume-width" 
                                                                name="excavation_surfaced_rock_open[width]" 
                                                                data-type="width"
                                                                data-target="surfaced_rock_open"
+                                                               data-table="surfaced_rock_open"
                                                                value="{{ old('excavation_surfaced_rock_open.width') }}"
                                                                placeholder="0.00">
                                                         <span class="input-group-text">م</span>
@@ -1089,10 +1094,11 @@
                                                 </td>
                                                 <td>
                                                     <div class="input-group input-group-sm">
-                                                        <input type="number" step="0.01" class="form-control dimension-input excavation-calc" 
+                                                        <input type="number" step="0.01" class="form-control dimension-input excavation-calc calc-volume-depth" 
                                                                name="excavation_surfaced_rock_open[depth]" 
                                                                data-type="depth"
                                                                data-target="surfaced_rock_open"
+                                                               data-table="surfaced_rock_open"
                                                                value="{{ old('excavation_surfaced_rock_open.depth') }}"
                                                                placeholder="0.00">
                                                         <span class="input-group-text">م</span>
@@ -1204,10 +1210,11 @@
                                                 </td>
                                                 <td>
                                                     <div class="input-group input-group-sm">
-                                                        <input type="number" step="0.01" class="form-control dimension-input excavation-calc" 
+                                                        <input type="number" step="0.01" class="form-control dimension-input excavation-calc calc-volume-width" 
                                                                name="excavation_unsurfaced_rock_open[width]" 
                                                                data-type="width"
                                                                data-target="unsurfaced_rock_open"
+                                                               data-table="unsurfaced_rock_open"
                                                                value="{{ old('excavation_unsurfaced_rock_open.width') }}"
                                                                placeholder="0.00">
                                                         <span class="input-group-text">م</span>
@@ -1215,10 +1222,11 @@
                                                 </td>
                                                 <td>
                                                     <div class="input-group input-group-sm">
-                                                        <input type="number" step="0.01" class="form-control dimension-input excavation-calc" 
+                                                        <input type="number" step="0.01" class="form-control dimension-input excavation-calc calc-volume-depth" 
                                                                name="excavation_unsurfaced_rock_open[depth]" 
                                                                data-type="depth"
                                                                data-target="unsurfaced_rock_open"
+                                                               data-table="unsurfaced_rock_open"
                                                                value="{{ old('excavation_unsurfaced_rock_open.depth') }}"
                                                                placeholder="0.00">
                                                         <span class="input-group-text">م</span>
@@ -1345,7 +1353,7 @@
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td class="align-middle">كشط واعادة السفلتة 21324 <span class="badge bg-info">12345678900</span></td>
+                                            <td class="align-middle">كشط واعادة السفلتة  <span class="badge bg-info">12345678900</span></td>
                                             <td>
                                                 <div class="input-group input-group-sm">
                                                     <input type="number" step="0.01" class="form-control dimension-input calculate-area calc-area-length" 
@@ -2448,6 +2456,8 @@
         }
 
         function calculateVolumeTotal(table) {
+            console.log(`🔧 calculateVolumeTotal called for table: ${table}`);
+            
             const lengthInput = document.querySelector(`input[name="excavation_${table}_open[length]"]`);
             const widthInput = document.querySelector(`input[name="excavation_${table}_open[width]"]`);
             const depthInput = document.querySelector(`input[name="excavation_${table}_open[depth]"]`);
@@ -2455,18 +2465,42 @@
             const volumeInput = document.getElementById(`total_${table}_open`);
             const totalInput = document.getElementById(`final_total_${table}_open`);
             
+            console.log(`   Elements found: length=${!!lengthInput}, width=${!!widthInput}, depth=${!!depthInput}, volume=${!!volumeInput}, price=${!!priceInput}, total=${!!totalInput}`);
+            
             if (lengthInput && widthInput && depthInput && volumeInput) {
                 const length = parseFloat(lengthInput.value) || 0;
                 const width = parseFloat(widthInput.value) || 0;
                 const depth = parseFloat(depthInput.value) || 0;
                 const volume = length * width * depth;
+                
+                console.log(`   Calculation: ${length} × ${width} × ${depth} = ${volume}`);
+                
                 volumeInput.value = volume.toFixed(2);
+                
+                // تغيير لون الخلفية لتأكيد التحديث
+                volumeInput.style.backgroundColor = '#e8f5e8';
+                setTimeout(() => {
+                    volumeInput.style.backgroundColor = '';
+                }, 1000);
                 
                 if (priceInput && totalInput) {
                     const price = parseFloat(priceInput.value) || 0;
                     const total = volume * price;
+                    
+                    console.log(`   Total calculation: ${volume} × ${price} = ${total}`);
+                    
                     totalInput.value = total.toFixed(2);
+                    
+                    // تغيير لون الخلفية لتأكيد التحديث
+                    totalInput.style.backgroundColor = '#e8f5e8';
+                    setTimeout(() => {
+                        totalInput.style.backgroundColor = '';
+                    }, 1000);
                 }
+                
+                console.log(`   ✅ ${table} calculation completed successfully`);
+            } else {
+                console.error(`   ❌ Missing required elements for ${table}`);
             }
         }
 
@@ -2530,7 +2564,10 @@
             }
             
             // للحفر المفتوح (الحجم * السعر)
-            if (e.target.classList.contains('calc-volume-length') || e.target.classList.contains('calc-volume-price')) {
+            if (e.target.classList.contains('calc-volume-length') || 
+                e.target.classList.contains('calc-volume-width') || 
+                e.target.classList.contains('calc-volume-depth') || 
+                e.target.classList.contains('calc-volume-price')) {
                 const table = e.target.dataset.table;
                 if (table) {
                     calculateVolumeTotal(table);
@@ -2564,18 +2601,36 @@
 
         // حساب الإجماليات عند تحميل الصفحة
         setTimeout(function() {
-            // حساب الإجماليات الخطية للجداول الأساسية
-            for (let table of ['unsurfaced_soil', 'surfaced_soil', 'surfaced_rock', 'unsurfaced_rock']) {
-                for (let row = 0; row < 8; row++) {
-                    calculateLinearTotal(row, table);
-                }
-                calculateVolumeTotal(table);
-            }
+            // التحقق من وجود العناصر أولاً
+            console.log('🚀 Page loaded, verifying elements...');
             
-            // حساب إجماليات الحفر المفتوح بالحجم (الجداول التي لها أبعاد 3D)
-            calculateVolumeTotal('surfaced_soil_open');
-            calculateVolumeTotal('surfaced_rock_open');
-            calculateVolumeTotal('unsurfaced_rock_open');
+            // انتظار إضافي للتأكد من تحميل DOM بالكامل
+            setTimeout(function() {
+                verifyElementsExistence();
+                
+                // حساب الإجماليات الخطية للجداول الأساسية
+                for (let table of ['unsurfaced_soil', 'surfaced_soil', 'surfaced_rock', 'unsurfaced_rock']) {
+                    for (let row = 0; row < 8; row++) {
+                        calculateLinearTotal(row, table);
+                    }
+                }
+                
+                // حساب إجماليات الحفر المفتوح بالحجم (الجداول التي لها أبعاد 3D)
+                // تأكد من تضمين جميع الجداول الأربعة
+                const openExcavationTables = ['unsurfaced_soil_open', 'surfaced_soil_open', 'surfaced_rock_open', 'unsurfaced_rock_open'];
+                openExcavationTables.forEach(table => {
+                    console.log(`Calculating volume total for: ${table}`);
+                    // فحص إضافي قبل الحساب
+                    const volumeInput = document.getElementById(`total_${table}_open`);
+                    const totalInput = document.getElementById(`final_total_${table}_open`);
+                    if (volumeInput && totalInput) {
+                        calculateVolumeTotal(table);
+                    } else {
+                        console.warn(`⚠️ Elements missing for ${table}: volume=${!!volumeInput}, total=${!!totalInput}`);
+                    }
+                });
+            }, 200);
+            
             
             // حساب إجماليات الحفر المفتوح بالمساحة (الجداول التي لها أبعاد 2D)
             calculateAreaTotal('first_asphalt');
@@ -2597,26 +2652,19 @@
 
     <!-- دالة مشتركة لتنسيق حجم الملف -->
     <script>
-        // دالة عامة لتنسيق حجم الملف
-        function formatFileSize(bytes) {
-            if (bytes === 0) return '0 Bytes';
-            const k = 1024;
-            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        // التحقق من وجود الدوال العامة وإنشاؤها إذا لم تكن موجودة
+        if (!window.formatFileSize) {
+            window.formatFileSize = function(bytes) {
+                if (bytes === 0) return '0 Bytes';
+                const k = 1024;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+            };
         }
         
-        // جعل الدالة متاحة عالمياً
-        window.formatFileSize = formatFileSize;
-    </script>
-
-    <!-- JavaScript للتعامل مع الصور تم حذفه -->
-
-    <!-- إضافة JavaScript للتعامل مع رفع المرفقات -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // دالة لتحديد أيقونة الملف
-            function getFileIcon(filename) {
+        if (!window.getFileIcon) {
+            window.getFileIcon = function(filename) {
                 const ext = filename.split('.').pop().toLowerCase();
                 switch(ext) {
                     case 'pdf': return 'pdf';
@@ -2631,7 +2679,201 @@
                     case 'rar': return 'archive';
                     default: return 'file';
                 }
+            };
+        }
+        
+        // دالة للتحقق من وجود العناصر المطلوبة
+        window.verifyElementsExistence = function() {
+            console.log('🔍 Verifying elements existence...');
+            const tables = ['unsurfaced_soil_open', 'surfaced_soil_open', 'surfaced_rock_open', 'unsurfaced_rock_open'];
+            let allElementsFound = true;
+            
+            tables.forEach(table => {
+                console.log(`\n=== Checking ${table} ===`);
+                
+                const lengthInput = document.querySelector(`input[name="excavation_${table}_open[length]"]`);
+                const widthInput = document.querySelector(`input[name="excavation_${table}_open[width]"]`);
+                const depthInput = document.querySelector(`input[name="excavation_${table}_open[depth]"]`);
+                const priceInput = document.querySelector(`input[name="excavation_${table}_open_price"]`);
+                const volumeInput = document.getElementById(`total_${table}_open`);
+                const totalInput = document.getElementById(`final_total_${table}_open`);
+                
+                console.log(`   Length input: ${lengthInput ? '✅' : '❌'}`);
+                console.log(`   Width input: ${widthInput ? '✅' : '❌'}`);
+                console.log(`   Depth input: ${depthInput ? '✅' : '❌'}`);
+                console.log(`   Price input: ${priceInput ? '✅' : '❌'}`);
+                console.log(`   Volume output: ${volumeInput ? '✅' : '❌'}`);
+                console.log(`   Total output: ${totalInput ? '✅' : '❌'}`);
+                
+                if (!lengthInput || !widthInput || !depthInput || !priceInput || !volumeInput || !totalInput) {
+                    allElementsFound = false;
+                }
+            });
+            
+            console.log(`\n${allElementsFound ? '🎉 All elements found!' : '⚠️ Some elements missing.'}`);
+            return allElementsFound;
+        };
+
+        // دالة لإعادة تعيين ألوان الحقول
+        window.resetFieldColors = function() {
+            const tables = ['unsurfaced_soil_open', 'surfaced_soil_open', 'surfaced_rock_open', 'unsurfaced_rock_open'];
+            tables.forEach(table => {
+                const volumeInput = document.getElementById(`total_${table}_open`);
+                const totalInput = document.getElementById(`final_total_${table}_open`);
+                if (volumeInput) {
+                    volumeInput.style.backgroundColor = '';
+                    volumeInput.style.color = '';
+                }
+                if (totalInput) {
+                    totalInput.style.backgroundColor = '';
+                    totalInput.style.color = '';
+                }
+            });
+        };
+
+        // دالة اختبار للتحقق من حسابات الحفر المفتوح
+        window.testOpenExcavationCalculation = function() {
+            console.log('🧪 Testing open excavation calculations...');
+            
+            // إعادة تعيين الألوان أولاً
+            resetFieldColors();
+            
+            const tables = ['unsurfaced_soil_open', 'surfaced_soil_open', 'surfaced_rock_open', 'unsurfaced_rock_open'];
+            let allTestsPassed = true;
+            
+            tables.forEach(table => {
+                console.log(`\n=== Testing ${table} ===`);
+                
+                // تعيين قيم اختبارية
+                const lengthInput = document.querySelector(`input[name="excavation_${table}_open[length]"]`);
+                const widthInput = document.querySelector(`input[name="excavation_${table}_open[width]"]`);
+                const depthInput = document.querySelector(`input[name="excavation_${table}_open[depth]"]`);
+                const priceInput = document.querySelector(`input[name="excavation_${table}_open_price"]`);
+                
+                if (lengthInput && widthInput && depthInput && priceInput) {
+                    // حفظ القيم الأصلية
+                    const originalValues = {
+                        length: lengthInput.value,
+                        width: widthInput.value,
+                        depth: depthInput.value,
+                        price: priceInput.value
+                    };
+                    
+                    // تعيين قيم اختبارية
+                    lengthInput.value = '10';
+                    widthInput.value = '5';
+                    depthInput.value = '2';
+                    priceInput.value = '100';
+                    
+                    // تشغيل الحساب
+                    calculateVolumeTotal(table);
+                    
+                    // التحقق من النتائج
+                    const volumeInput = document.getElementById(`total_${table}_open`);
+                    const totalInput = document.getElementById(`final_total_${table}_open`);
+                    
+                    const expectedVolume = '100.00';
+                    const expectedTotal = '10000.00';
+                    const actualVolume = volumeInput ? volumeInput.value : 'NOT FOUND';
+                    const actualTotal = totalInput ? totalInput.value : 'NOT FOUND';
+                    
+                    const volumeTest = actualVolume === expectedVolume;
+                    const totalTest = actualTotal === expectedTotal;
+                    
+                    console.log(`📊 ${table} Results:`);
+                    console.log(`   Volume: ${actualVolume} ${volumeTest ? '✅' : '❌'} (expected: ${expectedVolume})`);
+                    console.log(`   Total: ${actualTotal} ${totalTest ? '✅' : '❌'} (expected: ${expectedTotal})`);
+                    
+                    // إضافة تأثير بصري للاختبار
+                    if (volumeInput) {
+                        volumeInput.style.backgroundColor = volumeTest ? '#d4edda' : '#f8d7da';
+                        volumeInput.style.color = volumeTest ? '#155724' : '#721c24';
+                    }
+                    if (totalInput) {
+                        totalInput.style.backgroundColor = totalTest ? '#d4edda' : '#f8d7da';
+                        totalInput.style.color = totalTest ? '#155724' : '#721c24';
+                    }
+                    
+                    if (!volumeTest || !totalTest) {
+                        allTestsPassed = false;
+                    }
+                    
+                    // استعادة القيم الأصلية
+                    lengthInput.value = originalValues.length;
+                    widthInput.value = originalValues.width;
+                    depthInput.value = originalValues.depth;
+                    priceInput.value = originalValues.price;
+                    
+                    // إعادة حساب القيم الأصلية
+                    calculateVolumeTotal(table);
+                    
+                    // إعادة تعيين الألوان بعد فترة قصيرة
+                    setTimeout(() => {
+                        if (volumeInput) {
+                            volumeInput.style.backgroundColor = '';
+                            volumeInput.style.color = '';
+                        }
+                        if (totalInput) {
+                            totalInput.style.backgroundColor = '';
+                            totalInput.style.color = '';
+                        }
+                    }, 3000);
+                } else {
+                    console.error(`❌ Missing input elements for ${table}`);
+                    allTestsPassed = false;
+                }
+            });
+            
+            console.log(`\n${allTestsPassed ? '🎉 All tests passed!' : '⚠️ Some tests failed.'}`);
+            
+            // إشعار بصري
+            if (allTestsPassed) {
+                showNotification('✅ جميع اختبارات الحفر المفتوح نجحت!', 'success');
+            } else {
+                showNotification('⚠️ بعض اختبارات الحفر المفتوح فشلت. تحقق من وحدة التحكم.', 'warning');
             }
+            
+            return allTestsPassed;
+        };
+
+        // دالة سريعة لاختبار العناصر فقط
+        window.quickElementCheck = function() {
+            console.log('⚡ Quick element check...');
+            const tables = ['unsurfaced_soil_open', 'surfaced_soil_open', 'surfaced_rock_open', 'unsurfaced_rock_open'];
+            
+            tables.forEach(table => {
+                const lengthInput = document.querySelector(`input[name="excavation_${table}_open[length]"]`);
+                const widthInput = document.querySelector(`input[name="excavation_${table}_open[width]"]`);
+                const depthInput = document.querySelector(`input[name="excavation_${table}_open[depth]"]`);
+                const priceInput = document.querySelector(`input[name="excavation_${table}_open_price"]`);
+                const volumeInput = document.getElementById(`total_${table}_open`);
+                const totalInput = document.getElementById(`final_total_${table}_open`);
+                
+                const allFound = lengthInput && widthInput && depthInput && priceInput && volumeInput && totalInput;
+                console.log(`${table}: ${allFound ? '✅' : '❌'}`);
+                
+                if (!allFound) {
+                    console.log(`   Missing: ${!lengthInput ? 'length ' : ''}${!widthInput ? 'width ' : ''}${!depthInput ? 'depth ' : ''}${!priceInput ? 'price ' : ''}${!volumeInput ? 'volume ' : ''}${!totalInput ? 'total' : ''}`);
+                }
+            });
+        };
+    </script>
+
+    <!-- JavaScript للتعامل مع الصور تم حذفه -->
+
+    <!-- إضافة JavaScript للتعامل مع رفع المرفقات -->
+    <script>
+        // معالج الأخطاء العام
+        window.addEventListener('error', function(e) {
+            console.error('🚨 JavaScript Error:', e.error);
+            console.error('   File:', e.filename);
+            console.error('   Line:', e.lineno);
+            console.error('   Column:', e.colno);
+            return false; // لا تمنع الأخطاء الأخرى
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // استخدام الدالة العامة المعرفة مسبقاً
 
             // التعامل مع المرفقات
             const attachmentInput = document.getElementById('civil_works_attachments');
@@ -2671,12 +2913,12 @@
                             <div class="card h-100">
                                 <div class="card-body">
                                     <div class="d-flex align-items-center">
-                                        <i class="fas fa-file-${getFileIcon(file.name)} fa-2x text-warning me-3"></i>
+                                        <i class="fas fa-file-${window.getFileIcon(file.name)} fa-2x text-warning me-3"></i>
                                         <div class="flex-grow-1">
                                             <h6 class="card-title mb-1 text-truncate" title="${file.name}">
                                                 ${file.name.length > 20 ? file.name.substring(0, 20) + '...' : file.name}
                                             </h6>
-                                            <p class="card-text small text-muted mb-0">${formatFileSize(file.size)}</p>
+                                            <p class="card-text small text-muted mb-0">${window.formatFileSize ? window.formatFileSize(file.size) : ((file.size / 1024 / 1024).toFixed(2) + ' MB')}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -2796,32 +3038,7 @@
             });
         }
 
-        // دالة لتحديد أيقونة الملف بناءً على نوعه
-        function getFileIcon(filename) {
-            const ext = filename.split('.').pop().toLowerCase();
-            switch(ext) {
-                case 'pdf': return 'pdf';
-                case 'doc':
-                case 'docx': return 'word';
-                case 'xls':
-                case 'xlsx': return 'excel';
-                case 'ppt':
-                case 'pptx': return 'powerpoint';
-                case 'txt': return 'text';
-                case 'zip':
-                case 'rar': return 'archive';
-                default: return 'file';
-            }
-        }
-
-        // دالة تنسيق حجم الملف
-        function formatFileSize(bytes) {
-            if (bytes === 0) return '0 Bytes';
-            const k = 1024;
-            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-        }
+        // استخدام الدوال العامة المعرفة مسبقاً
 
         // دالة إنشاء حاوية المرفقات المرفوعة
         function createUploadedAttachmentsContainer() {
@@ -2951,12 +3168,12 @@
                                     fileDiv.className = 'd-flex align-items-center border rounded p-2 mb-2 attachment-item';
                                     fileDiv.setAttribute('data-attachment-id', attachment.id);
                                     fileDiv.innerHTML = `
-                                        <i class="fas fa-file-${getFileIcon(attachment.original_filename)} text-primary me-2"></i>
+                                        <i class="fas fa-file-${window.getFileIcon ? window.getFileIcon(attachment.original_filename) : 'file'} text-primary me-2"></i>
                                         <div class="flex-grow-1">
                                             <div class="text-truncate" title="${attachment.original_filename}">
                                                 ${attachment.original_filename}
                                             </div>
-                                            <small class="text-muted">${formatFileSize(attachment.file_size)}</small>
+                                            <small class="text-muted">${window.formatFileSize ? window.formatFileSize(attachment.file_size) : (attachment.file_size + ' bytes')}</small>
                                         </div>
                                         <div class="btn-group btn-group-sm ms-2">
                                             <a href="/storage/${attachment.file_path}" class="btn btn-outline-primary" target="_blank" title="عرض الملف">

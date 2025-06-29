@@ -349,37 +349,43 @@ use Illuminate\Support\Facades\Storage;
                                 'name' => 'اختبار العمق',
                                 'icon' => 'fas fa-ruler-vertical',
                                 'value_field' => 'depth_test_value',
-                                'file_field' => 'depth_test_file_path'
+                                'file_field' => 'depth_test_file_path',
+                                'result_field' => 'depth_test_result'
                             ],
                             'has_soil_compaction_test' => [
                                 'name' => 'اختبار دك التربة',
                                 'icon' => 'fas fa-compress',
                                 'value_field' => 'soil_compaction_test_value',
-                                'file_field' => 'soil_compaction_test_file_path'
+                                'file_field' => 'soil_compaction_test_file_path',
+                                'result_field' => 'soil_compaction_test_result'
                             ],
                             'has_rc1_mc1_test' => [
                                 'name' => 'اختبار RC1-MC1',
                                 'icon' => 'fas fa-vial',
                                 'value_field' => 'rc1_mc1_test_value',
-                                'file_field' => 'rc1_mc1_test_file_path'
+                                'file_field' => 'rc1_mc1_test_file_path',
+                                'result_field' => 'rc1_mc1_test_result'
                             ],
                             'has_asphalt_test' => [
                                 'name' => 'اختبار الأسفلت',
                                 'icon' => 'fas fa-road',
                                 'value_field' => 'asphalt_test_value',
-                                'file_field' => 'asphalt_test_file_path'
+                                'file_field' => 'asphalt_test_file_path',
+                                'result_field' => 'asphalt_test_result'
                             ],
                             'has_soil_test' => [
                                 'name' => 'اختبار التربة',
                                 'icon' => 'fas fa-mountain',
                                 'value_field' => 'soil_test_value',
-                                'file_field' => 'soil_test_file_path'
+                                'file_field' => 'soil_test_file_path',
+                                'result_field' => 'soil_test_result'
                             ],
                             'has_interlock_test' => [
                                 'name' => 'اختبار البلاط المتداخل',
                                 'icon' => 'fas fa-th',
                                 'value_field' => 'interlock_test_value',
-                                'file_field' => 'interlock_test_file_path'
+                                'file_field' => 'interlock_test_file_path',
+                                'result_field' => 'interlock_test_result'
                             ]
                         ];
                     @endphp
@@ -443,6 +449,15 @@ use Illuminate\Support\Facades\Storage;
                                                min="0" 
                                                step="0.01" 
                                                placeholder="أدخل القيمة">
+                                    </div>
+
+                                    <!-- نص النتيجة -->
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">نص النتيجة:</label>
+                                        <textarea class="form-control test-result" 
+                                                  name="{{ $test['result_field'] }}" 
+                                                  rows="2" 
+                                                  placeholder="أدخل تفاصيل نتيجة الاختبار">{{ $license->{$test['result_field']} ?? '' }}</textarea>
                                     </div>
 
                                     <!-- المرفق -->
@@ -2947,6 +2962,45 @@ function saveTestStatus(testField, status, value) {
     });
 }
 
+// حفظ حالة اختبار مع النتيجة
+function saveTestStatusWithResult(testField, status, value, resultText) {
+    const licenseId = {{ $license->id }};
+    
+    const formData = new FormData();
+    formData.append('license_id', licenseId);
+    formData.append('test_field', testField);
+    formData.append('status', status);
+    
+    if (value) {
+        formData.append('value', value);
+    }
+    
+    if (resultText) {
+        formData.append('result_text', resultText);
+    }
+
+    fetch('{{ route("admin.licenses.lab-test.save-status") }}', {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            toastr.success(data.message);
+            updateLabCounters();
+        } else {
+            toastr.error(data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error saving test status with result:', error);
+        toastr.error('حدث خطأ أثناء حفظ حالة الاختبار');
+    });
+}
+
 // رفع ملف اختبار
 function uploadTestFile(testField, file) {
     const licenseId = {{ $license->id }};
@@ -3066,6 +3120,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 const value = e.target.value;
                 
                 saveTestStatus(testField, status, value);
+            }
+        }
+        
+        // أحداث تغيير نص النتيجة
+        if (e.target.classList.contains('test-result')) {
+            const card = e.target.closest('.lab-test-card');
+            const testField = card.dataset.test;
+            const statusRadio = card.querySelector('input[type="radio"]:checked');
+            
+            if (statusRadio) {
+                const status = statusRadio.value;
+                const valueInput = card.querySelector('.test-value');
+                const value = valueInput ? valueInput.value : null;
+                const resultText = e.target.value;
+                
+                saveTestStatusWithResult(testField, status, value, resultText);
             }
         }
         

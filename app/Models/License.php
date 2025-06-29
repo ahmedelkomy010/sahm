@@ -152,7 +152,32 @@ class License extends Model
         'evac_table2_data',
         'lab_table1_data',
         'lab_table2_data',
-        'evacuation_data'
+        'evacuation_data',
+        // الحقول الأساسية للاختبارات
+        'has_depth_test',
+        'has_soil_compaction_test',
+        'has_rc1_mc1_test',
+        'has_asphalt_test',
+        'has_soil_test',
+        'has_interlock_test',
+        'depth_test_value',
+        'soil_compaction_test_value',
+        'rc1_mc1_test_value',
+        'asphalt_test_value',
+        'soil_test_value',
+        'interlock_test_value',
+        'depth_test_file_path',
+        'soil_compaction_test_file_path',
+        'rc1_mc1_test_file_path',
+        'asphalt_test_file_path',
+        'soil_test_file_path',
+        'interlock_test_file_path',
+        'depth_test_result',
+        'soil_compaction_test_result',
+        'rc1_mc1_test_result',
+        'asphalt_test_result',
+        'soil_test_result',
+        'interlock_test_result'
     ];
 
     protected $casts = [
