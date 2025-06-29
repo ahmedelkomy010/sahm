@@ -223,116 +223,7 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
     }
 
-        /* تنسيقات خاصة بجدول الحفريات التفصيلي */
-        #excavation-details-table {
-            font-size: 0.9rem;
-        }
 
-        #excavation-details-table th {
-            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%) !important;
-            color: white !important;
-            font-weight: 600;
-            text-align: center;
-            border: none;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        /* تثبيت الجدول التفصيلي */
-        .excavation-details-container {
-            position: sticky;
-            top: 20px;
-            z-index: 50;
-            max-height: 80vh;
-            overflow-y: auto;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-            background: white;
-        }
-
-        .excavation-details-container::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        .excavation-details-container::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 4px;
-        }
-
-        .excavation-details-container::-webkit-scrollbar-thumb {
-            background: #667eea;
-            border-radius: 4px;
-        }
-
-        .excavation-details-container::-webkit-scrollbar-thumb:hover {
-            background: #764ba2;
-        }
-
-        /* جعل البيانات ثابتة ومرئية */
-        .permanent-visible {
-            display: block !important;
-            opacity: 1 !important;
-            transform: none !important;
-        }
-
-        /* تثبيت حالة البيانات */
-        .data-locked {
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%) !important;
-            color: white !important;
-        }
-
-        .data-locked i {
-            animation: lock-pulse 2s infinite;
-        }
-
-        @keyframes lock-pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-        }
-
-        /* تثبيت الجدول في الصفحة */
-        .fixed-table-container {
-            position: fixed;
-            top: 50px;
-            right: 20px;
-            width: 500px;
-            max-height: 70vh;
-            overflow-y: auto;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
-            z-index: 1000;
-            transform: translateX(520px);
-            transition: transform 0.3s ease;
-        }
-
-        .fixed-table-container.visible {
-            transform: translateX(0);
-        }
-
-        .fixed-table-toggle {
-            position: fixed;
-            top: 120px;
-            right: 20px;
-            z-index: 1001;
-            border-radius: 50%;
-            width: 60px;
-            height: 60px;
-            font-size: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        }
-
-        #excavation-details-table tbody tr {
-            transition: all 0.3s ease;
-        }
-
-        #excavation-details-table tbody tr:hover {
-            transform: scale(1.02);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            z-index: 5;
-        }
 
         .table-success:hover {
             background-color: rgba(25, 135, 84, 0.2) !important;
@@ -409,22 +300,7 @@
             transform: translateY(-2px);
         }
 
-        /* تحسين responsive للجدول */
-        @media (max-width: 768px) {
-            #excavation-details-table {
-                font-size: 0.75rem;
-            }
-            
-            #excavation-details-table th,
-            #excavation-details-table td {
-                padding: 0.5rem 0.25rem;
-            }
-            
-            .btn-group-sm .btn {
-                font-size: 0.7rem;
-                padding: 0.25rem 0.5rem;
-            }
-        }
+
 
         /* تحسين الألوان والتدرجات */
         .bg-gradient.text-white {
@@ -514,65 +390,7 @@
             left: 100%;
         }
 
-        /* تحسين الجدول التفصيلي */
-        #excavation-details-table {
-            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-            border-radius: 15px;
-            overflow: hidden;
-        }
-        
-                 #excavation-details-table thead th {
-             background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-             color: white;
-             font-weight: 600;
-             border: none;
-             padding: 18px 12px;
-             text-align: center;
-             font-size: 0.9rem;
-             letter-spacing: 0.5px;
-         }
-         
-         #excavation-details-table thead th.bg-warning {
-             background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%) !important;
-             color: white !important;
-             font-weight: 700;
-             text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
-         }
-        
-        #excavation-details-table tbody tr {
-            border-left: 4px solid transparent;
-            transition: all 0.3s ease;
-            background: white;
-        }
-        
-        #excavation-details-table tbody tr:hover {
-            background-color: rgba(0, 123, 255, 0.05) !important;
-            transform: translateX(5px);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            border-left-color: #007bff;
-        }
 
-        #excavation-details-table tbody tr.table-success {
-            border-left-color: #198754;
-        }
-
-        #excavation-details-table tbody tr.table-danger {
-            border-left-color: #dc3545;
-        }
-
-        #excavation-details-table tbody tr.table-warning {
-            border-left-color: #ffc107;
-        }
-
-        #excavation-details-table tbody tr.table-info {
-            border-left-color: #0dcaf0;
-        }
-        
-        #excavation-details-table td {
-            padding: 15px 12px;
-            vertical-align: middle;
-            border-color: #e9ecef;
-        }
         
         /* تحسين البادجات */
         .badge.bg-secondary {
@@ -658,6 +476,149 @@
                 transform: translateX(100%);
                 opacity: 0;
             }
+        }
+
+        /* أنماط للرقم المضاف للكابلات */
+        .badge.bg-info {
+            font-size: 0.75rem !important;
+            font-weight: 600 !important;
+            padding: 0.35rem 0.6rem !important;
+            border-radius: 12px !important;
+            margin-right: 8px !important;
+            box-shadow: 0 2px 4px rgba(13, 202, 240, 0.25) !important;
+            background: linear-gradient(45deg, #0dcaf0, #0ba5cc) !important;
+            animation: pulse-cable-number 3s infinite alternate !important;
+            border: 1px solid rgba(255, 255, 255, 0.3) !important;
+            letter-spacing: 0.5px !important;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
+        }
+
+        .badge.bg-info:hover {
+            transform: scale(1.1) !important;
+            box-shadow: 0 4px 8px rgba(13, 202, 240, 0.4) !important;
+            transition: all 0.3s ease !important;
+        }
+
+        @keyframes pulse-cable-number {
+            0% { 
+                transform: scale(1); 
+                opacity: 1; 
+                box-shadow: 0 2px 4px rgba(13, 202, 240, 0.25);
+            }
+            100% { 
+                transform: scale(1.05); 
+                opacity: 0.9; 
+                box-shadow: 0 4px 8px rgba(13, 202, 240, 0.4);
+            }
+        }
+
+        /* تحسين عرض الرقم على الشاشات الصغيرة */
+        @media (max-width: 768px) {
+            .badge.bg-info {
+                font-size: 0.65rem !important;
+                padding: 0.25rem 0.4rem !important;
+                margin-right: 5px !important;
+            }
+        }
+
+        /* تنسيق حقول السعر */
+        .price-input {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border: 2px solid #28a745;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            color: #28a745;
+        }
+
+        .price-input:focus {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            border-color: #20c997;
+            box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+            transform: scale(1.02);
+        }
+
+        .price-input:hover {
+            background: linear-gradient(135deg, #ffffff 0%, #f1f3f4 100%);
+            border-color: #20c997;
+            transform: translateY(-1px);
+        }
+
+        .price-input::placeholder {
+            color: #6c757d;
+            opacity: 0.7;
+        }
+
+        .price-input + .input-group-text {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            border-color: #28a745;
+            color: white;
+            font-weight: bold;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+            border-radius: 0 8px 8px 0;
+            transition: all 0.3s ease;
+        }
+
+        .price-input:focus + .input-group-text {
+            background: linear-gradient(135deg, #20c997 0%, #17a2b8 100%);
+            transform: scale(1.02);
+        }
+
+        /* تأثير للصفوف التي تحتوي على حقول السعر */
+        tr:has(.price-input) {
+            background: linear-gradient(90deg, rgba(40, 167, 69, 0.02) 0%, rgba(32, 201, 151, 0.02) 100%);
+            transition: all 0.3s ease;
+        }
+
+        tr:has(.price-input:focus) {
+            background: linear-gradient(90deg, rgba(40, 167, 69, 0.05) 0%, rgba(32, 201, 151, 0.05) 100%);
+            transform: scale(1.001);
+        }
+
+        /* تأثير بصري عند التركيز على حقول السعر */
+        .input-group:has(.price-input:focus) {
+            position: relative;
+        }
+
+        .input-group:has(.price-input:focus)::after {
+            content: '💰';
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            font-size: 16px;
+            z-index: 10;
+            animation: float 2s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-5px); }
+        }
+
+        /* تنسيق عمود الإجمالي النهائي */
+        .total-calc {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            border: 2px solid #28a745;
+            color: white !important;
+            font-weight: bold;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+
+        .volume-total-calc, .area-total-calc {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            border: 2px solid #28a745;
+            color: white !important;
+            font-weight: bold;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+
+        .total-calc + .input-group-text, 
+        .volume-total-calc + .input-group-text, 
+        .area-total-calc + .input-group-text {
+            background: linear-gradient(135deg, #20c997 0%, #17a2b8 100%);
+            border-color: #20c997;
+            color: white;
+            font-weight: bold;
         }
     </style>
 </head>
@@ -788,7 +749,7 @@
             @method('PUT')
             <div class="row g-4">
                 <!-- كارد الحفريات الأساسية -->
-                <div class="col-md-6">
+                <div class="col-md-12">
                     <div class="card shadow-sm mb-4">
                         <div class="card-header bg-primary text-white">الحفريات الأساسية</div>
                         <div class="card-body">
@@ -799,37 +760,65 @@
                                     <table class="table table-bordered table-sm align-middle">
                                         <thead class="table-light">
                                             <tr>
-                                                <th style="width: 35%">نوع الكابل</th>
+                                                <th style="width: 20%">نوع الكابل</th>
                                                 <th style="width: 15%">الطول (متر)</th>
-                                                <th style="width: 15%">العرض (متر)</th>
-                                                <th style="width: 15%">العمق (متر)</th>
-                                                <th style="width: 20%">الإجمالي</th>
+                                                <th style="width: 10%">العرض (متر)</th>
+                                                <th style="width: 10%">العمق (متر)</th>
+                                                <th style="width: 12%">الإجمالي</th>
+                                                <th style="width: 13%">السعر (ريال)</th>
+                                                <th style="width: 20%">الإجمالي النهائي</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                         @foreach([ ' كابل منخفض', '2 كابل منخفض', '3 كابل منخفض', '4 كابل منخفض', '1 كابل متوسط', '2 كابل متوسط', '3 كابل متوسط', '4 كابل متوسط'] as $cable)
                                         <tr>
-                                                <td class="align-middle">{{ $cable }}</td>
-                                                <td colspan="4">
+                                                <td class="align-middle">{{ $cable }} <span class="badge bg-info">12345678900</span></td>
+                                                <td>
                                                     <div class="input-group input-group-sm">
-                                                        <input type="number" step="0.01" class="form-control dimension-input" 
+                                                        <input type="number" step="0.01" class="form-control dimension-input calc-length" 
                                                                name="excavation_unsurfaced_soil[{{ $loop->index }}]" 
+                                                               data-row="{{ $loop->index }}"
+                                                               data-table="unsurfaced_soil"
                                                                value="{{ old('excavation_unsurfaced_soil.' . $loop->index, $workOrder->excavation_unsurfaced_soil[$loop->index] ?? '') }}"
                                                                placeholder="0.00">
                                                         <span class="input-group-text">متر</span>
+                                                    </div>
+                                                </td>
+                                                <td><span class="text-muted">-</span></td>
+                                                <td><span class="text-muted">-</span></td>
+                                                <td><span class="text-muted">-</span></td>
+                                                <td>
+                                                    <div class="input-group input-group-sm">
+                                                        <input type="number" step="0.01" class="form-control price-input calc-price" 
+                                                               name="excavation_unsurfaced_soil_price[{{ $loop->index }}]" 
+                                                               data-row="{{ $loop->index }}"
+                                                               data-table="unsurfaced_soil"
+                                                               value="{{ old('excavation_unsurfaced_soil_price.' . $loop->index, $workOrder->excavation_unsurfaced_soil_price[$loop->index] ?? '') }}"
+                                                               placeholder="0.00">
+                                                        <span class="input-group-text">ريال</span>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div class="input-group input-group-sm">
+                                                        <input type="text" class="form-control bg-success text-white fw-bold total-calc" 
+                                                               id="total_unsurfaced_soil_{{ $loop->index }}" 
+                                                               readonly 
+                                                               value="0.00">
+                                                        <span class="input-group-text bg-success text-white">ريال</span>
                                                     </div>
                                                 </td>
                                             </tr>
                                             @endforeach
                                             <!-- حفر مفتوح اكبر من 4 كابلات - حقول منفصلة -->
                                             <tr class="table-warning">
-                                                <td class="align-middle fw-bold">حفر مفتوح اكبر من 4 كابلات</td>
+                                                <td class="align-middle fw-bold">حفر مفتوح اكبر من 4 كابلات <span class="badge bg-info">12345678900</span></td>
                                                 <td>
                                                     <div class="input-group input-group-sm">
-                                                        <input type="number" step="0.01" class="form-control dimension-input excavation-calc" 
+                                                        <input type="number" step="0.01" class="form-control dimension-input excavation-calc calc-volume-length" 
                                                                name="excavation_unsurfaced_soil_open[length]" 
                                                                data-type="length"
                                                                data-target="unsurfaced_soil_open"
+                                                               data-table="unsurfaced_soil_open"
                                                                value="{{ old('excavation_unsurfaced_soil_open.length') }}"
                                                                placeholder="0.00">
                                                         <span class="input-group-text">م</span>
@@ -866,6 +855,25 @@
                                                         <span class="input-group-text bg-primary text-white">م³</span>
                                                     </div>
                                                 </td>
+                                                <td>
+                                                    <div class="input-group input-group-sm">
+                                                        <input type="number" step="0.01" class="form-control price-input calc-volume-price" 
+                                                               name="excavation_unsurfaced_soil_open_price" 
+                                                               data-table="unsurfaced_soil_open"
+                                                               value="{{ old('excavation_unsurfaced_soil_open_price', $workOrder->excavation_unsurfaced_soil_open_price ?? '') }}"
+                                                               placeholder="0.00">
+                                                        <span class="input-group-text">ريال</span>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div class="input-group input-group-sm">
+                                                        <input type="text" class="form-control bg-success text-white fw-bold volume-total-calc" 
+                                                               id="final_total_unsurfaced_soil_open" 
+                                                               readonly 
+                                                               value="0.00">
+                                                        <span class="input-group-text bg-success text-white">ريال</span>
+                                                    </div>
+                                                </td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -878,37 +886,65 @@
                                     <table class="table table-bordered table-sm align-middle">
                                         <thead class="table-light">
                                             <tr>
-                                                <th style="width: 35%">نوع الكابل</th>
+                                                <th style="width: 20%">نوع الكابل</th>
                                                 <th style="width: 15%">الطول (متر)</th>
-                                                <th style="width: 15%">العرض (متر)</th>
-                                                <th style="width: 15%">العمق (متر)</th>
-                                                <th style="width: 20%">الإجمالي</th>
+                                                <th style="width: 10%">العرض (متر)</th>
+                                                <th style="width: 10%">العمق (متر)</th>
+                                                <th style="width: 12%">الإجمالي</th>
+                                                <th style="width: 13%">السعر (ريال)</th>
+                                                <th style="width: 20%">الإجمالي النهائي</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                         @foreach([ ' كابل منخفض', '2 كابل منخفض', '3 كابل منخفض', '4 كابل منخفض', '1 كابل متوسط ', '2 كابل متوسط ', '3 كابل متوسط', '4 كابل متوسط'] as $cable)
                                         <tr>
-                                                <td class="align-middle">{{ $cable }}</td>
-                                                <td colspan="4">
+                                                <td class="align-middle">{{ $cable }} <span class="badge bg-info">12345678900</span></td>
+                                                <td>
                                                     <div class="input-group input-group-sm">
-                                                        <input type="number" step="0.01" class="form-control dimension-input" 
+                                                        <input type="number" step="0.01" class="form-control dimension-input calc-length" 
                                                                name="excavation_surfaced_soil[{{ $loop->index }}]" 
+                                                               data-row="{{ $loop->index }}"
+                                                               data-table="surfaced_soil"
                                                                value="{{ old('excavation_surfaced_soil.' . $loop->index, $workOrder->excavation_surfaced_soil[$loop->index] ?? '') }}"
                                                                placeholder="0.00">
                                                         <span class="input-group-text">متر</span>
+                                                    </div>
+                                                </td>
+                                                <td><span class="text-muted">-</span></td>
+                                                <td><span class="text-muted">-</span></td>
+                                                <td><span class="text-muted">-</span></td>
+                                                <td>
+                                                    <div class="input-group input-group-sm">
+                                                        <input type="number" step="0.01" class="form-control price-input calc-price" 
+                                                               name="excavation_surfaced_soil_price[{{ $loop->index }}]" 
+                                                               data-row="{{ $loop->index }}"
+                                                               data-table="surfaced_soil"
+                                                               value="{{ old('excavation_surfaced_soil_price.' . $loop->index, $workOrder->excavation_surfaced_soil_price[$loop->index] ?? '') }}"
+                                                               placeholder="0.00">
+                                                        <span class="input-group-text">ريال</span>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div class="input-group input-group-sm">
+                                                        <input type="text" class="form-control bg-success text-white fw-bold total-calc" 
+                                                               id="total_surfaced_soil_{{ $loop->index }}" 
+                                                               readonly 
+                                                               value="0.00">
+                                                        <span class="input-group-text bg-success text-white">ريال</span>
                                                     </div>
                                                 </td>
                                             </tr>
                                             @endforeach
                                             <!-- حفر مفتوح اكبر من 4 كابلات - حقول منفصلة -->
                                             <tr class="table-warning">
-                                                <td class="align-middle fw-bold">حفر مفتوح اكبر من 4 كابلات</td>
+                                                <td class="align-middle fw-bold">حفر مفتوح اكبر من 4 كابلات <span class="badge bg-info">12345678900</span></td>
                                                 <td>
                                                     <div class="input-group input-group-sm">
-                                                        <input type="number" step="0.01" class="form-control dimension-input excavation-calc" 
+                                                        <input type="number" step="0.01" class="form-control dimension-input excavation-calc calc-volume-length" 
                                                                name="excavation_surfaced_soil_open[length]" 
                                                                data-type="length"
                                                                data-target="surfaced_soil_open"
+                                                               data-table="surfaced_soil_open"
                                                                value="{{ old('excavation_surfaced_soil_open.length') }}"
                                                                placeholder="0.00">
                                                         <span class="input-group-text">م</span>
@@ -945,6 +981,25 @@
                                                         <span class="input-group-text bg-primary text-white">م³</span>
                                                     </div>
                                                 </td>
+                                                <td>
+                                                    <div class="input-group input-group-sm">
+                                                        <input type="number" step="0.01" class="form-control price-input calc-volume-price" 
+                                                               name="excavation_surfaced_soil_open_price" 
+                                                               data-table="surfaced_soil_open"
+                                                               value="{{ old('excavation_surfaced_soil_open_price', $workOrder->excavation_surfaced_soil_open_price ?? '') }}"
+                                                               placeholder="0.00">
+                                                        <span class="input-group-text">ريال</span>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div class="input-group input-group-sm">
+                                                        <input type="text" class="form-control bg-success text-white fw-bold volume-total-calc" 
+                                                               id="final_total_surfaced_soil_open" 
+                                                               readonly 
+                                                               value="0.00">
+                                                        <span class="input-group-text bg-success text-white">ريال</span>
+                                                    </div>
+                                                </td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -957,37 +1012,65 @@
                                     <table class="table table-bordered table-sm">
                                         <thead>
                                             <tr>
-                                                <th style="width: 35%">نوع الكابل</th>
+                                                <th style="width: 20%">نوع الكابل</th>
                                                 <th style="width: 15%">الطول (متر)</th>
-                                                <th style="width: 15%">العرض (متر)</th>
-                                                <th style="width: 15%">العمق (متر)</th>
-                                                <th style="width: 20%">الإجمالي</th>
+                                                <th style="width: 10%">العرض (متر)</th>
+                                                <th style="width: 10%">العمق (متر)</th>
+                                                <th style="width: 12%">الإجمالي</th>
+                                                <th style="width: 13%">السعر (ريال)</th>
+                                                <th style="width: 20%">الإجمالي النهائي</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                         @foreach([ 'كابل منخفض', '2 كابل منخفض', '3 كابل منخفض', '4 كابل منخفض', '1 كابل متوسط', '2 كابل متوسط', '3 كابل متوسط   ', '4 كابل متوسط'] as $cable)
                                         <tr>
-                                                <td class="align-middle">{{ $cable }}</td>
-                                                <td colspan="4">
+                                                <td class="align-middle">{{ $cable }} <span class="badge bg-info">12345678900</span></td>
+                                                <td>
                                                     <div class="input-group input-group-sm">
-                                                        <input type="number" step="0.01" class="form-control dimension-input" 
+                                                        <input type="number" step="0.01" class="form-control dimension-input calc-length" 
                                                                name="excavation_surfaced_rock[{{ $loop->index }}]" 
+                                                               data-row="{{ $loop->index }}"
+                                                               data-table="surfaced_rock"
                                                                value="{{ old('excavation_surfaced_rock.' . $loop->index) }}"
                                                                placeholder="0.00">
                                                         <span class="input-group-text">متر</span>
+                                                    </div>
+                                                </td>
+                                                <td><span class="text-muted">-</span></td>
+                                                <td><span class="text-muted">-</span></td>
+                                                <td><span class="text-muted">-</span></td>
+                                                <td>
+                                                    <div class="input-group input-group-sm">
+                                                        <input type="number" step="0.01" class="form-control price-input calc-price" 
+                                                               name="excavation_surfaced_rock_price[{{ $loop->index }}]" 
+                                                               data-row="{{ $loop->index }}"
+                                                               data-table="surfaced_rock"
+                                                               value="{{ old('excavation_surfaced_rock_price.' . $loop->index, $workOrder->excavation_surfaced_rock_price[$loop->index] ?? '') }}"
+                                                               placeholder="0.00">
+                                                        <span class="input-group-text">ريال</span>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div class="input-group input-group-sm">
+                                                        <input type="text" class="form-control bg-success text-white fw-bold total-calc" 
+                                                               id="total_surfaced_rock_{{ $loop->index }}" 
+                                                               readonly 
+                                                               value="0.00">
+                                                        <span class="input-group-text bg-success text-white">ريال</span>
                                                     </div>
                                                 </td>
                                             </tr>
                                             @endforeach
                                             <!-- حفر مفتوح اكبر من 4 كابلات - حقول منفصلة -->
                                             <tr class="table-warning">
-                                                <td class="align-middle fw-bold">حفر مفتوح اكبر من 4 كابلات</td>
+                                                <td class="align-middle fw-bold">حفر مفتوح اكبر من 4 كابلات <span class="badge bg-info">12345678900</span></td>
                                                 <td>
                                                     <div class="input-group input-group-sm">
-                                                        <input type="number" step="0.01" class="form-control dimension-input excavation-calc" 
+                                                        <input type="number" step="0.01" class="form-control dimension-input excavation-calc calc-volume-length" 
                                                                name="excavation_surfaced_rock_open[length]" 
                                                                data-type="length"
                                                                data-target="surfaced_rock_open"
+                                                               data-table="surfaced_rock_open"
                                                                value="{{ old('excavation_surfaced_rock_open.length') }}"
                                                                placeholder="0.00">
                                                         <span class="input-group-text">م</span>
@@ -1024,6 +1107,25 @@
                                                         <span class="input-group-text bg-primary text-white">م³</span>
                                                     </div>
                                                 </td>
+                                                <td>
+                                                    <div class="input-group input-group-sm">
+                                                        <input type="number" step="0.01" class="form-control price-input calc-volume-price" 
+                                                               name="excavation_surfaced_rock_open_price" 
+                                                               data-table="surfaced_rock_open"
+                                                               value="{{ old('excavation_surfaced_rock_open_price', $workOrder->excavation_surfaced_rock_open_price ?? '') }}"
+                                                               placeholder="0.00">
+                                                        <span class="input-group-text">ريال</span>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div class="input-group input-group-sm">
+                                                        <input type="text" class="form-control bg-success text-white fw-bold volume-total-calc" 
+                                                               id="final_total_surfaced_rock_open" 
+                                                               readonly 
+                                                               value="0.00">
+                                                        <span class="input-group-text bg-success text-white">ريال</span>
+                                                    </div>
+                                                </td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -1036,37 +1138,65 @@
                                     <table class="table table-bordered table-sm">
                                         <thead>
                                             <tr>
-                                                <th style="width: 35%">نوع الكابل</th>
+                                                <th style="width: 20%">نوع الكابل</th>
                                                 <th style="width: 15%">الطول (متر)</th>
-                                                <th style="width: 15%">العرض (متر)</th>
-                                                <th style="width: 15%">العمق (متر)</th>
-                                                <th style="width: 20%">الإجمالي</th>
+                                                <th style="width: 10%">العرض (متر)</th>
+                                                <th style="width: 10%">العمق (متر)</th>
+                                                <th style="width: 12%">الإجمالي</th>
+                                                <th style="width: 13%">السعر (ريال)</th>
+                                                <th style="width: 20%">الإجمالي النهائي</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                         @foreach([ 'كابل منخفض', '2 كابل منخفض', '3 كابل منخفض', '4 كابل منخفض', '1 كابل متوسط', '2 كابل متوسط', '3 كابل متوسط', '4 كابل متوسط'] as $cable)
                                         <tr>
-                                                <td class="align-middle">{{ $cable }}</td>
-                                                <td colspan="4">
+                                                <td class="align-middle">{{ $cable }} <span class="badge bg-info">12345678900</span></td>
+                                                <td>
                                                     <div class="input-group input-group-sm">
-                                                        <input type="number" step="0.01" class="form-control dimension-input" 
+                                                        <input type="number" step="0.01" class="form-control dimension-input calc-length" 
                                                                name="excavation_unsurfaced_rock[{{ $loop->index }}]" 
+                                                               data-row="{{ $loop->index }}"
+                                                               data-table="unsurfaced_rock"
                                                                value="{{ old('excavation_unsurfaced_rock.' . $loop->index) }}"
                                                                placeholder="0.00">
                                                         <span class="input-group-text">متر</span>
+                                                    </div>
+                                                </td>
+                                                <td><span class="text-muted">-</span></td>
+                                                <td><span class="text-muted">-</span></td>
+                                                <td><span class="text-muted">-</span></td>
+                                                <td>
+                                                    <div class="input-group input-group-sm">
+                                                        <input type="number" step="0.01" class="form-control price-input calc-price" 
+                                                               name="excavation_unsurfaced_rock_price[{{ $loop->index }}]" 
+                                                               data-row="{{ $loop->index }}"
+                                                               data-table="unsurfaced_rock"
+                                                               value="{{ old('excavation_unsurfaced_rock_price.' . $loop->index, $workOrder->excavation_unsurfaced_rock_price[$loop->index] ?? '') }}"
+                                                               placeholder="0.00">
+                                                        <span class="input-group-text">ريال</span>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div class="input-group input-group-sm">
+                                                        <input type="text" class="form-control bg-success text-white fw-bold total-calc" 
+                                                               id="total_unsurfaced_rock_{{ $loop->index }}" 
+                                                               readonly 
+                                                               value="0.00">
+                                                        <span class="input-group-text bg-success text-white">ريال</span>
                                                     </div>
                                                 </td>
                                             </tr>
                                             @endforeach
                                             <!-- حفر مفتوح اكبر من 4 كابلات - حقول منفصلة -->
                                             <tr class="table-warning">
-                                                <td class="align-middle fw-bold">حفر مفتوح اكبر من 4 كابلات</td>
+                                                <td class="align-middle fw-bold">حفر مفتوح اكبر من 4 كابلات <span class="badge bg-info">12345678900</span></td>
                                                 <td>
                                                     <div class="input-group input-group-sm">
-                                                        <input type="number" step="0.01" class="form-control dimension-input excavation-calc" 
+                                                        <input type="number" step="0.01" class="form-control dimension-input excavation-calc calc-volume-length" 
                                                                name="excavation_unsurfaced_rock_open[length]" 
                                                                data-type="length"
                                                                data-target="unsurfaced_rock_open"
+                                                               data-table="unsurfaced_rock_open"
                                                                value="{{ old('excavation_unsurfaced_rock_open.length') }}"
                                                                placeholder="0.00">
                                                         <span class="input-group-text">م</span>
@@ -1103,6 +1233,25 @@
                                                         <span class="input-group-text bg-primary text-white">م³</span>
                                                     </div>
                                                 </td>
+                                                <td>
+                                                    <div class="input-group input-group-sm">
+                                                        <input type="number" step="0.01" class="form-control price-input calc-volume-price" 
+                                                               name="excavation_unsurfaced_rock_open_price" 
+                                                               data-table="unsurfaced_rock_open"
+                                                               value="{{ old('excavation_unsurfaced_rock_open_price', $workOrder->excavation_unsurfaced_rock_open_price ?? '') }}"
+                                                               placeholder="0.00">
+                                                        <span class="input-group-text">ريال</span>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div class="input-group input-group-sm">
+                                                        <input type="text" class="form-control bg-success text-white fw-bold volume-total-calc" 
+                                                               id="final_total_unsurfaced_rock_open" 
+                                                               readonly 
+                                                               value="0.00">
+                                                        <span class="input-group-text bg-success text-white">ريال</span>
+                                                    </div>
+                                                </td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -1117,7 +1266,7 @@
                 </div>
 
                 <!-- القسم الثاني: الحفر المفتوح -->
-                <div class="col-md-6">
+                <div class="col-md-12">
                     <div class="card shadow-sm mb-4">
                         <div class="card-header bg-success text-white">الحفر المفتوح </div>
                         <div class="card-body">
@@ -1125,23 +1274,26 @@
                                 <table class="table table-bordered table-sm align-middle">
                                     <thead class="table-light">
                                         <tr>
-                                            <th style="width: 35%">العنصر</th>
-                                            <th style="width: 15%">الطول (متر)</th>
-                                            <th style="width: 15%">العرض (متر)</th>
-                                            <th style="width: 15%">العمق (متر)</th>
-                                            <th style="width: 20%">الإجمالي (م³)</th>
+                                            <th style="width: 20%">العنصر</th>
+                                            <th style="width: 12%">الطول (متر)</th>
+                                            <th style="width: 12%">العرض (متر)</th>
+                                            <th style="width: 10%">العمق (متر)</th>
+                                            <th style="width: 12%">الإجمالي (م³)</th>
+                                            <th style="width: 14%">السعر (ريال)</th>
+                                            <th style="width: 20%">الإجمالي النهائي</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         
                                         
                                         <tr>
-                                            <td class="align-middle">أسفلت طبقة أولى</td>
+                                            <td class="align-middle">أسفلت طبقة أولى <span class="badge bg-info">12345678900</span></td>
                                             <td>
                                                 <div class="input-group input-group-sm">
-                                                    <input type="number" step="0.01" class="form-control dimension-input calculate-area" 
+                                                    <input type="number" step="0.01" class="form-control dimension-input calculate-area calc-area-length" 
                                                            name="open_excavation[first_asphalt][length]" 
                                                            data-row="first_asphalt"
+                                                           data-table="first_asphalt"
                                                            value="{{ old('open_excavation.first_asphalt.length') }}"
                                                            placeholder="0.00">
                                                     <span class="input-group-text">م</span>
@@ -1172,14 +1324,34 @@
                                                     <span class="input-group-text">م²</span>
                                                 </div>
                                             </td>
-                                        </tr>
-                                        <tr>
-                                            <td class="align-middle">كشط واعادة السفلتة 21324</td>
                                             <td>
                                                 <div class="input-group input-group-sm">
-                                                    <input type="number" step="0.01" class="form-control dimension-input calculate-area" 
+                                                    <input type="number" step="0.01" class="form-control price-input calc-area-price" 
+                                                           name="open_excavation[first_asphalt][price]" 
+                                                           data-table="first_asphalt"
+                                                           value="{{ old('open_excavation.first_asphalt.price', $workOrder->open_excavation['first_asphalt']['price'] ?? '') }}"
+                                                           placeholder="0.00">
+                                                    <span class="input-group-text">ريال</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="input-group input-group-sm">
+                                                    <input type="text" class="form-control bg-success text-white fw-bold area-total-calc" 
+                                                           id="final_total_first_asphalt" 
+                                                           readonly 
+                                                           value="0.00">
+                                                    <span class="input-group-text bg-success text-white">ريال</span>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="align-middle">كشط واعادة السفلتة 21324 <span class="badge bg-info">12345678900</span></td>
+                                            <td>
+                                                <div class="input-group input-group-sm">
+                                                    <input type="number" step="0.01" class="form-control dimension-input calculate-area calc-area-length" 
                                                            name="open_excavation[asphalt_scraping][length]" 
                                                            data-row="asphalt_scraping"
+                                                           data-table="asphalt_scraping"
                                                            value="{{ old('open_excavation.asphalt_scraping.length') }}"
                                                            placeholder="0.00">
                                                     <span class="input-group-text">م</span>
@@ -1210,6 +1382,25 @@
                                                     <span class="input-group-text">م²</span>
                                                 </div>
                                             </td>
+                                            <td>
+                                                <div class="input-group input-group-sm">
+                                                    <input type="number" step="0.01" class="form-control price-input calc-area-price" 
+                                                           name="open_excavation[asphalt_scraping][price]" 
+                                                           data-table="asphalt_scraping"
+                                                           value="{{ old('open_excavation.asphalt_scraping.price', $workOrder->open_excavation['asphalt_scraping']['price'] ?? '') }}"
+                                                           placeholder="0.00">
+                                                    <span class="input-group-text">ريال</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="input-group input-group-sm">
+                                                    <input type="text" class="form-control bg-success text-white fw-bold area-total-calc" 
+                                                           id="final_total_asphalt_scraping" 
+                                                           readonly 
+                                                           value="0.00">
+                                                    <span class="input-group-text bg-success text-white">ريال</span>
+                                                </div>
+                                            </td>
                                         </tr>
                                         <tr>
                                             <td colspan="5"><hr class='my-2'></td>
@@ -1228,90 +1419,232 @@
                                     <table class="table table-bordered table-sm">
                                         <thead>
                                             <tr>
-                                                <th style="width: 40%">نوع الحفر</th>
-                                                <th style="width: 30%">الأبعاد</th>
-                                                <th style="width: 30%">الطول (متر)</th>
+                                                <th style="width: 25%">نوع الحفر</th>
+                                                <th style="width: 15%">الأبعاد</th>
+                                                <th style="width: 20%">الطول (متر)</th>
+                                                <th style="width: 20%">السعر (ريال)</th>
+                                                <th style="width: 20%">الإجمالي النهائي</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             <tr>
-                                                <td class="align-middle">حفر متوسط</td>
+                                                <td class="align-middle">حفر متوسط <span class="badge bg-info">12345678900</span></td>
                                                 <td class="align-middle">20 × 80</td>
                                                 <td>
                                                     <div class="input-group input-group-sm">
-                                                        <input type="number" step="0.01" class="form-control dimension-input" 
+                                                        <input type="number" step="0.01" class="form-control dimension-input calc-precise-length" 
                                                                name="excavation_precise[medium]" 
+                                                               data-type="medium"
                                                                value="{{ old('excavation_precise.medium', $workOrder->excavation_precise['medium'] ?? '') }}"
                                                                placeholder="0.00">
                                                         <span class="input-group-text">م</span>
                                                     </div>
                                                 </td>
+                                                <td>
+                                                    <div class="input-group input-group-sm">
+                                                        <input type="number" step="0.01" class="form-control price-input calc-precise-price" 
+                                                               name="excavation_precise[medium_price]" 
+                                                               data-type="medium"
+                                                               value="{{ old('excavation_precise.medium_price', $workOrder->excavation_precise['medium_price'] ?? '') }}"
+                                                               placeholder="0.00">
+                                                        <span class="input-group-text">ريال</span>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div class="input-group input-group-sm">
+                                                        <input type="text" class="form-control bg-success text-white fw-bold precise-total-calc" 
+                                                               id="final_total_precise_medium" 
+                                                               readonly 
+                                                               value="0.00">
+                                                        <span class="input-group-text bg-success text-white">ريال</span>
+                                                    </div>
+                                                </td>
                                             </tr>
                                             <tr>
-                                                <td class="align-middle">حفر منخفض</td>
+                                                <td class="align-middle">حفر منخفض <span class="badge bg-info">12345678900</span></td>
                                                 <td class="align-middle">20 × 56</td>
                                                 <td>
                                                     <div class="input-group input-group-sm">
-                                                        <input type="number" step="0.01" class="form-control dimension-input" 
+                                                        <input type="number" step="0.01" class="form-control dimension-input calc-precise-length" 
                                                                name="excavation_precise[low]" 
+                                                               data-type="low"
                                                                value="{{ old('excavation_precise.low', $workOrder->excavation_precise['low'] ?? '') }}"
                                                                placeholder="0.00">
                                                         <span class="input-group-text">م</span>
                                                     </div>
                                                 </td>
+                                                <td>
+                                                    <div class="input-group input-group-sm">
+                                                        <input type="number" step="0.01" class="form-control price-input calc-precise-price" 
+                                                               name="excavation_precise[low_price]" 
+                                                               data-type="low"
+                                                               value="{{ old('excavation_precise.low_price', $workOrder->excavation_precise['low_price'] ?? '') }}"
+                                                               placeholder="0.00">
+                                                        <span class="input-group-text">ريال</span>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div class="input-group input-group-sm">
+                                                        <input type="text" class="form-control bg-success text-white fw-bold precise-total-calc" 
+                                                               id="final_total_precise_low" 
+                                                               readonly 
+                                                               value="0.00">
+                                                        <span class="input-group-text bg-success text-white">ريال</span>
+                                                    </div>
+                                                </td>
                                             </tr>
                                             <tr>
-                                                        <td class="align-middle">تمديد كيبل 4x70 منخفض</td>
-                                                        <td colspan="2">
+                                                        <td class="align-middle">تمديد كيبل 4x70 منخفض <span class="badge bg-info">12345678900</span></td>
+                                                        <td>-</td>
+                                                        <td>
                                                             <div class="input-group input-group-sm">
-                                                                <input type="number" step="0.01" min="0" class="form-control" name="electrical_items[cable_4x70_low][meters]" value="{{ old('electrical_items.cable_4x70_low.meters', '0') }}" placeholder="0.00">
+                                                                <input type="number" step="0.01" min="0" class="form-control calc-electrical-length" name="electrical_items[cable_4x70_low][meters]" data-type="cable_4x70_low" value="{{ old('electrical_items.cable_4x70_low.meters', '0') }}" placeholder="0.00">
                                                                 <div class="input-group-append">
                                                                     <span class="input-group-text">متر</span>
                                                                 </div>
                                                             </div>
                                                         </td>
+                                                        <td>
+                                                            <div class="input-group input-group-sm">
+                                                                <input type="number" step="0.01" class="form-control price-input calc-electrical-price" 
+                                                                       name="electrical_items[cable_4x70_low][price]" 
+                                                                       data-type="cable_4x70_low"
+                                                                       value="{{ old('electrical_items.cable_4x70_low.price', $workOrder->electrical_items['cable_4x70_low']['price'] ?? '') }}"
+                                                                       placeholder="0.00">
+                                                                <span class="input-group-text">ريال</span>
+                                                            </div>
+                                                        </td>
+                                                        <td>
+                                                            <div class="input-group input-group-sm">
+                                                                <input type="text" class="form-control bg-success text-white fw-bold electrical-total-calc" 
+                                                                       id="final_total_cable_4x70_low" 
+                                                                       readonly 
+                                                                       value="0.00">
+                                                                <span class="input-group-text bg-success text-white">ريال</span>
+                                                            </div>
+                                                        </td>
                                                     </tr>
                                                     <tr>
-                                                        <td class="align-middle">تمديد كيبل 4x185 منخفض</td>
-                                                        <td colspan="2">
+                                                        <td class="align-middle">تمديد كيبل 4x185 منخفض <span class="badge bg-info">12345678900</span></td>
+                                                        <td>-</td>
+                                                        <td>
                                                             <div class="input-group input-group-sm">
-                                                                <input type="number" step="0.01" min="0" class="form-control" name="electrical_items[cable_4x185_low][meters]" value="{{ old('electrical_items.cable_4x185_low.meters', '0') }}" placeholder="0.00">
+                                                                <input type="number" step="0.01" min="0" class="form-control calc-electrical-length" name="electrical_items[cable_4x185_low][meters]" data-type="cable_4x185_low" value="{{ old('electrical_items.cable_4x185_low.meters', '0') }}" placeholder="0.00">
                                                                 <div class="input-group-append">
                                                                     <span class="input-group-text">متر</span>
                                                                 </div>
                                                             </div>
                                                         </td>
+                                                        <td>
+                                                            <div class="input-group input-group-sm">
+                                                                <input type="number" step="0.01" class="form-control price-input calc-electrical-price" 
+                                                                       name="electrical_items[cable_4x185_low][price]" 
+                                                                       data-type="cable_4x185_low"
+                                                                       value="{{ old('electrical_items.cable_4x185_low.price', $workOrder->electrical_items['cable_4x185_low']['price'] ?? '') }}"
+                                                                       placeholder="0.00">
+                                                                <span class="input-group-text">ريال</span>
+                                                            </div>
+                                                        </td>
+                                                        <td>
+                                                            <div class="input-group input-group-sm">
+                                                                <input type="text" class="form-control bg-success text-white fw-bold electrical-total-calc" 
+                                                                       id="final_total_cable_4x185_low" 
+                                                                       readonly 
+                                                                       value="0.00">
+                                                                <span class="input-group-text bg-success text-white">ريال</span>
+                                                            </div>
+                                                        </td>
                                                     </tr>
                                                     <tr>
-                                                        <td class="align-middle">تمديد كيبل 4x300 منخفض</td>
-                                                        <td colspan="2">
+                                                        <td class="align-middle">تمديد كيبل 4x300 منخفض <span class="badge bg-info">12345678900</span></td>
+                                                        <td>-</td>
+                                                        <td>
                                                             <div class="input-group input-group-sm">
-                                                                <input type="number" step="0.01" min="0" class="form-control" name="electrical_items[cable_4x300_low][meters]" value="{{ old('electrical_items.cable_4x300_low.meters', '0') }}" placeholder="0.00">
+                                                                <input type="number" step="0.01" min="0" class="form-control calc-electrical-length" name="electrical_items[cable_4x300_low][meters]" data-type="cable_4x300_low" value="{{ old('electrical_items.cable_4x300_low.meters', '0') }}" placeholder="0.00">
                                                                 <div class="input-group-append">
                                                                     <span class="input-group-text">متر</span>
                                                                 </div>
                                                             </div>
                                                         </td>
+                                                        <td>
+                                                            <div class="input-group input-group-sm">
+                                                                <input type="number" step="0.01" class="form-control price-input calc-electrical-price" 
+                                                                       name="electrical_items[cable_4x300_low][price]" 
+                                                                       data-type="cable_4x300_low"
+                                                                       value="{{ old('electrical_items.cable_4x300_low.price', $workOrder->electrical_items['cable_4x300_low']['price'] ?? '') }}"
+                                                                       placeholder="0.00">
+                                                                <span class="input-group-text">ريال</span>
+                                                            </div>
+                                                        </td>
+                                                        <td>
+                                                            <div class="input-group input-group-sm">
+                                                                <input type="text" class="form-control bg-success text-white fw-bold electrical-total-calc" 
+                                                                       id="final_total_cable_4x300_low" 
+                                                                       readonly 
+                                                                       value="0.00">
+                                                                <span class="input-group-text bg-success text-white">ريال</span>
+                                                            </div>
+                                                        </td>
                                                     </tr>
                                                     <tr>
-                                                        <td class="align-middle">تمديد كيبل 3x500 متوسط</td>
-                                                        <td colspan="2">
+                                                        <td class="align-middle">تمديد كيبل 3x500 متوسط <span class="badge bg-info">12345678900</span></td>
+                                                        <td>-</td>
+                                                        <td>
                                                             <div class="input-group input-group-sm">
-                                                                <input type="number" step="0.01" min="0" class="form-control" name="electrical_items[cable_3x500_med][meters]" value="{{ old('electrical_items.cable_3x500_med.meters', '0') }}" placeholder="0.00">
+                                                                <input type="number" step="0.01" min="0" class="form-control calc-electrical-length" name="electrical_items[cable_3x500_med][meters]" data-type="cable_3x500_med" value="{{ old('electrical_items.cable_3x500_med.meters', '0') }}" placeholder="0.00">
                                                                 <div class="input-group-append">
                                                                     <span class="input-group-text">متر</span>
                                                                 </div>
                                                             </div>
                                                         </td>
+                                                        <td>
+                                                            <div class="input-group input-group-sm">
+                                                                <input type="number" step="0.01" class="form-control price-input calc-electrical-price" 
+                                                                       name="electrical_items[cable_3x500_med][price]" 
+                                                                       data-type="cable_3x500_med"
+                                                                       value="{{ old('electrical_items.cable_3x500_med.price', $workOrder->electrical_items['cable_3x500_med']['price'] ?? '') }}"
+                                                                       placeholder="0.00">
+                                                                <span class="input-group-text">ريال</span>
+                                                            </div>
+                                                        </td>
+                                                        <td>
+                                                            <div class="input-group input-group-sm">
+                                                                <input type="text" class="form-control bg-success text-white fw-bold electrical-total-calc" 
+                                                                       id="final_total_cable_3x500_med" 
+                                                                       readonly 
+                                                                       value="0.00">
+                                                                <span class="input-group-text bg-success text-white">ريال</span>
+                                                            </div>
+                                                        </td>
                                                     </tr>
                                                     <tr>
-                                                        <td class="align-middle">تمديد كيبل 3x400 متوسط</td>
-                                                        <td colspan="2">
+                                                        <td class="align-middle">تمديد كيبل 3x400 متوسط <span class="badge bg-info">12345678900</span></td>
+                                                        <td>-</td>
+                                                        <td>
                                                             <div class="input-group input-group-sm">
-                                                                <input type="number" step="0.01" min="0" class="form-control" name="electrical_items[cable_3x400_med][meters]" value="{{ old('electrical_items.cable_3x400_med.meters', '0') }}" placeholder="0.00">
+                                                                <input type="number" step="0.01" min="0" class="form-control calc-electrical-length" name="electrical_items[cable_3x400_med][meters]" data-type="cable_3x400_med" value="{{ old('electrical_items.cable_3x400_med.meters', '0') }}" placeholder="0.00">
                                                                 <div class="input-group-append">
                                                                     <span class="input-group-text">متر</span>
                                                                 </div>
+                                                            </div>
+                                                        </td>
+                                                        <td>
+                                                            <div class="input-group input-group-sm">
+                                                                <input type="number" step="0.01" class="form-control price-input calc-electrical-price" 
+                                                                       name="electrical_items[cable_3x400_med][price]" 
+                                                                       data-type="cable_3x400_med"
+                                                                       value="{{ old('electrical_items.cable_3x400_med.price', $workOrder->electrical_items['cable_3x400_med']['price'] ?? '') }}"
+                                                                       placeholder="0.00">
+                                                                <span class="input-group-text">ريال</span>
+                                                            </div>
+                                                        </td>
+                                                        <td>
+                                                            <div class="input-group input-group-sm">
+                                                                <input type="text" class="form-control bg-success text-white fw-bold electrical-total-calc" 
+                                                                       id="final_total_cable_3x400_med" 
+                                                                       readonly 
+                                                                       value="0.00">
+                                                                <span class="input-group-text bg-success text-white">ريال</span>
                                                             </div>
                                                         </td>
                                                     </tr>
@@ -1327,157 +1660,9 @@
 
                 
 
-                <!-- زر تثبيت الجدول -->
-                <button type="button" class="btn btn-primary fixed-table-toggle" id="toggle-fixed-table" title="تثبيت/إلغاء تثبيت الجدول">
-                    <i class="fas fa-thumbtack"></i>
-                </button>
 
-                <!-- الجدول المثبت -->
-                <div class="fixed-table-container" id="fixed-table-container">
-                    <div class="card border-0 h-100">
-                        <div class="card-header bg-gradient text-white p-2" style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <h6 class="mb-0">
-                                    <i class="fas fa-lock me-1"></i>الجدول المثبت
-                                </h6>
-                                <button type="button" class="btn btn-sm btn-outline-light" id="close-fixed-table">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="card-body p-2">
-                            <div class="table-responsive">
-                                <table class="table table-sm table-striped" id="fixed-excavation-table">
-                                    <thead class="table-dark">
-                                        <tr>
-                                            <th class="text-center">#</th>
-                                            <th>النوع</th>
-                                            <th class="text-center">الكمية</th>
-                                            <th class="text-center">الوحدة</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="fixed-table-tbody">
-                                        <!-- سيتم ملء البيانات تلقائياً -->
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
 
-                <!-- جدول شامل لبيانات الحفريات -->
-                <div class="col-12">
-                    <div class="card shadow-lg mb-4 border-0 excavation-details-container permanent-visible">
-                        <div class="card-header bg-gradient text-white data-locked" style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);">
-                            <i class="fas fa-shovel me-2"></i>
-                            <h5 class="mb-0 d-inline">جدول تفصيلي لجميع بيانات الحفريات المدخلة - مثبت دائماً</h5>
-                            <div class="float-end">
-                                <button type="button" class="btn btn-warning btn-sm me-1" id="lock-data-btn">
-                                    <i class="fas fa-lock me-1"></i>تثبيت البيانات
-                                </button>
-                            </div>
-                        </div>
-                        <div class="card-body">
-                            <div class="alert alert-warning border-0 shadow-sm">
-                                <i class="fas fa-excavator me-2"></i>
-                                هذا الجدول يعرض تفاصيل شاملة لجميع أنواع الحفريات والأعمال المدنية المدخلة في النموذج
-                            </div>
-                            
-                            <!-- أزرار التصفية تم حذفها -->
 
-                            <!-- الجدول التفصيلي -->
-                            <div class="table-responsive">
-                                <table class="table table-striped table-hover align-middle" id="excavation-details-table">
-                                    <thead class="table-dark">
-                                        <tr>
-                                            <th style="width: 8%" class="text-center">#</th>
-                                            <th style="width: 40%">تفاصيل نوع الحفرية</th>
-                                            <th style="width: 15%" class="text-center">الكمية</th>
-                                            <th style="width: 12%" class="text-center">الوحدة</th>
-                                            <th style="width: 15%" class="text-center">الحجم/المساحة</th>
-                                            <th style="width: 10%" class="text-center bg-warning">حالة السطح</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="excavation-details-tbody">
-                                        <!-- سيتم ملء البيانات تلقائياً بواسطة JavaScript -->
-                                    </tbody>
-                                </table>
-                            </div>
-
-                            <!-- أزرار إدارة الجدول التفصيلي -->
-                            <div class="row mt-3 mb-4">
-                                <div class="col-12">
-                                    <div class="d-flex flex-wrap gap-2 justify-content-center">
-                                        <button type="button" class="btn btn-primary" onclick="scrollToExcavationDetails()">
-                                            <i class="fas fa-eye me-2"></i>
-                                            عرض الجدول التفصيلي
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- إحصائيات تفصيلية -->
-                            <div class="row mt-4 stats-cards">
-                                <div class="col-md-3">
-                                    <div class="card bg-success text-white border-0 shadow-sm">
-                                        <div class="card-body text-center">
-                                            <i class="fas fa-mountain fa-2x mb-2"></i>
-                                            <h5 class="mb-1" id="total-soil-excavation">0.00</h5>
-                                            <small>إجمالي حفريات التربة (م)</small>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="card bg-danger text-white border-0 shadow-sm">
-                                        <div class="card-body text-center">
-                                            <i class="fas fa-hammer fa-2x mb-2"></i>
-                                            <h5 class="mb-1" id="total-rock-excavation">0.00</h5>
-                                            <small>إجمالي حفريات الصخر (م)</small>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="card bg-warning text-white border-0 shadow-sm">
-                                        <div class="card-body text-center">
-                                            <i class="fas fa-road fa-2x mb-2"></i>
-                                            <h5 class="mb-1" id="total-asphalt-work">0.00</h5>
-                                            <small>إجمالي أعمال الأسفلت (م²)</small>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="card bg-info text-white border-0 shadow-sm">
-                                        <div class="card-body text-center">
-                                            <i class="fas fa-crosshairs fa-2x mb-2"></i>
-                                            <h5 class="mb-1" id="total-precise-excavation">0.00</h5>
-                                            <small>إجمالي الحفريات الدقيقة (م)</small>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- ملخص نهائي -->
-                            <div class="mt-4 p-3 bg-light rounded">
-                                <h6 class="text-primary mb-3">
-                                    <i class="fas fa-chart-bar me-2"></i>ملخص إجمالي للحفريات
-                                </h6>
-                                <div class="row">
-                                    <div class="col-md-4">
-                                        <strong>إجمالي الطول:</strong> <span id="final-total-length" class="text-primary fw-bold">0.00 متر</span>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <strong>إجمالي الحجم:</strong> <span id="final-total-volume" class="text-success fw-bold">0.00 متر مكعب</span>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <strong>إجمالي المساحة:</strong> <span id="final-total-area" class="text-warning fw-bold">0.00 متر مربع</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                
                 <!-- قسم رفع الصور -->
                 <div class="col-md-6">
                     <div class="card shadow-sm mb-4">
@@ -1750,76 +1935,14 @@
 
         console.log('تم إعداد جميع الأحدث بنجاح');
         
-        // تحديث الجدول التفصيلي عند تحميل الصفحة
-        setTimeout(() => {
-            // فحص البيانات المحفوظة أولاً
-            const savedData = loadDataFromLocalStorage();
-            if (savedData && savedData.length > 0) {
-                // استعادة حالة التثبيت
-                const mainTable = document.querySelector('.excavation-details-container');
-                const lockBtn = document.getElementById('lock-data-btn');
-                
-                if (mainTable && lockBtn) {
-                    mainTable.classList.add('data-locked');
-                    lockBtn.innerHTML = '<i class="fas fa-lock me-1"></i>البيانات مثبتة';
-                    lockBtn.className = 'btn btn-success btn-sm me-1';
-                    
-                    // منع تحديث البيانات
-                    const updateBtn = document.getElementById('update-excavation-table-btn');
-                    if (updateBtn) updateBtn.disabled = true;
-                }
-                console.log('تم استعادة حالة التثبيت من التخزين المحلي');
-            }
-            
-            updateExcavationDetailsTable();
-            loadFixedTableData();
-        }, 500);
 
-        // إدارة الجدول المثبت
-        setupFixedTableControls();
         
-        // إضافة مؤشر بصري للتثبيت في العنوان
-        const mainCardHeader = document.querySelector('.excavation-details-container .card-header');
-        if (mainCardHeader) {
-            const lockIndicator = document.createElement('span');
-            lockIndicator.id = 'lock-indicator';
-            lockIndicator.innerHTML = ' <i class="fas fa-lock-open text-light ms-2" title="غير مثبت"></i>';
-            mainCardHeader.querySelector('h5').appendChild(lockIndicator);
-        }
+
     });
 
-    // دوال الجدول التفصيلي - متاحة عالمياً
-    window.scrollToExcavationDetails = function() {
-        console.log('الانتقال إلى الجدول التفصيلي');
-        const detailsSection = document.querySelector('#excavation-details-table');
-        if (detailsSection) {
-            detailsSection.scrollIntoView({ behavior: 'smooth' });
-            updateExcavationDetailsTable();
-        } else {
-            console.warn('لم يتم العثور على الجدول التفصيلي');
-        }
-    };
 
-    window.updateExcavationDetailsTable = function() {
-        console.log('تحديث الجدول التفصيلي');
-        const tbody = document.getElementById('excavation-details-tbody');
-        const mainTable = document.querySelector('.excavation-details-container');
-        
-        if (!tbody) {
-            console.warn('لم يتم العثور على tbody');
-            return;
-        }
 
-        // فحص إذا كانت البيانات مثبتة
-        if (mainTable && mainTable.classList.contains('data-locked')) {
-            console.log('البيانات مثبتة - لا يمكن التحديث');
-            const savedData = loadDataFromLocalStorage();
-            if (savedData && savedData.length > 0) {
-                console.log('استعادة البيانات المثبتة من التخزين المحلي');
-                displaySavedData(savedData, tbody);
-                return;
-            }
-        }
+
 
         // تنظيف الجدول
         tbody.innerHTML = '';
@@ -1830,14 +1953,14 @@
         // 1. بيانات الحفريات الترابية غير المسفلتة
         const soilUnsurfacedInputs = document.querySelectorAll('input[name^="excavation_unsurfaced_soil"]');
         const cableTypes = [
-            'كابل منخفض واحد', 
-            'كابلين منخفضين', 
-            '3 كابلات منخفضة', 
-            '4 كابلات منخفضة',
-            'كابل متوسط واحد', 
-            'كابلين متوسطين', 
-            '3 كابلات متوسطة', 
-            '4 كابلات متوسطة'
+            'كابل منخفض واحد 12345678900', 
+            'كابلين منخفضين 12345678900', 
+            '3 كابلات منخفضة 12345678900', 
+            '4 كابلات منخفضة 12345678900',
+            'كابل متوسط واحد 12345678900', 
+            'كابلين متوسطين 12345678900', 
+            '3 كابلات متوسطة 12345678900', 
+            '4 كابلات متوسطة 12345678900'
         ];
         
         soilUnsurfacedInputs.forEach((input, index) => {
@@ -1968,15 +2091,15 @@
         const preciseExcavationTypes = [
             { 
                 name: 'excavation_precise[medium]', 
-                label: 'حفر متوسط دقيق', 
-                description: 'حفر دقيق بأبعاد 20 × 80 سم',
+                label: 'حفر متوسط دقيق 12345678900', 
+                description: 'حفر دقيق بأبعاد 20 × 80 سم 12345678900',
                 dimensions: '20 × 80 سم',
                 badge: 'info'
             },
             { 
                 name: 'excavation_precise[low]', 
-                label: 'حفر منخفض دقيق', 
-                description: 'حفر دقيق بأبعاد 20 × 56 سم',
+                label: 'حفر منخفض دقيق 12345678900', 
+                description: 'حفر دقيق بأبعاد 20 × 56 سم 12345678900',
                 dimensions: '20 × 56 سم',
                 badge: 'info'
             }
@@ -2006,15 +2129,15 @@
             { 
                 name: 'open_excavation[first_asphalt][length]', 
                 widthName: 'open_excavation[first_asphalt][width]',
-                label: 'أسفلت طبقة أولى', 
-                description: 'عمل سطحي - طبقة أساسية',
+                label: 'أسفلت طبقة أولى 12345678900', 
+                description: 'عمل سطحي - طبقة أساسية 12345678900',
                 badge: 'primary'
             },
             { 
                 name: 'open_excavation[asphalt_scraping][length]', 
                 widthName: 'open_excavation[asphalt_scraping][width]',
-                label: 'كشط وإعادة السفلتة', 
-                description: 'إصلاح وتجديد السطح',
+                label: 'كشط وإعادة السفلتة 12345678900', 
+                description: 'إصلاح وتجديد السطح 12345678900',
                 badge: 'warning'
             }
         ];
@@ -2047,32 +2170,32 @@
         const electricalTypes = [
             { 
                 name: 'electrical_items[cable_4x70_low][meters]', 
-                label: 'كيبل 4x70 منخفض', 
-                description: 'جهد منخفض - 4 أسلاك',
+                label: 'كيبل 4x70 منخفض 12345678900', 
+                description: 'جهد منخفض - 4 أسلاك 12345678900',
                 badge: 'danger'
             },
             { 
                 name: 'electrical_items[cable_4x185_low][meters]', 
-                label: 'كيبل 4x185 منخفض', 
-                description: 'جهد منخفض - 4 أسلاك',
+                label: 'كيبل 4x185 منخفض 12345678900', 
+                description: 'جهد منخفض - 4 أسلاك 12345678900',
                 badge: 'danger'
             },
             { 
                 name: 'electrical_items[cable_4x300_low][meters]', 
-                label: 'كيبل 4x300 منخفض', 
-                description: 'جهد منخفض - 4 أسلاك',
+                label: 'كيبل 4x300 منخفض 12345678900', 
+                description: 'جهد منخفض - 4 أسلاك 12345678900',
                 badge: 'danger'
             },
             { 
                 name: 'electrical_items[cable_3x500_med][meters]', 
-                label: 'كيبل 3x500 متوسط', 
-                description: 'جهد متوسط - 3 أسلاك',
+                label: 'كيبل 3x500 متوسط 12345678900', 
+                description: 'جهد متوسط - 3 أسلاك 12345678900',
                 badge: 'primary'
             },
             { 
                 name: 'electrical_items[cable_3x400_med][meters]', 
-                label: 'كيبل 3x400 متوسط', 
-                description: 'جهد متوسط - 3 أسلاك',
+                label: 'كيبل 3x400 متوسط 12345678900', 
+                description: 'جهد متوسط - 3 أسلاك 12345678900',
                 badge: 'primary'
             }
         ];
@@ -2171,16 +2294,10 @@
 
         console.log(`تم عرض ${excavationData.length} عنصر في الجدول التفصيلي`);
         
-        // تحديث الإحصائيات
-        updateExcavationStats(excavationData);
-        
         // إفراغ حقول حفريات التربة الترابية المسفلتة بعد العرض
         clearSurfacedSoilExcavationFields();
         
-        // تحديث الجدول المثبت
-        setTimeout(() => {
-            loadFixedTableData();
-        }, 100);
+
     };
 
     // دالة لإفراغ حقول حفريات التربة الترابية المسفلتة
@@ -2281,566 +2398,201 @@
         }, 5000);
     }
 
-    // عرض البيانات المحفوظة
-    function displaySavedData(savedData, tbody) {
-        tbody.innerHTML = '';
-        
-        savedData.forEach((item, index) => {
-            const row = tbody.insertRow();
-            row.innerHTML = `
-                <td class="text-center fw-bold">${item.index}</td>
-                <td>
-                    <div class="d-flex align-items-center">
-                        <div class="bg-success rounded-circle me-2" style="width: 12px; height: 12px;"></div>
-                        <div>
-                            <strong class="d-block text-success">${item.type} (محفوظ)</strong>
-                            <small class="text-muted">بيانات مثبتة</small>
-                        </div>
-                    </div>
-                </td>
-                <td class="text-center">
-                    <strong class="text-primary fs-5">${item.quantity}</strong>
-                </td>
-                <td class="text-center">
-                    <span class="badge bg-info text-white px-2 py-1">${item.unit}</span>
-                </td>
-                <td class="text-center">
-                    <span class="text-success fw-bold fs-6">${item.volume}</span>
-                </td>
-                <td class="text-center">
-                    <span class="badge bg-success text-white px-2 py-1">
-                        <i class="fas fa-lock me-1"></i>
-                        ${item.surface}
-                    </span>
-                </td>
-                <td class="text-center">
-                    <span class="badge bg-success px-2 py-1">
-                        <i class="fas fa-database me-1"></i>
-                        محفوظ
-                    </span>
-                </td>
-            `;
-            
-            // إضافة فئة للصف المحفوظ
-            row.classList.add('table-success', 'table-hover-row');
-        });
-    }
 
-    // دالة لتحديث إحصائيات الحفريات
-    function updateExcavationStats(excavationData) {
-        let totalSoilLength = 0;
-        let totalRockLength = 0;
-        let totalVolume = 0;
-        let totalAsphaltArea = 0;
-        let totalPreciseExcavation = 0;
-        let totalCount = excavationData.length;
 
-        excavationData.forEach(item => {
-            if (item.type.includes('التربة الترابية')) {
-                totalSoilLength += parseFloat(item.value) || 0;
-            } else if (item.type.includes('التربة الصخرية')) {
-                totalRockLength += parseFloat(item.value) || 0;
-            } else if (item.type === 'الحفريات الدقيقة') {
-                totalPreciseExcavation += parseFloat(item.value) || 0;
-            } else if (item.type === 'أعمال الأسفلت') {
-                totalAsphaltArea += parseFloat(item.value) || 0;
-            }
-            
-            if (item.unit === 'متر مكعب') {
-                totalVolume += parseFloat(item.value) || 0;
-            }
-        });
 
-        // تحديث الإحصائيات في الكروت
-        const soilStat = document.getElementById('total-soil-excavation');
-        const rockStat = document.getElementById('total-rock-excavation');
-        const asphaltStat = document.getElementById('total-asphalt-work');
-        const preciseStat = document.getElementById('total-precise-excavation');
-        const volumeStat = document.getElementById('final-total-volume');
-        const lengthStat = document.getElementById('final-total-length');
-        const areaStat = document.getElementById('final-total-area');
 
-        if (soilStat) soilStat.textContent = totalSoilLength.toFixed(2);
-        if (rockStat) rockStat.textContent = totalRockLength.toFixed(2);
-        if (asphaltStat) asphaltStat.textContent = totalAsphaltArea.toFixed(2);
-        if (preciseStat) preciseStat.textContent = totalPreciseExcavation.toFixed(2);
-        if (volumeStat) volumeStat.textContent = totalVolume.toFixed(2) + ' متر مكعب';
-        if (lengthStat) lengthStat.textContent = (totalSoilLength + totalRockLength + totalPreciseExcavation).toFixed(2) + ' متر';
-        if (areaStat) areaStat.textContent = totalAsphaltArea.toFixed(2) + ' متر مربع';
-        
-        // إضافة إشارة للبيانات المثبتة
-        const mainTable = document.querySelector('.excavation-details-container');
-        if (mainTable && mainTable.classList.contains('data-locked')) {
-            if (soilStat) soilStat.innerHTML += ' <i class="fas fa-lock text-success ms-1" title="مثبت"></i>';
-            if (rockStat) rockStat.innerHTML += ' <i class="fas fa-lock text-success ms-1" title="مثبت"></i>';
-            if (volumeStat) volumeStat.innerHTML += ' <i class="fas fa-lock text-success ms-1" title="مثبت"></i>';
-            if (lengthStat) lengthStat.innerHTML += ' <i class="fas fa-lock text-success ms-1" title="مثبت"></i>';
-        }
 
-        // حفظ البيانات في التخزين المحلي
-        const summaryData = {
-            totalSoilLength,
-            totalRockLength,
-            totalVolume,
-            totalAsphaltArea,
-            totalPreciseExcavation,
-            timestamp: new Date().getTime()
-        };
-        localStorage.setItem('excavationSummary_{{ $workOrder->id }}', JSON.stringify(summaryData));
 
-        // حفظ البيانات في قاعدة البيانات
-        const formData = new FormData();
-        formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
-        formData.append('_method', 'PUT');
-        formData.append('excavation_summary', JSON.stringify(summaryData));
 
-        fetch(window.location.href, {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                'X-Requested-With': 'XMLHttpRequest',
-                'Accept': 'application/json'
-            },
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (!data.success) {
-                console.error('خطأ في حفظ البيانات:', data.message);
-            }
-        })
-        .catch(error => {
-            console.error('خطأ في حفظ البيانات:', error);
-        });
-    }
 
-    // دالة تحميل البيانات المحفوظة
-    function loadSavedExcavationSummary() {
-        const savedData = localStorage.getItem('excavationSummary_{{ $workOrder->id }}');
-        if (savedData) {
-            const data = JSON.parse(savedData);
-            
-            // التحقق من صلاحية البيانات (24 ساعة)
-            const now = new Date().getTime();
-            const hours24 = 24 * 60 * 60 * 1000;
-            if (now - data.timestamp > hours24) {
-                localStorage.removeItem('excavationSummary_{{ $workOrder->id }}');
-                return false;
-            }
 
-            // تحديث الإحصائيات في الكروت
-            const soilStat = document.getElementById('total-soil-excavation');
-            const rockStat = document.getElementById('total-rock-excavation');
-            const asphaltStat = document.getElementById('total-asphalt-work');
-            const preciseStat = document.getElementById('total-precise-excavation');
-            const volumeStat = document.getElementById('final-total-volume');
-            const lengthStat = document.getElementById('final-total-length');
-            const areaStat = document.getElementById('final-total-area');
-
-            if (soilStat) soilStat.textContent = data.totalSoilLength.toFixed(2);
-            if (rockStat) rockStat.textContent = data.totalRockLength.toFixed(2);
-            if (asphaltStat) asphaltStat.textContent = data.totalAsphaltArea.toFixed(2);
-            if (preciseStat) preciseStat.textContent = data.totalPreciseExcavation.toFixed(2);
-            if (volumeStat) volumeStat.textContent = data.totalVolume.toFixed(2) + ' متر مكعب';
-            if (lengthStat) lengthStat.textContent = (data.totalSoilLength + data.totalRockLength + data.totalPreciseExcavation).toFixed(2) + ' متر';
-            if (areaStat) areaStat.textContent = data.totalAsphaltArea.toFixed(2) + ' متر مربع';
-
-            return true;
-        }
-        return false;
-    }
-
-    // تحميل البيانات المحفوظة عند تحميل الصفحة
-    document.addEventListener('DOMContentLoaded', function() {
-        loadSavedExcavationSummary();
-        
-        // إضافة مستمع لتحديث البيانات عند تغيير أي حقل
-        const excavationInputs = document.querySelectorAll('input[type="number"]');
-        excavationInputs.forEach(input => {
-            input.addEventListener('change', function() {
-                const excavationData = collectExcavationData();
-                updateExcavationStats(excavationData);
-            });
-        });
-    });
-
-    // حفظ البيانات قبل مغادرة الصفحة
-    window.addEventListener('beforeunload', function() {
-        const excavationData = collectExcavationData();
-        updateExcavationStats(excavationData);
-    });
-
-    // دالة تجميع بيانات الحفريات
-    function collectExcavationData() {
-        const excavationData = [];
-        
-        // إضافة جميع أنواع الحفريات
-        const inputTypes = [
-            { selector: 'input[name^="excavation_unsurfaced_soil"]', type: 'حفريات التربة الترابية', surface: 'غير مسفلت' },
-            { selector: 'input[name^="excavation_surfaced_soil"]', type: 'حفريات التربة الترابية', surface: 'مسفلت' },
-            { selector: 'input[name^="excavation_unsurfaced_rock"]', type: 'حفريات التربة الصخرية', surface: 'غير مسفلت' },
-            { selector: 'input[name^="excavation_surfaced_rock"]', type: 'حفريات التربة الصخرية', surface: 'مسفلت' }
-        ];
-
-        inputTypes.forEach(type => {
-            document.querySelectorAll(type.selector).forEach((input, index) => {
-                const value = parseFloat(input.value) || 0;
-                if (value > 0) {
-                    excavationData.push({
-                        type: type.type,
-                        surface: type.surface,
-                        value: value,
-                        unit: 'متر طولي'
-                    });
-                }
-            });
-        });
-
-        // إضافة الحفريات الدقيقة
-        const preciseTypes = ['medium', 'low'];
-        preciseTypes.forEach(type => {
-            const input = document.querySelector(`input[name="excavation_precise[${type}]"]`);
-            if (input) {
-                const value = parseFloat(input.value) || 0;
-                if (value > 0) {
-                    excavationData.push({
-                        type: 'الحفريات الدقيقة',
-                        surface: 'دقيق',
-                        value: value,
-                        unit: 'متر طولي'
-                    });
-                }
-            }
-        });
-
-        return excavationData;
-    }
 
     window.exportExcavationData = function() {
         console.log('تصدير البيانات');
         alert('ميزة التصدير قيد التطوير');
     };
 
-    // دالة جديدة لحفظ بيانات الجدول التفصيلي في قاعدة البيانات
-    window.saveExcavationDetailsTable = function() {
-        console.log('حفظ بيانات الجدول التفصيلي');
-        
-        // جمع البيانات من الجدول التفصيلي
-        const tableRows = document.querySelectorAll('#excavation-details-tbody tr');
-        const excavationDetails = [];
-        
-        tableRows.forEach((row, index) => {
-            const cells = row.querySelectorAll('td');
-            if (cells.length >= 4 && !row.textContent.includes('لا توجد بيانات')) {
-                excavationDetails.push({
-                    index: index + 1,
-                    type: cells[1].textContent.trim(),
-                    description: cells[2].textContent.trim(),
-                    quantity: cells[3].textContent.trim()
-                });
-            }
-        });
 
-        if (excavationDetails.length === 0) {
-            alert('لا توجد بيانات للحفظ');
-            return;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    </script>
+
+    <!-- كود JavaScript لحساب الضرب والإجماليات -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // دوال حساب الضرب للإجمالي النهائي
+        function calculateLinearTotal(row, table) {
+            const lengthInput = document.querySelector(`input[name="excavation_${table}[${row}]"]`);
+            const priceInput = document.querySelector(`input[name="excavation_${table}_price[${row}]"]`);
+            const totalInput = document.getElementById(`total_${table}_${row}`);
+            
+            if (lengthInput && priceInput && totalInput) {
+                const length = parseFloat(lengthInput.value) || 0;
+                const price = parseFloat(priceInput.value) || 0;
+                const total = length * price;
+                totalInput.value = total.toFixed(2);
+            }
         }
 
-        // إرسال البيانات عبر AJAX
-        const formData = new FormData();
-        formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
-        formData.append('_method', 'PUT');
-        formData.append('excavation_details_table', JSON.stringify(excavationDetails));
-
-        // عرض رسالة التحميل
-        const saveButton = document.querySelector('button[onclick="saveExcavationDetailsTable()"]');
-        const originalText = saveButton ? saveButton.innerHTML : '';
-        if (saveButton) {
-            saveButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>جاري الحفظ...';
-            saveButton.disabled = true;
-        }
-
-        fetch(window.location.href, {
-            method: 'POST',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'Accept': 'application/json'
-            },
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert('تم حفظ بيانات الجدول التفصيلي بنجاح');
-                console.log('تم حفظ ' + excavationDetails.length + ' عنصر في قاعدة البيانات');
-            } else {
-                alert('حدث خطأ أثناء الحفظ: ' + (data.message || 'خطأ غير معروف'));
-            }
-        })
-        .catch(error => {
-            console.error('خطأ في حفظ البيانات:', error);
-            alert('حدث خطأ أثناء حفظ البيانات');
-        })
-        .finally(() => {
-            // استعادة النص الأصلي للزر
-            if (saveButton) {
-                saveButton.innerHTML = originalText;
-                saveButton.disabled = false;
-            }
-        });
-    };
-
-    // دالة لتحميل بيانات الجدول التفصيلي المحفوظة
-    window.loadSavedExcavationDetails = function() {
-        console.log('تحميل البيانات المحفوظة للجدول التفصيلي');
-        
-        fetch('{{ route("admin.work-orders.civil-works.excavation-details", $workOrder) }}', {
-            method: 'GET',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'Accept': 'application/json'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success && data.excavationDetails) {
-                const tbody = document.getElementById('excavation-details-tbody');
-                if (!tbody) return;
-
-                tbody.innerHTML = '';
+        function calculateVolumeTotal(table) {
+            const lengthInput = document.querySelector(`input[name="excavation_${table}_open[length]"]`);
+            const widthInput = document.querySelector(`input[name="excavation_${table}_open[width]"]`);
+            const depthInput = document.querySelector(`input[name="excavation_${table}_open[depth]"]`);
+            const priceInput = document.querySelector(`input[name="excavation_${table}_open_price"]`);
+            const volumeInput = document.getElementById(`total_${table}_open`);
+            const totalInput = document.getElementById(`final_total_${table}_open`);
+            
+            if (lengthInput && widthInput && depthInput && volumeInput) {
+                const length = parseFloat(lengthInput.value) || 0;
+                const width = parseFloat(widthInput.value) || 0;
+                const depth = parseFloat(depthInput.value) || 0;
+                const volume = length * width * depth;
+                volumeInput.value = volume.toFixed(2);
                 
-                if (data.excavationDetails.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">لا توجد بيانات محفوظة</td></tr>';
-                } else {
-                    data.excavationDetails.forEach((item, index) => {
-                        const row = tbody.insertRow();
-                        row.innerHTML = `
-                            <td>${index + 1}</td>
-                            <td>${item.type}</td>
-                            <td>${item.description}</td>
-                            <td>${item.quantity}</td>
-                        `;
-                    });
-                    console.log(`تم تحميل ${data.excavationDetails.length} عنصر من البيانات المحفوظة`);
+                if (priceInput && totalInput) {
+                    const price = parseFloat(priceInput.value) || 0;
+                    const total = volume * price;
+                    totalInput.value = total.toFixed(2);
                 }
             }
-        })
-        .catch(error => {
-            console.error('خطأ في تحميل البيانات المحفوظة:', error);
-        });
-    };
+        }
 
-    // دوال إدارة الجدول المثبت
-    function setupFixedTableControls() {
-        const toggleBtn = document.getElementById('toggle-fixed-table');
-        const fixedContainer = document.getElementById('fixed-table-container');
-        const closeBtn = document.getElementById('close-fixed-table');
-        const lockDataBtn = document.getElementById('lock-data-btn');
-        const toggleFixedViewBtn = document.getElementById('toggle-fixed-view-btn');
-
-        // تبديل عرض الجدول المثبت
-        if (toggleBtn) {
-            toggleBtn.addEventListener('click', function() {
-                fixedContainer.classList.toggle('visible');
-                loadFixedTableData();
+        function calculateAreaTotal(table) {
+            const lengthInput = document.querySelector(`input[name="open_excavation[${table}][length]"]`);
+            const widthInput = document.querySelector(`input[name="open_excavation[${table}][width]"]`);
+            const priceInput = document.querySelector(`input[name="open_excavation[${table}][price]"]`);
+            const areaInput = document.getElementById(`total-${table}`);
+            const totalInput = document.getElementById(`final_total_${table}`);
+            
+            if (lengthInput && widthInput && areaInput) {
+                const length = parseFloat(lengthInput.value) || 0;
+                const width = parseFloat(widthInput.value) || 0;
+                const area = length * width;
+                areaInput.value = area.toFixed(2);
                 
-                if (fixedContainer.classList.contains('visible')) {
-                    toggleBtn.innerHTML = '<i class="fas fa-eye-slash"></i>';
-                    toggleBtn.title = 'إخفاء الجدول المثبت';
-                } else {
-                    toggleBtn.innerHTML = '<i class="fas fa-thumbtack"></i>';
-                    toggleBtn.title = 'عرض الجدول المثبت';
+                if (priceInput && totalInput) {
+                    const price = parseFloat(priceInput.value) || 0;
+                    const total = area * price;
+                    totalInput.value = total.toFixed(2);
                 }
-            });
+            }
         }
 
-        // إغلاق الجدول المثبت
-        if (closeBtn) {
-            closeBtn.addEventListener('click', function() {
-                fixedContainer.classList.remove('visible');
-                toggleBtn.innerHTML = '<i class="fas fa-thumbtack"></i>';
-                toggleBtn.title = 'عرض الجدول المثبت';
-            });
+        function calculatePreciseTotal(type) {
+            const lengthInput = document.querySelector(`input[name="excavation_precise[${type}]"]`);
+            const priceInput = document.querySelector(`input[name="excavation_precise[${type}_price]"]`);
+            const totalId = type === 'medium' ? 'final_total_precise_medium' : 'final_total_precise_low';
+            const totalInput = document.getElementById(totalId);
+            
+            if (lengthInput && priceInput && totalInput) {
+                const length = parseFloat(lengthInput.value) || 0;
+                const price = parseFloat(priceInput.value) || 0;
+                const total = length * price;
+                totalInput.value = total.toFixed(2);
+            }
         }
 
-        // تثبيت البيانات
-        if (lockDataBtn) {
-            lockDataBtn.addEventListener('click', function() {
-                lockExcavationData();
-            });
+        function calculateElectricalTotal(type) {
+            const lengthInput = document.querySelector(`input[name="electrical_items[${type}][meters]"]`);
+            const priceInput = document.querySelector(`input[name="electrical_items[${type}][price]"]`);
+            const totalInput = document.getElementById(`final_total_${type}`);
+            
+            if (lengthInput && priceInput && totalInput) {
+                const length = parseFloat(lengthInput.value) || 0;
+                const price = parseFloat(priceInput.value) || 0;
+                const total = length * price;
+                totalInput.value = total.toFixed(2);
+            }
         }
 
-        // تبديل العرض المثبت
-        if (toggleFixedViewBtn) {
-            toggleFixedViewBtn.addEventListener('click', function() {
-                const mainTable = document.querySelector('.excavation-details-container');
-                if (mainTable) {
-                    mainTable.classList.toggle('permanent-visible');
-                    const isVisible = mainTable.classList.contains('permanent-visible');
-                    
-                    this.innerHTML = isVisible ? 
-                        '<i class="fas fa-eye-slash me-1"></i>إخفاء العرض' : 
-                        '<i class="fas fa-eye me-1"></i>عرض مثبت';
+        // إضافة مستمعات الأحداث للحسابات
+        document.addEventListener('input', function(e) {
+            // للحقول الخطية (الطول * السعر)
+            if (e.target.classList.contains('calc-length') || e.target.classList.contains('calc-price')) {
+                const row = e.target.dataset.row;
+                const table = e.target.dataset.table;
+                if (row !== undefined && table) {
+                    calculateLinearTotal(row, table);
                 }
-            });
-        }
-    }
+            }
+            
+            // للحفر المفتوح (الحجم * السعر)
+            if (e.target.classList.contains('calc-volume-length') || e.target.classList.contains('calc-volume-price')) {
+                const table = e.target.dataset.table;
+                if (table) {
+                    calculateVolumeTotal(table);
+                }
+            }
+            
+            // للمساحات (الطول * العرض * السعر)
+            if (e.target.classList.contains('calc-area-length') || e.target.classList.contains('calc-area-price')) {
+                const table = e.target.dataset.table;
+                if (table) {
+                    calculateAreaTotal(table);
+                }
+            }
 
-    // تحميل بيانات الجدول المثبت
-    function loadFixedTableData() {
-        const mainTableBody = document.getElementById('excavation-details-tbody');
-        const fixedTableBody = document.getElementById('fixed-table-tbody');
-        
-        if (!mainTableBody || !fixedTableBody) return;
+            // للحفريات الدقيقة
+            if (e.target.classList.contains('calc-precise-length') || e.target.classList.contains('calc-precise-price')) {
+                const type = e.target.dataset.type;
+                if (type) {
+                    calculatePreciseTotal(type);
+                }
+            }
 
-        // نسخ البيانات من الجدول الرئيسي للجدول المثبت
-        const mainRows = mainTableBody.querySelectorAll('tr');
-        fixedTableBody.innerHTML = '';
-
-        if (mainRows.length === 0 || mainRows[0].textContent.includes('لا توجد بيانات')) {
-            fixedTableBody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">لا توجد بيانات</td></tr>';
-            return;
-        }
-
-        mainRows.forEach((row, index) => {
-            const cells = row.querySelectorAll('td');
-            if (cells.length >= 4) {
-                const newRow = fixedTableBody.insertRow();
-                
-                // رقم السطر
-                newRow.insertCell(0).innerHTML = `<span class="badge bg-primary">${index + 1}</span>`;
-                
-                // نوع الحفرية (مبسط)
-                const typeCell = newRow.insertCell(1);
-                const typeText = cells[1].textContent.trim();
-                const shortType = typeText.length > 30 ? typeText.substring(0, 30) + '...' : typeText;
-                typeCell.innerHTML = `<small class="fw-bold text-primary">${shortType}</small>`;
-                
-                // الكمية
-                const quantityCell = newRow.insertCell(2);
-                quantityCell.innerHTML = `<span class="fw-bold text-success">${cells[2].textContent.trim()}</span>`;
-                quantityCell.className = 'text-center';
-                
-                // الوحدة
-                const unitCell = newRow.insertCell(3);
-                unitCell.innerHTML = `<span class="badge bg-info">${cells[3].textContent.trim()}</span>`;
-                unitCell.className = 'text-center';
-                
-                // إضافة hover effect
-                newRow.addEventListener('mouseenter', function() {
-                    this.style.backgroundColor = 'rgba(102, 126, 234, 0.1)';
-                });
-                
-                newRow.addEventListener('mouseleave', function() {
-                    this.style.backgroundColor = '';
-                });
+            // للكابلات الكهربائية
+            if (e.target.classList.contains('calc-electrical-length') || e.target.classList.contains('calc-electrical-price')) {
+                const type = e.target.dataset.type;
+                if (type) {
+                    calculateElectricalTotal(type);
+                }
             }
         });
 
-        console.log(`تم تحميل ${mainRows.length} عنصر في الجدول المثبت`);
-    }
-
-    // تثبيت البيانات
-    function lockExcavationData() {
-        const mainTable = document.querySelector('.excavation-details-container');
-        const lockBtn = document.getElementById('lock-data-btn');
-        
-        if (!mainTable || !lockBtn) return;
-
-        const isLocked = mainTable.classList.contains('data-locked');
-        
-        if (isLocked) {
-            // إلغاء التثبيت
-            mainTable.classList.remove('data-locked');
-            lockBtn.innerHTML = '<i class="fas fa-unlock me-1"></i>إلغاء التثبيت';
-            lockBtn.className = 'btn btn-outline-warning btn-sm me-1';
-            
-            // تمكين تحديث البيانات
-            const updateBtn = document.getElementById('update-excavation-table-btn');
-            if (updateBtn) updateBtn.disabled = false;
-            
-            // تحديث مؤشر التثبيت
-            const lockIndicator = document.getElementById('lock-indicator');
-            if (lockIndicator) {
-                lockIndicator.innerHTML = ' <i class="fas fa-lock-open text-light ms-2" title="غير مثبت"></i>';
+        // حساب الإجماليات عند تحميل الصفحة
+        setTimeout(function() {
+            // حساب الإجماليات الخطية للجداول الأساسية
+            for (let table of ['unsurfaced_soil', 'surfaced_soil', 'surfaced_rock', 'unsurfaced_rock']) {
+                for (let row = 0; row < 8; row++) {
+                    calculateLinearTotal(row, table);
+                }
+                calculateVolumeTotal(table);
             }
             
-            // حذف البيانات من التخزين المحلي
-            localStorage.removeItem('excavation_data_locked');
+            // حساب إجماليات الحفر المفتوح بالحجم (الجداول التي لها أبعاد 3D)
+            calculateVolumeTotal('surfaced_soil_open');
+            calculateVolumeTotal('surfaced_rock_open');
+            calculateVolumeTotal('unsurfaced_rock_open');
             
-            alert('تم إلغاء تثبيت البيانات - يمكن تحديثها الآن');
-        } else {
-            // تثبيت البيانات
-            mainTable.classList.add('data-locked');
-            lockBtn.innerHTML = '<i class="fas fa-lock me-1"></i>البيانات مثبتة';
-            lockBtn.className = 'btn btn-success btn-sm me-1';
+            // حساب إجماليات الحفر المفتوح بالمساحة (الجداول التي لها أبعاد 2D)
+            calculateAreaTotal('first_asphalt');
+            calculateAreaTotal('asphalt_scraping');
             
-            // منع تحديث البيانات
-            const updateBtn = document.getElementById('update-excavation-table-btn');
-            if (updateBtn) updateBtn.disabled = true;
+            // حساب إجماليات الحفريات الدقيقة
+            calculatePreciseTotal('medium');
+            calculatePreciseTotal('low');
             
-            // تحديث مؤشر التثبيت
-            const lockIndicator = document.getElementById('lock-indicator');
-            if (lockIndicator) {
-                lockIndicator.innerHTML = ' <i class="fas fa-lock text-warning ms-2" title="مثبت"></i>';
-            }
-            
-            // حفظ البيانات في التخزين المحلي
-            saveDataToLocalStorage();
-            
-            alert('تم تثبيت البيانات بنجاح - البيانات محمية من التغيير');
-        }
-    }
-
-    // حفظ البيانات في التخزين المحلي
-    function saveDataToLocalStorage() {
-        const tableData = [];
-        const rows = document.querySelectorAll('#excavation-details-tbody tr');
-        
-        rows.forEach((row, index) => {
-            const cells = row.querySelectorAll('td');
-            if (cells.length >= 4 && !row.textContent.includes('لا توجد بيانات')) {
-                tableData.push({
-                    index: index + 1,
-                    type: cells[1].textContent.trim(),
-                    quantity: cells[2].textContent.trim(),
-                    unit: cells[3].textContent.trim(),
-                    volume: cells[4] ? cells[4].textContent.trim() : '',
-                    surface: cells[5] ? cells[5].textContent.trim() : ''
-                });
-            }
-        });
-
-        localStorage.setItem('excavation_data_locked', JSON.stringify({
-            data: tableData,
-            timestamp: new Date().toISOString(),
-            workOrderId: '{{ $workOrder->id }}'
-        }));
-
-        console.log(`تم حفظ ${tableData.length} عنصر في التخزين المحلي`);
-    }
-
-    // استعادة البيانات من التخزين المحلي
-    function loadDataFromLocalStorage() {
-        const savedData = localStorage.getItem('excavation_data_locked');
-        if (!savedData) return false;
-
-        try {
-            const parsedData = JSON.parse(savedData);
-            if (parsedData.workOrderId === '{{ $workOrder->id }}') {
-                return parsedData.data;
-            }
-        } catch (error) {
-            console.error('خطأ في استعادة البيانات:', error);
-        }
-        
-        return false;
-    }
-
-    // جعل الدوال متاحة عالمياً
-    window.loadFixedTableData = loadFixedTableData;
-    window.lockExcavationData = lockExcavationData;
-    window.setupFixedTableControls = setupFixedTableControls;
+            // حساب إجماليات الكابلات الكهربائية
+            calculateElectricalTotal('cable_4x70_low');
+            calculateElectricalTotal('cable_4x185_low');
+            calculateElectricalTotal('cable_4x300_low');
+            calculateElectricalTotal('cable_3x500_med');
+            calculateElectricalTotal('cable_3x400_med');
+        }, 500);
+    });
     </script>
 
     <!-- دالة مشتركة لتنسيق حجم الملف -->
