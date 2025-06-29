@@ -1203,12 +1203,12 @@ class LicenseController extends Controller
     private function handleLabFiles(Request $request, License $license)
     {
         $labFiles = [
-            'depth_test_file' => 'depth_test_file_path',
-            'soil_compaction_file' => 'soil_compaction_file_path',
-            'rc1_mc1_file' => 'rc1_mc1_file_path',
-            'asphalt_test_file' => 'asphalt_test_file_path',
-            'soil_test_file' => 'soil_test_file_path',
-            'interlock_test_file' => 'interlock_test_file_path'
+            'depth_test_file_path' => 'depth_test_file_path',
+            'soil_compaction_file_path' => 'soil_compaction_file_path',
+            'rc1_mc1_file_path' => 'rc1_mc1_file_path',
+            'asphalt_test_file_path' => 'asphalt_test_file_path',
+            'soil_test_file_path' => 'soil_test_file_path',
+            'interlock_test_file_path' => 'interlock_test_file_path'
         ];
         
         foreach ($labFiles as $fileField => $dbField) {

@@ -67,6 +67,7 @@ class LicenseViolationController extends Controller
             'payment_due_date' => 'required|date',
             'violation_description' => 'nullable|string',
             'payment_invoice_number' => 'nullable|string|max:255',
+            'violation_attachment' => 'nullable|file|mimes:jpg,jpeg,png,pdf,doc,docx|max:10240',
         ]);
 
         if ($validator->fails()) {
@@ -115,6 +116,13 @@ class LicenseViolationController extends Controller
                 'violation_description' => $request->violation_description,
                 'payment_invoice_number' => $request->payment_invoice_number,
             ];
+
+            // Handle file upload if present
+            if ($request->hasFile('violation_attachment')) {
+                $file = $request->file('violation_attachment');
+                $path = $file->store('violations', 'public');
+                $violationData['attachment_path'] = $path;
+            }
             
             \Log::info('Creating violation with data', $violationData);
             

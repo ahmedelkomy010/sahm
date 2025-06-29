@@ -27,6 +27,9 @@
     <!-- Custom Toastr RTL CSS -->
     <link rel="stylesheet" href="{{ asset('css/toastr-rtl.css') }}">
     
+    <!-- Laboratory Tab Custom CSS -->
+    <link rel="stylesheet" href="{{ asset('css/laboratory-tab.css') }}">
+    
     <!-- Vite Assets (includes Tailwind CSS) -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     

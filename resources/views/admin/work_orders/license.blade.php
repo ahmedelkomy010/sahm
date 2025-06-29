@@ -953,10 +953,38 @@
                     saveBtn.innerHTML = '<i class="fas fa-save me-2"></i>حفظ بيانات المختبر';
                 }
                 
-                // تحديث البيانات بدلاً من إعادة تحميل الصفحة
+                // رسالة توضيحية مع رابط لعرض التفاصيل
                 setTimeout(() => {
-                    toastr.info('تم حفظ البيانات في الرخصة المختارة');
+                    toastr.info(`البيانات محفوظة وتظهر الآن في تبويب المختبر في تفاصيل الرخصة ${selectedLicenseName}`, 'تم الحفظ بنجاح', {
+                        timeOut: 5000,
+                        extendedTimeOut: 2000
+                    });
                 }, 1000);
+                
+                // إضافة رسالة نجاح مع تأكيد عرض النتائج
+                setTimeout(() => {
+                    const activeTests = document.querySelectorAll('input[type="checkbox"]:checked').length;
+                    const successValue = document.getElementById('successful_tests_value').value || 0;
+                    const failedValue = document.getElementById('failed_tests_value').value || 0;
+                    
+                    let statusMessage = '';
+                    if (parseFloat(successValue) > 0 && parseFloat(failedValue) == 0) {
+                        statusMessage = 'جميع الاختبارات ناجحة ✅';
+                    } else if (parseFloat(failedValue) > 0 && parseFloat(successValue) == 0) {
+                        statusMessage = 'جميع الاختبارات راسبة ❌';
+                    } else if (parseFloat(successValue) > 0 && parseFloat(failedValue) > 0) {
+                        statusMessage = 'نتائج مختلطة - ناجح وراسب ⚠️';
+                    } else {
+                        statusMessage = 'تم حفظ بيانات الاختبارات';
+                    }
+                    
+                    toastr.success(statusMessage + ` - تظهر النتائج في صفحة تفاصيل الرخصة`, 'نتيجة الاختبارات', {
+                        timeOut: 7000
+                    });
+                    
+                    // إضافة ملخص مرئي للاختبارات المحفوظة
+                    showLabTestsSummary();
+                }, 2000);
             },
             error: function(xhr) {
                 // إعادة تفعيل الزر
@@ -981,7 +1009,159 @@
         toastr.success('تم حفظ بيانات الإخلاء بنجاح');
     }
 
-    function loadViolations() {
+    // دالة عرض ملخص الاختبارات المحفوظة
+    function showLabTestsSummary() {
+        const activeTests = [];
+        const checkboxes = document.querySelectorAll('#labForm input[type="checkbox"]:checked');
+        
+        checkboxes.forEach(checkbox => {
+            const testName = getTestLabel(checkbox.name);
+            activeTests.push(testName);
+        });
+        
+        const successValue = document.getElementById('successful_tests_value').value || 0;
+        const failedValue = document.getElementById('failed_tests_value').value || 0;
+        
+        // فحص المرفقات المرفوعة
+        const uploadedFiles = [];
+        const fileInputs = document.querySelectorAll('#labForm input[type="file"]');
+        fileInputs.forEach(input => {
+            if (input.files && input.files.length > 0) {
+                const testName = getFileTestLabel(input.name);
+                uploadedFiles.push(testName);
+            }
+        });
+        
+        if (activeTests.length > 0) {
+            let summaryHtml = `
+                <div class="alert alert-info alert-dismissible fade show mt-3" role="alert">
+                    <h6 class="alert-heading"><i class="fas fa-info-circle me-2"></i>ملخص الاختبارات المحفوظة:</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong>الاختبارات المفعلة:</strong>
+                            <ul class="mb-2">`;
+            
+            activeTests.forEach(test => {
+                summaryHtml += `<li>${test}</li>`;
+            });
+            
+            summaryHtml += `</ul>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>النتائج المالية:</strong>
+                            <ul class="mb-2">
+                                <li>قيمة الاختبارات الناجحة: <span class="text-success">${successValue} ريال</span></li>
+                                <li>قيمة الاختبارات الراسبة: <span class="text-danger">${failedValue} ريال</span></li>
+                            </ul>`;
+            
+            if (uploadedFiles.length > 0) {
+                summaryHtml += `
+                            <strong>المرفقات المرفوعة:</strong>
+                            <ul class="mb-0">`;
+                uploadedFiles.forEach(file => {
+                    summaryHtml += `<li><i class="fas fa-file-alt me-1"></i>${file}</li>`;
+                });
+                summaryHtml += `</ul>`;
+            } else {
+                summaryHtml += `<small class="text-muted"><i class="fas fa-info-circle me-1"></i>لم يتم رفع مرفقات</small>`;
+            }
+            
+            summaryHtml += `
+                        </div>
+                    </div>
+                                         <hr class="my-2">
+                     <div class="d-flex justify-content-between align-items-center">
+                         <small class="text-muted">
+                             <i class="fas fa-eye me-1"></i>
+                             هذه البيانات تظهر الآن في <strong>تبويب المختبر</strong> في صفحة تفاصيل الرخصة
+                         </small>
+                         <button type="button" class="btn btn-sm btn-outline-primary" onclick="viewLicenseDetails()">
+                             <i class="fas fa-external-link-alt me-1"></i>
+                             عرض تفاصيل الرخصة
+                         </button>
+                     </div>
+                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+            
+            // إدراج الملخص بعد نموذج المختبر
+            const labForm = document.getElementById('labForm');
+            const existingSummary = document.querySelector('.lab-summary-alert');
+            if (existingSummary) {
+                existingSummary.remove();
+            }
+            
+            const summaryDiv = document.createElement('div');
+            summaryDiv.className = 'lab-summary-alert';
+            summaryDiv.innerHTML = summaryHtml;
+            labForm.parentNode.insertBefore(summaryDiv, labForm.nextSibling);
+            
+            // إزالة الملخص تلقائياً بعد 10 ثوان
+            setTimeout(() => {
+                const alertElement = document.querySelector('.lab-summary-alert .alert');
+                if (alertElement) {
+                    alertElement.classList.remove('show');
+                    setTimeout(() => {
+                        const summaryElement = document.querySelector('.lab-summary-alert');
+                        if (summaryElement) {
+                            summaryElement.remove();
+                        }
+                    }, 500);
+                }
+            }, 10000);
+        }
+    }
+    
+         // دالة للحصول على اسم الاختبار باللغة العربية
+     function getTestLabel(testName) {
+         const testLabels = {
+             'has_depth_test': 'اختبار العمق',
+             'has_soil_compaction_test': 'اختبار دك التربة', 
+             'has_rc1_mc1_test': 'اختبار RC1-MC1',
+             'has_asphalt_test': 'اختبار الأسفلت',
+             'has_soil_test': 'اختبار التربة',
+             'has_interlock_test': 'اختبار البلاط المتداخل'
+         };
+         return testLabels[testName] || testName;
+     }
+     
+          // دالة للحصول على اسم الاختبار من اسم الملف
+     function getFileTestLabel(fileName) {
+         const fileTestLabels = {
+             'depth_test_file_path': 'مرفق اختبار العمق',
+             'soil_compaction_file_path': 'مرفق اختبار دك التربة',
+             'rc1_mc1_file_path': 'مرفق اختبار RC1-MC1',
+             'asphalt_test_file_path': 'مرفق اختبار الأسفلت',
+             'soil_test_file_path': 'مرفق اختبار التربة',
+             'interlock_test_file_path': 'مرفق اختبار البلاط المتداخل'
+         };
+         return fileTestLabels[fileName] || fileName;
+     }
+     
+     // دالة إشعار عند رفع الملفات
+     function onFileUpload(input, testName) {
+         if (input.files && input.files.length > 0) {
+             const fileName = input.files[0].name;
+             toastr.success(`تم اختيار مرفق ${testName}: ${fileName}`, 'تم رفع الملف', {
+                 timeOut: 3000,
+                 progressBar: true
+             });
+         }
+     }
+     
+     // دالة عرض تفاصيل الرخصة المحددة
+     function viewLicenseDetails() {
+         const licenseId = document.getElementById('lab-license-id').value;
+         if (licenseId) {
+             const url = `{{ url('/admin/licenses') }}/${licenseId}`;
+             window.open(url, '_blank');
+             toastr.info('تم فتح صفحة تفاصيل الرخصة في نافذة جديدة');
+         } else {
+             toastr.warning('يرجى اختيار رخصة أولاً');
+         }
+     }
+
+     function loadViolations() {
         $.ajax({
             url: `/admin/violations/by-work-order/{{ $workOrder->id }}`,
             type: 'GET',
@@ -995,7 +1175,7 @@
                 if (!response.violations || response.violations.length === 0) {
                     tbody.innerHTML = `
                         <tr>
-                            <td colspan="11" class="text-center">لا توجد مخالفات</td>
+                            <td colspan="12" class="text-center">لا توجد مخالفات</td>
                         </tr>
                     `;
                     updateTotalAmount(0);
@@ -1015,6 +1195,13 @@
                     // تحديث إجمالي المبلغ
                     totalAmount += parseFloat(violation.violation_amount || 0);
 
+                    // إعداد المرفقات
+                    const attachmentCell = violation.attachment_path ? 
+                        `<button class="btn btn-sm btn-outline-primary" onclick="viewAttachment('${violation.attachment_path}')" title="عرض المرفق">
+                            <i class="fas fa-paperclip"></i>
+                        </button>` : 
+                        '<span class="text-muted">لا يوجد</span>';
+
                     tbody.innerHTML += `
                         <tr>
                             <td>${index + 1}</td>
@@ -1027,6 +1214,7 @@
                             <td>${dueDate}</td>
                             <td>${violation.payment_invoice_number || '-'}</td>
                             <td>${paymentStatusBadge}</td>
+                            <td>${attachmentCell}</td>
                             <td>
                                 <div class="btn-group btn-group-sm">
                                     <button class="btn btn-outline-info" onclick="viewViolation(${violation.id})" title="عرض">
@@ -1121,8 +1309,68 @@
             document.querySelector('[name="payment_due_date"]').value = '{{ date("Y-m-d", strtotime("+30 days")) }}';
             document.querySelector('[name="payment_status"][value="0"]').checked = true;
             
+            // إخفاء معاينة الملف
+            clearViolationFile();
+            
             toastr.info('تم إعادة تعيين النموذج');
         }
+    }
+
+    // دالة التحقق من صحة ملف المخالفة
+    function validateViolationFile(input) {
+        const file = input.files[0];
+        if (!file) {
+            clearViolationFile();
+            return;
+        }
+
+        // التحقق من حجم الملف (10 MB)
+        const maxSize = 10 * 1024 * 1024; // 10 MB
+        if (file.size > maxSize) {
+            toastr.error('حجم الملف يجب أن يكون أقل من 10 ميجابايت');
+            input.value = '';
+            clearViolationFile();
+            return;
+        }
+
+        // التحقق من نوع الملف
+        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+        if (!allowedTypes.includes(file.type)) {
+            toastr.error('نوع الملف غير مدعوم. يرجى اختيار ملف صورة، PDF، أو مستند Word');
+            input.value = '';
+            clearViolationFile();
+            return;
+        }
+
+        // عرض معاينة الملف
+        const preview = document.getElementById('violation-file-preview');
+        const fileName = document.getElementById('violation-file-name');
+        
+        fileName.textContent = file.name;
+        preview.style.display = 'block';
+        
+        toastr.success('تم اختيار الملف بنجاح');
+    }
+
+    // دالة مسح الملف المختار
+    function clearViolationFile() {
+        const input = document.querySelector('[name="violation_attachment"]');
+        const preview = document.getElementById('violation-file-preview');
+        
+        if (input) input.value = '';
+        if (preview) preview.style.display = 'none';
+    }
+
+    // دالة عرض المرفق
+    function viewAttachment(attachmentPath) {
+        if (!attachmentPath) {
+            toastr.error('لا يوجد مرفق للعرض');
+            return;
+        }
+
+        // فتح المرفق في نافذة جديدة
+        const url = `/storage/${attachmentPath}`;
+        window.open(url, '_blank');
     }
 
     function deleteViolation(violationId) {
@@ -2583,7 +2831,7 @@ function deleteExtension(extensionId) {
                             
                             <div class="mb-2">
                                 <label class="form-label small">مرفق الاختبار</label>
-                                <input type="file" class="form-control form-control-sm" name="depth_test_file_path">
+                                <input type="file" class="form-control form-control-sm" name="depth_test_file_path" onchange="onFileUpload(this, 'اختبار العمق')">
                             </div>
                         </div>
                                     </div>
@@ -2664,7 +2912,7 @@ function deleteExtension(extensionId) {
                             
                             <div class="mb-2">
                                 <label class="form-label small">مرفق الاختبار</label>
-                                <input type="file" class="form-control form-control-sm" name="soil_compaction_file_path">
+                                <input type="file" class="form-control form-control-sm" name="soil_compaction_file_path" onchange="onFileUpload(this, 'اختبار دك التربة')">
                             </div>
                         </div>
                                     </div>
@@ -2747,7 +2995,7 @@ function deleteExtension(extensionId) {
                             
                             <div class="mb-2">
                                 <label class="form-label small">مرفق الاختبار</label>
-                                <input type="file" class="form-control form-control-sm" name="rc1_mc1_file_path">
+                                <input type="file" class="form-control form-control-sm" name="rc1_mc1_file_path" onchange="onFileUpload(this, 'اختبار RC1-MC1')">
                             </div>
                         </div>
                                     </div>
@@ -2828,7 +3076,7 @@ function deleteExtension(extensionId) {
                             
                             <div class="mb-2">
                                 <label class="form-label small">مرفق الاختبار</label>
-                                <input type="file" class="form-control form-control-sm" name="asphalt_test_file_path">
+                                <input type="file" class="form-control form-control-sm" name="asphalt_test_file_path" onchange="onFileUpload(this, 'اختبار الأسفلت')">
                             </div>
                         </div>
                                     </div>
@@ -2911,7 +3159,7 @@ function deleteExtension(extensionId) {
                             
                             <div class="mb-2">
                                 <label class="form-label small">مرفق الاختبار</label>
-                                <input type="file" class="form-control form-control-sm" name="soil_test_file_path">
+                                <input type="file" class="form-control form-control-sm" name="soil_test_file_path" onchange="onFileUpload(this, 'اختبار التربة')">
                             </div>
                         </div>
                                     </div>
@@ -2992,7 +3240,7 @@ function deleteExtension(extensionId) {
                             
                             <div class="mb-2">
                                 <label class="form-label small">مرفق الاختبار</label>
-                                <input type="file" class="form-control form-control-sm" name="interlock_test_file_path">
+                                <input type="file" class="form-control form-control-sm" name="interlock_test_file_path" onchange="onFileUpload(this, 'اختبار البلاط المتداخل')">
                             </div>
                         </div>
                                     </div>
@@ -5619,7 +5867,7 @@ function deleteExtension(extensionId) {
                                 </div>
 
                                 <!-- معلومات السداد -->
-                                <div class="row g-3">
+                                <div class="row g-3 mb-4">
                                     <div class="col-md-4">
                                         <label class="form-label fw-bold">قيمة المخالفة</label>
                                         <div class="input-group">
@@ -5643,6 +5891,34 @@ function deleteExtension(extensionId) {
                                                 <option value="0">في انتظار السداد</option>
                                                 <option value="1">تم السداد</option>
                                             </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- مرفقات المخالفة -->
+                                <div class="row g-3">
+                                    <div class="col-md-12">
+                                        <label class="form-label fw-bold">
+                                            <i class="fas fa-paperclip me-2"></i>مرفقات المخالفة
+                                        </label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fas fa-file-upload"></i></span>
+                                            <input type="file" class="form-control" name="violation_attachment" 
+                                                   accept=".jpg,.jpeg,.png,.pdf,.doc,.docx" 
+                                                   onchange="validateViolationFile(this)">
+                                        </div>
+                                        <div class="form-text">
+                                            <i class="fas fa-info-circle me-1"></i>
+                                            يمكن رفع الملفات التالية: الصور (JPG, PNG)، PDF، مستندات Word - الحد الأقصى: 10 MB
+                                        </div>
+                                        <div id="violation-file-preview" class="mt-2" style="display: none;">
+                                            <div class="alert alert-info mb-0">
+                                                <i class="fas fa-file me-2"></i>
+                                                <span id="violation-file-name"></span>
+                                                <button type="button" class="btn btn-sm btn-outline-danger ms-2" onclick="clearViolationFile()">
+                                                    <i class="fas fa-times"></i> إزالة
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -5678,12 +5954,13 @@ function deleteExtension(extensionId) {
                                                 <th>تاريخ الاستحقاق</th>
                                                 <th>رقم فاتورة السداد</th>
                                                 <th>حالة الدفع</th>
+                                                <th>المرفقات</th>
                                                 <th>الإجراءات</th>
                                             </tr>
                                         </thead>
                                         <tbody id="violations-table-body">
                                             <tr>
-                                                <td colspan="11" class="text-center">لا توجد مخالفات</td>
+                                                <td colspan="12" class="text-center">لا توجد مخالفات</td>
                                             </tr>
                                         </tbody>
                                         <tfoot class="table-info">
@@ -5694,7 +5971,7 @@ function deleteExtension(extensionId) {
                                                 <td class="text-start" id="total-violations-amount">
                                                     <strong>0.00 ريال</strong>
                                                 </td>
-                                                <td colspan="4"></td>
+                                                <td colspan="5"></td>
                                             </tr>
                                         </tfoot>
                                     </table>

@@ -1,0 +1,267 @@
+/* تنسيق تبويب المختبر - License Laboratory Tab Styles */
+
+/* تنسيق البطاقات الرئيسية */
+#laboratory .card {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    border: 1px solid rgba(0, 0, 0, 0.125);
+    transition: all 0.3s ease;
+}
+
+#laboratory .card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+/* تنسيق ملخص النتائج */
+.laboratory-summary .card {
+    border: none;
+    border-radius: 15px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.laboratory-summary .card:hover {
+    transform: scale(1.02);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.laboratory-summary .card-body {
+    padding: 1.5rem;
+}
+
+.laboratory-summary .card-body i {
+    opacity: 0.8;
+}
+
+/* تنسيق الاختبارات الأساسية */
+.test-card {
+    transition: all 0.3s ease;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.test-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.test-card .card-header {
+    border: none;
+    padding: 12px 15px;
+    font-weight: 600;
+}
+
+.test-card .card-body {
+    padding: 12px 15px;
+}
+
+.test-card.border-success:hover {
+    box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+}
+
+.test-card.border-danger:hover {
+    box-shadow: 0 8px 25px rgba(220, 53, 69, 0.3);
+}
+
+/* تنسيق الجداول */
+.laboratory-table {
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.laboratory-table thead th {
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    color: white;
+    font-weight: 600;
+    text-align: center;
+    border: none;
+    padding: 15px 10px;
+}
+
+.laboratory-table tbody tr {
+    transition: background-color 0.3s ease;
+}
+
+.laboratory-table tbody tr:hover {
+    background-color: #f8f9fa;
+    transform: scale(1.01);
+}
+
+.laboratory-table tbody td {
+    padding: 12px 10px;
+    text-align: center;
+    vertical-align: middle;
+    border-color: #e9ecef;
+}
+
+/* تنسيق المرفقات المتقدمة */
+.advanced-tests .card {
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.advanced-tests .card:hover {
+    transform: scale(1.05);
+}
+
+.advanced-tests .card-header {
+    border-radius: 10px 10px 0 0;
+    border: none;
+    font-size: 0.9rem;
+}
+
+.advanced-tests .btn-group .btn {
+    border-radius: 20px;
+    margin: 0 2px;
+}
+
+/* تنسيق قسم إدارة البيانات */
+
+
+/* تنسيق الشارات والتسميات */
+.status-badge {
+    font-size: 0.85rem;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-weight: 500;
+}
+
+.status-badge.bg-success {
+    background: linear-gradient(135deg, #28a745, #20c997) !important;
+}
+
+.status-badge.bg-danger {
+    background: linear-gradient(135deg, #dc3545, #e74c3c) !important;
+}
+
+.status-badge.bg-warning {
+    background: linear-gradient(135deg, #ffc107, #f39c12) !important;
+}
+
+
+
+/* تأثيرات الحركة */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* تطبيق التأثيرات */
+#laboratory .card {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+#laboratory .test-card:nth-child(odd) {
+    animation: slideInRight 0.6s ease-out;
+    animation-delay: 0.1s;
+}
+
+#laboratory .test-card:nth-child(even) {
+    animation: slideInRight 0.6s ease-out;
+    animation-delay: 0.2s;
+}
+
+.laboratory-summary .card {
+    animation: pulse 2s infinite;
+}
+
+/* تصميم متجاوب */
+@media (max-width: 768px) {
+    .laboratory-summary .card-body {
+        padding: 1rem;
+    }
+    
+    .laboratory-summary .card-body h4 {
+        font-size: 1.2rem;
+    }
+    
+    .test-card .card-header {
+        padding: 10px;
+    }
+    
+    .test-card .card-body {
+        padding: 10px;
+    }
+    
+    .laboratory-table thead th {
+        padding: 10px 5px;
+        font-size: 0.9rem;
+    }
+    
+    .laboratory-table tbody td {
+        padding: 8px 5px;
+        font-size: 0.85rem;
+    }
+    
+
+}
+
+@media (max-width: 576px) {
+    .laboratory-summary .card-body h4 {
+        font-size: 1rem;
+    }
+    
+    .laboratory-summary .card-body small {
+        font-size: 0.8rem;
+    }
+    
+
+}
+
+/* تحسينات إضافية للطباعة */
+@media print {
+    #laboratory .btn,
+    #laboratory .card-header .badge {
+        display: none !important;
+    }
+    
+    #laboratory .card {
+        border: 1px solid #000 !important;
+        box-shadow: none !important;
+        break-inside: avoid;
+        margin-bottom: 15px;
+    }
+    
+    #laboratory .card-header {
+        background: #f8f9fa !important;
+        color: #000 !important;
+    }
+    
+    .laboratory-table {
+        font-size: 12px;
+    }
+    
+    .laboratory-table thead th {
+        background: #f8f9fa !important;
+        color: #000 !important;
+    }
+} 
