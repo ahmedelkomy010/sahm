@@ -673,21 +673,25 @@ class LicenseController extends Controller
                     $this->saveNotesSection($request, $license);
                     break;
                 case 'lab_table1':
+                case 'lab_table1_data':
                     // حفظ جدول الفسح ونوع الشارع للمختبر
                     \Log::info('Processing lab_table1 section');
                     $this->saveLabTable1Data($request, $license);
                     break;
                 case 'lab_table2':
+                case 'lab_table2_data':
                     // حفظ جدول التفاصيل الفنية للمختبر
                     \Log::info('Processing lab_table2 section');
                     $this->saveLabTable2Data($request, $license);
                     break;
                 case 'evac_table1':
+                case 'evac_table1_data':
                     // حفظ جدول فسح الإخلاءات
                     \Log::info('Processing evac_table1 section');
                     $this->saveEvacTable1Data($request, $license);
                     break;
                 case 'evac_table2':
+                case 'evac_table2_data':
                     // حفظ جدول التفاصيل الفنية للإخلاءات
                     \Log::info('Processing evac_table2 section');
                     $this->saveEvacTable2Data($request, $license);

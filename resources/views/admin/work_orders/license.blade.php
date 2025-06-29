@@ -198,6 +198,41 @@
     .btn-primary:hover {
         background: linear-gradient(45deg, #0056b3, #004085);
         transform: translateY(-2px);
+    }
+    
+    /* تحسينات جدول التفاصيل الفنية للمختبر */
+    .bg-gradient-success {
+        background: linear-gradient(45deg, #198754, #25a865);
+    }
+    
+    .table-hover tbody tr:hover {
+        background-color: rgba(0,0,0,.075);
+        transition: background-color 0.15s ease-in-out;
+    }
+    
+    .form-control-sm, .form-select-sm {
+        font-size: 0.85rem;
+    }
+    
+    .card {
+        border: none;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+    
+    .btn-group .btn {
+        transition: all 0.2s ease;
+    }
+    
+    .btn-group .btn:hover {
+        transform: translateY(-1px);
+    }
+    
+    .table th {
+        background-color: #495057;
+        color: white;
+        font-weight: 600;
+        border: 1px solid #495057;
+    }
         box-shadow: 0 6px 16px rgba(0,123,255,0.4);
     }
     
@@ -5701,53 +5736,54 @@ function deleteExtension(extensionId) {
                         </div>
 
                         <!-- جدول التفاصيل الفنية للمختبر -->
-                        <div class="row mb-4 mt-5">
-                            <div class="col-12">
-                                <h5 class="text-info mb-3">
-                                    <i class="fas fa-cogs me-2"></i>
+                        <div class="card mb-4 shadow-lg border-0">
+                            <div class="card-header bg-gradient-success text-white d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0 fw-bold">
+                                    <i class="fas fa-flask me-2"></i>
                                     جدول التفاصيل الفنية للمختبر
                                 </h5>
+                                <div class="btn-group btn-group-sm">
+                                    <button type="button" class="btn btn-light" onclick="addNewLabDetailsRow()">
+                                        <i class="fas fa-plus me-1"></i>إضافة صف
+                                    </button>
+                                    <button type="button" class="btn btn-outline-light" onclick="saveAllLabDetails()">
+                                        <i class="fas fa-save me-1"></i>حفظ البيانات
+                                    </button>
+                                </div>
                             </div>
-                        </div>
-
-                        <div class="d-flex justify-content-between mb-3">
-                            <button type="button" class="btn btn-success btn-sm" onclick="addNewLabDetailsRow()">
-                                <i class="fas fa-plus me-1"></i>
-                                إضافة صف جديد
-                            </button>
-                            <button type="button" class="btn btn-primary btn-sm" onclick="saveAllLabDetails()">
-                                <i class="fas fa-save me-1"></i>
-                                حفظ التفاصيل الفنية
-                            </button>
-                        </div>
-
-                        <div class="table-responsive">
-                            <table class="table table-bordered table-sm" id="labDetailsTable">
-                                <thead class="table-info text-white">
-                                    <tr>
-                                        <th style="min-width: 80px;">السنة</th>
-                                        <th style="min-width: 120px;">نوع العمل</th>
-                                        <th style="min-width: 80px;">العمق</th>
-                                        <th style="min-width: 100px;">دك التربة</th>
-                                        <th style="min-width: 100px;">MC1-RC2</th>
-                                        <th style="min-width: 100px;">دك أسفلت</th>
-                                        <th style="min-width: 80px;">ترابي</th>
-                                        <th style="min-width: 120px;">الكثافة القصوى للأسفلت</th>
-                                        <th style="min-width: 120px;">نسبة الأسفلت</th>
-                                        <th style="min-width: 120px;">تجربة مارشال</th>
-                                        <th style="min-width: 120px;">تقييم البلاط</th>
-                                        <th style="min-width: 120px;">تصنيف التربة</th>
-                                        <th style="min-width: 120px;">تجربة بروكتور</th>
-                                        <th style="min-width: 100px;">الخرسانة</th>
-                                        <th style="min-width: 80px;">حذف</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr id="no-lab-details-row">
-                                        <td colspan="15" class="text-center">لا توجد تفاصيل فنية مسجلة</td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-hover table-striped mb-0" id="labDetailsTable">
+                                        <thead class="table-dark">
+                                            <tr>
+                                                <th style="width: 80px;">السنة</th>
+                                                <th style="width: 120px;">نوع العمل</th>
+                                                <th style="width: 80px;">العمق</th>
+                                                <th style="width: 100px;">دك التربة</th>
+                                                <th style="width: 100px;">MC1-RC2</th>
+                                                <th style="width: 100px;">دك أسفلت</th>
+                                                <th style="width: 80px;">ترابي</th>
+                                                <th style="width: 120px;">الكثافة القصوى للأسفلت</th>
+                                                <th style="width: 120px;">نسبة الأسفلت</th>
+                                                <th style="width: 120px;">تجربة مارشال</th>
+                                                <th style="width: 120px;">تقييم البلاط</th>
+                                                <th style="width: 120px;">تصنيف التربة</th>
+                                                <th style="width: 120px;">تجربة بروكتور</th>
+                                                <th style="width: 100px;">الخرسانة</th>
+                                                <th style="width: 80px;">حذف</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr id="no-lab-details-row">
+                                                <td colspan="15" class="text-center text-muted py-5">
+                                                    <i class="fas fa-flask fa-3x mb-3 text-muted"></i>
+                                                    <br><strong>لا توجد بيانات اختبارات مختبرية</strong>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="row mt-4">
@@ -6151,109 +6187,176 @@ function saveDigLicenseSection() {
 
 // وظائف جدول التفاصيل الفنية للمختبر
 function addNewLabDetailsRow() {
-    const tbody = document.querySelector('#labDetailsTable tbody');
+    const labTable = document.getElementById('labDetailsTable');
+    if (!labTable) {
+        toastr.error('لم يتم العثور على جدول التفاصيل الفنية');
+        return;
+    }
+    
+    const tbody = labTable.querySelector('tbody');
+    if (!tbody) {
+        toastr.error('لم يتم العثور على body الجدول');
+        return;
+    }
+    
     const noLabDetailsRow = document.getElementById('no-lab-details-row');
     if (noLabDetailsRow) {
         noLabDetailsRow.remove();
     }
     
     const newRow = document.createElement('tr');
+    // إضافة تأثير بصري
+    newRow.style.opacity = '0';
+    newRow.style.transform = 'translateY(-20px)';
+    newRow.style.transition = 'all 0.3s ease';
+    
     const currentYear = new Date().getFullYear();
     newRow.innerHTML = `
         <td><input type="number" class="form-control form-control-sm" name="lab_year" value="${currentYear}" min="2020" max="2030"></td>
-        <td>
-            <select class="form-select form-select-sm" name="lab_work_type">
-                <option value="">اختر نوع العمل</option>
-                <option value="حفر">حفر</option>
-                <option value="ردم">ردم</option>
-                <option value="أسفلت">أسفلت</option>
-                <option value="بلاط">بلاط</option>
-                <option value="خرسانة">خرسانة</option>
-                <option value="أخرى">أخرى</option>
-            </select>
-        </td>
-        <td><input type="number" class="form-control form-control-sm" name="lab_depth" step="0.01" placeholder="متر"></td>
-        <td><input type="number" class="form-control form-control-sm" name="lab_soil_compaction" step="0.01" placeholder="%"></td>
+        <td><input type="text" class="form-control form-control-sm" name="lab_work_type" placeholder="نوع العمل"></td>
+        <td><input type="number" class="form-control form-control-sm" name="lab_depth" step="0.01" placeholder="العمق"></td>
+        <td><input type="number" class="form-control form-control-sm" name="lab_soil_compaction" step="0.01" placeholder="دك التربة "></td>
         <td><input type="text" class="form-control form-control-sm" name="lab_mc1rc2" placeholder="MC1-RC2"></td>
-        <td><input type="number" class="form-control form-control-sm" name="lab_asphalt_compaction" step="0.01" placeholder="%"></td>
+        <td><input type="number" class="form-control form-control-sm" name="lab_asphalt_compaction" step="0.01" placeholder="دك أسفلت "></td>
         <td><input type="text" class="form-control form-control-sm" name="lab_soil_type" placeholder="ترابي"></td>
-        <td><input type="number" class="form-control form-control-sm" name="lab_max_asphalt_density" step="0.01" placeholder="كغم/م³"></td>
-        <td><input type="number" class="form-control form-control-sm" name="lab_asphalt_percentage" step="0.01" placeholder="%"></td>
+        <td><input type="number" class="form-control form-control-sm" name="lab_max_asphalt_density" step="0.01" placeholder=""></td>
+        <td><input type="number" class="form-control form-control-sm" name="lab_asphalt_percentage" step="0.01" placeholder="نسبة الأسفلت "></td>
         <td><input type="text" class="form-control form-control-sm" name="lab_marshall_test" placeholder="نتيجة مارشال"></td>
         <td><input type="text" class="form-control form-control-sm" name="lab_tile_evaluation" placeholder="تقييم البلاط"></td>
         <td><input type="text" class="form-control form-control-sm" name="lab_soil_classification" placeholder="تصنيف التربة"></td>
         <td><input type="text" class="form-control form-control-sm" name="lab_proctor_test" placeholder="نتيجة بروكتور"></td>
         <td><input type="text" class="form-control form-control-sm" name="lab_concrete" placeholder="مقاومة الخرسانة"></td>
         <td>
-            <button type="button" class="btn btn-danger btn-sm" onclick="deleteLabDetailsRow(this)">
+            <button type="button" class="btn btn-danger btn-sm" onclick="deleteLabDetailsRow(this)" title="حذف الصف">
                 <i class="fas fa-trash"></i>
             </button>
         </td>
     `;
     tbody.appendChild(newRow);
+    
+    // تأثير بصري للإدراج
+    setTimeout(() => {
+        newRow.style.opacity = '1';
+        newRow.style.transform = 'translateY(0)';
+    }, 50);
 }
 
 function deleteLabDetailsRow(button) {
     if (confirm('هل أنت متأكد من حذف هذا السجل؟')) {
-        const tbody = document.querySelector('#labDetailsTable tbody');
-        button.closest('tr').remove();
-        
-        // إذا لم تعد هناك صفوف، أضف صف "لا توجد بيانات"
-        if (tbody.children.length === 0) {
-            const noDataRow = document.createElement('tr');
-            noDataRow.id = 'no-lab-details-row';
-            noDataRow.innerHTML = '<td colspan="15" class="text-center">لا توجد تفاصيل فنية مسجلة</td>';
-            tbody.appendChild(noDataRow);
+        const row = button.closest('tr');
+        if (!row) {
+            toastr.error('خطأ في العثور على الصف');
+            return;
         }
         
-        toastr.success('تم حذف السجل بنجاح');
+        const labTable = document.getElementById('labDetailsTable');
+        if (!labTable) {
+            toastr.error('لم يتم العثور على جدول التفاصيل الفنية');
+            return;
+        }
+        
+        const tbody = labTable.querySelector('tbody');
+        if (!tbody) {
+            toastr.error('لم يتم العثور على body الجدول');
+            return;
+        }
+        
+        // تأثير بصري للحذف
+        row.style.transition = 'all 0.3s ease';
+        row.style.opacity = '0';
+        row.style.transform = 'translateX(100px)';
+        
+        setTimeout(() => {
+            row.remove();
+            
+            // إذا لم تعد هناك صفوف، أضف صف "لا توجد بيانات"
+            if (tbody.children.length === 0) {
+                const noDataRow = document.createElement('tr');
+                noDataRow.id = 'no-lab-details-row';
+                noDataRow.innerHTML = `
+                    <td colspan="15" class="text-center text-muted py-5">
+                        <i class="fas fa-flask fa-3x mb-3 text-muted"></i>
+                        <br><strong>لا توجد بيانات اختبارات مختبرية</strong>
+                        <br><small>اضغط "إضافة صف" لبدء إدخال نتائج الاختبارات</small>
+                    </td>
+                `;
+                tbody.appendChild(noDataRow);
+            }
+            
+            toastr.success('تم حذف السجل بنجاح');
+        }, 300);
     }
 }
 
 function saveAllLabDetails() {
     // التحقق من اختيار الرخصة
-    const licenseId = document.getElementById('evacuation-license-id').value;
-    const licenseSelector = document.getElementById('evacuation-license-selector');
+    const licenseIdElement = document.getElementById('evacuation-license-id');
+    const licenseSelectorElement = document.getElementById('evacuation-license-selector');
+    
+    if (!licenseIdElement || !licenseSelectorElement) {
+        toastr.error('خطأ في العثور على عناصر اختيار الرخصة');
+        return;
+    }
+    
+    const licenseId = licenseIdElement.value;
     
     if (!licenseId) {
         toastr.warning('يجب اختيار رخصة قبل حفظ التفاصيل الفنية');
         return;
     }
 
-    const rows = document.querySelectorAll('#labDetailsTable tbody tr:not(#no-lab-details-row)');
+    const labTable = document.getElementById('labDetailsTable');
+    if (!labTable) {
+        toastr.error('لم يتم العثور على جدول التفاصيل الفنية');
+        return;
+    }
+
+    const rows = labTable.querySelectorAll('tbody tr:not(#no-lab-details-row)');
     if (rows.length === 0) {
         toastr.warning('لا توجد بيانات للحفظ');
         return;
     }
     
     const labDetailsData = [];
+    let hasValidData = false;
+    
     rows.forEach(row => {
-        const inputs = row.querySelectorAll('input, select');
+        const inputs = row.querySelectorAll('input, select, textarea');
         const rowData = {};
+        
         inputs.forEach(input => {
-            if (input.name && input.value) {
+            if (input.name && input.value.trim()) {
                 // تحويل أسماء الحقول لتتطابق مع قاعدة البيانات
                 const fieldName = input.name.replace('lab_', '');
-                rowData[fieldName] = input.value;
+                rowData[fieldName] = input.value.trim();
             }
         });
-        if (Object.keys(rowData).length > 0) {
+        
+        // التحقق من وجود بيانات أساسية مطلوبة
+        if (rowData.year || rowData.work_type || rowData.depth || rowData.soil_compaction) {
             labDetailsData.push(rowData);
+            hasValidData = true;
         }
     });
     
-    if (labDetailsData.length === 0) {
-        toastr.warning('لا توجد بيانات صحيحة للحفظ');
+    if (!hasValidData) {
+        toastr.warning('لا توجد بيانات صالحة للحفظ. تأكد من ملء البيانات الأساسية.');
         return;
     }
     
     // الحصول على اسم الرخصة المختارة
-    const selectedLicenseName = licenseSelector.options[licenseSelector.selectedIndex].text;
+    const selectedLicenseName = licenseSelectorElement.options[licenseSelectorElement.selectedIndex].text;
     
     // إظهار رسالة تأكيد
     if (!confirm(`هل أنت متأكد من حفظ التفاصيل الفنية في ${selectedLicenseName}؟`)) {
         return;
     }
+    
+    // عرض مؤشر التحميل
+    const saveButton = document.querySelector('button[onclick="saveAllLabDetails()"]');
+    const originalText = saveButton.innerHTML;
+    saveButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>جاري الحفظ...';
+    saveButton.disabled = true;
     
     // إرسال البيانات للخادم
     $.ajax({
@@ -6264,24 +6367,32 @@ function saveAllLabDetails() {
         },
         data: {
             license_id: licenseId,
-            section_type: 'evac_table2',
+            section: 'lab_table2',
             data: labDetailsData
         },
         success: function(response) {
-            toastr.success(`تم حفظ التفاصيل الفنية بنجاح في ${selectedLicenseName}`);
-            console.log('Lab Details saved successfully:', response);
+            if (response.success) {
+                toastr.success(`تم حفظ التفاصيل الفنية للمختبر بنجاح في ${selectedLicenseName}`);
+                console.log('Lab Details saved successfully:', response);
+            } else {
+                toastr.error(response.message || 'حدث خطأ أثناء حفظ البيانات');
+            }
         },
         error: function(xhr) {
             console.error('خطأ في حفظ التفاصيل الفنية:', xhr);
             const errors = xhr.responseJSON?.errors || {};
             if (Object.keys(errors).length > 0) {
                 Object.values(errors).forEach(error => {
-                    toastr.error(error[0]);
+                    toastr.error(Array.isArray(error) ? error[0] : error);
                 });
             } else {
-                toastr.error('حدث خطأ أثناء حفظ التفاصيل الفنية');
+                toastr.error('حدث خطأ أثناء حفظ التفاصيل الفنية للمختبر');
             }
         }
+    }).always(function() {
+        // إعادة تعيين زر الحفظ
+        saveButton.innerHTML = originalText;
+        saveButton.disabled = false;
     });
 }
 

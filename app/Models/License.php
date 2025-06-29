@@ -146,7 +146,13 @@ class License extends Model
         'marshall_density_test_status',
         'aggregate_ratio_test_status',
         'stability_deficiency_test_status',
-        'stability_degree_test_status'
+        'stability_degree_test_status',
+        // حقول جداول الإخلاءات والمختبر
+        'evac_table1_data',
+        'evac_table2_data',
+        'lab_table1_data',
+        'lab_table2_data',
+        'evacuation_data'
     ];
 
     protected $casts = [

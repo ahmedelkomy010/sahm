@@ -934,8 +934,15 @@ use Illuminate\Support\Facades\Storage;
                                             <th>العمق</th>
                                             <th>دك التربة</th>
                                             <th>MC1-RC2</th>
-                                            <th>دك الأسفلت</th>
-                                            <th>فحص التربة</th>
+                                            <th>دك أسفلت</th>
+                                            <th>ترابي</th>
+                                            <th>الكثافة القصوى للأسفلت</th>
+                                            <th>نسبة الأسفلت</th>
+                                            <th>تجربة مارشال</th>
+                                            <th>تقييم البلاط</th>
+                                            <th>تصنيف التربة</th>
+                                            <th>تجربة بروكتور</th>
+                                            <th>الخرسانة</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -948,7 +955,14 @@ use Illuminate\Support\Facades\Storage;
                                             <td>{{ $row['soil_compaction'] ?? '-' }}</td>
                                             <td>{{ $row['mc1_test'] ?? '-' }}</td>
                                             <td>{{ $row['asphalt_test'] ?? '-' }}</td>
-                                            <td>{{ $row['soil_test'] ?? '-' }}</td>
+                                            <td>{{ $row['soil_type'] ?? '-' }}</td>
+                                            <td>{{ $row['max_asphalt_density'] ?? '-' }}</td>
+                                            <td>{{ $row['asphalt_percentage'] ?? '-' }}</td>
+                                            <td>{{ $row['marshall_test'] ?? '-' }}</td>
+                                            <td>{{ $row['tile_evaluation'] ?? '-' }}</td>
+                                            <td>{{ $row['soil_classification'] ?? '-' }}</td>
+                                            <td>{{ $row['proctor_test'] ?? '-' }}</td>
+                                            <td>{{ $row['concrete'] ?? '-' }}</td>
                                         </tr>
                                         @endforeach
                                     </tbody>
@@ -1299,52 +1313,66 @@ use Illuminate\Support\Facades\Storage;
                         </div>
                     </div>
 
-                    <!-- جدول التفاصيل الفنية للإخلاءات - قابل للتحرير -->
+                    <!-- جدول التفاصيل الفنية للمختبر - قابل للتحرير -->
                     <div class="card mb-4">
-                        <div class="card-header bg-light d-flex justify-content-between align-items-center">
-                            <h6 class="mb-0"><i class="fas fa-table me-2"></i>جدول التفاصيل الفنية للإخلاءات</h6>
+                        <div class="card-header bg-gradient-success text-white d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0"><i class="fas fa-flask me-2"></i>جدول التفاصيل الفنية للمختبر</h6>
                             <div>
-                                <button type="button" class="btn btn-success btn-sm me-2" onclick="addEvacTable2Row()">
+                                <button type="button" class="btn btn-success btn-sm me-2" onclick="addLabDetailsRow()">
                                     <i class="fas fa-plus me-1"></i>إضافة صف
                                 </button>
-                                <button type="button" class="btn btn-primary btn-sm" onclick="saveEvacTable2Data()">
+                                <button type="button" class="btn btn-primary btn-sm" onclick="saveLabDetailsData()">
                                     <i class="fas fa-save me-1"></i>حفظ الجدول
                                 </button>
                             </div>
                         </div>
                         <div class="card-body">
                             <div class="table-responsive">
-                                <table class="table table-bordered table-striped" id="evacTable2">
-                                    <thead class="table-warning">
+                                <table class="table table-bordered table-striped" id="labDetailsTable">
+                                    <thead class="table-success">
                                         <tr>
-                                            <th>السنة</th>
-                                            <th>نوع العمل</th>
-                                            <th>العمق</th>
-                                            <th>دك التربة</th>
-                                            <th>MC1-RC2</th>
-                                            <th>دك أسفلت</th>
-                                            <th>فحص التربة</th>
-                                            <th>إجراءات</th>
+                                            <th style="width: 80px;">السنة</th>
+                                            <th style="width: 120px;">نوع العمل</th>
+                                            <th style="width: 80px;">العمق</th>
+                                            <th style="width: 100px;">دك التربة</th>
+                                            <th style="width: 100px;">MC1-RC2</th>
+                                            <th style="width: 100px;">دك أسفلت</th>
+                                            <th style="width: 80px;">ترابي</th>
+                                            <th style="width: 120px;">الكثافة القصوى للأسفلت</th>
+                                            <th style="width: 120px;">نسبة الأسفلت</th>
+                                            <th style="width: 120px;">تجربة مارشال</th>
+                                            <th style="width: 120px;">تقييم البلاط</th>
+                                            <th style="width: 120px;">تصنيف التربة</th>
+                                            <th style="width: 120px;">تجربة بروكتور</th>
+                                            <th style="width: 100px;">الخرسانة</th>
+                                            <th style="width: 80px;">حذف</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @php $evacTable2Data = is_string($license->evac_table2_data) ? json_decode($license->evac_table2_data, true) : $license->evac_table2_data; @endphp
-                                        @if($evacTable2Data && is_array($evacTable2Data))
-                                            @foreach($evacTable2Data as $index => $row)
+                                        @php $labDetailsData = is_string($license->lab_table2_data) ? json_decode($license->lab_table2_data, true) : $license->lab_table2_data; @endphp
+                                        @if($labDetailsData && is_array($labDetailsData))
+                                            @foreach($labDetailsData as $index => $row)
                                             <tr>
-                                                <td><input type="number" class="form-control form-control-sm" name="year" value="{{ $row['year'] ?? '' }}"></td>
-                                                <td><input type="text" class="form-control form-control-sm" name="work_type" value="{{ $row['work_type'] ?? '' }}"></td>
-                                                <td><input type="number" step="0.01" class="form-control form-control-sm" name="depth" value="{{ $row['depth'] ?? '' }}"></td>
-                                                <td><input type="number" step="0.01" class="form-control form-control-sm" name="soil_compaction" value="{{ $row['soil_compaction'] ?? '' }}"></td>
-                                                <td><input type="text" class="form-control form-control-sm" name="mc1_test" value="{{ $row['mc1_test'] ?? '' }}"></td>
-                                                <td><input type="number" step="0.01" class="form-control form-control-sm" name="asphalt_test" value="{{ $row['asphalt_test'] ?? '' }}"></td>
-                                                <td><input type="text" class="form-control form-control-sm" name="soil_test" value="{{ $row['soil_test'] ?? '' }}"></td>
-                                                <td><button type="button" class="btn btn-danger btn-sm" onclick="deleteTableRow(this)"><i class="fas fa-trash"></i></button></td>
+                                                <td><input type="number" class="form-control form-control-sm" name="lab_year" value="{{ $row['year'] ?? '' }}" min="2020" max="2030"></td>
+                                                <td><input type="text" class="form-control form-control-sm" name="lab_work_type" value="{{ $row['work_type'] ?? '' }}" placeholder="نوع العمل"></td>
+                                                <td><input type="number" class="form-control form-control-sm" name="lab_depth" value="{{ $row['depth'] ?? '' }}" step="0.01" placeholder="العمق"></td>
+                                                <td><input type="number" class="form-control form-control-sm" name="lab_soil_compaction" value="{{ $row['soil_compaction'] ?? '' }}" step="0.01" placeholder="دك التربة %"></td>
+                                                <td><input type="text" class="form-control form-control-sm" name="lab_mc1rc2" value="{{ $row['mc1rc2'] ?? $row['mc1_test'] ?? '' }}" placeholder="MC1-RC2"></td>
+                                                <td><input type="number" class="form-control form-control-sm" name="lab_asphalt_compaction" value="{{ $row['asphalt_compaction'] ?? $row['asphalt_test'] ?? '' }}" step="0.01" placeholder="دك أسفلت %"></td>
+                                                <td><input type="text" class="form-control form-control-sm" name="lab_soil_type" value="{{ $row['soil_type'] ?? $row['soil_test'] ?? '' }}" placeholder="ترابي"></td>
+                                                <td><input type="number" class="form-control form-control-sm" name="lab_max_asphalt_density" value="{{ $row['max_asphalt_density'] ?? '' }}" step="0.01" placeholder="كغم/م³"></td>
+                                                <td><input type="number" class="form-control form-control-sm" name="lab_asphalt_percentage" value="{{ $row['asphalt_percentage'] ?? '' }}" step="0.01" placeholder="نسبة الأسفلت %"></td>
+                                                <td><input type="text" class="form-control form-control-sm" name="lab_marshall_test" value="{{ $row['marshall_test'] ?? '' }}" placeholder="نتيجة مارشال"></td>
+                                                <td><input type="text" class="form-control form-control-sm" name="lab_tile_evaluation" value="{{ $row['tile_evaluation'] ?? '' }}" placeholder="تقييم البلاط"></td>
+                                                <td><input type="text" class="form-control form-control-sm" name="lab_soil_classification" value="{{ $row['soil_classification'] ?? '' }}" placeholder="تصنيف التربة"></td>
+                                                <td><input type="text" class="form-control form-control-sm" name="lab_proctor_test" value="{{ $row['proctor_test'] ?? '' }}" placeholder="نتيجة بروكتور"></td>
+                                                <td><input type="text" class="form-control form-control-sm" name="lab_concrete" value="{{ $row['concrete'] ?? '' }}" placeholder="مقاومة الخرسانة"></td>
+                                                <td><button type="button" class="btn btn-danger btn-sm" onclick="deleteTableRow(this)" title="حذف الصف"><i class="fas fa-trash"></i></button></td>
                                             </tr>
                                             @endforeach
                                         @else
-                                            <tr id="no-evac-table2-data">
-                                                <td colspan="8" class="text-center">لا توجد بيانات - اضغط "إضافة صف" لإضافة بيانات جديدة</td>
+                                            <tr id="no-lab-details-data">
+                                                <td colspan="15" class="text-center">لا توجد بيانات - اضغط "إضافة صف" لإضافة بيانات جديدة</td>
                                             </tr>
                                         @endif
                                     </tbody>
@@ -1771,6 +1799,47 @@ use Illuminate\Support\Facades\Storage;
     background: linear-gradient(45deg,rgb(126, 186, 226),rgb(143, 162, 204)) !important;
     border: none;
     padding: 1.5rem;
+}
+
+/* أنماط جدول التفاصيل الفنية للمختبر */
+.bg-gradient-success {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+}
+
+#labDetailsTable .form-control-sm {
+    font-size: 0.8rem;
+    padding: 0.25rem 0.4rem;
+}
+
+#labDetailsTable th {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    font-weight: 600;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    border: 1px solid rgba(255,255,255,0.2);
+}
+
+#labDetailsTable td {
+    padding: 0.3rem;
+    vertical-align: middle;
+}
+
+#labDetailsTable .btn-danger {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+}
+
+/* تأثيرات المرور للصفوف الجديدة */
+#labDetailsTable .table-success {
+    background: linear-gradient(135deg, rgba(40,167,69,0.1), rgba(32,201,151,0.1)) !important;
+    animation: highlightRow 2s ease-in-out;
+}
+
+@keyframes highlightRow {
+    0% { background: linear-gradient(135deg, #28a745, #20c997); }
+    100% { background: transparent; }
 }
 </style>
 @endsection
@@ -2314,6 +2383,10 @@ function deleteTableRow(button) {
                     noDataId = 'no-evac-table2-data';
                     colSpan = 8;
                     break;
+                case 'labDetailsTable':
+                    noDataId = 'no-lab-details-data';
+                    colSpan = 15;
+                    break;
                 default:
                     colSpan = 5;
             }
@@ -2426,6 +2499,144 @@ function saveEvacTable2Data() {
         },
         success: function(response) {
             toastr.success('تم حفظ جدول التفاصيل الفنية للإخلاءات بنجاح');
+        },
+        error: function(xhr) {
+            console.error('خطأ في حفظ البيانات:', xhr);
+            toastr.error('حدث خطأ أثناء حفظ البيانات');
+        }
+    });
+}
+
+// دالة إضافة صف جديد لجدول التفاصيل الفنية للمختبر
+function addLabDetailsRow() {
+    const labTable = document.getElementById('labDetailsTable');
+    if (!labTable) {
+        toastr.error('لم يتم العثور على جدول التفاصيل الفنية');
+        return;
+    }
+    
+    const tbody = labTable.querySelector('tbody');
+    if (!tbody) {
+        toastr.error('لم يتم العثور على body الجدول');
+        return;
+    }
+    
+    const noDataRow = document.getElementById('no-lab-details-data');
+    
+    if (noDataRow) {
+        noDataRow.remove();
+    }
+    
+    const newRow = document.createElement('tr');
+    const currentYear = new Date().getFullYear();
+    
+    newRow.innerHTML = `
+        <td><input type="number" class="form-control form-control-sm" name="lab_year" value="${currentYear}" min="2020" max="2030"></td>
+        <td><input type="text" class="form-control form-control-sm" name="lab_work_type" placeholder="نوع العمل"></td>
+        <td><input type="number" class="form-control form-control-sm" name="lab_depth" step="0.01" placeholder="العمق"></td>
+        <td><input type="number" class="form-control form-control-sm" name="lab_soil_compaction" step="0.01" placeholder="دك التربة %"></td>
+        <td><input type="text" class="form-control form-control-sm" name="lab_mc1rc2" placeholder="MC1-RC2"></td>
+        <td><input type="number" class="form-control form-control-sm" name="lab_asphalt_compaction" step="0.01" placeholder="دك أسفلت %"></td>
+        <td><input type="text" class="form-control form-control-sm" name="lab_soil_type" placeholder="ترابي"></td>
+        <td><input type="number" class="form-control form-control-sm" name="lab_max_asphalt_density" step="0.01" placeholder=""></td>
+        <td><input type="number" class="form-control form-control-sm" name="lab_asphalt_percentage" step="0.01" placeholder="نسبة الأسفلت "></td>
+        <td><input type="text" class="form-control form-control-sm" name="lab_marshall_test" placeholder="نتيجة مارشال"></td>
+        <td><input type="text" class="form-control form-control-sm" name="lab_tile_evaluation" placeholder="تقييم البلاط"></td>
+        <td><input type="text" class="form-control form-control-sm" name="lab_soil_classification" placeholder="تصنيف التربة"></td>
+        <td><input type="text" class="form-control form-control-sm" name="lab_proctor_test" placeholder="نتيجة بروكتور"></td>
+        <td><input type="text" class="form-control form-control-sm" name="lab_concrete" placeholder="مقاومة الخرسانة"></td>
+        <td><button type="button" class="btn btn-danger btn-sm" onclick="deleteLabDetailsRow(this)" title="حذف الصف"><i class="fas fa-trash"></i></button></td>
+    `;
+    
+    tbody.appendChild(newRow);
+    
+    // إضافة تأثير تمييز
+    newRow.classList.add('table-success');
+    setTimeout(() => {
+        newRow.classList.remove('table-success');
+    }, 2000);
+}
+
+// دالة حذف صف من جدول التفاصيل الفنية للمختبر
+function deleteLabDetailsRow(button) {
+    if (confirm('هل أنت متأكد من حذف هذا السجل؟')) {
+        const row = button.closest('tr');
+        if (!row) {
+            toastr.error('خطأ في العثور على الصف');
+            return;
+        }
+        
+        const tbody = row.closest('tbody');
+        if (!tbody) {
+            toastr.error('خطأ في العثور على tbody');
+            return;
+        }
+        
+        row.remove();
+        
+        // إذا لم تعد هناك صفوف، إضافة رسالة "لا توجد بيانات"
+        if (tbody.children.length === 0) {
+            const noDataRow = document.createElement('tr');
+            noDataRow.id = 'no-lab-details-data';
+            noDataRow.innerHTML = `<td colspan="15" class="text-center">لا توجد بيانات - اضغط "إضافة صف" لإضافة بيانات جديدة</td>`;
+            tbody.appendChild(noDataRow);
+        }
+        
+        toastr.success('تم حذف السجل بنجاح');
+    }
+}
+
+// دالة حفظ بيانات جدول التفاصيل الفنية للمختبر
+function saveLabDetailsData() {
+    const labTable = document.getElementById('labDetailsTable');
+    if (!labTable) {
+        toastr.error('لم يتم العثور على جدول التفاصيل الفنية');
+        return;
+    }
+    
+    const rows = labTable.querySelectorAll('tbody tr:not(#no-lab-details-data)');
+    if (rows.length === 0) {
+        toastr.warning('لا توجد بيانات للحفظ');
+        return;
+    }
+    
+    const tableData = [];
+    rows.forEach(row => {
+        const inputs = row.querySelectorAll('input');
+        const rowData = {};
+        
+        inputs.forEach(input => {
+            if (input.value.trim()) {
+                // إزالة 'lab_' من بداية الاسم
+                const fieldName = input.name.replace('lab_', '');
+                rowData[fieldName] = input.value.trim();
+            }
+        });
+        
+        if (Object.keys(rowData).length > 0) {
+            tableData.push(rowData);
+        }
+    });
+    
+    if (tableData.length === 0) {
+        toastr.warning('لا توجد بيانات صحيحة للحفظ');
+        return;
+    }
+    
+    // إرسال البيانات للخادم
+    $.ajax({
+        url: '{{ route("admin.licenses.save-section") }}',
+        type: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        },
+        data: {
+            license_id: {{ $license->id }},
+            section: 'lab_table2',
+            data: tableData
+        },
+        success: function(response) {
+            toastr.success('تم حفظ جدول التفاصيل الفنية للمختبر بنجاح');
         },
         error: function(xhr) {
             console.error('خطأ في حفظ البيانات:', xhr);
