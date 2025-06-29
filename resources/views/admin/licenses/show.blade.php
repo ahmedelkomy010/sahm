@@ -337,39 +337,39 @@ use Illuminate\Support\Facades\Storage;
                 </div>
                 <div class="card-body">
                     
-                    @php
-                    // تحديد حالة الاختبارات بناءً على القيم المالية والاختبارات المفعلة
-                    $totalTests = 0;
-                    $passedTests = 0;
-                    $failedTests = 0;
-                    $basicTests = ['has_depth_test', 'has_soil_compaction_test', 'has_rc1_mc1_test', 'has_asphalt_test', 'has_soil_test', 'has_interlock_test'];
-                    
-                    // عد الاختبارات المفعلة فقط
-                    foreach($basicTests as $test) {
-                        if($license->$test) {
-                            $totalTests++;
+                                                        @php
+                        // تحديد حالة الاختبارات بناءً على القيم المالية والاختبارات المفعلة
+                        $totalTests = 0;
+                        $passedTests = 0;
+                        $failedTests = 0;
+                        $basicTests = ['has_depth_test', 'has_soil_compaction_test', 'has_rc1_mc1_test', 'has_asphalt_test', 'has_soil_test', 'has_interlock_test'];
+                        
+                        // عد الاختبارات المفعلة فقط
+                        foreach($basicTests as $test) {
+                            if($license->$test) {
+                                $totalTests++;
+                            }
                         }
-                    }
-                    
-                    // تحديد النتائج بناءً على القيم المالية
-                    $successfulValue = $license->successful_tests_value ?? 0;
-                    $failedValue = $license->failed_tests_value ?? 0;
-                    
-                    if ($successfulValue > 0 && $failedValue == 0) {
-                        $passedTests = $totalTests; // جميع الاختبارات ناجحة
-                        $testStatus = 'all_passed';
-                    } elseif ($failedValue > 0 && $successfulValue == 0) {
-                        $failedTests = $totalTests; // جميع الاختبارات راسبة  
-                        $testStatus = 'all_failed';
-                    } elseif ($successfulValue > 0 && $failedValue > 0) {
-                        $passedTests = ceil($totalTests * 0.6); // تقدير للنتائج المختلطة
-                        $failedTests = $totalTests - $passedTests;
-                        $testStatus = 'mixed';
-                    } else {
-                        $testStatus = 'unknown';
-                    }
-                    
-                    $successRate = $totalTests > 0 ? round(($passedTests / $totalTests) * 100, 1) : 0;
+                        
+                        // تحديد النتائج بناءً على القيم المالية
+                        $successfulValue = $license->successful_tests_value ?? 0;
+                        $failedValue = $license->failed_tests_value ?? 0;
+                        
+                        if ($successfulValue > 0 && $failedValue == 0) {
+                            $passedTests = $totalTests; // جميع الاختبارات ناجحة
+                            $testStatus = 'all_passed';
+                        } elseif ($failedValue > 0 && $successfulValue == 0) {
+                            $failedTests = $totalTests; // جميع الاختبارات راسبة  
+                            $testStatus = 'all_failed';
+                        } elseif ($successfulValue > 0 && $failedValue > 0) {
+                            $passedTests = ceil($totalTests * 0.6); // تقدير للنتائج المختلطة
+                            $failedTests = $totalTests - $passedTests;
+                            $testStatus = 'mixed';
+                        } else {
+                            $testStatus = 'unknown';
+                        }
+                        
+                        $successRate = $totalTests > 0 ? round(($passedTests / $totalTests) * 100, 1) : 0;
                     @endphp
 
                     <!-- ملخص سريع للنتائج -->
@@ -429,7 +429,7 @@ use Illuminate\Support\Facades\Storage;
                                 <span class="badge bg-light text-primary ms-2">{{ $passedTests }}/{{ $totalTests }} ناجح</span>
                             </h5>
                         </div>
-                        <div class="card-body">
+                                <div class="card-body">
                             @php
                                 $testDetails = [
                                     'has_max_dry_density_pro_test' => [
@@ -658,7 +658,7 @@ use Illuminate\Support\Facades\Storage;
                                     ]
                                 ];
                             @endphp
-
+                            
                             @if(count($testDetails) == 0)
                                 <div class="text-center py-5">
                                     <i class="fas fa-clipboard-list fa-3x text-muted mb-3"></i>
@@ -666,87 +666,87 @@ use Illuminate\Support\Facades\Storage;
                                     <p class="text-muted mb-0">لم يتم إضافة أي اختبارات بعد</p>
                                 </div>
                             @else
-                                <div class="row">
-                                    @foreach($testDetails as $testField => $test)
-                                        @php
-                                            // تحديد حالة الاختبار الفردي
+                            <div class="row">
+                                @foreach($testDetails as $testField => $test)
+                                @php
+                                    // تحديد حالة الاختبار الفردي
                                             $isTestActive = $license->$testField ?? false;
                                             $testResult = $license->{$test['result_field']} ?? null;
                                             $testStatus = $license->{$test['status_field']} ?? 'pass';
                                             
-                                            if (!$isTestActive) {
-                                                $cardBorder = 'border-secondary';
-                                                $cardHeader = 'bg-secondary';
-                                                $badgeClass = 'bg-secondary';
-                                                $badgeText = 'غير مفعل';
-                                                $iconClass = 'fas fa-minus-circle';
-                                            } else {
+                                    if (!$isTestActive) {
+                                        $cardBorder = 'border-secondary';
+                                        $cardHeader = 'bg-secondary';
+                                        $badgeClass = 'bg-secondary';
+                                        $badgeText = 'غير مفعل';
+                                        $iconClass = 'fas fa-minus-circle';
+                                    } else {
                                                 if ($testStatus === 'pass') {
-                                                    $cardBorder = 'border-success';
-                                                    $cardHeader = 'bg-success';
-                                                    $badgeClass = 'bg-success';
-                                                    $badgeText = 'ناجح';
-                                                    $iconClass = 'fas fa-check-circle';
+                                            $cardBorder = 'border-success';
+                                            $cardHeader = 'bg-success';
+                                            $badgeClass = 'bg-success';
+                                            $badgeText = 'ناجح';
+                                            $iconClass = 'fas fa-check-circle';
                                                 } else {
-                                                    $cardBorder = 'border-danger';
-                                                    $cardHeader = 'bg-danger';
-                                                    $badgeClass = 'bg-danger';
-                                                    $badgeText = 'راسب';
-                                                    $iconClass = 'fas fa-times-circle';
-                                                }
-                                            }
-                                        @endphp
-                                        <div class="col-md-6 col-lg-4 mb-3">
-                                            <div class="card h-100 test-card {{ $cardBorder }}">
-                                                <div class="card-header {{ $cardHeader }} py-2">
-                                                    <div class="d-flex justify-content-between align-items-center">
-                                                        <span class="fw-bold">
-                                                            <i class="{{ $test['icon'] }} me-1"></i>
-                                                            {{ $test['name'] }}
-                                                        </span>
-                                                        <i class="{{ $iconClass }}"></i>
-                                                    </div>
-                                                </div>
-                                                <div class="card-body py-2">
+                                            $cardBorder = 'border-danger';
+                                            $cardHeader = 'bg-danger';
+                                            $badgeClass = 'bg-danger';
+                                            $badgeText = 'راسب';
+                                            $iconClass = 'fas fa-times-circle';
+                                        }
+                                    }
+                                @endphp
+                                <div class="col-md-6 col-lg-4 mb-3">
+                                    <div class="card h-100 test-card {{ $cardBorder }}">
+                                        <div class="card-header {{ $cardHeader }} py-2">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span class="fw-bold">
+                                                    <i class="{{ $test['icon'] }} me-1"></i>
+                                                    {{ $test['name'] }}
+                                                </span>
+                                                <i class="{{ $iconClass }}"></i>
+                                </div>
+                            </div>
+                                        <div class="card-body py-2">
                                                     <div class="d-flex justify-content-between align-items-center mb-2">
-                                                        <span class="badge {{ $badgeClass }} fs-6">
-                                                            {{ $badgeText }}
-                                                        </span>
-                                                        @if($license->{$test['file_field']})
-                                                            <div class="btn-group btn-group-sm">
-                                                                <a href="{{ Storage::url($license->{$test['file_field']}) }}" 
-                                                                   class="btn btn-outline-primary btn-sm" 
-                                                                   target="_blank" 
-                                                                   title="عرض الملف">
-                                                                    <i class="fas fa-eye"></i>
-                                                                </a>
-                                                                <a href="{{ Storage::url($license->{$test['file_field']}) }}" 
-                                                                   class="btn btn-outline-success btn-sm" 
-                                                                   download 
-                                                                   title="تحميل الملف">
-                                                                    <i class="fas fa-download"></i>
-                                                                </a>
-                                                            </div>
-                                                        @else
-                                                            <small class="text-muted">لا يوجد مرفق</small>
-                                                        @endif
-                                                    </div>
+                                                <span class="badge {{ $badgeClass }} fs-6">
+                                                    {{ $badgeText }}
+                                                </span>
+                                                @if($license->{$test['file_field']})
+                                                    <div class="btn-group btn-group-sm">
+                                                        <a href="{{ Storage::url($license->{$test['file_field']}) }}" 
+                                                           class="btn btn-outline-primary btn-sm" 
+                                                           target="_blank" 
+                                                           title="عرض الملف">
+                                                            <i class="fas fa-eye"></i>
+                                                        </a>
+                                                        <a href="{{ Storage::url($license->{$test['file_field']}) }}" 
+                                                           class="btn btn-outline-success btn-sm" 
+                                                           download 
+                                                           title="تحميل الملف">
+                                                            <i class="fas fa-download"></i>
+                                                        </a>
+                        </div>
+                                    @else
+                                                    <small class="text-muted">لا يوجد مرفق</small>
+                                    @endif
+                                </div>
                                                     @if($isTestActive)
-                                                        <div class="mt-2">
-                                                            <small class="text-muted">
+                                                <div class="mt-2">
+                                                    <small class="text-muted">
                                                                 <i class="fas fa-chart-line me-1"></i>
                                                                 النتيجة: {{ $testResult ?? 'لم يتم تحديد النتيجة' }}
-                                                            </small>
-                                                        </div>
-                                                    @endif
-                                                </div>
-                                            </div>
-                                        </div>
-                                    @endforeach
+                                                    </small>
+                            </div>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                                @endforeach
                                 </div>
                             @endif
+                            </div>
                         </div>
-                    </div>
 
                     <!-- ملخص حالة النتائج -->
                     @if($successfulValue > 0 || $failedValue > 0)
@@ -1404,6 +1404,227 @@ use Illuminate\Support\Facades\Storage;
                             <h4 class="text-success">لا توجد مخالفات</h4>
                         </div>
                     @endif
+                </div>
+            </div>
+        </div>
+
+        <!-- تبويب شهادة التنسيق -->
+        <div class="tab-pane fade" id="coordination-certificate" role="tabpanel">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-certificate me-2"></i>
+                        شهادة التنسيق
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">رقم شهادة التنسيق:</label>
+                                <p class="mb-0">{{ $license->coordination_certificate_number ?? 'غير محدد' }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">ملاحظات:</label>
+                                <p class="mb-0">{{ $license->coordination_certificate_notes ?? 'لا توجد ملاحظات' }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- قسم المرفقات -->
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-paperclip me-2"></i>
+                        مرفقات شهادة التنسيق
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <!-- شهادة التنسيق -->
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card h-100 border-primary">
+                                <div class="card-header bg-primary text-white">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-certificate me-1"></i>
+                                        شهادة التنسيق
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    @if($license->coordination_certificate_path)
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="text-muted">
+                                                <i class="fas fa-file-pdf me-1"></i>
+                                                ملف الشهادة
+                                            </span>
+                                            <div class="btn-group btn-group-sm">
+                                                <a href="{{ Storage::url($license->coordination_certificate_path) }}" 
+                                                   class="btn btn-outline-primary" 
+                                                   target="_blank">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a href="{{ Storage::url($license->coordination_certificate_path) }}" 
+                                                   class="btn btn-outline-success" 
+                                                   download>
+                                                    <i class="fas fa-download"></i>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    @else
+                                        <div class="text-center text-muted">
+                                            <i class="fas fa-file-upload fa-2x mb-2"></i>
+                                            <p class="mb-0">لم يتم رفع الملف</p>
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- الخطابات والتعهدات -->
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card h-100 border-success">
+                                <div class="card-header bg-success text-white">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-file-signature me-1"></i>
+                                        الخطابات والتعهدات
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    @if($license->letters_commitments_file_path)
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="text-muted">
+                                                <i class="fas fa-file-pdf me-1"></i>
+                                                ملف الخطابات
+                                            </span>
+                                            <div class="btn-group btn-group-sm">
+                                                <a href="{{ Storage::url($license->letters_commitments_file_path) }}" 
+                                                   class="btn btn-outline-primary" 
+                                                   target="_blank">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a href="{{ Storage::url($license->letters_commitments_file_path) }}" 
+                                                   class="btn btn-outline-success" 
+                                                   download>
+                                                    <i class="fas fa-download"></i>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    @else
+                                        <div class="text-center text-muted">
+                                            <i class="fas fa-file-upload fa-2x mb-2"></i>
+                                            <p class="mb-0">لم يتم رفع الملف</p>
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- إيصالات الدفع -->
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card h-100 border-warning">
+                                <div class="card-header bg-warning text-dark">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-receipt me-1"></i>
+                                        إيصالات الدفع
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    @if($license->payment_invoices_path)
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <span class="text-muted">
+                                                <i class="fas fa-file-invoice-dollar me-1"></i>
+                                                إيصالات الدفع
+                                            </span>
+                                            <div class="btn-group btn-group-sm">
+                                                <a href="{{ Storage::url($license->payment_invoices_path) }}" 
+                                                   class="btn btn-outline-primary" 
+                                                   target="_blank">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a href="{{ Storage::url($license->payment_invoices_path) }}" 
+                                                   class="btn btn-outline-success" 
+                                                   download>
+                                                    <i class="fas fa-download"></i>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    @endif
+
+                                    @if($license->payment_proof_path)
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="text-muted">
+                                                <i class="fas fa-check-circle me-1"></i>
+                                                إثبات الدفع
+                                            </span>
+                                            <div class="btn-group btn-group-sm">
+                                                <a href="{{ Storage::url($license->payment_proof_path) }}" 
+                                                   class="btn btn-outline-primary" 
+                                                   target="_blank">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a href="{{ Storage::url($license->payment_proof_path) }}" 
+                                                   class="btn btn-outline-success" 
+                                                   download>
+                                                    <i class="fas fa-download"></i>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    @endif
+
+                                    @if(!$license->payment_invoices_path && !$license->payment_proof_path)
+                                        <div class="text-center text-muted">
+                                            <i class="fas fa-file-invoice-dollar fa-2x mb-2"></i>
+                                            <p class="mb-0">لم يتم رفع الملفات</p>
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ملاحظات ومرفقات إضافية -->
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card h-100 border-info">
+                                <div class="card-header bg-info text-white">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-sticky-note me-1"></i>
+                                        ملاحظات ومرفقات إضافية
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    @if($license->notes_attachments_path)
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="text-muted">
+                                                <i class="fas fa-paperclip me-1"></i>
+                                                مرفقات الملاحظات
+                                            </span>
+                                            <div class="btn-group btn-group-sm">
+                                                <a href="{{ Storage::url($license->notes_attachments_path) }}" 
+                                                   class="btn btn-outline-primary" 
+                                                   target="_blank">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a href="{{ Storage::url($license->notes_attachments_path) }}" 
+                                                   class="btn btn-outline-success" 
+                                                   download>
+                                                    <i class="fas fa-download"></i>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    @else
+                                        <div class="text-center text-muted">
+                                            <i class="fas fa-paperclip fa-2x mb-2"></i>
+                                            <p class="mb-0">لا توجد مرفقات إضافية</p>
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
                 </div>
             </div>
         </div>
