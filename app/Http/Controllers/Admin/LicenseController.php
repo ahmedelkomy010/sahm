@@ -145,7 +145,9 @@ class LicenseController extends Controller
      */
     public function show(License $license)
     {
-        $license->load('workOrder');
+        $license->load(['workOrder', 'violations' => function($query) {
+            $query->orderBy('violation_date', 'desc');
+        }]);
         return view('admin.licenses.show', compact('license'));
     }
 

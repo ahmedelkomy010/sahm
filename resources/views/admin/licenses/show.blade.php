@@ -1397,44 +1397,251 @@ use Illuminate\Support\Facades\Storage;
             <div class="card">
                 <div class="card-header bg-danger text-white">
                     <h4 class="mb-0">
-                        <i class="fas fa-exclamation-triangle me-2"></i>المخالفات 
+                        <i class="fas fa-exclamation-triangle me-2"></i>سجل المخالفات 
                         <span class="badge bg-light text-danger ms-2 fs-6">رخصة {{ $license->license_number }}</span>
+                        @if($license->violations->count() > 0)
+                            <span class="badge bg-warning text-dark ms-2">{{ $license->violations->count() }} مخالفة</span>
+                        @endif
                     </h4>
                 </div>
                 <div class="card-body">
-                    @if($license->violation_number)
-                        <div class="alert alert-danger">
-                            <h5><i class="fas fa-exclamation-triangle"></i> يوجد مخالفة</h5>
-                            <table class="table">
-                                <tr>
-                                    <td><strong>رقم المخالفة:</strong></td>
-                                    <td>{{ $license->violation_number }}</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>قيمة المخالفة:</strong></td>
-                                    <td>{{ number_format($license->violation_license_value ?? 0, 2) }} ريال</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>تاريخ المخالفة:</strong></td>
-                                    <td>{{ $license->violation_license_date ? $license->violation_license_date->format('Y-m-d') : 'غير محدد' }}</td>
-                                </tr>
-                                @if($license->violation_cause)
-                                <tr>
-                                    <td><strong>سبب المخالفة:</strong></td>
-                                    <td>{{ $license->violation_cause }}</td>
-                                </tr>
-                                @endif
+                    @if($license->violations->count() > 0)
+                        <!-- إحصائيات المخالفات -->
+                        <div class="row mb-4">
+                            <div class="col-md-4">
+                                <div class="card bg-danger text-white">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
+                                        <h5>إجمالي المخالفات</h5>
+                                        <h3>{{ $license->violations->count() }}</h3>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card bg-warning text-dark">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-money-bill-wave fa-2x mb-2"></i>
+                                        <h5>إجمالي قيم المخالفات</h5>
+                                        <h3>{{ number_format($license->violations->sum('violation_amount'), 2) }} ريال</h3>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card bg-info text-white">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-calendar-times fa-2x mb-2"></i>
+                                        <h5>المخالفات المتأخرة</h5>
+                                        <h3>{{ $license->violations->filter(function($v) { return $v->status == 'overdue'; })->count() }}</h3>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- جدول المخالفات -->
+                        <div class="table-responsive">
+                            <table class="table table-striped table-bordered">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>رقم المخالفة</th>
+                                        <th>تاريخ المخالفة</th>
+                                        <th>نوع المخالفة</th>
+                                        <th>الجهة المسؤولة</th>
+                                        <th>قيمة المخالفة</th>
+                                        <th>تاريخ الاستحقاق</th>
+                                        <th>حالة الدفع</th>
+                                        <th>الحالة</th>
+                                        <th>الإجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($license->violations as $violation)
+                                        <tr>
+                                            <td>
+                                                <strong class="text-primary">{{ $violation->violation_number }}</strong>
+                                            </td>
+                                            <td>
+                                                {{ $violation->violation_date ? $violation->violation_date->format('Y-m-d') : 'غير محدد' }}
+                                            </td>
+                                            <td>{{ $violation->violation_type ?? 'غير محدد' }}</td>
+                                            <td>{{ $violation->responsible_party ?? 'غير محدد' }}</td>
+                                            <td>
+                                                <strong class="text-danger">{{ number_format($violation->violation_amount ?? 0, 2) }} ريال</strong>
+                                            </td>
+                                            <td>
+                                                {{ $violation->payment_due_date ? $violation->payment_due_date->format('Y-m-d') : 'غير محدد' }}
+                                            </td>
+                                            <td>
+                                                @switch($violation->payment_status_text)
+                                                    @case('paid')
+                                                        <span class="badge bg-success">مدفوعة</span>
+                                                        @break
+                                                    @case('pending')
+                                                        <span class="badge bg-warning">في الانتظار</span>
+                                                        @break
+                                                    @case('overdue')
+                                                        <span class="badge bg-danger">متأخرة</span>
+                                                        @break
+                                                    @default
+                                                        <span class="badge bg-secondary">غير محدد</span>
+                                                @endswitch
+                                            </td>
+                                            <td>
+                                                @if($violation->status == 'overdue')
+                                                    <span class="badge bg-danger">
+                                                        <i class="fas fa-clock"></i> متأخرة
+                                                    </span>
+                                                @else
+                                                    <span class="badge bg-info">
+                                                        <i class="fas fa-hourglass-half"></i> في الانتظار
+                                                    </span>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm">
+                                                    @if($violation->attachment_path)
+                                                        <a href="{{ $violation->attachment_url }}" 
+                                                           class="btn btn-outline-primary" 
+                                                           target="_blank" 
+                                                           title="عرض المرفق">
+                                                            <i class="fas fa-eye"></i>
+                                                        </a>
+                                                    @endif
+                                                    <button type="button" 
+                                                            class="btn btn-outline-info" 
+                                                            data-bs-toggle="modal" 
+                                                            data-bs-target="#violationModal{{ $violation->id }}"
+                                                            title="عرض التفاصيل">
+                                                        <i class="fas fa-info-circle"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
                             </table>
                         </div>
                     @else
                         <div class="text-center py-5">
                             <i class="fas fa-shield-alt fa-5x text-success mb-3"></i>
-                            <h4 class="text-success">لا توجد مخالفات</h4>
+                            <h4 class="text-success">لا توجد مخالفات مسجلة</h4>
+                            <p class="text-muted">هذه الرخصة لا تحتوي على أي مخالفات</p>
                         </div>
                     @endif
                 </div>
             </div>
         </div>
+
+        <!-- نوافذ منبثقة لتفاصيل المخالفات -->
+        @foreach($license->violations as $violation)
+            <div class="modal fade" id="violationModal{{ $violation->id }}" tabindex="-1">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header bg-danger text-white">
+                            <h5 class="modal-title">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                تفاصيل المخالفة رقم {{ $violation->violation_number }}
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6 class="fw-bold text-primary">معلومات أساسية</h6>
+                                    <table class="table table-sm">
+                                        <tr>
+                                            <td><strong>رقم الرخصة:</strong></td>
+                                            <td>{{ $violation->license_number ?? $license->license_number }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>رقم المخالفة:</strong></td>
+                                            <td>{{ $violation->violation_number }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>تاريخ المخالفة:</strong></td>
+                                            <td>{{ $violation->violation_date ? $violation->violation_date->format('Y-m-d') : 'غير محدد' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>نوع المخالفة:</strong></td>
+                                            <td>{{ $violation->violation_type ?? 'غير محدد' }}</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6 class="fw-bold text-warning">معلومات الدفع</h6>
+                                    <table class="table table-sm">
+                                        <tr>
+                                            <td><strong>قيمة المخالفة:</strong></td>
+                                            <td class="text-danger fw-bold">{{ number_format($violation->violation_amount ?? 0, 2) }} ريال</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>تاريخ الاستحقاق:</strong></td>
+                                            <td>{{ $violation->payment_due_date ? $violation->payment_due_date->format('Y-m-d') : 'غير محدد' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>رقم إيصال الدفع:</strong></td>
+                                            <td>{{ $violation->payment_invoice_number ?? 'لم يتم الدفع' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>حالة الدفع:</strong></td>
+                                            <td>
+                                                @switch($violation->payment_status_text)
+                                                    @case('paid')
+                                                        <span class="badge bg-success">مدفوعة</span>
+                                                        @break
+                                                    @case('pending')
+                                                        <span class="badge bg-warning">في الانتظار</span>
+                                                        @break
+                                                    @case('overdue')
+                                                        <span class="badge bg-danger">متأخرة</span>
+                                                        @break
+                                                    @default
+                                                        <span class="badge bg-secondary">غير محدد</span>
+                                                @endswitch
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                            
+                            @if($violation->violation_description)
+                                <div class="mt-3">
+                                    <h6 class="fw-bold text-info">وصف المخالفة</h6>
+                                    <div class="alert alert-light">
+                                        {{ $violation->violation_description }}
+                                    </div>
+                                </div>
+                            @endif
+
+                            @if($violation->responsible_party)
+                                <div class="mt-3">
+                                    <h6 class="fw-bold text-secondary">الجهة المسؤولة</h6>
+                                    <p class="mb-0">{{ $violation->responsible_party }}</p>
+                                </div>
+                            @endif
+
+                            @if($violation->notes)
+                                <div class="mt-3">
+                                    <h6 class="fw-bold text-success">ملاحظات</h6>
+                                    <div class="alert alert-info">
+                                        {{ $violation->notes }}
+                                    </div>
+                                </div>
+                            @endif
+                        </div>
+                        <div class="modal-footer">
+                            @if($violation->attachment_path)
+                                <a href="{{ $violation->attachment_url }}" 
+                                   class="btn btn-primary" 
+                                   target="_blank">
+                                    <i class="fas fa-download me-1"></i>تحميل المرفق
+                                </a>
+                            @endif
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endforeach
 
         <!-- تبويب شهادة التنسيق -->
         <div class="tab-pane fade" id="coordination-certificate" role="tabpanel">

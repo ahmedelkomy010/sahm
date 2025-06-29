@@ -93,4 +93,21 @@ class LicenseViolation extends Model
     {
         return $this->attachment_path ? Storage::url($this->attachment_path) : null;
     }
+
+    /**
+     * Get payment status as text
+     */
+    public function getPaymentStatusTextAttribute()
+    {
+        switch($this->payment_status) {
+            case 1:
+                return 'paid';
+            case 2:
+                return 'pending';
+            case 3:
+                return 'overdue';
+            default:
+                return 'unknown';
+        }
+    }
 } 

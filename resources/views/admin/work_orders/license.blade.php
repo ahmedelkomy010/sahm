@@ -1196,6 +1196,51 @@
          }
      }
 
+     // تحميل الرخص المتاحة لهذا أمر العمل
+     function loadLicenses() {
+        $.ajax({
+            url: `/admin/licenses-list/by-work-order/{{ $workOrder->id }}`,
+            type: 'GET',
+            success: function(response) {
+                const select = document.getElementById('license-select');
+                if (!select) return;
+                
+                // تنظيف القائمة المنسدلة
+                select.innerHTML = '<option value="" selected disabled>-- اختر رقم الرخصة --</option>';
+                
+                if (!response.licenses || response.licenses.length === 0) {
+                    select.innerHTML += '<option value="" disabled>لا توجد رخص متاحة</option>';
+                    return;
+                }
+
+                response.licenses.forEach(license => {
+                    const option = document.createElement('option');
+                    option.value = license.id;
+                    option.setAttribute('data-license-number', license.license_number);
+                    option.textContent = `${license.license_number} - ${license.license_type || 'غير محدد'}`;
+                    select.appendChild(option);
+                });
+            },
+            error: function(xhr) {
+                console.error('Error loading licenses:', xhr);
+                toastr.error('حدث خطأ في تحميل الرخص');
+            }
+        });
+    }
+
+    // اختيار الرخصة
+    function selectLicense(selectElement) {
+        const selectedOption = selectElement.options[selectElement.selectedIndex];
+        const licenseId = selectedOption.value;
+        const licenseNumber = selectedOption.getAttribute('data-license-number');
+        
+        // تحديث الحقول المخفية والمرئية
+        document.getElementById('violation-license-id').value = licenseId;
+        document.getElementById('selected-license-number').value = licenseNumber;
+        
+        toastr.success(`تم اختيار الرخصة: ${licenseNumber}`);
+    }
+
      function loadViolations() {
         $.ajax({
             url: `/admin/violations/by-work-order/{{ $workOrder->id }}`,
@@ -1293,8 +1338,10 @@
     function saveViolationSection() {
         // التحقق من اختيار الرخصة
         const licenseId = document.getElementById('violation-license-id').value;
-        if (!licenseId) {
-            toastr.warning('يجب اختيار رخصة قبل حفظ بيانات المخالفات');
+        const licenseNumber = document.getElementById('selected-license-number').value;
+        
+        if (!licenseId || !licenseNumber) {
+            toastr.warning('يجب اختيار رخصة محددة قبل حفظ المخالفة');
             return;
         }
         
@@ -1303,6 +1350,23 @@
             toastr.error('لم يتم العثور على نموذج المخالفة');
             return;
         }
+
+        // التحقق من البيانات المطلوبة
+        const violationNumber = form.querySelector('[name="violation_number"]').value;
+        const violationType = form.querySelector('[name="violation_type"]').value;
+        const violationAmount = form.querySelector('[name="violation_amount"]').value;
+        const responsibleParty = form.querySelector('[name="responsible_party"]').value;
+        
+        if (!violationNumber || !violationType || !violationAmount || !responsibleParty) {
+            toastr.error('يجب ملء جميع الحقول المطلوبة');
+            return;
+        }
+
+        // عرض مؤشر التحميل
+        const saveButton = document.querySelector('button[onclick="saveViolationSection()"]');
+        const originalText = saveButton.innerHTML;
+        saveButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>جاري الحفظ...';
+        saveButton.disabled = true;
 
         const formData = new FormData(form);
         
@@ -1316,15 +1380,25 @@
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             },
             success: function(response) {
-                toastr.success('تم حفظ المخالفة بنجاح');
+                toastr.success(response.message || `تم حفظ المخالفة بنجاح للرخصة: ${licenseNumber}`);
                 resetViolationForm();
                 loadViolations(); // سيقوم بتحديث الجدول والإجمالي
             },
             error: function(xhr) {
-                const errors = xhr.responseJSON?.errors || {};
-                Object.values(errors).forEach(error => {
-                    toastr.error(error[0]);
-                });
+                console.error('Error saving violation:', xhr);
+                if (xhr.responseJSON && xhr.responseJSON.errors) {
+                    const errors = xhr.responseJSON.errors;
+                    Object.values(errors).forEach(error => {
+                        toastr.error(Array.isArray(error) ? error[0] : error);
+                    });
+                } else {
+                    toastr.error(xhr.responseJSON?.message || 'حدث خطأ أثناء حفظ المخالفة');
+                }
+            },
+            complete: function() {
+                // إعادة تعيين زر الحفظ
+                saveButton.innerHTML = originalText;
+                saveButton.disabled = false;
             }
         });
     }
@@ -1339,10 +1413,15 @@
         if (form) {
             form.reset();
             
+            // إعادة تعيين اختيار الرخصة
+            document.getElementById('license-select').selectedIndex = 0;
+            document.getElementById('violation-license-id').value = '';
+            document.getElementById('selected-license-number').value = '';
+            
             // إعادة تعيين القيم الافتراضية
             document.querySelector('[name="violation_date"]').value = '{{ date("Y-m-d") }}';
             document.querySelector('[name="payment_due_date"]').value = '{{ date("Y-m-d", strtotime("+30 days")) }}';
-            document.querySelector('[name="payment_status"][value="0"]').checked = true;
+            document.querySelector('[name="payment_status"]').value = '0';
             
             // إخفاء معاينة الملف
             clearViolationFile();
@@ -1385,6 +1464,22 @@
         preview.style.display = 'block';
         
         toastr.success('تم اختيار الملف بنجاح');
+    }
+
+    // دالة إزالة ملف المخالفة
+    function clearViolationFile() {
+        const fileInput = document.querySelector('[name="violation_attachment"]');
+        const preview = document.getElementById('violation-file-preview');
+        
+        if (fileInput) {
+            fileInput.value = '';
+        }
+        
+        if (preview) {
+            preview.style.display = 'none';
+        }
+        
+        toastr.info('تم إزالة الملف');
     }
 
     // دالة مسح الملف المختار
@@ -5852,6 +5947,34 @@ function deleteExtension(extensionId) {
                                 </h5>
                             </div>
                             <div class="card-body">
+                                <!-- اختيار الرخصة -->
+                                <div class="row g-3 mb-4">
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold">
+                                            <i class="fas fa-license me-2"></i>اختر الرخصة
+                                            <span class="text-danger">*</span>
+                                        </label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fas fa-id-card"></i></span>
+                                            <select class="form-select" name="license_select" id="license-select" required onchange="selectLicense(this)">
+                                                <option value="" selected disabled>-- اختر رقم الرخصة --</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-text">
+                                            <i class="fas fa-info-circle me-1"></i>
+                                            سيتم ربط المخالفة بالرخصة المحددة
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold">رقم الرخصة المحدد</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fas fa-hashtag"></i></span>
+                                            <input type="text" class="form-control" name="license_number" id="selected-license-number" readonly 
+                                                   placeholder="سيتم تعبئته تلقائياً عند اختيار الرخصة">
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <!-- معلومات المخالفة الأساسية -->
                                 <div class="row g-3 mb-4">
                                     <div class="col-md-3">
@@ -5927,6 +6050,17 @@ function deleteExtension(extensionId) {
                                                 <option value="0">في انتظار السداد</option>
                                                 <option value="1">تم السداد</option>
                                             </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- ملاحظات إضافية -->
+                                <div class="row g-3 mb-4">
+                                    <div class="col-md-12">
+                                        <label class="form-label fw-bold">ملاحظات إضافية</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fas fa-sticky-note"></i></span>
+                                            <textarea class="form-control" name="notes" rows="3" placeholder="أي ملاحظات إضافية حول المخالفة"></textarea>
                                         </div>
                                     </div>
                                 </div>
@@ -7004,6 +7138,10 @@ function calculateExtensionDays() {
 
 // تهيئة النظام عند تحميل الصفحة
 document.addEventListener('DOMContentLoaded', function() {
+    // تحميل الرخص والمخالفات
+    loadLicenses();
+    loadViolations();
+    
     // تهيئة أزرار الحذف لجميع الاختبارات
     const testNames = [
         'depth_test', 'soil_compaction_test', 'rc1_mc1_test', 'asphalt_test', 'soil_test', 'interlock_test',
