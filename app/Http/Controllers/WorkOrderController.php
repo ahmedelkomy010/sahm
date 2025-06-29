@@ -140,7 +140,41 @@ class WorkOrderController extends Controller
     public function show(WorkOrder $workOrder)
     {
         $workOrder->load(['files', 'basicAttachments', 'invoiceAttachments', 'licenses.violations']);
-        return view('admin.work_orders.show', compact('workOrder'));
+        
+        // حساب إجماليات القيم
+        $licensesTotals = [
+            'total_license_value' => 0,
+            'total_extension_value' => 0,
+            'total_evacuation_value' => 0,
+            'total_violations_value' => 0,
+            'total_violations_count' => 0,
+            'pending_violations_value' => 0,
+            'paid_violations_value' => 0
+        ];
+        
+        foreach ($workOrder->licenses as $license) {
+            // إجمالي قيمة الرخص
+            $licensesTotals['total_license_value'] += $license->license_value ?? 0;
+            $licensesTotals['total_extension_value'] += $license->extension_value ?? 0;
+            
+            // إجمالي قيمة الإخلاءات
+            $licensesTotals['total_evacuation_value'] += $license->evac_amount ?? 0;
+            
+            // إجمالي قيمة المخالفات
+            foreach ($license->violations as $violation) {
+                $licensesTotals['total_violations_count']++;
+                $licensesTotals['total_violations_value'] += $violation->violation_amount ?? 0;
+                
+                // تقسيم المخالفات حسب حالة الدفع
+                if ($violation->payment_status == 1) { // مدفوع
+                    $licensesTotals['paid_violations_value'] += $violation->violation_amount ?? 0;
+                } else { // غير مدفوع أو جزئي
+                    $licensesTotals['pending_violations_value'] += $violation->violation_amount ?? 0;
+                }
+            }
+        }
+        
+        return view('admin.work_orders.show', compact('workOrder', 'licensesTotals'));
     }
 
     // عرض نموذج تعديل أمر عمل

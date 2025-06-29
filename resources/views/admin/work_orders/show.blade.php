@@ -103,6 +103,8 @@
             display: none;
         }
     }
+
+
 </style>
 @endpush
 
@@ -139,6 +141,8 @@
                 </div>
 
                 <div class="card-body p-4">
+
+
                     <div class="row g-4">
                         <!-- معلومات أساسية -->
                         <div class="col-12 col-lg-6">
@@ -503,41 +507,55 @@
                                                 <td>{{ $workOrder->extract_number ?? 'غير متوفر' }}</td>
                                             </tr>
                                             @if($workOrder->licenses->count() > 0)
+                                                <tr>
+                                                    <th>عدد الرخص</th>
+                                                    <td><span class="badge bg-info">{{ $workOrder->licenses->count() }} رخصة</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <th>إجمالي قيمة الرخص</th>
+                                                    <td><span class="text-primary fw-bold">{{ number_format($licensesTotals['total_license_value'], 2) }} ﷼</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <th>إجمالي قيمة التمديدات</th>
+                                                    <td><span class="text-info fw-bold">{{ number_format($licensesTotals['total_extension_value'], 2) }} ﷼</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <th>إجمالي قيمة الإخلاءات</th>
+                                                    <td><span class="text-warning fw-bold">{{ number_format($licensesTotals['total_evacuation_value'], 2) }} ﷼</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <th>إجمالي قيمة المخالفات</th>
+                                                    <td>
+                                                        <span class="text-danger fw-bold">{{ number_format($licensesTotals['total_violations_value'], 2) }} ﷼</span>
+                                                        @if($licensesTotals['total_violations_count'] > 0)
+                                                            <br><small class="text-muted">({{ $licensesTotals['total_violations_count'] }} مخالفة)</small>
+                                                        @endif
+                                                    </td>
+                                                </tr>
+                                                @if($licensesTotals['paid_violations_value'] > 0 || $licensesTotals['pending_violations_value'] > 0)
+                                                <tr>
+                                                    <th>المخالفات المدفوعة</th>
+                                                    <td><span class="text-success">{{ number_format($licensesTotals['paid_violations_value'], 2) }} ﷼</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <th>المخالفات المتأخرة</th>
+                                                    <td><span class="text-warning">{{ number_format($licensesTotals['pending_violations_value'], 2) }} ﷼</span></td>
+                                                </tr>
+                                                @endif
                                                 @php
-                                                    $totalLicenseValue = 0;
-                                                    $totalExtensionValue = 0;
-                                                    $totalViolationValue = 0;
-                                                    $totalEvacValue = 0;
-
-                                                    foreach($workOrder->licenses as $license) {
-                                                        $totalLicenseValue += $license->license_value ?? 0;
-                                                        $totalExtensionValue += $license->extension_value ?? 0;
-                                                        // استخدام النظام الجديد للمخالفات المتعددة
-                                                        $totalViolationValue += $license->violations ? $license->violations->sum('violation_value') : 0;
-                                                        $totalEvacValue += $license->evac_license_value ?? 0;
-                                                    }
+                                                    $grandTotal = $licensesTotals['total_license_value'] + $licensesTotals['total_extension_value'] + $licensesTotals['total_evacuation_value'] + $licensesTotals['total_violations_value'];
                                                 @endphp
-                                                <tr>
-                                                    <th>قيمة الرخص</th>
-                                                    <td>{{ number_format($totalLicenseValue, 2) }} ﷼</td>
+                                                <tr class="border-top border-2">
+                                                    <th>الإجمالي العام للرخص والمخالفات</th>
+                                                    <td><span class="text-success fw-bold fs-5">{{ number_format($grandTotal, 2) }} ﷼</span></td>
                                                 </tr>
-                                                <tr>
-                                                    <th>قيمة تمديد الرخص</th>
-                                                    <td>{{ number_format($totalExtensionValue, 2) }} ﷼</td>
-                                                </tr>
-                                                <tr>
-                                                    <th>قيمة المخالفات</th>
-                                                    <td>{{ number_format($totalViolationValue, 2) }} ﷼</td>
-                                                </tr>
-                                                <tr>
-                                                    <th>قيمة الإخلاءات</th>
-                                                    <td>{{ number_format($totalEvacValue, 2) }} ﷼</td>
-                                                </tr>
+                                                @php $latestLicense = $workOrder->licenses()->latest()->first(); @endphp
+                                                @if($latestLicense)
                                                 <tr>
                                                     <th>قيمة الاختبارات الناجحة</th>
                                                     <td>
                                                         <span class="text-success">
-                                                            {{ number_format($license->successful_tests_value ?? 0, 2) }} ﷼
+                                                            {{ number_format($latestLicense->successful_tests_value ?? 0, 2) }} ﷼
                                                         </span>
                                                     </td>
                                                 </tr>
@@ -545,9 +563,15 @@
                                                     <th>قيمة الاختبارات الراسبة</th>
                                                     <td>
                                                         <span class="text-danger">
-                                                            {{ number_format($license->failed_tests_value ?? 0, 2) }} ﷼
+                                                            {{ number_format($latestLicense->failed_tests_value ?? 0, 2) }} ﷼
                                                         </span>
                                                     </td>
+                                                </tr>
+                                                @endif
+                                            @else
+                                                <tr>
+                                                    <th>الرخص والمخالفات</th>
+                                                    <td><span class="text-muted">لا توجد رخص مرتبطة بهذا أمر العمل</span></td>
                                                 </tr>
                                             @endif
                                         </tbody>

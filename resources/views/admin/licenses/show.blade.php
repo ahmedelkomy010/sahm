@@ -1729,29 +1729,52 @@ use Illuminate\Support\Facades\Storage;
                                     </h6>
                                 </div>
                                 <div class="card-body">
-                                    @if($license->letters_commitments_file_path)
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <span class="text-muted">
-                                                <i class="fas fa-file-pdf me-1"></i>
-                                                ملف الخطابات
-                                            </span>
-                                            <div class="btn-group btn-group-sm">
-                                                <a href="{{ Storage::url($license->letters_commitments_file_path) }}" 
-                                                   class="btn btn-outline-primary" 
-                                                   target="_blank">
-                                                    <i class="fas fa-eye"></i>
-                                                </a>
-                                                <a href="{{ Storage::url($license->letters_commitments_file_path) }}" 
-                                                   class="btn btn-outline-success" 
-                                                   download>
-                                                    <i class="fas fa-download"></i>
-                                                </a>
-                                            </div>
-                                        </div>
+                                    @php
+                                        $letterFiles = null;
+                                        
+                                        // معالجة ملفات الخطابات والتعهدات
+                                        if ($license->letters_commitments_file_path) {
+                                            if (is_string($license->letters_commitments_file_path)) {
+                                                $decoded = json_decode($license->letters_commitments_file_path, true);
+                                                $letterFiles = is_array($decoded) ? $decoded : [$license->letters_commitments_file_path];
+                                            } else {
+                                                $letterFiles = [$license->letters_commitments_file_path];
+                                            }
+                                        }
+                                    @endphp
+
+                                    @if($letterFiles)
+                                        @foreach($letterFiles as $index => $filePath)
+                                            @if(Storage::exists($filePath))
+                                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                                    <span class="text-muted">
+                                                        <i class="fas fa-file-signature me-1"></i>
+                                                        ملف {{ $index + 1 }}
+                                                    </span>
+                                                    <div class="btn-group btn-group-sm">
+                                                        <a href="{{ Storage::url($filePath) }}" 
+                                                           class="btn btn-outline-primary" 
+                                                           target="_blank" title="عرض">
+                                                            <i class="fas fa-eye"></i>
+                                                        </a>
+                                                        <a href="{{ Storage::url($filePath) }}" 
+                                                           class="btn btn-outline-success" 
+                                                           download title="تحميل">
+                                                            <i class="fas fa-download"></i>
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            @else
+                                                <div class="text-muted small mb-1">
+                                                    <i class="fas fa-file-times me-1 text-danger"></i>
+                                                    ملف {{ $index + 1 }} (غير متوفر)
+                                                </div>
+                                            @endif
+                                        @endforeach
                                     @else
                                         <div class="text-center text-muted">
-                                            <i class="fas fa-file-upload fa-2x mb-2"></i>
-                                            <p class="mb-0">لم يتم رفع الملف</p>
+                                            <i class="fas fa-file-signature fa-2x mb-2"></i>
+                                            <p class="mb-0">لم يتم رفع ملفات الخطابات</p>
                                         </div>
                                     @endif
                                 </div>
@@ -1768,52 +1791,136 @@ use Illuminate\Support\Facades\Storage;
                                     </h6>
                                 </div>
                                 <div class="card-body">
-                                    @if($license->payment_invoices_path)
-                                        <div class="d-flex justify-content-between align-items-center mb-2">
-                                            <span class="text-muted">
-                                                <i class="fas fa-file-invoice-dollar me-1"></i>
-                                                إيصالات الدفع
-                                            </span>
-                                            <div class="btn-group btn-group-sm">
-                                                <a href="{{ Storage::url($license->payment_invoices_path) }}" 
-                                                   class="btn btn-outline-primary" 
-                                                   target="_blank">
-                                                    <i class="fas fa-eye"></i>
-                                                </a>
-                                                <a href="{{ Storage::url($license->payment_invoices_path) }}" 
-                                                   class="btn btn-outline-success" 
-                                                   download>
-                                                    <i class="fas fa-download"></i>
-                                                </a>
-                                            </div>
+                                    @php
+                                        $paymentInvoices = null;
+                                        $paymentProofs = null;
+                                        
+                                        // معالجة إيصالات الدفع
+                                        if ($license->payment_invoices_path) {
+                                            if (is_string($license->payment_invoices_path)) {
+                                                $decoded = json_decode($license->payment_invoices_path, true);
+                                                $paymentInvoices = is_array($decoded) ? $decoded : [$license->payment_invoices_path];
+                                            } else {
+                                                $paymentInvoices = [$license->payment_invoices_path];
+                                            }
+                                        }
+                                        
+                                        // معالجة إثباتات الدفع
+                                        if ($license->payment_proof_path) {
+                                            if (is_string($license->payment_proof_path)) {
+                                                $decoded = json_decode($license->payment_proof_path, true);
+                                                $paymentProofs = is_array($decoded) ? $decoded : [$license->payment_proof_path];
+                                            } else {
+                                                $paymentProofs = [$license->payment_proof_path];
+                                            }
+                                        }
+                                    @endphp
+
+                                    @if($paymentInvoices)
+                                        <div class="mb-3">
+                                            <strong class="text-primary d-block mb-2">
+                                                <i class="fas fa-file-invoice-dollar me-1"></i>إيصالات الدفع
+                                            </strong>
+                                            @foreach($paymentInvoices as $index => $filePath)
+                                                @if(Storage::exists($filePath))
+                                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                                        <span class="text-muted small">
+                                                            <i class="fas fa-file me-1"></i>إيصال {{ $index + 1 }}
+                                                        </span>
+                                                        <div class="btn-group btn-group-sm">
+                                                            <a href="{{ Storage::url($filePath) }}" 
+                                                               class="btn btn-outline-primary" 
+                                                               target="_blank" title="عرض">
+                                                                <i class="fas fa-eye"></i>
+                                                            </a>
+                                                            <a href="{{ Storage::url($filePath) }}" 
+                                                               class="btn btn-outline-success" 
+                                                               download title="تحميل">
+                                                                <i class="fas fa-download"></i>
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                @endif
+                                            @endforeach
                                         </div>
                                     @endif
 
-                                    @if($license->payment_proof_path)
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <span class="text-muted">
-                                                <i class="fas fa-check-circle me-1"></i>
-                                                إثبات الدفع
-                                            </span>
-                                            <div class="btn-group btn-group-sm">
-                                                <a href="{{ Storage::url($license->payment_proof_path) }}" 
-                                                   class="btn btn-outline-primary" 
-                                                   target="_blank">
-                                                    <i class="fas fa-eye"></i>
-                                                </a>
-                                                <a href="{{ Storage::url($license->payment_proof_path) }}" 
-                                                   class="btn btn-outline-success" 
-                                                   download>
-                                                    <i class="fas fa-download"></i>
-                                                </a>
-                                            </div>
+                                    @if($paymentProofs)
+                                        <div class="mb-3">
+                                            <strong class="text-success d-block mb-2">
+                                                <i class="fas fa-check-circle me-1"></i>إثباتات الدفع
+                                            </strong>
+                                            @foreach($paymentProofs as $index => $filePath)
+                                                @if(Storage::exists($filePath))
+                                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                                        <span class="text-muted small">
+                                                            <i class="fas fa-file me-1"></i>إثبات {{ $index + 1 }}
+                                                        </span>
+                                                        <div class="btn-group btn-group-sm">
+                                                            <a href="{{ Storage::url($filePath) }}" 
+                                                               class="btn btn-outline-primary" 
+                                                               target="_blank" title="عرض">
+                                                                <i class="fas fa-eye"></i>
+                                                            </a>
+                                                            <a href="{{ Storage::url($filePath) }}" 
+                                                               class="btn btn-outline-success" 
+                                                               download title="تحميل">
+                                                                <i class="fas fa-download"></i>
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                @endif
+                                            @endforeach
                                         </div>
                                     @endif
 
-                                    @if(!$license->payment_invoices_path && !$license->payment_proof_path)
+                                    @if(!$paymentInvoices && !$paymentProofs)
                                         <div class="text-center text-muted">
                                             <i class="fas fa-file-invoice-dollar fa-2x mb-2"></i>
-                                            <p class="mb-0">لم يتم رفع الملفات</p>
+                                            <p class="mb-0">لم يتم رفع ملفات الدفع</p>
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ملف رخصة الحفر -->
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card h-100 border-danger">
+                                <div class="card-header bg-danger text-white">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-hard-hat me-1"></i>
+                                        ملف رخصة الحفر
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    @if($license->license_file_path)
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="text-muted">
+                                                <i class="fas fa-file-pdf me-1"></i>
+                                                ملف الرخصة
+                                            </span>
+                                            <div class="btn-group btn-group-sm">
+                                                @if(Storage::exists($license->license_file_path))
+                                                    <a href="{{ Storage::url($license->license_file_path) }}" 
+                                                       class="btn btn-outline-primary" 
+                                                       target="_blank" title="عرض">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    <a href="{{ Storage::url($license->license_file_path) }}" 
+                                                       class="btn btn-outline-success" 
+                                                       download title="تحميل">
+                                                        <i class="fas fa-download"></i>
+                                                    </a>
+                                                @else
+                                                    <span class="text-danger small">الملف غير متوفر</span>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    @else
+                                        <div class="text-center text-muted">
+                                            <i class="fas fa-hard-hat fa-2x mb-2"></i>
+                                            <p class="mb-0">لم يتم رفع ملف الرخصة</p>
                                         </div>
                                     @endif
                                 </div>
@@ -1830,29 +1937,71 @@ use Illuminate\Support\Facades\Storage;
                                     </h6>
                                 </div>
                                 <div class="card-body">
-                                    @if($license->notes_attachments_path)
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <span class="text-muted">
-                                                <i class="fas fa-paperclip me-1"></i>
-                                                مرفقات الملاحظات
-                                            </span>
-                                            <div class="btn-group btn-group-sm">
-                                                <a href="{{ Storage::url($license->notes_attachments_path) }}" 
-                                                   class="btn btn-outline-primary" 
-                                                   target="_blank">
-                                                    <i class="fas fa-eye"></i>
-                                                </a>
-                                                <a href="{{ Storage::url($license->notes_attachments_path) }}" 
-                                                   class="btn btn-outline-success" 
-                                                   download>
-                                                    <i class="fas fa-download"></i>
-                                                </a>
+                                    @php
+                                        $notesFiles = null;
+                                        
+                                        // معالجة مرفقات الملاحظات
+                                        if ($license->notes_attachments_path) {
+                                            if (is_string($license->notes_attachments_path)) {
+                                                $decoded = json_decode($license->notes_attachments_path, true);
+                                                $notesFiles = is_array($decoded) ? $decoded : [$license->notes_attachments_path];
+                                            } else {
+                                                $notesFiles = [$license->notes_attachments_path];
+                                            }
+                                        }
+                                    @endphp
+
+                                    <!-- عرض الملاحظات النصية -->
+                                    @if($license->notes)
+                                        <div class="mb-3">
+                                            <strong class="text-info d-block mb-2">
+                                                <i class="fas fa-sticky-note me-1"></i>الملاحظات
+                                            </strong>
+                                            <div class="alert alert-light p-2">
+                                                <small>{{ $license->notes }}</small>
                                             </div>
                                         </div>
-                                    @else
+                                    @endif
+
+                                    <!-- عرض المرفقات -->
+                                    @if($notesFiles)
+                                        <div class="mb-2">
+                                            <strong class="text-secondary d-block mb-2">
+                                                <i class="fas fa-paperclip me-1"></i>المرفقات
+                                            </strong>
+                                            @foreach($notesFiles as $index => $filePath)
+                                                @if(Storage::exists($filePath))
+                                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                                        <span class="text-muted small">
+                                                            <i class="fas fa-file me-1"></i>مرفق {{ $index + 1 }}
+                                                        </span>
+                                                        <div class="btn-group btn-group-sm">
+                                                            <a href="{{ Storage::url($filePath) }}" 
+                                                               class="btn btn-outline-primary" 
+                                                               target="_blank" title="عرض">
+                                                                <i class="fas fa-eye"></i>
+                                                            </a>
+                                                            <a href="{{ Storage::url($filePath) }}" 
+                                                               class="btn btn-outline-success" 
+                                                               download title="تحميل">
+                                                                <i class="fas fa-download"></i>
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                @else
+                                                    <div class="text-muted small mb-1">
+                                                        <i class="fas fa-file-times me-1 text-danger"></i>
+                                                        مرفق {{ $index + 1 }} (غير متوفر)
+                                                    </div>
+                                                @endif
+                                            @endforeach
+                                        </div>
+                                    @endif
+
+                                    @if(!$license->notes && !$notesFiles)
                                         <div class="text-center text-muted">
-                                            <i class="fas fa-paperclip fa-2x mb-2"></i>
-                                            <p class="mb-0">لا توجد مرفقات إضافية</p>
+                                            <i class="fas fa-sticky-note fa-2x mb-2"></i>
+                                            <p class="mb-0">لا توجد ملاحظات أو مرفقات</p>
                                         </div>
                                     @endif
                                 </div>
@@ -1862,6 +2011,208 @@ use Illuminate\Support\Facades\Storage;
                     </div>
                 </div>
             </div>
+
+            <!-- قسم معلومات ومرفقات رخصة الحفر -->
+            @if($license->license_number || $license->license_file_path || $license->license_value || $license->excavation_length)
+            <div class="card mt-4">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-hard-hat me-2"></i>
+                        معلومات ومرفقات رخصة الحفر
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <!-- بيانات رخصة الحفر -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-header bg-secondary text-white">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        معلومات الرخصة
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <table class="table table-sm table-borderless">
+                                        <tr>
+                                            <td><strong>رقم الرخصة:</strong></td>
+                                            <td><span class="badge bg-primary">{{ $license->license_number ?? 'غير محدد' }}</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>نوع الرخصة:</strong></td>
+                                            <td>{{ $license->license_type ?? 'غير محدد' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>تاريخ الرخصة:</strong></td>
+                                            <td>{{ $license->license_date ? \Carbon\Carbon::parse($license->license_date)->format('Y-m-d') : 'غير محدد' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>قيمة الرخصة:</strong></td>
+                                            <td>
+                                                @if($license->license_value)
+                                                    <span class="badge bg-success">{{ number_format($license->license_value, 2) }} ريال</span>
+                                                @else
+                                                    غير محدد
+                                                @endif
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-header bg-info text-white">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-ruler-combined me-1"></i>
+                                        أبعاد الحفر
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <table class="table table-sm table-borderless">
+                                        <tr>
+                                            <td><strong>الطول:</strong></td>
+                                            <td>{{ $license->excavation_length ? $license->excavation_length . ' متر' : 'غير محدد' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>العرض:</strong></td>
+                                            <td>{{ $license->excavation_width ? $license->excavation_width . ' متر' : 'غير محدد' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>العمق:</strong></td>
+                                            <td>{{ $license->excavation_depth ? $license->excavation_depth . ' متر' : 'غير محدد' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>الحجم الإجمالي:</strong></td>
+                                            <td>
+                                                @if($license->excavation_length && $license->excavation_width && $license->excavation_depth)
+                                                    <span class="badge bg-warning text-dark">
+                                                        {{ number_format($license->excavation_length * $license->excavation_width * $license->excavation_depth, 2) }} متر مكعب
+                                                    </span>
+                                                @else
+                                                    غير محسوب
+                                                @endif
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- تواريخ الرخصة والتمديد -->
+                    @if($license->license_start_date || $license->license_end_date || $license->extension_start_date || $license->extension_end_date)
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-header bg-primary text-white">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-calendar me-1"></i>
+                                        فترة الرخصة الأساسية
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <table class="table table-sm table-borderless">
+                                        <tr>
+                                            <td><strong>تاريخ البداية:</strong></td>
+                                            <td>{{ $license->license_start_date ? \Carbon\Carbon::parse($license->license_start_date)->format('Y-m-d') : 'غير محدد' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>تاريخ الانتهاء:</strong></td>
+                                            <td>{{ $license->license_end_date ? \Carbon\Carbon::parse($license->license_end_date)->format('Y-m-d') : 'غير محدد' }}</td>
+                                        </tr>
+                                        @if($license->license_start_date && $license->license_end_date)
+                                        <tr>
+                                            <td><strong>المدة:</strong></td>
+                                            <td>
+                                                <span class="badge bg-info">
+                                                    {{ \Carbon\Carbon::parse($license->license_start_date)->diffInDays(\Carbon\Carbon::parse($license->license_end_date)) }} يوم
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        @endif
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        @if($license->extension_start_date || $license->extension_end_date || $license->extension_value)
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-header bg-warning text-dark">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-calendar-plus me-1"></i>
+                                        فترة التمديد
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <table class="table table-sm table-borderless">
+                                        <tr>
+                                            <td><strong>تاريخ بداية التمديد:</strong></td>
+                                            <td>{{ $license->extension_start_date ? \Carbon\Carbon::parse($license->extension_start_date)->format('Y-m-d') : 'غير محدد' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>تاريخ انتهاء التمديد:</strong></td>
+                                            <td>{{ $license->extension_end_date ? \Carbon\Carbon::parse($license->extension_end_date)->format('Y-m-d') : 'غير محدد' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>قيمة التمديد:</strong></td>
+                                            <td>
+                                                @if($license->extension_value)
+                                                    <span class="badge bg-success">{{ number_format($license->extension_value, 2) }} ريال</span>
+                                                @else
+                                                    غير محدد
+                                                @endif
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+                    </div>
+                    @endif
+
+                    <!-- ملخص مالي -->
+                    @if($license->license_value || $license->extension_value)
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <div class="card bg-light">
+                                <div class="card-header bg-success text-white">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-money-bill-wave me-1"></i>
+                                        الملخص المالي
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row text-center">
+                                        <div class="col-md-4">
+                                            <div class="p-3 border rounded">
+                                                <h6 class="text-primary">قيمة الرخصة الأساسية</h6>
+                                                <h4 class="text-success">{{ number_format($license->license_value ?? 0, 2) }} ريال</h4>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="p-3 border rounded">
+                                                <h6 class="text-warning">قيمة التمديد</h6>
+                                                <h4 class="text-info">{{ number_format($license->extension_value ?? 0, 2) }} ريال</h4>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="p-3 border rounded bg-primary text-white">
+                                                <h6>إجمالي التكلفة</h6>
+                                                <h4>{{ number_format(($license->license_value ?? 0) + ($license->extension_value ?? 0), 2) }} ريال</h4>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    @endif
+
+                </div>
+            </div>
+            @endif
         </div>
     </div>
 
