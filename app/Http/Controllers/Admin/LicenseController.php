@@ -1499,4 +1499,203 @@ class LicenseController extends Controller
             throw $e;
         }
     }
+
+    /**
+     * حفظ حالة اختبار المختبر ديناميكياً
+     */
+    public function saveLabTestStatus(Request $request)
+    {
+        try {
+            $request->validate([
+                'license_id' => 'required|exists:licenses,id',
+                'test_field' => 'required|string',
+                'status' => 'required|in:passed,failed',
+                'value' => 'nullable|numeric|min:0',
+                'result_text' => 'nullable|string|max:255'
+            ]);
+
+            $license = License::findOrFail($request->license_id);
+            
+            // تحديث حالة الاختبار
+            $testField = $request->test_field;
+            $license->$testField = ($request->status === 'passed');
+            
+            // تحديث قيمة الاختبار إذا تم توفيرها
+            if ($request->has('value')) {
+                $valueField = str_replace('has_', '', $testField) . '_value';
+                $license->$valueField = $request->value;
+            }
+            
+            // تحديث نتيجة الاختبار إذا تم توفيرها
+            if ($request->has('result_text')) {
+                $resultField = str_replace('has_', '', $testField) . '_result';
+                $license->$resultField = $request->result_text;
+            }
+            
+            $license->save();
+            
+            // إعادة حساب إجمالي القيم
+            $totals = $this->calculateTestTotals($license);
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'تم حفظ حالة الاختبار بنجاح',
+                'test_status' => $request->status,
+                'totals' => $totals
+            ]);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error saving lab test status: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء حفظ حالة الاختبار: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * رفع مرفق اختبار المختبر
+     */
+    public function uploadLabTestFile(Request $request)
+    {
+        try {
+            $request->validate([
+                'license_id' => 'required|exists:licenses,id',
+                'test_field' => 'required|string',
+                'file' => 'required|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:10240'
+            ]);
+
+            $license = License::findOrFail($request->license_id);
+            
+            if ($request->hasFile('file')) {
+                $testField = str_replace('has_', '', $request->test_field);
+                $fileField = $testField . '_file_path';
+                
+                // حذف الملف القديم إذا كان موجوداً
+                if ($license->$fileField && Storage::disk('public')->exists($license->$fileField)) {
+                    Storage::disk('public')->delete($license->$fileField);
+                }
+                
+                // رفع الملف الجديد
+                $file = $request->file('file');
+                $filename = time() . '_' . $testField . '_' . $file->getClientOriginalName();
+                $filePath = $file->storeAs('licenses/lab_tests/' . $testField, $filename, 'public');
+                
+                $license->$fileField = $filePath;
+                $license->save();
+                
+                return response()->json([
+                    'success' => true,
+                    'message' => 'تم رفع المرفق بنجاح',
+                    'file_path' => $filePath,
+                    'file_url' => Storage::url($filePath),
+                    'file_name' => $filename
+                ]);
+            }
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'لم يتم العثور على ملف للرفع'
+            ], 400);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error uploading lab test file: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء رفع المرفق: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * حذف مرفق اختبار المختبر
+     */
+    public function deleteLabTestFile(Request $request)
+    {
+        try {
+            $request->validate([
+                'license_id' => 'required|exists:licenses,id',
+                'test_field' => 'required|string'
+            ]);
+
+            $license = License::findOrFail($request->license_id);
+            
+            $testField = str_replace('has_', '', $request->test_field);
+            $fileField = $testField . '_file_path';
+            
+            if ($license->$fileField) {
+                // حذف الملف من التخزين
+                if (Storage::disk('public')->exists($license->$fileField)) {
+                    Storage::disk('public')->delete($license->$fileField);
+                }
+                
+                // حذف مسار الملف من قاعدة البيانات
+                $license->$fileField = null;
+                $license->save();
+                
+                return response()->json([
+                    'success' => true,
+                    'message' => 'تم حذف المرفق بنجاح'
+                ]);
+            }
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'لا يوجد مرفق لحذفه'
+            ], 404);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error deleting lab test file: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء حذف المرفق: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * حساب إجمالي قيم الاختبارات
+     */
+    private function calculateTestTotals(License $license)
+    {
+        $basicTests = [
+            'has_depth_test' => 'depth_test_value',
+            'has_soil_compaction_test' => 'soil_compaction_test_value', 
+            'has_rc1_mc1_test' => 'rc1_mc1_test_value',
+            'has_asphalt_test' => 'asphalt_test_value',
+            'has_soil_test' => 'soil_test_value',
+            'has_interlock_test' => 'interlock_test_value'
+        ];
+        
+        $passedCount = 0;
+        $failedCount = 0;
+        $passedValue = 0;
+        $failedValue = 0;
+        
+        foreach ($basicTests as $testField => $valueField) {
+            $testStatus = $license->$testField;
+            $testValue = floatval($license->$valueField ?? 0);
+            
+            if ($testStatus === true) {
+                $passedCount++;
+                $passedValue += $testValue;
+            } elseif ($testStatus === false) {
+                $failedCount++;
+                $failedValue += $testValue;
+            }
+        }
+        
+        // تحديث إجمالي القيم في قاعدة البيانات
+        $license->successful_tests_value = $passedValue;
+        $license->failed_tests_value = $failedValue;
+        $license->save();
+        
+        return [
+            'passed_count' => $passedCount,
+            'failed_count' => $failedCount,
+            'passed_value' => $passedValue,
+            'failed_value' => $failedValue,
+            'total_tests' => $passedCount + $failedCount
+        ];
+    }
 } 

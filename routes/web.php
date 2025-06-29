@@ -195,6 +195,11 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::get('licenses/extensions/by-work-order/{workOrder}', [\App\Http\Controllers\Admin\LicenseController::class, 'getExtensionsByWorkOrder'])->name('licenses.extensions.by-work-order');
     Route::get('licenses/extensions/by-license/{license}', [\App\Http\Controllers\Admin\LicenseController::class, 'getExtensionsByLicense'])->name('licenses.extensions.by-license');
 
+    // مسارات الاختبارات المعملية الديناميكية
+    Route::post('licenses/lab-test/save-status', [\App\Http\Controllers\Admin\LicenseController::class, 'saveLabTestStatus'])->name('licenses.lab-test.save-status');
+    Route::post('licenses/lab-test/upload-file', [\App\Http\Controllers\Admin\LicenseController::class, 'uploadLabTestFile'])->name('licenses.lab-test.upload-file');
+    Route::post('licenses/lab-test/delete-file', [\App\Http\Controllers\Admin\LicenseController::class, 'deleteLabTestFile'])->name('licenses.lab-test.delete-file');
+
     // License Violations routes
     Route::get('licenses/{license}/violations', [\App\Http\Controllers\Admin\LicenseViolationController::class, 'index'])->name('license-violations.index');
     Route::get('violations/by-work-order/{workOrder}', [\App\Http\Controllers\Admin\LicenseViolationController::class, 'getByWorkOrder'])->name('violations.by-work-order');

@@ -326,519 +326,186 @@ use Illuminate\Support\Facades\Storage;
             </div>
         </div>
 
-        <!-- المختبر -->
+                <!-- المختبر الديناميكي -->
         <div class="tab-pane fade" id="laboratory" role="tabpanel">
             <div class="card">
                 <div class="card-header bg-success text-white">
-                    <h4 class="mb-0">
-                        <i class="fas fa-flask me-2"></i>الاختبارات المعملية 
-                        <span class="badge bg-light text-success ms-2 fs-6">رخصة {{ $license->license_number }}</span>
+                    <h4 class="mb-0 d-flex justify-content-between align-items-center">
+                        <span>
+                            <i class="fas fa-flask me-2"></i>الاختبارات المعملية 
+                            <span class="badge bg-light text-success ms-2 fs-6">رخصة {{ $license->license_number }}</span>
+                        </span>
+                        <div class="d-flex gap-2">
+                            <span class="badge bg-white text-success fs-6" id="lab-passed-count">ناجح: 0</span>
+                            <span class="badge bg-white text-danger fs-6" id="lab-failed-count">راسب: 0</span>
+                            <span class="badge bg-white text-info fs-6" id="lab-total-value">إجمالي: 0 ريال</span>
+                        </div>
                     </h4>
                 </div>
                 <div class="card-body">
-                    
-                                                        @php
-                        // تحديد حالة الاختبارات بناءً على القيم المالية والاختبارات المفعلة
-                        $totalTests = 0;
-                        $passedTests = 0;
-                        $failedTests = 0;
-                        $basicTests = ['has_depth_test', 'has_soil_compaction_test', 'has_rc1_mc1_test', 'has_asphalt_test', 'has_soil_test', 'has_interlock_test'];
-                        
-                        // عد الاختبارات المفعلة فقط
-                        foreach($basicTests as $test) {
-                            if($license->$test) {
-                                $totalTests++;
-                            }
-                        }
-                        
-                        // تحديد النتائج بناءً على القيم المالية
-                        $successfulValue = $license->successful_tests_value ?? 0;
-                        $failedValue = $license->failed_tests_value ?? 0;
-                        
-                        if ($successfulValue > 0 && $failedValue == 0) {
-                            $passedTests = $totalTests; // جميع الاختبارات ناجحة
-                            $testStatus = 'all_passed';
-                        } elseif ($failedValue > 0 && $successfulValue == 0) {
-                            $failedTests = $totalTests; // جميع الاختبارات راسبة  
-                            $testStatus = 'all_failed';
-                        } elseif ($successfulValue > 0 && $failedValue > 0) {
-                            $passedTests = ceil($totalTests * 0.6); // تقدير للنتائج المختلطة
-                            $failedTests = $totalTests - $passedTests;
-                            $testStatus = 'mixed';
-                        } else {
-                            $testStatus = 'unknown';
-                        }
-                        
-                        $successRate = $totalTests > 0 ? round(($passedTests / $totalTests) * 100, 1) : 0;
-                    @endphp
-
-                    <!-- ملخص سريع للنتائج -->
-                    <div class="row mb-4 laboratory-summary">
-                        <div class="col-md-3">
-                            <div class="card bg-success text-white h-100">
-                                <div class="card-body text-center">
-                                    <i class="fas fa-check-circle fa-2x mb-2"></i>
-                                    <h4 class="mb-1">{{ number_format($license->successful_tests_value ?? 0, 2) }}</h4>
-                                    <small>ريال - الاختبارات الناجحة</small>
-                                    @if($testStatus == 'all_passed')
-                                        <div class="mt-2 small"><i class="fas fa-star"></i> جميع الاختبارات ناجحة</div>
-                                    @endif
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="card bg-danger text-white h-100">
-                                <div class="card-body text-center">
-                                    <i class="fas fa-times-circle fa-2x mb-2"></i>
-                                    <h4 class="mb-1">{{ number_format($license->failed_tests_value ?? 0, 2) }}</h4>
-                                    <small>ريال - الاختبارات الراسبة</small>
-                                    @if($testStatus == 'all_failed')
-                                        <div class="mt-2 small"><i class="fas fa-exclamation-triangle"></i> جميع الاختبارات راسبة</div>
-                                    @elseif($testStatus == 'mixed')
-                                        <div class="mt-2 small"><i class="fas fa-balance-scale"></i> نتائج مختلطة</div>
-                                    @endif
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="card bg-info text-white h-100">
-                                <div class="card-body text-center">
-                                    <i class="fas fa-percentage fa-2x mb-2"></i>
-                                    <h4 class="mb-1">{{ $successRate }}%</h4>
-                                    <small>معدل النجاح</small>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="card bg-warning text-dark h-100">
-                                <div class="card-body text-center">
-                                    <i class="fas fa-clipboard-list fa-2x mb-2"></i>
-                                    <h4 class="mb-1">{{ $totalTests }}</h4>
-                                    <small>إجمالي الاختبارات</small>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- الاختبارات المعملية -->
-                    <div class="card mb-4">
-                        <div class="card-header bg-primary text-white">
-                            <h5 class="mb-0">
-                                <i class="fas fa-flask me-2"></i>
-                                الاختبارات المعملية
-                                <span class="badge bg-light text-primary ms-2">{{ $passedTests }}/{{ $totalTests }} ناجح</span>
-                            </h5>
-                        </div>
-                                <div class="card-body">
-                            @php
-                                $testDetails = [
-                                    'has_max_dry_density_pro_test' => [
-                                        'name' => 'اختبار الكثافة الجافة القصوى',
-                                        'icon' => 'fas fa-compress',
-                                        'color' => 'primary',
-                                        'file_field' => 'max_dry_density_pro_test_file_path',
-                                        'result_field' => 'max_dry_density_pro_test_result',
-                                        'status_field' => 'max_dry_density_pro_test_status'
-                                    ],
-                                    'has_asphalt_ratio_gradation_test' => [
-                                        'name' => 'اختبار نسبة الأسفلت والتدرج',
-                                        'icon' => 'fas fa-layer-group',
-                                        'color' => 'info',
-                                        'file_field' => 'asphalt_ratio_gradation_test_file_path',
-                                        'result_field' => 'asphalt_ratio_gradation_test_result',
-                                        'status_field' => 'asphalt_ratio_gradation_test_status'
-                                    ],
-                                    'has_marshall_test' => [
-                                        'name' => 'اختبار مارشال',
-                                        'icon' => 'fas fa-hammer',
-                                        'color' => 'warning',
-                                        'file_field' => 'marshall_test_file_path',
-                                        'result_field' => 'marshall_test_result',
-                                        'status_field' => 'marshall_test_status'
-                                    ],
-                                    'has_concrete_molds_test' => [
-                                        'name' => 'اختبار قوالب الخرسانة',
-                                        'icon' => 'fas fa-cube',
-                                        'color' => 'danger',
-                                        'file_field' => 'concrete_molds_test_file_path',
-                                        'result_field' => 'concrete_molds_test_result',
-                                        'status_field' => 'concrete_molds_test_status'
-                                    ],
-                                    'has_excavation_bottom_test' => [
-                                        'name' => 'اختبار قاع الحفر',
-                                        'icon' => 'fas fa-arrow-down',
-                                        'color' => 'success',
-                                        'file_field' => 'excavation_bottom_test_file_path',
-                                        'result_field' => 'excavation_bottom_test_result',
-                                        'status_field' => 'excavation_bottom_test_status'
-                                    ],
-                                    'has_protection_depth_test' => [
-                                        'name' => 'اختبار عمق الحماية',
-                                        'icon' => 'fas fa-shield-alt',
-                                        'color' => 'secondary',
-                                        'file_field' => 'protection_depth_test_file_path',
-                                        'result_field' => 'protection_depth_test_result',
-                                        'status_field' => 'protection_depth_test_status'
-                                    ],
-                                    'has_settlement_test' => [
-                                        'name' => 'اختبار الهبوط',
-                                        'icon' => 'fas fa-arrow-down',
-                                        'color' => 'primary',
-                                        'file_field' => 'settlement_test_file_path',
-                                        'result_field' => 'settlement_test_result',
-                                        'status_field' => 'settlement_test_status'
-                                    ],
-                                    'has_concrete_temperature_test' => [
-                                        'name' => 'اختبار درجة حرارة الخرسانة',
-                                        'icon' => 'fas fa-thermometer-half',
-                                        'color' => 'info',
-                                        'file_field' => 'concrete_temperature_test_file_path',
-                                        'result_field' => 'concrete_temperature_test_result',
-                                        'status_field' => 'concrete_temperature_test_status'
-                                    ],
-                                    'has_field_density_atomic_test' => [
-                                        'name' => 'اختبار الكثافة الحقلية النووي',
-                                        'icon' => 'fas fa-atom',
-                                        'color' => 'warning',
-                                        'file_field' => 'field_density_atomic_test_file_path',
-                                        'result_field' => 'field_density_atomic_test_result',
-                                        'status_field' => 'field_density_atomic_test_status'
-                                    ],
-                                    'has_moisture_content_test' => [
-                                        'name' => 'اختبار المحتوى الرطوبي',
-                                        'icon' => 'fas fa-tint',
-                                        'color' => 'danger',
-                                        'file_field' => 'moisture_content_test_file_path',
-                                        'result_field' => 'moisture_content_test_result',
-                                        'status_field' => 'moisture_content_test_status'
-                                    ],
-                                    'has_soil_layer_flatness_test' => [
-                                        'name' => 'اختبار استواء طبقة التربة',
-                                        'icon' => 'fas fa-ruler-horizontal',
-                                        'color' => 'success',
-                                        'file_field' => 'soil_layer_flatness_test_file_path',
-                                        'result_field' => 'soil_layer_flatness_test_result',
-                                        'status_field' => 'soil_layer_flatness_test_status'
-                                    ],
-                                    'has_concrete_sample_test' => [
-                                        'name' => 'اختبار عينة الخرسانة',
-                                        'icon' => 'fas fa-vial',
-                                        'color' => 'secondary',
-                                        'file_field' => 'concrete_sample_test_file_path',
-                                        'result_field' => 'concrete_sample_test_result',
-                                        'status_field' => 'concrete_sample_test_status'
-                                    ],
-                                    'has_asphalt_spray_rate_test' => [
-                                        'name' => 'اختبار معدل رش الأسفلت',
-                                        'icon' => 'fas fa-spray-can',
-                                        'color' => 'primary',
-                                        'file_field' => 'asphalt_spray_rate_test_file_path',
-                                        'result_field' => 'asphalt_spray_rate_test_result',
-                                        'status_field' => 'asphalt_spray_rate_test_status'
-                                    ],
-                                    'has_asphalt_temperature_test' => [
-                                        'name' => 'اختبار درجة حرارة الأسفلت',
-                                        'icon' => 'fas fa-temperature-high',
-                                        'color' => 'info',
-                                        'file_field' => 'asphalt_temperature_test_file_path',
-                                        'result_field' => 'asphalt_temperature_test_result',
-                                        'status_field' => 'asphalt_temperature_test_status'
-                                    ],
-                                    'has_concrete_cylinder_compression_test' => [
-                                        'name' => 'اختبار ضغط الاسطوانة الخرسانية',
-                                        'icon' => 'fas fa-compress-arrows-alt',
-                                        'color' => 'warning',
-                                        'file_field' => 'concrete_cylinder_compression_test_file_path',
-                                        'result_field' => 'concrete_cylinder_compression_test_result',
-                                        'status_field' => 'concrete_cylinder_compression_test_status'
-                                    ],
-                                    'has_soil_particle_analysis_test' => [
-                                        'name' => 'اختبار تحليل حبيبات التربة',
-                                        'icon' => 'fas fa-microscope',
-                                        'color' => 'danger',
-                                        'file_field' => 'soil_particle_analysis_test_file_path',
-                                        'result_field' => 'soil_particle_analysis_test_result',
-                                        'status_field' => 'soil_particle_analysis_test_status'
-                                    ],
-                                    'has_liquid_plastic_limit_test' => [
-                                        'name' => 'اختبار حد السيولة واللدونة',
-                                        'icon' => 'fas fa-water',
-                                        'color' => 'success',
-                                        'file_field' => 'liquid_plastic_limit_test_file_path',
-                                        'result_field' => 'liquid_plastic_limit_test_result',
-                                        'status_field' => 'liquid_plastic_limit_test_status'
-                                    ],
-                                    'has_proctor_test' => [
-                                        'name' => 'اختبار بروكتور',
-                                        'icon' => 'fas fa-chart-line',
-                                        'color' => 'secondary',
-                                        'file_field' => 'proctor_test_file_path',
-                                        'result_field' => 'proctor_test_result',
-                                        'status_field' => 'proctor_test_status'
-                                    ],
-                                    'has_asphalt_layer_flatness_test' => [
-                                        'name' => 'اختبار استواء طبقة الأسفلت',
-                                        'icon' => 'fas fa-road',
-                                        'color' => 'primary',
-                                        'file_field' => 'asphalt_layer_flatness_test_file_path',
-                                        'result_field' => 'asphalt_layer_flatness_test_result',
-                                        'status_field' => 'asphalt_layer_flatness_test_status'
-                                    ],
-                                    'has_asphalt_compaction_atomic_test' => [
-                                        'name' => 'اختبار دمك الأسفلت النووي',
-                                        'icon' => 'fas fa-atom',
-                                        'color' => 'info',
-                                        'file_field' => 'asphalt_compaction_atomic_test_file_path',
-                                        'result_field' => 'asphalt_compaction_atomic_test_result',
-                                        'status_field' => 'asphalt_compaction_atomic_test_status'
-                                    ],
-                                    'has_bitumen_ratio_test' => [
-                                        'name' => 'اختبار نسبة البيتومين',
-                                        'icon' => 'fas fa-percentage',
-                                        'color' => 'warning',
-                                        'file_field' => 'bitumen_ratio_test_file_path',
-                                        'result_field' => 'bitumen_ratio_test_result',
-                                        'status_field' => 'bitumen_ratio_test_status'
-                                    ],
-                                    'has_asphalt_gradation_test' => [
-                                        'name' => 'اختبار تدرج الأسفلت',
-                                        'icon' => 'fas fa-layer-group',
-                                        'color' => 'danger',
-                                        'file_field' => 'asphalt_gradation_test_file_path',
-                                        'result_field' => 'asphalt_gradation_test_result',
-                                        'status_field' => 'asphalt_gradation_test_status'
-                                    ],
-                                    'has_asphalt_mix_gmm_test' => [
-                                        'name' => 'اختبار GMM للخلطة الأسفلتية',
-                                        'icon' => 'fas fa-vials',
-                                        'color' => 'success',
-                                        'file_field' => 'asphalt_mix_gmm_test_file_path',
-                                        'result_field' => 'asphalt_mix_gmm_test_result',
-                                        'status_field' => 'asphalt_mix_gmm_test_status'
-                                    ],
-                                    'has_marshall_density_test' => [
-                                        'name' => 'اختبار كثافة مارشال',
-                                        'icon' => 'fas fa-weight',
-                                        'color' => 'secondary',
-                                        'file_field' => 'marshall_density_test_file_path',
-                                        'result_field' => 'marshall_density_test_result',
-                                        'status_field' => 'marshall_density_test_status'
-                                    ],
-                                    'has_aggregate_ratio_test' => [
-                                        'name' => 'اختبار نسبة الركام',
-                                        'icon' => 'fas fa-chart-pie',
-                                        'color' => 'primary',
-                                        'file_field' => 'aggregate_ratio_test_file_path',
-                                        'result_field' => 'aggregate_ratio_test_result',
-                                        'status_field' => 'aggregate_ratio_test_status'
-                                    ],
-                                    'has_stability_deficiency_test' => [
-                                        'name' => 'اختبار نقص الثبات',
-                                        'icon' => 'fas fa-balance-scale',
-                                        'color' => 'info',
-                                        'file_field' => 'stability_deficiency_test_file_path',
-                                        'result_field' => 'stability_deficiency_test_result',
-                                        'status_field' => 'stability_deficiency_test_status'
-                                    ],
-                                    'has_stability_degree_test' => [
-                                        'name' => 'اختبار درجة الثبات',
-                                        'icon' => 'fas fa-thermometer',
-                                        'color' => 'warning',
-                                        'file_field' => 'stability_degree_test_file_path',
-                                        'result_field' => 'stability_degree_test_result',
-                                        'status_field' => 'stability_degree_test_status'
-                                    ],
-                                    'has_backup_test' => [
-                                        'name' => 'اختبار احتياطي',
-                                        'icon' => 'fas fa-archive',
-                                        'color' => 'danger',
-                                        'file_field' => 'backup_test_file_path',
-                                        'result_field' => 'backup_test_result',
-                                        'status_field' => 'backup_test_status'
-                                    ]
-                                ];
-                            @endphp
-                            
-                            @if(count($testDetails) == 0)
-                                <div class="text-center py-5">
-                                    <i class="fas fa-clipboard-list fa-3x text-muted mb-3"></i>
-                                    <h5 class="text-muted">لا توجد اختبارات متاحة</h5>
-                                    <p class="text-muted mb-0">لم يتم إضافة أي اختبارات بعد</p>
-                                </div>
-                            @else
-                            <div class="row">
-                                @foreach($testDetails as $testField => $test)
-                                @php
-                                    // تحديد حالة الاختبار الفردي
-                                            $isTestActive = $license->$testField ?? false;
-                                            $testResult = $license->{$test['result_field']} ?? null;
-                                            $testStatus = $license->{$test['status_field']} ?? 'pass';
-                                            
-                                    if (!$isTestActive) {
-                                        $cardBorder = 'border-secondary';
-                                        $cardHeader = 'bg-secondary';
-                                        $badgeClass = 'bg-secondary';
-                                        $badgeText = 'غير مفعل';
-                                        $iconClass = 'fas fa-minus-circle';
-                                    } else {
-                                                if ($testStatus === 'pass') {
-                                            $cardBorder = 'border-success';
-                                            $cardHeader = 'bg-success';
-                                            $badgeClass = 'bg-success';
-                                            $badgeText = 'ناجح';
-                                            $iconClass = 'fas fa-check-circle';
-                                                } else {
-                                            $cardBorder = 'border-danger';
-                                            $cardHeader = 'bg-danger';
-                                            $badgeClass = 'bg-danger';
-                                            $badgeText = 'راسب';
-                                            $iconClass = 'fas fa-times-circle';
-                                        }
-                                    }
-                                @endphp
-                                <div class="col-md-6 col-lg-4 mb-3">
-                                    <div class="card h-100 test-card {{ $cardBorder }}">
-                                        <div class="card-header {{ $cardHeader }} py-2">
-                                            <div class="d-flex justify-content-between align-items-center">
-                                                <span class="fw-bold">
-                                                    <i class="{{ $test['icon'] }} me-1"></i>
-                                                    {{ $test['name'] }}
-                                                </span>
-                                                <i class="{{ $iconClass }}"></i>
-                                </div>
-                            </div>
-                                        <div class="card-body py-2">
-                                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                                <span class="badge {{ $badgeClass }} fs-6">
-                                                    {{ $badgeText }}
-                                                </span>
-                                                @if($license->{$test['file_field']})
-                                                    <div class="btn-group btn-group-sm">
-                                                        <a href="{{ Storage::url($license->{$test['file_field']}) }}" 
-                                                           class="btn btn-outline-primary btn-sm" 
-                                                           target="_blank" 
-                                                           title="عرض الملف">
-                                                            <i class="fas fa-eye"></i>
-                                                        </a>
-                                                        <a href="{{ Storage::url($license->{$test['file_field']}) }}" 
-                                                           class="btn btn-outline-success btn-sm" 
-                                                           download 
-                                                           title="تحميل الملف">
-                                                            <i class="fas fa-download"></i>
-                                                        </a>
-                        </div>
-                                    @else
-                                                    <small class="text-muted">لا يوجد مرفق</small>
-                                    @endif
-                                </div>
-                                                    @if($isTestActive)
-                                                <div class="mt-2">
-                                                    <small class="text-muted">
-                                                                <i class="fas fa-chart-line me-1"></i>
-                                                                النتيجة: {{ $testResult ?? 'لم يتم تحديد النتيجة' }}
-                                                    </small>
-                            </div>
-                                    @endif
-                                </div>
-                            </div>
-                        </div>
-                                @endforeach
-                                </div>
-                            @endif
-                            </div>
-                        </div>
-
-                    <!-- ملخص حالة النتائج -->
-                    @if($successfulValue > 0 || $failedValue > 0)
-                    <div class="card mb-4 border-info">
-                        <div class="card-header bg-info text-white">
-                            <h5 class="mb-0">
-                                <i class="fas fa-chart-pie me-2"></i>
-                                ملخص نتائج الاختبارات
-                            </h5>
-                                </div>
-                                <div class="card-body">
-                                    <div class="row text-center">
-                                @if($testStatus == 'all_passed')
-                                    <div class="col-12">
-                                        <div class="alert alert-success mb-0">
-                                            <i class="fas fa-trophy fa-2x mb-2 d-block"></i>
-                                            <h5>🎉 تهانينا! جميع الاختبارات المفعلة ناجحة</h5>
-                                            <p class="mb-0">جميع الاختبارات المطلوبة قد اجتازت المعايير بنجاح</p>
-                                        </div>
-                                        </div>
-                                @elseif($testStatus == 'all_failed')
-                                    <div class="col-12">
-                                        <div class="alert alert-danger mb-0">
-                                            <i class="fas fa-times-circle fa-2x mb-2 d-block"></i>
-                                            <h5>❌ جميع الاختبارات المفعلة راسبة</h5>
-                                            <p class="mb-0">يجب مراجعة وإعادة تنفيذ الاختبارات</p>
-                                        </div>
-                                    </div>
-                                @elseif($testStatus == 'mixed')
-                                    <div class="col-12">
-                                        <div class="alert alert-warning mb-0">
-                                            <i class="fas fa-balance-scale fa-2x mb-2 d-block"></i>
-                                            <h5>⚠️ نتائج مختلطة</h5>
-                                            <p class="mb-0">بعض الاختبارات ناجحة وأخرى راسبة - يتطلب مراجعة تفصيلية</p>
-                                            <div class="row mt-3">
-                                                <div class="col-md-6">
-                                                    <div class="text-success">
-                                                        <i class="fas fa-check-circle me-1"></i>
-                                                        قيمة الاختبارات الناجحة: <strong>{{ number_format($successfulValue, 2) }} ريال</strong>
-                                </div>
-                            </div>
-                                                <div class="col-md-6">
-                                                    <div class="text-danger">
-                                                        <i class="fas fa-times-circle me-1"></i>
-                                                        قيمة الاختبارات الراسبة: <strong>{{ number_format($failedValue, 2) }} ريال</strong>
-                        </div>
-                    </div>
-                        </div>
-                                        </div>
-                                    </div>
-                                @endif
-                                </div>
-                        </div>
-                    </div>
-                    @endif
-
-                        <!-- الاختبارات غير المفعلة -->
                     @php
-                        $inactiveTests = [];
-                        foreach($testDetails as $testField => $test) {
-                            if (!$license->$testField) {
-                                $inactiveTests[] = $test;
-                            }
-                        }
+                        $basicLabTests = [
+                            'has_depth_test' => [
+                                'name' => 'اختبار العمق',
+                                'icon' => 'fas fa-ruler-vertical',
+                                'value_field' => 'depth_test_value',
+                                'file_field' => 'depth_test_file_path'
+                            ],
+                            'has_soil_compaction_test' => [
+                                'name' => 'اختبار دك التربة',
+                                'icon' => 'fas fa-compress',
+                                'value_field' => 'soil_compaction_test_value',
+                                'file_field' => 'soil_compaction_test_file_path'
+                            ],
+                            'has_rc1_mc1_test' => [
+                                'name' => 'اختبار RC1-MC1',
+                                'icon' => 'fas fa-vial',
+                                'value_field' => 'rc1_mc1_test_value',
+                                'file_field' => 'rc1_mc1_test_file_path'
+                            ],
+                            'has_asphalt_test' => [
+                                'name' => 'اختبار الأسفلت',
+                                'icon' => 'fas fa-road',
+                                'value_field' => 'asphalt_test_value',
+                                'file_field' => 'asphalt_test_file_path'
+                            ],
+                            'has_soil_test' => [
+                                'name' => 'اختبار التربة',
+                                'icon' => 'fas fa-mountain',
+                                'value_field' => 'soil_test_value',
+                                'file_field' => 'soil_test_file_path'
+                            ],
+                            'has_interlock_test' => [
+                                'name' => 'اختبار البلاط المتداخل',
+                                'icon' => 'fas fa-th',
+                                'value_field' => 'interlock_test_value',
+                                'file_field' => 'interlock_test_file_path'
+                            ]
+                        ];
                     @endphp
 
-                    @if(count($inactiveTests) > 0)
-                    <div class="card mb-4 border-secondary">
-                        <div class="card-header bg-light">
-                            <h6 class="mb-0 text-muted">
-                                <i class="fas fa-info-circle me-2"></i>
-                                الاختبارات المتاحة غير المفعلة ({{ count($inactiveTests) }} اختبار)
-                            </h6>
-                        </div>
-                        <div class="card-body py-2">
-                            <div class="row">
-                                @foreach($inactiveTests as $test)
-                                <div class="col-md-4 mb-2">
-                                    <div class="d-flex align-items-center text-muted">
-                                        <i class="{{ $test['icon'] }} me-2"></i>
-                                        <small>{{ $test['name'] }}</small>
+                    <!-- الاختبارات الديناميكية -->
+                    <div class="row">
+                        @foreach($basicLabTests as $testField => $test)
+                        @php
+                            $testStatus = $license->$testField;
+                            $testValue = $license->{$test['value_field']} ?? 0;
+                            $testFile = $license->{$test['file_field']} ?? null;
+                        @endphp
+                        <div class="col-md-6 col-lg-4 mb-4">
+                            <div class="card lab-test-card h-100" data-test="{{ $testField }}">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0 d-flex align-items-center justify-content-between">
+                                        <span>
+                                            <i class="{{ $test['icon'] }} me-2"></i>
+                                            {{ $test['name'] }}
+                                        </span>
+                                        <i class="test-status-icon fas fa-question-circle text-secondary"></i>
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <!-- حالة الاختبار -->
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">حالة الاختبار:</label>
+                                        <div class="d-flex gap-3">
+                                            <div class="form-check">
+                                                <input class="form-check-input test-status" 
+                                                       type="radio" 
+                                                       name="{{ $testField }}_status" 
+                                                       value="passed" 
+                                                       id="{{ $testField }}_passed"
+                                                       {{ $testStatus === true ? 'checked' : '' }}>
+                                                <label class="form-check-label text-success" for="{{ $testField }}_passed">
+                                                    <i class="fas fa-check-circle me-1"></i>ناجح
+                                                </label>
                                             </div>
-                                                    </div>
-                                @endforeach
-                                                </div>
-                            <small class="text-muted">
-                                <i class="fas fa-lightbulb me-1"></i>
-                                يمكن تفعيل هذه الاختبارات من صفحة إدارة الجودة والرخص حسب الحاجة
-                                                </small>
+                                            <div class="form-check">
+                                                <input class="form-check-input test-status" 
+                                                       type="radio" 
+                                                       name="{{ $testField }}_status" 
+                                                       value="failed" 
+                                                       id="{{ $testField }}_failed"
+                                                       {{ $testStatus === false ? 'checked' : '' }}>
+                                                <label class="form-check-label text-danger" for="{{ $testField }}_failed">
+                                                    <i class="fas fa-times-circle me-1"></i>راسب
+                                                </label>
+                                            </div>
                                         </div>
                                     </div>
-                                    @endif
+
+                                    <!-- قيمة الاختبار -->
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">القيمة (ريال):</label>
+                                        <input type="number" 
+                                               class="form-control test-value" 
+                                               name="{{ $test['value_field'] }}" 
+                                               value="{{ $testValue }}" 
+                                               min="0" 
+                                               step="0.01" 
+                                               placeholder="أدخل القيمة">
+                                    </div>
+
+                                    <!-- المرفق -->
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">المرفق:</label>
+                                        <div class="file-upload-section">
+                                            @if($testFile)
+                                                <div class="current-file mb-2">
+                                                    <div class="d-flex align-items-center justify-content-between p-2 bg-success bg-opacity-10 rounded">
+                                                        <div class="d-flex align-items-center">
+                                                            <i class="fas fa-file-pdf text-success me-2"></i>
+                                                            <span class="text-success">يوجد مرفق</span>
+                                                        </div>
+                                                        <div class="d-flex gap-1">
+                                                            <a href="{{ Storage::url($testFile) }}" 
+                                                               target="_blank" 
+                                                               class="btn btn-outline-success btn-sm" 
+                                                               title="عرض">
+                                                                <i class="fas fa-eye"></i>
+                                                            </a>
+                                                            <button type="button" 
+                                                                    class="btn btn-outline-danger btn-sm delete-file-btn" 
+                                                                    data-test="{{ $testField }}" 
+                                                                    title="حذف">
+                                                                <i class="fas fa-trash"></i>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            @endif
+                                            <input type="file" 
+                                                   class="form-control file-input" 
+                                                   data-test="{{ $testField }}" 
+                                                   accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+
+                    <!-- أزرار التحكم -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="d-flex gap-2 justify-content-center">
+                                <button type="button" class="btn btn-primary" id="save-all-tests">
+                                    <i class="fas fa-save me-2"></i>حفظ جميع التغييرات
+                                </button>
+                                <button type="button" class="btn btn-info" id="export-lab-report">
+                                    <i class="fas fa-file-export me-2"></i>تصدير تقرير
+                                </button>
+                                <button type="button" class="btn btn-secondary" id="reset-lab-tests">
+                                    <i class="fas fa-undo me-2"></i>إعادة تعيين
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
 
                     <!-- أسباب الرسوب -->
                     @if($license->test_failure_reasons)
@@ -3203,7 +2870,324 @@ function saveLabDetailsData() {
     });
 }
 
+// ==================== وظائف المختبر الديناميكية ====================
 
+// تحديث عدادات المختبر
+function updateLabCounters() {
+    let passedCount = 0;
+    let failedCount = 0;
+    let totalValue = 0;
+
+    document.querySelectorAll('.lab-test-card').forEach(card => {
+        const testField = card.dataset.test;
+        const passedRadio = card.querySelector('input[value="passed"]:checked');
+        const failedRadio = card.querySelector('input[value="failed"]:checked');
+        const valueInput = card.querySelector('.test-value');
+        const statusIcon = card.querySelector('.test-status-icon');
+        
+        // تحديث لون البطاقة وأيقونة الحالة
+        card.classList.remove('border-success', 'border-danger', 'border-warning');
+        
+        if (passedRadio) {
+            passedCount++;
+            card.classList.add('border-success');
+            statusIcon.className = 'test-status-icon fas fa-check-circle text-success';
+            
+            if (valueInput && valueInput.value) {
+                totalValue += parseFloat(valueInput.value) || 0;
+            }
+        } else if (failedRadio) {
+            failedCount++;
+            card.classList.add('border-danger');
+            statusIcon.className = 'test-status-icon fas fa-times-circle text-danger';
+        } else {
+            card.classList.add('border-warning');
+            statusIcon.className = 'test-status-icon fas fa-question-circle text-secondary';
+        }
+    });
+
+    // تحديث العدادات في الواجهة
+    document.getElementById('lab-passed-count').textContent = `ناجح: ${passedCount}`;
+    document.getElementById('lab-failed-count').textContent = `راسب: ${failedCount}`;
+    document.getElementById('lab-total-value').textContent = `إجمالي: ${totalValue.toFixed(2)} ريال`;
+}
+
+// حفظ حالة اختبار واحد
+function saveTestStatus(testField, status, value) {
+    const licenseId = {{ $license->id }};
+    
+    const formData = new FormData();
+    formData.append('license_id', licenseId);
+    formData.append('test_field', testField);
+    formData.append('status', status);
+    
+    if (value) {
+        formData.append('value', value);
+    }
+
+    fetch('{{ route("admin.licenses.lab-test.save-status") }}', {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            toastr.success(data.message);
+            updateLabCounters();
+        } else {
+            toastr.error(data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error saving test status:', error);
+        toastr.error('حدث خطأ أثناء حفظ حالة الاختبار');
+    });
+}
+
+// رفع ملف اختبار
+function uploadTestFile(testField, file) {
+    const licenseId = {{ $license->id }};
+    
+    const formData = new FormData();
+    formData.append('license_id', licenseId);
+    formData.append('test_field', testField);
+    formData.append('file', file);
+
+    fetch('{{ route("admin.licenses.lab-test.upload-file") }}', {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            toastr.success(data.message);
+            
+            // تحديث واجهة المرفق
+            const card = document.querySelector(`[data-test="${testField}"]`);
+            const fileSection = card.querySelector('.file-upload-section');
+            
+            fileSection.innerHTML = `
+                <div class="current-file mb-2">
+                    <div class="d-flex align-items-center justify-content-between p-2 bg-success bg-opacity-10 rounded">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-file-pdf text-success me-2"></i>
+                            <span class="text-success">يوجد مرفق</span>
+                        </div>
+                        <div class="d-flex gap-1">
+                            <a href="${data.file_url}" target="_blank" class="btn btn-outline-success btn-sm" title="عرض">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <button type="button" class="btn btn-outline-danger btn-sm delete-file-btn" data-test="${testField}" title="حذف">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <input type="file" class="form-control file-input" data-test="${testField}" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+            `;
+        } else {
+            toastr.error(data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error uploading file:', error);
+        toastr.error('حدث خطأ أثناء رفع الملف');
+    });
+}
+
+// حذف ملف اختبار
+function deleteTestFile(testField) {
+    const licenseId = {{ $license->id }};
+    
+    const formData = new FormData();
+    formData.append('license_id', licenseId);
+    formData.append('test_field', testField);
+
+    fetch('{{ route("admin.licenses.lab-test.delete-file") }}', {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            toastr.success(data.message);
+            
+            // تحديث واجهة المرفق
+            const card = document.querySelector(`[data-test="${testField}"]`);
+            const fileSection = card.querySelector('.file-upload-section');
+            
+            fileSection.innerHTML = `
+                <input type="file" class="form-control file-input" data-test="${testField}" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+            `;
+        } else {
+            toastr.error(data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error deleting file:', error);
+        toastr.error('حدث خطأ أثناء حذف الملف');
+    });
+}
+
+// إضافة أحداث للاختبارات
+document.addEventListener('DOMContentLoaded', function() {
+    // تحديث العدادات عند التحميل
+    updateLabCounters();
+    
+    // أحداث تغيير حالة الاختبار
+    document.addEventListener('change', function(e) {
+        if (e.target.classList.contains('test-status')) {
+            const card = e.target.closest('.lab-test-card');
+            const testField = card.dataset.test;
+            const status = e.target.value;
+            const valueInput = card.querySelector('.test-value');
+            const value = valueInput ? valueInput.value : null;
+            
+            saveTestStatus(testField, status, value);
+        }
+        
+        // أحداث تغيير القيمة
+        if (e.target.classList.contains('test-value')) {
+            const card = e.target.closest('.lab-test-card');
+            const testField = card.dataset.test;
+            const statusRadio = card.querySelector('input[type="radio"]:checked');
+            
+            if (statusRadio) {
+                const status = statusRadio.value;
+                const value = e.target.value;
+                
+                saveTestStatus(testField, status, value);
+            }
+        }
+        
+        // أحداث رفع الملفات
+        if (e.target.classList.contains('file-input')) {
+            const testField = e.target.dataset.test;
+            const file = e.target.files[0];
+            
+            if (file) {
+                uploadTestFile(testField, file);
+            }
+        }
+    });
+    
+    // أحداث حذف الملفات
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.delete-file-btn')) {
+            const btn = e.target.closest('.delete-file-btn');
+            const testField = btn.dataset.test;
+            
+            if (confirm('هل أنت متأكد من حذف هذا المرفق؟')) {
+                deleteTestFile(testField);
+            }
+        }
+    });
+    
+    // أزرار التحكم
+    document.getElementById('save-all-tests')?.addEventListener('click', function() {
+        const cards = document.querySelectorAll('.lab-test-card');
+        let savedCount = 0;
+        
+        cards.forEach(card => {
+            const testField = card.dataset.test;
+            const statusRadio = card.querySelector('input[type="radio"]:checked');
+            const valueInput = card.querySelector('.test-value');
+            
+            if (statusRadio) {
+                const status = statusRadio.value;
+                const value = valueInput ? valueInput.value : null;
+                
+                saveTestStatus(testField, status, value);
+                savedCount++;
+            }
+        });
+        
+        if (savedCount > 0) {
+            toastr.success(`تم حفظ ${savedCount} اختبار بنجاح`);
+        } else {
+            toastr.warning('لا توجد تغييرات للحفظ');
+        }
+    });
+    
+    document.getElementById('export-lab-report')?.addEventListener('click', function() {
+        toastr.info('جارِ إعداد التقرير...');
+        setTimeout(() => {
+            window.print();
+        }, 500);
+    });
+    
+    document.getElementById('reset-lab-tests')?.addEventListener('click', function() {
+        if (confirm('هل أنت متأكد من إعادة تعيين جميع الاختبارات؟')) {
+            location.reload();
+        }
+    });
+});
+
+// CSS للمختبر الديناميكي
+const labTestsCSS = `
+<style>
+.lab-test-card {
+    transition: all 0.3s ease;
+    border-width: 2px !important;
+}
+
+.lab-test-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.lab-test-card.border-success {
+    border-color: #28a745 !important;
+    background: linear-gradient(135deg, #ffffff 0%, #f8fff8 100%);
+}
+
+.lab-test-card.border-danger {
+    border-color: #dc3545 !important;
+    background: linear-gradient(135deg, #ffffff 0%, #fff8f8 100%);
+}
+
+.lab-test-card.border-warning {
+    border-color: #ffc107 !important;
+    background: linear-gradient(135deg, #ffffff 0%, #fffef8 100%);
+}
+
+.test-value {
+    text-align: center;
+    font-weight: bold;
+}
+
+.form-check-input:checked {
+    transform: scale(1.1);
+}
+
+.file-upload-section .current-file {
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 768px) {
+    .lab-test-card {
+        margin-bottom: 1rem;
+    }
+}
+</style>
+`;
+
+// إضافة CSS إلى الصفحة
+document.head.insertAdjacentHTML('beforeend', labTestsCSS);
 
 
 </script>
