@@ -87,12 +87,30 @@ class WorkOrderController extends Controller
         if ($request->has('materials') && is_array($request->materials)) {
             foreach ($request->materials as $material) {
                 if (!empty($material['material_code']) && !empty($material['material_description'])) {
+                    // حفظ في جدول مقايسة المواد (work_order_materials)
                     $workOrder->workOrderMaterials()->create([
                         'material_code' => $material['material_code'],
                         'material_description' => $material['material_description'],
                         'planned_quantity' => $material['planned_quantity'] ?? 0,
                         'unit' => $material['unit'] ?? 'عدد',
                         'notes' => $material['notes'] ?? null,
+                    ]);
+                    
+                    // حفظ في جدول المواد الرئيسي (materials)
+                    Material::create([
+                        'work_order_id' => $workOrder->id,
+                        'code' => $material['material_code'],
+                        'description' => $material['material_description'],
+                        'planned_quantity' => $material['planned_quantity'] ?? 0,
+                        'unit' => $material['unit'] ?? 'عدد',
+                        'actual_quantity' => 0, // الكمية الفعلية تبدأ بصفر
+                        'difference' => 0, // الفرق يبدأ بصفر
+                        'stock_in' => 0, // المخزون الداخل يبدأ بصفر
+                        'stock_out' => 0, // المخزون الخارج يبدأ بصفر
+                        'line' => '', // رقم السطر فارغ في البداية
+                        'check_in' => false,
+                        'check_out' => false,
+                        'date_gatepass' => null,
                     ]);
                 }
             }
