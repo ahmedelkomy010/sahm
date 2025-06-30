@@ -2458,12 +2458,12 @@
         function calculateVolumeTotal(table) {
             console.log(`🔧 calculateVolumeTotal called for table: ${table}`);
             
-            const lengthInput = document.querySelector(`input[name="excavation_${table}_open[length]"]`);
-            const widthInput = document.querySelector(`input[name="excavation_${table}_open[width]"]`);
-            const depthInput = document.querySelector(`input[name="excavation_${table}_open[depth]"]`);
-            const priceInput = document.querySelector(`input[name="excavation_${table}_open_price"]`);
-            const volumeInput = document.getElementById(`total_${table}_open`);
-            const totalInput = document.getElementById(`final_total_${table}_open`);
+            const lengthInput = document.querySelector(`input[name="excavation_${table}[length]"]`);
+            const widthInput = document.querySelector(`input[name="excavation_${table}[width]"]`);
+            const depthInput = document.querySelector(`input[name="excavation_${table}[depth]"]`);
+            const priceInput = document.querySelector(`input[name="excavation_${table}_price"]`);
+            const volumeInput = document.getElementById(`total_${table}`);
+            const totalInput = document.getElementById(`final_total_${table}`);
             
             console.log(`   Elements found: length=${!!lengthInput}, width=${!!widthInput}, depth=${!!depthInput}, volume=${!!volumeInput}, price=${!!priceInput}, total=${!!totalInput}`);
             
@@ -2603,6 +2603,7 @@
         setTimeout(function() {
             // التحقق من وجود العناصر أولاً
             console.log('🚀 Page loaded, verifying elements...');
+            console.log('🔧 Initializing civil works calculations...');
             
             // انتظار إضافي للتأكد من تحميل DOM بالكامل
             setTimeout(function() {
@@ -2621,8 +2622,8 @@
                 openExcavationTables.forEach(table => {
                     console.log(`Calculating volume total for: ${table}`);
                     // فحص إضافي قبل الحساب
-                    const volumeInput = document.getElementById(`total_${table}_open`);
-                    const totalInput = document.getElementById(`final_total_${table}_open`);
+                    const volumeInput = document.getElementById(`total_${table}`);
+                    const totalInput = document.getElementById(`final_total_${table}`);
                     if (volumeInput && totalInput) {
                         calculateVolumeTotal(table);
                     } else {
@@ -2646,6 +2647,14 @@
             calculateElectricalTotal('cable_4x300_low');
             calculateElectricalTotal('cable_3x500_med');
             calculateElectricalTotal('cable_3x400_med');
+            
+            console.log('✅ Civil works calculations initialized successfully!');
+            
+            // إجراء فحص سريع للعناصر للتأكد من عملها
+            setTimeout(() => {
+                console.log('🔍 Running quick element verification...');
+                window.quickElementCheck();
+            }, 1000);
         }, 500);
     });
     </script>
@@ -2691,12 +2700,12 @@
             tables.forEach(table => {
                 console.log(`\n=== Checking ${table} ===`);
                 
-                const lengthInput = document.querySelector(`input[name="excavation_${table}_open[length]"]`);
-                const widthInput = document.querySelector(`input[name="excavation_${table}_open[width]"]`);
-                const depthInput = document.querySelector(`input[name="excavation_${table}_open[depth]"]`);
-                const priceInput = document.querySelector(`input[name="excavation_${table}_open_price"]`);
-                const volumeInput = document.getElementById(`total_${table}_open`);
-                const totalInput = document.getElementById(`final_total_${table}_open`);
+                const lengthInput = document.querySelector(`input[name="excavation_${table}[length]"]`);
+                const widthInput = document.querySelector(`input[name="excavation_${table}[width]"]`);
+                const depthInput = document.querySelector(`input[name="excavation_${table}[depth]"]`);
+                const priceInput = document.querySelector(`input[name="excavation_${table}_price"]`);
+                const volumeInput = document.getElementById(`total_${table}`);
+                const totalInput = document.getElementById(`final_total_${table}`);
                 
                 console.log(`   Length input: ${lengthInput ? '✅' : '❌'}`);
                 console.log(`   Width input: ${widthInput ? '✅' : '❌'}`);
@@ -2718,8 +2727,8 @@
         window.resetFieldColors = function() {
             const tables = ['unsurfaced_soil_open', 'surfaced_soil_open', 'surfaced_rock_open', 'unsurfaced_rock_open'];
             tables.forEach(table => {
-                const volumeInput = document.getElementById(`total_${table}_open`);
-                const totalInput = document.getElementById(`final_total_${table}_open`);
+                const volumeInput = document.getElementById(`total_${table}`);
+                const totalInput = document.getElementById(`final_total_${table}`);
                 if (volumeInput) {
                     volumeInput.style.backgroundColor = '';
                     volumeInput.style.color = '';
@@ -2745,10 +2754,10 @@
                 console.log(`\n=== Testing ${table} ===`);
                 
                 // تعيين قيم اختبارية
-                const lengthInput = document.querySelector(`input[name="excavation_${table}_open[length]"]`);
-                const widthInput = document.querySelector(`input[name="excavation_${table}_open[width]"]`);
-                const depthInput = document.querySelector(`input[name="excavation_${table}_open[depth]"]`);
-                const priceInput = document.querySelector(`input[name="excavation_${table}_open_price"]`);
+                const lengthInput = document.querySelector(`input[name="excavation_${table}[length]"]`);
+                const widthInput = document.querySelector(`input[name="excavation_${table}[width]"]`);
+                const depthInput = document.querySelector(`input[name="excavation_${table}[depth]"]`);
+                const priceInput = document.querySelector(`input[name="excavation_${table}_price"]`);
                 
                 if (lengthInput && widthInput && depthInput && priceInput) {
                     // حفظ القيم الأصلية
@@ -2769,8 +2778,8 @@
                     calculateVolumeTotal(table);
                     
                     // التحقق من النتائج
-                    const volumeInput = document.getElementById(`total_${table}_open`);
-                    const totalInput = document.getElementById(`final_total_${table}_open`);
+                    const volumeInput = document.getElementById(`total_${table}`);
+                    const totalInput = document.getElementById(`final_total_${table}`);
                     
                     const expectedVolume = '100.00';
                     const expectedTotal = '10000.00';
@@ -2842,12 +2851,12 @@
             const tables = ['unsurfaced_soil_open', 'surfaced_soil_open', 'surfaced_rock_open', 'unsurfaced_rock_open'];
             
             tables.forEach(table => {
-                const lengthInput = document.querySelector(`input[name="excavation_${table}_open[length]"]`);
-                const widthInput = document.querySelector(`input[name="excavation_${table}_open[width]"]`);
-                const depthInput = document.querySelector(`input[name="excavation_${table}_open[depth]"]`);
-                const priceInput = document.querySelector(`input[name="excavation_${table}_open_price"]`);
-                const volumeInput = document.getElementById(`total_${table}_open`);
-                const totalInput = document.getElementById(`final_total_${table}_open`);
+                const lengthInput = document.querySelector(`input[name="excavation_${table}[length]"]`);
+                const widthInput = document.querySelector(`input[name="excavation_${table}[width]"]`);
+                const depthInput = document.querySelector(`input[name="excavation_${table}[depth]"]`);
+                const priceInput = document.querySelector(`input[name="excavation_${table}_price"]`);
+                const volumeInput = document.getElementById(`total_${table}`);
+                const totalInput = document.getElementById(`final_total_${table}`);
                 
                 const allFound = lengthInput && widthInput && depthInput && priceInput && volumeInput && totalInput;
                 console.log(`${table}: ${allFound ? '✅' : '❌'}`);
