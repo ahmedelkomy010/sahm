@@ -620,6 +620,98 @@
             color: white;
             font-weight: bold;
         }
+        
+        /* تنسيقات جدول الملخص اليومي */
+        .daily-excavation-row {
+            transition: all 0.3s ease;
+        }
+        
+        .daily-excavation-row:hover {
+            background-color: rgba(102, 126, 234, 0.1);
+            transform: scale(1.01);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .excavation-type-select {
+            border-left: 4px solid transparent;
+            transition: all 0.3s ease;
+        }
+        
+        .excavation-type-select:focus {
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        
+        .total-cost {
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%) !important;
+            font-weight: bold !important;
+            text-align: center;
+        }
+        
+        .total-cost:focus {
+            background: linear-gradient(135deg, #b8daff 0%, #9ec5fe 100%) !important;
+        }
+        
+        /* تأثيرات على الإحصائيات */
+        .stats-card .card-body {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .stats-card:hover .card-body {
+            transform: translateY(-3px);
+        }
+        
+        /* تحسين أزرار الجدول */
+        .btn-group-sm .btn {
+            transition: all 0.2s ease;
+        }
+        
+        .btn-group-sm .btn:hover {
+            transform: scale(1.1);
+        }
+        
+        /* تأثيرات الإدخال */
+        .daily-excavation-row input:focus {
+            transform: scale(1.02);
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        
+        /* رسالة لا توجد بيانات */
+        #no-data-row {
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+        }
+        
+        #no-data-row .fas {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+            100% {
+                opacity: 1;
+            }
+        }
+        
+        /* تأثيرات خاصة للأرقام الكبيرة */
+        #daily-total-cost {
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* تحسين responsive للجدول */
+        @media (max-width: 768px) {
+            .daily-excavation-row input {
+                font-size: 0.85rem;
+            }
+            
+            .btn-group-sm .btn {
+                padding: 0.25rem 0.4rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -742,6 +834,121 @@
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         @endif
+
+        <!-- جدول الملخص اليومي للحفريات -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card shadow-sm border-0" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <div class="card-header bg-transparent border-0 text-white">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">
+                                <i class="fas fa-magic me-2"></i>
+                                الملخص اليومي التلقائي للحفريات الأساسية
+                                <span class="badge bg-light text-dark ms-2">
+                                    <i class="fas fa-sync-alt fa-spin"></i>
+                                    تحديث تلقائي
+                                </span>
+                            </h5>
+                            <small class="text-light">
+                                <i class="fas fa-clock me-1"></i>
+                                {{ date('Y-m-d H:i') }}
+                            </small>
+                        </div>
+                    </div>
+                    <div class="card-body bg-white" style="border-radius: 0 0 15px 15px;">
+                        
+                        <!-- إحصائيات سريعة -->
+                        <div class="row mb-4">
+                            <div class="col-md-3 col-sm-6 mb-2">
+                                <div class="card bg-light border-0 text-center" style="border-radius: 15px;">
+                                    <div class="card-body py-3">
+                                        <div class="text-primary display-6 mb-2">
+                                            <i class="fas fa-hammer"></i>
+                                        </div>
+                                        <h4 class="mb-1" id="daily-items-count">0</h4>
+                                        <small class="text-muted">إجمالي البنود</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6 mb-2">
+                                <div class="card bg-light border-0 text-center" style="border-radius: 15px;">
+                                    <div class="card-body py-3">
+                                        <div class="text-success display-6 mb-2">
+                                            <i class="fas fa-plug"></i>
+                                        </div>
+                                        <h4 class="mb-1" id="daily-cables-count">0</h4>
+                                        <small class="text-muted">إجمالي الكابلات</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6 mb-2">
+                                <div class="card bg-light border-0 text-center" style="border-radius: 15px;">
+                                    <div class="card-body py-3">
+                                        <div class="text-warning display-6 mb-2">
+                                            <i class="fas fa-ruler-horizontal"></i>
+                                        </div>
+                                        <h4 class="mb-1" id="daily-total-length">0</h4>
+                                        <small class="text-muted">إجمالي الطول (متر)</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6 mb-2">
+                                <div class="card bg-light border-0 text-center" style="border-radius: 15px;">
+                                    <div class="card-body py-3">
+                                        <div class="text-danger display-6 mb-2">
+                                            <i class="fas fa-coins"></i>
+                                        </div>
+                                        <h4 class="mb-1" id="daily-total-cost">0.00</h4>
+                                        <small class="text-muted">إجمالي التكلفة (ريال)</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- الجدول الديناميكي -->
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle" id="daily-excavation-table">
+                                <thead style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                                    <tr>
+                                        <th style="width: 25%">نوع الحفرية</th>
+                                        <th style="width: 10%">عدد الكابلات</th>
+                                        <th style="width: 15%">الطول/الحجم (متر)</th>
+                                        <th style="width: 15%">السعر لكل وحدة (ريال)</th>
+                                        <th style="width: 15%">إجمالي التكلفة (ريال)</th>
+                                        <th style="width: 15%">آخر تحديث</th>
+                                        <th style="width: 5%">حذف</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="daily-excavation-tbody">
+                                    <tr id="no-data-row">
+                                        <td colspan="7" class="text-center text-muted py-4">
+                                            <i class="fas fa-clipboard-list fa-2x mb-2 d-block"></i>
+                                            <p class="mb-0">لا توجد بيانات حفريات مدخلة اليوم</p>
+                                            <small>استخدم الزر أدناه لإضافة بيانات جديدة</small>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- أزرار التحكم -->
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+                            <button type="button" class="btn btn-primary" id="add-daily-excavation-btn">
+                                <i class="fas fa-plus me-2"></i>إضافة حفرية جديدة
+                            </button>
+                            <div class="d-flex gap-2">
+                                <button type="button" class="btn btn-outline-success" id="export-daily-summary-btn">
+                                    <i class="fas fa-file-excel me-2"></i>تصدير الملخص
+                                </button>
+                                <button type="button" class="btn btn-outline-info" id="save-daily-summary-btn">
+                                    <i class="fas fa-save me-2"></i>حفظ الملخص
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <form method="POST" action="{{ route('admin.work-orders.civil-works.store', $workOrder) }}" 
               enctype="multipart/form-data" class="needs-validation" novalidate>
@@ -2656,6 +2863,384 @@
                 window.quickElementCheck();
             }, 1000);
         }, 500);
+    });
+
+    // جدول الملخص اليومي للحفريات - نظام تلقائي
+    let dailyExcavationCounter = 0;
+    let dailyExcavationData = new Map(); // استخدام Map لتتبع البيانات
+
+    // أنواع الحفريات المتاحة مع معرفات الحقول
+    const excavationTypes = [
+        { value: 'unsurfaced_soil', label: 'تربة ترابية غير مسفلتة', color: '#28a745', pattern: 'excavation_unsurfaced_soil' },
+        { value: 'surfaced_soil', label: 'تربة ترابية مسفلتة', color: '#17a2b8', pattern: 'excavation_surfaced_soil' },
+        { value: 'surfaced_rock', label: 'صخر مسفلت', color: '#dc3545', pattern: 'excavation_surfaced_rock' },
+        { value: 'unsurfaced_rock', label: 'صخر غير مسفلت', color: '#6f42c1', pattern: 'excavation_unsurfaced_rock' },
+        { value: 'open_excavation', label: 'حفر مفتوح أكبر من 4 كابلات', color: '#fd7e14', pattern: 'excavation_.*_open' }
+    ];
+
+    // أسماء الكابلات للمرجع
+    const cableNames = [
+        '1 كابل منخفض', '2 كابل منخفض', '3 كابل منخفض', '4 كابل منخفض',
+        '1 كابل متوسط', '2 كابل متوسط', '3 كابل متوسط', '4 كابل متوسط'
+    ];
+
+    // تحديد نوع الحفرية من اسم الحقل
+    function getExcavationTypeFromFieldName(fieldName) {
+        for (const type of excavationTypes) {
+            const regex = new RegExp(type.pattern);
+            if (regex.test(fieldName)) {
+                return type;
+            }
+        }
+        return null;
+    }
+
+    // استخراج فهرس الكابل من اسم الحقل
+    function getCableIndexFromFieldName(fieldName) {
+        const match = fieldName.match(/\[(\d+)\]/);
+        return match ? parseInt(match[1]) : null;
+    }
+
+    // إضافة/تحديث بند في الملخص اليومي تلقائياً
+    function addOrUpdateDailySummaryItem(fieldName, lengthValue, priceValue) {
+        const excavationType = getExcavationTypeFromFieldName(fieldName);
+        if (!excavationType) return;
+
+        const cableIndex = getCableIndexFromFieldName(fieldName);
+        let itemKey, itemLabel;
+
+        if (excavationType.value === 'open_excavation') {
+            itemKey = `${excavationType.value}`;
+            itemLabel = excavationType.label;
+        } else {
+            itemKey = `${excavationType.value}_${cableIndex}`;
+            itemLabel = `${excavationType.label} - ${cableNames[cableIndex] || `كابل ${cableIndex + 1}`}`;
+        }
+
+        const length = parseFloat(lengthValue) || 0;
+        const price = parseFloat(priceValue) || 0;
+        const totalCost = length * price;
+
+        // تحديث أو إضافة البيانات
+        if (length > 0 && price > 0) {
+            dailyExcavationData.set(itemKey, {
+                type: excavationType.value,
+                label: itemLabel,
+                color: excavationType.color,
+                cablesCount: excavationType.value === 'open_excavation' ? '4+' : '1',
+                totalLength: length,
+                unitPrice: price,
+                totalCost: totalCost,
+                lastUpdated: new Date().toLocaleTimeString('ar-SA')
+            });
+        } else {
+            // حذف البند إذا كانت القيم فارغة
+            dailyExcavationData.delete(itemKey);
+        }
+
+        updateDailySummaryDisplay();
+    }
+
+    // تحديث عرض الملخص اليومي
+    function updateDailySummaryDisplay() {
+        const tbody = document.getElementById('daily-excavation-tbody');
+        const noDataRow = document.getElementById('no-data-row');
+
+        // مسح الصفوف الموجودة
+        const existingRows = tbody.querySelectorAll('.daily-excavation-row');
+        existingRows.forEach(row => row.remove());
+
+        if (dailyExcavationData.size === 0) {
+            noDataRow.style.display = '';
+            updateDailySummary();
+            return;
+        }
+
+        noDataRow.style.display = 'none';
+
+        // إضافة الصفوف الجديدة
+        dailyExcavationData.forEach((data, key) => {
+            const row = document.createElement('tr');
+            row.className = 'daily-excavation-row';
+            row.setAttribute('data-key', key);
+            
+            row.innerHTML = `
+                <td>
+                    <span class="badge" style="background-color: ${data.color}; color: white;">
+                        ${data.label}
+                    </span>
+                </td>
+                <td>
+                    <span class="badge bg-secondary">${data.cablesCount}</span>
+                </td>
+                <td>
+                    <strong>${data.totalLength.toFixed(2)}</strong> متر
+                </td>
+                <td>
+                    <strong>${data.unitPrice.toFixed(2)}</strong> ريال
+                </td>
+                <td>
+                    <div class="input-group input-group-sm">
+                        <input type="text" class="form-control total-cost fw-bold text-success" 
+                               readonly value="${data.totalCost.toFixed(2)}">
+                        <span class="input-group-text bg-success text-white">ريال</span>
+                    </div>
+                </td>
+                <td>
+                    <small class="text-muted">
+                        <i class="fas fa-clock me-1"></i>
+                        ${data.lastUpdated}
+                    </small>
+                </td>
+                <td>
+                    <button type="button" class="btn btn-outline-danger btn-sm" 
+                            onclick="removeDailyExcavationItem('${key}')" 
+                            title="حذف البند">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            `;
+
+            tbody.appendChild(row);
+            
+            // تأثير بصري للإضافة
+            row.style.opacity = '0';
+            row.style.transform = 'translateY(20px)';
+            setTimeout(() => {
+                row.style.transition = 'all 0.3s ease';
+                row.style.opacity = '1';
+                row.style.transform = 'translateY(0)';
+            }, 10);
+        });
+
+        updateDailySummary();
+    }
+
+    // حذف بند من الملخص اليومي
+    function removeDailyExcavationItem(key) {
+        if (confirm('هل أنت متأكد من حذف هذا البند؟')) {
+            dailyExcavationData.delete(key);
+            updateDailySummaryDisplay();
+        }
+    }
+
+    // مراقبة التغييرات في حقول النموذج الأساسي
+    function watchFormFieldChanges() {
+        // مراقبة جميع حقول الطول والسعر في النموذج
+        const lengthInputs = document.querySelectorAll('input[name*="excavation_"][name*="["], input[name*="excavation_"][name$="_open[length]"]');
+        const priceInputs = document.querySelectorAll('input[name*="excavation_"][name*="_price"]');
+
+        // إضافة مستمعات للحقول الطولية
+        lengthInputs.forEach(input => {
+            input.addEventListener('input', function() {
+                handleFieldChange();
+            });
+        });
+
+        // إضافة مستمعات لحقول السعر
+        priceInputs.forEach(input => {
+            input.addEventListener('input', function() {
+                handleFieldChange();
+            });
+        });
+
+        console.log(`🔍 Watching ${lengthInputs.length} length inputs and ${priceInputs.length} price inputs`);
+    }
+
+    // معالجة التغييرات في الحقول
+    function handleFieldChange() {
+        // تأخير قصير لضمان تحديث جميع القيم
+        setTimeout(() => {
+            scanAndUpdateDailySummary();
+        }, 100);
+    }
+
+    // فحص جميع الحقول وتحديث الملخص
+    function scanAndUpdateDailySummary() {
+        // مسح البيانات الحالية
+        dailyExcavationData.clear();
+
+        // فحص الحفريات الأساسية (الخطية)
+        const basicExcavationTypes = ['unsurfaced_soil', 'surfaced_soil', 'surfaced_rock', 'unsurfaced_rock'];
+        
+        basicExcavationTypes.forEach(type => {
+            for (let i = 0; i < 8; i++) {
+                const lengthInput = document.querySelector(`input[name="excavation_${type}[${i}]"]`);
+                const priceInput = document.querySelector(`input[name="excavation_${type}_price[${i}]"]`);
+                
+                if (lengthInput && priceInput) {
+                    const length = parseFloat(lengthInput.value) || 0;
+                    const price = parseFloat(priceInput.value) || 0;
+                    
+                    if (length > 0 && price > 0) {
+                        addOrUpdateDailySummaryItem(`excavation_${type}[${i}]`, length, price);
+                    }
+                }
+            }
+        });
+
+        // فحص الحفريات المفتوحة (الحجمية)
+        const openExcavationTypes = ['unsurfaced_soil_open', 'surfaced_soil_open', 'surfaced_rock_open', 'unsurfaced_rock_open'];
+        
+        openExcavationTypes.forEach(type => {
+            const lengthInput = document.querySelector(`input[name="excavation_${type}[length]"]`);
+            const widthInput = document.querySelector(`input[name="excavation_${type}[width]"]`);
+            const depthInput = document.querySelector(`input[name="excavation_${type}[depth]"]`);
+            const priceInput = document.querySelector(`input[name="excavation_${type}_price"]`);
+            
+            if (lengthInput && widthInput && depthInput && priceInput) {
+                const length = parseFloat(lengthInput.value) || 0;
+                const width = parseFloat(widthInput.value) || 0;
+                const depth = parseFloat(depthInput.value) || 0;
+                const price = parseFloat(priceInput.value) || 0;
+                
+                const volume = length * width * depth;
+                
+                if (volume > 0 && price > 0) {
+                    addOrUpdateDailySummaryItem(`excavation_${type}[length]`, volume, price);
+                }
+            }
+        });
+
+        // تحديث العرض
+        updateDailySummaryDisplay();
+    }
+
+    // تحديث الملخص العام
+    function updateDailySummary() {
+        let totalItems = 0;
+        let totalCables = 0;
+        let totalLength = 0;
+        let totalCost = 0;
+
+        dailyExcavationData.forEach((data, key) => {
+            totalItems++;
+            totalCables += (data.cablesCount === '4+') ? 4 : parseInt(data.cablesCount) || 1;
+            totalLength += data.totalLength;
+            totalCost += data.totalCost;
+        });
+
+        // تحديث الإحصائيات مع تأثيرات بصرية
+        updateCounterWithAnimation('daily-items-count', totalItems);
+        updateCounterWithAnimation('daily-cables-count', totalCables);
+        updateCounterWithAnimation('daily-total-length', totalLength.toFixed(2));
+        updateCounterWithAnimation('daily-total-cost', totalCost.toFixed(2));
+    }
+
+    // تحديث العداد مع تأثير بصري
+    function updateCounterWithAnimation(elementId, newValue) {
+        const element = document.getElementById(elementId);
+        const currentValue = element.textContent;
+        
+        if (currentValue !== newValue.toString()) {
+            element.style.transform = 'scale(1.2)';
+            element.style.color = '#007bff';
+            element.textContent = newValue;
+            
+            setTimeout(() => {
+                element.style.transform = 'scale(1)';
+                element.style.color = '';
+            }, 200);
+        }
+    }
+
+    // تصدير الملخص
+    function exportDailySummary() {
+        if (dailyExcavationData.size === 0) {
+            alert('لا توجد بيانات للتصدير');
+            return;
+        }
+
+        let data = [];
+        
+        dailyExcavationData.forEach((item, key) => {
+            data.push({
+                'نوع الحفرية': item.label,
+                'عدد الكابلات': item.cablesCount,
+                'الطول الإجمالي': item.totalLength.toFixed(2),
+                'السعر لكل متر': item.unitPrice.toFixed(2),
+                'إجمالي التكلفة': item.totalCost.toFixed(2),
+                'وقت آخر تحديث': item.lastUpdated
+            });
+        });
+
+        // تحويل إلى CSV
+        const csvContent = convertToCSV(data);
+        downloadCSV(csvContent, `ملخص_حفريات_${new Date().toLocaleDateString('ar-SA')}.csv`);
+        
+        // إشعار بنجاح التصدير
+        alert(`تم تصدير ${data.length} بند بنجاح!`);
+    }
+
+    // تحويل البيانات إلى CSV
+    function convertToCSV(data) {
+        const headers = Object.keys(data[0]);
+        const csv = [
+            headers.join(','),
+            ...data.map(row => headers.map(header => `"${row[header]}"`).join(','))
+        ].join('\n');
+        
+        return '\uFEFF' + csv; // BOM for Arabic support
+    }
+
+    // تحميل ملف CSV
+    function downloadCSV(content, filename) {
+        const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', filename);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    // إضافة المستمعات عند تحميل الصفحة
+    document.addEventListener('DOMContentLoaded', function() {
+        // إخفاء زر الإضافة اليدوية
+        const addBtn = document.getElementById('add-daily-excavation-btn');
+        if (addBtn) {
+            addBtn.style.display = 'none';
+        }
+        
+        // إضافة رسالة توضيحية
+        const controlsDiv = addBtn.parentElement;
+        const autoNotice = document.createElement('div');
+        autoNotice.className = 'alert alert-info alert-sm d-flex align-items-center';
+        autoNotice.innerHTML = `
+            <i class="fas fa-magic me-2"></i>
+            <small>
+                <strong>الملخص اليومي تلقائي:</strong> 
+                عند إدخال الطول والسعر في النموذج أعلاه، سيتم إضافة البيانات تلقائياً للملخص
+            </small>
+        `;
+        controlsDiv.insertBefore(autoNotice, controlsDiv.firstChild);
+        
+        // زر التصدير
+        document.getElementById('export-daily-summary-btn').addEventListener('click', exportDailySummary);
+        
+        // زر الحفظ
+        document.getElementById('save-daily-summary-btn').addEventListener('click', function() {
+            if (dailyExcavationData.size === 0) {
+                alert('لا توجد بيانات للحفظ');
+                return;
+            }
+            
+            // هنا يمكن إضافة كود الحفظ الفعلي
+            alert(`تم حفظ ${dailyExcavationData.size} بند بنجاح!\n(سيتم إضافة حفظ قاعدة البيانات قريباً)`);
+        });
+
+        // تهيئة مراقبة التغييرات
+        setTimeout(() => {
+            watchFormFieldChanges();
+            
+            // فحص أولي للحقول الموجودة
+            scanAndUpdateDailySummary();
+            
+            console.log('✅ Auto daily excavation summary initialized successfully!');
+            console.log(`📊 Found ${dailyExcavationData.size} initial items`);
+        }, 1000);
     });
     </script>
 

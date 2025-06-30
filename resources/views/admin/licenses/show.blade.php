@@ -425,7 +425,7 @@ use Illuminate\Support\Facades\Storage;
                                 'result_field' => 'interlock_test_result'
                             ]
                         ];
-                    @endphp
+                        @endphp
 
                     <!-- الاختبارات الديناميكية -->
                     <div class="row">
