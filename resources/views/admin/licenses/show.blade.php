@@ -143,12 +143,14 @@ use Illuminate\Support\Facades\Storage;
                                         <i class="fas fa-file-pdf fa-2x text-danger me-3"></i>
                                         <div>
                                             <h6 class="mb-1">ملف شهادة التنسيق</h6>
-                                            @if(Storage::exists($license->coordination_certificate_path))
-                                                <a href="{{ Storage::url($license->coordination_certificate_path) }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                            @if(\Storage::disk('public')->exists($license->coordination_certificate_path))
+                                                <a href="{{ \Storage::disk('public')->url($license->coordination_certificate_path) }}" target="_blank" class="btn btn-sm btn-outline-primary">
                                                     <i class="fas fa-eye me-1"></i>عرض الملف
                                                 </a>
                                             @else
-                                                <span class="text-muted small">الملف غير متوفر</span>
+                                                <span class="text-danger small">
+                                                    <i class="fas fa-exclamation-triangle me-1"></i>الملف غير متوفر
+                                                </span>
                                             @endif
                                         </div>
                                     </div>
@@ -160,23 +162,58 @@ use Illuminate\Support\Facades\Storage;
                                     <div class="p-3 border rounded bg-white">
                                         <h6 class="mb-2"><i class="fas fa-folder me-2 text-warning"></i>الخطابات والتعهدات</h6>
                                         @php 
-                                            $letterFiles = is_string($license->letters_commitments_file_path) 
-                                                ? json_decode($license->letters_commitments_file_path, true) 
-                                                : $license->letters_commitments_file_path;
+                                            $letterFiles = [];
+                                            
+                                            // معالجة ملفات الخطابات والتعهدات بطريقة محسنة
+                                            if ($license->letters_commitments_file_path) {
+                                                try {
+                                                    $decoded = json_decode($license->letters_commitments_file_path, true);
+                                                    if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                                                        $letterFiles = array_filter($decoded, function($path) {
+                                                            return !empty($path) && is_string($path);
+                                                        });
+                                                    } elseif (is_string($license->letters_commitments_file_path)) {
+                                                        $letterFiles = [$license->letters_commitments_file_path];
+                                                    }
+                                                } catch (\Exception $e) {
+                                                    \Log::error('Error parsing letters_commitments_file_path: ' . $e->getMessage());
+                                                }
+                                            }
                                         @endphp
-                                        @if($letterFiles && is_array($letterFiles))
+                                        
+                                        @if(!empty($letterFiles))
                                             @foreach($letterFiles as $index => $filePath)
-                                            <div class="d-flex align-items-center mb-2">
-                                                <i class="fas fa-file-alt text-primary me-2"></i>
-                                                @if(Storage::exists($filePath))
-                                                    <a href="{{ Storage::url($filePath) }}" target="_blank" class="text-decoration-none">
-                                                        <small>ملف {{ $index + 1 }}</small>
-                                                    </a>
-                                                @else
-                                                    <span class="text-muted small">ملف {{ $index + 1 }} (غير متوفر)</span>
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <span class="text-muted">
+                                                    <i class="fas fa-file-alt text-primary me-1"></i>
+                                                    ملف {{ $index + 1 }}
+                                                </span>
+                                                @if(!empty($filePath) && \Storage::disk('public')->exists($filePath))
+                                                    <div class="btn-group btn-group-sm">
+                                                        <a href="{{ \Storage::disk('public')->url($filePath) }}" 
+                                                           class="btn btn-outline-primary" 
+                                                           target="_blank" title="عرض">
+                                                            <i class="fas fa-eye"></i>
+                                                        </a>
+                                                        <a href="{{ \Storage::disk('public')->url($filePath) }}" 
+                                                           class="btn btn-outline-success" 
+                                                           download title="تحميل">
+                                                            <i class="fas fa-download"></i>
+                                                        </a>
+                                                    </div>
+                                                @elseif(!empty($filePath))
+                                                    <span class="text-danger small">
+                                                        <i class="fas fa-exclamation-triangle me-1"></i>
+                                                        (غير متوفر)
+                                                    </span>
                                                 @endif
                                             </div>
                                             @endforeach
+                                        @else
+                                            <div class="text-center text-muted py-3">
+                                                <i class="fas fa-file-signature fa-2x mb-2"></i>
+                                                <p class="mb-0">لم يتم رفع ملفات الخطابات</p>
+                                            </div>
                                         @endif
                                     </div>
                                 </div>
@@ -1372,24 +1409,29 @@ use Illuminate\Support\Facades\Storage;
                                     </h6>
                                 </div>
                                 <div class="card-body">
-                                    @if($license->coordination_certificate_path)
+                                    @if($license->coordination_certificate_path && \Storage::disk('public')->exists($license->coordination_certificate_path))
                                         <div class="d-flex justify-content-between align-items-center">
                                             <span class="text-muted">
                                                 <i class="fas fa-file-pdf me-1"></i>
                                                 ملف الشهادة
                                             </span>
                                             <div class="btn-group btn-group-sm">
-                                                <a href="{{ Storage::url($license->coordination_certificate_path) }}" 
+                                                <a href="{{ \Storage::disk('public')->url($license->coordination_certificate_path) }}" 
                                                    class="btn btn-outline-primary" 
-                                                   target="_blank">
+                                                   target="_blank" title="عرض">
                                                     <i class="fas fa-eye"></i>
                                                 </a>
-                                                <a href="{{ Storage::url($license->coordination_certificate_path) }}" 
+                                                <a href="{{ \Storage::disk('public')->url($license->coordination_certificate_path) }}" 
                                                    class="btn btn-outline-success" 
-                                                   download>
+                                                   download title="تحميل">
                                                     <i class="fas fa-download"></i>
                                                 </a>
                                             </div>
+                                        </div>
+                                    @elseif($license->coordination_certificate_path)
+                                        <div class="text-center text-muted">
+                                            <i class="fas fa-file-times fa-2x mb-2 text-danger"></i>
+                                            <p class="mb-0">الملف غير متوفر</p>
                                         </div>
                                     @else
                                         <div class="text-center text-muted">
@@ -1412,41 +1454,47 @@ use Illuminate\Support\Facades\Storage;
                                 </div>
                                 <div class="card-body">
                                     @php
-                                        $letterFiles = null;
+                                        $letterFiles = [];
                                         
-                                        // معالجة ملفات الخطابات والتعهدات
+                                        // معالجة ملفات الخطابات والتعهدات بطريقة محسنة
                                         if ($license->letters_commitments_file_path) {
-                                            if (is_string($license->letters_commitments_file_path)) {
+                                            try {
                                                 $decoded = json_decode($license->letters_commitments_file_path, true);
-                                                $letterFiles = is_array($decoded) ? $decoded : [$license->letters_commitments_file_path];
-                                            } else {
-                                                $letterFiles = [$license->letters_commitments_file_path];
+                                                if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                                                    $letterFiles = array_filter($decoded, function($path) {
+                                                        return !empty($path) && is_string($path);
+                                                    });
+                                                } elseif (is_string($license->letters_commitments_file_path)) {
+                                                    $letterFiles = [$license->letters_commitments_file_path];
+                                                }
+                                            } catch (\Exception $e) {
+                                                \Log::error('Error parsing letters_commitments_file_path: ' . $e->getMessage());
                                             }
                                         }
                                     @endphp
 
-                                    @if($letterFiles)
+                                    @if(!empty($letterFiles))
                                         @foreach($letterFiles as $index => $filePath)
-                                            @if(Storage::exists($filePath))
+                                            @if(!empty($filePath) && \Storage::disk('public')->exists($filePath))
                                                 <div class="d-flex justify-content-between align-items-center mb-2">
                                                     <span class="text-muted">
                                                         <i class="fas fa-file-signature me-1"></i>
                                                         ملف {{ $index + 1 }}
                                                     </span>
                                                     <div class="btn-group btn-group-sm">
-                                                        <a href="{{ Storage::url($filePath) }}" 
+                                                        <a href="{{ \Storage::disk('public')->url($filePath) }}" 
                                                            class="btn btn-outline-primary" 
                                                            target="_blank" title="عرض">
                                                             <i class="fas fa-eye"></i>
                                                         </a>
-                                                        <a href="{{ Storage::url($filePath) }}" 
+                                                        <a href="{{ \Storage::disk('public')->url($filePath) }}" 
                                                            class="btn btn-outline-success" 
                                                            download title="تحميل">
                                                             <i class="fas fa-download"></i>
                                                         </a>
                                                     </div>
                                                 </div>
-                                            @else
+                                            @elseif(!empty($filePath))
                                                 <div class="text-muted small mb-1">
                                                     <i class="fas fa-file-times me-1 text-danger"></i>
                                                     ملف {{ $index + 1 }} (غير متوفر)
@@ -1474,89 +1522,111 @@ use Illuminate\Support\Facades\Storage;
                                 </div>
                                 <div class="card-body">
                                     @php
-                                        $paymentInvoices = null;
-                                        $paymentProofs = null;
+                                        $paymentInvoices = [];
+                                        $paymentProofs = [];
                                         
-                                        // معالجة إيصالات الدفع
+                                        // معالجة إيصالات الدفع بطريقة محسنة
                                         if ($license->payment_invoices_path) {
-                                            if (is_string($license->payment_invoices_path)) {
+                                            try {
                                                 $decoded = json_decode($license->payment_invoices_path, true);
-                                                $paymentInvoices = is_array($decoded) ? $decoded : [$license->payment_invoices_path];
-                                            } else {
-                                                $paymentInvoices = [$license->payment_invoices_path];
+                                                if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                                                    $paymentInvoices = array_filter($decoded, function($path) {
+                                                        return !empty($path) && is_string($path);
+                                                    });
+                                                } elseif (is_string($license->payment_invoices_path)) {
+                                                    $paymentInvoices = [$license->payment_invoices_path];
+                                                }
+                                            } catch (\Exception $e) {
+                                                \Log::error('Error parsing payment_invoices_path: ' . $e->getMessage());
                                             }
                                         }
                                         
-                                        // معالجة إثباتات الدفع
+                                        // معالجة إثباتات الدفع بطريقة محسنة
                                         if ($license->payment_proof_path) {
-                                            if (is_string($license->payment_proof_path)) {
+                                            try {
                                                 $decoded = json_decode($license->payment_proof_path, true);
-                                                $paymentProofs = is_array($decoded) ? $decoded : [$license->payment_proof_path];
-                                            } else {
-                                                $paymentProofs = [$license->payment_proof_path];
+                                                if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                                                    $paymentProofs = array_filter($decoded, function($path) {
+                                                        return !empty($path) && is_string($path);
+                                                    });
+                                                } elseif (is_string($license->payment_proof_path)) {
+                                                    $paymentProofs = [$license->payment_proof_path];
+                                                }
+                                            } catch (\Exception $e) {
+                                                \Log::error('Error parsing payment_proof_path: ' . $e->getMessage());
                                             }
                                         }
                                     @endphp
 
-                                    @if($paymentInvoices)
+                                    @if(!empty($paymentInvoices))
                                         <div class="mb-3">
                                             <strong class="text-primary d-block mb-2">
                                                 <i class="fas fa-file-invoice-dollar me-1"></i>إيصالات الدفع
                                             </strong>
                                             @foreach($paymentInvoices as $index => $filePath)
-                                                @if(Storage::exists($filePath))
+                                                @if(!empty($filePath) && \Storage::disk('public')->exists($filePath))
                                                     <div class="d-flex justify-content-between align-items-center mb-1">
                                                         <span class="text-muted small">
                                                             <i class="fas fa-file me-1"></i>إيصال {{ $index + 1 }}
                                                         </span>
                                                         <div class="btn-group btn-group-sm">
-                                                            <a href="{{ Storage::url($filePath) }}" 
+                                                            <a href="{{ \Storage::disk('public')->url($filePath) }}" 
                                                                class="btn btn-outline-primary" 
                                                                target="_blank" title="عرض">
                                                                 <i class="fas fa-eye"></i>
                                                             </a>
-                                                            <a href="{{ Storage::url($filePath) }}" 
+                                                            <a href="{{ \Storage::disk('public')->url($filePath) }}" 
                                                                class="btn btn-outline-success" 
                                                                download title="تحميل">
                                                                 <i class="fas fa-download"></i>
                                                             </a>
                                                         </div>
                                                     </div>
+                                                @elseif(!empty($filePath))
+                                                    <div class="text-muted small mb-1">
+                                                        <i class="fas fa-file-times me-1 text-danger"></i>
+                                                        إيصال {{ $index + 1 }} (غير متوفر)
+                                                    </div>
                                                 @endif
                                             @endforeach
                                         </div>
                                     @endif
 
-                                    @if($paymentProofs)
+                                    @if(!empty($paymentProofs))
                                         <div class="mb-3">
                                             <strong class="text-success d-block mb-2">
                                                 <i class="fas fa-check-circle me-1"></i>إثباتات الدفع
                                             </strong>
                                             @foreach($paymentProofs as $index => $filePath)
-                                                @if(Storage::exists($filePath))
+                                                @if(!empty($filePath) && \Storage::disk('public')->exists($filePath))
                                                     <div class="d-flex justify-content-between align-items-center mb-1">
                                                         <span class="text-muted small">
                                                             <i class="fas fa-file me-1"></i>إثبات {{ $index + 1 }}
                                                         </span>
                                                         <div class="btn-group btn-group-sm">
-                                                            <a href="{{ Storage::url($filePath) }}" 
+                                                            <a href="{{ \Storage::disk('public')->url($filePath) }}" 
                                                                class="btn btn-outline-primary" 
                                                                target="_blank" title="عرض">
                                                                 <i class="fas fa-eye"></i>
                                                             </a>
-                                                            <a href="{{ Storage::url($filePath) }}" 
+                                                            <a href="{{ \Storage::disk('public')->url($filePath) }}" 
                                                                class="btn btn-outline-success" 
                                                                download title="تحميل">
                                                                 <i class="fas fa-download"></i>
                                                             </a>
                                                         </div>
                                                     </div>
+                                                @elseif(!empty($filePath))
+                                                    <div class="text-muted small mb-1">
+                                                        <i class="fas fa-file-times me-1 text-danger"></i>
+                                                        إثبات {{ $index + 1 }} (غير متوفر)
+                                                    </div>
                                                 @endif
                                             @endforeach
                                         </div>
                                     @endif
 
-                                    @if(!$paymentInvoices && !$paymentProofs)
+                                    @if(empty($paymentInvoices) && empty($paymentProofs))
                                         <div class="text-center text-muted">
                                             <i class="fas fa-file-invoice-dollar fa-2x mb-2"></i>
                                             <p class="mb-0">لم يتم رفع ملفات الدفع</p>
@@ -1576,28 +1646,29 @@ use Illuminate\Support\Facades\Storage;
                                     </h6>
                                 </div>
                                 <div class="card-body">
-                                    @if($license->license_file_path)
+                                    @if($license->license_file_path && \Storage::disk('public')->exists($license->license_file_path))
                                         <div class="d-flex justify-content-between align-items-center">
                                             <span class="text-muted">
                                                 <i class="fas fa-file-pdf me-1"></i>
                                                 ملف الرخصة
                                             </span>
                                             <div class="btn-group btn-group-sm">
-                                                @if(Storage::exists($license->license_file_path))
-                                                    <a href="{{ Storage::url($license->license_file_path) }}" 
-                                                       class="btn btn-outline-primary" 
-                                                       target="_blank" title="عرض">
-                                                        <i class="fas fa-eye"></i>
-                                                    </a>
-                                                    <a href="{{ Storage::url($license->license_file_path) }}" 
-                                                       class="btn btn-outline-success" 
-                                                       download title="تحميل">
-                                                        <i class="fas fa-download"></i>
-                                                    </a>
-                                                @else
-                                                    <span class="text-danger small">الملف غير متوفر</span>
-                                                @endif
+                                                <a href="{{ \Storage::disk('public')->url($license->license_file_path) }}" 
+                                                   class="btn btn-outline-primary" 
+                                                   target="_blank" title="عرض">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a href="{{ \Storage::disk('public')->url($license->license_file_path) }}" 
+                                                   class="btn btn-outline-success" 
+                                                   download title="تحميل">
+                                                    <i class="fas fa-download"></i>
+                                                </a>
                                             </div>
+                                        </div>
+                                    @elseif($license->license_file_path)
+                                        <div class="text-center text-muted">
+                                            <i class="fas fa-file-times fa-2x mb-2 text-danger"></i>
+                                            <p class="mb-0">الملف غير متوفر</p>
                                         </div>
                                     @else
                                         <div class="text-center text-muted">

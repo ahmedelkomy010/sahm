@@ -779,6 +779,11 @@ class LicenseController extends Controller
             
             // معالجة ملفات شهادة التنسيق
             if ($request->hasFile('coordination_certificate_path')) {
+                // حذف الملف القديم إذا كان موجوداً
+                if ($license->coordination_certificate_path && \Storage::disk('public')->exists($license->coordination_certificate_path)) {
+                    \Storage::disk('public')->delete($license->coordination_certificate_path);
+                }
+                
                 $file = $request->file('coordination_certificate_path');
                 $filename = time() . '_coordination_cert_' . $file->getClientOriginalName();
                 $path = $file->storeAs('licenses/coordination', $filename, 'public');
@@ -789,11 +794,23 @@ class LicenseController extends Controller
             
             // معالجة ملفات الخطابات والتعهدات
             if ($request->hasFile('letters_commitments_files')) {
+                // حذف الملفات القديمة إذا كانت موجودة
+                if ($license->letters_commitments_file_path) {
+                    $oldFiles = json_decode($license->letters_commitments_file_path, true);
+                    if (is_array($oldFiles)) {
+                        foreach ($oldFiles as $oldFile) {
+                            if (\Storage::disk('public')->exists($oldFile)) {
+                                \Storage::disk('public')->delete($oldFile);
+                            }
+                        }
+                    }
+                }
+                
                 $files = $request->file('letters_commitments_files');
                 $filePaths = [];
                 
                 foreach ($files as $file) {
-                    $filename = time() . '_letters_' . $file->getClientOriginalName();
+                    $filename = time() . '_' . uniqid() . '_letters_' . $file->getClientOriginalName();
                     $path = $file->storeAs('licenses/letters', $filename, 'public');
                     $filePaths[] = $path;
                 }
@@ -1156,50 +1173,100 @@ class LicenseController extends Controller
      */
     private function handleDigLicenseFiles(Request $request, License $license)
     {
+        // معالجة ملف الرخصة الرئيسي
         if ($request->hasFile('license_file')) {
+            // حذف الملف القديم
+            if ($license->license_file_path && \Storage::disk('public')->exists($license->license_file_path)) {
+                \Storage::disk('public')->delete($license->license_file_path);
+            }
+            
             $file = $request->file('license_file');
             $filename = time() . '_license_' . $file->getClientOriginalName();
             $path = $file->storeAs('licenses/files', $filename, 'public');
             $license->license_file_path = $path;
+            
+            \Log::info('License file uploaded', ['path' => $path]);
         }
         
+        // معالجة إيصالات الدفع
         if ($request->hasFile('payment_invoices')) {
+            // حذف الملفات القديمة
+            if ($license->payment_invoices_path) {
+                $oldFiles = json_decode($license->payment_invoices_path, true);
+                if (is_array($oldFiles)) {
+                    foreach ($oldFiles as $oldFile) {
+                        if (\Storage::disk('public')->exists($oldFile)) {
+                            \Storage::disk('public')->delete($oldFile);
+                        }
+                    }
+                }
+            }
+            
             $files = $request->file('payment_invoices');
             $filePaths = [];
             
             foreach ($files as $file) {
-                $filename = time() . '_invoice_' . $file->getClientOriginalName();
+                $filename = time() . '_' . uniqid() . '_invoice_' . $file->getClientOriginalName();
                 $path = $file->storeAs('licenses/invoices', $filename, 'public');
                 $filePaths[] = $path;
             }
             
             $license->payment_invoices_path = json_encode($filePaths);
+            \Log::info('Payment invoices uploaded', ['count' => count($filePaths)]);
         }
         
+        // معالجة إثباتات الدفع
         if ($request->hasFile('payment_proof')) {
+            // حذف الملفات القديمة
+            if ($license->payment_proof_path) {
+                $oldFiles = json_decode($license->payment_proof_path, true);
+                if (is_array($oldFiles)) {
+                    foreach ($oldFiles as $oldFile) {
+                        if (\Storage::disk('public')->exists($oldFile)) {
+                            \Storage::disk('public')->delete($oldFile);
+                        }
+                    }
+                }
+            }
+            
             $files = $request->file('payment_proof');
             $filePaths = [];
             
             foreach ($files as $file) {
-                $filename = time() . '_proof_' . $file->getClientOriginalName();
+                $filename = time() . '_' . uniqid() . '_proof_' . $file->getClientOriginalName();
                 $path = $file->storeAs('licenses/proof', $filename, 'public');
                 $filePaths[] = $path;
             }
             
             $license->payment_proof_path = json_encode($filePaths);
+            \Log::info('Payment proofs uploaded', ['count' => count($filePaths)]);
         }
         
+        // معالجة ملفات التفعيل
         if ($request->hasFile('license_activation')) {
+            // حذف الملفات القديمة
+            if ($license->license_activation_path) {
+                $oldFiles = json_decode($license->license_activation_path, true);
+                if (is_array($oldFiles)) {
+                    foreach ($oldFiles as $oldFile) {
+                        if (\Storage::disk('public')->exists($oldFile)) {
+                            \Storage::disk('public')->delete($oldFile);
+                        }
+                    }
+                }
+            }
+            
             $files = $request->file('license_activation');
             $filePaths = [];
             
             foreach ($files as $file) {
-                $filename = time() . '_activation_' . $file->getClientOriginalName();
+                $filename = time() . '_' . uniqid() . '_activation_' . $file->getClientOriginalName();
                 $path = $file->storeAs('licenses/activation', $filename, 'public');
                 $filePaths[] = $path;
             }
             
             $license->license_activation_path = json_encode($filePaths);
+            \Log::info('License activation files uploaded', ['count' => count($filePaths)]);
         }
     }
     

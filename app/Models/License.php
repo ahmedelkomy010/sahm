@@ -21,6 +21,26 @@ class License extends Model
         'attachments',
         'restriction_reason',
         'restriction_authority',
+        // حقول شهادة التنسيق
+        'coordination_certificate_number',
+        'coordination_certificate_path',
+        'coordination_certificate_notes',
+        'letters_commitments_file_path',
+        'has_restriction',
+        // حقول رخصة الحفر
+        'license_value',
+        'extension_value',
+        'excavation_length',
+        'excavation_width',
+        'excavation_depth',
+        'license_start_date',
+        'license_end_date',
+        'extension_start_date',
+        'extension_end_date',
+        'payment_invoices_path',
+        'payment_proof_path',
+        'license_activation_path',
+        'notes_attachments_path',
         'evacuation_date',
         'evacuation_time',
         'evacuation_duration',
@@ -305,5 +325,76 @@ class License extends Model
     public function streets()
     {
         return $this->hasMany(Street::class);
+    }
+
+    /**
+     * دالة مساعدة للحصول على ملفات متعددة من JSON path
+     */
+    public function getMultipleFiles($fieldName)
+    {
+        $files = [];
+        
+        if ($this->{$fieldName}) {
+            try {
+                $decoded = json_decode($this->{$fieldName}, true);
+                if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                    $files = array_filter($decoded, function($path) {
+                        return !empty($path) && is_string($path);
+                    });
+                } elseif (is_string($this->{$fieldName})) {
+                    $files = [$this->{$fieldName}];
+                }
+            } catch (\Exception $e) {
+                \Log::error("Error parsing {$fieldName}: " . $e->getMessage());
+            }
+        }
+        
+        return $files;
+    }
+
+    /**
+     * التحقق من وجود ملف واحد
+     */
+    public function hasFile($fieldName)
+    {
+        return !empty($this->{$fieldName}) && \Storage::disk('public')->exists($this->{$fieldName});
+    }
+
+    /**
+     * الحصول على رابط ملف واحد
+     */
+    public function getFileUrl($fieldName)
+    {
+        if ($this->hasFile($fieldName)) {
+            return \Storage::disk('public')->url($this->{$fieldName});
+        }
+        return null;
+    }
+
+    /**
+     * الحصول على روابط ملفات متعددة
+     */
+    public function getMultipleFileUrls($fieldName)
+    {
+        $files = $this->getMultipleFiles($fieldName);
+        $urls = [];
+        
+        foreach ($files as $file) {
+            if (!empty($file) && \Storage::disk('public')->exists($file)) {
+                $urls[] = [
+                    'path' => $file,
+                    'url' => \Storage::disk('public')->url($file),
+                    'exists' => true
+                ];
+            } else {
+                $urls[] = [
+                    'path' => $file,
+                    'url' => null,
+                    'exists' => false
+                ];
+            }
+        }
+        
+        return $urls;
     }
 } 
