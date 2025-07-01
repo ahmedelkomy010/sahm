@@ -912,7 +912,7 @@
                                     <tr>
                                         <th style="width: 25%">نوع الحفرية</th>
                                         <th style="width: 10%">عدد الكابلات</th>
-                                        <th style="width: 15%">الطول/الحجم (متر)</th>
+                                        <th style="width: 15%">الطول/الحجم</th>
                                         <th style="width: 15%">السعر لكل وحدة (ريال)</th>
                                         <th style="width: 15%">إجمالي التكلفة (ريال)</th>
                                         <th style="width: 15%">آخر تحديث</th>
@@ -2875,7 +2875,16 @@
         { value: 'surfaced_soil', label: 'تربة ترابية مسفلتة', color: '#17a2b8', pattern: 'excavation_surfaced_soil' },
         { value: 'surfaced_rock', label: 'صخر مسفلت', color: '#dc3545', pattern: 'excavation_surfaced_rock' },
         { value: 'unsurfaced_rock', label: 'صخر غير مسفلت', color: '#6f42c1', pattern: 'excavation_unsurfaced_rock' },
-        { value: 'open_excavation', label: 'حفر مفتوح أكبر من 4 كابلات', color: '#fd7e14', pattern: 'excavation_.*_open' }
+        { value: 'open_excavation', label: 'حفر مفتوح أكبر من 4 كابلات', color: '#fd7e14', pattern: 'excavation_.*_open' },
+        { value: 'precise_medium', label: 'حفريات دقيقة - حفر متوسط', color: '#e83e8c', pattern: 'excavation_precise.*medium.*' },
+        { value: 'precise_low', label: 'حفريات دقيقة - حفر منخفض', color: '#20c997', pattern: 'excavation_precise.*low.*' },
+        { value: 'cable_4x70_low', label: 'تمديد كيبل 4x70 منخفض', color: '#ff6b6b', pattern: 'electrical_items.*cable_4x70_low.*' },
+        { value: 'cable_4x185_low', label: 'تمديد كيبل 4x185 منخفض', color: '#4ecdc4', pattern: 'electrical_items.*cable_4x185_low.*' },
+        { value: 'cable_4x300_low', label: 'تمديد كيبل 4x300 منخفض', color: '#45b7d1', pattern: 'electrical_items.*cable_4x300_low.*' },
+        { value: 'cable_3x500_med', label: 'تمديد كيبل 3x500 متوسط', color: '#f9ca24', pattern: 'electrical_items.*cable_3x500_med.*' },
+        { value: 'cable_3x400_med', label: 'تمديد كيبل 3x400 متوسط', color: '#f0932b', pattern: 'electrical_items.*cable_3x400_med.*' },
+        { value: 'first_asphalt', label: 'أسفلت أولي', color: '#6c5ce7', pattern: 'open_excavation.*first_asphalt.*' },
+        { value: 'asphalt_scraping', label: 'كشط وإعادة السفلتة', color: '#a29bfe', pattern: 'open_excavation.*asphalt_scraping.*' }
     ];
 
     // أسماء الكابلات للمرجع
@@ -2901,20 +2910,49 @@
         return match ? parseInt(match[1]) : null;
     }
 
+    // تحديد الوحدة المناسبة حسب نوع العنصر
+    function getUnitForType(type) {
+        if (type.startsWith('cable_')) {
+            return 'متر';
+        } else if (type.includes('asphalt')) {
+            return 'م²';
+        } else if (type === 'open_excavation') {
+            return 'م³';
+        } else if (type.startsWith('precise_')) {
+            return 'متر';
+        } else {
+            return 'متر';
+        }
+    }
+
     // إضافة/تحديث بند في الملخص اليومي تلقائياً
     function addOrUpdateDailySummaryItem(fieldName, lengthValue, priceValue) {
         const excavationType = getExcavationTypeFromFieldName(fieldName);
         if (!excavationType) return;
 
         const cableIndex = getCableIndexFromFieldName(fieldName);
-        let itemKey, itemLabel;
+        let itemKey, itemLabel, cablesCount;
 
         if (excavationType.value === 'open_excavation') {
             itemKey = `${excavationType.value}`;
             itemLabel = excavationType.label;
+            cablesCount = '4+';
+        } else if (excavationType.value.startsWith('precise_')) {
+            itemKey = `${excavationType.value}`;
+            itemLabel = excavationType.label;
+            cablesCount = '-';
+        } else if (excavationType.value.startsWith('cable_')) {
+            itemKey = `${excavationType.value}`;
+            itemLabel = excavationType.label;
+            cablesCount = 'كيبل';
+        } else if (excavationType.value.includes('asphalt')) {
+            itemKey = `${excavationType.value}`;
+            itemLabel = excavationType.label;
+            cablesCount = 'م²';
         } else {
             itemKey = `${excavationType.value}_${cableIndex}`;
             itemLabel = `${excavationType.label} - ${cableNames[cableIndex] || `كابل ${cableIndex + 1}`}`;
+            cablesCount = '1';
         }
 
         const length = parseFloat(lengthValue) || 0;
@@ -2927,7 +2965,7 @@
                 type: excavationType.value,
                 label: itemLabel,
                 color: excavationType.color,
-                cablesCount: excavationType.value === 'open_excavation' ? '4+' : '1',
+                cablesCount: cablesCount,
                 totalLength: length,
                 unitPrice: price,
                 totalCost: totalCost,
@@ -2974,7 +3012,7 @@
                     <span class="badge bg-secondary">${data.cablesCount}</span>
                 </td>
                 <td>
-                    <strong>${data.totalLength.toFixed(2)}</strong> متر
+                    <strong>${data.totalLength.toFixed(2)}</strong> ${getUnitForType(data.type)}
                 </td>
                 <td>
                     <strong>${data.unitPrice.toFixed(2)}</strong> ريال
@@ -3029,6 +3067,15 @@
         // مراقبة جميع حقول الطول والسعر في النموذج
         const lengthInputs = document.querySelectorAll('input[name*="excavation_"][name*="["], input[name*="excavation_"][name$="_open[length]"]');
         const priceInputs = document.querySelectorAll('input[name*="excavation_"][name*="_price"]');
+        
+        // مراقبة حقول الحفريات الدقيقة
+        const preciseInputs = document.querySelectorAll('input[name*="excavation_precise["]');
+        
+        // مراقبة حقول الكابلات الكهربائية
+        const electricalInputs = document.querySelectorAll('input[name*="electrical_items["]');
+        
+        // مراقبة حقول أعمال الأسفلت
+        const asphaltInputs = document.querySelectorAll('input[name*="open_excavation[first_asphalt]"], input[name*="open_excavation[asphalt_scraping]"]');
 
         // إضافة مستمعات للحقول الطولية
         lengthInputs.forEach(input => {
@@ -3044,7 +3091,28 @@
             });
         });
 
-        console.log(`🔍 Watching ${lengthInputs.length} length inputs and ${priceInputs.length} price inputs`);
+        // إضافة مستمعات لحقول الحفريات الدقيقة
+        preciseInputs.forEach(input => {
+            input.addEventListener('input', function() {
+                handleFieldChange();
+            });
+        });
+
+        // إضافة مستمعات لحقول الكابلات الكهربائية
+        electricalInputs.forEach(input => {
+            input.addEventListener('input', function() {
+                handleFieldChange();
+            });
+        });
+
+        // إضافة مستمعات لحقول أعمال الأسفلت
+        asphaltInputs.forEach(input => {
+            input.addEventListener('input', function() {
+                handleFieldChange();
+            });
+        });
+
+        console.log(`🔍 Watching ${lengthInputs.length} length inputs, ${priceInputs.length} price inputs, ${preciseInputs.length} precise inputs, ${electricalInputs.length} electrical inputs, ${asphaltInputs.length} asphalt inputs`);
     }
 
     // معالجة التغييرات في الحقول
@@ -3098,6 +3166,61 @@
                 
                 if (volume > 0 && price > 0) {
                     addOrUpdateDailySummaryItem(`excavation_${type}[length]`, volume, price);
+                }
+            }
+        });
+
+        // فحص الحفريات الدقيقة
+        const preciseExcavationTypes = ['medium', 'low'];
+        
+        preciseExcavationTypes.forEach(type => {
+            const lengthInput = document.querySelector(`input[name="excavation_precise[${type}]"]`);
+            const priceInput = document.querySelector(`input[name="excavation_precise[${type}_price]"]`);
+            
+            if (lengthInput && priceInput) {
+                const length = parseFloat(lengthInput.value) || 0;
+                const price = parseFloat(priceInput.value) || 0;
+                
+                if (length > 0 && price > 0) {
+                    addOrUpdateDailySummaryItem(`excavation_precise[${type}]`, length, price);
+                }
+            }
+        });
+
+        // فحص الكابلات الكهربائية
+        const electricalCableTypes = ['cable_4x70_low', 'cable_4x185_low', 'cable_4x300_low', 'cable_3x500_med', 'cable_3x400_med'];
+        
+        electricalCableTypes.forEach(type => {
+            const lengthInput = document.querySelector(`input[name="electrical_items[${type}][meters]"]`);
+            const priceInput = document.querySelector(`input[name="electrical_items[${type}][price]"]`);
+            
+            if (lengthInput && priceInput) {
+                const length = parseFloat(lengthInput.value) || 0;
+                const price = parseFloat(priceInput.value) || 0;
+                
+                if (length > 0 && price > 0) {
+                    addOrUpdateDailySummaryItem(`electrical_items[${type}][meters]`, length, price);
+                }
+            }
+        });
+
+        // فحص أعمال الأسفلت (المساحة)
+        const asphaltTypes = ['first_asphalt', 'asphalt_scraping'];
+        
+        asphaltTypes.forEach(type => {
+            const lengthInput = document.querySelector(`input[name="open_excavation[${type}][length]"]`);
+            const widthInput = document.querySelector(`input[name="open_excavation[${type}][width]"]`);
+            const priceInput = document.querySelector(`input[name="open_excavation[${type}][price]"]`);
+            
+            if (lengthInput && widthInput && priceInput) {
+                const length = parseFloat(lengthInput.value) || 0;
+                const width = parseFloat(widthInput.value) || 0;
+                const price = parseFloat(priceInput.value) || 0;
+                
+                const area = length * width;
+                
+                if (area > 0 && price > 0) {
+                    addOrUpdateDailySummaryItem(`open_excavation[${type}][length]`, area, price);
                 }
             }
         });
@@ -3212,7 +3335,7 @@
             <i class="fas fa-magic me-2"></i>
             <small>
                 <strong>الملخص اليومي تلقائي:</strong> 
-                عند إدخال الطول والسعر في النموذج أعلاه، سيتم إضافة البيانات تلقائياً للملخص
+                عند إدخال الطول والسعر في الحفريات، الحفريات الدقيقة، تمديد الكيبل، أو أعمال الأسفلت سيتم إضافة البيانات تلقائياً للملخص
             </small>
         `;
         controlsDiv.insertBefore(autoNotice, controlsDiv.firstChild);
