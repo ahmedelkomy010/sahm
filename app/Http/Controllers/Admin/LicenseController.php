@@ -148,6 +148,15 @@ class LicenseController extends Controller
         $license->load(['workOrder', 'violations' => function($query) {
             $query->orderBy('violation_date', 'desc');
         }]);
+        
+        // إذا كان الطلب JSON، إرجاع البيانات كـ JSON
+        if (request()->expectsJson() || request()->ajax()) {
+            return response()->json([
+                'success' => true,
+                'license' => $license
+            ]);
+        }
+        
         return view('admin.licenses.show', compact('license'));
     }
 
@@ -698,6 +707,11 @@ class LicenseController extends Controller
                     \Log::info('Processing evac_table2 section');
                     $this->saveEvacTable2Data($request, $license);
                     break;
+                case 'lab_tests':
+                    // حفظ بيانات الاختبارات الجديدة
+                    \Log::info('Processing lab_tests section');
+                    $this->saveNewLabTests($request, $license);
+                    break;
                 default:
                     \Log::error('Unknown section type: ' . $sectionType);
                     return response()->json([
@@ -715,21 +729,23 @@ class LicenseController extends Controller
                                    ->orderBy('created_at', 'desc')
                                    ->first();
             
-            return response()->json([
+            // إضافة ملخص خاص لقسم الاختبارات الجديدة
+            $response = [
                 'success' => true,
                 'message' => 'تم حفظ القسم بنجاح',
                 'license_id' => $license->id,
                 'latest_license_id' => $latestLicense ? $latestLicense->id : $license->id,
-                'refresh_table' => true, // إعادة تحديث الجدول دائماً
+                'refresh_table' => true,
                 'is_new' => $isNewLicense,
                 'total_licenses' => License::where('work_order_id', $workOrderId)->count(),
-                'debug_info' => [
-                    'updated_license_id' => $license->id,
-                    'latest_license_id' => $latestLicense ? $latestLicense->id : null,
-                    'work_order_id' => $workOrderId,
-                    'section_type' => $sectionType
-                ]
-            ]);
+            ];
+            
+            // إضافة ملخص خاص للاختبارات الجديدة
+            if ($sectionType === 'lab_tests' && isset($request->totals)) {
+                $response['summary'] = $request->totals;
+            }
+            
+            return response()->json($response);
             
         } catch (\Exception $e) {
             \Log::error('Error saving license section: ' . $e->getMessage(), [
@@ -1635,27 +1651,19 @@ class LicenseController extends Controller
             $license = License::findOrFail($request->license_id);
             
             if ($request->hasFile('file')) {
-                $testField = str_replace('has_', '', $request->test_field);
-                $fileField = $testField . '_file_path';
-                
-                // حذف الملف القديم إذا كان موجوداً
-                if ($license->$fileField && Storage::disk('public')->exists($license->$fileField)) {
-                    Storage::disk('public')->delete($license->$fileField);
-                }
-                
                 // رفع الملف الجديد
                 $file = $request->file('file');
-                $filename = time() . '_' . $testField . '_' . $file->getClientOriginalName();
-                $filePath = $file->storeAs('licenses/lab_tests/' . $testField, $filename, 'public');
+                $filename = time() . '_lab_test_' . $file->getClientOriginalName();
+                $filePath = $file->storeAs('licenses/lab_tests', $filename, 'public');
                 
-                $license->$fileField = $filePath;
-                $license->save();
+                // إنشاء URL كامل للملف
+                $fileUrl = asset('storage/' . $filePath);
                 
                 return response()->json([
                     'success' => true,
                     'message' => 'تم رفع المرفق بنجاح',
                     'file_path' => $filePath,
-                    'file_url' => Storage::url($filePath),
+                    'file_url' => $fileUrl,
                     'file_name' => $filename
                 ]);
             }
@@ -1764,5 +1772,41 @@ class LicenseController extends Controller
             'failed_value' => $failedValue,
             'total_tests' => $passedCount + $failedCount
         ];
+    }
+
+    /**
+     * حفظ بيانات الاختبارات الجديدة
+     */
+    private function saveNewLabTests(Request $request, License $license)
+    {
+        try {
+            $testsData = $request->input('tests_data', []);
+            $totals = $request->input('totals', []);
+            
+            if (empty($testsData)) {
+                throw new \Exception('لا توجد بيانات اختبارات للحفظ');
+            }
+            
+            // حفظ بيانات الاختبارات في حقل JSON (الملفات تم رفعها بالفعل)
+            $license->lab_tests_data = json_encode($testsData);
+            
+            // حفظ الإجماليات
+            $license->successful_tests_value = $totals['passed_tests'] ?? 0;
+            $license->failed_tests_value = $totals['failed_tests'] ?? 0;
+            $license->total_tests_count = $totals['total_tests'] ?? 0;
+            $license->total_tests_amount = $totals['total_amount'] ?? 0;
+            
+            \Log::info('New lab tests saved successfully', [
+                'license_id' => $license->id,
+                'tests_count' => count($testsData),
+                'total_amount' => $totals['total_amount'] ?? 0
+            ]);
+            
+            return $license;
+            
+        } catch (\Exception $e) {
+            \Log::error('Error saving new lab tests: ' . $e->getMessage());
+            throw $e;
+        }
     }
 } 

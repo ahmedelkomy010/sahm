@@ -197,7 +197,11 @@ class License extends Model
         'rc1_mc1_test_result',
         'asphalt_test_result',
         'soil_test_result',
-        'interlock_test_result'
+        'interlock_test_result',
+        // حقول الاختبارات الجديدة
+        'lab_tests_data',
+        'total_tests_count',
+        'total_tests_amount'
     ];
 
     protected $casts = [
@@ -268,6 +272,8 @@ class License extends Model
         'has_stability_degree_test' => 'boolean',
         'has_backup_test' => 'boolean',
         'evacuation_data' => 'array',
+        // حقول الاختبارات الجديدة
+        'lab_tests_data' => 'array',
     ];
 
     protected $dates = [

@@ -382,47 +382,40 @@ use Illuminate\Support\Facades\Storage;
                 <div class="card-body">
                     @php
                         $basicLabTests = [
-                            'has_depth_test' => [
-                                'name' => 'اختبار العمق',
-                                'icon' => 'fas fa-ruler-vertical',
-                                'value_field' => 'depth_test_value',
-                                'file_field' => 'depth_test_file_path',
-                                'result_field' => 'depth_test_result'
-                            ],
-                            'has_soil_compaction_test' => [
-                                'name' => 'اختبار دك التربة',
-                                'icon' => 'fas fa-compress',
-                                'value_field' => 'soil_compaction_test_value',
-                                'file_field' => 'soil_compaction_test_file_path',
-                                'result_field' => 'soil_compaction_test_result'
-                            ],
-                            'has_rc1_mc1_test' => [
-                                'name' => 'اختبار RC1-MC1',
-                                'icon' => 'fas fa-vial',
-                                'value_field' => 'rc1_mc1_test_value',
-                                'file_field' => 'rc1_mc1_test_file_path',
-                                'result_field' => 'rc1_mc1_test_result'
-                            ],
-                            'has_asphalt_test' => [
-                                'name' => 'اختبار الأسفلت',
-                                'icon' => 'fas fa-road',
-                                'value_field' => 'asphalt_test_value',
-                                'file_field' => 'asphalt_test_file_path',
-                                'result_field' => 'asphalt_test_result'
-                            ],
-                            'has_soil_test' => [
-                                'name' => 'اختبار التربة',
-                                'icon' => 'fas fa-mountain',
-                                'value_field' => 'soil_test_value',
-                                'file_field' => 'soil_test_file_path',
-                                'result_field' => 'soil_test_result'
-                            ],
                             'has_interlock_test' => [
-                                'name' => 'اختبار البلاط المتداخل',
+                                'name' => 'اختبار تقييم بلاط والأرصفة والبردورات',
                                 'icon' => 'fas fa-th',
                                 'value_field' => 'interlock_test_value',
                                 'file_field' => 'interlock_test_file_path',
                                 'result_field' => 'interlock_test_result'
+                            ],
+                            'has_asphalt_ratio_gradation_test' => [
+                                'name' => 'اختبار تعيين نسبة الأسفلت والتدرج الحبيبي',
+                                'icon' => 'fas fa-chart-line',
+                                'value_field' => 'asphalt_ratio_gradation_test_value',
+                                'file_field' => 'asphalt_ratio_gradation_test_file_path',
+                                'result_field' => 'asphalt_ratio_gradation_test_result'
+                            ],
+                            'has_concrete_molds_test' => [
+                                'name' => 'اختبار إعداد القوالب الخرسانية وصبها مع الكسر',
+                                'icon' => 'fas fa-cube',
+                                'value_field' => 'concrete_molds_test_value',
+                                'file_field' => 'concrete_molds_test_file_path',
+                                'result_field' => 'concrete_molds_test_result'
+                            ],
+                            'has_protection_depth_test' => [
+                                'name' => 'اختبار تحديد الأعماق لمواد الحماية',
+                                'icon' => 'fas fa-shield-alt',
+                                'value_field' => 'protection_depth_test_value',
+                                'file_field' => 'protection_depth_test_file_path',
+                                'result_field' => 'protection_depth_test_result'
+                            ],
+                            'has_concrete_temperature_test' => [
+                                'name' => 'اختبار درجة حرارة الخرسانة',
+                                'icon' => 'fas fa-thermometer-half',
+                                'value_field' => 'concrete_temperature_test_value',
+                                'file_field' => 'concrete_temperature_test_file_path',
+                                'result_field' => 'concrete_temperature_test_result'
                             ]
                         ];
                         @endphp
