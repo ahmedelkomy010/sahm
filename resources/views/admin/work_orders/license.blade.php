@@ -4221,6 +4221,17 @@ function addTestWithFileData(testName, testPoints, testPrice, testTotal, testRes
     // إضافة الاختبار للمصفوفة
     testsArray.push(testData);
     
+    // حفظ احتياطي محلي فوري
+    const licenseId = document.getElementById('lab-license-id').value;
+    if (licenseId) {
+        try {
+            localStorage.setItem(`lab_tests_backup_${licenseId}`, JSON.stringify(testsArray));
+            console.log('Auto-backup saved after adding test');
+        } catch (e) {
+            console.error('Failed to save auto-backup:', e);
+        }
+    }
+    
     // تحديث الجدول
     updateTestsTable();
     
@@ -4321,6 +4332,18 @@ function updateTestsTable() {
 function removeTest(testId) {
     if (confirm('هل أنت متأكد من حذف هذا الاختبار؟')) {
         testsArray = testsArray.filter(test => test.id !== testId);
+        
+        // حفظ احتياطي محلي فوري
+        const licenseId = document.getElementById('lab-license-id').value;
+        if (licenseId) {
+            try {
+                localStorage.setItem(`lab_tests_backup_${licenseId}`, JSON.stringify(testsArray));
+                console.log('Auto-backup saved after removing test');
+            } catch (e) {
+                console.error('Failed to save auto-backup:', e);
+            }
+        }
+        
         updateTestsTable();
         updateTestsSummary();
         toastr.success('تم حذف الاختبار بنجاح');
@@ -4438,6 +4461,9 @@ function saveAllNewLabTests() {
         return;
     }
     
+    console.log('Starting save process for license:', licenseId);
+    console.log('Tests to save:', testsArray);
+    
     // تحضير البيانات للإرسال
     const testsData = testsArray.map(test => ({
         name: test.name,
@@ -4478,10 +4504,13 @@ function saveAllNewLabTests() {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
         },
         body: JSON.stringify({
             license_id: licenseId,
+            work_order_id: {{ $workOrder->id }},
             section: 'lab_tests',
             tests_data: testsData,
             totals: {
@@ -4495,9 +4524,24 @@ function saveAllNewLabTests() {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
+            console.log('Save successful:', data);
             toastr.success('تم حفظ بيانات الاختبارات بنجاح');
             showNewLabTestSummary(data);
+            
+            // حفظ احتياطي محلي
+            try {
+                localStorage.setItem(`lab_tests_backup_${licenseId}`, JSON.stringify(testsArray));
+                console.log('Backup saved locally');
+            } catch (e) {
+                console.error('Failed to save backup:', e);
+            }
+            
+            // إعادة تحميل البيانات من الخادم للتأكد من الحفظ
+            setTimeout(() => {
+                loadLabTestsFromServer(licenseId);
+            }, 500);
         } else {
+            console.error('Save failed:', data);
             toastr.error(data.message || 'حدث خطأ أثناء حفظ البيانات');
         }
     })
@@ -4566,7 +4610,12 @@ function showNewLabTestSummary(data) {
 
 // دالة تحميل بيانات الاختبارات المحفوظة من الخادم
 function loadLabTestsFromServer(licenseId) {
-    if (!licenseId) return;
+    if (!licenseId) {
+        console.log('No license ID provided for loading tests');
+        return;
+    }
+    
+    console.log(`Loading lab tests for license ID: ${licenseId}`);
     
     // عرض مؤشر التحميل
     const tableBody = document.getElementById('testsTableBody');
@@ -4575,14 +4624,26 @@ function loadLabTestsFromServer(licenseId) {
     fetch(`/admin/licenses/${licenseId}`, {
             headers: {
                 'Accept': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest'
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
             }
         })
-        .then(response => response.json())
+        .then(response => {
+            console.log('Response status:', response.status);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
         .then(data => {
-            if (data.license && data.license.lab_tests_data) {
+            console.log('License data received:', data);
+            
+            if (data.success && data.license && data.license.lab_tests_data) {
                 try {
+                    console.log('Raw lab_tests_data:', data.license.lab_tests_data);
                     const savedTests = JSON.parse(data.license.lab_tests_data);
+                    console.log('Parsed tests:', savedTests);
+                    
                     if (Array.isArray(savedTests) && savedTests.length > 0) {
                         // تحويل البيانات المحفوظة إلى تنسيق النظام
                         testsArray = savedTests.map((test, index) => ({
@@ -4603,9 +4664,11 @@ function loadLabTestsFromServer(licenseId) {
                         updateTestsTable();
                         updateTestsSummary();
                         
-                        toastr.info(`تم تحميل ${testsArray.length} اختبار محفوظ`);
+                        console.log(`Successfully loaded ${testsArray.length} tests`);
+                        toastr.success(`تم تحميل ${testsArray.length} اختبار محفوظ`);
                     } else {
-                        // لا توجد بيانات محفوظة
+                        // لا توجد بيانات محفوظة أو البيانات فارغة
+                        console.log('No saved tests found or empty array');
                         testsArray = [];
                         updateTestsTable();
                         updateTestsSummary();
@@ -4615,21 +4678,46 @@ function loadLabTestsFromServer(licenseId) {
                     testsArray = [];
                     updateTestsTable();
                     updateTestsSummary();
+                    toastr.error('خطأ في معالجة البيانات المحفوظة');
                 }
             } else {
-                // لا توجد بيانات محفوظة
-                testsArray = [];
-                updateTestsTable();
-                updateTestsSummary();
+                // لا توجد بيانات محفوظة، جرب تحميل النسخة الاحتياطية
+                console.log('No lab_tests_data found in response, trying local backup');
+                tryLoadLocalBackup(licenseId);
             }
         })
         .catch(error => {
             console.error('Error loading tests from server:', error);
-            testsArray = [];
-            updateTestsTable();
-            updateTestsSummary();
-            toastr.error('خطأ في تحميل البيانات من الخادم');
+            // جرب تحميل النسخة الاحتياطية المحلية
+            tryLoadLocalBackup(licenseId);
+            toastr.error(`خطأ في تحميل البيانات من الخادم: ${error.message}`);
         });
+}
+
+// دالة تحميل النسخة الاحتياطية المحلية
+function tryLoadLocalBackup(licenseId) {
+    try {
+        const backupData = localStorage.getItem(`lab_tests_backup_${licenseId}`);
+        if (backupData) {
+            const savedTests = JSON.parse(backupData);
+            if (Array.isArray(savedTests) && savedTests.length > 0) {
+                testsArray = savedTests;
+                testIdCounter = testsArray.length + 1;
+                updateTestsTable();
+                updateTestsSummary();
+                console.log(`Loaded ${testsArray.length} tests from local backup`);
+                toastr.info(`تم تحميل ${testsArray.length} اختبار من النسخة الاحتياطية المحلية`);
+                return;
+            }
+        }
+    } catch (error) {
+        console.error('Error loading local backup:', error);
+    }
+    
+    // إذا لم تنجح النسخة الاحتياطية، اعرض جدول فارغ
+    testsArray = [];
+    updateTestsTable();
+    updateTestsSummary();
 }
 
 // تهيئة النظام عند تحميل الصفحة
@@ -4655,6 +4743,28 @@ document.addEventListener('DOMContentLoaded', function() {
                 updateTestsSummary();
             }
         });
+        
+        // تحميل البيانات تلقائياً إذا كانت هناك رخصة مختارة مسبقاً
+        setTimeout(() => {
+            const initialLicenseId = licenseSelector.value;
+            if (initialLicenseId) {
+                loadLabTestsFromServer(initialLicenseId);
+            }
+        }, 1000);
+    }
+    
+    // التنقل التلقائي إلى قسم المختبر إذا كان موجود في URL
+    if (window.location.hash === '#lab-section') {
+        // تفعيل تبويب المختبر
+        showSection('lab');
+        
+        // التمرير إلى القسم
+        setTimeout(() => {
+            const labSection = document.getElementById('lab-section');
+            if (labSection) {
+                labSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }, 100);
     }
 });
 
@@ -4912,6 +5022,6 @@ function addEvacuationRowWithData(data, rowNumber) {
     tbody.appendChild(newRow);
 }
 
-</script>
-
+  </script>
+  
 @endsection 

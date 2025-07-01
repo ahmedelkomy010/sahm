@@ -39,10 +39,18 @@ use Illuminate\Support\Facades\Storage;
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                                            <button class="nav-link" data-bs-toggle="pill" data-bs-target="#laboratory" type="button" role="tab">
-                            <i class="fas fa-flask me-2"></i>المختبر 
-                            <span class="badge bg-success ms-2">{{ $license->license_number }}</span>
-                        </button>
+                    <button class="nav-link" data-bs-toggle="pill" data-bs-target="#laboratory" type="button" role="tab">
+                        <i class="fas fa-flask me-2"></i>الاختبارات المعملية
+                        @if($license->lab_tests_data)
+                            @php
+                                $testsData = json_decode($license->lab_tests_data, true);
+                                $testsCount = is_array($testsData) ? count($testsData) : 0;
+                            @endphp
+                            <span class="badge bg-success ms-2">{{ $testsCount }}</span>
+                        @else
+                            <span class="badge bg-secondary ms-2">0</span>
+                        @endif
+                    </button>
                 </li>
                 <li class="nav-item" role="presentation">
                                             <button class="nav-link" data-bs-toggle="pill" data-bs-target="#evacuations" type="button" role="tab">
@@ -363,436 +371,177 @@ use Illuminate\Support\Facades\Storage;
             </div>
         </div>
 
-                <!-- المختبر الديناميكي -->
+        <!-- الاختبارات المعملية -->
         <div class="tab-pane fade" id="laboratory" role="tabpanel">
+            @php
+                $testsData = null;
+                $testsCount = 0;
+                $passedCount = 0;
+                $failedCount = 0;
+                $totalAmount = 0;
+                
+                if($license->lab_tests_data) {
+                    try {
+                        $testsData = json_decode($license->lab_tests_data, true);
+                        if(is_array($testsData)) {
+                            $testsCount = count($testsData);
+                            $passedCount = collect($testsData)->where('result', 'pass')->count();
+                            $failedCount = collect($testsData)->where('result', 'fail')->count();
+                            $totalAmount = collect($testsData)->sum('total');
+                        }
+                    } catch (\Exception $e) {
+                        $testsData = null;
+                    }
+                }
+            @endphp
+            
             <div class="card">
                 <div class="card-header bg-success text-white">
                     <h4 class="mb-0 d-flex justify-content-between align-items-center">
                         <span>
-                            <i class="fas fa-flask me-2"></i>الاختبارات المعملية 
+                            <i class="fas fa-flask me-2"></i>الاختبارات المعملية
                             <span class="badge bg-light text-success ms-2 fs-6">رخصة {{ $license->license_number }}</span>
                         </span>
                         <div class="d-flex gap-2">
-                            <span class="badge bg-white text-success fs-6" id="lab-passed-count">ناجح: 0</span>
-                            <span class="badge bg-white text-danger fs-6" id="lab-failed-count">راسب: 0</span>
-                            <span class="badge bg-white text-info fs-6" id="lab-total-value">إجمالي: 0 ريال</span>
+                            <span class="badge bg-white text-success fs-6">ناجح: {{ $passedCount }}</span>
+                            <span class="badge bg-white text-danger fs-6">راسب: {{ $failedCount }}</span>
+                            <span class="badge bg-white text-info fs-6">إجمالي: {{ number_format($totalAmount, 2) }} ريال</span>
                         </div>
                     </h4>
                 </div>
                 <div class="card-body">
-                    @php
-                        $basicLabTests = [
-                            'has_interlock_test' => [
-                                'name' => 'اختبار تقييم بلاط والأرصفة والبردورات',
-                                'icon' => 'fas fa-th',
-                                'value_field' => 'interlock_test_value',
-                                'file_field' => 'interlock_test_file_path',
-                                'result_field' => 'interlock_test_result'
-                            ],
-                            'has_asphalt_ratio_gradation_test' => [
-                                'name' => 'اختبار تعيين نسبة الأسفلت والتدرج الحبيبي',
-                                'icon' => 'fas fa-chart-line',
-                                'value_field' => 'asphalt_ratio_gradation_test_value',
-                                'file_field' => 'asphalt_ratio_gradation_test_file_path',
-                                'result_field' => 'asphalt_ratio_gradation_test_result'
-                            ],
-                            'has_concrete_molds_test' => [
-                                'name' => 'اختبار إعداد القوالب الخرسانية وصبها مع الكسر',
-                                'icon' => 'fas fa-cube',
-                                'value_field' => 'concrete_molds_test_value',
-                                'file_field' => 'concrete_molds_test_file_path',
-                                'result_field' => 'concrete_molds_test_result'
-                            ],
-                            'has_protection_depth_test' => [
-                                'name' => 'اختبار تحديد الأعماق لمواد الحماية',
-                                'icon' => 'fas fa-shield-alt',
-                                'value_field' => 'protection_depth_test_value',
-                                'file_field' => 'protection_depth_test_file_path',
-                                'result_field' => 'protection_depth_test_result'
-                            ],
-                            'has_concrete_temperature_test' => [
-                                'name' => 'اختبار درجة حرارة الخرسانة',
-                                'icon' => 'fas fa-thermometer-half',
-                                'value_field' => 'concrete_temperature_test_value',
-                                'file_field' => 'concrete_temperature_test_file_path',
-                                'result_field' => 'concrete_temperature_test_result'
-                            ]
-                        ];
-                        @endphp
-
-                    <!-- الاختبارات الديناميكية -->
-                    <div class="row">
-                        @foreach($basicLabTests as $testField => $test)
-                        @php
-                            $testStatus = $license->$testField;
-                            $testValue = $license->{$test['value_field']} ?? 0;
-                            $testFile = $license->{$test['file_field']} ?? null;
-                        @endphp
-                        <div class="col-md-6 col-lg-4 mb-4">
-                            <div class="card lab-test-card h-100" data-test="{{ $testField }}">
-                                <div class="card-header bg-light">
-                                    <h6 class="mb-0 d-flex align-items-center justify-content-between">
-                                        <span>
-                                            <i class="{{ $test['icon'] }} me-2"></i>
-                                            {{ $test['name'] }}
-                                        </span>
-                                        <i class="test-status-icon fas fa-question-circle text-secondary"></i>
-                                    </h6>
-                                </div>
-                                <div class="card-body">
-                                    <!-- حالة الاختبار -->
-                                    <div class="mb-3">
-                                        <label class="form-label fw-bold">حالة الاختبار:</label>
-                                        <div class="d-flex gap-3">
-                                            <div class="form-check">
-                                                <input class="form-check-input test-status" 
-                                                       type="radio" 
-                                                       name="{{ $testField }}_status" 
-                                                       value="passed" 
-                                                       id="{{ $testField }}_passed"
-                                                       {{ $testStatus === true ? 'checked' : '' }}>
-                                                <label class="form-check-label text-success" for="{{ $testField }}_passed">
-                                                    <i class="fas fa-check-circle me-1"></i>ناجح
-                                                </label>
-                                            </div>
-                                            <div class="form-check">
-                                                <input class="form-check-input test-status" 
-                                                       type="radio" 
-                                                       name="{{ $testField }}_status" 
-                                                       value="failed" 
-                                                       id="{{ $testField }}_failed"
-                                                       {{ $testStatus === false ? 'checked' : '' }}>
-                                                <label class="form-check-label text-danger" for="{{ $testField }}_failed">
-                                                    <i class="fas fa-times-circle me-1"></i>راسب
-                                                </label>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- قيمة الاختبار -->
-                                    <div class="mb-3">
-                                        <label class="form-label fw-bold">القيمة (ريال):</label>
-                                        <input type="number" 
-                                               class="form-control test-value" 
-                                               name="{{ $test['value_field'] }}" 
-                                               value="{{ $testValue }}" 
-                                               min="0" 
-                                               step="0.01" 
-                                               placeholder="أدخل القيمة">
-                                    </div>
-
-                                    <!-- نص النتيجة -->
-                                    <div class="mb-3">
-                                        <label class="form-label fw-bold">نص النتيجة:</label>
-                                        <textarea class="form-control test-result" 
-                                                  name="{{ $test['result_field'] }}" 
-                                                  rows="2" 
-                                                  placeholder="أدخل تفاصيل نتيجة الاختبار">{{ $license->{$test['result_field']} ?? '' }}</textarea>
-                                    </div>
-
-                                    <!-- المرفق -->
-                                    <div class="mb-3">
-                                        <label class="form-label fw-bold">المرفق:</label>
-                                        <div class="file-upload-section">
-                                            @if($testFile)
-                                                <div class="current-file mb-2">
-                                                    <div class="d-flex align-items-center justify-content-between p-2 bg-success bg-opacity-10 rounded">
-                                                        <div class="d-flex align-items-center">
-                                                            <i class="fas fa-file-pdf text-success me-2"></i>
-                                                            <span class="text-success">يوجد مرفق</span>
-                                                        </div>
-                                                        <div class="d-flex gap-1">
-                                                            <a href="{{ Storage::url($testFile) }}" 
-                                                               target="_blank" 
-                                                               class="btn btn-outline-success btn-sm" 
-                                                               title="عرض">
-                                                                <i class="fas fa-eye"></i>
-                                                            </a>
-                                                            <button type="button" 
-                                                                    class="btn btn-outline-danger btn-sm delete-file-btn" 
-                                                                    data-test="{{ $testField }}" 
-                                                                    title="حذف">
-                                                                <i class="fas fa-trash"></i>
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                </div>
+                    @if($testsData && count($testsData) > 0)
+                        <!-- جدول الاختبارات -->
+                        <div class="table-responsive">
+                            <table class="table table-striped table-bordered">
+                                <thead class="table-success">
+                                    <tr>
+                                        <th style="width: 50px;">#</th>
+                                        <th>اسم الاختبار</th>
+                                        <th style="width: 100px;">عدد النقاط</th>
+                                        <th style="width: 100px;">السعر (ريال)</th>
+                                        <th style="width: 120px;">الإجمالي (ريال)</th>
+                                        <th style="width: 100px;">النتيجة</th>
+                                        <th style="width: 150px;">المرفق</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($testsData as $index => $test)
+                                    <tr>
+                                        <td class="text-center fw-bold">{{ $index + 1 }}</td>
+                                        <td>{{ $test['name'] ?? '-' }}</td>
+                                        <td class="text-center">{{ $test['points'] ?? 0 }}</td>
+                                        <td class="text-end">{{ number_format($test['price'] ?? 0, 2) }}</td>
+                                        <td class="text-end fw-bold text-primary">{{ number_format($test['total'] ?? 0, 2) }}</td>
+                                        <td class="text-center">
+                                            @if(($test['result'] ?? '') === 'pass')
+                                                <span class="badge bg-success">
+                                                    <i class="fas fa-check me-1"></i>ناجح
+                                                </span>
+                                            @elseif(($test['result'] ?? '') === 'fail')
+                                                <span class="badge bg-danger">
+                                                    <i class="fas fa-times me-1"></i>راسب
+                                                </span>
+                                            @else
+                                                <span class="badge bg-secondary">غير محدد</span>
                                             @endif
-                                            <input type="file" 
-                                                   class="form-control file-input" 
-                                                   data-test="{{ $testField }}" 
-                                                   accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
-                                        </div>
+                                        </td>
+                                        <td class="text-center">
+                                            @if(!empty($test['file_url']) && !empty($test['file_name']))
+                                                <div class="d-flex gap-1 justify-content-center">
+                                                    <a href="{{ $test['file_url'] }}" 
+                                                       target="_blank" 
+                                                       class="btn btn-info btn-sm" 
+                                                       title="عرض المرفق">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    <a href="{{ $test['file_url'] }}" 
+                                                       download="{{ $test['file_name'] }}" 
+                                                       class="btn btn-success btn-sm" 
+                                                       title="تحميل المرفق">
+                                                        <i class="fas fa-download"></i>
+                                                    </a>
+                                                </div>
+                                                <small class="text-muted d-block mt-1">{{ $test['file_name'] }}</small>
+                                            @else
+                                                <span class="text-muted">لا يوجد مرفق</span>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- ملخص إحصائي -->
+                        <div class="row mt-4">
+                            <div class="col-md-3">
+                                <div class="card bg-primary text-white">
+                                    <div class="card-body text-center">
+                                        <h3 class="mb-1">{{ $testsCount }}</h3>
+                                        <small>إجمالي الاختبارات</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-success text-white">
+                                    <div class="card-body text-center">
+                                        <h3 class="mb-1">{{ $passedCount }}</h3>
+                                        <small>اختبارات ناجحة</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-danger text-white">
+                                    <div class="card-body text-center">
+                                        <h3 class="mb-1">{{ $failedCount }}</h3>
+                                        <small>اختبارات راسبة</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-warning text-dark">
+                                    <div class="card-body text-center">
+                                        <h3 class="mb-1">{{ number_format($totalAmount, 2) }}</h3>
+                                        <small>المبلغ الإجمالي (ريال)</small>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        @endforeach
-                    </div>
-
-                    <!-- أزرار التحكم -->
-                    <div class="row mt-4">
-                        <div class="col-12">
-                            <div class="d-flex gap-2 justify-content-center">
-                                <button type="button" class="btn btn-primary" id="save-all-tests">
-                                    <i class="fas fa-save me-2"></i>حفظ جميع التغييرات
-                                </button>
-                                <button type="button" class="btn btn-info" id="export-lab-report">
-                                    <i class="fas fa-file-export me-2"></i>تصدير تقرير
-                                </button>
-                                <button type="button" class="btn btn-secondary" id="reset-lab-tests">
-                                    <i class="fas fa-undo me-2"></i>إعادة تعيين
-                                </button>
+                        
+                        <!-- معلومات إضافية -->
+                        <div class="alert alert-info mt-4">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div>
+                                    <h6 class="mb-1">
+                                        <i class="fas fa-info-circle me-2"></i>معلومات الاختبارات
+                                    </h6>
+                                    <p class="mb-0">تم حفظ هذه الاختبارات من خلال صفحة إدارة الجودة والرخص</p>
+                                </div>
+                                <a href="{{ route('admin.work-orders.license', $license->workOrder) }}#lab-section" 
+                                   class="btn btn-outline-primary">
+                                    <i class="fas fa-eye me-2"></i>عرض في صفحة الإدارة
+                                </a>
                             </div>
                         </div>
-                    </div>
+                    @else
+                        <!-- لا توجد اختبارات -->
+                        <div class="text-center py-5">
+                            <i class="fas fa-flask fa-5x text-muted mb-3"></i>
+                            <h4 class="text-muted mb-3">لا توجد اختبارات معملية</h4>
+                            <p class="text-muted mb-4">لم يتم إضافة أي اختبارات معملية لهذه الرخصة بعد</p>
+                            <div class="alert alert-light border d-inline-block">
+                                <small class="text-muted">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    يمكن إضافة الاختبارات من خلال صفحة إدارة الجودة والرخص
+                                </small>
+                            </div>
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>
 
-
-
-                    <!-- أسباب الرسوب -->
-                    @if($license->test_failure_reasons)
-                    <div class="card mb-4 border-warning">
-                        <div class="card-header bg-warning text-dark">
-                            <h5 class="mb-0">
-                                <i class="fas fa-exclamation-triangle me-2"></i>
-                                أسباب رسوب الاختبارات
-                            </h5>
-                            </div>
-                        <div class="card-body">
-                            <p class="mb-0">{{ $license->test_failure_reasons }}</p>
-                        </div>
-                    </div>
-                    @endif
-
-                    <!-- الجداول المعملية -->
-                    @if($license->lab_table1_data || $license->lab_table2_data)
-                    <div class="card mb-4">
-                        <div class="card-header bg-info text-white">
-                            <h5 class="mb-0">
-                                <i class="fas fa-table me-2"></i>
-                                الجداول المعملية التفصيلية
-                            </h5>
-                        </div>
-                        <div class="card-body">
-                            <!-- جدول الفسح ونوع الشارع -->
-                            @if($license->lab_table1_data)
-                            <h6 class="text-primary border-bottom pb-2 mb-3">
-                                <i class="fas fa-list-ul me-2"></i>
-                                جدول الفسح ونوع الشارع
-                            </h6>
-                            @php
-                                $labTable1Data = is_string($license->lab_table1_data) ? 
-                                    json_decode($license->lab_table1_data, true) : 
-                                    $license->lab_table1_data;
-                            @endphp
-                            @if($labTable1Data && is_array($labTable1Data))
-                            <div class="table-responsive mb-4">
-                                <table class="table table-striped table-bordered laboratory-table">
-                                    <thead class="bg-light">
-                                        <tr>
-                                            <th>#</th>
-                                            <th>رقم الفسح</th>
-                                            <th>تاريخ الفسح</th>
-                                            <th>طول الفسح</th>
-                                            <th>طول المختبر</th>
-                                            <th>نوع الشارع</th>
-                                            <th>كمية التربة</th>
-                                            <th>كمية الأسفلت</th>
-                                            <th>كمية البلاط</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach($labTable1Data as $index => $row)
-                                        <tr>
-                                            <td>{{ $index + 1 }}</td>
-                                            <td>{{ $row['clearance_number'] ?? '-' }}</td>
-                                            <td>{{ $row['clearance_date'] ?? '-' }}</td>
-                                            <td>{{ $row['length'] ?? '-' }}</td>
-                                            <td>{{ $row['lab_length'] ?? '-' }}</td>
-                                            <td>{{ $row['street_type'] ?? '-' }}</td>
-                                            <td>{{ $row['soil_quantity'] ?? '-' }}</td>
-                                            <td>{{ $row['asphalt_quantity'] ?? '-' }}</td>
-                                            <td>{{ $row['tile_quantity'] ?? '-' }}</td>
-                                        </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                            </div>
-                            @endif
-                            @endif
-
-                            <!-- جدول التفاصيل الفنية -->
-                            @if($license->lab_table2_data)
-                            <h6 class="text-primary border-bottom pb-2 mb-3">
-                                <i class="fas fa-cogs me-2"></i>
-                                جدول التفاصيل الفنية
-                            </h6>
-                            @php
-                                $labTable2Data = is_string($license->lab_table2_data) ? 
-                                    json_decode($license->lab_table2_data, true) : 
-                                    $license->lab_table2_data;
-                            @endphp
-                            @if($labTable2Data && is_array($labTable2Data))
-                            <div class="table-responsive mb-4">
-                                <table class="table table-striped table-bordered laboratory-table">
-                                    <thead class="bg-light">
-                                        <tr>
-                                            <th>#</th>
-                                            <th>السنة</th>
-                                            <th>نوع العمل</th>
-                                            <th>العمق</th>
-                                            <th>دك التربة</th>
-                                            <th>MC1-RC2</th>
-                                            <th>دك أسفلت</th>
-                                            <th>ترابي</th>
-                                            <th>الكثافة القصوى للأسفلت</th>
-                                            <th>نسبة الأسفلت</th>
-                                            <th>تجربة مارشال</th>
-                                            <th>تقييم البلاط</th>
-                                            <th>تصنيف التربة</th>
-                                            <th>تجربة بروكتور</th>
-                                            <th>الخرسانة</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach($labTable2Data as $index => $row)
-                                        <tr>
-                                            <td>{{ $index + 1 }}</td>
-                                            <td>{{ $row['year'] ?? '-' }}</td>
-                                            <td>{{ $row['work_type'] ?? '-' }}</td>
-                                            <td>{{ $row['depth'] ?? '-' }}</td>
-                                            <td>{{ $row['soil_compaction'] ?? '-' }}</td>
-                                            <td>{{ $row['mc1_test'] ?? '-' }}</td>
-                                            <td>{{ $row['asphalt_test'] ?? '-' }}</td>
-                                            <td>{{ $row['soil_type'] ?? '-' }}</td>
-                                            <td>{{ $row['max_asphalt_density'] ?? '-' }}</td>
-                                            <td>{{ $row['asphalt_percentage'] ?? '-' }}</td>
-                                            <td>{{ $row['marshall_test'] ?? '-' }}</td>
-                                            <td>{{ $row['tile_evaluation'] ?? '-' }}</td>
-                                            <td>{{ $row['soil_classification'] ?? '-' }}</td>
-                                            <td>{{ $row['proctor_test'] ?? '-' }}</td>
-                                            <td>{{ $row['concrete'] ?? '-' }}</td>
-                                        </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                            </div>
-                            @endif
-                            @endif
-                        </div>
-                    </div>
-                    @endif
-
-                    <!-- الاختبارات المتقدمة -->
-                    @php
-                                $advancedTests = [
-                                    'max_dry_density_pro_test_file_path' => [
-                                        'name' => 'اختبار الكثافة الجافة القصوى',
-                                        'icon' => 'fas fa-weight-hanging',
-                                        'color' => 'secondary'
-                                    ],
-                                    'asphalt_ratio_gradation_test_file_path' => [
-                                        'name' => 'اختبار تدرج نسبة الأسفلت',
-                                        'icon' => 'fas fa-chart-bar',
-                                        'color' => 'info'
-                                    ],
-                                    'marshall_test_file_path' => [
-                                        'name' => 'اختبار مارشال',
-                                        'icon' => 'fas fa-hammer',
-                                        'color' => 'dark'
-                                    ],
-                                    'concrete_molds_test_file_path' => [
-                                        'name' => 'اختبار قوالب الخرسانة',
-                                        'icon' => 'fas fa-cube',
-                                        'color' => 'secondary'
-                                    ],
-                                    'excavation_bottom_test_file_path' => [
-                                        'name' => 'اختبار قاع الحفر',
-                                        'icon' => 'fas fa-arrow-down',
-                                        'color' => 'warning'
-                                    ],
-                                    'protection_depth_test_file_path' => [
-                                        'name' => 'اختبار عمق الحماية',
-                                        'icon' => 'fas fa-shield-alt',
-                                        'color' => 'success'
-                                    ],
-                                    'settlement_test_file_path' => [
-                                        'name' => 'اختبار الهبوط',
-                                        'icon' => 'fas fa-level-down-alt',
-                                        'color' => 'danger'
-                                    ],
-                                    'concrete_temperature_test_file_path' => [
-                                        'name' => 'اختبار درجة حرارة الخرسانة',
-                                        'icon' => 'fas fa-thermometer-half',
-                                        'color' => 'info'
-                            ]
-                        ];
-                        
-                                $hasAdvancedTests = false;
-                                foreach($advancedTests as $field => $test) {
-                                    if($license->$field) {
-                                        $hasAdvancedTests = true;
-                                        break;
-                                    }
-                                }
-                            @endphp
-
-                            @if($hasAdvancedTests)
-                    <div class="card mb-4">
-                        <div class="card-header bg-secondary text-white">
-                            <h5 class="mb-0">
-                                <i class="fas fa-microscope me-2"></i>
-                                الاختبارات المتقدمة والمرفقات الإضافية
-                            </h5>
-                        </div>
-                        <div class="card-body advanced-tests">
-                            <div class="row">
-                                @foreach($advancedTests as $field => $test)
-                                    @if($license->$field)
-                                    <div class="col-md-6 col-lg-4 mb-3">
-                                        <div class="card border-{{ $test['color'] }}">
-                                            <div class="card-header bg-{{ $test['color'] }} text-white py-2">
-                                                <small class="fw-bold">
-                                                    <i class="{{ $test['icon'] }} me-1"></i>
-                                                    {{ $test['name'] }}
-                                                </small>
-                                            </div>
-                                            <div class="card-body py-2">
-                                                <div class="d-flex justify-content-between align-items-center">
-                                                    <span class="badge bg-success">
-                                                        <i class="fas fa-file-alt me-1"></i>مرفق
-                                                    </span>
-                                                    <div class="btn-group btn-group-sm">
-                                                        <a href="{{ Storage::url($license->$field) }}" 
-                                                           class="btn btn-outline-primary btn-sm" 
-                                                           target="_blank" 
-                                                           title="عرض الملف">
-                                                            <i class="fas fa-eye"></i>
-                                                        </a>
-                                                        <a href="{{ Storage::url($license->$field) }}" 
-                                                           class="btn btn-outline-success btn-sm" 
-                                                           download 
-                                                           title="تحميل الملف">
-                                                            <i class="fas fa-download"></i>
-                                                        </a>
-                                                    </div>
-                                                </div>
-                                                <small class="text-muted d-block mt-1">
-                                                    <i class="fas fa-clock me-1"></i>
-                                                    {{ $license->updated_at->format('Y-m-d H:i') }}
-                                                </small>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    @endif
-                                @endforeach
-                            </div>
-                                        </div>
-                                        </div>
-                    @endif
 
 
 
