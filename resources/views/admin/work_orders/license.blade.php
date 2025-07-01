@@ -3094,28 +3094,24 @@ function deleteExtension(extensionId) {
                                     </div>
                                     <div class="card-body">
                                         <div class="row text-center">
-                                            <div class="col-md-3">
-                                                <div class="bg-light p-3 rounded">
-                                                    <h5 class="text-primary mb-0" id="total_tests_count">0</h5>
-                                                    <small class="text-muted">إجمالي الاختبارات</small>
+                                            <div class="col-md-6">
+                                                <div class="bg-success bg-gradient text-white p-4 rounded shadow-sm">
+                                                    <div class="d-flex align-items-center justify-content-center mb-2">
+                                                        <i class="fas fa-check-circle fa-2x me-3"></i>
+                                                        <h3 class="mb-0" id="passed_tests_amount">0.00</h3>
+                                                        <span class="ms-2">ريال</span>
+                                                    </div>
+                                                    <strong>إجمالي الاختبارات الناجحة</strong>
                                                 </div>
                                             </div>
-                                            <div class="col-md-3">
-                                                <div class="bg-light p-3 rounded">
-                                                    <h5 class="text-success mb-0" id="passed_tests_count">0</h5>
-                                                    <small class="text-muted">الاختبارات الناجحة</small>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-3">
-                                                <div class="bg-light p-3 rounded">
-                                                    <h5 class="text-danger mb-0" id="failed_tests_count">0</h5>
-                                                    <small class="text-muted">الاختبارات الراسبة</small>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-3">
-                                                <div class="bg-light p-3 rounded">
-                                                    <h5 class="text-info mb-0" id="total_amount">0.00</h5>
-                                                    <small class="text-muted">إجمالي المبلغ (ريال)</small>
+                                            <div class="col-md-6">
+                                                <div class="bg-danger bg-gradient text-white p-4 rounded shadow-sm">
+                                                    <div class="d-flex align-items-center justify-content-center mb-2">
+                                                        <i class="fas fa-times-circle fa-2x me-3"></i>
+                                                        <h3 class="mb-0" id="failed_tests_amount">0.00</h3>
+                                                        <span class="ms-2">ريال</span>
+                                                    </div>
+                                                    <strong>إجمالي الاختبارات الراسبة</strong>
                                                 </div>
                                             </div>
                                         </div>
@@ -4440,23 +4436,43 @@ function downloadAttachment(fileUrl, fileName) {
 
 // دالة تحديث ملخص الاختبارات
 function updateTestsSummary() {
-    const totalCount = testsArray.length;
-    const passedCount = testsArray.filter(test => test.result === 'pass').length;
-    const failedCount = testsArray.filter(test => test.result === 'fail').length;
-    const totalAmount = testsArray.reduce((sum, test) => sum + test.total, 0);
+    // حساب مبالغ الاختبارات الناجحة والراسبة
+    const passedAmount = testsArray
+        .filter(test => test.result === 'pass')
+        .reduce((sum, test) => sum + test.total, 0);
     
-    document.getElementById('total_tests_count').textContent = totalCount;
-    document.getElementById('passed_tests_count').textContent = passedCount;
-    document.getElementById('failed_tests_count').textContent = failedCount;
-    document.getElementById('total_amount').textContent = totalAmount.toFixed(2);
+    const failedAmount = testsArray
+        .filter(test => test.result === 'fail')
+        .reduce((sum, test) => sum + test.total, 0);
+    
+    // تحديث العرض مع التنسيق المناسب
+    document.getElementById('passed_tests_amount').textContent = 
+        passedAmount === 0 ? '0.00' : passedAmount.toFixed(2);
+    document.getElementById('failed_tests_amount').textContent = 
+        failedAmount === 0 ? '0.00' : failedAmount.toFixed(2);
+    
+    // تحديث ألوان الصناديق حسب القيم
+    const passedBox = document.getElementById('passed_tests_amount').closest('.bg-success');
+    const failedBox = document.getElementById('failed_tests_amount').closest('.bg-danger');
+    
+    if (passedBox) {
+        passedBox.style.opacity = passedAmount === 0 ? '0.6' : '1';
+    }
+    
+    if (failedBox) {
+        failedBox.style.opacity = failedAmount === 0 ? '0.6' : '1';
+    }
 }
 
 // تم حذف دالة الحفظ اليدوي - الحفظ يتم تلقائياً الآن
 
 // دالة تحميل بيانات الاختبارات المحفوظة من الخادم
 function loadLabTestsFromServer(licenseId) {
-    if (!licenseId) {
-        console.log('No license ID provided for loading tests');
+    if (!licenseId || licenseId === '' || licenseId === 'undefined') {
+        console.log('No valid license ID provided for loading tests:', licenseId);
+        testsArray = [];
+        updateTestsTable();
+        updateTestsSummary();
         return;
     }
     
@@ -4464,78 +4480,109 @@ function loadLabTestsFromServer(licenseId) {
     
     // عرض مؤشر التحميل
     const tableBody = document.getElementById('testsTableBody');
-    tableBody.innerHTML = '<tr><td colspan="8" class="text-center"><i class="fas fa-spinner fa-spin me-2"></i>جاري تحميل البيانات...</td></tr>';
+    if (tableBody) {
+        tableBody.innerHTML = '<tr><td colspan="8" class="text-center"><i class="fas fa-spinner fa-spin me-2"></i>جاري تحميل البيانات...</td></tr>';
+    }
+    
+    const csrfToken = document.querySelector('meta[name="csrf-token"]');
+    if (!csrfToken) {
+        console.error('CSRF token not found');
+        toastr.error('خطأ في التحقق من الأمان');
+        return;
+    }
     
     fetch(`/admin/licenses/${licenseId}`, {
             headers: {
                 'Accept': 'application/json',
                 'X-Requested-With': 'XMLHttpRequest',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                'X-CSRF-TOKEN': csrfToken.getAttribute('content')
             }
         })
         .then(response => {
             console.log('Response status:', response.status);
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+                throw new Error(`خطأ HTTP: ${response.status} - ${response.statusText}`);
             }
             return response.json();
         })
         .then(data => {
             console.log('License data received:', data);
             
-            if (data.success && data.license && data.license.lab_tests_data) {
+            if (data.success && data.license) {
                 try {
-                    console.log('Raw lab_tests_data:', data.license.lab_tests_data);
-                    const savedTests = JSON.parse(data.license.lab_tests_data);
-                    console.log('Parsed tests:', savedTests);
-                    
-                    if (Array.isArray(savedTests) && savedTests.length > 0) {
-                        // تحويل البيانات المحفوظة إلى تنسيق النظام
-                        testsArray = savedTests.map((test, index) => ({
-                            id: index + 1,
-                            name: test.name,
-                            points: parseFloat(test.points || 0),
-                            price: parseFloat(test.price || 0),
-                            total: parseFloat(test.total || 0),
-                            result: test.result,
-                            fileUrl: test.file_url || null,
-                            fileName: test.file_name || null
-                        }));
+                    // التحقق من وجود بيانات الاختبارات
+                    if (data.license.lab_tests_data && data.license.lab_tests_data !== '[]' && data.license.lab_tests_data !== '') {
+                        console.log('Raw lab_tests_data:', data.license.lab_tests_data);
                         
-                        // تحديث العداد
-                        testIdCounter = testsArray.length + 1;
+                        // معالجة البيانات بأمان
+                        let savedTests;
+                        if (typeof data.license.lab_tests_data === 'string') {
+                            savedTests = JSON.parse(data.license.lab_tests_data);
+                        } else {
+                            savedTests = data.license.lab_tests_data;
+                        }
                         
-                        // تحديث الجدول والملخص
-                        updateTestsTable();
-                        updateTestsSummary();
+                        console.log('Parsed tests:', savedTests);
                         
-                        console.log(`Successfully loaded ${testsArray.length} tests`);
-                        toastr.success(`تم تحميل ${testsArray.length} اختبار محفوظ`);
+                        if (Array.isArray(savedTests) && savedTests.length > 0) {
+                            // تحويل البيانات المحفوظة إلى تنسيق النظام
+                            testsArray = savedTests.map((test, index) => ({
+                                id: index + 1,
+                                name: test.name || '',
+                                points: parseFloat(test.points || 0),
+                                price: parseFloat(test.price || 0),
+                                total: parseFloat(test.total || 0),
+                                result: test.result || '',
+                                fileUrl: test.file_url || null,
+                                fileName: test.file_name || null
+                            }));
+                            
+                            // تحديث العداد
+                            testIdCounter = testsArray.length + 1;
+                            
+                            // تحديث الجدول والملخص
+                            updateTestsTable();
+                            updateTestsSummary();
+                            
+                            console.log(`Successfully loaded ${testsArray.length} tests`);
+                            toastr.success(`تم تحميل ${testsArray.length} اختبار محفوظ`);
+                        } else {
+                            // لا توجد اختبارات صالحة
+                            console.log('No valid tests found in saved data');
+                            testsArray = [];
+                            updateTestsTable();
+                            updateTestsSummary();
+                        }
                     } else {
-                        // لا توجد بيانات محفوظة أو البيانات فارغة
-                        console.log('No saved tests found or empty array');
-                        testsArray = [];
-                        updateTestsTable();
-                        updateTestsSummary();
+                        // لا توجد بيانات محفوظة، جرب تحميل النسخة الاحتياطية
+                        console.log('No lab_tests_data found in response, trying local backup');
+                        tryLoadLocalBackup(licenseId);
                     }
-                } catch (error) {
-                    console.error('Error parsing saved tests:', error);
+                } catch (parseError) {
+                    console.error('Error parsing saved tests:', parseError);
                     testsArray = [];
                     updateTestsTable();
                     updateTestsSummary();
                     toastr.error('خطأ في معالجة البيانات المحفوظة');
                 }
             } else {
-                // لا توجد بيانات محفوظة، جرب تحميل النسخة الاحتياطية
-                console.log('No lab_tests_data found in response, trying local backup');
+                console.log('Response indicates failure or no license data');
                 tryLoadLocalBackup(licenseId);
             }
         })
         .catch(error => {
             console.error('Error loading tests from server:', error);
+            // عرض رسالة أكثر تفصيلاً للخطأ
+            if (error.message.includes('404')) {
+                toastr.error('الرخصة المحددة غير موجودة');
+            } else if (error.message.includes('500')) {
+                toastr.error('خطأ في الخادم، يرجى المحاولة مرة أخرى');
+            } else {
+                toastr.error(`خطأ في تحميل البيانات: ${error.message}`);
+            }
+            
             // جرب تحميل النسخة الاحتياطية المحلية
             tryLoadLocalBackup(licenseId);
-            toastr.error(`خطأ في تحميل البيانات من الخادم: ${error.message}`);
         });
 }
 
@@ -4567,8 +4614,9 @@ function tryLoadLocalBackup(licenseId) {
 
 // دالة الحفظ التلقائي على الخادم
 function autoSaveTestsToServer(licenseId) {
-    if (!licenseId) {
-        console.error('No license ID provided for auto-save');
+    if (!licenseId || licenseId === '' || licenseId === 'undefined') {
+        console.error('No valid license ID provided for auto-save:', licenseId);
+        toastr.warning('يجب اختيار رخصة قبل الحفظ');
         return;
     }
     
@@ -4585,7 +4633,9 @@ function autoSaveTestsToServer(licenseId) {
     
     const passedCount = testsArray.filter(test => test.result === 'pass').length;
     const failedCount = testsArray.filter(test => test.result === 'fail').length;
-    const totalAmount = testsArray.reduce((sum, test) => sum + test.total, 0);
+    const passedAmount = testsArray.filter(test => test.result === 'pass').reduce((sum, test) => sum + test.total, 0);
+    const failedAmount = testsArray.filter(test => test.result === 'fail').reduce((sum, test) => sum + test.total, 0);
+    const totalAmount = passedAmount + failedAmount;
     
     console.log(`Auto-saving ${testsArray.length} tests for license ${licenseId}`);
     
@@ -4607,6 +4657,8 @@ function autoSaveTestsToServer(licenseId) {
                 total_tests: testsArray.length,
                 passed_tests: passedCount,
                 failed_tests: failedCount,
+                passed_amount: passedAmount,
+                failed_amount: failedAmount,
                 total_amount: totalAmount
             }
         })

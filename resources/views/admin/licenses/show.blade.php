@@ -402,10 +402,13 @@ use Illuminate\Support\Facades\Storage;
                             <i class="fas fa-flask me-2"></i>المختبر 
                             <span class="badge bg-light text-success ms-2 fs-6">رخصة {{ $license->license_number }}</span>
                         </span>
+                        @php
+                            $passedAmountHeader = collect($testsData)->where('result', 'pass')->sum('total');
+                            $failedAmountHeader = collect($testsData)->where('result', 'fail')->sum('total');
+                        @endphp
                         <div class="d-flex gap-2">
-                            <span class="badge bg-white text-success fs-6">ناجح: {{ $passedCount }}</span>
-                            <span class="badge bg-white text-danger fs-6">راسب: {{ $failedCount }}</span>
-                            <span class="badge bg-white text-info fs-6">إجمالي: {{ number_format($totalAmount, 2) }} ريال</span>
+                            <span class="badge bg-white text-success fs-6">ناجح: {{ number_format($passedAmountHeader, 2) }} ريال</span>
+                            <span class="badge bg-white text-danger fs-6">راسب: {{ number_format($failedAmountHeader, 2) }} ريال</span>
                         </div>
                     </h4>
                 </div>
@@ -475,35 +478,35 @@ use Illuminate\Support\Facades\Storage;
                         
                         <!-- ملخص إحصائي -->
                         <div class="row mt-4">
-                            <div class="col-md-3">
-                                <div class="card bg-primary text-white">
-                                    <div class="card-body text-center">
-                                        <h3 class="mb-1">{{ $testsCount }}</h3>
-                                        <small>إجمالي الاختبارات</small>
+                            @php
+                                $passedAmount = collect($testsData)
+                                    ->where('result', 'pass')
+                                    ->sum('total');
+                                $failedAmount = collect($testsData)
+                                    ->where('result', 'fail')
+                                    ->sum('total');
+                            @endphp
+                            <div class="col-md-6">
+                                <div class="card bg-success bg-gradient text-white border-0 shadow">
+                                    <div class="card-body text-center py-4">
+                                        <div class="d-flex align-items-center justify-content-center mb-3">
+                                            <i class="fas fa-check-circle fa-3x me-3"></i>
+                                            <h2 class="mb-0">{{ number_format($passedAmount, 2) }}</h2>
+                                            <span class="ms-2 fs-4">ريال</span>
+                                        </div>
+                                        <strong class="fs-5">إجمالي الاختبارات الناجحة</strong>
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-3">
-                                <div class="card bg-success text-white">
-                                    <div class="card-body text-center">
-                                        <h3 class="mb-1">{{ $passedCount }}</h3>
-                                        <small>اختبارات ناجحة</small>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="card bg-danger text-white">
-                                    <div class="card-body text-center">
-                                        <h3 class="mb-1">{{ $failedCount }}</h3>
-                                        <small>اختبارات راسبة</small>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="card bg-warning text-dark">
-                                    <div class="card-body text-center">
-                                        <h3 class="mb-1">{{ number_format($totalAmount, 2) }}</h3>
-                                        <small>المبلغ الإجمالي (ريال)</small>
+                            <div class="col-md-6">
+                                <div class="card bg-danger bg-gradient text-white border-0 shadow">
+                                    <div class="card-body text-center py-4">
+                                        <div class="d-flex align-items-center justify-content-center mb-3">
+                                            <i class="fas fa-times-circle fa-3x me-3"></i>
+                                            <h2 class="mb-0">{{ number_format($failedAmount, 2) }}</h2>
+                                            <span class="ms-2 fs-4">ريال</span>
+                                        </div>
+                                        <strong class="fs-5">إجمالي الاختبارات الراسبة</strong>
                                     </div>
                                 </div>
                             </div>

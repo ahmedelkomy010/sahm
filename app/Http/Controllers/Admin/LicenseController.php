@@ -1790,9 +1790,9 @@ class LicenseController extends Controller
             // حفظ بيانات الاختبارات في حقل JSON (الملفات تم رفعها بالفعل)
             $license->lab_tests_data = json_encode($testsData);
             
-            // حفظ الإجماليات
-            $license->successful_tests_value = $totals['passed_tests'] ?? 0;
-            $license->failed_tests_value = $totals['failed_tests'] ?? 0;
+            // حفظ الإجماليات للحقول الموجودة فقط
+            $license->successful_tests_value = $totals['passed_amount'] ?? 0;
+            $license->failed_tests_value = $totals['failed_amount'] ?? 0;
             $license->total_tests_count = $totals['total_tests'] ?? 0;
             $license->total_tests_amount = $totals['total_amount'] ?? 0;
             
