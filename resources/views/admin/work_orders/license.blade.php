@@ -1689,6 +1689,12 @@ function selectLabLicense() {
         displayElement.textContent = selectedText;
         infoDiv.style.display = 'block';
         
+        // إعادة تعيين الاختبارات والتحميل من الخادم
+        testsArray = [];
+        testIdCounter = 1;
+        updateTestsTable();
+        updateTestsSummary();
+        
         // تحميل البيانات المحفوظة من الخادم للرخصة المختارة
         loadLabTestsFromServer(selector.value);
     } else {
@@ -1697,6 +1703,7 @@ function selectLabLicense() {
         
         // مسح البيانات عند عدم اختيار رخصة
         testsArray = [];
+        testIdCounter = 1;
         updateTestsTable();
         updateTestsSummary();
     }
@@ -2963,14 +2970,23 @@ function deleteExtension(extensionId) {
                         <input type="hidden" name="work_order_id" value="{{ $workOrder->id }}">
                         <input type="hidden" name="license_id" id="lab-license-id" value="">
                         
+                        <!-- تنبيه الحفظ التلقائي -->
+                       
+                        
                         <!-- نافذة إضافة اختبار جديد -->
                         <div class="row mb-4">
                             <div class="col-12">
                                 <div class="card border-primary">
                                     <div class="card-header bg-primary text-white">
-                                        <h5 class="mb-0">
-                                            <i class="fas fa-plus-circle me-2"></i>
-                                            إضافة اختبار جديد
+                                        <h5 class="mb-0 d-flex justify-content-between align-items-center">
+                                            <span>
+                                                <i class="fas fa-plus-circle me-2"></i>
+                                                إضافة اختبار جديد
+                                            </span>
+                                            <small class="badge bg-success">
+                                                <i class="fas fa-cloud-upload-alt me-1"></i>
+                                                الحفظ تلقائي
+                                            </small>
                                         </h5>
                                     </div>
                                     <div class="card-body">
@@ -3024,9 +3040,15 @@ function deleteExtension(extensionId) {
                             <div class="col-12">
                                 <div class="card">
                                     <div class="card-header bg-info text-white">
-                                        <h5 class="mb-0">
-                                            <i class="fas fa-table me-2"></i>
-                                            جدول الاختبارات المضافة
+                                        <h5 class="mb-0 d-flex justify-content-between align-items-center">
+                                            <span>
+                                                <i class="fas fa-table me-2"></i>
+                                                جدول الاختبارات المضافة
+                                            </span>
+                                            <small class="badge bg-light text-info">
+                                                <i class="fas fa-sync me-1"></i>
+                                                محفوظة تلقائياً
+                                            </small>
                                         </h5>
                                     </div>
                                     <div class="card-body">
@@ -3102,14 +3124,7 @@ function deleteExtension(extensionId) {
                             </div>
                         </div>
 
-                        <div class="row mt-4">
-                            <div class="col-12 text-center">
-                                <button type="button" id="save-lab-btn" class="btn btn-primary-custom btn-lg" onclick="saveAllNewLabTests()">
-                                    <i class="fas fa-save me-2"></i>
-                                    حفظ جميع بيانات المختبر
-                                </button>
-                            </div>
-                        </div>
+                        <!-- تم حذف زر الحفظ - الحفظ يتم تلقائياً الآن -->
                     </form>
                 </div>
             </div>
@@ -4221,27 +4236,22 @@ function addTestWithFileData(testName, testPoints, testPrice, testTotal, testRes
     // إضافة الاختبار للمصفوفة
     testsArray.push(testData);
     
-    // حفظ احتياطي محلي فوري
-    const licenseId = document.getElementById('lab-license-id').value;
-    if (licenseId) {
-        try {
-            localStorage.setItem(`lab_tests_backup_${licenseId}`, JSON.stringify(testsArray));
-            console.log('Auto-backup saved after adding test');
-        } catch (e) {
-            console.error('Failed to save auto-backup:', e);
-        }
-    }
-    
     // تحديث الجدول
     updateTestsTable();
     
     // تحديث الملخص
     updateTestsSummary();
     
+    // حفظ تلقائي على الخادم
+    const licenseId = document.getElementById('lab-license-id').value;
+    if (licenseId) {
+        autoSaveTestsToServer(licenseId);
+    }
+    
     // مسح النموذج
     clearTestForm();
     
-    toastr.success('تم إضافة الاختبار بنجاح');
+    toastr.success('تم إضافة الاختبار وحفظه تلقائياً');
 }
 
 // دالة مسح النموذج
@@ -4333,20 +4343,16 @@ function removeTest(testId) {
     if (confirm('هل أنت متأكد من حذف هذا الاختبار؟')) {
         testsArray = testsArray.filter(test => test.id !== testId);
         
-        // حفظ احتياطي محلي فوري
-        const licenseId = document.getElementById('lab-license-id').value;
-        if (licenseId) {
-            try {
-                localStorage.setItem(`lab_tests_backup_${licenseId}`, JSON.stringify(testsArray));
-                console.log('Auto-backup saved after removing test');
-            } catch (e) {
-                console.error('Failed to save auto-backup:', e);
-            }
-        }
-        
         updateTestsTable();
         updateTestsSummary();
-        toastr.success('تم حذف الاختبار بنجاح');
+        
+        // حفظ تلقائي على الخادم
+        const licenseId = document.getElementById('lab-license-id').value;
+        if (licenseId) {
+            autoSaveTestsToServer(licenseId);
+        }
+        
+        toastr.success('تم حذف الاختبار وحفظ التغيير تلقائياً');
     }
 }
 
@@ -4445,168 +4451,7 @@ function updateTestsSummary() {
     document.getElementById('total_amount').textContent = totalAmount.toFixed(2);
 }
 
-// دالة حفظ جميع بيانات الاختبارات
-function saveAllNewLabTests() {
-    // التحقق من اختيار الرخصة
-    const licenseId = document.getElementById('lab-license-id').value;
-    
-    if (!licenseId) {
-        toastr.error('يجب اختيار رخصة أولاً');
-        return;
-    }
-    
-    // التحقق من وجود اختبارات
-    if (testsArray.length === 0) {
-        toastr.warning('لا توجد اختبارات للحفظ');
-        return;
-    }
-    
-    console.log('Starting save process for license:', licenseId);
-    console.log('Tests to save:', testsArray);
-    
-    // تحضير البيانات للإرسال
-    const testsData = testsArray.map(test => ({
-        name: test.name,
-        points: parseFloat(test.points),
-        price: parseFloat(test.price),
-        total: parseFloat(test.total),
-        result: test.result,
-        file_url: test.fileUrl || null,
-        file_name: test.fileName || null
-    }));
-    
-    // إظهار رسالة تأكيد مع الملخص
-    const totalAmount = testsArray.reduce((sum, test) => sum + test.total, 0);
-    const passedCount = testsArray.filter(test => test.result === 'pass').length;
-    const failedCount = testsArray.filter(test => test.result === 'fail').length;
-    
-    const confirmMessage = `
-        هل أنت متأكد من حفظ بيانات الاختبارات؟
-        
-        إجمالي الاختبارات: ${testsArray.length}
-        الاختبارات الناجحة: ${passedCount}
-        الاختبارات الراسبة: ${failedCount}
-        المبلغ الإجمالي: ${totalAmount.toFixed(2)} ريال
-    `;
-    
-    if (!confirm(confirmMessage)) {
-        return;
-    }
-    
-    // عرض مؤشر التحميل
-    const saveButton = document.querySelector('button[onclick="saveAllNewLabTests()"]');
-    const originalText = saveButton.innerHTML;
-    saveButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>جاري الحفظ...';
-    saveButton.disabled = true;
-    
-    // إرسال البيانات للخادم
-    fetch('{{ route("admin.licenses.save-section") }}', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-            'Accept': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest'
-        },
-        body: JSON.stringify({
-            license_id: licenseId,
-            work_order_id: {{ $workOrder->id }},
-            section: 'lab_tests',
-            tests_data: testsData,
-            totals: {
-                total_tests: testsArray.length,
-                passed_tests: passedCount,
-                failed_tests: failedCount,
-                total_amount: totalAmount
-            }
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            console.log('Save successful:', data);
-            toastr.success('تم حفظ بيانات الاختبارات بنجاح');
-            showNewLabTestSummary(data);
-            
-            // حفظ احتياطي محلي
-            try {
-                localStorage.setItem(`lab_tests_backup_${licenseId}`, JSON.stringify(testsArray));
-                console.log('Backup saved locally');
-            } catch (e) {
-                console.error('Failed to save backup:', e);
-            }
-            
-            // إعادة تحميل البيانات من الخادم للتأكد من الحفظ
-            setTimeout(() => {
-                loadLabTestsFromServer(licenseId);
-            }, 500);
-        } else {
-            console.error('Save failed:', data);
-            toastr.error(data.message || 'حدث خطأ أثناء حفظ البيانات');
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        toastr.error('حدث خطأ أثناء حفظ بيانات الاختبارات');
-    })
-    .finally(() => {
-        // إعادة تعيين زر الحفظ
-        saveButton.innerHTML = originalText;
-        saveButton.disabled = false;
-    });
-}
-
-// دالة عرض ملخص الحفظ
-function showNewLabTestSummary(data) {
-    const summary = data.summary || {};
-    
-    // إنشاء ملخص مرئي
-    const summaryHtml = `
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <h5><i class="fas fa-check-circle me-2"></i>تم حفظ البيانات بنجاح</h5>
-            <hr>
-            <div class="row">
-                <div class="col-md-3">
-                    <div class="text-center">
-                        <i class="fas fa-vial fa-2x text-primary mb-2"></i>
-                        <h6>إجمالي الاختبارات</h6>
-                        <span class="h4 text-primary">${summary.total_tests || testsArray.length}</span>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="text-center">
-                        <i class="fas fa-check fa-2x text-success mb-2"></i>
-                        <h6>الاختبارات الناجحة</h6>
-                        <span class="h4 text-success">${summary.passed_tests || 0}</span>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="text-center">
-                        <i class="fas fa-times fa-2x text-danger mb-2"></i>
-                        <h6>الاختبارات الراسبة</h6>
-                        <span class="h4 text-danger">${summary.failed_tests || 0}</span>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="text-center">
-                        <i class="fas fa-coins fa-2x text-warning mb-2"></i>
-                        <h6>المبلغ الإجمالي</h6>
-                        <span class="h4 text-warning">${(summary.total_amount || 0).toFixed(2)} ريال</span>
-                    </div>
-                </div>
-            </div>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    `;
-    
-    // إضافة الملخص إلى الصفحة
-    const summaryContainer = document.getElementById('lab-summary-container') || 
-                             document.querySelector('#lab-tab-content .container-fluid');
-    
-    if (summaryContainer) {
-        summaryContainer.insertAdjacentHTML('afterbegin', summaryHtml);
-    }
-}
+// تم حذف دالة الحفظ اليدوي - الحفظ يتم تلقائياً الآن
 
 // دالة تحميل بيانات الاختبارات المحفوظة من الخادم
 function loadLabTestsFromServer(licenseId) {
@@ -4718,6 +4563,112 @@ function tryLoadLocalBackup(licenseId) {
     testsArray = [];
     updateTestsTable();
     updateTestsSummary();
+}
+
+// دالة الحفظ التلقائي على الخادم
+function autoSaveTestsToServer(licenseId) {
+    if (!licenseId) {
+        console.error('No license ID provided for auto-save');
+        return;
+    }
+    
+    // تحضير البيانات للإرسال
+    const testsData = testsArray.map(test => ({
+        name: test.name,
+        points: parseFloat(test.points),
+        price: parseFloat(test.price),
+        total: parseFloat(test.total),
+        result: test.result,
+        file_url: test.fileUrl || null,
+        file_name: test.fileName || null
+    }));
+    
+    const passedCount = testsArray.filter(test => test.result === 'pass').length;
+    const failedCount = testsArray.filter(test => test.result === 'fail').length;
+    const totalAmount = testsArray.reduce((sum, test) => sum + test.total, 0);
+    
+    console.log(`Auto-saving ${testsArray.length} tests for license ${licenseId}`);
+    
+    // إرسال البيانات للخادم
+    fetch('{{ route("admin.licenses.save-section") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({
+            license_id: licenseId,
+            work_order_id: {{ $workOrder->id }},
+            section: 'lab_tests',
+            tests_data: testsData,
+            totals: {
+                total_tests: testsArray.length,
+                passed_tests: passedCount,
+                failed_tests: failedCount,
+                total_amount: totalAmount
+            }
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            console.log('Auto-save successful:', data);
+            
+            // حفظ احتياطي محلي
+            try {
+                localStorage.setItem(`lab_tests_backup_${licenseId}`, JSON.stringify(testsArray));
+                console.log('Local backup updated after auto-save');
+            } catch (e) {
+                console.error('Failed to update local backup:', e);
+            }
+            
+            // عرض رسالة نجاح صغيرة في الزاوية
+            showAutoSaveSuccess();
+        } else {
+            console.error('Auto-save failed:', data);
+            toastr.error('خطأ في الحفظ التلقائي: ' + (data.message || 'خطأ غير معروف'));
+        }
+    })
+    .catch(error => {
+        console.error('Auto-save error:', error);
+        toastr.error('خطأ في الحفظ التلقائي: ' + error.message);
+    });
+}
+
+// دالة عرض رسالة نجاح الحفظ التلقائي
+function showAutoSaveSuccess() {
+    // إنشاء عنصر إشعار صغير
+    const notification = document.createElement('div');
+    notification.className = 'auto-save-notification';
+    notification.innerHTML = '<i class="fas fa-check-circle me-2"></i>تم الحفظ تلقائياً';
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #28a745;
+        color: white;
+        padding: 8px 16px;
+        border-radius: 4px;
+        font-size: 14px;
+        z-index: 9999;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        transition: all 0.3s ease;
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // إزالة الإشعار بعد 2 ثانية
+    setTimeout(() => {
+        notification.style.opacity = '0';
+        notification.style.transform = 'translateY(-20px)';
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 300);
+    }, 2000);
 }
 
 // تهيئة النظام عند تحميل الصفحة

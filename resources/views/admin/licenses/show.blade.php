@@ -399,7 +399,7 @@ use Illuminate\Support\Facades\Storage;
                 <div class="card-header bg-success text-white">
                     <h4 class="mb-0 d-flex justify-content-between align-items-center">
                         <span>
-                            <i class="fas fa-flask me-2"></i>الاختبارات المعملية
+                            <i class="fas fa-flask me-2"></i>المختبر 
                             <span class="badge bg-light text-success ms-2 fs-6">رخصة {{ $license->license_number }}</span>
                         </span>
                         <div class="d-flex gap-2">
@@ -509,27 +509,13 @@ use Illuminate\Support\Facades\Storage;
                             </div>
                         </div>
                         
-                        <!-- معلومات إضافية -->
-                        <div class="alert alert-info mt-4">
-                            <div class="d-flex align-items-center justify-content-between">
-                                <div>
-                                    <h6 class="mb-1">
-                                        <i class="fas fa-info-circle me-2"></i>معلومات الاختبارات
-                                    </h6>
-                                    <p class="mb-0">تم حفظ هذه الاختبارات من خلال صفحة إدارة الجودة والرخص</p>
-                                </div>
-                                <a href="{{ route('admin.work-orders.license', $license->workOrder) }}#lab-section" 
-                                   class="btn btn-outline-primary">
-                                    <i class="fas fa-eye me-2"></i>عرض في صفحة الإدارة
-                                </a>
-                            </div>
-                        </div>
+                       
                     @else
                         <!-- لا توجد اختبارات -->
                         <div class="text-center py-5">
                             <i class="fas fa-flask fa-5x text-muted mb-3"></i>
-                            <h4 class="text-muted mb-3">لا توجد اختبارات معملية</h4>
-                            <p class="text-muted mb-4">لم يتم إضافة أي اختبارات معملية لهذه الرخصة بعد</p>
+                            <h4 class="text-muted mb-3">لا توجد اختبارات </h4>
+                            <p class="text-muted mb-4">لم يتم إضافة أي اختبارات  لهذه الرخصة بعد</p>
                             <div class="alert alert-light border d-inline-block">
                                 <small class="text-muted">
                                     <i class="fas fa-info-circle me-1"></i>
