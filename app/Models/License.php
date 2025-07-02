@@ -272,8 +272,38 @@ class License extends Model
         'has_stability_degree_test' => 'boolean',
         'has_backup_test' => 'boolean',
         'evacuation_data' => 'array',
+        
         // حقول الاختبارات الجديدة
         'lab_tests_data' => 'array',
+        
+        // حقول حالة الاختبارات الجديدة
+        'max_dry_density_pro_test_status' => 'string',
+        'asphalt_ratio_gradation_test_status' => 'string',
+        'marshall_test_status' => 'string',
+        'concrete_molds_test_status' => 'string',
+        'excavation_bottom_test_status' => 'string',
+        'protection_depth_test_status' => 'string',
+        'settlement_test_status' => 'string',
+        'concrete_temperature_test_status' => 'string',
+        'field_density_atomic_test_status' => 'string',
+        'moisture_content_test_status' => 'string',
+        'soil_layer_flatness_test_status' => 'string',
+        'concrete_sample_test_status' => 'string',
+        'asphalt_spray_rate_test_status' => 'string',
+        'asphalt_temperature_test_status' => 'string',
+        'concrete_cylinder_compression_test_status' => 'string',
+        'soil_particle_analysis_test_status' => 'string',
+        'liquid_plastic_limit_test_status' => 'string',
+        'proctor_test_status' => 'string',
+        'asphalt_layer_flatness_test_status' => 'string',
+        'asphalt_compaction_atomic_test_status' => 'string',
+        'bitumen_ratio_test_status' => 'string',
+        'asphalt_gradation_test_status' => 'string',
+        'asphalt_mix_gmm_test_status' => 'string',
+        'marshall_density_test_status' => 'string',
+        'aggregate_ratio_test_status' => 'string',
+        'stability_deficiency_test_status' => 'string',
+        'stability_degree_test_status' => 'string',
     ];
 
     protected $dates = [
