@@ -739,9 +739,39 @@
                             <td><small>${period}</small></td>
                             <td data-end-date="${license.license_end_date || ''}">${countdown}</td>
                             <td>
-                                <div class="btn-group btn-group-sm">
-                                    ${license.license_file_path ? `<a href="${license.license_file_path}" target="_blank" class="btn btn-outline-primary" title="ملف الرخصة"><i class="fas fa-file-pdf"></i></a>` : ''}
-                                    ${license.payment_proof_path ? `<a href="${license.payment_proof_path}" target="_blank" class="btn btn-outline-success" title="إثبات السداد"><i class="fas fa-receipt"></i></a>` : ''}
+                                <div class="btn-group btn-group-sm" role="group">
+                                    ${license.license_file_url ? 
+                                        `<a href="${license.license_file_url}" target="_blank" class="btn btn-outline-primary" title="ملف الرخصة">
+                                            <i class="fas fa-file-pdf me-1"></i>رخصة
+                                        </a>` : 
+                                        `<span class="btn btn-outline-secondary disabled" title="لا يوجد ملف رخصة">
+                                            <i class="fas fa-file-pdf me-1"></i>رخصة
+                                        </span>`
+                                    }
+                                    ${license.payment_proof_url ? 
+                                        `<a href="${license.payment_proof_url}" target="_blank" class="btn btn-outline-success" title="إثبات السداد">
+                                            <i class="fas fa-receipt me-1"></i>إثبات
+                                        </a>` : 
+                                        license.payment_proof_urls && license.payment_proof_urls.length > 0 ?
+                                        `<button class="btn btn-outline-success" onclick="showPaymentProofs(${license.id})" title="إثباتات السداد (${license.payment_proof_urls.length})">
+                                            <i class="fas fa-receipt me-1"></i>${license.payment_proof_urls.length}
+                                        </button>` : ''
+                                    }
+                                    ${license.payment_invoices_urls && license.payment_invoices_urls.length > 0 ? 
+                                        `<button class="btn btn-outline-info" onclick="showPaymentInvoices(${license.id})" title="فواتير السداد (${license.payment_invoices_urls.length})">
+                                            <i class="fas fa-file-invoice me-1"></i>${license.payment_invoices_urls.length}
+                                        </button>` : ''
+                                    }
+                                    ${license.license_activation_urls && license.license_activation_urls.length > 0 ? 
+                                        `<button class="btn btn-outline-warning" onclick="showActivationFiles(${license.id})" title="ملفات اضافية (${license.license_activation_urls.length})">
+                                            <i class="fas fa-power-off me-1"></i>${license.license_activation_urls.length}
+                                        </button>` : ''
+                                    }
+                                </div>
+                                <div class="mt-1">
+                                    <small class="text-muted">
+                                        ${getAttachmentsCount(license)} مرفق
+                                    </small>
                                 </div>
                             </td>
                             <td>
@@ -779,6 +809,9 @@
                         </tr>
                     `;
                 }
+                
+                // حفظ بيانات الرخص في sessionStorage للوصول إليها لاحقاً
+                sessionStorage.setItem('current_licenses', JSON.stringify(response.licenses));
                 
                 // تحديث قوائم الرخص في التبويبات الأخرى
                 loadLicensesForSelectors();
@@ -861,6 +894,151 @@
         }
     }
 
+    // دالة حساب عدد المرفقات
+    function getAttachmentsCount(license) {
+        let count = 0;
+        if (license.license_file_url) count++;
+        if (license.payment_proof_url) count++;
+        if (license.payment_proof_urls && license.payment_proof_urls.length > 0) count += license.payment_proof_urls.length;
+        if (license.payment_invoices_urls && license.payment_invoices_urls.length > 0) count += license.payment_invoices_urls.length;
+        if (license.license_activation_urls && license.license_activation_urls.length > 0) count += license.license_activation_urls.length;
+        return count;
+    }
+
+    // دالة عرض إثباتات السداد
+    function showPaymentProofs(licenseId) {
+        const licenses = JSON.parse(sessionStorage.getItem('current_licenses') || '[]');
+        const license = licenses.find(l => l.id == licenseId);
+        
+        if (!license || !license.payment_proof_urls) {
+            toastr.error('لا توجد إثباتات سداد لهذه الرخصة');
+            return;
+        }
+
+        let modalContent = '<div class="row">';
+        license.payment_proof_urls.forEach((file, index) => {
+            if (file.exists && file.url) {
+                modalContent += `
+                    <div class="col-md-6 mb-3">
+                        <div class="card">
+                            <div class="card-body text-center">
+                                <i class="fas fa-receipt fa-3x text-success mb-3"></i>
+                                <h6>إثبات سداد ${index + 1}</h6>
+                                <a href="${file.url}" target="_blank" class="btn btn-success btn-sm">
+                                    <i class="fas fa-external-link-alt me-1"></i>عرض الملف
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        });
+        modalContent += '</div>';
+
+        showCustomModal('إثباتات السداد', modalContent);
+    }
+
+    // دالة عرض فواتير السداد
+    function showPaymentInvoices(licenseId) {
+        const licenses = JSON.parse(sessionStorage.getItem('current_licenses') || '[]');
+        const license = licenses.find(l => l.id == licenseId);
+        
+        if (!license || !license.payment_invoices_urls) {
+            toastr.error('لا توجد فواتير سداد لهذه الرخصة');
+            return;
+        }
+
+        let modalContent = '<div class="row">';
+        license.payment_invoices_urls.forEach((file, index) => {
+            if (file.exists && file.url) {
+                modalContent += `
+                    <div class="col-md-6 mb-3">
+                        <div class="card">
+                            <div class="card-body text-center">
+                                <i class="fas fa-file-invoice fa-3x text-info mb-3"></i>
+                                <h6>فاتورة سداد ${index + 1}</h6>
+                                <a href="${file.url}" target="_blank" class="btn btn-info btn-sm">
+                                    <i class="fas fa-external-link-alt me-1"></i>عرض الملف
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        });
+        modalContent += '</div>';
+
+        showCustomModal('فواتير السداد', modalContent);
+    }
+
+    // دالة عرض ملفات التفعيل
+    function showActivationFiles(licenseId) {
+        const licenses = JSON.parse(sessionStorage.getItem('current_licenses') || '[]');
+        const license = licenses.find(l => l.id == licenseId);
+        
+        if (!license || !license.license_activation_urls) {
+            toastr.error('لا توجد ملفات تفعيل لهذه الرخصة');
+            return;
+        }
+
+        let modalContent = '<div class="row">';
+        license.license_activation_urls.forEach((file, index) => {
+            if (file.exists && file.url) {
+                modalContent += `
+                    <div class="col-md-6 mb-3">
+                        <div class="card">
+                            <div class="card-body text-center">
+                                <i class="fas fa-power-off fa-3x text-warning mb-3"></i>
+                                <h6>ملف تفعيل ${index + 1}</h6>
+                                <a href="${file.url}" target="_blank" class="btn btn-warning btn-sm">
+                                    <i class="fas fa-external-link-alt me-1"></i>عرض الملف
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        });
+        modalContent += '</div>';
+
+        showCustomModal('ملفات التفعيل', modalContent);
+    }
+
+    // دالة مساعدة لعرض نافذة منبثقة مخصصة
+    function showCustomModal(title, content) {
+        const modalId = 'customModal_' + Date.now();
+        const modalHtml = `
+            <div class="modal fade" id="${modalId}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">${title}</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            ${content}
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // إضافة النافذة إلى الصفحة
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+        
+        // عرض النافذة
+        const modal = new bootstrap.Modal(document.getElementById(modalId));
+        modal.show();
+        
+        // حذف النافذة بعد إغلاقها
+        document.getElementById(modalId).addEventListener('hidden.bs.modal', function() {
+            this.remove();
+        });
+    }
+
     // دالة مساعدة لتنظيف العدادات التنازلية عند مغادرة الصفحة
     window.addEventListener('beforeunload', function() {
         if (window.countdownInterval) {
@@ -868,10 +1046,45 @@
         }
     });
 
+    // حساب أيام الرخصة تلقائياً
+    function calculateLicenseDays() {
+        const startDate = document.getElementById('license_start_date').value;
+        const endDate = document.getElementById('license_end_date').value;
+        const daysField = document.getElementById('license_days');
+        
+        if (startDate && endDate) {
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            const timeDiff = end.getTime() - start.getTime();
+            const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24)) + 1; // +1 لتشمل اليوم الأخير
+            
+            if (daysDiff > 0) {
+                daysField.value = daysDiff;
+            } else {
+                daysField.value = '';
+                toastr.warning('تاريخ النهاية يجب أن يكون بعد تاريخ البداية');
+            }
+        } else {
+            daysField.value = '';
+        }
+    }
+
     // تشغيل العد التنازلي عند تحميل الصفحة
     document.addEventListener('DOMContentLoaded', function() {
         // تحميل رخص الحفر مع العد التنازلي
         loadDigLicenses();
+        
+        // إضافة مستمعي الأحداث لحساب أيام الرخصة
+        const startDateInput = document.getElementById('license_start_date');
+        const endDateInput = document.getElementById('license_end_date');
+        
+        if (startDateInput) {
+            startDateInput.addEventListener('change', calculateLicenseDays);
+        }
+        
+        if (endDateInput) {
+            endDateInput.addEventListener('change', calculateLicenseDays);
+        }
     });
 
 
@@ -2658,26 +2871,60 @@ function deleteExtension(extensionId) {
 
                                 <!-- المرفقات -->
                                 <div class="row g-3 mb-4">
-                                    <div class="col-md-4">
+                                    <div class="col-md-3">
                                         <label class="form-label fw-bold">ملف الرخصة</label>
-                                        <input type="file" class="form-control" name="license_file_path" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+                                        <input type="file" class="form-control" name="license_file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+                                        <div class="form-text">
+                                            <i class="fas fa-info-circle me-1"></i>
+                                            ملف PDF أو صورة للرخصة
+                                        </div>
                                     </div>
-                                    <div class="col-md-4">
+                                    <div class="col-md-3">
                                         <label class="form-label fw-bold">إثبات سداد البنك</label>
-                                        <input type="file" class="form-control" name="payment_proof_path" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+                                        <input type="file" class="form-control" name="payment_proof[]" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" multiple>
+                                        <div class="form-text">
+                                            <i class="fas fa-info-circle me-1"></i>
+                                            يمكن رفع ملفات متعددة
+                                        </div>
                                     </div>
-                                    <div class="col-md-4">
+                                    <div class="col-md-3">
                                         <label class="form-label fw-bold">فواتير السداد</label>
-                                        <input type="file" class="form-control" name="payment_invoices_path" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" multiple>
+                                        <input type="file" class="form-control" name="payment_invoices[]" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" multiple>
+                                        <div class="form-text">
+                                            <i class="fas fa-info-circle me-1"></i>
+                                            يمكن رفع ملفات متعددة
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label fw-bold">ملفات التفعيل</label>
+                                        <input type="file" class="form-control" name="license_activation[]" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" multiple>
+                                        <div class="form-text">
+                                            <i class="fas fa-info-circle me-1"></i>
+                                            ملفات تفعيل الرخصة (اختياري)
+                                        </div>
                                     </div>
                                 </div>
                             </form>
                         </div>
-                        <div class="card-footer text-center">
-                            <button type="button" class="btn btn-primary" onclick="saveDigLicenseSection()">
-                                <i class="fas fa-save me-2"></i>
-                                حفظ رخصة الحفر
-                            </button>
+                        <div class="card-footer">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="text-muted small">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        تذكر: يجب ملء جميع البيانات المطلوبة قبل الحفظ
+                                    </div>
+                                </div>
+                                <div class="col-md-6 text-end">
+                                    <button type="button" class="btn btn-secondary me-2" onclick="resetDigLicenseForm()">
+                                        <i class="fas fa-undo me-2"></i>
+                                        إعادة تعيين
+                                    </button>
+                                    <button type="button" class="btn btn-primary" onclick="saveDigLicenseSection()">
+                                        <i class="fas fa-save me-2"></i>
+                                        حفظ رخصة الحفر
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -3655,6 +3902,29 @@ function saveDigLicenseSection() {
         return false;
     }
 
+    // التحقق من البيانات الأساسية
+    const licenseNumber = form.querySelector('[name="license_number"]').value.trim();
+    const licenseDate = form.querySelector('[name="license_date"]').value;
+    const licenseType = form.querySelector('[name="license_type"]').value;
+    
+    if (!licenseNumber) {
+        toastr.error('يرجى إدخال رقم الرخصة');
+        form.querySelector('[name="license_number"]').focus();
+        return false;
+    }
+    
+    if (!licenseDate) {
+        toastr.error('يرجى إدخال تاريخ إصدار الرخصة');
+        form.querySelector('[name="license_date"]').focus();
+        return false;
+    }
+    
+    if (!licenseType) {
+        toastr.error('يرجى اختيار نوع الرخصة');
+        form.querySelector('[name="license_type"]').focus();
+        return false;
+    }
+
     const formData = new FormData(form);
     
     // إضافة معلومات القسم
@@ -3676,10 +3946,29 @@ function saveDigLicenseSection() {
             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
         },
         success: function(response) {
-            toastr.success('تم حفظ رخصة الحفر بنجاح');
+            console.log('Save response:', response);
+            
+            // حساب عدد الملفات المرفوعة
+            const fileInputs = form.querySelectorAll('input[type="file"]');
+            let uploadedFiles = 0;
+            fileInputs.forEach(input => {
+                if (input.files && input.files.length > 0) {
+                    uploadedFiles += input.files.length;
+                }
+            });
+            
+            let successMessage = 'تم حفظ رخصة الحفر بنجاح';
+            if (uploadedFiles > 0) {
+                successMessage += ` مع ${uploadedFiles} مرفق`;
+            }
+            
+            toastr.success(successMessage);
             
             // إعادة تعيين النموذج
             form.reset();
+            
+            // إعادة تعيين حقل عدد الأيام
+            document.getElementById('license_days').value = '';
             
             // تحديث جدول رخص الحفر
             loadDigLicenses();
@@ -3710,7 +3999,22 @@ function saveDigLicenseSection() {
     return false;
 }
 
-
+// دالة إعادة تعيين نموذج رخصة الحفر
+function resetDigLicenseForm() {
+    if (confirm('هل أنت متأكد من إعادة تعيين جميع البيانات؟ سيتم فقدان جميع البيانات المدخلة.')) {
+        const form = document.getElementById('digLicenseForm');
+        if (form) {
+            form.reset();
+            
+            // إعادة تعيين حقل عدد الأيام
+            document.getElementById('license_days').value = '';
+            
+            toastr.info('تم إعادة تعيين النموذج');
+        } else {
+            toastr.error('لم يتم العثور على النموذج');
+        }
+    }
+}
 
     function saveEvacuationSection() {
         // التحقق من اختيار الرخصة

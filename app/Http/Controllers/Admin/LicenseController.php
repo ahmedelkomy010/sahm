@@ -386,9 +386,23 @@ class LicenseController extends Controller
                 ->orderBy('created_at', 'desc')
                 ->get();
 
+            // إضافة مسارات الملفات الصحيحة
+            $licensesWithFiles = $licenses->map(function ($license) {
+                $licenseArray = $license->toArray();
+                
+                // إضافة روابط الملفات
+                $licenseArray['license_file_url'] = $license->getFileUrl('license_file_path');
+                $licenseArray['payment_proof_url'] = $license->getFileUrl('payment_proof_path');
+                $licenseArray['payment_proof_urls'] = $license->getMultipleFileUrls('payment_proof_path');
+                $licenseArray['payment_invoices_urls'] = $license->getMultipleFileUrls('payment_invoices_path');
+                $licenseArray['license_activation_urls'] = $license->getMultipleFileUrls('license_activation_path');
+                
+                return $licenseArray;
+            });
+
             return response()->json([
                 'success' => true,
-                'licenses' => $licenses
+                'licenses' => $licensesWithFiles
             ]);
 
         } catch (\Exception $e) {
