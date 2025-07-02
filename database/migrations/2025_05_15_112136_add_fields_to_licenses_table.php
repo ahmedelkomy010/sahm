@@ -22,11 +22,11 @@ return new class extends Migration
             }
             
             if (!Schema::hasColumn('licenses', 'license_1_path')) {
-                $table->string('license_1_path')->nullable();
+                $table->text('license_1_path')->nullable();
             }
             
             if (!Schema::hasColumn('licenses', 'letters_and_commitments_path')) {
-                $table->string('letters_and_commitments_path')->nullable();
+                $table->text('letters_and_commitments_path')->nullable();
             }
             
             if (!Schema::hasColumn('licenses', 'has_depth_test')) {
@@ -54,11 +54,11 @@ return new class extends Migration
             }
             
             if (!Schema::hasColumn('licenses', 'test_results_file_path')) {
-                $table->string('test_results_file_path')->nullable();
+                $table->text('test_results_file_path')->nullable();
             }
             
             if (!Schema::hasColumn('licenses', 'final_inspection_file_path')) {
-                $table->string('final_inspection_file_path')->nullable();
+                $table->text('final_inspection_file_path')->nullable();
             }
         });
     }

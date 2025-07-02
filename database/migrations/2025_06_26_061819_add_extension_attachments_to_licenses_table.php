@@ -14,30 +14,30 @@ return new class extends Migration
         Schema::table('licenses', function (Blueprint $table) {
             // إضافة حقول مرفقات التمديد الأربعة
             if (!Schema::hasColumn('licenses', 'extension_attachment_1')) {
-                $table->string('extension_attachment_1')->nullable()->comment(' ملف الرخصة ');
+                $table->text('extension_attachment_1')->nullable()->comment(' ملف الرخصة ');
             }
             
             // extension_attachment_2 تم حذفه - لم يعد مطلوباً
             
             if (!Schema::hasColumn('licenses', 'extension_attachment_3')) {
-                $table->string('extension_attachment_3')->nullable()->comment('إثبات سداد البنك ');
+                $table->text('extension_attachment_3')->nullable()->comment('إثبات سداد البنك ');
             }
             
             if (!Schema::hasColumn('licenses', 'extension_attachment_4')) {
-                $table->string('extension_attachment_4')->nullable()->comment('اثبات السداد');
+                $table->text('extension_attachment_4')->nullable()->comment('اثبات السداد');
             }
             
             // إضافة الحقول المطلوبة للكنترولر
             if (!Schema::hasColumn('licenses', 'extension_license_file_path')) {
-                $table->string('extension_license_file_path')->nullable()->comment('مسار ملف الرخصة للتمديد');
+                $table->text('extension_license_file_path')->nullable()->comment('مسار ملف الرخصة للتمديد');
             }
             
             if (!Schema::hasColumn('licenses', 'extension_payment_proof_path')) {
-                $table->string('extension_payment_proof_path')->nullable()->comment('مسار إثبات السداد للتمديد');
+                $table->text('extension_payment_proof_path')->nullable()->comment('مسار إثبات السداد للتمديد');
             }
             
             if (!Schema::hasColumn('licenses', 'extension_bank_proof_path')) {
-                $table->string('extension_bank_proof_path')->nullable()->comment('مسار إثبات سداد البنك للتمديد');
+                $table->text('extension_bank_proof_path')->nullable()->comment('مسار إثبات سداد البنك للتمديد');
             }
             
             // إضافة حقول التمديد الناقصة إذا لم تكن موجودة
