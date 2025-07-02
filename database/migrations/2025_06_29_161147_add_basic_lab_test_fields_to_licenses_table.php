@@ -56,22 +56,22 @@ return new class extends Migration
             
             // حقول مرفقات الاختبارات
             if (!Schema::hasColumn('licenses', 'depth_test_file_path')) {
-                $table->string('depth_test_file_path')->nullable()->after('interlock_test_value');
+                $table->text('depth_test_file_path')->nullable()->after('interlock_test_value');
             }
             if (!Schema::hasColumn('licenses', 'soil_compaction_test_file_path')) {
-                $table->string('soil_compaction_test_file_path')->nullable()->after('depth_test_file_path');
+                $table->text('soil_compaction_test_file_path')->nullable()->after('depth_test_file_path');
             }
             if (!Schema::hasColumn('licenses', 'rc1_mc1_test_file_path')) {
-                $table->string('rc1_mc1_test_file_path')->nullable()->after('soil_compaction_test_file_path');
+                $table->text('rc1_mc1_test_file_path')->nullable()->after('soil_compaction_test_file_path');
             }
             if (!Schema::hasColumn('licenses', 'asphalt_test_file_path')) {
-                $table->string('asphalt_test_file_path')->nullable()->after('rc1_mc1_test_file_path');
+                $table->text('asphalt_test_file_path')->nullable()->after('rc1_mc1_test_file_path');
             }
             if (!Schema::hasColumn('licenses', 'soil_test_file_path')) {
-                $table->string('soil_test_file_path')->nullable()->after('asphalt_test_file_path');
+                $table->text('soil_test_file_path')->nullable()->after('asphalt_test_file_path');
             }
             if (!Schema::hasColumn('licenses', 'interlock_test_file_path')) {
-                $table->string('interlock_test_file_path')->nullable()->after('soil_test_file_path');
+                $table->text('interlock_test_file_path')->nullable()->after('soil_test_file_path');
             }
             
             // حقول نتائج الاختبارات

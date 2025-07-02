@@ -14,85 +14,85 @@ return new class extends Migration
         Schema::table('licenses', function (Blueprint $table) {
             // إضافة حقول نتائج الاختبارات فقط (الحقول الأخرى موجودة بالفعل)
             if (!Schema::hasColumn('licenses', 'max_dry_density_pro_test_result')) {
-                $table->string('max_dry_density_pro_test_result')->nullable();
+                $table->text('max_dry_density_pro_test_result')->nullable();
             }
             if (!Schema::hasColumn('licenses', 'asphalt_ratio_gradation_test_result')) {
-                $table->string('asphalt_ratio_gradation_test_result')->nullable();
+                $table->text('asphalt_ratio_gradation_test_result')->nullable();
             }
             if (!Schema::hasColumn('licenses', 'marshall_test_result')) {
-                $table->string('marshall_test_result')->nullable();
+                $table->text('marshall_test_result')->nullable();
             }
             if (!Schema::hasColumn('licenses', 'concrete_molds_test_result')) {
-                $table->string('concrete_molds_test_result')->nullable();
+                $table->text('concrete_molds_test_result')->nullable();
             }
             if (!Schema::hasColumn('licenses', 'excavation_bottom_test_result')) {
-                $table->string('excavation_bottom_test_result')->nullable();
+                $table->text('excavation_bottom_test_result')->nullable();
             }
             if (!Schema::hasColumn('licenses', 'protection_depth_test_result')) {
-                $table->string('protection_depth_test_result')->nullable();
+                $table->text('protection_depth_test_result')->nullable();
             }
             if (!Schema::hasColumn('licenses', 'settlement_test_result')) {
-                $table->string('settlement_test_result')->nullable();
+                $table->text('settlement_test_result')->nullable();
             }
             if (!Schema::hasColumn('licenses', 'concrete_temperature_test_result')) {
-                $table->string('concrete_temperature_test_result')->nullable();
+                $table->text('concrete_temperature_test_result')->nullable();
             }
             if (!Schema::hasColumn('licenses', 'field_density_atomic_test_result')) {
-                $table->string('field_density_atomic_test_result')->nullable();
+                $table->text('field_density_atomic_test_result')->nullable();
             }
             if (!Schema::hasColumn('licenses', 'moisture_content_test_result')) {
-                $table->string('moisture_content_test_result')->nullable();
+                $table->text('moisture_content_test_result')->nullable();
             }
             if (!Schema::hasColumn('licenses', 'soil_layer_flatness_test_result')) {
-                $table->string('soil_layer_flatness_test_result')->nullable();
+                $table->text('soil_layer_flatness_test_result')->nullable();
             }
             if (!Schema::hasColumn('licenses', 'concrete_sample_test_result')) {
-                $table->string('concrete_sample_test_result')->nullable();
+                $table->text('concrete_sample_test_result')->nullable();
             }
             if (!Schema::hasColumn('licenses', 'asphalt_spray_rate_test_result')) {
-                $table->string('asphalt_spray_rate_test_result')->nullable();
+                $table->text('asphalt_spray_rate_test_result')->nullable();
             }
             if (!Schema::hasColumn('licenses', 'asphalt_temperature_test_result')) {
-                $table->string('asphalt_temperature_test_result')->nullable();
+                $table->text('asphalt_temperature_test_result')->nullable();
             }
             if (!Schema::hasColumn('licenses', 'concrete_cylinder_compression_test_result')) {
-                $table->string('concrete_cylinder_compression_test_result')->nullable();
+                $table->text('concrete_cylinder_compression_test_result')->nullable();
             }
             if (!Schema::hasColumn('licenses', 'soil_particle_analysis_test_result')) {
-                $table->string('soil_particle_analysis_test_result')->nullable();
+                $table->text('soil_particle_analysis_test_result')->nullable();
             }
             if (!Schema::hasColumn('licenses', 'liquid_plastic_limit_test_result')) {
-                $table->string('liquid_plastic_limit_test_result')->nullable();
+                $table->text('liquid_plastic_limit_test_result')->nullable();
             }
             if (!Schema::hasColumn('licenses', 'proctor_test_result')) {
-                $table->string('proctor_test_result')->nullable();
+                $table->text('proctor_test_result')->nullable();
             }
             if (!Schema::hasColumn('licenses', 'asphalt_layer_flatness_test_result')) {
-                $table->string('asphalt_layer_flatness_test_result')->nullable();
+                $table->text('asphalt_layer_flatness_test_result')->nullable();
             }
             if (!Schema::hasColumn('licenses', 'asphalt_compaction_atomic_test_result')) {
-                $table->string('asphalt_compaction_atomic_test_result')->nullable();
+                $table->text('asphalt_compaction_atomic_test_result')->nullable();
             }
             if (!Schema::hasColumn('licenses', 'bitumen_ratio_test_result')) {
-                $table->string('bitumen_ratio_test_result')->nullable();
+                $table->text('bitumen_ratio_test_result')->nullable();
             }
             if (!Schema::hasColumn('licenses', 'asphalt_gradation_test_result')) {
-                $table->string('asphalt_gradation_test_result')->nullable();
+                $table->text('asphalt_gradation_test_result')->nullable();
             }
             if (!Schema::hasColumn('licenses', 'asphalt_mix_gmm_test_result')) {
-                $table->string('asphalt_mix_gmm_test_result')->nullable();
+                $table->text('asphalt_mix_gmm_test_result')->nullable();
             }
             if (!Schema::hasColumn('licenses', 'marshall_density_test_result')) {
-                $table->string('marshall_density_test_result')->nullable();
+                $table->text('marshall_density_test_result')->nullable();
             }
             if (!Schema::hasColumn('licenses', 'aggregate_ratio_test_result')) {
-                $table->string('aggregate_ratio_test_result')->nullable();
+                $table->text('aggregate_ratio_test_result')->nullable();
             }
             if (!Schema::hasColumn('licenses', 'stability_deficiency_test_result')) {
-                $table->string('stability_deficiency_test_result')->nullable();
+                $table->text('stability_deficiency_test_result')->nullable();
             }
             if (!Schema::hasColumn('licenses', 'stability_degree_test_result')) {
-                $table->string('stability_degree_test_result')->nullable();
+                $table->text('stability_degree_test_result')->nullable();
             }
 
             // إضافة حقول حالة الاختبارات
@@ -186,7 +186,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('licenses', function (Blueprint $table) {
-            // حذف حقول نتائج الاختبارات الجديدة فقط
+            // حذف حقول نتائج الاختبارات
             $table->dropColumn([
                 'max_dry_density_pro_test_result',
                 'asphalt_ratio_gradation_test_result',
@@ -214,11 +214,9 @@ return new class extends Migration
                 'marshall_density_test_result',
                 'aggregate_ratio_test_result',
                 'stability_deficiency_test_result',
-                'stability_degree_test_result'
-            ]);
-
-            // حذف حقول حالة الاختبارات الجديدة
-            $table->dropColumn([
+                'stability_degree_test_result',
+                
+                // حذف حقول حالة الاختبارات
                 'max_dry_density_pro_test_status',
                 'asphalt_ratio_gradation_test_status',
                 'marshall_test_status',

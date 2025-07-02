@@ -12,7 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('licenses', function (Blueprint $table) {
-            $table->string('coordination_certificate_number')->nullable()->after('coordination_certificate_path');
+            if (!Schema::hasColumn('licenses', 'coordination_certificate_number')) {
+                $table->string('coordination_certificate_number')->nullable()->after('coordination_certificate_path');
+            }
         });
     }
 
