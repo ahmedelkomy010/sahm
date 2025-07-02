@@ -422,9 +422,9 @@ class LicenseController extends Controller
                         'extension_start_date' => $license->license_extension_start_date,
                         'extension_end_date' => $license->license_extension_end_date,
                         'extension_days' => $this->calculateExtensionDays($license->license_extension_start_date, $license->license_extension_end_date),
-                        'extension_license_file' => $license->extension_license_file_path ? Storage::url($license->extension_license_file_path) : null,
-                        'extension_payment_proof' => $license->extension_payment_proof_path ? Storage::url($license->extension_payment_proof_path) : null,
-                        'extension_bank_proof' => $license->extension_bank_proof_path ? Storage::url($license->extension_bank_proof_path) : null,
+                        'extension_license_file' => $license->extension_attachment_1 ? Storage::url($license->extension_attachment_1) : null,
+                        'extension_payment_proof' => $license->extension_attachment_4 ? Storage::url($license->extension_attachment_4) : null,
+                        'extension_bank_proof' => $license->extension_attachment_3 ? Storage::url($license->extension_attachment_3) : null,
                     ];
                 }
             }
@@ -456,9 +456,9 @@ class LicenseController extends Controller
                     'extension_start_date' => $license->license_extension_start_date,
                     'extension_end_date' => $license->license_extension_end_date,
                     'extension_days' => $this->calculateExtensionDays($license->license_extension_start_date, $license->license_extension_end_date),
-                    'extension_license_file' => $license->extension_license_file_path ? Storage::url($license->extension_license_file_path) : null,
-                    'extension_payment_proof' => $license->extension_payment_proof_path ? Storage::url($license->extension_payment_proof_path) : null,
-                    'extension_bank_proof' => $license->extension_bank_proof_path ? Storage::url($license->extension_bank_proof_path) : null,
+                    'extension_license_file' => $license->extension_attachment_1 ? Storage::url($license->extension_attachment_1) : null,
+                    'extension_payment_proof' => $license->extension_attachment_4 ? Storage::url($license->extension_attachment_4) : null,
+                    'extension_bank_proof' => $license->extension_attachment_3 ? Storage::url($license->extension_attachment_3) : null,
                 ];
             }
             
@@ -1134,23 +1134,23 @@ class LicenseController extends Controller
             $license->license_extension_end_date = $request->input('extension_end_date');
         }
         
-        // معالجة ملفات التمديد
+        // معالجة ملفات التمديد - استخدام الحقول الموجودة
         if ($request->hasFile('extension_license_file')) {
             $extensionLicenseFile = $request->file('extension_license_file');
             $extensionLicensePath = $extensionLicenseFile->store('licenses/extensions/license_files', 'public');
-            $license->extension_license_file_path = $extensionLicensePath;
+            $license->extension_attachment_1 = $extensionLicensePath;
         }
         
         if ($request->hasFile('extension_payment_proof')) {
             $paymentProofFile = $request->file('extension_payment_proof');
             $paymentProofPath = $paymentProofFile->store('licenses/extensions/payment_proofs', 'public');
-            $license->extension_payment_proof_path = $paymentProofPath;
+            $license->extension_attachment_4 = $paymentProofPath;
         }
         
         if ($request->hasFile('extension_bank_proof')) {
             $bankProofFile = $request->file('extension_bank_proof');
             $bankProofPath = $bankProofFile->store('licenses/extensions/bank_proofs', 'public');
-            $license->extension_bank_proof_path = $bankProofPath;
+            $license->extension_attachment_3 = $bankProofPath;
         }
         
         // حفظ الرخصة

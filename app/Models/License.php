@@ -37,6 +37,10 @@ class License extends Model
         'license_end_date',
         'extension_start_date',
         'extension_end_date',
+        // حقول مرفقات التمديد
+        'extension_attachment_1',
+        'extension_attachment_3',
+        'extension_attachment_4',
         'payment_invoices_path',
         'payment_proof_path',
         'license_activation_path',

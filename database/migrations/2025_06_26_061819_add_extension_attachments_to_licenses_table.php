@@ -27,6 +27,19 @@ return new class extends Migration
                 $table->string('extension_attachment_4')->nullable()->comment('اثبات السداد');
             }
             
+            // إضافة الحقول المطلوبة للكنترولر
+            if (!Schema::hasColumn('licenses', 'extension_license_file_path')) {
+                $table->string('extension_license_file_path')->nullable()->comment('مسار ملف الرخصة للتمديد');
+            }
+            
+            if (!Schema::hasColumn('licenses', 'extension_payment_proof_path')) {
+                $table->string('extension_payment_proof_path')->nullable()->comment('مسار إثبات السداد للتمديد');
+            }
+            
+            if (!Schema::hasColumn('licenses', 'extension_bank_proof_path')) {
+                $table->string('extension_bank_proof_path')->nullable()->comment('مسار إثبات سداد البنك للتمديد');
+            }
+            
             // إضافة حقول التمديد الناقصة إذا لم تكن موجودة
             if (!Schema::hasColumn('licenses', 'extension_start_date')) {
                 $table->date('extension_start_date')->nullable()->comment('تاريخ بداية التمديد');
@@ -53,6 +66,9 @@ return new class extends Migration
                 'extension_attachment_2', 
                 'extension_attachment_3',
                 'extension_attachment_4',
+                'extension_license_file_path',
+                'extension_payment_proof_path',
+                'extension_bank_proof_path',
                 'extension_start_date',
                 'extension_end_date',
                 'extension_alert_days'
