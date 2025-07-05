@@ -348,12 +348,36 @@ use Illuminate\Support\Facades\Storage;
                                         </tr>
                                     </thead>
                                     <tbody id="extensions-table-body">
+                                        @if ($license->extension_value)
+                                            <tr>
+                                                <td>1</td>
+                                                <td>{{ $license->license_number }}</td>
+                                                <td>{{ number_format($license->extension_value, 2) }} ريال</td>
+                                                <td>{{ $license->license_extension_start_date ? $license->license_extension_start_date->format('Y-m-d') : 'غير محدد' }}</td>
+                                                <td>{{ $license->license_extension_end_date ? $license->license_extension_end_date->format('Y-m-d') : 'غير محدد' }}</td>
+                                                {{-- calculate days between start and end dates (inetger num) --}}
+                                                <td>
+                                                    @if ($license->license_extension_start_date && $license->license_extension_end_date)
+                                                        {{ $license->license_extension_start_date->diffInDays($license->license_extension_end_date) }}
+                                                    @else
+                                                        غير محدد
+                                                    @endif
+                                                </td>
+                                                <td>
+                                                    <a href="{{ $license->extension_path }}" target="_blank" class="btn btn-sm btn-primary">
+                                                        <i class="fas fa-download me-2"></i>
+                                                        تحميل المرفقات
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        @else
                                         <tr id="no-extensions-row">
                                             <td colspan="8" class="text-center text-muted">
                                                 <i class="fas fa-calendar-times fa-2x mb-3 d-block"></i>
                                                 لا توجد تمديدات محفوظة لهذه الرخصة
                                             </td>
                                         </tr>
+                                        @endif
                                     </tbody>
                                 </table>
                             </div>
@@ -892,15 +916,15 @@ use Illuminate\Support\Facades\Storage;
                             <table class="table table-striped table-bordered">
                                 <thead class="table-dark">
                                     <tr>
-                                        <th>رقم المخالفة</th>
-                                        <th>تاريخ المخالفة</th>
-                                        <th>نوع المخالفة</th>
-                                        <th>الجهة المسؤولة</th>
-                                        <th>قيمة المخالفة</th>
-                                        <th>تاريخ الاستحقاق</th>
-                                        <th>حالة الدفع</th>
-                                        <th>الحالة</th>
-                                        <th>الإجراءات</th>
+                                        <th style="color: black;">رقم المخالفة</th>
+                                        <th style="color: black;">تاريخ المخالفة</th>
+                                        <th style="color: black;">نوع المخالفة</th>
+                                        <th style="color: black;">الجهة المسؤولة</th>
+                                        <th style="color: black;">قيمة المخالفة</th>
+                                        <th style="color: black;">تاريخ الاستحقاق</th>
+                                        <th style="color: black;">حالة الدفع</th>
+                                        <th style="color: black;">الحالة</th>
+                                        <th style="color: black;">الإجراءات</th>
                                     </tr>
                                 </thead>
                                 <tbody>
