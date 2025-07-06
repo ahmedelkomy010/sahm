@@ -1,0 +1,44 @@
+/* Page Title Component Styles */
+.page-title-container {
+    @apply flex items-center gap-4 mb-6 bg-white p-4 rounded-lg shadow-sm transition-all duration-300;
+}
+
+.page-title-container:hover {
+    @apply shadow-md;
+}
+
+.page-title-logo {
+    @apply h-12 w-auto object-contain transition-transform duration-300;
+}
+
+.page-title-logo:hover {
+    @apply transform scale-105;
+}
+
+.page-title-text {
+    @apply text-2xl font-bold text-gray-800 transition-colors duration-300;
+}
+
+.page-title-subtitle {
+    @apply text-sm text-gray-600 mt-1;
+}
+
+/* RTL Support */
+[dir="rtl"] .page-title-container {
+    @apply flex-row-reverse;
+}
+
+/* Responsive Design */
+@media (max-width: 640px) {
+    .page-title-container {
+        @apply flex-col items-center text-center p-3;
+    }
+    
+    .page-title-logo {
+        @apply h-10 mb-2;
+    }
+    
+    .page-title-text {
+        @apply text-xl;
+    }
+} 

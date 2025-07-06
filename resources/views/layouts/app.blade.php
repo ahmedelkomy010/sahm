@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Route;
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>{{ config('app.name', 'شركة سهم بلدي للمقاولات') }}</title>
+        <title>إدارة سهم بلدي</title>
 
         <!-- Fonts -->
         <link rel="dns-prefetch" href="//fonts.bunny.net">

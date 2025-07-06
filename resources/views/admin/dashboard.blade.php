@@ -58,7 +58,7 @@
         </div>
         
         <div class="project-card bg-gradient-to-br from-green-500 to-green-700 rounded-lg shadow-lg">
-            <a href="#" class="block p-6 text-center">
+            <a href="{{ route('project.type-selection') }}" class="block p-6 text-center">
                 <div class="icon-container bg-white rounded-full h-16 w-16 flex items-center justify-center mx-auto mb-4 shadow-md">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />

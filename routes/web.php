@@ -9,6 +9,7 @@ use App\Http\Controllers\OrderEntryController;
 use App\Http\Controllers\LabLicenseWebController;
 use App\Http\Controllers\CableRecordController;
 use App\Http\Controllers\LicenseViolationController;
+use App\Http\Controllers\ProjectController;
 
 
 /*
@@ -49,7 +50,7 @@ Route::get('/test-admin', function () {
 
 // Admin Routes
 Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
+Route::get('/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
     
     // إزالة وسيط التحقق للاختبار - جميع المسارات متاحة للمستخدمين المسجلين
     // Users Management - all actions
@@ -70,15 +71,15 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     
     // وحدات التحكم في أوامر العمل والمواد
     // صفحة المواد ووظائفها مرتبطة بأمر العمل
-            Route::get('work-orders/{workOrder}/materials', [MaterialsController::class, 'index'])->name('work-orders.materials.index');
-        Route::get('work-orders/{workOrder}/materials/create', [MaterialsController::class, 'create'])->name('work-orders.materials.create');
-        Route::post('work-orders/{workOrder}/materials', [MaterialsController::class, 'store'])->name('work-orders.materials.store');
-        Route::get('work-orders/{workOrder}/materials/{material}', [MaterialsController::class, 'show'])->name('work-orders.materials.show');
-        Route::get('work-orders/{workOrder}/materials/{material}/edit', [MaterialsController::class, 'edit'])->name('work-orders.materials.edit');
-        Route::put('work-orders/{workOrder}/materials/{material}', [MaterialsController::class, 'update'])->name('work-orders.materials.update');
-        Route::delete('work-orders/{workOrder}/materials/{material}', [MaterialsController::class, 'destroy'])->name('work-orders.materials.destroy');
-        Route::get('work-orders/{workOrder}/materials/export/excel', [MaterialsController::class, 'exportExcel'])->name('work-orders.materials.export.excel');
-        Route::get('materials/description/{code}', [MaterialsController::class, 'getDescriptionByCode'])->name('materials.description');
+    Route::get('work-orders/{workOrder}/materials', [MaterialsController::class, 'index'])->name('work-orders.materials.index');
+    Route::get('work-orders/{workOrder}/materials/create', [MaterialsController::class, 'create'])->name('work-orders.materials.create');
+    Route::post('work-orders/{workOrder}/materials', [MaterialsController::class, 'store'])->name('work-orders.materials.store');
+    Route::get('work-orders/{workOrder}/materials/{material}', [MaterialsController::class, 'show'])->name('work-orders.materials.show');
+    Route::get('work-orders/{workOrder}/materials/{material}/edit', [MaterialsController::class, 'edit'])->name('work-orders.materials.edit');
+    Route::put('work-orders/{workOrder}/materials/{material}', [MaterialsController::class, 'update'])->name('work-orders.materials.update');
+    Route::delete('work-orders/{workOrder}/materials/{material}', [MaterialsController::class, 'destroy'])->name('work-orders.materials.destroy');
+    Route::get('work-orders/{workOrder}/materials/export/excel', [MaterialsController::class, 'exportExcel'])->name('work-orders.materials.export.excel');
+    Route::get('materials/description/{code}', [MaterialsController::class, 'getDescriptionByCode'])->name('materials.description');
         
         // روتات الملفات المرفقة للمواد
         Route::post('work-orders/{workOrder}/materials/upload-files', [MaterialsController::class, 'uploadFiles'])->name('work-orders.materials.upload-files');
@@ -117,14 +118,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::get('work-orders/{workOrder}/actions-execution', [WorkOrderController::class, 'actionsExecution'])->name('work-orders.actions-execution');
     Route::post('work-orders/{workOrderId}/upload-post-execution-file', [WorkOrderController::class, 'uploadPostExecutionFile'])->name('work-orders.upload-post-execution-file');
 
-    // Cable Records Routes - تم تعطيلها مؤقتاً
-    // Route::get('work-orders/{workOrder}/cable-records', [CableRecordController::class, 'index'])->name('work-orders.cable-records');
-    // Route::post('work-orders/{workOrder}/cable-records', [CableRecordController::class, 'store'])->name('work-orders.cable-records.store');
-    // Route::post('work-orders/{workOrder}/cable-records/bulk-store', [CableRecordController::class, 'bulkStore'])->name('work-orders.cable-records.bulk-store');
-    // Route::put('work-orders/{workOrder}/cable-records/{cableRecord}', [CableRecordController::class, 'update'])->name('work-orders.cable-records.update');
-    // Route::delete('work-orders/{workOrder}/cable-records/{cableRecord}', [CableRecordController::class, 'destroy'])->name('work-orders.cable-records.destroy');
-    // Route::get('work-orders/{workOrder}/cable-records/daily-details', [CableRecordController::class, 'dailyDetails'])->name('work-orders.cable-records.daily-details');
-
+    
     // Survey Routes
     Route::get('work-orders/{workOrder}/survey', [WorkOrderController::class, 'survey'])->name('work-orders.survey');
     Route::post('work-orders/{workOrder}/survey', [WorkOrderController::class, 'storeSurvey'])->name('work-orders.survey.store');
@@ -214,12 +208,6 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::patch('license-violations/{violation}/status', [\App\Http\Controllers\Admin\LicenseViolationController::class, 'updateStatus'])->name('license-violations.update-status');
     Route::delete('license-violations/bulk-destroy', [\App\Http\Controllers\Admin\LicenseViolationController::class, 'bulkDestroy'])->name('license-violations.bulk-destroy');
 
-    // Streets routes - تم تعطينها مؤقتاً
-    // Route::post('streets', [\App\Http\Controllers\Admin\StreetController::class, 'store'])->name('streets.store');
-    // Route::put('streets/{street}', [\App\Http\Controllers\Admin\StreetController::class, 'update'])->name('streets.update');
-    // Route::delete('streets/{street}', [\App\Http\Controllers\Admin\StreetController::class, 'destroy'])->name('streets.destroy');
-
-
 
     Route::post('work-orders/{workOrder}/installations/images', [App\Http\Controllers\WorkOrderController::class, 'uploadInstallationsImages'])->name('work-orders.installations.images');
     Route::delete('work-orders/installations/images/{imageId}', [App\Http\Controllers\WorkOrderController::class, 'deleteInstallationImage'])->name('work-orders.installations.images.delete');
@@ -240,46 +228,9 @@ Route::get('/project-selection', function () {
 })->middleware('auth')->name('project.selection');
 
 // مسار مؤقت لتعيين المستخدم الحالي كمسؤول - يجب حذفه بعد الاستخدام
-Route::get('/make-me-admin', function () {
-    if (auth()->check()) {
-        $user = auth()->user();
-        $user->is_admin = 1; // استخدام القيمة 1 الصريحة للتأكد
-        $user->save();
-        return redirect()->route('admin.users.index')
-            ->with('success', 'تم تعيينك كمسؤول بنجاح!');
-    }
-    return redirect()->route('login');
-});
 
-// مسار مؤقت لإنشاء أرقام شهادات التنسيق
-Route::get('/generate-coordination-numbers', function () {
-    $licenses = \App\Models\License::whereNull('coordination_certificate_number')
-                                  ->orWhere('coordination_certificate_number', '')
-                                  ->get();
 
-    $count = 0;
-    $results = [];
 
-    foreach ($licenses as $license) {
-        $year = $license->license_date ? $license->license_date->format('Y') : date('Y');
-        $workOrderId = str_pad($license->work_order_id, 4, '0', STR_PAD_LEFT);
-        $licenseId = str_pad($license->id, 4, '0', STR_PAD_LEFT);
-        
-        $coordinationNumber = "TC-{$year}-{$workOrderId}-{$licenseId}";
-        
-        $license->update([
-            'coordination_certificate_number' => $coordinationNumber
-        ]);
-        
-        $count++;
-        $results[] = "تم إنشاء رقم شهادة التنسيق للرخصة #{$license->id}: {$coordinationNumber}";
-    }
-
-    $output = implode('<br>', $results);
-    $output .= "<br><br><strong>تم إنشاء أرقام شهادات التنسيق لـ {$count} رخصة بنجاح!</strong>";
-    
-    return $output;
-})->middleware('auth');
 
 
 // User Dashboard (redirect to admin dashboard)
@@ -435,21 +386,22 @@ Route::get('/test-violation', function () {
             ['work_order_id' => $workOrder->id]
         );
 
-        // إنشاء مخالفة تجريبية
-        $violation = \App\Models\LicenseViolation::create([
-            'license_id' => $license->id,
-            'work_order_id' => $workOrder->id,
-            'violation_number' => 'TEST-' . time(),
-            'violation_date' => now(),
-            'violation_type' => 'Test Violation',
-            'responsible_party' => 'Test Party',
-            'payment_status' => 1,
-            'violation_amount' => 100.50,
-            'payment_due_date' => now()->addDays(30),
-        ]);
+     
 
         return 'Violation created successfully with ID: ' . $violation->id;
     } catch (\Exception $e) {
         return 'Error: ' . $e->getMessage() . '<br>Trace: ' . $e->getTraceAsString();
     }
 })->middleware('auth');
+
+// Project Type Selection Routes
+Route::middleware(['auth'])->group(function () {
+    Route::get('/project/type-selection', [ProjectController::class, 'showProjectTypeSelection'])
+        ->name('project.type-selection');
+    
+    Route::post('/project/set-type', [ProjectController::class, 'setProjectType'])
+        ->name('project.set-type');
+    
+    Route::get('/project/current-type', [ProjectController::class, 'getCurrentProjectType'])
+        ->name('project.current-type');
+});
