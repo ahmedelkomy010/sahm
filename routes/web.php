@@ -143,6 +143,11 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::post('work-orders/{workOrder}/civil-works/images', [WorkOrderController::class, 'saveCivilWorksImages'])->name('work-orders.civil-works.images');
     Route::post('work-orders/{workOrder}/civil-works/attachments', [WorkOrderController::class, 'saveCivilWorksAttachments'])->name('work-orders.civil-works.attachments');
     Route::post('work-orders/{workOrder}/civil-works/lock', [WorkOrderController::class, 'lockCivilWorksImages'])->name('work-orders.civil-works.lock');
+    Route::post('work-orders/{workOrder}/civil-works/save-daily-data', [WorkOrderController::class, 'saveDailyData'])->name('work-orders.civil-works.save-daily-data');
+    Route::post('/work-orders/{workOrder}/civil-works/save-excavation', [WorkOrderController::class, 'saveExcavationDetails'])
+        ->name('work-orders.civil-works.save-excavation');
+    Route::get('/work-orders/{workOrder}/civil-works/today-excavations', [WorkOrderController::class, 'getTodayExcavations'])
+        ->name('work-orders.civil-works.today-excavations');
 
     // Electrical Works Routes
     Route::get('work-orders/{workOrder}/electrical-works', [App\Http\Controllers\ElectricalWorksController::class, 'index'])->name('work-orders.electrical-works');

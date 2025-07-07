@@ -570,6 +570,75 @@ class WorkOrderController extends Controller
         ]);
     }
 
+    /**
+     * Save daily civil works data
+     */
+    public function saveDailyData(Request $request, WorkOrder $workOrder)
+    {
+        try {
+            // استلام البيانات اليومية
+            $dailyDataJson = $request->input('daily_data');
+            $dailyData = json_decode($dailyDataJson, true);
+            
+            if (!$dailyData || !is_array($dailyData)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'لا توجد بيانات صحيحة لحفظها'
+                ], 400);
+            }
+            
+            // تحضير البيانات للحفظ
+            $existingDailyData = $workOrder->daily_civil_works_data ?? [];
+            $newDailyEntries = [];
+            
+            foreach ($dailyData as $item) {
+                $newDailyEntries[] = [
+                    'work_type' => $item['work_type'] ?? '',
+                    'cable_type' => $item['cable_type'] ?? '',
+                    'length' => floatval($item['length'] ?? 0),
+                    'width' => isset($item['width']) ? floatval($item['width']) : null,
+                    'depth' => isset($item['depth']) ? floatval($item['depth']) : null,
+                    'volume' => isset($item['volume']) ? floatval($item['volume']) : null,
+                    'price' => floatval($item['price'] ?? 0),
+                    'total' => floatval($item['total'] ?? 0),
+                    'date' => $item['date'] ?? now()->format('Y-m-d'),
+                    'time' => $item['time'] ?? now()->format('H:i:s'),
+                    'created_at' => now()->toISOString()
+                ];
+            }
+            
+            // دمج البيانات الجديدة مع الموجودة
+            $allDailyData = array_merge($existingDailyData, $newDailyEntries);
+            
+            // حفظ البيانات في قاعدة البيانات
+            $workOrder->update([
+                'daily_civil_works_data' => $allDailyData
+            ]);
+            
+            // حساب الإحصائيات
+            $totalAmount = array_sum(array_column($newDailyEntries, 'total'));
+            $totalItems = count($newDailyEntries);
+            
+            return response()->json([
+                'success' => true,
+                'message' => "تم حفظ {$totalItems} عنصر بإجمالي {$totalAmount} ريال",
+                'data' => [
+                    'saved_items' => $totalItems,
+                    'total_amount' => $totalAmount,
+                    'daily_entries' => $newDailyEntries
+                ]
+            ]);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error saving daily civil works data: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء حفظ البيانات: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function uploadInstallationsImages(Request $request, WorkOrder $workOrder)
     {
         try {
@@ -1930,6 +1999,81 @@ class WorkOrderController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'حدث خطأ أثناء حذف المرفق'
+            ], 500);
+        }
+    }
+
+    public function saveExcavationDetails(Request $request, WorkOrder $workOrder)
+    {
+        try {
+            $validatedData = $request->validate([
+                'excavation_type' => 'required|string',
+                'length' => 'required|numeric|min:0',
+                'width' => 'nullable|numeric|min:0',
+                'depth' => 'nullable|numeric|min:0',
+                'price' => 'required|numeric|min:0',
+                'total' => 'required|numeric|min:0',
+                'is_open_excavation' => 'required|boolean',
+                'soil_type' => 'required|string'
+            ]);
+
+            $excavationDetail = $workOrder->excavationDetails()->create($validatedData);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'تم حفظ تفاصيل الحفرية بنجاح',
+                'data' => $excavationDetail
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء حفظ تفاصيل الحفرية',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getTodayExcavations(WorkOrder $workOrder)
+    {
+        try {
+            $todayExcavations = $workOrder->excavationDetails()
+                ->whereDate('created_at', today())
+                ->get()
+                ->map(function ($excavation) {
+                    return [
+                        'excavation_type' => $excavation->excavation_type,
+                        'soil_type' => $excavation->soil_type,
+                        'length' => $excavation->length,
+                        'width' => $excavation->width,
+                        'depth' => $excavation->depth,
+                        'price' => $excavation->price,
+                        'total' => $excavation->total,
+                        'is_open_excavation' => $excavation->is_open_excavation,
+                        'created_at' => $excavation->created_at->format('Y-m-d H:i:s')
+                    ];
+                });
+
+            $summary = [
+                'total_amount' => $todayExcavations->sum('total'),
+                'total_length' => $todayExcavations->sum('length'),
+                'excavation_count' => $todayExcavations->count(),
+                'surfaced_soil_count' => $todayExcavations->where('soil_type', 'مسفلتة')->count(),
+                'unsurfaced_soil_count' => $todayExcavations->where('soil_type', 'غير مسفلتة')->count(),
+                'open_excavation_count' => $todayExcavations->where('is_open_excavation', true)->count()
+            ];
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'excavations' => $todayExcavations,
+                    'summary' => $summary
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء جلب بيانات الحفريات',
+                'error' => $e->getMessage()
             ], 500);
         }
     }

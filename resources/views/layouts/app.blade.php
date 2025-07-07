@@ -31,6 +31,9 @@ use Illuminate\Support\Facades\Route;
         <!-- Toastr CSS -->
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
 
+        <!-- jQuery -->
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
         
@@ -103,9 +106,6 @@ use Illuminate\Support\Facades\Route;
         
         <!-- Bootstrap JS Bundle with Popper -->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-        
-        <!-- jQuery (if needed) -->
-        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
         
         <!-- Alpine.js for dropdown functionality -->
         <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>

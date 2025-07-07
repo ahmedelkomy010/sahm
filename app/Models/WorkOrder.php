@@ -64,6 +64,7 @@ class WorkOrder extends Model
         'installations_locked_at',
         'installations_locked_by',
         'pre_operation_tests',
+        'daily_civil_works_data',
     ];
 
     protected $casts = [
@@ -90,6 +91,7 @@ class WorkOrder extends Model
         'invoice_images' => 'array',
         'electrical_works' => 'array',
         'installations_data' => 'array',
+        'daily_civil_works_data' => 'array',
     ];
 
     // Relationships
@@ -198,6 +200,11 @@ class WorkOrder extends Model
     public function violations()
     {
         return $this->hasMany(LicenseViolation::class);
+    }
+
+    public function excavationDetails()
+    {
+        return $this->hasMany(ExcavationDetail::class);
     }
 
     // Scopes
