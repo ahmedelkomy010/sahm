@@ -13,6 +13,7 @@ return new class extends Migration
             $table->id();
             $table->string('license_number')->unique();
             $table->foreignId('user_id')->constrained()->onDelete('restrict');
+            $table->unsignedBigInteger('work_order_id')->nullable();
             $table->string('status')->default('pending');
             $table->date('issue_date')->nullable();
             $table->date('expiry_date')->nullable();
@@ -47,6 +48,10 @@ return new class extends Migration
             
             // Financial
             $table->decimal('fee_amount', 10, 2)->nullable();
+            $table->decimal('license_value', 10, 2)->nullable();
+            $table->decimal('extension_value', 10, 2)->nullable();
+            $table->decimal('evac_license_value', 10, 2)->nullable();
+            $table->decimal('evac_amount', 10, 2)->nullable();
             $table->string('invoice_number')->nullable();
             $table->string('payment_status')->default('pending');
             $table->string('invoice_attachment')->nullable();
@@ -66,6 +71,9 @@ return new class extends Migration
             $table->string('status')->default('pending');
             $table->string('attachment')->nullable();
             $table->json('violation_details')->nullable();
+            $table->decimal('violation_amount', 10, 2)->nullable();
+            $table->decimal('violation_license_value', 10, 2)->nullable();
+            $table->string('payment_status')->default('pending');
             $table->timestamps();
             $table->softDeletes();
         });

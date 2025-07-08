@@ -14,6 +14,7 @@ class Material extends Model
         'work_order_id',
         'work_order_number', 
         'subscriber_name',
+        'name',
         'code',
         'description',
         'planned_quantity',
@@ -48,6 +49,7 @@ class Material extends Model
     ];
 
     protected $attributes = [
+        'name' => '',  // قيمة افتراضية فارغة
         'planned_quantity' => 0,
         'spent_quantity' => 0,
         'executed_quantity' => 0,
@@ -57,6 +59,21 @@ class Material extends Model
         'unit' => 'قطعة',
         'line' => '',
     ];
+
+    /**
+     * Boot the model.
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::saving(function ($material) {
+            // إذا كان الاسم فارغاً، نستخدم الوصف أو الكود
+            if (empty($material->name)) {
+                $material->name = $material->description ?? $material->code ?? '';
+            }
+        });
+    }
     
     /**
      * العلاقة مع أمر العمل

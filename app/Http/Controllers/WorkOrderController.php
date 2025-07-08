@@ -852,74 +852,150 @@ class WorkOrderController extends Controller
     // حفظ بيانات المسح
     public function storeSurvey(Request $request, WorkOrder $workOrder)
     {
-        $validated = $request->validate([
-            'survey_id' => 'nullable|exists:surveys,id',
-            'start_coordinates' => 'nullable|string|max:255',
-            'end_coordinates' => 'nullable|string|max:255',
-            'has_obstacles' => 'required|boolean',
-            'obstacles_notes' => 'nullable|string',
-            'site_images.*' => 'nullable|image|max:30720', // 30MB max per image
-        ]);
-
         try {
-            // إذا كان هناك survey_id، فهذا تعديل، وإلا فهو إنشاء جديد
+            \Log::info('Starting survey save process', ['request' => $request->all()]);
+            
+            // التحقق من صحة البيانات
+            $validated = $request->validate([
+                'survey_id' => 'nullable|integer',
+                'start_coordinates' => 'nullable|string|max:255',
+                'end_coordinates' => 'nullable|string|max:255',
+                'has_obstacles' => 'required|in:true,false,1,0',
+                'obstacles_notes' => 'nullable|string',
+                'site_images.*' => 'nullable|image|max:30720', // 30MB max per image
+            ]);
+
+            \Log::info('Validation passed', ['validated' => $validated]);
+
+            // تحويل has_obstacles إلى boolean
+            $hasObstacles = in_array($validated['has_obstacles'], ['true', '1', 1, true]);
+            \Log::info('Has obstacles value', ['original' => $validated['has_obstacles'], 'converted' => $hasObstacles]);
+
+            // إعداد بيانات المسح
+            $surveyData = [
+                'work_order_id' => $workOrder->id,
+                'start_coordinates' => $validated['start_coordinates'] ?? null,
+                'end_coordinates' => $validated['end_coordinates'] ?? null,
+                'has_obstacles' => $hasObstacles,
+                'obstacles_notes' => $validated['obstacles_notes'] ?? null,
+                'survey_type' => 'general',
+                'survey_date' => now(),
+                'status' => 'pending',
+                'created_by' => auth()->id()
+            ];
+
+            \Log::info('Survey data prepared', ['data' => $surveyData]);
+
+            // حفظ أو تحديث المسح
             if ($request->survey_id) {
-                $survey = \App\Models\Survey::findOrFail($request->survey_id);
-                $survey->update([
-                    'start_coordinates' => $validated['start_coordinates'],
-                    'end_coordinates' => $validated['end_coordinates'],
-                    'has_obstacles' => $validated['has_obstacles'],
-                    'obstacles_notes' => $validated['obstacles_notes']
-                ]);
+                \Log::info('Updating existing survey', ['survey_id' => $request->survey_id]);
+                $survey = \App\Models\Survey::find($request->survey_id);
+                if (!$survey) {
+                    throw new \Exception('Survey not found');
+                }
+                $survey->update($surveyData);
                 $message = 'تم تحديث بيانات المسح بنجاح';
             } else {
-                // إنشاء مسح جديد
-                $survey = \App\Models\Survey::create([
-                    'work_order_id' => $workOrder->id,
-                    'start_coordinates' => $validated['start_coordinates'],
-                    'end_coordinates' => $validated['end_coordinates'],
-                    'has_obstacles' => $validated['has_obstacles'],
-                    'obstacles_notes' => $validated['obstacles_notes']
-                ]);
+                \Log::info('Creating new survey');
+                
+                // إنشاء رقم المسح
+                $surveyNumber = 'SRV-' . date('Ymd') . '-' . str_pad(\App\Models\Survey::count() + 1, 4, '0', STR_PAD_LEFT);
+                $surveyData['survey_number'] = $surveyNumber;
+                
+                $survey = \App\Models\Survey::create($surveyData);
                 $message = 'تم حفظ بيانات المسح بنجاح';
             }
 
+            \Log::info('Survey saved', ['survey_id' => $survey->id]);
+
             // رفع الصور إذا تم اختيارها
             if ($request->hasFile('site_images')) {
-                foreach ($request->file('site_images') as $image) {
-                    $originalName = $image->getClientOriginalName();
-                    $filename = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
-                    $path = 'work_orders/' . $workOrder->id . '/survey';
-                    
-                    if (!Storage::disk('public')->exists($path)) {
-                        Storage::disk('public')->makeDirectory($path);
+                \Log::info('Processing site images');
+                foreach ($request->file('site_images') as $index => $image) {
+                    try {
+                        \Log::info('Processing image', ['index' => $index, 'original_name' => $image->getClientOriginalName()]);
+                        
+                        $originalName = $image->getClientOriginalName();
+                        $filename = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+                        $path = 'work_orders/' . $workOrder->id . '/survey';
+                        
+                        // التأكد من وجود المجلد
+                        $fullPath = storage_path('app/public/' . $path);
+                        if (!file_exists($fullPath)) {
+                            mkdir($fullPath, 0755, true);
+                        }
+                        
+                        $filePath = $image->storeAs($path, $filename, 'public');
+                        
+                        if (!$filePath) {
+                            throw new \Exception('Failed to store image');
+                        }
+
+                        \Log::info('Image stored', ['path' => $filePath]);
+                        
+                        // حفظ معلومات الملف في قاعدة البيانات
+                        $fileData = [
+                            'work_order_id' => $workOrder->id,
+                            'survey_id' => $survey->id,
+                            'file_category' => 'survey',
+                            'file_path' => $filePath,
+                            'file_name' => $filename,
+                            'filename' => $filename,
+                            'original_filename' => $originalName,
+                            'mime_type' => $image->getClientMimeType(),
+                            'file_size' => $image->getSize(),
+                            'description' => 'صورة موقع المسح'
+                        ];
+                        
+                        // التحقق من وجود جدول work_order_files
+                        if (\Schema::hasTable('work_order_files')) {
+                            \App\Models\WorkOrderFile::create($fileData);
+                        } else {
+                            \Log::warning('work_order_files table does not exist');
+                        }
+
+                        \Log::info('Image record created in database');
+                    } catch (\Exception $e) {
+                        \Log::error('Error uploading survey image', [
+                            'index' => $index,
+                            'error' => $e->getMessage(),
+                            'trace' => $e->getTraceAsString()
+                        ]);
+                        continue;
                     }
-                    
-                    $filePath = $image->storeAs($path, $filename, 'public');
-                    
-                    \App\Models\WorkOrderFile::create([
-                        'work_order_id' => $workOrder->id,
-                        'survey_id' => $survey->id,
-                        'filename' => $filename,
-                        'original_filename' => $originalName,
-                        'file_path' => $filePath,
-                        'file_type' => $image->getClientMimeType(),
-                        'file_size' => $image->getSize(),
-                        'file_category' => 'survey'
-                    ]);
                 }
             }
 
+            \Log::info('Survey process completed successfully');
+
             return response()->json([
                 'success' => true,
-                'message' => $message
+                'message' => $message,
+                'survey_id' => $survey->id
             ]);
 
-        } catch (\Exception $e) {
-            Log::error('Error saving survey: ' . $e->getMessage());
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            \Log::error('Validation error in storeSurvey', [
+                'errors' => $e->errors(),
+                'request' => $request->all()
+            ]);
+            
             return response()->json([
                 'success' => false,
-                'message' => 'حدث خطأ أثناء حفظ بيانات المسح: ' . $e->getMessage()
+                'message' => 'خطأ في البيانات المدخلة',
+                'errors' => $e->errors()
+            ], 422);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error in storeSurvey', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'request' => $request->all()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء حفظ المسح: ' . $e->getMessage()
             ], 500);
         }
     }

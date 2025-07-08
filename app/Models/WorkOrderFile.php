@@ -19,6 +19,9 @@ class WorkOrderFile extends Model
         'file_size',
         'file_category',
         'attachment_type',
+        'file_name',
+        'mime_type',
+        'description'
     ];
 
     public function workOrder()

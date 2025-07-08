@@ -82,7 +82,7 @@ class MaterialsController extends Controller
      */
     public function store(Request $request, WorkOrder $workOrder)
     {
-                $validated = $request->validate([
+        $validated = $request->validate([
             'code' => 'required|string|max:255',
             'description' => 'nullable|string',
             'planned_quantity' => 'nullable|numeric|min:0',
@@ -122,16 +122,19 @@ class MaterialsController extends Controller
         $data['work_order_number'] = $workOrder->order_number;
         $data['subscriber_name'] = $workOrder->subscriber_name;
         
-        // إذا كان الوصف فارغًا، نحاول جلب الوصف من جدول المواد المرجعية
-        if (empty($data['description'])) {
-            $referenceMaterial = ReferenceMaterial::where('code', $data['code'])->first();
-            if ($referenceMaterial) {
-                $data['description'] = $referenceMaterial->description;
-            } else {
-                return redirect()->back()
-                    ->withInput()
-                    ->withErrors(['description' => 'يرجى إدخال وصف المادة أو التأكد من وجود الكود في جدول المواد المرجعية']);
+        // محاولة العثور على المادة المرجعية
+        $referenceMaterial = ReferenceMaterial::where('code', $data['code'])->first();
+        
+        if ($referenceMaterial) {
+            $data['description'] = $referenceMaterial->description;
+            $data['name'] = $referenceMaterial->name ?? $referenceMaterial->description;
+        } else {
+            // إذا لم يكن هناك وصف، نستخدم الكود كوصف
+            if (empty($data['description'])) {
+                $data['description'] = $data['code'];
             }
+            // استخدام الوصف كاسم
+            $data['name'] = $data['description'];
         }
 
         // إنشاء المادة

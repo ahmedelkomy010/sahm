@@ -13,10 +13,23 @@ return new class extends Migration
             $table->id();
             $table->string('order_number')->unique();
             $table->foreignId('license_id')->nullable()->constrained()->onDelete('restrict');
-            $table->foreignId('created_by')->constrained('users')->onDelete('restrict');
             $table->foreignId('assigned_to')->nullable()->constrained('users')->onDelete('restrict');
             $table->string('status')->default('pending');
             $table->string('priority')->default('normal');
+            
+            // معلومات المشترك
+            $table->string('subscriber_name')->nullable();
+            
+            // نوع العمل والوصف
+            $table->string('work_type')->nullable();
+            $table->text('work_description')->nullable();
+            $table->date('approval_date')->nullable();
+            
+            // قيم أمر العمل
+            $table->decimal('order_value', 12, 2)->nullable();
+            $table->decimal('order_value_with_consultant', 12, 2)->nullable();
+            $table->decimal('consultant_value', 12, 2)->nullable();
+            $table->decimal('execution_value', 12, 2)->nullable();
             
             // Project information
             $table->string('project_name')->nullable();
@@ -61,6 +74,16 @@ return new class extends Migration
             $table->string('purchase_order_number')->nullable();
             $table->decimal('total_cost', 12, 2)->default(0);
             $table->string('payment_status')->default('pending');
+            
+            $table->string('municipality')->nullable();
+            $table->string('office')->nullable();
+            $table->string('station_number')->nullable();
+            $table->string('consultant_name')->nullable();
+            $table->decimal('order_value_without_consultant', 12, 2)->nullable();
+            $table->enum('execution_status', [1, 2, 3, 4, 5, 6, 7])->default(1);
+            
+            // User who created the work order
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
             
             $table->timestamps();
             $table->softDeletes();
@@ -122,9 +145,13 @@ return new class extends Migration
             $table->id();
             $table->foreignId('work_order_id')->constrained()->onDelete('cascade');
             $table->string('file_category');
+            $table->string('attachment_type')->nullable();
             $table->string('file_path');
             $table->string('file_name');
+            $table->string('filename')->nullable();
+            $table->string('original_filename')->nullable();
             $table->string('mime_type')->nullable();
+            $table->string('file_type')->nullable();
             $table->integer('file_size')->nullable();
             $table->text('description')->nullable();
             $table->timestamps();
@@ -142,10 +169,34 @@ return new class extends Migration
             $table->json('changes')->nullable();
             $table->timestamps();
         });
+
+        // Reference materials table
+        Schema::create('reference_materials', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->string('code')->unique();
+            $table->text('description')->nullable();
+            $table->string('unit');
+            $table->decimal('unit_price', 10, 2)->nullable();
+            $table->boolean('is_active')->default(true);
+            $table->timestamps();
+        });
+
+        // Invoice attachments table
+        Schema::create('invoice_attachments', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('work_order_id')->constrained()->onDelete('cascade');
+            $table->string('file_path');
+            $table->string('original_filename');
+            $table->string('file_type')->nullable();
+            $table->text('description')->nullable();
+            $table->timestamps();
+        });
     }
 
     public function down()
     {
+        Schema::dropIfExists('invoice_attachments');
         Schema::dropIfExists('work_order_history');
         Schema::dropIfExists('work_order_files');
         Schema::dropIfExists('work_order_materials');
@@ -153,5 +204,6 @@ return new class extends Migration
         Schema::dropIfExists('work_order_items');
         Schema::dropIfExists('work_items');
         Schema::dropIfExists('work_orders');
+        Schema::dropIfExists('reference_materials');
     }
 }; 
