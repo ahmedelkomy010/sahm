@@ -237,104 +237,50 @@ class License extends Model
     ];
 
     protected $casts = [
+        'license_date' => 'datetime',
+        'license_start_date' => 'datetime',
+        'license_end_date' => 'datetime',
+        'license_extension_start_date' => 'datetime',
+        'license_extension_end_date' => 'datetime',
+        'evacuation_date' => 'datetime',
+        'lab_test_date' => 'datetime',
+        'attachments' => 'array',
+        'notes_attachments' => 'array',
         'has_restriction' => 'boolean',
+        'is_restricted' => 'boolean',
         'has_depth_test' => 'boolean',
+        'has_soil_test' => 'boolean',
+        'has_asphalt_test' => 'boolean',
         'has_soil_compaction_test' => 'boolean',
         'has_rc1_mc1_test' => 'boolean',
-        'has_asphalt_test' => 'boolean',
-        'has_soil_test' => 'boolean',
         'has_interlock_test' => 'boolean',
         'is_evacuated' => 'boolean',
-        'lab_table1_data' => 'array',
-        'lab_table2_data' => 'array',
-        'evac_table1_data' => 'array',
-        'evac_table2_data' => 'array',
-        'license_start_date' => 'date',
-        'license_end_date' => 'date',
-        'license_date' => 'date',
-        'extension_start_date' => 'date',
-        'extension_end_date' => 'date',
-        'evac_date' => 'date',
-        'issue_date' => 'date',
-        'activation_date' => 'date',
-        'expiry_date' => 'date',
-        'activation_files' => 'array',
-        'payment_receipts' => 'array',
-        'payment_proof_files' => 'array',
-        'license_value' => 'decimal:2',
-        'excavation_length' => 'decimal:2',
-        'excavation_width' => 'decimal:2',
-        'excavation_depth' => 'decimal:2',
-        'license_extension_start_date' => 'date',
-        'license_extension_end_date' => 'date',
-        'license_extension_alert_days' => 'integer',
-        'invoice_extension_start_date' => 'date',
-        'invoice_extension_end_date' => 'date',
-        'evac_license_value' => 'decimal:2',
-        'evac_amount' => 'decimal:2',
-        'successful_tests_value' => 'decimal:2',
-        'failed_tests_value' => 'decimal:2',
-        'extension_alert_days' => 'integer',
-        'has_backup_test' => 'boolean',
-        'lab_tests_data' => 'json',
-        'total_tests_amount' => 'decimal:2',
-        'successful_tests_amount' => 'decimal:2',
-        'failed_tests_amount' => 'decimal:2',
-        'max_dry_density_pro_test' => 'boolean',
-        'has_asphalt_ratio_gradation_test' => 'boolean',
-        'has_marshall_test' => 'boolean',
-        'has_concrete_molds_test' => 'boolean',
-        'has_excavation_bottom_test' => 'boolean',
-        'has_protection_depth_test' => 'boolean',
-        'has_settlement_test' => 'boolean',
-        'has_concrete_temperature_test' => 'boolean',
-        'has_field_density_atomic_test' => 'boolean',
-        'has_moisture_content_test' => 'boolean',
-        'has_soil_layer_flatness_test' => 'boolean',
-        'has_concrete_sample_test' => 'boolean',
-        'has_asphalt_spray_rate_test' => 'boolean',
-        'has_asphalt_temperature_test' => 'boolean',
-        'has_concrete_cylinder_compression_test' => 'boolean',
-        'has_soil_particle_analysis_test' => 'boolean',
-        'has_liquid_plastic_limit_test' => 'boolean',
-        'has_proctor_test' => 'boolean',
-        'has_asphalt_layer_flatness_test' => 'boolean',
-        'has_asphalt_compaction_atomic_test' => 'boolean',
-        'has_bitumen_ratio_test' => 'boolean',
-        'has_asphalt_gradation_test' => 'boolean',
-        'has_asphalt_mix_gmm_test' => 'boolean',
-        'has_marshall_density_test' => 'boolean',
-        'has_aggregate_ratio_test' => 'boolean',
-        'has_stability_deficiency_test' => 'boolean',
-        'has_stability_degree_test' => 'boolean',
-        'max_dry_density_pro_test_status' => 'string',
-        'asphalt_ratio_gradation_test_status' => 'string',
-        'marshall_test_status' => 'string',
-        'concrete_molds_test_status' => 'string',
-        'excavation_bottom_test_status' => 'string',
-        'protection_depth_test_status' => 'string',
-        'settlement_test_status' => 'string',
-        'concrete_temperature_test_status' => 'string',
-        'field_density_atomic_test_status' => 'string',
-        'moisture_content_test_status' => 'string',
-        'soil_layer_flatness_test_status' => 'string',
-        'concrete_sample_test_status' => 'string',
-        'asphalt_spray_rate_test_status' => 'string',
-        'asphalt_temperature_test_status' => 'string',
-        'concrete_cylinder_compression_test_status' => 'string',
-        'soil_particle_analysis_test_status' => 'string',
-        'liquid_plastic_limit_test_status' => 'string',
-        'proctor_test_status' => 'string',
-        'asphalt_layer_flatness_test_status' => 'string',
-        'asphalt_compaction_atomic_test_status' => 'string',
-        'bitumen_ratio_test_status' => 'string',
-        'asphalt_gradation_test_status' => 'string',
-        'asphalt_mix_gmm_test_status' => 'string',
-        'marshall_density_test_status' => 'string',
-        'aggregate_ratio_test_status' => 'string',
-        'stability_deficiency_test_status' => 'string',
-        'stability_degree_test_status' => 'string',
     ];
+
+    public function getIsRestrictedAttribute(): bool
+    {
+        return $this->has_restriction ?? false;
+    }
+
+    public function getRestrictionStatusTextAttribute(): string
+    {
+        return $this->is_restricted ? 'يوجد حظر' : 'لا يوجد حظر';
+    }
+
+    public function getRestrictionStatusColorAttribute(): string
+    {
+        return $this->is_restricted ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800';
+    }
+
+    public function getFormattedRestrictionAuthorityAttribute(): string
+    {
+        return $this->restriction_authority ?? 'غير محدد';
+    }
+
+    public function getFormattedRestrictionReasonAttribute(): string
+    {
+        return $this->restriction_reason ?? 'غير محدد';
+    }
 
     protected $dates = [
         'license_start_date',
@@ -502,6 +448,30 @@ class License extends Model
         $this->save();
     }
 
+    public function getIssueDateAttribute()
+    {
+        return $this->license_date;
+    }
+
+    public function getActivationDateAttribute()
+    {
+        return $this->license_start_date;
+    }
+
+    public function getExpiryDateAttribute()
+    {
+        return $this->license_end_date;
+    }
+
+    public function getLicenseDaysAttribute()
+    {
+        if (!$this->license_start_date || !$this->license_end_date) {
+            return 0;
+        }
+
+        return $this->license_start_date->diffInDays($this->license_end_date);
+    }
+
     public function getFormattedDimensionsAttribute(): string
     {
         return sprintf(
@@ -521,19 +491,19 @@ class License extends Model
     {
         $today = now();
         
-        if (!$this->activation_date) {
+        if (!$this->license_start_date) {
             return 'غير مفعلة';
         }
         
-        if ($this->activation_date > $today) {
+        if ($this->license_start_date > $today) {
             return 'مجدولة';
         }
         
-        if (!$this->expiry_date) {
+        if (!$this->license_end_date) {
             return 'سارية';
         }
         
-        if ($this->expiry_date < $today) {
+        if ($this->license_end_date < $today) {
             return 'منتهية';
         }
         
@@ -543,11 +513,11 @@ class License extends Model
     public function getStatusColorAttribute(): string
     {
         return match($this->status_text) {
-            'غير مفعلة' => 'gray',
-            'مجدولة' => 'blue',
-            'سارية' => 'green',
-            'منتهية' => 'red',
-            default => 'gray'
+            'غير مفعلة' => '#9CA3AF', // gray-400
+            'مجدولة' => '#3B82F6', // blue-500
+            'سارية' => '#10B981', // green-500
+            'منتهية' => '#EF4444', // red-500
+            default => '#9CA3AF' // gray-400
         };
     }
 } 

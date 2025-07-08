@@ -1137,40 +1137,54 @@ class LicenseController extends Controller
      */
     private function saveExtensionSection(Request $request, License $license)
     {
-        // حفظ بيانات التمديد
-        if ($request->has('extension_value')) {
+        // حفظ بيانات التمديد في جدول التمديدات
+        if ($request->has(['extension_start_date', 'extension_end_date'])) {
+            $startDate = $request->input('extension_start_date');
+            $endDate = $request->input('extension_end_date');
+            
+            // حساب عدد أيام التمديد
+            $daysCount = $this->calculateExtensionDays($startDate, $endDate);
+            
+            // تجهيز مصفوفة المرفقات
+            $attachments = [];
+            
+            // معالجة ملفات التمديد
+            if ($request->hasFile('extension_license_file')) {
+                $extensionLicenseFile = $request->file('extension_license_file');
+                $extensionLicensePath = $extensionLicenseFile->store('licenses/extensions/license_files', 'public');
+                $attachments[] = $extensionLicensePath;
+            }
+            
+            if ($request->hasFile('extension_payment_proof')) {
+                $paymentProofFile = $request->file('extension_payment_proof');
+                $paymentProofPath = $paymentProofFile->store('licenses/extensions/payment_proofs', 'public');
+                $attachments[] = $paymentProofPath;
+            }
+            
+            if ($request->hasFile('extension_bank_proof')) {
+                $bankProofFile = $request->file('extension_bank_proof');
+                $bankProofPath = $bankProofFile->store('licenses/extensions/bank_proofs', 'public');
+                $attachments[] = $bankProofPath;
+            }
+            
+            // إنشاء سجل تمديد جديد
+            $extension = new \App\Models\LicenseExtension([
+                'license_id' => $license->id,
+                'days_count' => $daysCount,
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+                'reason' => $request->input('extension_reason'),
+                'attachments' => $attachments,
+            ]);
+            
+            $extension->save();
+            
+            // تحديث بيانات التمديد في الرخصة
             $license->extension_value = $request->input('extension_value');
+            $license->license_extension_start_date = $startDate;
+            $license->license_extension_end_date = $endDate;
+            $license->save();
         }
-        
-        if ($request->has('extension_start_date')) {
-            $license->license_extension_start_date = $request->input('extension_start_date');
-        }
-        
-        if ($request->has('extension_end_date')) {
-            $license->license_extension_end_date = $request->input('extension_end_date');
-        }
-        
-        // معالجة ملفات التمديد - استخدام الحقول الموجودة
-        if ($request->hasFile('extension_license_file')) {
-            $extensionLicenseFile = $request->file('extension_license_file');
-            $extensionLicensePath = $extensionLicenseFile->store('licenses/extensions/license_files', 'public');
-            $license->extension_attachment_1 = $extensionLicensePath;
-        }
-        
-        if ($request->hasFile('extension_payment_proof')) {
-            $paymentProofFile = $request->file('extension_payment_proof');
-            $paymentProofPath = $paymentProofFile->store('licenses/extensions/payment_proofs', 'public');
-            $license->extension_attachment_4 = $paymentProofPath;
-        }
-        
-        if ($request->hasFile('extension_bank_proof')) {
-            $bankProofFile = $request->file('extension_bank_proof');
-            $bankProofPath = $bankProofFile->store('licenses/extensions/bank_proofs', 'public');
-            $license->extension_attachment_3 = $bankProofPath;
-        }
-        
-        // حفظ الرخصة
-        $license->save();
         
         \Log::info('Extension section saved', [
             'license_id' => $license->id,

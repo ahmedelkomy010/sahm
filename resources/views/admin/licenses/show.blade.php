@@ -65,27 +65,19 @@ use Illuminate\Support\Facades\Storage;
                 <div>
                     <p class="mb-2">
                         <span class="font-medium">حالة الحظر:</span>
-                        @if($license->is_restricted)
-                            <span class="bg-red-100 text-red-800 px-2 py-1 rounded-full text-sm">
-                                يوجد حظر
-                            </span>
-                        @else
-                            <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-sm">
-                                لا يوجد حظر
-                            </span>
-                        @endif
+                        <span class="{{ $license->restriction_status_color }} px-2 py-1 rounded-full text-sm">
+                            {{ $license->restriction_status_text }}
+                        </span>
                     </p>
                     @if($license->is_restricted)
                         <p class="mb-2">
                             <span class="font-medium">جهة الحظر:</span>
-                            <span class="text-gray-700">{{ $license->restriction_authority ?: 'غير محدد' }}</span>
+                            <span class="text-gray-700">{{ $license->formatted_restriction_authority }}</span>
                         </p>
-                        @if($license->restriction_reason)
-                            <p class="mb-2">
-                                <span class="font-medium">سبب الحظر:</span>
-                                <span class="text-gray-700">{{ $license->restriction_reason }}</span>
-                            </p>
-                        @endif
+                        <p class="mb-2">
+                            <span class="font-medium">سبب الحظر:</span>
+                            <span class="text-gray-700">{{ $license->formatted_restriction_reason }}</span>
+                        </p>
                     @endif
                 </div>
             </div>
