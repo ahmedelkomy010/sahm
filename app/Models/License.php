@@ -22,11 +22,13 @@ class License extends Model
         'attachments',
         'restriction_reason',
         'restriction_authority',
+        'restriction_notes',
         // حقول شهادة التنسيق
         'coordination_certificate_number',
         'coordination_certificate_path',
         'coordination_certificate_notes',
         'letters_commitments_file_path',
+        'letters_and_commitments_path',
         'has_restriction',
         // حقول رخصة الحفر
         'license_value',

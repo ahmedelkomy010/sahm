@@ -70,8 +70,8 @@ class LicenseViolationController extends Controller
         try {
             $licenses = License::where('work_order_id', $workOrderId)
                               ->whereNotNull('license_number')
-                              ->select('id', 'license_number', 'license_type', 'license_date')
-                              ->orderBy('license_date', 'desc')
+                              ->select('id', 'license_number', 'license_type', 'issue_date as license_date')
+                              ->orderBy('issue_date', 'desc')
                               ->get();
             
             return response()->json([
@@ -79,6 +79,11 @@ class LicenseViolationController extends Controller
                 'licenses' => $licenses
             ]);
         } catch (\Exception $e) {
+            \Log::error('Error in getLicensesByWorkOrder: ' . $e->getMessage(), [
+                'work_order_id' => $workOrderId,
+                'trace' => $e->getTraceAsString()
+            ]);
+            
             return response()->json([
                 'success' => false,
                 'message' => 'حدث خطأ في تحميل الرخص',
