@@ -10,6 +10,7 @@ use App\Http\Controllers\LabLicenseWebController;
 use App\Http\Controllers\CableRecordController;
 use App\Http\Controllers\LicenseViolationController;
 use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\ExcavationDetailController;
 
 
 /*
@@ -50,7 +51,7 @@ Route::get('/test-admin', function () {
 
 // Admin Routes
 Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
-Route::get('/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
     
     // إزالة وسيط التحقق للاختبار - جميع المسارات متاحة للمستخدمين المسجلين
     // Users Management - all actions
@@ -137,6 +138,11 @@ Route::get('/dashboard', [App\Http\Controllers\Admin\DashboardController::class,
     Route::post('work-orders/{workOrder}/civil-works/images', [WorkOrderController::class, 'saveCivilWorksImages'])->name('work-orders.civil-works.images');
     Route::post('work-orders/{workOrder}/civil-works/attachments', [WorkOrderController::class, 'saveCivilWorksAttachments'])->name('work-orders.civil-works.attachments');
     Route::post('work-orders/{workOrder}/civil-works/lock', [WorkOrderController::class, 'lockCivilWorksImages'])->name('work-orders.civil-works.lock');
+    Route::post('work-orders/{workOrder}/civil-works/save-daily-data', [WorkOrderController::class, 'saveDailyData'])->name('work-orders.civil-works.save-daily-data');
+    Route::post('/work-orders/{workOrder}/civil-works/save-excavation', [WorkOrderController::class, 'saveExcavationDetails'])
+        ->name('work-orders.civil-works.save-excavation');
+    Route::get('/work-orders/{workOrder}/civil-works/today-excavations', [WorkOrderController::class, 'getTodayExcavations'])
+        ->name('work-orders.civil-works.today-excavations');
 
     // Electrical Works Routes
     Route::get('work-orders/{workOrder}/electrical-works', [App\Http\Controllers\ElectricalWorksController::class, 'index'])->name('work-orders.electrical-works');
@@ -220,6 +226,11 @@ Route::get('/dashboard', [App\Http\Controllers\Admin\DashboardController::class,
         ->name('work-orders.invoice-attachments.store');
     Route::delete('work-orders/invoice-attachments/{invoiceAttachment}', [\App\Http\Controllers\Admin\InvoiceAttachmentController::class, 'destroy'])
         ->name('work-orders.invoice-attachments.destroy');
+
+    // Excavation Details Routes
+    Route::post('licenses/{license}/excavation-details', [ExcavationDetailController::class, 'store'])->name('excavation-details.store');
+    Route::put('excavation-details/{excavationDetail}', [ExcavationDetailController::class, 'update'])->name('excavation-details.update');
+    Route::delete('excavation-details/{excavationDetail}', [ExcavationDetailController::class, 'destroy'])->name('excavation-details.destroy');
 });
 
 // Project Selection Route

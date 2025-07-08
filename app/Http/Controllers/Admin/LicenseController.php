@@ -147,6 +147,8 @@ class LicenseController extends Controller
     {
         $license->load(['workOrder', 'violations' => function($query) {
             $query->orderBy('violation_date', 'desc');
+        }, 'extensions' => function($query) {
+            $query->orderBy('created_at', 'desc');
         }]);
         
         // إذا كان الطلب JSON، إرجاع البيانات كـ JSON
