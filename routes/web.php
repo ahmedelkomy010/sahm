@@ -9,6 +9,7 @@ use App\Http\Controllers\OrderEntryController;
 use App\Http\Controllers\LabLicenseWebController;
 use App\Http\Controllers\CableRecordController;
 use App\Http\Controllers\LicenseViolationController;
+use App\Http\Controllers\ExcavationDetailController;
 
 
 /*
@@ -237,6 +238,11 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         ->name('work-orders.invoice-attachments.store');
     Route::delete('work-orders/invoice-attachments/{invoiceAttachment}', [\App\Http\Controllers\Admin\InvoiceAttachmentController::class, 'destroy'])
         ->name('work-orders.invoice-attachments.destroy');
+
+    // Excavation Details Routes
+    Route::post('licenses/{license}/excavation-details', [ExcavationDetailController::class, 'store'])->name('excavation-details.store');
+    Route::put('excavation-details/{excavationDetail}', [ExcavationDetailController::class, 'update'])->name('excavation-details.update');
+    Route::delete('excavation-details/{excavationDetail}', [ExcavationDetailController::class, 'destroy'])->name('excavation-details.destroy');
 });
 
 // Project Selection Route

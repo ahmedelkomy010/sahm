@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class License extends Model
 {
@@ -205,7 +206,34 @@ class License extends Model
         // حقول الاختبارات الجديدة
         'lab_tests_data',
         'total_tests_count',
-        'total_tests_amount'
+        'successful_tests_count',
+        'failed_tests_count',
+        'total_tests_amount',
+        'successful_tests_amount',
+        'failed_tests_amount',
+        'issue_date',
+        'activation_date',
+        'expiry_date',
+        'activation_files',
+        'payment_receipts',
+        'payment_proof_files',
+        'status',
+        'license_days',
+        'license_extension_start_date',
+        'license_extension_end_date',
+        'license_extension_alert_days',
+        'invoice_extension_start_date',
+        'invoice_extension_end_date',
+        'evac_license_value',
+        'evac_amount',
+        'successful_tests_value',
+        'failed_tests_value',
+        'extension_alert_days',
+        'has_backup_test',
+        'lab_tests_data',
+        'total_tests_amount',
+        'successful_tests_amount',
+        'failed_tests_amount',
     ];
 
     protected $casts = [
@@ -227,11 +255,13 @@ class License extends Model
         'extension_start_date' => 'date',
         'extension_end_date' => 'date',
         'evac_date' => 'date',
-
-        'license_alert_days' => 'integer',
-        'license_length' => 'float',
+        'issue_date' => 'date',
+        'activation_date' => 'date',
+        'expiry_date' => 'date',
+        'activation_files' => 'array',
+        'payment_receipts' => 'array',
+        'payment_proof_files' => 'array',
         'license_value' => 'decimal:2',
-        'extension_value' => 'decimal:2',
         'excavation_length' => 'decimal:2',
         'excavation_width' => 'decimal:2',
         'excavation_depth' => 'decimal:2',
@@ -245,9 +275,12 @@ class License extends Model
         'successful_tests_value' => 'decimal:2',
         'failed_tests_value' => 'decimal:2',
         'extension_alert_days' => 'integer',
-
-        // الحقول الجديدة للاختبارات
-        'has_max_dry_density_pro_test' => 'boolean',
+        'has_backup_test' => 'boolean',
+        'lab_tests_data' => 'json',
+        'total_tests_amount' => 'decimal:2',
+        'successful_tests_amount' => 'decimal:2',
+        'failed_tests_amount' => 'decimal:2',
+        'max_dry_density_pro_test' => 'boolean',
         'has_asphalt_ratio_gradation_test' => 'boolean',
         'has_marshall_test' => 'boolean',
         'has_concrete_molds_test' => 'boolean',
@@ -274,13 +307,6 @@ class License extends Model
         'has_aggregate_ratio_test' => 'boolean',
         'has_stability_deficiency_test' => 'boolean',
         'has_stability_degree_test' => 'boolean',
-        'has_backup_test' => 'boolean',
-        'evacuation_data' => 'array',
-        
-        // حقول الاختبارات الجديدة
-        'lab_tests_data' => 'array',
-        
-        // حقول حالة الاختبارات الجديدة
         'max_dry_density_pro_test_status' => 'string',
         'asphalt_ratio_gradation_test_status' => 'string',
         'marshall_test_status' => 'string',
@@ -319,6 +345,9 @@ class License extends Model
         'license_extension_start_date',
         'license_extension_end_date',
         'evac_date',
+        'issue_date',
+        'activation_date',
+        'expiry_date',
     ];
 
     public function workOrder(): BelongsTo
@@ -329,7 +358,7 @@ class License extends Model
     /**
      * Get the violations for the license.
      */
-    public function violations()
+    public function violations(): HasMany
     {
         return $this->hasMany(LicenseViolation::class);
     }
@@ -436,5 +465,84 @@ class License extends Model
         }
         
         return $urls;
+    }
+
+    /**
+     * Get the excavation history for the license.
+     */
+    public function excavationHistory()
+    {
+        return $this->hasMany(ExcavationDetail::class);
+    }
+
+    /**
+     * Update lab tests summary
+     */
+    public function updateLabTestsSummary()
+    {
+        $tests = json_decode($this->lab_tests_data ?? '[]', true);
+        
+        $this->total_tests_count = count($tests);
+        $this->successful_tests_count = collect($tests)->where('result', 'ناجح')->count();
+        $this->failed_tests_count = collect($tests)->where('result', 'راسب')->count();
+        
+        $this->total_tests_amount = collect($tests)->sum('price');
+        $this->successful_tests_amount = collect($tests)
+            ->where('result', 'ناجح')
+            ->sum('price');
+        $this->failed_tests_amount = collect($tests)
+            ->where('result', 'راسب')
+            ->sum('price');
+            
+        $this->save();
+    }
+
+    public function getFormattedDimensionsAttribute(): string
+    {
+        return sprintf(
+            '%s × %s × %s م',
+            number_format($this->excavation_length ?? 0, 2),
+            number_format($this->excavation_width ?? 0, 2),
+            number_format($this->excavation_depth ?? 0, 2)
+        );
+    }
+
+    public function getFormattedValueAttribute(): string
+    {
+        return number_format($this->license_value ?? 0, 2) . ' ريال';
+    }
+
+    public function getStatusTextAttribute(): string
+    {
+        $today = now();
+        
+        if (!$this->activation_date) {
+            return 'غير مفعلة';
+        }
+        
+        if ($this->activation_date > $today) {
+            return 'مجدولة';
+        }
+        
+        if (!$this->expiry_date) {
+            return 'سارية';
+        }
+        
+        if ($this->expiry_date < $today) {
+            return 'منتهية';
+        }
+        
+        return 'سارية';
+    }
+
+    public function getStatusColorAttribute(): string
+    {
+        return match($this->status_text) {
+            'غير مفعلة' => 'gray',
+            'مجدولة' => 'blue',
+            'سارية' => 'green',
+            'منتهية' => 'red',
+            default => 'gray'
+        };
     }
 } 
