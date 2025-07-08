@@ -355,6 +355,11 @@ class License extends Model
         return $this->belongsTo(WorkOrder::class);
     }
 
+    public function extensions(): HasMany
+    {
+        return $this->hasMany(LicenseExtension::class);
+    }
+
     /**
      * Get the violations for the license.
      */
