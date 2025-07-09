@@ -2261,15 +2261,19 @@ function loadExtensions() {
                     extensionDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
                 }
                 
+                // معالجة المرفقات
                 const attachments = [];
-                if (extension.extension_license_file) {
-                    attachments.push(`<a href="${extension.extension_license_file}" target="_blank" class="btn btn-outline-primary btn-sm me-1" title="ملف الرخصة"><i class="fas fa-file-pdf"></i></a>`);
+                if (extension.attachments && extension.attachments.length > 0) {
+                    extension.attachments.forEach((attachment, attachIndex) => {
+                        const fileName = attachment.path ? attachment.path.split('/').pop() : `مرفق ${attachIndex + 1}`;
+                        attachments.push(`<a href="${attachment.url}" target="_blank" class="btn btn-outline-primary btn-sm me-1 mb-1" title="${fileName}"><i class="fas fa-file-pdf"></i></a>`);
+                    });
                 }
-                if (extension.extension_payment_proof) {
-                    attachments.push(`<a href="${extension.extension_payment_proof}" target="_blank" class="btn btn-outline-success btn-sm me-1" title="إثبات السداد"><i class="fas fa-receipt"></i></a>`);
-                }
-                if (extension.extension_bank_proof) {
-                    attachments.push(`<a href="${extension.extension_bank_proof}" target="_blank" class="btn btn-outline-info btn-sm" title="إثبات البنك"><i class="fas fa-university"></i></a>`);
+                
+                // معالجة النص المحدود للملاحظات
+                let reasonText = extension.reason || 'لا توجد ملاحظات';
+                if (reasonText.length > 50) {
+                    reasonText = reasonText.substring(0, 50) + '...';
                 }
                 
                 const row = document.createElement('tr');
@@ -2282,6 +2286,11 @@ function loadExtensions() {
                     <td>
                         <span class="badge bg-warning text-dark">
                             <i class="fas fa-clock me-1"></i>${extensionDays} يوم
+                        </span>
+                    </td>
+                    <td>
+                        <span class="text-muted" title="${extension.reason || 'لا توجد ملاحظات'}">
+                            ${reasonText}
                         </span>
                     </td>
                     <td>${attachments.join('') || '<span class="text-muted">لا توجد مرفقات</span>'}</td>
@@ -2331,8 +2340,11 @@ function loadSampleExtensions() {
             extension_start_date: '2024-01-15',
             extension_end_date: '2024-02-14',
             extension_days: 30,
-            extension_license_file: '/path/to/license.pdf',
-            extension_payment_proof: '/path/to/payment.pdf'
+            reason: 'تمديد لاستكمال الأعمال المطلوبة',
+            attachments: [
+                { url: '/path/to/license.pdf', path: 'licenses/license.pdf' },
+                { url: '/path/to/payment.pdf', path: 'payments/payment.pdf' }
+            ]
         },
         {
             id: 2,
@@ -2341,7 +2353,10 @@ function loadSampleExtensions() {
             extension_start_date: '2024-02-01',
             extension_end_date: '2024-03-15',
             extension_days: 43,
-            extension_bank_proof: '/path/to/bank.pdf'
+            reason: 'تمديد بسبب الظروف الجوية',
+            attachments: [
+                { url: '/path/to/bank.pdf', path: 'banks/bank.pdf' }
+            ]
         }
     ];
     
@@ -2349,15 +2364,19 @@ function loadSampleExtensions() {
         const startDate = new Date(extension.extension_start_date).toLocaleDateString('en-GB');
         const endDate = new Date(extension.extension_end_date).toLocaleDateString('en-GB');
         
+        // معالجة المرفقات
         const attachments = [];
-        if (extension.extension_license_file) {
-            attachments.push(`<a href="${extension.extension_license_file}" target="_blank" class="btn btn-outline-primary btn-sm me-1" title="ملف الرخصة"><i class="fas fa-file-pdf"></i></a>`);
+        if (extension.attachments && extension.attachments.length > 0) {
+            extension.attachments.forEach((attachment, attachIndex) => {
+                const fileName = attachment.path ? attachment.path.split('/').pop() : `مرفق ${attachIndex + 1}`;
+                attachments.push(`<a href="${attachment.url}" target="_blank" class="btn btn-outline-primary btn-sm me-1 mb-1" title="${fileName}"><i class="fas fa-file-pdf"></i></a>`);
+            });
         }
-        if (extension.extension_payment_proof) {
-            attachments.push(`<a href="${extension.extension_payment_proof}" target="_blank" class="btn btn-outline-success btn-sm me-1" title="إثبات السداد"><i class="fas fa-receipt"></i></a>`);
-        }
-        if (extension.extension_bank_proof) {
-            attachments.push(`<a href="${extension.extension_bank_proof}" target="_blank" class="btn btn-outline-info btn-sm me-1" title="إثبات البنك"><i class="fas fa-university"></i></a>`);
+        
+        // معالجة النص المحدود للملاحظات
+        let reasonText = extension.reason || 'لا توجد ملاحظات';
+        if (reasonText.length > 50) {
+            reasonText = reasonText.substring(0, 50) + '...';
         }
         
         const row = document.createElement('tr');
@@ -2370,6 +2389,11 @@ function loadSampleExtensions() {
             <td>
                 <span class="badge bg-warning text-dark">
                     <i class="fas fa-clock me-1"></i>${extension.extension_days} يوم
+                </span>
+            </td>
+            <td>
+                <span class="text-muted" title="${extension.reason || 'لا توجد ملاحظات'}">
+                    ${reasonText}
                 </span>
             </td>
             <td>${attachments.join('') || '<span class="text-muted">لا توجد مرفقات</span>'}</td>
@@ -3096,9 +3120,9 @@ function deleteExtension(extensionId) {
 
                                             <div class="col-12">
                                                 <label class="form-label fw-bold">
-                                                    <i class="fas fa-sticky-note me-2"></i>ملاحظات (اختياري)
+                                                    <i class="fas fa-sticky-note me-2"></i>سبب التمديد / الملاحظات
                                                 </label>
-                                                <textarea class="form-control" name="extension_notes" rows="3" placeholder="أي ملاحظات إضافية عن التمديد..."></textarea>
+                                                <textarea class="form-control" name="extension_reason" rows="3" placeholder="أذكر سبب التمديد أو أي ملاحظات إضافية..."></textarea>
                                             </div>
                                         </div>
 
@@ -3146,13 +3170,14 @@ function deleteExtension(extensionId) {
                                                     <th>تاريخ البداية</th>
                                                     <th>تاريخ النهاية</th>
                                                     <th>عدد أيام التمديد</th>
+                                                    <th>الملاحظات</th>
                                                     <th>المرفقات</th>
                                                     <th>الإجراءات</th>
                                                 </tr>
                                             </thead>
                                             <tbody id="extensions-table-body">
                                                 <tr id="no-extensions-row">
-                                                    <td colspan="8" class="text-center text-muted">
+                                                    <td colspan="9" class="text-center text-muted">
                                                         <i class="fas fa-calendar-times fa-2x mb-3 d-block"></i>
                                                         لا توجد تمديدات محفوظة
                                                     </td>
@@ -3893,14 +3918,17 @@ document.addEventListener('DOMContentLoaded', function() {
 // تم نقل دالة saveCoordinationSection إلى أعلى الملف
 
 function saveDigLicenseSection() {
-    // منع الإرسال العادي للنموذج
-    event.preventDefault();
-    
-    const form = document.getElementById('digLicenseForm');
-    if (!form) {
-        toastr.error('لم يتم العثور على نموذج رخصة الحفر');
-        return false;
-    }
+    try {
+        // منع الإرسال العادي للنموذج
+        if (event) {
+            event.preventDefault();
+        }
+        
+        const form = document.getElementById('digLicenseForm');
+        if (!form) {
+            toastr.error('لم يتم العثور على نموذج رخصة الحفر');
+            return false;
+        }
 
     // التحقق من البيانات الأساسية
     const licenseNumber = form.querySelector('[name="license_number"]').value.trim();
@@ -3931,10 +3959,12 @@ function saveDigLicenseSection() {
     formData.set('section_type', 'dig_license');
     
     // إظهار loading على الزر
-    const saveBtn = event.target;
-    const originalText = saveBtn.innerHTML;
-    saveBtn.disabled = true;
-    saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>جاري الحفظ...';
+    const saveBtn = event && event.target ? event.target : document.querySelector('button[onclick="saveDigLicenseSection()"]');
+    const originalText = saveBtn ? saveBtn.innerHTML : '';
+    if (saveBtn) {
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>جاري الحفظ...';
+    }
     
     $.ajax({
         url: '{{ route("admin.licenses.save-section") }}',
@@ -3974,15 +4004,19 @@ function saveDigLicenseSection() {
             loadDigLicenses();
             
             // إعادة تفعيل الزر
-            saveBtn.disabled = false;
-            saveBtn.innerHTML = originalText;
+            if (saveBtn) {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = originalText;
+            }
         },
         error: function(xhr) {
             console.error('Error saving dig license:', xhr);
             
             // إعادة تفعيل الزر
-            saveBtn.disabled = false;
-            saveBtn.innerHTML = originalText;
+            if (saveBtn) {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = originalText;
+            }
             
             if (xhr.responseJSON && xhr.responseJSON.errors) {
                 const errors = xhr.responseJSON.errors;
@@ -3997,6 +4031,12 @@ function saveDigLicenseSection() {
     });
     
     return false;
+    
+    } catch (error) {
+        console.error('Error in saveDigLicenseSection:', error);
+        toastr.error('حدث خطأ في JavaScript: ' + error.message);
+        return false;
+    }
 }
 
 // دالة إعادة تعيين نموذج رخصة الحفر

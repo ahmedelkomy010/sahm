@@ -105,13 +105,14 @@
             </div>
         </div>
         
-        <!-- الملاحظات -->
+        <!-- سبب التمديد / الملاحظات -->
         <div class="mt-6">
-            <label for="notes" class="block text-sm font-medium text-gray-700 mb-2">ملاحظات</label>
-            <textarea name="notes" 
-                      id="notes" 
+            <label for="extension_reason" class="block text-sm font-medium text-gray-700 mb-2">سبب التمديد / الملاحظات</label>
+            <textarea name="extension_reason" 
+                      id="extension_reason" 
                       rows="3" 
-                      class="form-textarea w-full rounded-md shadow-sm"></textarea>
+                      class="form-textarea w-full rounded-md shadow-sm"
+                      placeholder="أذكر سبب التمديد أو أي ملاحظات إضافية..."></textarea>
         </div>
         
         <!-- أزرار التحكم -->

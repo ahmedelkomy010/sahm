@@ -8,6 +8,7 @@ use App\Models\Survey;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Schema;
 use App\Models\License;
 use App\Models\Material;
 use Illuminate\Support\Facades\DB;
@@ -576,11 +577,23 @@ class WorkOrderController extends Controller
     public function saveDailyData(Request $request, WorkOrder $workOrder)
     {
         try {
+            \Log::info('Starting saveDailyData', [
+                'work_order_id' => $workOrder->id,
+                'request_data' => $request->all()
+            ]);
+            
             // استلام البيانات اليومية
             $dailyDataJson = $request->input('daily_data');
+            \Log::info('Received daily_data', ['daily_data_json' => $dailyDataJson]);
+            
             $dailyData = json_decode($dailyDataJson, true);
             
             if (!$dailyData || !is_array($dailyData)) {
+                \Log::warning('Invalid daily data received', [
+                    'daily_data' => $dailyData,
+                    'json_error' => json_last_error_msg()
+                ]);
+                
                 return response()->json([
                     'success' => false,
                     'message' => 'لا توجد بيانات صحيحة لحفظها'
@@ -588,7 +601,7 @@ class WorkOrderController extends Controller
             }
             
             // تحضير البيانات للحفظ
-            $existingDailyData = $workOrder->daily_civil_works_data ?? [];
+            $existingDailyData = $workOrder->daily_civil_works_data ?? $workOrder->excavation_details_table ?? [];
             $newDailyEntries = [];
             
             foreach ($dailyData as $item) {
@@ -607,12 +620,31 @@ class WorkOrderController extends Controller
                 ];
             }
             
+            \Log::info('Prepared daily entries', [
+                'count' => count($newDailyEntries),
+                'entries' => $newDailyEntries
+            ]);
+            
             // دمج البيانات الجديدة مع الموجودة
             $allDailyData = array_merge($existingDailyData, $newDailyEntries);
             
             // حفظ البيانات في قاعدة البيانات
-            $workOrder->update([
-                'daily_civil_works_data' => $allDailyData
+            // استخدام excavation_details_table كبديل إذا لم يكن daily_civil_works_data موجود
+            $updateData = [];
+            
+            // التحقق من وجود العمود
+            if (Schema::hasColumn('work_orders', 'daily_civil_works_data')) {
+                $updateData['daily_civil_works_data'] = $allDailyData;
+            } else {
+                // استخدام excavation_details_table كبديل
+                $updateData['excavation_details_table'] = $allDailyData;
+            }
+            
+            $updateResult = $workOrder->update($updateData);
+            
+            \Log::info('Database update result', [
+                'success' => $updateResult,
+                'total_entries' => count($allDailyData)
             ]);
             
             // حساب الإحصائيات
@@ -630,7 +662,11 @@ class WorkOrderController extends Controller
             ]);
             
         } catch (\Exception $e) {
-            \Log::error('Error saving daily civil works data: ' . $e->getMessage());
+            \Log::error('Error saving daily civil works data', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'work_order_id' => $workOrder->id ?? 'unknown'
+            ]);
             
             return response()->json([
                 'success' => false,
@@ -1092,8 +1128,8 @@ class WorkOrderController extends Controller
                     'restriction_authority' => $request->restriction_agency,
                     'license_start_date' => $request->license_start_date,
                     'license_end_date' => $request->license_end_date,
-                    'license_extension_start_date' => $request->extension_start_date,
-                    'license_extension_end_date' => $request->extension_end_date,
+                                    'extension_start_date' => $request->extension_start_date,
+                'extension_end_date' => $request->extension_end_date,
                     // حقول الاختبارات
                     'has_depth_test' => $request->has_depth_test,
                     'has_soil_compaction_test' => $request->has_soil_compaction_test,
@@ -1653,6 +1689,7 @@ class WorkOrderController extends Controller
             $license = \App\Models\License::updateOrCreate(
                 ['work_order_id' => $workOrder->id],
                 [
+                    'user_id' => auth()->id(),
                     'license_number' => $validatedData['license_number'] ?? null,
                     'license_date' => $validatedData['license_date'] ?? null,
                     'license_type' => $validatedData['license_type'] ?? null,

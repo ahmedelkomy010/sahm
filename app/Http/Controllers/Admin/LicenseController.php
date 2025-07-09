@@ -41,14 +41,14 @@ class LicenseController extends Controller
             if ($request->status === 'active') {
                 $query->where(function($q) use ($now) {
                     $q->where('license_end_date', '>', $now)
-                      ->orWhere('license_extension_end_date', '>', $now);
+                      ->orWhere('extension_end_date', '>', $now);
                 });
             } elseif ($request->status === 'expired') {
                 $query->where(function($q) use ($now) {
                     $q->where('license_end_date', '<=', $now)
                       ->orWhere(function($q) use ($now) {
-                          $q->whereNotNull('license_extension_end_date')
-                            ->where('license_extension_end_date', '<=', $now);
+                          $q->whereNotNull('extension_end_date')
+                            ->where('extension_end_date', '<=', $now);
                       });
                 });
             }
@@ -75,8 +75,8 @@ class LicenseController extends Controller
                 'extension_value' => 'nullable|numeric|min:0',
                 'license_start_date' => 'nullable|date|before_or_equal:license_end_date',
                 'license_end_date' => 'nullable|date|after_or_equal:license_start_date',
-                'license_extension_start_date' => 'nullable|date',
-                'license_extension_end_date' => 'nullable|date|after_or_equal:license_extension_start_date',
+                'extension_start_date' => 'nullable|date',
+                'extension_end_date' => 'nullable|date|after_or_equal:extension_start_date',
                 'excavation_length' => 'nullable|numeric|min:0',
                 'excavation_width' => 'nullable|numeric|min:0',
                 'excavation_depth' => 'nullable|numeric|min:0',
@@ -220,14 +220,14 @@ class LicenseController extends Controller
             if ($request->status === 'active') {
                 $query->where(function($q) use ($now) {
                     $q->where('license_end_date', '>', $now)
-                      ->orWhere('license_extension_end_date', '>', $now);
+                      ->orWhere('extension_end_date', '>', $now);
                 });
             } elseif ($request->status === 'expired') {
                 $query->where(function($q) use ($now) {
                     $q->where('license_end_date', '<=', $now)
                       ->where(function($q) use ($now) {
-                          $q->whereNull('license_extension_end_date')
-                            ->orWhere('license_extension_end_date', '<=', $now);
+                          $q->whereNull('extension_end_date')
+                            ->orWhere('extension_end_date', '<=', $now);
                       });
                 });
             } elseif ($request->status === 'pending') {
@@ -424,23 +424,56 @@ class LicenseController extends Controller
     public function getExtensionsByWorkOrder($workOrderId)
     {
         try {
+            // جلب التمديدات من جدول license_extensions
             $licenses = License::where('work_order_id', $workOrderId)->get();
             $extensions = [];
             
             foreach ($licenses as $license) {
-                // التحقق من وجود تمديد في الرخصة
-                if ($license->extension_value && $license->extension_value > 0) {
+                // جلب التمديدات من جدول LicenseExtension
+                $licenseExtensions = $license->extensions()->orderBy('created_at', 'desc')->get();
+                
+                foreach ($licenseExtensions as $extension) {
+                    $attachments = [];
+                    
+                    // معالجة المرفقات إذا كانت موجودة
+                    if ($extension->attachments && is_array($extension->attachments)) {
+                        foreach ($extension->attachments as $attachment) {
+                            if ($attachment && \Storage::disk('public')->exists($attachment)) {
+                                $attachments[] = [
+                                    'url' => \Storage::disk('public')->url($attachment),
+                                    'path' => $attachment
+                                ];
+                            }
+                        }
+                    }
+                    
+                    $extensions[] = [
+                        'id' => $extension->id,
+                        'license_id' => $license->id,
+                        'license_number' => $license->license_number,
+                        'extension_value' => $license->extension_value,
+                        'extension_start_date' => $extension->start_date,
+                        'extension_end_date' => $extension->end_date,
+                        'extension_days' => $extension->days_count,
+                        'reason' => $extension->reason,
+                        'attachments' => $attachments,
+                        'created_at' => $extension->created_at?->format('Y-m-d H:i:s'),
+                    ];
+                }
+                
+                // في حالة عدم وجود تمديدات في جدول license_extensions، عرض من جدول licenses
+                if ($licenseExtensions->isEmpty() && $license->extension_value && $license->extension_value > 0) {
                     $extensions[] = [
                         'id' => $license->id,
                         'license_id' => $license->id,
                         'license_number' => $license->license_number,
                         'extension_value' => $license->extension_value,
-                        'extension_start_date' => $license->license_extension_start_date,
-                        'extension_end_date' => $license->license_extension_end_date,
-                        'extension_days' => $this->calculateExtensionDays($license->license_extension_start_date, $license->license_extension_end_date),
-                        'extension_license_file' => $license->extension_attachment_1 ? Storage::url($license->extension_attachment_1) : null,
-                        'extension_payment_proof' => $license->extension_attachment_4 ? Storage::url($license->extension_attachment_4) : null,
-                        'extension_bank_proof' => $license->extension_attachment_3 ? Storage::url($license->extension_attachment_3) : null,
+                        'extension_start_date' => $license->extension_start_date,
+                        'extension_end_date' => $license->extension_end_date,
+                        'extension_days' => $this->calculateExtensionDays($license->extension_start_date, $license->extension_end_date),
+                        'reason' => null,
+                        'attachments' => [],
+                        'created_at' => $license->updated_at?->format('Y-m-d H:i:s'),
                     ];
                 }
             }
@@ -462,19 +495,51 @@ class LicenseController extends Controller
             $license = License::findOrFail($licenseId);
             $extensions = [];
             
-            // التحقق من وجود تمديد في الرخصة
-            if ($license->extension_value && $license->extension_value > 0) {
+            // جلب التمديدات من جدول LicenseExtension
+            $licenseExtensions = $license->extensions()->orderBy('created_at', 'desc')->get();
+            
+            foreach ($licenseExtensions as $extension) {
+                $attachments = [];
+                
+                // معالجة المرفقات إذا كانت موجودة
+                if ($extension->attachments && is_array($extension->attachments)) {
+                    foreach ($extension->attachments as $attachment) {
+                        if ($attachment && \Storage::disk('public')->exists($attachment)) {
+                            $attachments[] = [
+                                'url' => \Storage::disk('public')->url($attachment),
+                                'path' => $attachment
+                            ];
+                        }
+                    }
+                }
+                
+                $extensions[] = [
+                    'id' => $extension->id,
+                    'license_id' => $license->id,
+                    'license_number' => $license->license_number,
+                    'extension_value' => $license->extension_value,
+                    'extension_start_date' => $extension->start_date,
+                    'extension_end_date' => $extension->end_date,
+                    'extension_days' => $extension->days_count,
+                    'reason' => $extension->reason,
+                    'attachments' => $attachments,
+                    'created_at' => $extension->created_at?->format('Y-m-d H:i:s'),
+                ];
+            }
+            
+            // في حالة عدم وجود تمديدات في جدول license_extensions، عرض من جدول licenses
+            if ($licenseExtensions->isEmpty() && $license->extension_value && $license->extension_value > 0) {
                 $extensions[] = [
                     'id' => $license->id,
                     'license_id' => $license->id,
                     'license_number' => $license->license_number,
                     'extension_value' => $license->extension_value,
-                    'extension_start_date' => $license->license_extension_start_date,
-                    'extension_end_date' => $license->license_extension_end_date,
-                    'extension_days' => $this->calculateExtensionDays($license->license_extension_start_date, $license->license_extension_end_date),
-                    'extension_license_file' => $license->extension_attachment_1 ? Storage::url($license->extension_attachment_1) : null,
-                    'extension_payment_proof' => $license->extension_attachment_4 ? Storage::url($license->extension_attachment_4) : null,
-                    'extension_bank_proof' => $license->extension_attachment_3 ? Storage::url($license->extension_attachment_3) : null,
+                    'extension_start_date' => $license->extension_start_date,
+                    'extension_end_date' => $license->extension_end_date,
+                    'extension_days' => $this->calculateExtensionDays($license->extension_start_date, $license->extension_end_date),
+                    'reason' => null,
+                    'attachments' => [],
+                    'created_at' => $license->updated_at?->format('Y-m-d H:i:s'),
                 ];
             }
             
@@ -588,6 +653,7 @@ class LicenseController extends Controller
                 // إنشاء رخصة جديدة دائماً - لا تحديث على رخصة موجودة
                 $license = new License();
                 $license->work_order_id = $workOrderId;
+                $license->user_id = auth()->id();
                 $isNewLicense = true;
                 
                 \Log::info('Creating NEW license (force_new = true)', [
@@ -635,6 +701,7 @@ class LicenseController extends Controller
                 if (!$license) {
                     $license = new License();
                     $license->work_order_id = $workOrderId;
+                    $license->user_id = auth()->id();
                     $isNewLicense = true;
                     
                     \Log::info('Creating NEW license (no existing license found)', [
@@ -1167,6 +1234,11 @@ class LicenseController extends Controller
                 $attachments[] = $bankProofPath;
             }
             
+            // تأكد من أن الرخصة لديها ID (محفوظة في قاعدة البيانات)
+            if (!$license->id) {
+                $license->save();
+            }
+            
             // إنشاء سجل تمديد جديد
             $extension = new \App\Models\LicenseExtension([
                 'license_id' => $license->id,
@@ -1181,9 +1253,8 @@ class LicenseController extends Controller
             
             // تحديث بيانات التمديد في الرخصة
             $license->extension_value = $request->input('extension_value');
-            $license->license_extension_start_date = $startDate;
-            $license->license_extension_end_date = $endDate;
-            $license->save();
+            $license->extension_start_date = $startDate;
+            $license->extension_end_date = $endDate;
         }
         
         \Log::info('Extension section saved', [
