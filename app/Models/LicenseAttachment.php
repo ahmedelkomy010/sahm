@@ -5,22 +5,17 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class InvoiceAttachment extends Model
+class LicenseAttachment extends Model
 {
     protected $fillable = [
-        'work_order_id',
         'license_id',
+        'attachment_type',
         'file_path',
-        'original_filename',
-        'file_type',
-        'description',
-        'attachment_type'
+        'file_name',
+        'mime_type',
+        'file_size',
+        'description'
     ];
-
-    public function workOrder(): BelongsTo
-    {
-        return $this->belongsTo(WorkOrder::class);
-    }
 
     public function license(): BelongsTo
     {

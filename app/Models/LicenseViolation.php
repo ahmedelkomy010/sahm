@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Storage;
+use App\Models\User;
 
 class LicenseViolation extends Model
 {
@@ -13,11 +14,14 @@ class LicenseViolation extends Model
 
     protected $fillable = [
         'license_id',
+        'reported_by',
         'work_order_id',
         'license_number',
         'violation_number',
         'violation_date',
         'violation_type',
+        'description',
+        'status',
         'responsible_party',
         'payment_status',
         'violation_amount',
@@ -33,6 +37,14 @@ class LicenseViolation extends Model
         'payment_due_date' => 'date',
         'violation_amount' => 'decimal:2'
     ];
+
+    /**
+     * Get the user who reported the violation.
+     */
+    public function reportedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'reported_by');
+    }
 
     /**
      * العلاقة مع أمر العمل

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\License;
 use App\Models\LicenseViolation;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -155,13 +156,16 @@ class LicenseViolationController extends Controller
             // Create the violation
             $violationData = [
                 'license_id' => $license->id,
+                'reported_by' => Auth::id(),
                 'work_order_id' => $request->work_order_id,
                 'license_number' => $request->license_number,
                 'violation_number' => $request->violation_number,
                 'violation_date' => $request->violation_date,
                 'violation_type' => $request->violation_type,
+                'description' => $request->violation_description ?? $request->violation_type,
+                'status' => 'pending',
                 'responsible_party' => $request->responsible_party,
-                'payment_status' => $request->payment_status ?? 0,
+                'payment_status' => $request->payment_status ?? 'pending',
                 'violation_amount' => $request->violation_amount,
                 'payment_due_date' => $request->payment_due_date,
                 'violation_description' => $request->violation_description,

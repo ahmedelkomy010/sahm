@@ -179,7 +179,6 @@ class License extends Model
         'evac_table2_data',
         'lab_table1_data',
         'lab_table2_data',
-        'evacuation_data',
         // الحقول الأساسية للاختبارات
         'has_depth_test',
         'has_soil_compaction_test',
@@ -521,5 +520,11 @@ class License extends Model
             'منتهية' => '#EF4444', // red-500
             default => '#9CA3AF' // gray-400
         };
+    }
+
+    // Add the attachments relationship
+    public function attachments(): HasMany
+    {
+        return $this->hasMany(InvoiceAttachment::class, 'license_id');
     }
 } 

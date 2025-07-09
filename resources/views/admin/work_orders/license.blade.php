@@ -3445,7 +3445,7 @@ function deleteExtension(extensionId) {
                     <form id="evacuationForm">
                         @csrf
                         <input type="hidden" name="work_order_id" value="{{ $workOrder->id }}">
-                        <input type="hidden" name="license_id" id="evacuation-license-id" value="">
+                        <input type="hidden" name="license_id" id="evacuation-license-id" value="@if($workOrder->license) {{ $workOrder->license->id }} @endif">
                         
                         
 
@@ -3464,10 +3464,16 @@ function deleteExtension(extensionId) {
                                 <i class="fas fa-plus me-1"></i>
                                 إضافة بيانات إخلاء جديدة
                             </button>
-                            <button type="button" class="btn btn-primary btn-sm" onclick="saveAllEvacuationData()">
-                                <i class="fas fa-save me-1"></i>
-                                حفظ جميع بيانات الإخلاء
-                            </button>
+                            <div>
+                                <button type="button" class="btn btn-warning btn-sm me-2" onclick="saveAllEvacuationDataSimple()">
+                                    <i class="fas fa-save me-1"></i>
+                                    حفظ بسيط (بدون مرفقات)
+                                </button>
+                                <button type="button" class="btn btn-primary btn-sm" onclick="saveAllEvacuationData()">
+                                    <i class="fas fa-save me-1"></i>
+                                    حفظ جميع بيانات الإخلاء
+                                </button>
+                            </div>
                         </div>
 
                         <div class="table-responsive">
@@ -3614,39 +3620,7 @@ function deleteExtension(extensionId) {
                     </h3>
                 </div>
                 <div class="section-body">
-                    <!-- اختيار الرخصة للمخالفات -->
-                    <div class="row mb-4">
-                        <div class="col-md-6">
-                            <div class="card border-danger">
-                                <div class="card-header bg-danger text-white">
-                                    <h6 class="mb-0">
-                                        <i class="fas fa-clipboard-list me-2"></i>
-                                        اختيار الرخصة للعمل عليها
-                                    </h6>
-                                </div>
-                                <div class="card-body">
-                                    <label class="form-label fw-bold">
-                                        <i class="fas fa-search me-2"></i>اختر الرخصة:
-                                    </label>
-                                    <select class="form-select" id="violation-license-selector" onchange="selectViolationLicense()">
-                                        <option value="">-- اختر الرخصة للعمل عليها --</option>
-                                    </select>
-                                    <div class="mt-2">
-                                        <small class="text-muted">
-                                            <i class="fas fa-info-circle me-1"></i>
-                                            يجب اختيار رخصة قبل إدخال بيانات المخالفات
-                                        </small>
-                                    </div>
-                                    <div id="selected-violation-license-info" class="mt-2" style="display: none;">
-                                        <div class="alert alert-danger mb-0">
-                                            <i class="fas fa-certificate me-2"></i>
-                                            الرخصة المختارة: <strong id="violation-license-display"></strong>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+
                     
                     <form id="violationForm" enctype="multipart/form-data">
                         @csrf
@@ -4057,17 +4031,16 @@ function resetDigLicenseForm() {
 }
 
     function saveEvacuationSection() {
-        // التحقق من اختيار الرخصة
-        const licenseId = document.getElementById('evacuation-license-id').value;
-        const licenseSelector = document.getElementById('evacuation-license-selector');
+        // استخدام الرخصة المرتبطة بأمر العمل
+        const licenseId = @if($workOrder->license) {{ $workOrder->license->id }} @else null @endif;
         
         if (!licenseId) {
-            toastr.warning('يجب اختيار رخصة قبل حفظ بيانات الإخلاءات');
+            toastr.warning('لا توجد رخصة مرتبطة بأمر العمل هذا');
             return;
         }
 
         // الحصول على اسم الرخصة المختارة
-        const selectedLicenseName = licenseSelector.options[licenseSelector.selectedIndex].text;
+        const selectedLicenseName = '@if($workOrder->license) {{ $workOrder->license->license_number }} @else "غير محدد" @endif';
         
         // إظهار رسالة تأكيد
         if (!confirm(`هل أنت متأكد من حفظ بيانات الإخلاءات في ${selectedLicenseName}؟`)) {
@@ -4140,7 +4113,7 @@ function addNewLabDetailsRow() {
         <td><input type="text" class="form-control form-control-sm" name="lab_mc1rc2" placeholder="MC1-RC2"></td>
         <td><input type="number" class="form-control form-control-sm" name="lab_asphalt_compaction" step="0.01" placeholder="دك أسفلت "></td>
         <td><input type="text" class="form-control form-control-sm" name="lab_soil_type" placeholder="ترابي"></td>
-        <td><input type="number" class="form-control form-control-sm" name="lab_max_asphalt_density" step="0.01" placeholder=""></td>
+        <td><input type="number" class="form-control form-control-sm" name="lab_max_asphalt_density" step="0.01" placeholder="الكثافة القصوى"></td>
         <td><input type="number" class="form-control form-control-sm" name="lab_asphalt_percentage" step="0.01" placeholder="نسبة الأسفلت "></td>
         <td><input type="text" class="form-control form-control-sm" name="lab_marshall_test" placeholder="نتيجة مارشال"></td>
         <td><input type="text" class="form-control form-control-sm" name="lab_tile_evaluation" placeholder="تقييم البلاط"></td>
@@ -4210,19 +4183,11 @@ function deleteLabDetailsRow(button) {
 }
 
 function saveAllLabDetails() {
-    // التحقق من اختيار الرخصة
-    const licenseIdElement = document.getElementById('evacuation-license-id');
-    const licenseSelectorElement = document.getElementById('evacuation-license-selector');
-    
-    if (!licenseIdElement || !licenseSelectorElement) {
-        toastr.error('خطأ في العثور على عناصر اختيار الرخصة');
-        return;
-    }
-    
-    const licenseId = licenseIdElement.value;
+    // استخدام الرخصة المرتبطة بأمر العمل
+    const licenseId = @if($workOrder->license) {{ $workOrder->license->id }} @else null @endif;
     
     if (!licenseId) {
-        toastr.warning('يجب اختيار رخصة قبل حفظ التفاصيل الفنية');
+        toastr.warning('لا توجد رخصة مرتبطة بأمر العمل هذا');
         return;
     }
 
@@ -4367,12 +4332,11 @@ function deleteEvacStreetRow(button) {
 }
 
 function saveAllEvacStreets() {
-    // التحقق من اختيار الرخصة
-    const licenseId = document.getElementById('evacuation-license-id').value;
-    const licenseSelector = document.getElementById('evacuation-license-selector');
+    // استخدام الرخصة المرتبطة بأمر العمل
+    const licenseId = @if($workOrder->license) {{ $workOrder->license->id }} @else null @endif;
     
     if (!licenseId) {
-        toastr.warning('يجب اختيار رخصة قبل حفظ جميع الفسح');
+        toastr.warning('لا توجد رخصة مرتبطة بأمر العمل هذا');
         return;
     }
 
@@ -4411,7 +4375,7 @@ function saveAllEvacStreets() {
     }
 
     // الحصول على اسم الرخصة المختارة
-    const selectedLicenseName = licenseSelector.options[licenseSelector.selectedIndex].text;
+    const selectedLicenseName = '@if($workOrder->license) {{ $workOrder->license->license_number }} @else "غير محدد" @endif';
     
     // إظهار رسالة تأكيد
     if (!confirm(`هل أنت متأكد من حفظ جميع الفسح في ${selectedLicenseName}؟`)) {
@@ -5215,18 +5179,17 @@ function updateEvacuationRowNumbers() {
     });
 }
 
-function saveAllEvacuationData() {
-    // التحقق من اختيار الرخصة
-    const licenseId = document.getElementById('evacuation-license-id').value;
+function saveAllEvacuationDataSimple() {
+    // دالة حفظ مبسطة للاختبار
+    const licenseId = @if($workOrder->license) {{ $workOrder->license->id }} @else null @endif;
     if (!licenseId) {
-        toastr.error('يجب اختيار الرخصة أولاً');
+        toastr.error('لا توجد رخصة مرتبطة بأمر العمل هذا');
         return;
     }
 
-    // تجميع بيانات الجدول
+    // تجميع بيانات الجدول بدون مرفقات
     const rows = document.getElementById('evacuationDataTable').getElementsByTagName('tbody')[0].rows;
-    const data = [];
-    let hasValidData = false;
+    let evacuationDataArray = [];
     
     for (let i = 0; i < rows.length; i++) {
         if (rows[i].id !== 'no-evacuation-data-row') {
@@ -5242,8 +5205,99 @@ function saveAllEvacuationData() {
             
             // التحقق من وجود بيانات مطلوبة
             if (rowData.is_evacuated && rowData.evacuation_date && rowData.evacuation_amount && rowData.evacuation_datetime && rowData.payment_number) {
-                data.push(rowData);
+                evacuationDataArray.push(rowData);
+            }
+        }
+    }
+
+    if (evacuationDataArray.length === 0) {
+        toastr.warning('لا توجد بيانات صالحة للحفظ');
+        return;
+    }
+
+    // إرسال البيانات بصيغة JSON بسيطة
+    const requestData = {
+        work_order_id: {{ $workOrder->id }},
+        license_id: licenseId,
+        evacuation_data: JSON.stringify(evacuationDataArray),
+        _token: document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+    };
+
+    console.log('Simple evacuation data to be sent:', requestData);
+
+    fetch(`/admin/licenses/save-evacuation-data-simple`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify(requestData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            toastr.success(data.message);
+            loadEvacuationDataForLicense(licenseId);
+        } else {
+            toastr.error(data.message || 'حدث خطأ أثناء حفظ البيانات');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        toastr.error('حدث خطأ أثناء حفظ البيانات: ' + error.message);
+    });
+}
+
+function saveAllEvacuationData() {
+    // استخدام الرخصة المرتبطة بأمر العمل
+    const licenseId = @if($workOrder->license) {{ $workOrder->license->id }} @else null @endif;
+    if (!licenseId) {
+        toastr.error('لا توجد رخصة مرتبطة بأمر العمل هذا');
+        return;
+    }
+
+    // تجميع بيانات الجدول
+    const rows = document.getElementById('evacuationDataTable').getElementsByTagName('tbody')[0].rows;
+    const formData = new FormData();
+    let hasValidData = false;
+    let evacuationDataArray = [];
+    let validRowIndex = 0;
+    
+    console.log('Reading data from table. Total rows:', rows.length);
+    
+    for (let i = 0; i < rows.length; i++) {
+        if (rows[i].id !== 'no-evacuation-data-row') {
+            const row = rows[i];
+            const rowData = {
+                is_evacuated: row.querySelector('[name*="[is_evacuated]"]').value,
+                evacuation_date: row.querySelector('[name*="[evacuation_date]"]').value,
+                evacuation_amount: row.querySelector('[name*="[evacuation_amount]"]').value,
+                evacuation_datetime: row.querySelector('[name*="[evacuation_datetime]"]').value,
+                payment_number: row.querySelector('[name*="[payment_number]"]').value,
+                notes: row.querySelector('[name*="[notes]"]').value
+            };
+            
+            console.log('Row', i, 'data:', rowData);
+            
+            // التحقق من وجود بيانات مطلوبة
+            if (rowData.is_evacuated && rowData.evacuation_date && rowData.evacuation_amount && rowData.evacuation_datetime && rowData.payment_number) {
+                evacuationDataArray.push(rowData);
                 hasValidData = true;
+                
+                // إضافة المرفقات للصف الحالي
+                const attachmentInput = row.querySelector('[name*="[attachments]"]');
+                if (attachmentInput && attachmentInput.files.length > 0) {
+                    console.log('Found', attachmentInput.files.length, 'files for row', validRowIndex);
+                    for (let j = 0; j < attachmentInput.files.length; j++) {
+                        formData.append(`evacuation_data[${validRowIndex}][attachments][]`, attachmentInput.files[j]);
+                    }
+                } else {
+                    console.log('No files found for row', validRowIndex);
+                }
+                
+                validRowIndex++;
+            } else {
+                console.log('Row', i, 'has invalid data, skipping');
             }
         }
     }
@@ -5251,6 +5305,38 @@ function saveAllEvacuationData() {
     if (!hasValidData) {
         toastr.warning('لا توجد بيانات صالحة للحفظ. تأكد من ملء الحقول المطلوبة.');
         return;
+    }
+
+    // إضافة البيانات الأساسية إلى FormData
+    formData.append('work_order_id', {{ $workOrder->id }});
+    formData.append('license_id', licenseId);
+    formData.append('evacuation_data', JSON.stringify(evacuationDataArray));
+    
+    // طباعة معلومات التشخيص
+    console.log('=== EVACUATION DATA DEBUG ===');
+    console.log('Total rows found:', rows.length);
+    console.log('Valid evacuation data count:', evacuationDataArray.length);
+    console.log('Evacuation data to be sent:', evacuationDataArray);
+    console.log('=== DETAILED ROW ANALYSIS ===');
+    
+    // تحليل تفصيلي لكل صف
+    for (let i = 0; i < rows.length; i++) {
+        if (rows[i].id !== 'no-evacuation-data-row') {
+            const row = rows[i];
+            console.log(`Row ${i}:`, {
+                is_evacuated: row.querySelector('[name*="[is_evacuated]"]')?.value || 'NOT FOUND',
+                evacuation_date: row.querySelector('[name*="[evacuation_date]"]')?.value || 'NOT FOUND',
+                evacuation_amount: row.querySelector('[name*="[evacuation_amount]"]')?.value || 'NOT FOUND',
+                evacuation_datetime: row.querySelector('[name*="[evacuation_datetime]"]')?.value || 'NOT FOUND',
+                payment_number: row.querySelector('[name*="[payment_number]"]')?.value || 'NOT FOUND',
+                notes: row.querySelector('[name*="[notes]"]')?.value || 'NOT FOUND'
+            });
+        }
+    }
+    
+    console.log('=== FORM DATA ENTRIES ===');
+    for (let pair of formData.entries()) {
+        console.log(pair[0] + ': ' + (pair[1] instanceof File ? pair[1].name : pair[1]));
     }
 
     // عرض مؤشر التحميل
@@ -5263,26 +5349,41 @@ function saveAllEvacuationData() {
     fetch(`/admin/licenses/save-evacuation-data`, {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json',
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
         },
-        body: JSON.stringify({
-            work_order_id: {{ $workOrder->id }},
-            license_id: licenseId,
-            evacuation_data: data
-        })
+        body: formData
     })
-    .then(response => response.json())
+    .then(response => {
+        console.log('Response status:', response.status);
+        console.log('Response headers:', response.headers);
+        
+        if (!response.ok) {
+            return response.text().then(text => {
+                console.error('Response error text:', text);
+                throw new Error(`HTTP error! status: ${response.status} - ${text.substring(0, 200)}`);
+            });
+        }
+        return response.json();
+    })
     .then(data => {
+        console.log('Response data:', data);
         if (data.success) {
             toastr.success(`تم حفظ بيانات الإخلاءات بنجاح للرخصة: ${data.license_name || licenseId}`);
+            // إعادة تحميل البيانات لإظهار المرفقات المحفوظة
+            loadEvacuationDataForLicense(licenseId);
         } else {
             toastr.error(data.message || 'حدث خطأ أثناء حفظ البيانات');
+            if (data.errors) {
+                console.error('Validation errors:', data.errors);
+                Object.keys(data.errors).forEach(field => {
+                    toastr.error(`${field}: ${data.errors[field].join(', ')}`);
+                });
+            }
         }
     })
     .catch(error => {
-        console.error('Error:', error);
-        toastr.error('حدث خطأ أثناء حفظ بيانات الإخلاءات');
+        console.error('Full error:', error);
+        toastr.error('حدث خطأ أثناء حفظ بيانات الإخلاءات: ' + error.message);
     })
     .finally(() => {
         // إعادة تعيين زر الحفظ
@@ -5293,19 +5394,27 @@ function saveAllEvacuationData() {
 
 // دالة لتحميل بيانات الإخلاءات الموجودة للرخصة المختارة
 function loadEvacuationDataForLicense(licenseId) {
+    if (!licenseId) {
+        licenseId = @if($workOrder->license) {{ $workOrder->license->id }} @else null @endif;
+    }
     if (!licenseId) return;
+    
+    console.log('Loading evacuation data for license:', licenseId);
     
     fetch(`/admin/licenses/get-evacuation-data/${licenseId}`)
         .then(response => response.json())
         .then(data => {
+            console.log('Loaded evacuation data:', data);
             const tbody = document.getElementById('evacuationDataTable').getElementsByTagName('tbody')[0];
             tbody.innerHTML = '';
             
             if (data.evacuation_data && data.evacuation_data.length > 0) {
+                console.log('Adding', data.evacuation_data.length, 'existing rows to table');
                 data.evacuation_data.forEach((item, index) => {
                     addEvacuationRowWithData(item, index + 1);
                 });
             } else {
+                console.log('No existing evacuation data found');
                 tbody.innerHTML = `
                     <tr id="no-evacuation-data-row">
                         <td colspan="9" class="text-center text-muted py-4">
@@ -5322,6 +5431,7 @@ function loadEvacuationDataForLicense(licenseId) {
 }
 
 function addEvacuationRowWithData(data, rowNumber) {
+    console.log('Adding evacuation row with data:', data, 'row number:', rowNumber);
     const tbody = document.getElementById('evacuationDataTable').getElementsByTagName('tbody')[0];
     const noRowsMessage = document.getElementById('no-evacuation-data-row');
     
@@ -5357,7 +5467,16 @@ function addEvacuationRowWithData(data, rowNumber) {
         </td>
         <td>
             <input type="file" class="form-control form-control-sm" name="evacuation_data[${rowNumber}][attachments][]" multiple accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
-            ${data.attachments ? `<small class="text-muted">ملفات موجودة: ${data.attachments}</small>` : ''}
+            ${data.attachments && data.attachments.length > 0 ? `
+                <div class="mt-2">
+                    ${data.attachments.map(attachment => `
+                        <span class="badge bg-primary me-1">
+                            <i class="fas fa-file me-1"></i>
+                            ${attachment.split('/').pop()}
+                        </span>
+                    `).join('')}
+                </div>
+            ` : ''}
         </td>
         <td class="text-center">
             <button type="button" class="btn btn-danger btn-sm" onclick="deleteEvacuationRow(this)" title="حذف الصف">
@@ -5369,6 +5488,16 @@ function addEvacuationRowWithData(data, rowNumber) {
     tbody.appendChild(newRow);
 }
 
+  </script>
+  
+  <script>
+    // تحميل بيانات الإخلاءات تلقائياً عند تحميل الصفحة
+    document.addEventListener('DOMContentLoaded', function() {
+        const licenseId = @if($workOrder->license) {{ $workOrder->license->id }} @else null @endif;
+        if (licenseId) {
+            loadEvacuationDataForLicense(licenseId);
+        }
+    });
   </script>
   
 @endsection 

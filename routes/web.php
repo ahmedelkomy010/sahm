@@ -191,6 +191,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     
     // بيانات الإخلاءات التفصيلية
     Route::post('licenses/save-evacuation-data', [\App\Http\Controllers\Admin\LicenseController::class, 'saveEvacuationData'])->name('licenses.save-evacuation-data');
+Route::post('licenses/save-evacuation-data-simple', [\App\Http\Controllers\Admin\LicenseController::class, 'saveEvacuationDataSimple'])->name('licenses.save-evacuation-data-simple');
     Route::get('licenses/get-evacuation-data/{license}', [\App\Http\Controllers\Admin\LicenseController::class, 'getEvacuationData'])->name('licenses.get-evacuation-data');
 
     // مسارات التمديدات

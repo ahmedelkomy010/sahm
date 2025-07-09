@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\License;
 use App\Models\WorkOrder;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
 class LicenseController extends Controller
@@ -149,7 +150,7 @@ class LicenseController extends Controller
             $query->orderBy('violation_date', 'desc');
         }, 'extensions' => function($query) {
             $query->orderBy('created_at', 'desc');
-        }]);
+        }, 'attachments']);
         
         // إذا كان الطلب JSON، إرجاع البيانات كـ JSON
         if (request()->expectsJson() || request()->ajax()) {
@@ -1184,14 +1185,17 @@ class LicenseController extends Controller
             // إنشاء سجل مخالفة جديد
             \App\Models\LicenseViolation::create([
                 'license_id' => $license->id,
-                'violation_license_number' => $violationData['violation_license_number'],
-                'violation_license_value' => $violationData['violation_license_value'],
-                'violation_license_date' => $violationData['violation_license_date'],
-                'violation_due_date' => $violationData['violation_due_date'],
+                'reported_by' => Auth::id(),
+                'violation_type' => $violationData['violation_cause'] ?? 'غير محدد',
+                'description' => $violationData['violation_cause'] ?? 'غير محدد',
+                'violation_date' => $violationData['violation_license_date'] ?? now(),
+                'status' => 'pending',
+                'payment_status' => 'pending',
                 'violation_number' => $violationData['violation_number'],
-                'violation_payment_number' => $violationData['violation_payment_number'],
-                'violation_cause' => $violationData['violation_cause'],
-                'violations_file_path' => $violationFilePath,
+                'violation_amount' => $violationData['violation_license_value'],
+                'payment_due_date' => $violationData['violation_due_date'],
+                'payment_invoice_number' => $violationData['violation_payment_number'],
+                'attachment_path' => $violationFilePath,
             ]);
 
             // تحديث عدد المخالفات في الرخصة
@@ -1514,26 +1518,321 @@ class LicenseController extends Controller
     /**
      * حفظ بيانات الإخلاءات التفصيلية
      */
+    public function saveEvacuationDataSimple(Request $request)
+    {
+        try {
+            \Log::info('Simple evacuation save attempt', $request->all());
+            
+            // تحقق بسيط
+            if (!$request->has('license_id') || !$request->has('evacuation_data')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'البيانات المطلوبة مفقودة'
+                ], 422);
+            }
+            
+            $license = License::find($request->license_id);
+            if (!$license) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'الرخصة غير موجودة'
+                ], 404);
+            }
+            
+            // محاولة حفظ بسيط بدون ملفات
+            $evacuationData = json_decode($request->evacuation_data, true);
+            if (!$evacuationData) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'بيانات الإخلاء غير صحيحة'
+                ], 422);
+            }
+            
+            $additionalDetails = $license->additional_details ? json_decode($license->additional_details, true) : [];
+            $additionalDetails['evacuation_data'] = $evacuationData;
+            $license->additional_details = json_encode($additionalDetails, JSON_UNESCAPED_UNICODE);
+            $license->save();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'تم حفظ البيانات بنجاح (بدون مرفقات)',
+                'license_name' => $license->license_number
+            ]);
+            
+        } catch (\Exception $e) {
+            \Log::error('Simple save error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'خطأ: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function saveEvacuationData(Request $request)
     {
         try {
-            $validated = $request->validate([
-                'work_order_id' => 'required|exists:work_orders,id',
-                'license_id' => 'required|exists:licenses,id',
-                'evacuation_data' => 'required|array',
-                'evacuation_data.*.is_evacuated' => 'required|in:0,1',
-                'evacuation_data.*.evacuation_date' => 'required|date',
-                'evacuation_data.*.evacuation_amount' => 'required|numeric|min:0',
-                'evacuation_data.*.evacuation_datetime' => 'required|date',
-                'evacuation_data.*.payment_number' => 'required|string|max:255',
-                'evacuation_data.*.notes' => 'nullable|string'
+            // طباعة تفاصيل الطلب للتشخيص
+            \Log::info('saveEvacuationData request received', [
+                'evacuation_data_type' => gettype($request->evacuation_data),
+                'files_count' => count($request->allFiles()),
+                'content_type' => $request->header('Content-Type'),
+                'method' => $request->method(),
+                'all_inputs' => array_keys($request->all()),
+                'detailed_file_structure' => array_map(function($files) {
+                    if (is_array($files)) {
+                        return array_map(function($file) {
+                            return ($file && $file instanceof \Illuminate\Http\UploadedFile) ? $file->getClientOriginalName() : 'unknown';
+                        }, $files);
+                    }
+                    return ($files && $files instanceof \Illuminate\Http\UploadedFile) ? $files->getClientOriginalName() : 'unknown';
+                }, $request->allFiles())
             ]);
 
-            $license = License::findOrFail($validated['license_id']);
+            // التحقق من صحة البيانات الأساسية
+            $request->validate([
+                'work_order_id' => 'required|exists:work_orders,id',
+                'license_id' => 'required|exists:licenses,id',
+                'evacuation_data' => 'required'
+            ]);
+
+            $license = License::findOrFail($request->license_id);
             
-            // حفظ بيانات الإخلاءات في حقل JSON
-            $license->evacuation_data = json_encode($validated['evacuation_data'], JSON_UNESCAPED_UNICODE);
-            $license->save();
+            // التحقق من وجود الرخصة
+            if (!$license) {
+                throw new \Exception('الرخصة غير موجودة');
+            }
+            
+            // تحويل بيانات الإخلاء إلى array
+            $evacuationDataArray = $request->evacuation_data;
+            
+            // إذا كانت البيانات string، حولها إلى array
+            if (is_string($evacuationDataArray)) {
+                $evacuationDataArray = json_decode($evacuationDataArray, true);
+            }
+            
+            // التأكد من أن البيانات في تنسيق array صحيح
+            if (!is_array($evacuationDataArray)) {
+                throw new \Exception('بيانات الإخلاء غير صحيحة');
+            }
+            
+            \Log::info('Evacuation data received', [
+                'license_id' => $request->license_id,
+                'work_order_id' => $request->work_order_id,
+                'evacuation_count' => count($evacuationDataArray),
+                'evacuation_data_raw' => is_string($request->evacuation_data) ? $request->evacuation_data : 'array',
+                'evacuation_data_type' => gettype($request->evacuation_data),
+                'evacuation_data_parsed' => $evacuationDataArray,
+                'has_files' => $request->hasFile('evacuation_data'),
+                'all_files' => array_keys($request->allFiles()),
+                'all_inputs' => array_keys($request->all()),
+                'request_files_detail' => $this->getFileDetails($request),
+                'detailed_files' => $request->allFiles()
+            ]);
+            
+            // معالجة المرفقات لكل سجل إخلاء
+            $processedEvacuationData = [];
+            $attachmentIndex = 0; // مؤشر للمرفقات
+            
+            foreach ($evacuationDataArray as $dataIndex => $evacuation) {
+                $processedEvacuation = $evacuation;
+                
+                // معالجة المرفقات إذا كانت موجودة - البحث بعدة تنسيقات
+                $attachmentKeys = [
+                    "evacuation_data.{$dataIndex}.attachments",
+                    "evacuation_data[{$dataIndex}][attachments]",
+                    "evacuation_data[{$attachmentIndex}][attachments]",
+                    "evacuation_data_{$dataIndex}_attachments",
+                    "evacuation_data_{$attachmentIndex}_attachments"
+                ];
+                
+                \Log::info("Searching for attachments for evacuation {$dataIndex}", [
+                    'attachment_index' => $attachmentIndex,
+                    'searching_keys' => $attachmentKeys,
+                    'all_file_keys' => array_keys($request->allFiles()),
+                    'detailed_file_keys' => array_map(function($key) use ($request) {
+                        $files = $request->file($key);
+                        if (is_array($files)) {
+                            return [
+                                'key' => $key,
+                                'count' => count($files),
+                                'files' => array_map(function($file) {
+                                    return ($file && $file instanceof \Illuminate\Http\UploadedFile) ? $file->getClientOriginalName() : 'null';
+                                }, $files)
+                            ];
+                        }
+                        return [
+                            'key' => $key,
+                            'count' => 1,
+                            'file' => ($files && $files instanceof \Illuminate\Http\UploadedFile) ? $files->getClientOriginalName() : 'null'
+                        ];
+                    }, array_keys($request->allFiles()))
+                ]);
+                
+                $attachmentFiles = null;
+                foreach ($attachmentKeys as $key) {
+                    if ($request->hasFile($key)) {
+                        $attachmentFiles = $request->file($key);
+                        \Log::info("Found attachments with key: {$key}", [
+                            'file_count' => is_array($attachmentFiles) ? count($attachmentFiles) : 1
+                        ]);
+                        break;
+                    }
+                }
+                
+                // إذا لم توجد المرفقات، جرب البحث في جميع الملفات المرسلة
+                if (!$attachmentFiles) {
+                    foreach ($request->allFiles() as $key => $files) {
+                        if (strpos($key, 'evacuation_data') !== false && 
+                            strpos($key, 'attachments') !== false && 
+                            (strpos($key, "[{$dataIndex}]") !== false || strpos($key, "[{$attachmentIndex}]") !== false)) {
+                            $attachmentFiles = $files;
+                            \Log::info("Found attachments with alternate search, key: {$key}", [
+                                'file_count' => is_array($attachmentFiles) ? count($attachmentFiles) : 1
+                            ]);
+                            break;
+                        }
+                    }
+                }
+                
+                // إذا لم توجد المرفقات بعد، جرب البحث المرن في جميع الملفات
+                if (!$attachmentFiles) {
+                    $allEvacuationFiles = [];
+                    foreach ($request->allFiles() as $key => $files) {
+                        if (strpos($key, 'evacuation_data') !== false && strpos($key, 'attachments') !== false) {
+                            $allEvacuationFiles[$key] = $files;
+                        }
+                    }
+                    
+                    if (count($allEvacuationFiles) > 0) {
+                        \Log::info("Found evacuation files for flexible matching", [
+                            'available_files' => array_keys($allEvacuationFiles),
+                            'looking_for_index' => $attachmentIndex
+                        ]);
+                        
+                        // استخدام المرفقات بالترتيب
+                        $fileKeys = array_keys($allEvacuationFiles);
+                        if (isset($fileKeys[$attachmentIndex])) {
+                            $attachmentFiles = $allEvacuationFiles[$fileKeys[$attachmentIndex]];
+                            \Log::info("Using flexible matching for evacuation {$dataIndex}", [
+                                'used_key' => $fileKeys[$attachmentIndex],
+                                'file_count' => is_array($attachmentFiles) ? count($attachmentFiles) : 1
+                            ]);
+                        }
+                    }
+                }
+                
+                // إذا لم نجد المرفقات بعد، جرب البحث بناءً على pattern matching
+                if (!$attachmentFiles) {
+                    foreach ($request->allFiles() as $key => $files) {
+                        // البحث عن أي مفتاح يحتوي على evacuation_data و attachments
+                        if (preg_match('/evacuation_data\[(\d+)\]\[attachments\]/', $key, $matches)) {
+                            $foundIndex = intval($matches[1]);
+                            // استخدام المرفقات إذا كان الفهرس يطابق أي من الفهارس المتوقعة
+                            if ($foundIndex === $dataIndex || $foundIndex === $attachmentIndex) {
+                                $attachmentFiles = $files;
+                                \Log::info("Found attachments using regex pattern for evacuation {$dataIndex}", [
+                                    'found_key' => $key,
+                                    'found_index' => $foundIndex,
+                                    'file_count' => is_array($attachmentFiles) ? count($attachmentFiles) : 1
+                                ]);
+                                break;
+                            }
+                        }
+                    }
+                }
+                
+                // الطريقة الأخيرة: إذا لم نجد المرفقات بعد، استخدم أي مرفق متاح
+                if (!$attachmentFiles && $attachmentIndex === 0) {
+                    $allEvacuationFiles = [];
+                    foreach ($request->allFiles() as $key => $files) {
+                        if (strpos($key, 'evacuation_data') !== false && strpos($key, 'attachments') !== false) {
+                            $allEvacuationFiles[] = ['key' => $key, 'files' => $files];
+                        }
+                    }
+                    
+                    if (count($allEvacuationFiles) > 0) {
+                        $attachmentFiles = $allEvacuationFiles[0]['files'];
+                        \Log::info("Using fallback: first available evacuation files for evacuation {$dataIndex}", [
+                            'used_key' => $allEvacuationFiles[0]['key'],
+                            'file_count' => is_array($attachmentFiles) ? count($attachmentFiles) : 1
+                        ]);
+                    }
+                }
+                
+                if ($attachmentFiles) {
+                    $attachmentPaths = [];
+                    
+                    // التأكد من وجود المجلد
+                    if (!\Storage::disk('public')->exists('licenses/evacuations')) {
+                        \Storage::disk('public')->makeDirectory('licenses/evacuations');
+                    }
+                    
+                    foreach ($attachmentFiles as $fileIndex => $file) {
+                        // التحقق من صحة الملف
+                        if ($file->isValid()) {
+                            $sanitizedFileName = preg_replace('/[^a-zA-Z0-9._-]/', '_', $file->getClientOriginalName());
+                            $filename = time() . '_' . $dataIndex . '_' . $fileIndex . '_' . $sanitizedFileName;
+                            $path = $file->storeAs('licenses/evacuations', $filename, 'public');
+                            $attachmentPaths[] = $path;
+                                        } else {
+                    \Log::warning("Invalid file uploaded for evacuation {$dataIndex}", [
+                        'file_error' => $file->getError(),
+                        'file_name' => $file->getClientOriginalName()
+                    ]);
+                }
+            }
+            
+            $processedEvacuation['attachments'] = $attachmentPaths;
+            
+            \Log::info("Processed attachments for evacuation {$dataIndex}", [
+                'attachment_count' => count($attachmentPaths),
+                'files' => $attachmentPaths
+            ]);
+        } else {
+            \Log::warning("No attachments found for evacuation {$dataIndex}", [
+                'attachment_index' => $attachmentIndex,
+                'all_file_keys' => array_keys($request->allFiles())
+            ]);
+        }
+        
+        $processedEvacuationData[] = $processedEvacuation;
+        $attachmentIndex++;
+    }
+            
+            // الحصول على البيانات الإضافية الحالية أو إنشاء مصفوفة فارغة
+            $additionalDetails = $license->additional_details ? json_decode($license->additional_details, true) : [];
+            
+            // استبدال بيانات الإخلاء بالبيانات الجديدة المرسلة
+            // هذا يضمن أن البيانات المحررة في الجدول تستبدل البيانات الموجودة
+            $additionalDetails['evacuation_data'] = $processedEvacuationData;
+            
+            \Log::info('Replacing evacuation data', [
+                'new_count' => count($processedEvacuationData),
+                'evacuation_data' => $processedEvacuationData,
+                'additional_details_before' => $license->additional_details,
+                'additional_details_after_prep' => json_encode($additionalDetails, JSON_UNESCAPED_UNICODE)
+            ]);
+            
+            // حفظ البيانات الإضافية المحدثة
+            $license->additional_details = json_encode($additionalDetails, JSON_UNESCAPED_UNICODE);
+            $saved = $license->save();
+            
+            // التحقق من الحفظ
+            $license->refresh(); // إعادة تحميل البيانات من قاعدة البيانات
+            \Log::info('Data saved verification', [
+                'save_result' => $saved,
+                'license_id' => $license->id,
+                'additional_details_saved' => $license->additional_details,
+                'evacuation_data_in_db' => $license->additional_details ? json_decode($license->additional_details, true)['evacuation_data'] ?? 'NOT FOUND' : 'NULL'
+            ]);
+
+            \Log::info('Evacuation data saved successfully', [
+                'license_id' => $license->id,
+                'evacuation_count' => count($processedEvacuationData),
+                'attachments_count' => array_sum(array_map(function($item) {
+                    return isset($item['attachments']) ? count($item['attachments']) : 0;
+                }, $processedEvacuationData))
+            ]);
 
             return response()->json([
                 'success' => true,
@@ -1542,16 +1841,36 @@ class LicenseController extends Controller
             ]);
 
         } catch (\Illuminate\Validation\ValidationException $e) {
+            \Log::error('Validation error in saveEvacuationData', [
+                'errors' => $e->errors(),
+                'request_data' => [
+                    'work_order_id' => $request->work_order_id,
+                    'license_id' => $request->license_id,
+                    'evacuation_data_type' => gettype($request->evacuation_data),
+                    'evacuation_data' => is_string($request->evacuation_data) ? $request->evacuation_data : 'array',
+                    'has_evacuation_data' => $request->has('evacuation_data'),
+                    'evacuation_data_length' => is_string($request->evacuation_data) ? strlen($request->evacuation_data) : (is_array($request->evacuation_data) ? count($request->evacuation_data) : 0),
+                ]
+            ]);
+            
             return response()->json([
                 'success' => false,
-                'message' => 'بيانات غير صحيحة',
+                'message' => 'بيانات غير صحيحة: ' . implode(', ', array_map(function($errors) {
+                    return implode(', ', $errors);
+                }, $e->errors())),
                 'errors' => $e->errors()
             ], 422);
             
         } catch (\Exception $e) {
             \Log::error('Error saving evacuation data: ' . $e->getMessage(), [
                 'trace' => $e->getTraceAsString(),
-                'request' => $request->all()
+                'request_data' => [
+                    'work_order_id' => $request->work_order_id,
+                    'license_id' => $request->license_id,
+                    'evacuation_data_type' => gettype($request->evacuation_data),
+                    'evacuation_data_length' => is_string($request->evacuation_data) ? strlen($request->evacuation_data) : (is_array($request->evacuation_data) ? count($request->evacuation_data) : 0),
+                    'has_files' => $request->hasFile('evacuation_data')
+                ]
             ]);
 
             return response()->json([
@@ -1570,12 +1889,17 @@ class LicenseController extends Controller
             $license = License::findOrFail($licenseId);
             
             $evacuationData = [];
-            if ($license->evacuation_data) {
-                $evacuationData = json_decode($license->evacuation_data, true);
+            if ($license->additional_details) {
+                $additionalDetails = json_decode($license->additional_details, true);
                 
                 // التأكد من أن البيانات في تنسيق مصفوفة
-                if (!is_array($evacuationData)) {
-                    $evacuationData = [];
+                if (is_array($additionalDetails) && isset($additionalDetails['evacuation_data'])) {
+                    $evacuationData = $additionalDetails['evacuation_data'];
+                    
+                    // التأكد من أن بيانات الإخلاءات في تنسيق مصفوفة
+                    if (!is_array($evacuationData)) {
+                        $evacuationData = [];
+                    }
                 }
             }
 
@@ -1594,6 +1918,22 @@ class LicenseController extends Controller
                 'evacuation_data' => []
             ], 500);
         }
+    }
+
+    /**
+     * دالة مساعدة لفهم تفاصيل الملفات المرسلة
+     */
+    private function getFileDetails($request)
+    {
+        $details = [];
+        foreach ($request->allFiles() as $key => $files) {
+            if (is_array($files)) {
+                $details[$key] = count($files) . ' files';
+            } else {
+                $details[$key] = '1 file';
+            }
+        }
+        return $details;
     }
 
     /**

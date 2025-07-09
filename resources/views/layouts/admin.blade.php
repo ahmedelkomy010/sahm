@@ -29,7 +29,6 @@
     
     <!-- Laboratory Tab Custom CSS -->
     <link rel="stylesheet" href="{{ asset('css/laboratory-tab.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/license-details.css') }}">
     
     <!-- Vite Assets (includes Tailwind CSS) -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
