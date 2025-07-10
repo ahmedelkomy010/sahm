@@ -52,6 +52,7 @@ class WorkOrderController extends Controller
             'work_items' => 'nullable|array',
             'work_items.*.work_item_id' => 'required_with:work_items|exists:work_items,id',
             'work_items.*.planned_quantity' => 'required_with:work_items|numeric|min:0',
+            'work_items.*.unit_price' => 'nullable|numeric|min:0',
             'work_items.*.notes' => 'nullable|string',
             // المواد
             'materials' => 'nullable|array',
@@ -59,6 +60,7 @@ class WorkOrderController extends Controller
             'materials.*.material_description' => 'required_with:materials|string|max:255',
             'materials.*.planned_quantity' => 'required_with:materials|numeric|min:0',
             'materials.*.unit' => 'required_with:materials|string|max:50',
+            'materials.*.unit_price' => 'nullable|numeric|min:0',
             'materials.*.notes' => 'nullable|string',
             // المرفقات
             'files.license_estimate' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png|max:20480',
@@ -75,9 +77,14 @@ class WorkOrderController extends Controller
         if ($request->has('work_items') && is_array($request->work_items)) {
             foreach ($request->work_items as $workItem) {
                 if (!empty($workItem['work_item_id']) && !empty($workItem['planned_quantity'])) {
+                    // الحصول على بيانات بند العمل لاستخراج سعر الوحدة
+                    $workItemDetails = \App\Models\WorkItem::find($workItem['work_item_id']);
+                    $unitPrice = $workItemDetails ? $workItemDetails->unit_price : 0;
+                    
                     $workOrder->workOrderItems()->create([
                         'work_item_id' => $workItem['work_item_id'],
-                        'planned_quantity' => $workItem['planned_quantity'],
+                        'quantity' => $workItem['planned_quantity'],
+                        'unit_price' => $workItem['unit_price'] ?? $unitPrice,
                         'notes' => $workItem['notes'] ?? null,
                     ]);
                 }
@@ -88,30 +95,24 @@ class WorkOrderController extends Controller
         if ($request->has('materials') && is_array($request->materials)) {
             foreach ($request->materials as $material) {
                 if (!empty($material['material_code']) && !empty($material['material_description'])) {
-                    // حفظ في جدول مقايسة المواد (work_order_materials)
-                    $workOrder->workOrderMaterials()->create([
-                        'material_code' => $material['material_code'],
-                        'material_description' => $material['material_description'],
-                        'planned_quantity' => $material['planned_quantity'] ?? 0,
-                        'unit' => $material['unit'] ?? 'عدد',
-                        'notes' => $material['notes'] ?? null,
-                    ]);
+                    // إنشاء أو العثور على المادة في جدول materials
+                    $materialRecord = Material::firstOrCreate(
+                        ['code' => $material['material_code']],
+                        [
+                            'name' => $material['material_description'],
+                            'description' => $material['material_description'],
+                            'unit' => $material['unit'] ?? 'عدد',
+                            'unit_price' => $material['unit_price'] ?? 0,
+                            'is_active' => true,
+                        ]
+                    );
                     
-                    // حفظ في جدول المواد الرئيسي (materials)
-                    Material::create([
-                        'work_order_id' => $workOrder->id,
-                        'code' => $material['material_code'],
-                        'description' => $material['material_description'],
-                        'planned_quantity' => $material['planned_quantity'] ?? 0,
-                        'unit' => $material['unit'] ?? 'عدد',
-                        'actual_quantity' => 0, // الكمية الفعلية تبدأ بصفر
-                        'difference' => 0, // الفرق يبدأ بصفر
-                        'stock_in' => 0, // المخزون الداخل يبدأ بصفر
-                        'stock_out' => 0, // المخزون الخارج يبدأ بصفر
-                        'line' => '', // رقم السطر فارغ في البداية
-                        'check_in' => false,
-                        'check_out' => false,
-                        'date_gatepass' => null,
+                    // ربط المادة بأمر العمل في جدول work_order_materials
+                    $workOrder->workOrderMaterials()->create([
+                        'material_id' => $materialRecord->id,
+                        'quantity' => $material['planned_quantity'] ?? 0,
+                        'unit_price' => $material['unit_price'] ?? 0,
+                        'notes' => $material['notes'] ?? null,
                     ]);
                 }
             }
@@ -339,8 +340,9 @@ class WorkOrderController extends Controller
             $workOrderItem = \App\Models\WorkOrderItem::create([
                 'work_order_id' => $request->work_order_id,
                 'work_item_id' => $workItem->id,
-                'planned_quantity' => $request->planned_quantity,
-                'actual_quantity' => $request->actual_quantity ?? 0,
+                'quantity' => $request->planned_quantity,
+                'unit_price' => $request->unit_price,
+                'executed_quantity' => $request->actual_quantity ?? 0,
             ]);
 
             return response()->json([
@@ -364,13 +366,13 @@ class WorkOrderController extends Controller
     {
         try {
             $request->validate([
-                'planned_quantity' => 'required|numeric|min:0',
-                'actual_quantity' => 'nullable|numeric|min:0',
+                'quantity' => 'required|numeric|min:0',
+                'executed_quantity' => 'nullable|numeric|min:0',
             ]);
 
             $workOrderItem->update([
-                'planned_quantity' => $request->planned_quantity,
-                'actual_quantity' => $request->actual_quantity ?? 0,
+                'quantity' => $request->quantity,
+                'executed_quantity' => $request->executed_quantity ?? 0,
             ]);
 
             return response()->json([

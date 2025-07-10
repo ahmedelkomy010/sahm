@@ -104,10 +104,10 @@ class WorkItemsImport implements ToModel, WithHeadingRow, WithValidation, SkipsO
         $workItem = WorkItem::firstOrCreate(
             ['code' => $code],
             [
+                'name' => $description, // اسم البند
                 'description' => $description,
                 'unit' => $unit,
-                'unit_price' => $unitPrice,
-                'notes' => $this->generateNotesFromRow($row)
+                'unit_price' => $unitPrice
             ]
         );
 

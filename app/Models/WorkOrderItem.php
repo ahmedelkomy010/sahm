@@ -12,14 +12,16 @@ class WorkOrderItem extends Model
     protected $fillable = [
         'work_order_id',
         'work_item_id', 
-        'planned_quantity',
-        'actual_quantity',
+        'quantity',
+        'unit_price',
+        'executed_quantity',
         'notes'
     ];
 
     protected $casts = [
-        'planned_quantity' => 'decimal:2',
-        'actual_quantity' => 'decimal:2',
+        'quantity' => 'decimal:2',
+        'unit_price' => 'decimal:2',
+        'executed_quantity' => 'decimal:2',
     ];
 
     /**

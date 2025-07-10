@@ -567,9 +567,18 @@ use Illuminate\Support\Facades\Storage;
                             // حساب إجمالي الإخلاءات والمبلغ
                             $totalEvacuations = is_array($evacuationData) ? count($evacuationData) : 0;
                             $totalEvacuationAmount = 0;
+                            $totalAttachments = 0;
+                            
                             if (is_array($evacuationData)) {
                                 foreach ($evacuationData as $evacuation) {
                                     $totalEvacuationAmount += $evacuation['evacuation_amount'] ?? 0;
+                                    
+                                    // حساب عدد المرفقات
+                                    if (isset($evacuation['attachments']) && is_array($evacuation['attachments'])) {
+                                        $totalAttachments += count($evacuation['attachments']);
+                                    } elseif (isset($evacuation['attachment']) && !empty($evacuation['attachment'])) {
+                                        $totalAttachments += 1;
+                                    }
                                 }
                             }
                             
@@ -583,6 +592,10 @@ use Illuminate\Support\Facades\Storage;
                             <span class="font-medium">إجمالي المبلغ:</span>
                             <span class="ml-1">{{ number_format($totalEvacuationAmount, 2) }} ريال</span>
                         </div>
+                        <div class="stat-item bg-purple-100 text-purple-800 px-4 py-2 rounded-lg">
+                            <span class="font-medium">عدد المرفقات:</span>
+                            <span class="ml-1">{{ $totalAttachments }}</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -592,7 +605,25 @@ use Illuminate\Support\Facades\Storage;
 
 
             <!-- جدول بيانات الإخلاءات الأساسي -->
-            @if($totalEvacuations > 0)
+            @php
+                // تحقق من وجود أي بيانات إخلاء أو مرفقات
+                $hasEvacuationData = false;
+                $hasCompleteEvacuationData = false;
+                
+                if (is_array($evacuationData) && count($evacuationData) > 0) {
+                    $hasEvacuationData = true;
+                    
+                    // تحقق من وجود بيانات كاملة
+                    foreach ($evacuationData as $evacuation) {
+                        if (isset($evacuation['evacuation_date']) || isset($evacuation['evacuation_amount']) || isset($evacuation['is_evacuated'])) {
+                            $hasCompleteEvacuationData = true;
+                            break;
+                        }
+                    }
+                }
+            @endphp
+            
+            @if($hasCompleteEvacuationData)
                 <div class="mb-8">
                     <h4 class="text-lg font-medium text-gray-800 mb-4">بيانات الإخلاءات الأساسية</h4>
                     <div class="overflow-x-auto">
@@ -606,7 +637,6 @@ use Illuminate\Support\Facades\Storage;
                                     <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">تاريخ ووقت الإخلاء</th>
                                     <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">رقم السداد</th>
                                     <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الملاحظات</th>
-                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">المرفقات</th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
@@ -619,10 +649,15 @@ use Illuminate\Support\Facades\Storage;
                                                     <i class="fas fa-check-circle mr-1"></i>
                                                     تم الإخلاء
                                                 </span>
-                                            @else
+                                            @elseif(isset($evacuation['is_evacuated']) && $evacuation['is_evacuated'] == 0)
                                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
                                                     <i class="fas fa-times-circle mr-1"></i>
                                                     لم يتم الإخلاء
+                                                </span>
+                                            @else
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                                    <i class="fas fa-question-circle mr-1"></i>
+                                                    غير محدد
                                                 </span>
                                             @endif
                                         </td>
@@ -641,44 +676,6 @@ use Illuminate\Support\Facades\Storage;
                                         <td class="px-6 py-4 text-sm text-gray-900">
                                             {{ $evacuation['notes'] ?? '-' }}
                                         </td>
-                                        <td class="px-6 py-4 text-sm text-gray-900">
-                                            @php
-                                                $evacuationFiles = [];
-                                                
-                                                // البحث عن المرفقات الفردية أولاً
-                                                if (isset($evacuation['attachments']) && is_array($evacuation['attachments']) && count($evacuation['attachments']) > 0) {
-                                                    $evacuationFiles = $evacuation['attachments'];
-                                                } elseif (isset($evacuation['attachment']) && !empty($evacuation['attachment'])) {
-                                                    $evacuationFiles = [$evacuation['attachment']];
-                                                }
-                                                
-                                                // إذا لم توجد مرفقات فردية، استخدم المرفقات العامة للإخلاءات
-                                                if (empty($evacuationFiles) && $license->evacuations_file_path) {
-                                                    $generalFiles = json_decode($license->evacuations_file_path, true);
-                                                    if (is_array($generalFiles) && count($generalFiles) > 0) {
-                                                        $evacuationFiles = $generalFiles;
-                                                    }
-                                                }
-                                            @endphp
-                                            
-                                            @if(count($evacuationFiles) > 0)
-                                                <div class="flex flex-wrap gap-1">
-                                                    @foreach($evacuationFiles as $attachment)
-                                                        @if(!empty($attachment))
-                                                            <a href="{{ asset('storage/' . $attachment) }}" 
-                                                               target="_blank" 
-                                                               class="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full hover:bg-blue-200 transition-colors duration-200"
-                                                               title="تحميل المرفق: {{ basename($attachment) }}">
-                                                                <i class="fas fa-file mr-1"></i>
-                                                                {{ Str::limit(basename($attachment), 15) }}
-                                                            </a>
-                                                        @endif
-                                                    @endforeach
-                                                </div>
-                                            @else
-                                                <span class="text-gray-500 text-xs italic">لا توجد مرفقات</span>
-                                            @endif
-                                        </td>
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -688,7 +685,7 @@ use Illuminate\Support\Facades\Storage;
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                         {{ number_format($totalEvacuationAmount, 2) }} ريال
                                     </td>
-                                    <td colspan="4"></td>
+                                    <td colspan="3"></td>
                                 </tr>
                             </tfoot>
                         </table>
@@ -696,8 +693,71 @@ use Illuminate\Support\Facades\Storage;
                 </div>
             @endif
 
+            <!-- عرض المرفقات فقط إذا كانت موجودة ولكن البيانات ناقصة -->
+            @if($hasEvacuationData && !$hasCompleteEvacuationData)
+                <div class="mb-8">
+                    <div class="bg-orange-50 p-6 rounded-lg border border-orange-200">
+                        <div class="flex items-center mb-4">
+                            <i class="fas fa-info-circle text-orange-600 text-xl mr-3"></i>
+                            <h4 class="text-lg font-medium text-orange-900">مرفقات الإخلاءات</h4>
+                        </div>
+                        
+                        <div class="mb-4 p-3 bg-orange-100 rounded border border-orange-300">
+                            <p class="text-sm text-orange-800">
+                                <i class="fas fa-exclamation-triangle mr-2"></i>
+                                توجد مرفقات للإخلاء ولكن البيانات التفصيلية (التاريخ، المبلغ، إلخ) غير مكتملة. يرجى التحقق من البيانات أو إضافة المعلومات المفقودة.
+                            </p>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            @foreach($evacuationData as $index => $evacuation)
+                                @php
+                                    $evacuationFiles = [];
+                                    
+                                    // البحث عن المرفقات
+                                    if (isset($evacuation['attachments']) && is_array($evacuation['attachments']) && count($evacuation['attachments']) > 0) {
+                                        $evacuationFiles = $evacuation['attachments'];
+                                    } elseif (isset($evacuation['attachment']) && !empty($evacuation['attachment'])) {
+                                        $evacuationFiles = [$evacuation['attachment']];
+                                    }
+                                @endphp
+                                
+                                @if(count($evacuationFiles) > 0)
+                                    <div class="bg-white rounded-lg shadow p-4 border border-orange-200">
+                                        <div class="flex items-center justify-between mb-3">
+                                            <h5 class="text-sm font-medium text-orange-900">
+                                                مرفقات إخلاء رقم {{ $index + 1 }}
+                                            </h5>
+                                            <span class="text-xs text-orange-600 bg-orange-100 px-2 py-1 rounded-full">
+                                                {{ count($evacuationFiles) }} ملف
+                                            </span>
+                                        </div>
+                                        
+                                        <div class="space-y-2">
+                                            @foreach($evacuationFiles as $fileIndex => $attachment)
+                                                @if(!empty($attachment))
+                                                    <a href="{{ asset('storage/' . $attachment) }}" 
+                                                       target="_blank" 
+                                                       class="flex items-center justify-between p-2 bg-gray-50 hover:bg-gray-100 rounded border transition-colors duration-200">
+                                                        <div class="flex items-center">
+                                                            <i class="fas fa-file text-blue-600 mr-2"></i>
+                                                            <span class="text-sm text-gray-700">{{ basename($attachment) }}</span>
+                                                        </div>
+                                                        <i class="fas fa-external-link-alt text-gray-400 text-xs"></i>
+                                                    </a>
+                                                @endif
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                @endif
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+            @endif
+
             <!-- قسم مرفقات الإخلاءات منفصل -->
-            @if($totalEvacuations > 0)
+            @if($hasEvacuationData)
                 <div class="mb-8">
                     <div class="bg-blue-50 p-6 rounded-lg">
                         <div class="flex items-center mb-4">
@@ -982,7 +1042,7 @@ use Illuminate\Support\Facades\Storage;
             @endif
 
             <!-- رسالة عدم وجود بيانات -->
-            @if($totalEvacuations == 0 && (!is_array($evacTable1Data) || count($evacTable1Data) == 0) && (!is_array($labTechnicalData) || count($labTechnicalData) == 0))
+            @if(!$hasEvacuationData && (!is_array($evacTable1Data) || count($evacTable1Data) == 0) && (!is_array($labTechnicalData) || count($labTechnicalData) == 0))
                 <div class="text-center py-8 text-gray-500">
                     <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M12 12h.01M12 14h.01M12 16h.01M12 18h.01M12 20h.01M12 22h.01"></path>

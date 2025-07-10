@@ -10,11 +10,17 @@ class WorkItem extends Model
     use HasFactory;
 
     protected $fillable = [
+        'name',
         'code',
         'description',
-        'unit',
         'unit_price',
-        'notes'
+        'unit',
+        'is_active'
+    ];
+
+    protected $casts = [
+        'unit_price' => 'decimal:2',
+        'is_active' => 'boolean',
     ];
 
     /**
@@ -23,7 +29,7 @@ class WorkItem extends Model
     public function workOrders()
     {
         return $this->belongsToMany(WorkOrder::class, 'work_order_items')
-                    ->withPivot('planned_quantity', 'actual_quantity', 'notes')
+                    ->withPivot('quantity', 'unit_price', 'executed_quantity', 'notes')
                     ->withTimestamps();
     }
 

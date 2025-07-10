@@ -166,7 +166,7 @@ class WorkOrder extends Model
     public function workItems()
     {
         return $this->belongsToMany(WorkItem::class, 'work_order_items')
-                    ->withPivot('planned_quantity', 'actual_quantity', 'notes')
+                    ->withPivot('quantity', 'unit_price', 'executed_quantity', 'notes')
                     ->withTimestamps();
     }
 

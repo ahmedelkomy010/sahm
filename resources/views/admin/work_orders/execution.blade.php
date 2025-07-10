@@ -305,8 +305,8 @@
                                     @foreach($workOrder->workOrderItems as $index => $workOrderItem)
                                         @php
                                             $workItem = $workOrderItem->workItem ?? null;
-                                            $plannedQuantity = $workOrderItem->planned_quantity ?? 0;
-                                            $executedQuantity = $workOrderItem->actual_quantity ?? 0;
+                                            $plannedQuantity = $workOrderItem->quantity ?? 0;
+                                            $executedQuantity = $workOrderItem->executed_quantity ?? 0;
                                             $unitPrice = $workItem ? ($workItem->unit_price ?? 0) : 0;
                                             $plannedAmount = $plannedQuantity * $unitPrice;
                                             $executedAmount = $executedQuantity * $unitPrice;
@@ -670,8 +670,8 @@ function updateWorkItem(input) {
     // إرسال التحديث للخادم
     const formData = new FormData();
     formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
-    formData.append('planned_quantity', plannedQuantity);
-    formData.append('actual_quantity', actualQuantity);
+    formData.append('quantity', plannedQuantity);
+    formData.append('executed_quantity', actualQuantity);
     
     fetch(`{{ url('admin/work-orders/update-work-item') }}/${itemId}`, {
         method: 'POST',

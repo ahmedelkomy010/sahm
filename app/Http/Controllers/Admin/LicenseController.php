@@ -1550,7 +1550,7 @@ class LicenseController extends Controller
                 ], 404);
             }
             
-            // محاولة حفظ بسيط بدون ملفات
+            // محاولة حفظ بسيط بدون ملفات مع الحفاظ على المرفقات الموجودة
             $evacuationData = json_decode($request->evacuation_data, true);
             if (!$evacuationData) {
                 return response()->json([
@@ -1560,13 +1560,29 @@ class LicenseController extends Controller
             }
             
             $additionalDetails = $license->additional_details ? json_decode($license->additional_details, true) : [];
-            $additionalDetails['evacuation_data'] = $evacuationData;
+            $existingEvacuationData = $additionalDetails['evacuation_data'] ?? [];
+            
+            // دمج البيانات مع الحفاظ على المرفقات الموجودة
+            $mergedEvacuationData = [];
+            foreach ($evacuationData as $index => $newEvacuation) {
+                $mergedEvacuation = $newEvacuation;
+                
+                // احتفظ بالمرفقات الموجودة إذا لم تكن هناك مرفقات جديدة
+                if (isset($existingEvacuationData[$index]['attachments']) 
+                    && !empty($existingEvacuationData[$index]['attachments'])) {
+                    $mergedEvacuation['attachments'] = $existingEvacuationData[$index]['attachments'];
+                }
+                
+                $mergedEvacuationData[] = $mergedEvacuation;
+            }
+            
+            $additionalDetails['evacuation_data'] = $mergedEvacuationData;
             $license->additional_details = json_encode($additionalDetails, JSON_UNESCAPED_UNICODE);
             $license->save();
             
             return response()->json([
                 'success' => true,
-                'message' => 'تم حفظ البيانات بنجاح (بدون مرفقات)',
+                'message' => 'تم حفظ البيانات بنجاح (مع الحفاظ على المرفقات الموجودة)',
                 'license_name' => $license->license_number
             ]);
             
@@ -1804,6 +1820,19 @@ class LicenseController extends Controller
                 'attachment_index' => $attachmentIndex,
                 'all_file_keys' => array_keys($request->allFiles())
             ]);
+            
+            // إذا لم توجد مرفقات جديدة، احتفظ بالمرفقات الموجودة إن وجدت
+            $additionalDetailsTemp = $license->additional_details ? json_decode($license->additional_details, true) : [];
+            $existingEvacuationDataTemp = $additionalDetailsTemp['evacuation_data'] ?? [];
+            
+            if (isset($existingEvacuationDataTemp[$dataIndex]['attachments']) 
+                && !empty($existingEvacuationDataTemp[$dataIndex]['attachments'])) {
+                $processedEvacuation['attachments'] = $existingEvacuationDataTemp[$dataIndex]['attachments'];
+                
+                \Log::info("Preserving existing attachments for evacuation {$dataIndex} (no new files)", [
+                    'existing_attachments' => $existingEvacuationDataTemp[$dataIndex]['attachments']
+                ]);
+            }
         }
         
         $processedEvacuationData[] = $processedEvacuation;
@@ -1813,13 +1842,47 @@ class LicenseController extends Controller
             // الحصول على البيانات الإضافية الحالية أو إنشاء مصفوفة فارغة
             $additionalDetails = $license->additional_details ? json_decode($license->additional_details, true) : [];
             
-            // استبدال بيانات الإخلاء بالبيانات الجديدة المرسلة
-            // هذا يضمن أن البيانات المحررة في الجدول تستبدل البيانات الموجودة
-            $additionalDetails['evacuation_data'] = $processedEvacuationData;
+            // الحصول على بيانات الإخلاء الموجودة للحفاظ على المرفقات
+            $existingEvacuationData = $additionalDetails['evacuation_data'] ?? [];
             
-            \Log::info('Replacing evacuation data', [
+            // دمج البيانات الجديدة مع المرفقات الموجودة
+            $mergedEvacuationData = [];
+            
+            foreach ($processedEvacuationData as $index => $newEvacuation) {
+                $mergedEvacuation = $newEvacuation;
+                
+                // إذا لم تكن هناك مرفقات جديدة في البيانات المرسلة، احتفظ بالمرفقات الموجودة
+                if ((!isset($newEvacuation['attachments']) || empty($newEvacuation['attachments'])) 
+                    && isset($existingEvacuationData[$index]['attachments']) 
+                    && !empty($existingEvacuationData[$index]['attachments'])) {
+                    $mergedEvacuation['attachments'] = $existingEvacuationData[$index]['attachments'];
+                    
+                    \Log::info("Preserving existing attachments for evacuation {$index}", [
+                        'existing_attachments' => $existingEvacuationData[$index]['attachments'],
+                        'new_data_keys' => array_keys($newEvacuation)
+                    ]);
+                }
+                
+                $mergedEvacuationData[] = $mergedEvacuation;
+            }
+            
+            // إذا كان هناك بيانات إخلاء موجودة أكثر من الجديدة، احتفظ بها
+            if (count($existingEvacuationData) > count($processedEvacuationData)) {
+                for ($i = count($processedEvacuationData); $i < count($existingEvacuationData); $i++) {
+                    $mergedEvacuationData[] = $existingEvacuationData[$i];
+                    \Log::info("Preserving existing evacuation data at index {$i}");
+                }
+            }
+            
+            // حفظ البيانات المدموجة
+            $additionalDetails['evacuation_data'] = $mergedEvacuationData;
+            
+            \Log::info('Merging evacuation data', [
                 'new_count' => count($processedEvacuationData),
+                'existing_count' => count($existingEvacuationData),
+                'merged_count' => count($mergedEvacuationData),
                 'evacuation_data' => $processedEvacuationData,
+                'merged_data' => $mergedEvacuationData,
                 'additional_details_before' => $license->additional_details,
                 'additional_details_after_prep' => json_encode($additionalDetails, JSON_UNESCAPED_UNICODE)
             ]);
@@ -1833,16 +1896,17 @@ class LicenseController extends Controller
             \Log::info('Data saved verification', [
                 'save_result' => $saved,
                 'license_id' => $license->id,
+                'merged_data_count' => count($mergedEvacuationData),
                 'additional_details_saved' => $license->additional_details,
                 'evacuation_data_in_db' => $license->additional_details ? json_decode($license->additional_details, true)['evacuation_data'] ?? 'NOT FOUND' : 'NULL'
             ]);
 
             \Log::info('Evacuation data saved successfully', [
                 'license_id' => $license->id,
-                'evacuation_count' => count($processedEvacuationData),
+                'evacuation_count' => count($mergedEvacuationData),
                 'attachments_count' => array_sum(array_map(function($item) {
                     return isset($item['attachments']) ? count($item['attachments']) : 0;
-                }, $processedEvacuationData))
+                }, $mergedEvacuationData))
             ]);
 
             return response()->json([

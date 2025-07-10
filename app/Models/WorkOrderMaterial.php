@@ -11,17 +11,17 @@ class WorkOrderMaterial extends Model
 
     protected $fillable = [
         'work_order_id',
-        'material_code',
-        'material_description',
-        'planned_quantity',
-        'unit',
-        'actual_quantity',
+        'material_id',
+        'quantity',
+        'used_quantity',
+        'unit_price',
         'notes'
     ];
 
     protected $casts = [
-        'planned_quantity' => 'decimal:2',
-        'actual_quantity' => 'decimal:2',
+        'quantity' => 'decimal:2',
+        'used_quantity' => 'decimal:2',
+        'unit_price' => 'decimal:2',
     ];
 
     /**
@@ -33,10 +33,10 @@ class WorkOrderMaterial extends Model
     }
 
     /**
-     * Get the reference material details if available.
+     * Get the material details.
      */
-    public function referenceMaterial()
+    public function material()
     {
-        return $this->hasOne(ReferenceMaterial::class, 'code', 'material_code');
+        return $this->belongsTo(Material::class);
     }
 }

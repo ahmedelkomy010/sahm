@@ -3465,10 +3465,7 @@ function deleteExtension(extensionId) {
                                 إضافة بيانات إخلاء جديدة
                             </button>
                             <div>
-                                <button type="button" class="btn btn-warning btn-sm me-2" onclick="saveAllEvacuationDataSimple()">
-                                    <i class="fas fa-save me-1"></i>
-                                    حفظ بسيط (بدون مرفقات)
-                                </button>
+                               
                                 <button type="button" class="btn btn-primary btn-sm" onclick="saveAllEvacuationData()">
                                     <i class="fas fa-save me-1"></i>
                                     حفظ جميع بيانات الإخلاء
@@ -3487,13 +3484,12 @@ function deleteExtension(extensionId) {
                                         <th style="min-width: 150px;">تاريخ ووقت الإخلاء</th>
                                         <th style="min-width: 130px;">رقم سداد الإخلاء</th>
                                         <th style="min-width: 200px;">ملاحظات</th>
-                                        <th style="min-width: 120px;">المرفقات</th>
                                         <th style="min-width: 100px;">الإجراءات</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr id="no-evacuation-data-row">
-                                        <td colspan="9" class="text-center text-muted py-4">
+                                        <td colspan="8" class="text-center text-muted py-4">
                                             <i class="fas fa-truck fa-2x mb-2"></i>
                                             <br>لا توجد بيانات إخلاء مسجلة
                                         </td>
@@ -4233,10 +4229,10 @@ function saveAllLabDetails() {
     }
     
     // الحصول على اسم الرخصة المختارة
-    const selectedLicenseName = licenseSelectorElement.options[licenseSelectorElement.selectedIndex].text;
+    const selectedLicenseName = '@if($workOrder->license) {{ $workOrder->license->license_number }} @else "غير محدد" @endif';
     
     // إظهار رسالة تأكيد
-    if (!confirm(`هل أنت متأكد من حفظ التفاصيل الفنية في ${selectedLicenseName}؟`)) {
+    if (!confirm(`هل أنت متأكد من حفظ التفاصيل الفنية في الرخصة ${selectedLicenseName}؟`)) {
         return;
     }
     
@@ -5120,9 +5116,6 @@ function addNewEvacuationRow() {
         <td>
             <textarea class="form-control form-control-sm" name="evacuation_data[${rowCount}][notes]" rows="2" placeholder="ملاحظات الإخلاء"></textarea>
         </td>
-        <td>
-            <input type="file" class="form-control form-control-sm" name="evacuation_data[${rowCount}][attachments][]" multiple accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
-        </td>
         <td class="text-center">
             <button type="button" class="btn btn-danger btn-sm" onclick="deleteEvacuationRow(this)" title="حذف الصف">
                 <i class="fas fa-trash"></i>
@@ -5161,7 +5154,7 @@ function deleteEvacuationRow(button) {
         if (tbody.rows.length === 0) {
             tbody.innerHTML = `
                 <tr id="no-evacuation-data-row">
-                    <td colspan="9" class="text-center text-muted py-4">
+                    <td colspan="8" class="text-center text-muted py-4">
                         <i class="fas fa-truck fa-2x mb-2"></i>
                         <br>لا توجد بيانات إخلاء مسجلة
                     </td>
@@ -5260,7 +5253,6 @@ function saveAllEvacuationData() {
 
     // تجميع بيانات الجدول
     const rows = document.getElementById('evacuationDataTable').getElementsByTagName('tbody')[0].rows;
-    const formData = new FormData();
     let hasValidData = false;
     let evacuationDataArray = [];
     let validRowIndex = 0;
@@ -5285,18 +5277,6 @@ function saveAllEvacuationData() {
             if (rowData.is_evacuated && rowData.evacuation_date && rowData.evacuation_amount && rowData.evacuation_datetime && rowData.payment_number) {
                 evacuationDataArray.push(rowData);
                 hasValidData = true;
-                
-                // إضافة المرفقات للصف الحالي
-                const attachmentInput = row.querySelector('[name*="[attachments]"]');
-                if (attachmentInput && attachmentInput.files.length > 0) {
-                    console.log('Found', attachmentInput.files.length, 'files for row', validRowIndex);
-                    for (let j = 0; j < attachmentInput.files.length; j++) {
-                        formData.append(`evacuation_data[${validRowIndex}][attachments][]`, attachmentInput.files[j]);
-                    }
-                } else {
-                    console.log('No files found for row', validRowIndex);
-                }
-                
                 validRowIndex++;
             } else {
                 console.log('Row', i, 'has invalid data, skipping');
@@ -5308,11 +5288,6 @@ function saveAllEvacuationData() {
         toastr.warning('لا توجد بيانات صالحة للحفظ. تأكد من ملء الحقول المطلوبة.');
         return;
     }
-
-    // إضافة البيانات الأساسية إلى FormData
-    formData.append('work_order_id', {{ $workOrder->id }});
-    formData.append('license_id', licenseId);
-    formData.append('evacuation_data', JSON.stringify(evacuationDataArray));
     
     // طباعة معلومات التشخيص
     console.log('=== EVACUATION DATA DEBUG ===');
@@ -5335,11 +5310,6 @@ function saveAllEvacuationData() {
             });
         }
     }
-    
-    console.log('=== FORM DATA ENTRIES ===');
-    for (let pair of formData.entries()) {
-        console.log(pair[0] + ': ' + (pair[1] instanceof File ? pair[1].name : pair[1]));
-    }
 
     // عرض مؤشر التحميل
     const saveButton = document.querySelector('button[onclick="saveAllEvacuationData()"]');
@@ -5347,13 +5317,19 @@ function saveAllEvacuationData() {
     saveButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>جاري الحفظ...';
     saveButton.disabled = true;
 
-    // إرسال البيانات إلى الخادم
-    fetch(`/admin/licenses/save-evacuation-data`, {
+    // إرسال البيانات إلى الخادم (الطريقة البسيطة بدون مرفقات)
+    fetch(`/admin/licenses/save-evacuation-data-simple`, {
         method: 'POST',
         headers: {
+            'Content-Type': 'application/json',
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
         },
-        body: formData
+        body: JSON.stringify({
+            work_order_id: {{ $workOrder->id }},
+            license_id: licenseId,
+            evacuation_data: JSON.stringify(evacuationDataArray),
+            _token: document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        })
     })
     .then(response => {
         console.log('Response status:', response.status);
@@ -5419,7 +5395,7 @@ function loadEvacuationDataForLicense(licenseId) {
                 console.log('No existing evacuation data found');
                 tbody.innerHTML = `
                     <tr id="no-evacuation-data-row">
-                        <td colspan="9" class="text-center text-muted py-4">
+                        <td colspan="8" class="text-center text-muted py-4">
                             <i class="fas fa-truck fa-2x mb-2"></i>
                             <br>لا توجد بيانات إخلاء مسجلة لهذه الرخصة
                         </td>
@@ -5466,19 +5442,6 @@ function addEvacuationRowWithData(data, rowNumber) {
         </td>
         <td>
             <textarea class="form-control form-control-sm" name="evacuation_data[${rowNumber}][notes]" rows="2" placeholder="ملاحظات الإخلاء">${data.notes || ''}</textarea>
-        </td>
-        <td>
-            <input type="file" class="form-control form-control-sm" name="evacuation_data[${rowNumber}][attachments][]" multiple accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
-            ${data.attachments && data.attachments.length > 0 ? `
-                <div class="mt-2">
-                    ${data.attachments.map(attachment => `
-                        <span class="badge bg-primary me-1">
-                            <i class="fas fa-file me-1"></i>
-                            ${attachment.split('/').pop()}
-                        </span>
-                    `).join('')}
-                </div>
-            ` : ''}
         </td>
         <td class="text-center">
             <button type="button" class="btn btn-danger btn-sm" onclick="deleteEvacuationRow(this)" title="حذف الصف">
