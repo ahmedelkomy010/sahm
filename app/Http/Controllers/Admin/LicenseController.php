@@ -160,7 +160,18 @@ class LicenseController extends Controller
             ]);
         }
         
-        return view('admin.licenses.show', compact('license'));
+        // تحضير البيانات المطلوبة للعرض
+        $labTechnicalData = [];
+        if ($license->lab_table2_data) {
+            $labTechnicalData = json_decode($license->lab_table2_data, true) ?: [];
+        }
+        
+        $evacTable1Data = [];
+        if ($license->evac_table1_data) {
+            $evacTable1Data = json_decode($license->evac_table1_data, true) ?: [];
+        }
+        
+        return view('admin.licenses.show', compact('license', 'labTechnicalData', 'evacTable1Data'));
     }
 
     /**

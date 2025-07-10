@@ -3893,6 +3893,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function saveDigLicenseSection() {
     try {
+        console.log('saveDigLicenseSection function called!');
+        
         // منع الإرسال العادي للنموذج
         if (event) {
             event.preventDefault();
@@ -5488,16 +5490,19 @@ function addEvacuationRowWithData(data, rowNumber) {
     tbody.appendChild(newRow);
 }
 
-  </script>
-  
-  <script>
-    // تحميل بيانات الإخلاءات تلقائياً عند تحميل الصفحة
-    document.addEventListener('DOMContentLoaded', function() {
-        const licenseId = @if($workOrder->license) {{ $workOrder->license->id }} @else null @endif;
-        if (licenseId) {
-            loadEvacuationDataForLicense(licenseId);
-        }
-    });
-  </script>
-  
-@endsection 
+// تحميل بيانات الإخلاءات تلقائياً عند تحميل الصفحة
+document.addEventListener('DOMContentLoaded', function() {
+    const licenseId = @if($workOrder->license) {{ $workOrder->license->id }} @else null @endif;
+    if (licenseId) {
+        loadEvacuationDataForLicense(licenseId);
+    }
+});
+
+</script>
+
+@endsection
+
+@push('scripts')
+<!-- تحميل معالج JavaScript الآمن للرخص -->
+<script src="{{ asset('js/work-order-license.js') }}"></script>
+@endpush 

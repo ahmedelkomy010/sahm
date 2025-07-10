@@ -589,17 +589,7 @@ use Illuminate\Support\Facades\Storage;
 
 
 
-            <!-- تشخيص البيانات - سيتم إزالته لاحقاً -->
-            <div class="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded">
-                <h5 class="font-medium text-yellow-800 mb-2">تشخيص البيانات:</h5>
-                <p class="text-sm text-yellow-700 mb-2">عدد الإخلاءات: {{ $totalEvacuations }}</p>
-                <p class="text-sm text-yellow-700 mb-2">البيانات الخام:</p>
-                <pre class="text-xs bg-yellow-100 p-2 rounded overflow-auto">{{ json_encode($evacuationData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>
-                @if($license->additional_details)
-                    <p class="text-sm text-yellow-700 mb-2 mt-2">additional_details الكامل:</p>
-                    <pre class="text-xs bg-yellow-100 p-2 rounded overflow-auto">{{ $license->additional_details }}</pre>
-                @endif
-            </div>
+
 
             <!-- جدول بيانات الإخلاءات الأساسي -->
             @if($totalEvacuations > 0)
@@ -1156,4 +1146,53 @@ use Illuminate\Support\Facades\Storage;
 </div>
 @endsection
 
- 
+@push('scripts')
+<script src="{{ asset('js/license-handler.js') }}"></script>
+<style>
+/* CSS للتبويبات في حالة عدم وجود CSS مخصص */
+.nav-tab-btn {
+    margin: 5px;
+    padding: 10px 20px;
+    border: 1px solid #ddd;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+}
+
+.nav-tab-btn:hover {
+    background-color: #e9ecef;
+    border-color: #adb5bd;
+}
+
+.nav-tab-btn.active {
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+.tab-section {
+    padding: 20px;
+    border: 1px solid #dee2e6;
+    border-radius: 5px;
+    margin-top: 10px;
+}
+
+/* تحسينات إضافية */
+.section-body {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.d-flex {
+    display: flex;
+}
+
+.justify-content-center {
+    justify-content: center;
+}
+
+.flex-wrap {
+    flex-wrap: wrap;
+}
+</style>
+@endpush

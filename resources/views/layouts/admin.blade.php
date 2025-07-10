@@ -30,6 +30,9 @@
     <!-- Laboratory Tab Custom CSS -->
     <link rel="stylesheet" href="{{ asset('css/laboratory-tab.css') }}">
     
+    <!-- Tabs Handler CSS -->
+    <link rel="stylesheet" href="{{ asset('css/tabs-handler.css') }}">
+    
     <!-- Vite Assets (includes Tailwind CSS) -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     
@@ -224,32 +227,56 @@
     @stack('scripts')
 
     <script>
-    // Add CSRF token to all AJAX requests
-    $.ajaxSetup({
-        headers: {
-            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+    // معالجة الأخطاء العامة
+    window.addEventListener('error', function(e) {
+        // تجاهل الأخطاء غير المهمة
+        if (e.message && (
+            e.message.includes('ResizeObserver') || 
+            e.message.includes('Non-Error') ||
+            e.message.includes('Script error')
+        )) {
+            e.preventDefault();
+            return true;
         }
     });
     
-    // Configure Toastr options
-    toastr.options = {
-        "closeButton": true,
-        "debug": false,
-        "newestOnTop": true,
-        "progressBar": true,
-        "positionClass": "toast-top-right",
-        "preventDuplicates": true,
-        "onclick": null,
-        "showDuration": "300",
-        "hideDuration": "1000",
-        "timeOut": "5000",
-        "extendedTimeOut": "1000",
-        "showEasing": "swing",
-        "hideEasing": "linear",
-        "showMethod": "fadeIn",
-        "hideMethod": "fadeOut",
-        "rtl": true
-    };
+    // التأكد من وجود jQuery و Toastr
+    $(document).ready(function() {
+        try {
+            // Add CSRF token to all AJAX requests
+            if (typeof $ !== 'undefined' && $.ajaxSetup) {
+                $.ajaxSetup({
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    }
+                });
+            }
+            
+            // Configure Toastr options
+            if (typeof toastr !== 'undefined') {
+                toastr.options = {
+                    "closeButton": true,
+                    "debug": false,
+                    "newestOnTop": true,
+                    "progressBar": true,
+                    "positionClass": "toast-top-right",
+                    "preventDuplicates": true,
+                    "onclick": null,
+                    "showDuration": "300",
+                    "hideDuration": "1000",
+                    "timeOut": "5000",
+                    "extendedTimeOut": "1000",
+                    "showEasing": "swing",
+                    "hideEasing": "linear",
+                    "showMethod": "fadeIn",
+                    "hideMethod": "fadeOut",
+                    "rtl": true
+                };
+            }
+        } catch (error) {
+            console.error('خطأ في تهيئة الإعدادات:', error);
+        }
+    });
     </script>
 </body>
 </html> 
