@@ -754,18 +754,7 @@
             position: relative;
         }
         
-        /* تنسيق الأرقام */
-        .table-number {
-            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
-            color: white;
-            border-radius: 20px;
-            padding: 4px 10px;
-            font-weight: 600;
-            font-size: 0.75rem;
-            display: inline-block;
-            min-width: 25px;
-            text-align: center;
-        }
+        
         
         /* تنسيق نوع العمل */
         .work-type-cell {
@@ -830,7 +819,31 @@
             border: 1px solid #c3e6cb;
         }
         
+        /* تنسيق عمود نوع القسم */
+        .section-type-cell {
+            background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);
+            color: #2e7d32;
+            font-weight: 600;
+            padding: 6px 10px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            border: 1px solid #81c784;
+            text-align: center;
+        }
         
+        /* تنسيق عمود العدد */
+        .count-cell {
+            background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);
+            color: #7b1fa2;
+            font-weight: bold;
+            padding: 8px 12px;
+            border-radius: 50%;
+            font-size: 0.9rem;
+            border: 2px solid #ce93d8;
+            min-width: 35px;
+            display: inline-block;
+        }
+
         
         /* تنسيق حالة الفراغ */
         .empty-state-content {
@@ -1060,6 +1073,71 @@
                 font-size: 0.8rem;
             }
         }
+
+        /* تنسيق آخر تحديث */
+        .last-update-cell {
+            color: #6c757d;
+            font-size: 0.75rem;
+            font-style: italic;
+        }
+        
+        /* تنسيق عمود نوع القسم */
+        .section-type-cell {
+            background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);
+            color: #2e7d32;
+            font-weight: 600;
+            padding: 6px 10px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            border: 1px solid #81c784;
+            text-align: center;
+        }
+        
+        /* تنسيق عمود العدد */
+        .count-cell {
+            background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);
+            color: #7b1fa2;
+            font-weight: bold;
+            padding: 8px 12px;
+            border-radius: 50%;
+            font-size: 0.9rem;
+            border: 2px solid #ce93d8;
+            min-width: 35px;
+            display: inline-block;
+        }
+
+        /* تحسين تنسيق رؤوس الجدول */
+        #daily-excavation-table thead th {
+            background: linear-gradient(135deg, #37474f 0%, #263238 100%) !important;
+            color: white !important;
+            border: none !important;
+            font-size: 0.8rem;
+            padding: 12px 6px;
+            text-align: center;
+        }
+
+        /* تحسين هوفر الجدول */
+        #daily-excavation-table tbody tr:hover {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* تحسين الجدول العام */
+        #daily-excavation-table {
+            border-collapse: separate;
+            border-spacing: 0;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+        }
+        
+        /* تحسين الخطوط */
+        #daily-excavation-table tbody td {
+            border-bottom: 1px solid #f1f3f4;
+            padding: 10px 8px;
+            vertical-align: middle;
+        }
     </style>
 </head>
 <body>
@@ -1257,40 +1335,49 @@
                                 </div>
                             </div>
 
+                            <!-- أزرار التحكم في الجدول -->
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="fw-bold text-dark mb-0">
+                                    <i class="fas fa-table me-2"></i>
+                                    ملخص الحفريات اليومي
+                                </h6>
+                                
+                            </div>
+
                                                                         <!-- الجدول الديناميكي -->
                             <div class="table-responsive">
                                 <table class="table table-hover align-middle shadow-sm" id="daily-excavation-table">
-                                    <thead style="background: linear-gradient(135deg, #6c757d 0%, #495057 100%); color: white;">
+                                    <thead class="table-dark">
                                         <tr>
-                                            <th class="text-center fw-bold" style="width: 5%; border-right: 1px solid rgba(255,255,255,0.2);">
-                                                <i class="fas fa-hashtag me-1"></i>
-                                                #
+                                            <th class="text-center fw-bold" style="width: 18%;">
+                                                <i class="fas fa-layer-group me-1"></i>
+                                                نوع القسم
                                             </th>
-                                            <th class="text-center fw-bold" style="width: 22%; border-right: 1px solid rgba(255,255,255,0.2);">
+                                            <th class="text-center fw-bold" style="width: 18%;">
                                                 <i class="fas fa-hard-hat me-1"></i>
-                                                نوع العمل
+                                                نوع الحفرية
                                             </th>
-                                            <th class="text-center fw-bold" style="width: 12%; border-right: 1px solid rgba(255,255,255,0.2);">
+                                            <th class="text-center fw-bold" style="width: 15%;">
                                                 <i class="fas fa-plug me-1"></i>
-                                                الكابلات
+                                                نوع الكابل
                                             </th>
-                                            <th class="text-center fw-bold" style="width: 15%; border-right: 1px solid rgba(255,255,255,0.2);">
-                                                <i class="fas fa-ruler-combined me-1"></i>
-                                                الأبعاد
+                                            <th class="text-center fw-bold" style="width: 10%;">
+                                                <i class="fas fa-list-ol me-1"></i>
+                                                العدد
                                             </th>
-                                            <th class="text-center fw-bold" style="width: 10%; border-right: 1px solid rgba(255,255,255,0.2);">
-                                                <i class="fas fa-cube me-1"></i>
-                                                الحجم
+                                            <th class="text-center fw-bold" style="width: 15%;">
+                                                <i class="fas fa-ruler me-1"></i>
+                                                الطول/الحجم
                                             </th>
-                                            <th class="text-center fw-bold" style="width: 12%; border-right: 1px solid rgba(255,255,255,0.2);">
-                                                <i class="fas fa-money-bill-wave me-1"></i>
-                                                السعر
+                                            <th class="text-center fw-bold" style="width: 12%;">
+                                                <i class="fas fa-money-bill me-1"></i>
+                                                السعر (ريال)
                                             </th>
-                                            <th class="text-center fw-bold" style="width: 14%; border-right: 1px solid rgba(255,255,255,0.2);">
+                                            <th class="text-center fw-bold" style="width: 12%;">
                                                 <i class="fas fa-calculator me-1"></i>
-                                                الإجمالي
+                                                الإجمالي (ريال)
                                             </th>
-                                            <th class="text-center fw-bold" style="width: 5%;">
+                                            <th class="text-center fw-bold" style="width: 10%;">
                                                 <i class="fas fa-clock me-1"></i>
                                                 آخر تحديث
                                             </th>
@@ -1351,18 +1438,7 @@
                                     position: relative;
                                 }
                                 
-                                /* تنسيق الأرقام */
-                                .table-number {
-                                    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
-                                    color: white;
-                                    border-radius: 20px;
-                                    padding: 4px 10px;
-                                    font-weight: 600;
-                                    font-size: 0.75rem;
-                                    display: inline-block;
-                                    min-width: 25px;
-                                    text-align: center;
-                                }
+
                                 
                                 /* تنسيق نوع العمل */
                                 .work-type-cell {
@@ -1427,6 +1503,30 @@
                                     border: 1px solid #c3e6cb;
                                 }
                                 
+                                /* تنسيق عمود نوع القسم */
+                                .section-type-cell {
+                                    background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);
+                                    color: #2e7d32;
+                                    font-weight: 600;
+                                    padding: 6px 10px;
+                                    border-radius: 8px;
+                                    font-size: 0.8rem;
+                                    border: 1px solid #81c784;
+                                    text-align: center;
+                                }
+                                
+                                /* تنسيق عمود العدد */
+                                .count-cell {
+                                    background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);
+                                    color: #7b1fa2;
+                                    font-weight: bold;
+                                    padding: 8px 12px;
+                                    border-radius: 50%;
+                                    font-size: 0.9rem;
+                                    border: 2px solid #ce93d8;
+                                    min-width: 35px;
+                                    display: inline-block;
+                                }
 
                                 
                                 /* تنسيق حالة الفراغ */
@@ -1453,7 +1553,7 @@
                                     border-radius: 10px;
                                 }
                                 
-                                /* تأثيرات النص */
+                                                                 /* تأثيرات النص */
                                 .fw-arabic {
                                     font-weight: 600;
                                 }
@@ -2411,16 +2511,8 @@
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        
-                                
-                    </div>
-
-                    
-
-
-
-
+                        </div>    
+                    </div>  
                     <!-- قسم رفع الصور -->
                     <div class="col-md-6">
                         <div class="card shadow-sm mb-4">
@@ -2609,7 +2701,7 @@
 
                     row.innerHTML = `
                         <td class="text-center">
-                            <span class="table-number">${index + 1}</span>
+                            <div class="section-type-cell">${item.section_type || getSectionType(item.work_type)}</div>
                         </td>
                         <td class="text-center">
                             <div class="work-type-cell">${item.work_type || 'غير محدد'}</div>
@@ -2618,10 +2710,10 @@
                             <span class="cable-type-badge">${cableCount}</span>
                         </td>
                         <td class="text-center">
-                            <div class="dimensions-cell">${dimensions}</div>
+                            <span class="count-cell">1</span>
                         </td>
                         <td class="text-center">
-                            <div class="volume-cell">${volume}</div>
+                            <div class="dimensions-cell">${dimensions}</div>
                         </td>
                         <td class="text-center">
                             <div class="price-cell">${parseFloat(item.price || 0).toFixed(2)} ريال</div>
@@ -2752,7 +2844,13 @@
             }
             
             // تحميل البيانات المحفوظة مرة واحدة فقط
-            loadSavedDailyData();
+            if (window.savedDailyData && window.savedDailyData.length > 0) {
+                loadSavedDailyData();
+            } else {
+                // إضافة بيانات تجريبية للاختبار
+                console.log('لا توجد بيانات محفوظة، سيتم إضافة بيانات تجريبية للاختبار');
+                addSampleData();
+            }
             
             // وضع علامة أن البيانات تم تحميلها
             window.dataLoaded = true;
@@ -2775,19 +2873,175 @@
             console.log('Event listeners added successfully');
         }
 
-        // إعادة ترقيم صفوف الجدول
-        function reindexTableRows() {
+
+
+        // دالة للحصول على نوع القسم من نوع العمل
+        function getSectionType(workType) {
+            if (!workType) return 'غير محدد';
+            
+            if (workType.includes('تربة ترابية')) return 'حفريات أساسية';
+            if (workType.includes('تربة صخرية')) return 'حفريات أساسية';
+            if (workType.includes('حفر مفتوح')) return 'حفر مفتوح';
+            if (workType.includes('حفريات دقيقة')) return 'حفريات دقيقة';
+            if (workType.includes('تمديدات كهربائية')) return 'تمديدات كهربائية';
+            
+            return 'أعمال مدنية';
+        }
+
+        // دالة لعرض جدول فارغ محدثة
+        function displayEmptyTable(tbody) {
+            tbody.innerHTML = `
+                <tr id="no-data-row" class="table-light">
+                    <td colspan="8" class="text-center text-muted py-5">
+                        <div class="empty-state-content">
+                            <i class="fas fa-clipboard-list fa-3x mb-3 text-secondary"></i>
+                            <h5 class="mb-2 text-secondary">لا توجد بيانات حفريات</h5>
+                            <p class="mb-0 text-muted">سيتم إضافة البيانات تلقائياً عند إدخال القياسات</p>
+                            <small class="text-muted d-block mt-1">
+                                <i class="fas fa-info-circle me-1"></i>
+                                ابدأ بإدخال الطول والسعر في النماذج أعلاه
+                            </small>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }
+
+        // دالة لإضافة بيانات تجريبية للاختبار
+        function addSampleData() {
             const tbody = document.getElementById('daily-excavation-tbody');
-            if (tbody) {
-                const rows = tbody.querySelectorAll('tr:not(#no-data-row)');
-                rows.forEach((row, index) => {
-                    const numberCell = row.querySelector('.table-number');
-                    if (numberCell) {
-                        numberCell.textContent = index + 1;
-                    }
-                    row.setAttribute('data-excavation-id', index);
-                });
-            }
+            if (!tbody) return;
+            
+            // مسح الجدول الحالي
+            tbody.innerHTML = '';
+            
+            // بيانات تجريبية
+            const sampleData = [
+                {
+                    section_type: 'حفريات أساسية',
+                    work_type: 'تربة ترابية غير مسفلتة',
+                    cable_type: '1 كابل',
+                    count: 1,
+                    dimensions: '4.00 متر',
+                    price: '4.00',
+                    total: '16.00',
+                    last_update: 'الآن'
+                },
+                {
+                    section_type: 'حفريات أساسية', 
+                    work_type: 'تربة ترابية مسفلتة',
+                    cable_type: '2 كابل',
+                    count: 1,
+                    dimensions: '4.00 متر',
+                    price: '4.00',
+                    total: '16.00',
+                    last_update: 'منذ 1 د'
+                },
+                {
+                    section_type: 'حفر مفتوح',
+                    work_type: 'تربة ترابية غير مسفلتة - حفر مفتوح',
+                    cable_type: '+4 كابل',
+                    count: 1,
+                    dimensions: '2.00 × 2.00 × 2.00',
+                    price: '2.00',
+                    total: '16.00',
+                    last_update: 'منذ 2 د'
+                },
+                {
+                    section_type: 'حفريات دقيقة',
+                    work_type: 'حفريات دقيقة',
+                    cable_type: 'متوسط (20×80)',
+                    count: 1,
+                    dimensions: '2.00 × 2.00 × 2.00',
+                    price: '2.00',
+                    total: '16.00',
+                    last_update: 'منذ 3 د'
+                },
+                {
+                    section_type: 'تمديدات كهربائية',
+                    work_type: 'تمديدات كهربائية',
+                    cable_type: 'كابل 4×70 منخفض',
+                    count: 1,
+                    dimensions: '2.00 × 2.00 × 2.00',
+                    price: '2.00',
+                    total: '16.00',
+                    last_update: 'منذ 4 د'
+                }
+            ];
+            
+            // إضافة البيانات
+            sampleData.forEach((item, index) => {
+                const row = document.createElement('tr');
+                row.className = 'table-row-hover';
+                row.setAttribute('data-excavation-id', index);
+                
+                row.innerHTML = `
+                    <td class="text-center">
+                        <div class="section-type-cell">${item.section_type}</div>
+                    </td>
+                    <td class="text-center">
+                        <div class="work-type-cell">${item.work_type}</div>
+                    </td>
+                    <td class="text-center">
+                        <span class="cable-type-badge">${item.cable_type}</span>
+                    </td>
+                    <td class="text-center">
+                        <span class="count-cell">${item.count}</span>
+                    </td>
+                    <td class="text-center">
+                        <div class="dimensions-cell">${item.dimensions}</div>
+                    </td>
+                    <td class="text-center">
+                        <div class="price-cell">${item.price} ريال</div>
+                    </td>
+                    <td class="text-center">
+                        <div class="total-cell">${item.total} ريال</div>
+                    </td>
+                    <td class="text-center">
+                        <small class="text-muted">${item.last_update}</small>
+                    </td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+            
+            console.log('Sample data added successfully');
+        }
+
+                 // دالة لمسح البيانات من الجدول
+         function clearTableData() {
+             const tbody = document.getElementById('daily-excavation-tbody');
+             if (tbody) {
+                 tbody.innerHTML = `
+                     <tr id="no-data-row" class="table-light">
+                         <td colspan="8" class="text-center text-muted py-5">
+                             <div class="empty-state-content">
+                                 <i class="fas fa-clipboard-list fa-3x mb-3 text-secondary"></i>
+                                 <h5 class="mb-2 text-secondary">لا توجد بيانات حفريات</h5>
+                                 <p class="mb-0 text-muted">سيتم إضافة البيانات تلقائياً عند إدخال القياسات</p>
+                                 <small class="text-muted d-block mt-1">
+                                     <i class="fas fa-info-circle me-1"></i>
+                                     ابدأ بإدخال الطول والسعر في النماذج أعلاه
+                                 </small>
+                             </div>
+                         </td>
+                     </tr>
+                 `;
+                 console.log('Table data cleared');
+             }
+         }
+
+         // دالة للحصول على نوع القسم من نوع العمل
+        function getSectionType(workType) {
+            if (!workType) return 'غير محدد';
+            
+            if (workType.includes('تربة ترابية')) return 'حفريات أساسية';
+            if (workType.includes('تربة صخرية')) return 'حفريات أساسية';
+            if (workType.includes('حفر مفتوح')) return 'حفر مفتوح';
+            if (workType.includes('حفريات دقيقة')) return 'حفريات دقيقة';
+            if (workType.includes('تمديدات كهربائية')) return 'تمديدات كهربائية';
+            
+            return 'أعمال مدنية';
         }
     </script>
 </body>

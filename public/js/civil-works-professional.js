@@ -434,6 +434,7 @@ class CivilWorksManager {
                     
                     summaryData.push({
                         work_type: this.getSoilTypeTitle(type),
+                        section_type: 'حفريات أساسية',
                         cable_type: cableTypes[index] || `كابل ${index + 1}`,
                         length: item.length,
                         price: item.price,
@@ -449,6 +450,7 @@ class CivilWorksManager {
             if (openData && Object.keys(openData).length > 0) {
                 summaryData.push({
                     work_type: this.getSoilTypeTitle(type) + ' - حفر مفتوح',
+                    section_type: 'حفر مفتوح',
                     cable_type: 'أكبر من 4 كابلات',
                     length: openData.length,
                     width: openData.width,
@@ -467,6 +469,7 @@ class CivilWorksManager {
             Object.entries(formData.open_excavation).forEach(([key, value]) => {
                 summaryData.push({
                     work_type: 'حفر مفتوح',
+                    section_type: 'حفر مفتوح',
                     cable_type: this.getOpenExcavationTitle(key),
                     length: value.length,
                     price: value.price,
@@ -482,6 +485,7 @@ class CivilWorksManager {
             Object.entries(formData.precise_excavation).forEach(([key, value]) => {
                 summaryData.push({
                     work_type: 'حفريات دقيقة',
+                    section_type: 'حفريات دقيقة',
                     cable_type: key === 'medium' ? 'متوسط (20×80)' : 'منخفض (20×56)',
                     length: value.length,
                     price: value.price,
@@ -497,6 +501,7 @@ class CivilWorksManager {
             Object.entries(formData.electrical_items).forEach(([key, value]) => {
                 summaryData.push({
                     work_type: 'تمديدات كهربائية',
+                    section_type: 'تمديدات كهربائية',
                     cable_type: this.getCableTitle(key),
                     length: value.meters,
                     price: value.price,
@@ -546,7 +551,7 @@ class CivilWorksManager {
 
             row.innerHTML = `
                 <td class="text-center">
-                    <span class="table-number">${index + 1}</span>
+                    <div class="section-type-cell">${item.section_type || this.getSectionType(item.work_type)}</div>
                 </td>
                 <td class="text-center">
                     <div class="work-type-cell">${item.work_type || 'غير محدد'}</div>
@@ -555,10 +560,10 @@ class CivilWorksManager {
                     <span class="cable-type-badge">${cableCount}</span>
                 </td>
                 <td class="text-center">
-                    <div class="dimensions-cell">${dimensions}</div>
+                    <span class="count-cell">1</span>
                 </td>
                 <td class="text-center">
-                    <div class="volume-cell">${volume}</div>
+                    <div class="dimensions-cell">${dimensions}</div>
                 </td>
                 <td class="text-center">
                     <div class="price-cell">${parseFloat(item.price || 0).toFixed(2)} ريال</div>
@@ -885,6 +890,25 @@ class CivilWorksManager {
             'cable_3x400_med': 'كابل 3×400 متوسط'
         };
         return titles[key] || key;
+    }
+
+    getSectionType(workType) {
+        if (!workType) return 'غير محدد';
+        
+        if (workType.includes('تربة ترابية') || workType.includes('تربة صخرية')) {
+            return 'حفريات أساسية';
+        }
+        if (workType.includes('حفر مفتوح')) {
+            return 'حفر مفتوح';
+        }
+        if (workType.includes('حفريات دقيقة')) {
+            return 'حفريات دقيقة';
+        }
+        if (workType.includes('تمديدات كهربائية')) {
+            return 'تمديدات كهربائية';
+        }
+        
+        return 'أعمال مدنية';
     }
 }
 
