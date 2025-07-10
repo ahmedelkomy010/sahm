@@ -115,6 +115,36 @@
     .btn-secondary:hover {
         background: #6e707e;
     }
+    
+    /* تنسيق جدول مقايسة المواد */
+    .work-order-materials-table {
+        font-size: 0.9rem;
+    }
+    .work-order-materials-table th {
+        background-color: #f8f9fa;
+        font-weight: 600;
+        color: #5a5c69;
+        text-align: center;
+        vertical-align: middle;
+    }
+    .work-order-materials-table td {
+        vertical-align: middle;
+        text-align: center;
+    }
+    .work-order-materials-table .material-name {
+        text-align: right;
+    }
+    .work-order-materials-table .material-notes {
+        text-align: right;
+        max-width: 200px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .copy-to-form:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(78, 115, 223, 0.2);
+    }
 </style>
 @endpush
 
@@ -172,6 +202,83 @@
             </div>
         </div>
     </div>
+
+    @if($workOrderMaterials && $workOrderMaterials->count() > 0)
+    <!-- Work Order Materials Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header py-3 bg-gradient-primary">
+                    <h6 class="m-0 font-weight-bold text-white">
+                        <i class="fas fa-clipboard-list me-2"></i>
+                        بيانات مقايسة المواد ({{ $workOrderMaterials->count() }} مادة)
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover work-order-materials-table">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th width="5%">#</th>
+                                    <th width="15%">اسم المادة</th>
+                                    <th width="10%">الكمية</th>
+                                    <th width="10%">السعر</th>
+                                    <th width="10%">الوحدة</th>
+                                    <th width="25%">الملاحظات</th>
+                                    <th width="25%">الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($workOrderMaterials as $index => $workOrderMaterial)
+                                <tr>
+                                    <td>{{ $index + 1 }}</td>
+                                    <td class="material-name">
+                                        <strong>{{ $workOrderMaterial->material->name ?? 'غير محدد' }}</strong>
+                                        <br>
+                                        <small class="text-muted">{{ $workOrderMaterial->material->description ?? 'بدون وصف' }}</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">{{ number_format($workOrderMaterial->quantity, 2) }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-success">{{ number_format($workOrderMaterial->unit_price, 2) }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary">{{ $workOrderMaterial->material->unit ?? 'غير محدد' }}</span>
+                                    </td>
+                                    <td class="material-notes" title="{{ $workOrderMaterial->notes ?? 'لا توجد ملاحظات' }}">
+                                        <small>{{ $workOrderMaterial->notes ?? 'لا توجد ملاحظات' }}</small>
+                                    </td>
+                                    <td>
+                                        <button type="button" 
+                                                class="btn btn-primary btn-sm copy-to-form"
+                                                data-material-id="{{ $workOrderMaterial->material_id }}"
+                                                data-material-name="{{ $workOrderMaterial->material->name ?? '' }}"
+                                                data-material-code="{{ $workOrderMaterial->material->code ?? '' }}"
+                                                data-material-description="{{ $workOrderMaterial->material->description ?? '' }}"
+                                                data-quantity="{{ $workOrderMaterial->quantity }}"
+                                                data-unit-price="{{ $workOrderMaterial->unit_price }}"
+                                                data-unit="{{ $workOrderMaterial->material->unit ?? '' }}"
+                                                data-notes="{{ $workOrderMaterial->notes ?? '' }}"
+                                                title="نسخ البيانات إلى النموذج">
+                                            <i class="fas fa-copy me-1"></i>
+                                            نسخ
+                                        </button>
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="alert alert-info mt-3">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>تلميح:</strong> يمكنك النقر على زر "نسخ" بجانب أي مادة لنسخ بياناتها إلى نموذج الإدخال أدناه.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
 
     <!-- Create Material Form -->
     <div class="row">
@@ -328,6 +435,30 @@
 @push('scripts')
 <script>
 $(document).ready(function() {
+    // نسخ بيانات المواد من مقايسة المواد إلى النموذج
+    $('.copy-to-form').click(function() {
+        var button = $(this);
+        
+        // تأكيد من المستخدم
+        if (confirm('هل تريد نسخ بيانات هذه المادة إلى النموذج؟')) {
+            // نسخ البيانات
+            $('#code').val(button.data('material-code'));
+            $('#description').val(button.data('material-description'));
+            $('#planned_quantity').val(button.data('quantity'));
+            $('#unit').val(button.data('unit'));
+            
+            // إعادة حساب الفروق
+            calculatePlannedSpentDifference();
+            calculateExecutedSpentDifference();
+            
+            // إظهار رسالة نجاح
+            toastr.success('تم نسخ بيانات المادة بنجاح');
+            
+            // التركيز على حقل الكمية المصروفة
+            $('#spent_quantity').focus();
+        }
+    });
+
     // البحث عن وصف المادة عند تغيير الكود
     $('#search-material-btn').click(function() {
         var code = $('#code').val();

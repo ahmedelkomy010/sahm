@@ -75,6 +75,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::get('work-orders/{workOrder}/materials', [MaterialsController::class, 'index'])->name('work-orders.materials.index');
     Route::get('work-orders/{workOrder}/materials/create', [MaterialsController::class, 'create'])->name('work-orders.materials.create');
     Route::post('work-orders/{workOrder}/materials', [MaterialsController::class, 'store'])->name('work-orders.materials.store');
+    Route::post('work-orders/{workOrder}/materials/add-all-from-work-order', [MaterialsController::class, 'addAllFromWorkOrderMaterials'])->name('work-orders.materials.add-all-from-work-order');
     Route::get('work-orders/{workOrder}/materials/{material}', [MaterialsController::class, 'show'])->name('work-orders.materials.show');
     Route::get('work-orders/{workOrder}/materials/{material}/edit', [MaterialsController::class, 'edit'])->name('work-orders.materials.edit');
     Route::put('work-orders/{workOrder}/materials/{material}', [MaterialsController::class, 'update'])->name('work-orders.materials.update');

@@ -36,6 +36,9 @@ class MaterialsController extends Controller
 
         $materials = $query->latest()->paginate(15)->appends($request->query());
         
+        // جلب بيانات مقايسة المواد من work_order_materials
+        $workOrderMaterials = $workOrder->workOrderMaterials()->with('material')->get();
+        
         // جلب الملفات المستقلة (الملفات العامة)
         $generalFiles = $workOrder->materials()
             ->where('code', 'LIKE', 'GENERAL_FILES_%')
@@ -66,7 +69,7 @@ class MaterialsController extends Controller
             }
         }
         
-        return view('admin.work_orders.materials', compact('workOrder', 'materials', 'independentFiles'));
+        return view('admin.work_orders.materials', compact('workOrder', 'materials', 'workOrderMaterials', 'independentFiles'));
     }
 
     /**
@@ -74,7 +77,10 @@ class MaterialsController extends Controller
      */
     public function create(WorkOrder $workOrder)
     {
-        return view('admin.work_orders.create_material', compact('workOrder'));
+        // جلب بيانات مقايسة المواد من work_order_materials
+        $workOrderMaterials = $workOrder->workOrderMaterials()->with('material')->get();
+        
+        return view('admin.work_orders.create_material', compact('workOrder', 'workOrderMaterials'));
     }
 
     /**
@@ -144,7 +150,87 @@ class MaterialsController extends Controller
         $this->handleFileUploads($request, $material);
 
         return redirect()->route('admin.work-orders.materials.index', $workOrder)
-            ->with('success', 'تم إضافة المادة بنجاح');
+            ->with('success', 'تم إضافة المادة بنجاح - ' . ($data['name'] ?? $data['code']));
+    }
+
+    /**
+     * Add all remaining materials from work order materials to materials list.
+     */
+    public function addAllFromWorkOrderMaterials(WorkOrder $workOrder)
+    {
+        try {
+            $workOrderMaterials = $workOrder->workOrderMaterials()->with('material')->get();
+            $existingMaterials = $workOrder->materials()->get()->keyBy('code');
+            
+            $addedCount = 0;
+            $skippedCount = 0;
+            $errors = [];
+            
+            foreach ($workOrderMaterials as $workOrderMaterial) {
+                $materialCode = $workOrderMaterial->material->code ?? '';
+                
+                // تخطي المواد المضافة بالفعل
+                if ($existingMaterials->has($materialCode)) {
+                    $skippedCount++;
+                    continue;
+                }
+                
+                try {
+                    // إعداد بيانات المادة
+                    $data = [
+                        'code' => $materialCode,
+                        'description' => $workOrderMaterial->material->description ?? '',
+                        'name' => $workOrderMaterial->material->name ?? $workOrderMaterial->material->description ?? $materialCode,
+                        'planned_quantity' => $workOrderMaterial->quantity ?? 0,
+                        'spent_quantity' => 0,
+                        'executed_quantity' => 0,
+                        'unit' => $workOrderMaterial->material->unit ?? 'قطعة',
+                        'line' => '',
+                        'work_order_id' => $workOrder->id,
+                        'work_order_number' => $workOrder->order_number,
+                        'subscriber_name' => $workOrder->subscriber_name,
+                    ];
+
+                    // إنشاء المادة
+                    Material::create($data);
+                    $addedCount++;
+                    
+                } catch (\Exception $e) {
+                    $errors[] = "خطأ في إضافة المادة {$materialCode}: " . $e->getMessage();
+                }
+            }
+            
+            // إعداد رسالة النجاح
+            $message = "تم إضافة {$addedCount} مادة بنجاح";
+            if ($skippedCount > 0) {
+                $message .= " (تم تخطي {$skippedCount} مادة موجودة بالفعل)";
+            }
+            
+            // إرجاع JSON response للتعامل مع AJAX
+            if (!empty($errors)) {
+                $message .= ". حدثت أخطاء في بعض المواد.";
+                return response()->json([
+                    'success' => false,
+                    'message' => $message,
+                    'errors' => $errors,
+                    'added_count' => $addedCount,
+                    'skipped_count' => $skippedCount
+                ]);
+            }
+            
+            return response()->json([
+                'success' => true,
+                'message' => $message,
+                'added_count' => $addedCount,
+                'skipped_count' => $skippedCount
+            ]);
+                
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء إضافة المواد: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**

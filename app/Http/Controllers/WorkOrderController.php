@@ -248,11 +248,31 @@ class WorkOrderController extends Controller
     // حذف أمر عمل
     public function destroy(WorkOrder $workOrder)
     {
-        foreach ($workOrder->files as $file) {
-            Storage::disk('public')->delete($file->file_path);
+        try {
+            // حذف الملفات المرتبطة
+            foreach ($workOrder->files as $file) {
+                Storage::disk('public')->delete($file->file_path);
+            }
+            
+            // حذف المسوحات المرتبطة
+            $workOrder->surveys()->delete();
+            
+            // حذف بنود العمل المرتبطة
+            $workOrder->workOrderItems()->delete();
+            
+            // حذف مواد العمل المرتبطة
+            $workOrder->workOrderMaterials()->delete();
+            
+            // حذف الملفات المرتبطة من قاعدة البيانات
+            $workOrder->files()->delete();
+            
+            // حذف أمر العمل
+            $workOrder->delete();
+            
+            return redirect()->route('admin.work-orders.index')->with('success', 'تم حذف أمر العمل بنجاح');
+        } catch (\Exception $e) {
+            return redirect()->route('admin.work-orders.index')->with('error', 'حدث خطأ أثناء حذف أمر العمل: ' . $e->getMessage());
         }
-        $workOrder->delete();
-        return redirect()->route('admin.work-orders.index')->with('success', 'تم حذف أمر العمل بنجاح');
     }
 
     // رفع ملف عام (مثال)

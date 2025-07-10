@@ -98,10 +98,13 @@
     
     /* تنسيق الكميات */
     .quantity-badge {
-        padding: 6px 12px;
+        padding: 8px 12px;
         border-radius: 6px;
-        font-weight: 500;
+        font-weight: 600;
         background: #f8f9fa;
+        display: inline-block;
+        min-width: 60px;
+        text-align: center;
     }
     .quantity-badge.planned {
         background: rgba(78, 115, 223, 0.1);
@@ -128,6 +131,40 @@
     .difference-zero {
         color: #858796;
         font-weight: 500;
+    }
+    
+    /* تنسيق جدول مقايسة المواد */
+    .work-order-materials-table {
+        font-size: 0.95rem;
+    }
+    .work-order-materials-table th {
+        background: linear-gradient(45deg, #1cc88a, #17a2b8);
+        color: white;
+        font-weight: 600;
+        text-align: center;
+        vertical-align: middle;
+        border: none;
+        padding: 15px 10px;
+    }
+    .work-order-materials-table td {
+        vertical-align: middle;
+        padding: 12px 10px;
+        border-bottom: 1px solid #e3e6f0;
+    }
+    .work-order-materials-table .text-right {
+        text-align: right;
+        padding-right: 15px;
+    }
+    .work-order-materials-table .text-center {
+        text-align: center;
+    }
+    .work-order-materials-table tr:hover {
+        background-color: rgba(28, 200, 138, 0.05);
+    }
+    .work-order-materials-table .badge {
+        font-size: 0.9rem;
+        padding: 6px 10px;
+        min-width: 50px;
     }
 </style>
 @endpush
@@ -202,6 +239,73 @@
         </div>
     </div>
 
+    @if($workOrderMaterials && $workOrderMaterials->count() > 0)
+    <!-- Work Order Materials Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header py-3 bg-gradient-success">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h6 class="m-0 font-weight-bold text-white">
+                            <i class="fas fa-clipboard-list me-2"></i>
+                            مقايسة المواد - قائمة المواد المخططة ({{ $workOrderMaterials->count() }} مادة)
+                        </h6>
+                        <div class="text-white">
+                            <small>
+                                <span class="badge bg-light text-primary">
+                                    <i class="fas fa-list"></i> إجمالي المواد: {{ $workOrderMaterials->count() }}
+                                </span>
+                            </small>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover work-order-materials-table">
+                            <thead>
+                                <tr>
+                                    <th width="10%">#</th>
+                                    <th width="20%">كود المادة</th>
+                                    <th width="40%">وصف المادة</th>
+                                    <th width="15%">الكمية المخططة</th>
+                                    <th width="15%">الوحدة</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($workOrderMaterials as $index => $workOrderMaterial)
+                                <tr>
+                                    <td class="text-center">{{ $index + 1 }}</td>
+                                    <td class="text-center">
+                                        <strong class="text-primary">{{ $workOrderMaterial->material->code ?? 'غير محدد' }}</strong>
+                                    </td>
+                                    <td class="text-right">
+                                        {{ $workOrderMaterial->material->description ?? $workOrderMaterial->material->name ?? 'بدون وصف' }}
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-info fs-6">{{ number_format($workOrderMaterial->quantity, 2) }}</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-secondary">{{ $workOrderMaterial->material->unit ?? 'غير محدد' }}</span>
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <div class="alert alert-info mb-0">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>مقايسة المواد:</strong> .
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+
     <!-- Search and Filter -->
     <div class="row mb-4">
         <div class="col-12">
@@ -261,10 +365,7 @@
                                 نتائج البحث: {{ $materials->total() }} من أصل {{ $materials->total() }}
                             </span>
                         @endif
-                        <small class="text-light">
-                            <i class="fas fa-info-circle me-1"></i>
-                            نظام إدارة الملفات المستقل متاح في القسم السفلي
-                        </small>
+                        
                     </div>
                 </div>
                 <div class="card-body">
@@ -469,7 +570,6 @@
                                             <h5 class="alert-heading text-info mb-2">
                                                 رفع ملفات مستقلة
                                             </h5>
-                                            <p class="mb-0 small">يمكنك رفع الملفات المطلوبة (مستقلة عن بيانات المواد) من خلال النموذج أدناه</p>
                                         </div>
                                     </div>
                                 </div>
@@ -596,7 +696,6 @@
                                                                                     <h5 class="alert-heading text-success mb-2">
                                                 الملفات المستقلة المرفوعة
                                             </h5>
-                                            <p class="mb-0 small">جميع الملفات المرفوعة (مستقلة عن المواد) في هذا أمر العمل</p>
                                     </div>
                                 </div>
                             </div>
@@ -668,8 +767,6 @@
                                                             <h5 class="text-muted mb-2">لا توجد ملفات مستقلة مرفوعة</h5>
                                                             <p class="text-muted small mb-3">لم يتم رفع أي ملفات مستقلة حتى الآن</p>
                                                             <div class="text-muted small">
-                                                                <i class="fas fa-arrow-up me-1"></i>
-                                                                استخدم النموذج أعلاه لرفع الملفات المطلوبة
                                                             </div>
                                                         </div>
                                                     </td>
@@ -1341,6 +1438,188 @@ function deleteIndependentFile(materialId, fileType, button) {
         }
     });
 }
+
+// معالجة إضافة المواد من مقايسة المواد
+document.addEventListener('DOMContentLoaded', function() {
+    // إظهار رسالة نجاح إذا تم إضافة مادة
+    @if(session('success'))
+        Swal.fire({
+            title: 'تم بنجاح!',
+            text: '{{ session('success') }}',
+            icon: 'success',
+            confirmButtonColor: '#28a745',
+            confirmButtonText: 'حسناً'
+        });
+    @endif
+
+    // إظهار رسالة خطأ إذا حدث خطأ
+    @if(session('error'))
+        Swal.fire({
+            title: 'خطأ!',
+            text: '{{ session('error') }}',
+            icon: 'error',
+            confirmButtonColor: '#dc3545',
+            confirmButtonText: 'حسناً'
+        });
+    @endif
+    
+    // التعامل مع نماذج إضافة المواد من مقايسة المواد
+    const createMaterialForms = document.querySelectorAll('.create-material-form');
+    
+    createMaterialForms.forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const materialName = this.dataset.materialName;
+            const materialCode = this.dataset.materialCode;
+            const quantity = this.dataset.quantity;
+            
+            Swal.fire({
+                title: 'تأكيد الإضافة',
+                html: `
+                    <div class="text-start">
+                        <p><strong>اسم المادة:</strong> ${materialName}</p>
+                        <p><strong>الكود:</strong> ${materialCode}</p>
+                        <p><strong>الكمية المخططة:</strong> ${quantity}</p>
+                    </div>
+                    <hr>
+                    <p class="text-muted">هل تريد إضافة هذه المادة إلى قائمة المواد؟</p>
+                `,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#28a745',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: '<i class="fas fa-plus me-1"></i> نعم، أضف المادة',
+                cancelButtonText: '<i class="fas fa-times me-1"></i> إلغاء',
+                buttonsStyling: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // إظهار loader
+                    Swal.fire({
+                        title: 'جاري الإضافة...',
+                        html: 'يتم إضافة المادة إلى قائمة المواد',
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                        showConfirmButton: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+                    
+                    // إرسال النموذج
+                    this.submit();
+                }
+            });
+        });
+    });
+    
+    // معالجة زر إضافة جميع المواد المتبقية
+    const addAllMaterialsBtn = document.getElementById('addAllMaterialsBtn');
+    if (addAllMaterialsBtn) {
+        addAllMaterialsBtn.addEventListener('click', function() {
+            const notAddedForms = document.querySelectorAll('.create-material-form');
+            const notAddedCount = notAddedForms.length;
+            
+            if (notAddedCount === 0) {
+                Swal.fire({
+                    title: 'لا توجد مواد',
+                    text: 'تم إضافة جميع المواد من المقايسة بالفعل',
+                    icon: 'info',
+                    confirmButtonText: 'حسناً'
+                });
+                return;
+            }
+            
+            Swal.fire({
+                title: 'تأكيد الإضافة الجماعية',
+                html: `
+                    <div class="text-center">
+                        <i class="fas fa-plus-circle text-success mb-3" style="font-size: 3rem;"></i>
+                        <h5 class="mb-3">إضافة جميع المواد المتبقية</h5>
+                        <p class="text-muted">سيتم إضافة <strong>${notAddedCount}</strong> مادة من مقايسة المواد إلى قائمة المواد</p>
+                        <div class="alert alert-warning mt-3 text-start">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>ملاحظة:</strong> ستتم إضافة جميع المواد بالكميات المخططة من المقايسة، ويمكنك تعديل الكميات المصروفة والمنفذة لاحقاً.
+                        </div>
+                    </div>
+                `,
+                icon: null,
+                showCancelButton: true,
+                confirmButtonColor: '#28a745',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: '<i class="fas fa-plus-circle me-1"></i> نعم، أضف جميع المواد',
+                cancelButtonText: '<i class="fas fa-times me-1"></i> إلغاء',
+                buttonsStyling: true,
+                customClass: {
+                    popup: 'swal2-large'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // إظهار progress bar
+                    Swal.fire({
+                        title: 'جاري الإضافة...',
+                        html: `
+                            <div class="progress mb-3" style="height: 20px;">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" 
+                                     role="progressbar" style="width: 100%">
+                                    جاري المعالجة...
+                                </div>
+                            </div>
+                            <p>إضافة جميع المواد من مقايسة المواد...</p>
+                        `,
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                        showConfirmButton: false
+                    });
+                    
+                    // إرسال طلب AJAX لإضافة جميع المواد
+                    fetch('{{ route('admin.work-orders.materials.add-all-from-work-order', $workOrder) }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        Swal.close();
+                        
+                        if (data.success) {
+                            Swal.fire({
+                                title: 'تم بنجاح!',
+                                text: data.message || `تم إضافة جميع المواد بنجاح`,
+                                icon: 'success',
+                                confirmButtonColor: '#28a745',
+                                confirmButtonText: 'ممتاز'
+                            }).then(() => {
+                                location.reload(); // إعادة تحميل الصفحة لإظهار التحديثات
+                            });
+                        } else {
+                            Swal.fire({
+                                title: 'خطأ!',
+                                text: data.message || 'حدث خطأ أثناء إضافة المواد',
+                                icon: 'error',
+                                confirmButtonColor: '#dc3545',
+                                confirmButtonText: 'حسناً'
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        Swal.close();
+                        console.error('Error:', error);
+                        Swal.fire({
+                            title: 'خطأ!',
+                            text: 'حدث خطأ أثناء إضافة المواد',
+                            icon: 'error',
+                            confirmButtonColor: '#dc3545',
+                            confirmButtonText: 'حسناً'
+                        });
+                    });
+                }
+            });
+        });
+    }
+});
 </script>
 
 <style>
