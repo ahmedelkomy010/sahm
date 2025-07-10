@@ -168,6 +168,14 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         ->name('work-orders.import-work-items');
     Route::get('work-orders/work-items', [WorkOrderController::class, 'getWorkItems'])
         ->name('work-orders.work-items');
+        
+    // مسارات Excel للمواد
+    Route::post('work-orders/import-materials', [WorkOrderController::class, 'importWorkOrderMaterials'])
+        ->name('work-orders.import-materials');
+    
+    // مسار البحث في المواد المرجعية
+    Route::get('work-orders/search-materials', [WorkOrderController::class, 'searchReferenceMaterials'])
+        ->name('work-orders.search-materials');
 
     // مسارات إدارة الرخص
     Route::get('work-orders/licenses', [WorkOrderController::class, 'licenses'])->name('work-orders.licenses');

@@ -1620,6 +1620,80 @@ class WorkOrderController extends Controller
     }
 
     /**
+     * Import work order materials from Excel file
+     */
+    public function importWorkOrderMaterials(Request $request)
+    {
+        ini_set('memory_limit', '2G');
+        
+        try {
+            $request->validate([
+                'file' => 'required|mimes:xlsx,xls,csv|max:10240'
+            ]);
+
+            $file = $request->file('file');
+            Log::info('Materials import file details', [
+                'original_name' => $file->getClientOriginalName(),
+                'mime_type' => $file->getMimeType(),
+                'size' => $file->getSize()
+            ]);
+
+            // التحقق من أن مكتبة Excel متاحة
+            if (!class_exists('\Maatwebsite\Excel\Facades\Excel')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'مكتبة Excel غير متاحة'
+                ], 500);
+            }
+
+            // التحقق من أن كلاس WorkOrderMaterialsImport يعمل
+            if (!class_exists('\App\Imports\WorkOrderMaterialsImport')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'كلاس استيراد المواد غير متاح'
+                ], 500);
+            }
+
+            $import = new \App\Imports\WorkOrderMaterialsImport();
+            Log::info('Materials import class created successfully');
+
+            \Maatwebsite\Excel\Facades\Excel::import($import, $file);
+            Log::info('Materials Excel import completed');
+
+            $importedMaterials = $import->getFormattedMaterials();
+            $errors = $import->errors();
+
+            Log::info('Materials import results', [
+                'imported_count' => count($importedMaterials),
+                'errors_count' => count($errors)
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'تم استيراد ' . count($importedMaterials) . ' مادة بنجاح',
+                'imported_count' => count($importedMaterials),
+                'errors_count' => count($errors),
+                'errors' => $errors,
+                'imported_materials' => $importedMaterials
+            ]);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'خطأ في تحقق الملف: ' . implode(', ', $e->errors()['file'] ?? ['ملف غير صالح'])
+            ], 422);
+        } catch (\Exception $e) {
+            Log::error('Import materials error: ' . $e->getMessage());
+            Log::error('Stack trace: ' . $e->getTraceAsString());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء استيراد ملف المواد: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Get work items with search functionality
      */
     public function getWorkItems(Request $request)
@@ -1653,6 +1727,57 @@ class WorkOrderController extends Controller
         }
 
         return view('admin.work_items.index', compact('workItems'));
+    }
+
+    /**
+     * Search reference materials for work orders
+     */
+    public function searchReferenceMaterials(Request $request)
+    {
+        try {
+            $query = \App\Models\ReferenceMaterial::query();
+
+            // البحث بالكود
+            if ($request->filled('code')) {
+                $query->where('code', 'LIKE', '%' . $request->code . '%');
+            }
+
+            // البحث بالوصف
+            if ($request->filled('description')) {
+                $query->where('description', 'LIKE', '%' . $request->description . '%');
+            }
+
+            // البحث العام (في الكود والوصف)
+            if ($request->filled('search')) {
+                $searchTerm = $request->search;
+                $query->where(function($q) use ($searchTerm) {
+                    $q->where('code', 'LIKE', "%{$searchTerm}%")
+                      ->orWhere('description', 'LIKE', "%{$searchTerm}%")
+                      ->orWhere('name', 'LIKE', "%{$searchTerm}%");
+                });
+            }
+
+            // ترتيب النتائج
+            $materials = $query->where('is_active', true)
+                              ->orderBy('code')
+                              ->limit(100) // حد أقصى 100 نتيجة
+                              ->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $materials,
+                'count' => $materials->count()
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error searching reference materials: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء البحث في المواد',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     public function updateLicense(Request $request, WorkOrder $workOrder)

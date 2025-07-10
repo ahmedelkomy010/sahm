@@ -294,10 +294,41 @@
                                             <i class="fas fa-boxes me-2 text-success"></i>
                                             مقايسة المواد
                                         </h4>
-                                        <button type="button" class="btn btn-outline-success btn-sm" onclick="addMaterial()">
-                                            <i class="fas fa-plus"></i> إضافة مادة
-                                        </button>
+                                        <div class="d-flex gap-2">
+                                            <button type="button" class="btn btn-outline-info btn-sm" data-bs-toggle="modal" data-bs-target="#materialsImportModal">
+                                                <i class="fas fa-file-excel"></i> استيراد من Excel
+                                            </button>
+                                            <button type="button" class="btn btn-outline-warning btn-sm" data-bs-toggle="modal" data-bs-target="#materialsSearchModal">
+                                                <i class="fas fa-search"></i> بحث في المواد
+                                            </button>
+                                            <button type="button" class="btn btn-outline-success btn-sm" onclick="addMaterial()">
+                                                <i class="fas fa-plus"></i> إضافة مادة
+                                            </button>
+                                        </div>
                                     </div>
+                                    
+                                    <!-- حقل البحث السريع -->
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <div class="input-group">
+                                                <span class="input-group-text">
+                                                    <i class="fas fa-search text-muted"></i>
+                                                </span>
+                                                <input type="text" class="form-control" id="quickMaterialSearch" 
+                                                       placeholder="بحث سريع في كود المادة..." 
+                                                       onkeyup="quickSearchMaterials(this.value)">
+                                                <button class="btn btn-outline-secondary" type="button" onclick="clearQuickSearch()">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div id="quickSearchResults" class="position-relative">
+                                                <!-- نتائج البحث السريع ستظهر هنا -->
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
                                     <div class="table-responsive">
                                         <table class="table table-bordered" id="materialsTable">
                                             <thead class="table-light">
@@ -361,6 +392,65 @@
     </div>
 </div>
 
+<!-- Modal for Materials Excel Import -->
+<div class="modal fade" id="materialsImportModal" tabindex="-1" aria-labelledby="materialsImportModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="materialsImportModalLabel">
+                    <i class="fas fa-file-excel me-2"></i>
+                    استيراد مقايسة المواد من ملف Excel
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>متطلبات الملف:</strong>
+                    <ul class="mb-0 mt-2">
+                        <li>يجب أن يحتوي الملف على عمودين على الأقل: <strong>كود المادة</strong> و <strong>وصف المادة</strong></li>
+                        <li>يمكن إضافة عمود <strong>الكمية</strong> و <strong>الوحدة</strong> (اختياري)</li>
+                        <li>يدعم ملفات Excel (.xlsx, .xls) و CSV (.csv)</li>
+                        <li>الحد الأقصى لحجم الملف: 10 ميجا بايت</li>
+                    </ul>
+                </div>
+                
+                <form id="materialsImportForm" enctype="multipart/form-data">
+                    @csrf
+                    <div class="mb-3">
+                        <label for="materialsFile" class="form-label fw-bold">اختر ملف المواد</label>
+                        <input type="file" class="form-control form-control-lg" id="materialsFile" name="file" 
+                               accept=".xlsx,.xls,.csv" required>
+                        <div class="form-text">
+                            <i class="fas fa-download me-1"></i>
+                            <a href="#" class="text-decoration-none" onclick="downloadMaterialsTemplate()">
+                                تحميل نموذج Excel للمواد
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div id="materialsUploadProgress" class="progress mb-3 d-none">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" 
+                             role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                        </div>
+                    </div>
+                    
+                    <div id="materialsImportResults" class="mb-3"></div>
+                    
+                    <div class="d-flex justify-content-end gap-2">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="fas fa-times me-1"></i> إلغاء
+                        </button>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-upload me-1"></i> رفع واستيراد
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Modal البحث في البنود -->
 <div class="modal fade" id="workItemsSearchModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-xl">
@@ -407,6 +497,64 @@
                 </div>
                 
                 <div id="searchPagination" class="d-flex justify-content-center mt-3"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal البحث في المواد -->
+<div class="modal fade" id="materialsSearchModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title">
+                    <i class="fas fa-search me-2"></i>
+                    البحث في المواد المرجعية
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label class="form-label">البحث بالكود</label>
+                        <input type="text" class="form-control" id="searchMaterialCode" 
+                               placeholder="كود المادة">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">البحث بالوصف</label>
+                        <input type="text" class="form-control" id="searchMaterialDescription" 
+                               placeholder="وصف المادة">
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <button type="button" class="btn btn-warning w-100" onclick="searchMaterials()">
+                            <i class="fas fa-search me-1"></i>بحث
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 20%">الكود</th>
+                                <th style="width: 40%">الوصف</th>
+                                <th style="width: 15%">الوحدة</th>
+                                <th style="width: 15%">السعر</th>
+                                <th style="width: 10%">إضافة</th>
+                            </tr>
+                        </thead>
+                        <tbody id="materialsSearchResults">
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-4">
+                                    <i class="fas fa-search fa-2x mb-2 d-block"></i>
+                                    ابدأ بالبحث لعرض النتائج
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div id="materialsPagination" class="d-flex justify-content-center mt-3"></div>
             </div>
         </div>
     </div>
@@ -557,6 +705,31 @@
     .btn-sm {
         padding: 0.25rem 0.5rem;
         font-size: 0.875rem;
+    }
+    
+    /* تنسيق البحث السريع */
+    #quickSearchResults {
+        z-index: 1000;
+    }
+    
+    #quickSearchResults .cursor-pointer:hover {
+        background-color: #f8f9fa;
+        cursor: pointer;
+    }
+    
+    .alert-sm {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.875rem;
+    }
+    
+    /* تحسينات للتصاميم */
+    .modal-xl .modal-body {
+        max-height: 70vh;
+        overflow-y: auto;
+    }
+    
+    .table-hover tbody tr:hover {
+        background-color: rgba(0, 123, 255, 0.1);
     }
 </style>
 
@@ -1220,6 +1393,504 @@ function clearContractSearch() {
     document.getElementById('searchContractItem').value = '';
     document.getElementById('searchResults').innerHTML = '';
 }
+
+// ================================
+// وظائف استيراد المواد من Excel
+// ================================
+
+// معالجة نموذج استيراد المواد
+document.getElementById('materialsImportForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData();
+    const fileInput = document.getElementById('materialsFile');
+    const file = fileInput.files[0];
+    
+    if (!file) {
+        showMaterialsImportError('يرجى اختيار ملف أولاً');
+        return;
+    }
+    
+    // التحقق من نوع الملف
+    const allowedTypes = [
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'application/vnd.ms-excel',
+        'text/csv'
+    ];
+    
+    if (!allowedTypes.includes(file.type)) {
+        showMaterialsImportError('نوع الملف غير مدعوم. يرجى اختيار ملف Excel أو CSV');
+        return;
+    }
+    
+    // التحقق من حجم الملف (10 ميجا بايت)
+    if (file.size > 10 * 1024 * 1024) {
+        showMaterialsImportError('حجم الملف كبير جداً. الحد الأقصى المسموح 10 ميجا بايت');
+        return;
+    }
+    
+    formData.append('file', file);
+    formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+    
+    // إظهار شريط التقدم
+    showMaterialsImportProgress();
+    
+    // إرسال الطلب
+                        fetch('{{ route('admin.work-orders.import-materials') }}', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        hideMaterialsImportProgress();
+        
+        if (data.success) {
+            showMaterialsImportSuccess(data);
+            
+            // إضافة المواد المستوردة إلى الجدول
+            if (data.imported_materials && data.imported_materials.length > 0) {
+                addImportedMaterialsToTable(data.imported_materials);
+            }
+            
+            // إغلاق النافذة بعد 2 ثانية
+            setTimeout(() => {
+                const modal = bootstrap.Modal.getInstance(document.getElementById('materialsImportModal'));
+                modal.hide();
+                resetMaterialsImportForm();
+            }, 2000);
+            
+        } else {
+            showMaterialsImportError(data.message || 'حدث خطأ أثناء استيراد المواد');
+            
+            // إظهار تفاصيل الأخطاء إن وجدت
+            if (data.errors && data.errors.length > 0) {
+                showMaterialsImportErrors(data.errors);
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        hideMaterialsImportProgress();
+        showMaterialsImportError('حدث خطأ في الاتصال بالخادم');
+    });
+});
+
+// إظهار شريط التقدم
+function showMaterialsImportProgress() {
+    const progressDiv = document.getElementById('materialsUploadProgress');
+    const progressBar = progressDiv.querySelector('.progress-bar');
+    
+    progressDiv.classList.remove('d-none');
+    progressBar.style.width = '100%';
+    progressBar.textContent = 'جاري الاستيراد...';
+}
+
+// إخفاء شريط التقدم
+function hideMaterialsImportProgress() {
+    const progressDiv = document.getElementById('materialsUploadProgress');
+    progressDiv.classList.add('d-none');
+}
+
+// إظهار رسالة نجاح الاستيراد
+function showMaterialsImportSuccess(data) {
+    const resultsDiv = document.getElementById('materialsImportResults');
+    const importedCount = data.imported_count || 0;
+    const errorsCount = data.errors_count || 0;
+    
+    let html = `
+        <div class="alert alert-success">
+            <h6><i class="fas fa-check-circle me-2"></i>تم الاستيراد بنجاح!</h6>
+            <ul class="mb-0">
+                <li>تم استيراد <strong>${importedCount}</strong> مادة</li>
+    `;
+    
+    if (errorsCount > 0) {
+        html += `<li class="text-warning">تخطي <strong>${errorsCount}</strong> صف بسبب أخطاء</li>`;
+    }
+    
+    html += `
+            </ul>
+        </div>
+    `;
+    
+    resultsDiv.innerHTML = html;
+}
+
+// إظهار رسالة خطأ
+function showMaterialsImportError(message) {
+    const resultsDiv = document.getElementById('materialsImportResults');
+    resultsDiv.innerHTML = `
+        <div class="alert alert-danger">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            ${message}
+        </div>
+    `;
+}
+
+// إظهار تفاصيل الأخطاء
+function showMaterialsImportErrors(errors) {
+    const resultsDiv = document.getElementById('materialsImportResults');
+    const currentContent = resultsDiv.innerHTML;
+    
+    let errorsHtml = `
+        <div class="alert alert-warning mt-2">
+            <h6><i class="fas fa-exclamation-triangle me-2"></i>تفاصيل الأخطاء:</h6>
+            <ul class="mb-0">
+    `;
+    
+    errors.forEach(error => {
+        errorsHtml += `<li>الصف ${error.row}: ${error.errors.join(', ')}</li>`;
+    });
+    
+    errorsHtml += `</ul></div>`;
+    
+    resultsDiv.innerHTML = currentContent + errorsHtml;
+}
+
+// إضافة المواد المستوردة إلى الجدول
+function addImportedMaterialsToTable(materials) {
+    const tbody = document.getElementById('materialsBody');
+    
+    materials.forEach(material => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>
+                <input type="text" name="materials[${materialRowIndex}][material_code]" 
+                       class="form-control form-control-sm" 
+                       value="${material.material_code}" readonly>
+            </td>
+            <td>
+                <input type="text" name="materials[${materialRowIndex}][material_description]" 
+                       class="form-control form-control-sm" 
+                       value="${material.material_description}" readonly>
+            </td>
+            <td>
+                <input type="number" name="materials[${materialRowIndex}][planned_quantity]" 
+                       class="form-control form-control-sm" 
+                       step="0.01" min="0" value="${material.planned_quantity || ''}">
+            </td>
+            <td>
+                <select name="materials[${materialRowIndex}][unit]" class="form-select form-select-sm">
+                    <option value="L.M" ${material.unit === 'L.M' ? 'selected' : ''}>L.M</option>
+                    <option value="Kit" ${material.unit === 'Kit' ? 'selected' : ''}>Kit</option>
+                    <option value="Ech" ${material.unit === 'Ech' ? 'selected' : ''}>Ech</option>
+                    <option value="قطعة" ${material.unit === 'قطعة' ? 'selected' : ''}>قطعة</option>
+                    <option value="متر" ${material.unit === 'متر' ? 'selected' : ''}>متر</option>
+                    <option value="كيلو" ${material.unit === 'كيلو' ? 'selected' : ''}>كيلو</option>
+                </select>
+            </td>
+            <td>
+                <input type="text" name="materials[${materialRowIndex}][notes]" 
+                       class="form-control form-control-sm" 
+                       value="${material.notes || ''}" placeholder="ملاحظات">
+            </td>
+            <td>
+                <button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </td>
+        `;
+        tbody.appendChild(row);
+        materialRowIndex++;
+    });
+    
+    // إظهار رسالة توضيحية
+    toastr.success(`تم إضافة ${materials.length} مادة إلى مقايسة المواد`, 'استيراد ناجح');
+}
+
+// إعادة تعيين نموذج الاستيراد
+function resetMaterialsImportForm() {
+    const form = document.getElementById('materialsImportForm');
+    const results = document.getElementById('materialsImportResults');
+    
+    form.reset();
+    results.innerHTML = '';
+    hideMaterialsImportProgress();
+}
+
+// تحميل نموذج Excel للمواد
+function downloadMaterialsTemplate() {
+    // إنشاء CSV بسيط كنموذج
+    const csvContent = "كود المادة,وصف المادة,الكمية,الوحدة\nMAT001,مادة تجريبية,10,قطعة\nMAT002,كابل كهربائي,100,متر";
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    
+    if (link.download !== undefined) {
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', 'نموذج_مقايسة_المواد.csv');
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+}
+
+// إعادة تعيين نموذج الاستيراد عند إغلاق النافذة
+const materialsImportModal = document.getElementById('materialsImportModal');
+if (materialsImportModal) {
+    materialsImportModal.addEventListener('hidden.bs.modal', function() {
+        resetMaterialsImportForm();
+    });
+}
+
+// ================================
+// وظائف البحث في المواد
+// ================================
+
+// البحث السريع في المواد
+function quickSearchMaterials(searchTerm) {
+    const resultsDiv = document.getElementById('quickSearchResults');
+    
+    if (searchTerm.length < 2) {
+        resultsDiv.innerHTML = '';
+        return;
+    }
+    
+    // إظهار مؤشر التحميل
+    resultsDiv.innerHTML = `
+        <div class="d-flex align-items-center">
+            <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+            <small class="text-muted">جاري البحث...</small>
+        </div>
+    `;
+    
+    // البحث في المواد المرجعية عبر API
+    fetch(`{{ route('admin.work-orders.search-materials') }}?search=${encodeURIComponent(searchTerm)}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.data.length > 0) {
+                const filteredMaterials = data.data.slice(0, 5); // أول 5 نتائج فقط
+                
+                let html = '<div class="border rounded p-2 bg-white shadow-sm">';
+                html += '<small class="text-muted fw-bold">نتائج البحث السريع:</small>';
+                html += '<div class="mt-1">';
+                
+                filteredMaterials.forEach(material => {
+                    html += `
+                        <div class="border-bottom py-1 cursor-pointer" onclick="addMaterialFromQuickSearch('${material.code}', '${material.description}', '${material.unit}')">
+                            <small>
+                                <strong>${material.code}</strong> - ${material.description}
+                                <span class="text-muted">(${material.unit || 'قطعة'})</span>
+                            </small>
+                        </div>
+                    `;
+                });
+                
+                html += '</div></div>';
+                resultsDiv.innerHTML = html;
+            } else {
+                resultsDiv.innerHTML = `
+                    <div class="alert alert-info alert-sm mb-0">
+                        <i class="fas fa-info-circle me-1"></i>
+                        لا توجد نتائج للبحث "${searchTerm}"
+                    </div>
+                `;
+            }
+        })
+        .catch(error => {
+            console.error('Error searching materials:', error);
+            resultsDiv.innerHTML = `
+                <div class="alert alert-danger alert-sm mb-0">
+                    <i class="fas fa-exclamation-triangle me-1"></i>
+                    خطأ في البحث
+                </div>
+            `;
+        });
+}
+
+// إضافة مادة من البحث السريع
+function addMaterialFromQuickSearch(code, description, unit) {
+    addMaterialRow(code, description, '', unit, '');
+    clearQuickSearch();
+}
+
+// مسح البحث السريع
+function clearQuickSearch() {
+    document.getElementById('quickMaterialSearch').value = '';
+    document.getElementById('quickSearchResults').innerHTML = '';
+}
+
+// البحث المتقدم في المواد
+function searchMaterials() {
+    const codeSearch = document.getElementById('searchMaterialCode').value;
+    const descriptionSearch = document.getElementById('searchMaterialDescription').value;
+    const resultsBody = document.getElementById('materialsSearchResults');
+    
+    if (!codeSearch && !descriptionSearch) {
+        resultsBody.innerHTML = `
+            <tr>
+                <td colspan="5" class="text-center text-warning py-4">
+                    <i class="fas fa-exclamation-triangle fa-2x mb-2 d-block"></i>
+                    يرجى إدخال كود المادة أو وصف المادة للبحث
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    // إظهار مؤشر التحميل
+    resultsBody.innerHTML = `
+        <tr>
+            <td colspan="5" class="text-center py-4">
+                <div class="d-flex align-items-center justify-content-center">
+                    <div class="spinner-border me-2" role="status"></div>
+                    <span>جاري البحث...</span>
+                </div>
+            </td>
+        </tr>
+    `;
+    
+    // بناء URL للبحث
+    const searchParams = new URLSearchParams();
+    if (codeSearch) searchParams.append('code', codeSearch);
+    if (descriptionSearch) searchParams.append('description', descriptionSearch);
+    
+    // البحث عبر API
+    fetch(`{{ route('admin.work-orders.search-materials') }}?${searchParams.toString()}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.data.length > 0) {
+                const materials = data.data;
+                
+                // عرض النتائج (أول 50 نتيجة)
+                let html = '';
+                materials.slice(0, 50).forEach(material => {
+                    html += `
+                        <tr>
+                            <td><small class="fw-bold">${material.code}</small></td>
+                            <td><small>${material.description}</small></td>
+                            <td><small class="text-muted">${material.unit || 'قطعة'}</small></td>
+                            <td><small class="text-success">${material.unit_price || 0}</small></td>
+                            <td>
+                                <button type="button" class="btn btn-success btn-sm" 
+                                        onclick="addMaterialFromSearch('${material.code}', '${material.description}', '${material.unit || 'قطعة'}', '${material.unit_price || 0}')">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+                
+                if (materials.length > 50) {
+                    html += `
+                        <tr>
+                            <td colspan="5" class="text-center text-warning py-2">
+                                <small><i class="fas fa-info-circle me-1"></i>
+                                عرض أول 50 نتيجة من أصل ${materials.length} نتيجة. يرجى تحديد البحث أكثر.</small>
+                            </td>
+                        </tr>
+                    `;
+                }
+                
+                resultsBody.innerHTML = html;
+            } else {
+                resultsBody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="text-center text-info py-4">
+                            <i class="fas fa-search fa-2x mb-2 d-block"></i>
+                            لا توجد نتائج مطابقة لمعايير البحث
+                        </td>
+                    </tr>
+                `;
+            }
+        })
+        .catch(error => {
+            console.error('Error searching materials:', error);
+            resultsBody.innerHTML = `
+                <tr>
+                    <td colspan="5" class="text-center text-danger py-4">
+                        <i class="fas fa-exclamation-triangle fa-2x mb-2 d-block"></i>
+                        حدث خطأ أثناء البحث
+                    </td>
+                </tr>
+            `;
+        });
+}
+
+// إضافة مادة من البحث المتقدم
+function addMaterialFromSearch(code, description, unit, unitPrice) {
+    addMaterialRow(code, description, '', unit, '');
+    
+    // إغلاق النافذة
+    const modal = bootstrap.Modal.getInstance(document.getElementById('materialsSearchModal'));
+    modal.hide();
+    
+    // إظهار رسالة نجاح
+    toastr.success(`تم إضافة المادة: ${code}`, 'تمت الإضافة');
+}
+
+// وظيفة مساعدة لإضافة صف مادة
+function addMaterialRow(code, description, quantity, unit, notes) {
+    const tbody = document.getElementById('materialsBody');
+    const row = document.createElement('tr');
+    
+    row.innerHTML = `
+        <td>
+            <input type="text" name="materials[${materialRowIndex}][material_code]" 
+                   class="form-control form-control-sm" 
+                   value="${code}" readonly>
+        </td>
+        <td>
+            <input type="text" name="materials[${materialRowIndex}][material_description]" 
+                   class="form-control form-control-sm" 
+                   value="${description}" readonly>
+        </td>
+        <td>
+            <input type="number" name="materials[${materialRowIndex}][planned_quantity]" 
+                   class="form-control form-control-sm" 
+                   step="0.01" min="0" value="${quantity}" placeholder="الكمية">
+        </td>
+        <td>
+            <select name="materials[${materialRowIndex}][unit]" class="form-select form-select-sm">
+                <option value="L.M" ${unit === 'L.M' ? 'selected' : ''}>L.M</option>
+                <option value="Kit" ${unit === 'Kit' ? 'selected' : ''}>Kit</option>
+                <option value="Ech" ${unit === 'Ech' ? 'selected' : ''}>Ech</option>
+            </select>
+        </td>
+        <td>
+            <input type="text" name="materials[${materialRowIndex}][notes]" 
+                   class="form-control form-control-sm" 
+                   value="${notes}" placeholder="ملاحظات">
+        </td>
+        <td>
+            <button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">
+                <i class="fas fa-trash"></i>
+            </button>
+        </td>
+    `;
+    
+    tbody.appendChild(row);
+    materialRowIndex++;
+}
+
+// إضافة أحداث البحث السريع
+document.addEventListener('DOMContentLoaded', function() {
+    // البحث السريع عند الضغط على Enter
+    const quickSearchInput = document.getElementById('quickMaterialSearch');
+    if (quickSearchInput) {
+        quickSearchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                quickSearchMaterials(this.value);
+            }
+        });
+    }
+    
+    // البحث المتقدم عند الضغط على Enter
+    const searchInputs = ['searchMaterialCode', 'searchMaterialDescription'];
+    searchInputs.forEach(inputId => {
+        const input = document.getElementById(inputId);
+        if (input) {
+            input.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    searchMaterials();
+                }
+            });
+        }
+    });
+});
 </script>
 
 @section('scripts')
