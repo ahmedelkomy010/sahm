@@ -7,8 +7,16 @@
  * @description نظام شامل لإدارة الأعمال المدنية والحفريات اليومية مع تسجيل تفاصيل الكابلات
  */
 
+let civilWorksManagerInstance = null;
+
 class CivilWorksManager {
     constructor() {
+        // Singleton pattern to prevent multiple instances
+        if (civilWorksManagerInstance) {
+            return civilWorksManagerInstance;
+        }
+        civilWorksManagerInstance = this;
+        
         this.workOrderId = null;
         this.csrfToken = null;
         this.calculationEngine = new CalculationEngine();
@@ -17,6 +25,7 @@ class CivilWorksManager {
         this.dailyDataManager = new DailyDataManager();
         this.apiClient = new ApiClient();
         this.excavationLogger = new ExcavationLogger();
+        this.initialized = false;
         
         this.init();
     }
@@ -26,17 +35,70 @@ class CivilWorksManager {
      * Initialize the system
      */
     init() {
+        if (this.initialized) {
+            console.log('System already initialized');
+            return;
+        }
+
         try {
             this.setupConfiguration();
             this.setupEventListeners();
             this.initializeCalculations();
             this.setupAutoSave();
+            this.loadInitialData();
+            this.initialized = true;
             this.notificationSystem.show('تم تحميل نظام الأعمال المدنية بنجاح', 'success');
             console.log('CivilWorksManager initialized successfully');
         } catch (error) {
             console.error('Error initializing CivilWorksManager:', error);
             this.notificationSystem.show('حدث خطأ في تحميل النظام', 'error');
         }
+    }
+
+    /**
+     * تحميل البيانات الأولية
+     * Load initial data
+     */
+    async loadInitialData() {
+        try {
+            const response = await this.apiClient.getTodayExcavations();
+            if (response && response.data) {
+                // Process the data to ensure cable types are properly formatted
+                const processedData = response.data.map(item => ({
+                    ...item,
+                    cableType: this.processCableType(item.cableType || item.cable_type || item.workType)
+                }));
+                this.updateDailySummaryTable(processedData);
+            }
+        } catch (error) {
+            console.error('Error loading initial data:', error);
+        }
+    }
+
+    processCableType(input) {
+        if (!input) return '-';
+        
+        // If it's already in the correct format (e.g., "4×70"), return as is
+        if (/^\d+×\d+$/.test(input)) {
+            return input;
+        }
+        
+        // If it contains "كابل" followed by dimensions, extract the dimensions
+        const cableMatch = input.match(/كابل\s+([\d×]+)/);
+        if (cableMatch) {
+            return cableMatch[1];
+        }
+        
+        // If it's a predefined cable type, get its title
+        const cableTitle = this.getCableTitle(input);
+        if (cableTitle !== input) {
+            const titleMatch = cableTitle.match(/كابل\s+([\d×]+)/);
+            if (titleMatch) {
+                return titleMatch[1];
+            }
+        }
+        
+        return input;
     }
 
     /**
@@ -235,25 +297,49 @@ class CivilWorksManager {
      * Log excavation data to daily table
      */
     logExcavationData(row, data) {
-        try {
-            const excavationType = this.getExcavationType(row);
-            const soilType = this.getSoilType(row);
-            
-            const excavationData = {
-                excavation_type: excavationType,
-                soil_type: soilType,
-                cable_type: excavationType, // نفس نوع الحفرية
-                ...data,
-                timestamp: new Date().toISOString()
-            };
+        const excavationData = {
+            workType: this.getExcavationType(row),
+            cableType: this.getCableType(row),
+            length: data.length,
+            price: data.price,
+            total: data.total,
+            dimensions: data.type === 'volume' ? `${data.length} × ${data.width} × ${data.depth}` : null,
+            timestamp: new Date().toISOString()
+        };
 
-            // إضافة أو تحديث البيانات في الجدول اليومي
-            this.excavationLogger.updateDailyTable(excavationData);
-            
-            console.log('Excavation data logged:', excavationData);
-        } catch (error) {
-            console.error('Error logging excavation data:', error);
+        this.excavationLogger.addToTable(excavationData);
+        this.updateStatistics();
+    }
+
+    getCableType(row) {
+        // Try to get cable type from select element
+        const cableSelect = row.querySelector('select.cable-type');
+        if (cableSelect) {
+            return cableSelect.value;
         }
+
+        // Try to get cable type from input element
+        const cableInput = row.querySelector('input.cable-type');
+        if (cableInput) {
+            return cableInput.value;
+        }
+
+        // Try to get cable type from data attribute
+        const cableType = row.dataset.cableType;
+        if (cableType) {
+            return cableType;
+        }
+
+        // If no cable type is found, check the work type for cable information
+        const workType = this.getExcavationType(row);
+        if (workType.includes('كابل')) {
+            const match = workType.match(/كابل\s+([\d×]+)/);
+            if (match) {
+                return match[1];
+            }
+        }
+
+        return '-';
     }
 
     /**
@@ -429,13 +515,25 @@ class CivilWorksManager {
             const typeData = formData[type];
             if (typeData && typeData.length > 0) {
                 typeData.forEach((item, index) => {
-                    const cableTypes = ['1 كابل منخفض', '2 كابل منخفض', '3 كابل منخفض', '4 كابل منخفض',
-                                      '1 كابل متوسط', '2 كابل متوسط', '3 كابل متوسط', '4 كابل متوسط'];
+                    // تحديد نوع الكابل من العنصر نفسه
+                    let cableType = item.cable_type;
+                    
+                    // إذا لم يكن هناك نوع كابل محدد، نستخدم القيمة الافتراضية
+                    if (!cableType) {
+                        const cableTypes = {
+                            'low_1': '4×70 منخفض',
+                            'low_2': '4×185 منخفض',
+                            'low_3': '4×300 منخفض',
+                            'med_1': '3×500 متوسط',
+                            'med_2': '3×400 متوسط'
+                        };
+                        cableType = cableTypes[`${item.voltage_type}_${index + 1}`] || `كابل ${index + 1}`;
+                    }
                     
                     summaryData.push({
                         work_type: this.getSoilTypeTitle(type),
                         section_type: 'حفريات أساسية',
-                        cable_type: cableTypes[index] || `كابل ${index + 1}`,
+                        cable_type: cableType,
                         length: item.length,
                         price: item.price,
                         total: item.total,
@@ -451,7 +549,7 @@ class CivilWorksManager {
                 summaryData.push({
                     work_type: this.getSoilTypeTitle(type) + ' - حفر مفتوح',
                     section_type: 'حفر مفتوح',
-                    cable_type: 'أكبر من 4 كابلات',
+                    cable_type: openData.cable_type || 'أكبر من 4 كابلات',
                     length: openData.length,
                     width: openData.width,
                     depth: openData.depth,
@@ -464,51 +562,39 @@ class CivilWorksManager {
             }
         });
 
-        // معالجة الحفر المفتوح
-        if (formData.open_excavation && Object.keys(formData.open_excavation).length > 0) {
-            Object.entries(formData.open_excavation).forEach(([key, value]) => {
-                summaryData.push({
-                    work_type: 'حفر مفتوح',
-                    section_type: 'حفر مفتوح',
-                    cable_type: this.getOpenExcavationTitle(key),
-                    length: value.length,
-                    price: value.price,
-                    total: value.total,
-                    created_at: currentTime,
-                    updated_at: currentTime
-                });
-            });
-        }
-
         // معالجة الحفريات الدقيقة
-        if (formData.precise_excavation && Object.keys(formData.precise_excavation).length > 0) {
-            Object.entries(formData.precise_excavation).forEach(([key, value]) => {
-                summaryData.push({
-                    work_type: 'حفريات دقيقة',
-                    section_type: 'حفريات دقيقة',
-                    cable_type: key === 'medium' ? 'متوسط (20×80)' : 'منخفض (20×56)',
-                    length: value.length,
-                    price: value.price,
-                    total: value.total,
-                    created_at: currentTime,
-                    updated_at: currentTime
-                });
+        if (formData.precise_excavations) {
+            formData.precise_excavations.forEach(item => {
+                if (item.length && item.price) {
+                    summaryData.push({
+                        work_type: 'حفريات دقيقة',
+                        section_type: 'حفريات دقيقة',
+                        cable_type: item.cable_type || '-',
+                        length: item.length,
+                        price: item.price,
+                        total: item.total,
+                        created_at: currentTime,
+                        updated_at: currentTime
+                    });
+                }
             });
         }
 
         // معالجة التمديدات الكهربائية
-        if (formData.electrical_items && Object.keys(formData.electrical_items).length > 0) {
-            Object.entries(formData.electrical_items).forEach(([key, value]) => {
-                summaryData.push({
-                    work_type: 'تمديدات كهربائية',
-                    section_type: 'تمديدات كهربائية',
-                    cable_type: this.getCableTitle(key),
-                    length: value.meters,
-                    price: value.price,
-                    total: value.total,
-                    created_at: currentTime,
-                    updated_at: currentTime
-                });
+        if (formData.electrical_installations) {
+            formData.electrical_installations.forEach(item => {
+                if (item.length && item.price) {
+                    summaryData.push({
+                        work_type: 'تمديدات كهربائية',
+                        section_type: 'تمديدات كهربائية',
+                        cable_type: item.cable_type || '-',
+                        length: item.length,
+                        price: item.price,
+                        total: item.total,
+                        created_at: currentTime,
+                        updated_at: currentTime
+                    });
+                }
             });
         }
 
@@ -1021,34 +1107,64 @@ class ExcavationLogger {
      */
     createTableRow(id, excavation) {
         const row = document.createElement('tr');
-        row.dataset.excavationId = id;
+        row.dataset.id = id;
         
-        const displayLength = excavation.type === 'volume' ? 
-            `${excavation.volume?.toFixed(2)} م³` : 
-            `${excavation.length?.toFixed(2)} متر`;
+        // نوع القسم
+        const sectionTypeCell = document.createElement('td');
+        sectionTypeCell.textContent = this.getSectionType(excavation.workType);
+        sectionTypeCell.className = 'text-center';
+        row.appendChild(sectionTypeCell);
 
-        row.innerHTML = `
-            <td>
-                <strong>${excavation.excavation_type}</strong>
-                <br><small class="text-muted">${excavation.soil_type}</small>
-            </td>
-            <td class="text-center">
-                <span class="badge bg-primary">1</span>
-            </td>
-            <td class="text-center">${displayLength}</td>
-            <td class="text-center">${excavation.price?.toFixed(2)} ريال</td>
-            <td class="text-center">
-                <strong class="text-success">${excavation.total?.toFixed(2)} ريال</strong>
-            </td>
-            <td class="text-center">
-                <small>${this.formatTime(excavation.timestamp)}</small>
-            </td>
-            <td class="text-center">
-                <button type="button" class="btn btn-danger btn-sm delete-excavation-btn">
-                    <i class="fas fa-trash"></i>
-                </button>
-            </td>
-        `;
+        // نوع العمل
+        const workTypeCell = document.createElement('td');
+        workTypeCell.textContent = excavation.workType;
+        workTypeCell.className = 'text-center';
+        row.appendChild(workTypeCell);
+
+        // نوع الكابل
+        const cableTypeCell = document.createElement('td');
+        const cableType = excavation.cableType && excavation.cableType !== '-' 
+            ? `كابل ${excavation.cableType}`
+            : '-';
+        cableTypeCell.textContent = cableType;
+        cableTypeCell.className = 'text-center';
+        row.appendChild(cableTypeCell);
+
+        // الأبعاد
+        const dimensionsCell = document.createElement('td');
+        dimensionsCell.textContent = excavation.dimensions || `${excavation.length} متر`;
+        dimensionsCell.className = 'text-center';
+        row.appendChild(dimensionsCell);
+
+        // السعر
+        const priceCell = document.createElement('td');
+        priceCell.textContent = `${excavation.price} ريال`;
+        priceCell.className = 'text-center';
+        row.appendChild(priceCell);
+
+        // الإجمالي
+        const totalCell = document.createElement('td');
+        totalCell.textContent = `${excavation.total.toFixed(2)} ريال`;
+        totalCell.className = 'text-center';
+        row.appendChild(totalCell);
+
+        // آخر تحديث
+        const lastUpdateCell = document.createElement('td');
+        lastUpdateCell.textContent = this.formatTime(excavation.timestamp);
+        lastUpdateCell.className = 'text-center text-muted';
+        row.appendChild(lastUpdateCell);
+
+        // أزرار التحكم
+        const actionsCell = document.createElement('td');
+        actionsCell.className = 'text-center';
+        
+        const deleteButton = document.createElement('button');
+        deleteButton.className = 'btn btn-sm btn-outline-danger';
+        deleteButton.innerHTML = '<i class="fas fa-trash"></i>';
+        deleteButton.onclick = () => this.removeFromTable(id);
+        
+        actionsCell.appendChild(deleteButton);
+        row.appendChild(actionsCell);
 
         return row;
     }
@@ -1997,142 +2113,125 @@ function addTableEffects() {
 
 // دالة جمع البيانات من النموذج الفعلي
 function collectFormData() {
-    const data = {
-        // الحفريات الأساسية - تربة ترابية غير مسفلتة
+    const formData = {
         unsurfaced_soil: [],
-        unsurfaced_soil_open: {},
-        
-        // الحفريات الأساسية - تربة ترابية مسفلتة
         surfaced_soil: [],
-        surfaced_soil_open: {},
-        
-        // الحفريات الأساسية - تربة صخرية مسفلتة
         surfaced_rock: [],
-        surfaced_rock_open: {},
-        
-        // الحفريات الأساسية - تربة صخرية غير مسفلتة
         unsurfaced_rock: [],
-        unsurfaced_rock_open: {},
-        
-        // الحفر المفتوح
-        open_excavation: {},
-        
-        // الحفريات الدقيقة
-        precise_excavation: {},
-        
-        // التمديدات الكهربائية
-        electrical_items: {}
+        precise_excavations: [],
+        electrical_installations: []
     };
 
     // جمع بيانات الحفريات الأساسية
-    const excavationTypes = ['unsurfaced_soil', 'surfaced_soil', 'surfaced_rock', 'unsurfaced_rock'];
-    excavationTypes.forEach(type => {
-        for (let i = 0; i < 8; i++) {
-            const lengthInput = document.querySelector(`input[name="excavation_${type}[${i}]"]`);
-            const priceInput = document.querySelector(`input[name="excavation_${type}_price[${i}]"]`);
-            
-            if (lengthInput && priceInput) {
-                const length = parseFloat(lengthInput.value) || 0;
-                const price = parseFloat(priceInput.value) || 0;
-                
-                if (length > 0 && price > 0) {
-                    data[type].push({
-                        index: i,
-                        length: length,
-                        price: price,
-                        total: length * price
-                    });
-                }
-            }
-        }
-        
-        // جمع بيانات الحفر المفتوح لأكثر من 4 كابلات
-        const lengthInput = document.querySelector(`input[name="excavation_${type}_open[length]"]`);
-        const widthInput = document.querySelector(`input[name="excavation_${type}_open[width]"]`);
-        const depthInput = document.querySelector(`input[name="excavation_${type}_open[depth]"]`);
-        const priceInput = document.querySelector(`input[name="excavation_${type}_open_price"]`);
-        
-        if (lengthInput && widthInput && depthInput && priceInput) {
+    document.querySelectorAll('.excavation-row').forEach(row => {
+        const type = row.dataset.type;
+        if (!type) return;
+
+        const lengthInput = row.querySelector('.calc-length');
+        const priceInput = row.querySelector('.calc-price');
+        const totalInput = row.querySelector('.total-calc');
+        const cableTypeInput = row.querySelector('.cable-type');
+        const voltageTypeInput = row.querySelector('.voltage-type');
+
+        if (lengthInput && priceInput && totalInput) {
             const length = parseFloat(lengthInput.value) || 0;
-            const width = parseFloat(widthInput.value) || 0;
-            const depth = parseFloat(depthInput.value) || 0;
             const price = parseFloat(priceInput.value) || 0;
-            
-            if (length > 0 && width > 0 && depth > 0 && price > 0) {
-                const volume = length * width * depth;
-                data[type + '_open'] = {
+            const total = parseFloat(totalInput.value) || 0;
+
+            if (length > 0 && price > 0) {
+                formData[type].push({
                     length: length,
-                    width: width,
-                    depth: depth,
-                    volume: volume,
                     price: price,
-                    total: volume * price
-                };
+                    total: total,
+                    cable_type: cableTypeInput ? cableTypeInput.value : null,
+                    voltage_type: voltageTypeInput ? voltageTypeInput.value : 'low'
+                });
             }
         }
     });
 
     // جمع بيانات الحفر المفتوح
-    const openTypes = ['first_asphalt', 'asphalt_scraping'];
-    openTypes.forEach(type => {
-        const lengthInput = document.querySelector(`input[name="open_excavation[${type}][length]"]`);
-        const priceInput = document.querySelector(`input[name="open_excavation[${type}][price]"]`);
-        
-        if (lengthInput && priceInput) {
+    document.querySelectorAll('.open-excavation-row').forEach(row => {
+        const type = row.dataset.type;
+        if (!type) return;
+
+        const lengthInput = row.querySelector('.calc-volume-length');
+        const widthInput = row.querySelector('.calc-volume-width');
+        const depthInput = row.querySelector('.calc-volume-depth');
+        const volumeInput = row.querySelector('.volume-calc');
+        const priceInput = row.querySelector('.calc-volume-price');
+        const totalInput = row.querySelector('.volume-total-calc');
+        const cableTypeInput = row.querySelector('.cable-type');
+
+        if (lengthInput && widthInput && depthInput && volumeInput && priceInput && totalInput) {
             const length = parseFloat(lengthInput.value) || 0;
+            const width = parseFloat(widthInput.value) || 0;
+            const depth = parseFloat(depthInput.value) || 0;
+            const volume = parseFloat(volumeInput.value) || 0;
             const price = parseFloat(priceInput.value) || 0;
-            
-            if (length > 0 && price > 0) {
-                data.open_excavation[type] = {
+            const total = parseFloat(totalInput.value) || 0;
+
+            if (length > 0 && width > 0 && depth > 0 && price > 0) {
+                formData[type + '_open'] = {
                     length: length,
+                    width: width,
+                    depth: depth,
+                    volume: volume,
                     price: price,
-                    total: length * price
+                    total: total,
+                    cable_type: cableTypeInput ? cableTypeInput.value : null
                 };
             }
         }
     });
 
     // جمع بيانات الحفريات الدقيقة
-    const preciseTypes = ['medium', 'low'];
-    preciseTypes.forEach(type => {
-        const lengthInput = document.querySelector(`input[name="excavation_precise[${type}]"]`);
-        const priceInput = document.querySelector(`input[name="excavation_precise[${type}_price]"]`);
-        
-        if (lengthInput && priceInput) {
+    document.querySelectorAll('.precise-excavation-row').forEach(row => {
+        const lengthInput = row.querySelector('.calc-length');
+        const priceInput = row.querySelector('.calc-price');
+        const totalInput = row.querySelector('.total-calc');
+        const cableTypeInput = row.querySelector('.cable-type');
+
+        if (lengthInput && priceInput && totalInput) {
             const length = parseFloat(lengthInput.value) || 0;
             const price = parseFloat(priceInput.value) || 0;
-            
+            const total = parseFloat(totalInput.value) || 0;
+
             if (length > 0 && price > 0) {
-                data.precise_excavation[type] = {
+                formData.precise_excavations.push({
                     length: length,
                     price: price,
-                    total: length * price
-                };
+                    total: total,
+                    cable_type: cableTypeInput ? cableTypeInput.value : null
+                });
             }
         }
     });
 
     // جمع بيانات التمديدات الكهربائية
-    const electricalTypes = ['cable_4x70_low', 'cable_4x185_low', 'cable_4x300_low', 'cable_3x500_med', 'cable_3x400_med'];
-    electricalTypes.forEach(type => {
-        const lengthInput = document.querySelector(`input[name="electrical_items[${type}][meters]"]`);
-        const priceInput = document.querySelector(`input[name="electrical_items[${type}][price]"]`);
-        
-        if (lengthInput && priceInput) {
+    document.querySelectorAll('.electrical-installation-row').forEach(row => {
+        const lengthInput = row.querySelector('.calc-length');
+        const priceInput = row.querySelector('.calc-price');
+        const totalInput = row.querySelector('.total-calc');
+        const cableTypeInput = row.querySelector('.cable-type');
+
+        if (lengthInput && priceInput && totalInput) {
             const length = parseFloat(lengthInput.value) || 0;
             const price = parseFloat(priceInput.value) || 0;
-            
+            const total = parseFloat(totalInput.value) || 0;
+
             if (length > 0 && price > 0) {
-                data.electrical_items[type] = {
-                    meters: length,
+                formData.electrical_installations.push({
+                    length: length,
                     price: price,
-                    total: length * price
-                };
+                    total: total,
+                    cable_type: cableTypeInput ? cableTypeInput.value : null
+                });
             }
         }
     });
 
-    return data;
+    return formData;
 }
 
 // دالة إضافة أقسام الحفريات الأساسية

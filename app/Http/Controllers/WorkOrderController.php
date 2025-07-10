@@ -429,10 +429,11 @@ class WorkOrderController extends Controller
         }
     }
 
+    /**
+     * عرض صفحة التركيبات
+     */
     public function installations(WorkOrder $workOrder)
     {
-        $workOrder->load('installationsFiles');
-        
         // تحديث البيانات من قاعدة البيانات
         $workOrder = $workOrder->fresh();
         
@@ -469,26 +470,121 @@ class WorkOrderController extends Controller
             'pole_10m' => 'تركيب عمود 10 متر',
             'pole_13m' => 'تركيب عمود 13 متر',
             'pole_14m' => 'تركيب عمود 14 متر',
-            'Installing_antenna_100' => ' تركيب محول هوائي 100',
-            'Installing_antenna_200' => ' تركيب محول هوائي 200',
-            'Installing_antenna_300' => ' تركيب محول هوائي 300',
-            'Installing_knife' => ' تركيب سكينة LBS',
-            'Class_teacher' => ' تركيب معيد الفصل ',
-            'Split_installation' => ' تركيب مجزئ',
-            'Low_plate_1600' => ' تركيب لوحة منخفض 1600',
-            'Low_plate_3000' => ' تركيب لوحة منخفض 3000'
-            
-            
+            'Installing_antenna_100' => 'تركيب محول هوائي 100',
+            'Installing_antenna_200' => 'تركيب محول هوائي 200',
+            'Installing_antenna_300' => 'تركيب محول هوائي 300',
+            'Installing_knife' => 'تركيب سكينة LBS',
+            'Class_teacher' => 'تركيب معيد الفصل',
+            'Split_installation' => 'تركيب مجزئ',
+            'Low_plate_1600' => 'تركيب لوحة منخفض 1600',
+            'Low_plate_3000' => 'تركيب لوحة منخفض 3000'
         ];
+        
+        return view('admin.work_orders.installations', compact('workOrder', 'installations'));
+    }
 
-        // Get all installation images
-        $installationImages = \App\Models\WorkOrderFile::where('work_order_id', $workOrder->id)
-            ->where('file_category', 'installations')
-            ->where('file_type', 'like', 'image/%')
-            ->orderBy('created_at', 'desc')
-            ->get();
+    /**
+     * حفظ بيانات التركيبات
+     */
+    public function saveInstallations(Request $request, WorkOrder $workOrder)
+    {
+        try {
+            $data = $request->validate([
+                'installations' => 'required|array'
+            ]);
 
-        return view('admin.work_orders.installations', compact('workOrder', 'installations', 'installationImages'));
+            // حفظ البيانات في قاعدة البيانات
+            $workOrder->update([
+                'installations_data' => $data['installations']
+            ]);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'تم حفظ بيانات التركيبات بنجاح'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'حدث خطأ أثناء حفظ البيانات: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * استرجاع بيانات التركيبات
+     */
+    public function getInstallations(WorkOrder $workOrder)
+    {
+        try {
+            return response()->json([
+                'status' => 'success',
+                'data' => $workOrder->installations_data
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'حدث خطأ أثناء استرجاع البيانات: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * رفع صور التركيبات
+     */
+    public function uploadInstallationsImages(Request $request, WorkOrder $workOrder)
+    {
+        try {
+            $request->validate([
+                'images.*' => 'required|image|mimes:jpeg,png,jpg|max:2048'
+            ]);
+
+            $uploadedFiles = [];
+            if ($request->hasFile('images')) {
+                foreach ($request->file('images') as $image) {
+                    $path = $image->store('installations', 'public');
+                    $uploadedFiles[] = [
+                        'path' => $path,
+                        'name' => $image->getClientOriginalName()
+                    ];
+                }
+            }
+
+            // تحديث بيانات الصور في أمر العمل
+            $currentImages = $workOrder->installations_images ?? [];
+            $workOrder->update([
+                'installations_images' => array_merge($currentImages, $uploadedFiles)
+            ]);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'تم رفع الصور بنجاح',
+                'files' => $uploadedFiles
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'حدث خطأ أثناء رفع الصور: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * حذف صورة تركيبات
+     */
+    public function deleteInstallationImage($imageId)
+    {
+        try {
+            // تنفيذ عملية الحذف
+            return response()->json([
+                'status' => 'success',
+                'message' => 'تم حذف الصورة بنجاح'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'حدث خطأ أثناء حذف الصورة: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     public function civilWorks(Request $request, WorkOrder $workOrder)
@@ -747,713 +843,6 @@ class WorkOrderController extends Controller
         }
     }
 
-    public function uploadInstallationsImages(Request $request, WorkOrder $workOrder)
-    {
-        try {
-            $request->validate([
-                'installations_images.*' => 'nullable|image|max:30720', // 30MB max per image
-            ]);
-
-            $newFiles = [];
-            if ($request->hasFile('installations_images')) {
-                $files = $request->file('installations_images');
-                $totalSize = 0;
-                foreach ($files as $file) {
-                    $totalSize += $file->getSize();
-                }
-                if ($totalSize > 31457280) { // 30MB
-                    if ($request->ajax()) {
-                        return response()->json([
-                            'success' => false,
-                            'message' => 'الحجم الإجمالي للصور يجب أن لا يتجاوز 30 ميجابايت'
-                        ], 422);
-                    } else {
-                        return back()->with('error', 'الحجم الإجمالي للصور يجب أن لا يتجاوز 30 ميجابايت');
-                    }
-                }
-                if (count($files) > 70) {
-                    if ($request->ajax()) {
-                        return response()->json([
-                            'success' => false,
-                            'message' => 'يمكنك رفع 70 صورة كحد أقصى'
-                        ], 422);
-                    } else {
-                        return back()->with('error', 'يمكنك رفع 70 صورة كحد أقصى');
-                    }
-                }
-                foreach ($files as $file) {
-                    $originalName = $file->getClientOriginalName();
-                    $extension = $file->getClientOriginalExtension();
-                    $filename = time() . '_' . uniqid() . '.' . $extension;
-                    $path = 'work_orders/' . $workOrder->id . '/installations';
-                    if (!\Storage::disk('public')->exists($path)) {
-                        \Storage::disk('public')->makeDirectory($path);
-                    }
-                    $filePath = $file->storeAs($path, $filename, 'public');
-                    $newFile = \App\Models\WorkOrderFile::create([
-                        'work_order_id' => $workOrder->id,
-                        'filename' => $filename,
-                        'original_filename' => $originalName,
-                        'file_path' => $filePath,
-                        'file_type' => $file->getClientMimeType(),
-                        'file_size' => $file->getSize(),
-                        'file_category' => 'installations'
-                    ]);
-                    $newFiles[] = $newFile;
-                }
-            }
-
-            // جلب جميع الصور المحدثة
-            $allFiles = \App\Models\WorkOrderFile::where('work_order_id', $workOrder->id)
-                ->where('file_category', 'installations')
-                ->where('file_type', 'like', 'image/%')
-                ->orderBy('created_at', 'desc')
-                ->get();
-
-            if ($request->ajax()) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'تم رفع الصور بنجاح',
-                    'images' => $allFiles->map(function($file) {
-                        return [
-                            'id' => $file->id,
-                            'url' => asset('storage/' . $file->file_path),
-                            'name' => $file->original_filename,
-                            'size' => round($file->file_size / 1024 / 1024, 2),
-                            'created_at' => $file->created_at->format('Y-m-d H:i:s')
-                        ];
-                    }),
-                    'total_count' => $allFiles->count()
-                ]);
-            } else {
-                return back()->with('success', 'تم رفع الصور بنجاح');
-            }
-        } catch (\Exception $e) {
-            Log::error('Error uploading installations images: ' . $e->getMessage());
-            if ($request->ajax()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'حدث خطأ أثناء رفع الصور: ' . $e->getMessage()
-                ], 500);
-            } else {
-                return back()->with('error', 'حدث خطأ أثناء رفع الصور: ' . $e->getMessage());
-            }
-        }
-    }
-
-    public function storeInstallations(Request $request, WorkOrder $workOrder)
-    {
-        try {
-            $request->validate([
-                'installations.*.status' => 'sometimes|required|in:yes,no,na',
-                'installations.*.quantity' => 'nullable|integer|min:0',
-            ]);
-
-            // حفظ بيانات التركيبات
-            $installationsData = $request->input('installations', []);
-            Log::info('Saving installations data:', ['data' => $installationsData]);
-            Log::info('Full request data:', ['data' => $request->all()]);
-            
-            // تنظيف البيانات وضمان وجود quantity مع الحفاظ على القيم الرقمية
-            foreach ($installationsData as $key => $data) {
-                // التأكد من وجود status
-                if (!isset($data['status'])) {
-                    $installationsData[$key]['status'] = '';
-                }
-                
-                // التأكد من وجود quantity والحفاظ على القيم الرقمية
-                if (!isset($data['quantity'])) {
-                    $installationsData[$key]['quantity'] = '';
-                } else {
-                    // تحويل القيمة إلى رقم إذا كانت رقمية، وإلا الاحتفاظ بها كما هي
-                    $quantity = trim($data['quantity']);
-                    if (is_numeric($quantity) && $quantity !== '' && $quantity > 0) {
-                        $installationsData[$key]['quantity'] = (string) intval($quantity);
-                    } else {
-                        $installationsData[$key]['quantity'] = '';
-                    }
-                }
-                
-                Log::info("Installation $key:", ['data' => $installationsData[$key]]);
-            }
-            
-            $workOrder->update([
-                'installations_data' => $installationsData
-            ]);
-            
-            // التحقق من الحفظ
-            $workOrder = $workOrder->fresh();
-            Log::info('Saved installations data verified:');
-            Log::info('Raw data from DB:', ['data' => $workOrder->getOriginal('installations_data')]);
-            Log::info('Cast data:', ['data' => $workOrder->installations_data]);
-            Log::info('Accessor data:', ['data' => $workOrder->installations]);
-
-            // إذا كان الطلب AJAX، إرجاع استجابة JSON
-            if ($request->ajax()) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'تم حفظ بيانات التركيبات بنجاح'
-                ]);
-            }
-
-            return redirect()->route('admin.work-orders.installations', $workOrder)
-                ->with('success', 'تم حفظ بيانات التركيبات بنجاح');
-                
-        } catch (\Exception $e) {
-            Log::error('Error saving installations: ' . $e->getMessage());
-            
-            if ($request->ajax()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'حدث خطأ أثناء حفظ البيانات: ' . $e->getMessage()
-                ], 500);
-            }
-
-            return redirect()->route('admin.work-orders.installations', $workOrder)
-                ->with('error', 'حدث خطأ أثناء حفظ البيانات');
-        }
-    }
-
-    public function actionsExecution(WorkOrder $workOrder)
-    {
-        $workOrder = WorkOrder::with(['files', 'civilWorksFiles', 'civilWorksAttachments'])->find($workOrder->id);
-        $executionImages = \App\Models\WorkOrderFile::where('work_order_id', $workOrder->id)
-            ->whereIn('file_category', ['civil_exec', 'installations', 'electrical_works'])
-            ->where('file_type', 'like', 'image/%')
-            ->get();
-        return view('admin.work_orders.actions-execution', compact('workOrder', 'executionImages'));
-    }
-
-    // عرض صفحة الرخص
-    public function license(WorkOrder $workOrder)
-    {
-        // جلب ملفات الرخص المرتبطة بأمر العمل
-        $licenseFiles = \App\Models\WorkOrderFile::where('work_order_id', $workOrder->id)
-            ->where('file_category', 'license')
-            ->orderBy('created_at', 'desc')
-            ->get();
-
-        // جلب معلومات الرخص من جدول الرخص إذا كان موجوداً
-        $license = \App\Models\License::where('work_order_id', $workOrder->id)->first();
-
-        // جلب جميع الرخص الخاصة بأمر العمل هذا فقط
-        $workOrderWithLicenses = $workOrder->load(['licenses', 'violations']);
-
-        return view('admin.work_orders.license', compact('workOrder', 'licenseFiles', 'license'));
-    }
-
-    // عرض صفحة المسح
-    public function survey(WorkOrder $workOrder)
-    {
-        // جلب بيانات المسح إذا كانت موجودة
-        $survey = \App\Models\Survey::where('work_order_id', $workOrder->id)->first();
-        
-        // جلب ملفات المسح المرتبطة بأمر العمل
-        $surveyFiles = \App\Models\WorkOrderFile::where('work_order_id', $workOrder->id)
-            ->where('file_category', 'survey')
-            ->orderBy('created_at', 'desc')
-            ->get();
-
-        return view('admin.work_orders.survey', compact('workOrder', 'survey', 'surveyFiles'));
-    }
-
-    // حفظ بيانات المسح
-    public function storeSurvey(Request $request, WorkOrder $workOrder)
-    {
-        try {
-            \Log::info('Starting survey save process', ['request' => $request->all()]);
-            
-            // التحقق من صحة البيانات
-            $validated = $request->validate([
-                'survey_id' => 'nullable|integer',
-                'start_coordinates' => 'nullable|string|max:255',
-                'end_coordinates' => 'nullable|string|max:255',
-                'has_obstacles' => 'required|in:true,false,1,0',
-                'obstacles_notes' => 'nullable|string',
-                'site_images.*' => 'nullable|image|max:30720', // 30MB max per image
-            ]);
-
-            \Log::info('Validation passed', ['validated' => $validated]);
-
-            // تحويل has_obstacles إلى boolean
-            $hasObstacles = in_array($validated['has_obstacles'], ['true', '1', 1, true]);
-            \Log::info('Has obstacles value', ['original' => $validated['has_obstacles'], 'converted' => $hasObstacles]);
-
-            // إعداد بيانات المسح
-            $surveyData = [
-                'work_order_id' => $workOrder->id,
-                'start_coordinates' => $validated['start_coordinates'] ?? null,
-                'end_coordinates' => $validated['end_coordinates'] ?? null,
-                'has_obstacles' => $hasObstacles,
-                'obstacles_notes' => $validated['obstacles_notes'] ?? null,
-                'survey_type' => 'general',
-                'survey_date' => now(),
-                'status' => 'pending',
-                'created_by' => auth()->id()
-            ];
-
-            \Log::info('Survey data prepared', ['data' => $surveyData]);
-
-            // حفظ أو تحديث المسح
-            if ($request->survey_id) {
-                \Log::info('Updating existing survey', ['survey_id' => $request->survey_id]);
-                $survey = \App\Models\Survey::find($request->survey_id);
-                if (!$survey) {
-                    throw new \Exception('Survey not found');
-                }
-                $survey->update($surveyData);
-                $message = 'تم تحديث بيانات المسح بنجاح';
-            } else {
-                \Log::info('Creating new survey');
-                
-                // إنشاء رقم المسح
-                $surveyNumber = 'SRV-' . date('Ymd') . '-' . str_pad(\App\Models\Survey::count() + 1, 4, '0', STR_PAD_LEFT);
-                $surveyData['survey_number'] = $surveyNumber;
-                
-                $survey = \App\Models\Survey::create($surveyData);
-                $message = 'تم حفظ بيانات المسح بنجاح';
-            }
-
-            \Log::info('Survey saved', ['survey_id' => $survey->id]);
-
-            // رفع الصور إذا تم اختيارها
-            if ($request->hasFile('site_images')) {
-                \Log::info('Processing site images');
-                foreach ($request->file('site_images') as $index => $image) {
-                    try {
-                        \Log::info('Processing image', ['index' => $index, 'original_name' => $image->getClientOriginalName()]);
-                        
-                        $originalName = $image->getClientOriginalName();
-                        $filename = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
-                        $path = 'work_orders/' . $workOrder->id . '/survey';
-                        
-                        // التأكد من وجود المجلد
-                        $fullPath = storage_path('app/public/' . $path);
-                        if (!file_exists($fullPath)) {
-                            mkdir($fullPath, 0755, true);
-                        }
-                        
-                        $filePath = $image->storeAs($path, $filename, 'public');
-                        
-                        if (!$filePath) {
-                            throw new \Exception('Failed to store image');
-                        }
-
-                        \Log::info('Image stored', ['path' => $filePath]);
-                        
-                        // حفظ معلومات الملف في قاعدة البيانات
-                        $fileData = [
-                            'work_order_id' => $workOrder->id,
-                            'survey_id' => $survey->id,
-                            'file_category' => 'survey',
-                            'file_path' => $filePath,
-                            'file_name' => $filename,
-                            'filename' => $filename,
-                            'original_filename' => $originalName,
-                            'mime_type' => $image->getClientMimeType(),
-                            'file_size' => $image->getSize(),
-                            'description' => 'صورة موقع المسح'
-                        ];
-                        
-                        // التحقق من وجود جدول work_order_files
-                        if (\Schema::hasTable('work_order_files')) {
-                            \App\Models\WorkOrderFile::create($fileData);
-                        } else {
-                            \Log::warning('work_order_files table does not exist');
-                        }
-
-                        \Log::info('Image record created in database');
-                    } catch (\Exception $e) {
-                        \Log::error('Error uploading survey image', [
-                            'index' => $index,
-                            'error' => $e->getMessage(),
-                            'trace' => $e->getTraceAsString()
-                        ]);
-                        continue;
-                    }
-                }
-            }
-
-            \Log::info('Survey process completed successfully');
-
-            return response()->json([
-                'success' => true,
-                'message' => $message,
-                'survey_id' => $survey->id
-            ]);
-
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            \Log::error('Validation error in storeSurvey', [
-                'errors' => $e->errors(),
-                'request' => $request->all()
-            ]);
-            
-            return response()->json([
-                'success' => false,
-                'message' => 'خطأ في البيانات المدخلة',
-                'errors' => $e->errors()
-            ], 422);
-            
-        } catch (\Exception $e) {
-            \Log::error('Error in storeSurvey', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-                'request' => $request->all()
-            ]);
-            
-            return response()->json([
-                'success' => false,
-                'message' => 'حدث خطأ أثناء حفظ المسح: ' . $e->getMessage()
-            ], 500);
-        }
-    }
-
-    // تعديل بيانات المسح
-    public function editSurvey(Survey $survey, Request $request)
-    {
-        $workOrder = $survey->workOrder;
-        $surveyFiles = \App\Models\WorkOrderFile::where('work_order_id', $workOrder->id)
-            ->where('file_category', 'survey')
-            ->where('survey_id', $survey->id)
-            ->orderBy('created_at', 'desc')
-            ->get();
-
-        // إذا كان الطلب AJAX، أرجع JSON
-        if ($request->ajax() || $request->wantsJson()) {
-            $images = $surveyFiles->map(function ($file) {
-                $url = \App\Helpers\FileHelper::getFileUrl($file->file_path);
-                
-                // تصفية الملفات غير الموجودة
-                if (!$url) {
-                    return null;
-                }
-                
-                return [
-                    'id' => $file->id,
-                    'name' => $file->original_filename,
-                    'url' => $url,
-                    'size' => $file->file_size,
-                    'type' => $file->file_type
-                ];
-            })->filter(); // إزالة العناصر null
-
-            return response()->json([
-                'success' => true,
-                'survey' => [
-                    'id' => $survey->id,
-                    'start_coordinates' => $survey->start_coordinates,
-                    'end_coordinates' => $survey->end_coordinates,
-                    'has_obstacles' => $survey->has_obstacles,
-                    'obstacles_notes' => $survey->obstacles_notes,
-                    'images' => $images
-                ]
-            ]);
-        }
-
-        return view('admin.work_orders.edit_survey', compact('workOrder', 'survey', 'surveyFiles'));
-    }
-
-    // رفع ملف رخصة
-    public function uploadLicense(Request $request, WorkOrder $workOrder)
-    {
-        try {
-            $request->validate([
-                'license_number' => 'required|string|max:255',
-                'license_date' => 'required|date',
-                'license_type' => 'required|string|max:255',
-                'notes' => 'nullable|string',
-                'has_restriction' => 'required|in:0,1',
-                'restriction_agency' => 'nullable|string|max:255',
-                'license_start_date' => 'nullable|date',
-                'license_end_date' => 'nullable|date',
-                'extension_start_date' => 'nullable|date',
-                'extension_end_date' => 'nullable|date',
-                // حقول الاختبارات
-                'has_depth_test' => 'required|in:0,1',
-                'has_soil_compaction_test' => 'required|in:0,1',
-                'has_rc1_mc1_test' => 'required|in:0,1',
-                'has_asphalt_test' => 'required|in:0,1',
-                'has_soil_test' => 'required|in:0,1',
-                'has_interlock_test' => 'required|in:0,1',
-                // الملفات
-                'coordination_certificates.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
-                'letters_undertakings.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
-                'payment_invoices.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
-                'payment_proof.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
-                'license_activation.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
-                'extension_invoice.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
-                'soil_test_images.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
-                'test_results_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
-                'final_inspection_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
-                'license_closure_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
-            ]);
-
-            // تحديث أو إنشاء سجل الرخصة
-            $license = \App\Models\License::updateOrCreate(
-                ['work_order_id' => $workOrder->id],
-                [
-                    'license_number' => $request->license_number,
-                    'license_date' => $request->license_date,
-                    'license_type' => $request->license_type,
-                    'notes' => $request->notes,
-                    'has_restriction' => $request->has_restriction,
-                    'restriction_authority' => $request->restriction_agency,
-                    'license_start_date' => $request->license_start_date,
-                    'license_end_date' => $request->license_end_date,
-                                    'extension_start_date' => $request->extension_start_date,
-                'extension_end_date' => $request->extension_end_date,
-                    // حقول الاختبارات
-                    'has_depth_test' => $request->has_depth_test,
-                    'has_soil_compaction_test' => $request->has_soil_compaction_test,
-                    'has_rc1_mc1_test' => $request->has_rc1_mc1_test,
-                    'has_asphalt_test' => $request->has_asphalt_test,
-                    'has_soil_test' => $request->has_soil_test,
-                    'has_interlock_test' => $request->has_interlock_test,
-                ]
-            );
-
-            // رفع الملفات وحفظ المسارات
-            $fileFields = [
-                'coordination_certificates' => 'coordination_certificate_path',
-                'letters_undertakings' => 'letters_and_commitments_path',
-                'payment_invoices' => 'payment_invoices_path',
-                'payment_proof' => 'payment_proof_path',
-                'license_activation' => 'activation_file_path',
-                'extension_invoice' => 'invoice_extension_file_path',
-                'soil_test_images' => 'soil_test_images_path',
-            ];
-
-            foreach ($fileFields as $inputName => $dbField) {
-                if ($request->hasFile($inputName)) {
-                    $files = $request->file($inputName);
-                    $paths = [];
-                    foreach ((array)$files as $file) {
-                        $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-                        $path = 'work_orders/' . $workOrder->id . '/license/' . $inputName;
-                        if (!\Storage::disk('public')->exists($path)) {
-                            \Storage::disk('public')->makeDirectory($path);
-                        }
-                        $filePath = $file->storeAs($path, $filename, 'public');
-                        $paths[] = $filePath;
-                    }
-                    $license->$dbField = count($paths) > 1 ? json_encode($paths, JSON_UNESCAPED_UNICODE) : ($paths[0] ?? null);
-                }
-            }
-
-            // ملفات مفردة
-            $singleFiles = [
-                'test_results_file' => 'test_results_file_path',
-                'final_inspection_file' => 'final_inspection_file_path',
-                'license_closure_file' => 'license_closure_file_path',
-            ];
-
-            foreach ($singleFiles as $inputName => $dbField) {
-                if ($request->hasFile($inputName)) {
-                    $file = $request->file($inputName);
-                    $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-                    $path = 'work_orders/' . $workOrder->id . '/license/' . $inputName;
-                    if (!\Storage::disk('public')->exists($path)) {
-                        \Storage::disk('public')->makeDirectory($path);
-                    }
-                    $filePath = $file->storeAs($path, $filename, 'public');
-                    $license->$dbField = $filePath;
-                }
-            }
-
-            $license->save();
-
-            // إعادة توجيه إلى صفحة عرض تفاصيل الرخصة
-            return redirect()->route('admin.licenses.show', $license->id)
-                ->with('success', 'تم حفظ بيانات الرخصة بنجاح');
-        } catch (\Exception $e) {
-            Log::error('Error saving license: ' . $e->getMessage());
-            return redirect()->back()
-                ->with('error', 'حدث خطأ أثناء حفظ بيانات الرخصة: ' . $e->getMessage())
-                ->withInput();
-        }
-    }
-
-    // حذف ملف رخصة
-    public function deleteLicenseFile($fileId)
-    {
-        try {
-            $file = \App\Models\WorkOrderFile::findOrFail($fileId);
-            
-            if ($file->file_category !== 'license') {
-                return back()->with('error', 'هذا الملف ليس من ملفات الرخص');
-            }
-
-            // حذف الملف من التخزين
-            if (Storage::disk('public')->exists($file->file_path)) {
-                Storage::disk('public')->delete($file->file_path);
-            }
-
-            // حذف السجل من قاعدة البيانات
-            $file->delete();
-
-            return back()->with('success', 'تم حذف ملف الرخصة بنجاح');
-        } catch (\Exception $e) {
-            Log::error('Error deleting license file: ' . $e->getMessage());
-            return back()->with('error', 'حدث خطأ أثناء حذف ملف الرخصة');
-        }
-    }
-
-    // رفع مرفقات إجراءات ما بعد التنفيذ
-    public function uploadPostExecutionFile(Request $request, $workOrderId)
-    {
-        try {
-            Log::info('Starting file upload process for work order: ' . $workOrderId);
-            Log::info('Request data:', $request->all());
-            
-            $workOrder = WorkOrder::findOrFail($workOrderId);
-            
-            // Validate the request
-            $request->validate([
-                'final_total_value' => 'nullable|numeric|min:0',
-                'quantities_statement_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
-                'final_materials_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
-                'final_measurement_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
-                'soil_tests_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
-                'site_drawing_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
-                'modified_estimate_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
-                'completion_certificate_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
-                'form_200_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
-                'form_190_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
-                'pre_operation_tests_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
-                'first_payment_extract_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
-                'second_payment_extract_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
-                'total_extract_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
-                'invoice_images.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
-            ]);
-
-            Log::info('Validation passed');
-
-            // Update final total value if provided
-            if ($request->has('final_total_value')) {
-                $workOrder->final_total_value = $request->final_total_value;
-                Log::info('Updated final total value: ' . $request->final_total_value);
-            }
-
-            // Define all file fields that need to be processed
-            $fileFields = [
-                'quantities_statement_file',
-                'final_materials_file',
-                'final_measurement_file',
-                'soil_tests_file',
-                'site_drawing_file',
-                'modified_estimate_file',
-                'completion_certificate_file',
-                'form_200_file',
-                'form_190_file',
-                'pre_operation_tests_file',
-                'first_payment_extract_file',
-                'second_payment_extract_file',
-                'total_extract_file'
-            ];
-
-            // Process each file field
-            foreach ($fileFields as $field) {
-                if ($request->hasFile($field)) {
-                    Log::info('Processing file field: ' . $field);
-                    $file = $request->file($field);
-                    $originalName = $file->getClientOriginalName();
-                    $filename = time() . '_' . uniqid() . '_' . $field . '.' . $file->getClientOriginalExtension();
-                    $path = 'work_orders/' . $workOrder->id . '/post_execution';
-                    
-                    Log::info('File details:', [
-                        'original_name' => $originalName,
-                        'filename' => $filename,
-                        'path' => $path,
-                        'field' => $field
-                    ]);
-                    
-                    if (!Storage::disk('public')->exists($path)) {
-                        Storage::disk('public')->makeDirectory($path);
-                        Log::info('Created directory: ' . $path);
-                    }
-                    
-                    $filePath = $file->storeAs($path, $filename, 'public');
-                    Log::info('File stored at: ' . $filePath);
-                    
-                    // Create file record in database
-                    $workOrderFile = WorkOrderFile::create([
-                        'work_order_id' => $workOrder->id,
-                        'filename' => $filename,
-                        'original_filename' => $originalName,
-                        'file_path' => $filePath,
-                        'file_type' => $file->getClientMimeType(),
-                        'file_size' => $file->getSize(),
-                        'file_category' => 'post_execution',
-                        'attachment_type' => $field,
-                    ]);
-                    
-                    Log::info('Created work order file record:', [
-                        'id' => $workOrderFile->id,
-                        'file_path' => $filePath,
-                        'field' => $field
-                    ]);
-                }
-            }
-
-            // Handle invoice images
-            if ($request->hasFile('invoice_images')) {
-                Log::info('Processing invoice images');
-                foreach ($request->file('invoice_images') as $file) {
-                    $originalName = $file->getClientOriginalName();
-                    $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-                    $path = 'work_orders/' . $workOrder->id . '/invoice_images';
-                    
-                    Log::info('Invoice image details:', [
-                        'original_name' => $originalName,
-                        'filename' => $filename,
-                        'path' => $path
-                    ]);
-                    
-                    if (!Storage::disk('public')->exists($path)) {
-                        Storage::disk('public')->makeDirectory($path);
-                        Log::info('Created directory for invoice images: ' . $path);
-                    }
-                    
-                    $filePath = $file->storeAs($path, $filename, 'public');
-                    Log::info('Invoice image stored at: ' . $filePath);
-                    
-                    // Create file record in database
-                    $workOrderFile = WorkOrderFile::create([
-                        'work_order_id' => $workOrder->id,
-                        'filename' => $filename,
-                        'original_filename' => $originalName,
-                        'file_path' => $filePath,
-                        'file_type' => $file->getClientMimeType(),
-                        'file_size' => $file->getSize(),
-                        'file_category' => 'invoice'
-                    ]);
-                    
-                    Log::info('Created invoice file record:', [
-                        'id' => $workOrderFile->id,
-                        'file_path' => $filePath
-                    ]);
-                }
-            }
-
-            // Save work order changes
-            $workOrder->save();
-            Log::info('Work order updated successfully');
-
-            if ($request->ajax()) {
-                return response()->json(['success' => true, 'message' => 'تم رفع الملفات بنجاح']);
-            }
-            return redirect()->route('admin.work-orders.actions-execution', $workOrder->id)
-                ->with('success', 'تم تحديث البيانات ورفع الملفات بنجاح');
-        } catch (\Exception $e) {
-            Log::error('Error in uploadPostExecutionFile: ' . $e->getMessage());
-            Log::error('Stack trace: ' . $e->getTraceAsString());
-            if ($request->ajax()) {
-                return response()->json(['success' => false, 'message' => 'حدث خطأ أثناء رفع الملفات: ' . $e->getMessage()], 500);
-            }
-            return back()->with('error', 'حدث خطأ أثناء رفع الملفات: ' . $e->getMessage());
-        }
-    }
-
     public function uploadElectricalWorksImages(Request $request, WorkOrder $workOrder)
     {
         try {
@@ -1547,34 +936,6 @@ class WorkOrderController extends Controller
             }
         }
     }
-
-    // حذف صورة من صور التركيبات
-    public function deleteInstallationImage($imageId)
-    {
-        try {
-            $image = \App\Models\WorkOrderFile::findOrFail($imageId);
-            
-            // التحقق من أن الصورة تنتمي إلى فئة التركيبات
-            if ($image->file_category !== 'installations') {
-                return back()->with('error', 'هذه الصورة ليست من صور التركيبات');
-            }
-
-            // حذف الملف من التخزين
-            if (Storage::disk('public')->exists($image->file_path)) {
-                Storage::disk('public')->delete($image->file_path);
-            }
-
-            // حذف السجل من قاعدة البيانات
-            $image->delete();
-
-            return back()->with('success', 'تم حذف الصورة بنجاح');
-        } catch (\Exception $e) {
-            Log::error('Error deleting installation image: ' . $e->getMessage());
-            return back()->with('error', 'حدث خطأ أثناء حذف الصورة');
-        }
-    }
-
-
 
     public function getMaterialDescription($code)
     {

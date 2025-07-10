@@ -60,6 +60,7 @@ class WorkOrder extends Model
         'municipality',
         'electrical_works',
         'installations_data',
+        'installations_images',
         'installations_locked',
         'installations_locked_at',
         'installations_locked_by',
@@ -91,6 +92,7 @@ class WorkOrder extends Model
         'invoice_images' => 'array',
         'electrical_works' => 'array',
         'installations_data' => 'array',
+        'installations_images' => 'array',
         'daily_civil_works_data' => 'array',
     ];
 
@@ -158,6 +160,11 @@ class WorkOrder extends Model
     public function invoiceAttachments()
     {
         return $this->hasMany(InvoiceAttachment::class);
+    }
+
+    public function installations()
+    {
+        return $this->hasMany(WorkOrderInstallation::class);
     }
 
     /**

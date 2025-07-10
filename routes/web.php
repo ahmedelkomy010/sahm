@@ -128,8 +128,10 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
 
     // Installations Routes
     Route::get('work-orders/{workOrder}/installations', [WorkOrderController::class, 'installations'])->name('work-orders.installations');
-    Route::put('work-orders/{workOrder}/installations', [WorkOrderController::class, 'storeInstallations'])->name('work-orders.installations.store');
-    Route::delete('work-orders/{workOrder}/installations/{file}', [WorkOrderController::class, 'deleteInstallationsFile'])->name('work-orders.installations.delete-file');
+    Route::post('work-orders/{workOrder}/installations/save', [WorkOrderController::class, 'saveInstallations'])->name('work-orders.installations.save');
+    Route::get('work-orders/{workOrder}/installations/data', [WorkOrderController::class, 'getInstallations'])->name('work-orders.installations.data');
+    Route::post('work-orders/{workOrder}/installations/images', [WorkOrderController::class, 'uploadInstallationsImages'])->name('work-orders.installations.images');
+    Route::delete('work-orders/installations/images/{imageId}', [WorkOrderController::class, 'deleteInstallationImage'])->name('work-orders.installations.images.delete');
 
     // Civil Works Routes
     Route::get('work-orders/{workOrder}/civil-works', [WorkOrderController::class, 'civilWorks'])->name('work-orders.civil-works');
@@ -226,8 +228,6 @@ Route::post('licenses/save-evacuation-data-simple', [\App\Http\Controllers\Admin
     Route::delete('license-violations/bulk-destroy', [\App\Http\Controllers\Admin\LicenseViolationController::class, 'bulkDestroy'])->name('license-violations.bulk-destroy');
 
 
-    Route::post('work-orders/{workOrder}/installations/images', [App\Http\Controllers\WorkOrderController::class, 'uploadInstallationsImages'])->name('work-orders.installations.images');
-    Route::delete('work-orders/installations/images/{imageId}', [App\Http\Controllers\WorkOrderController::class, 'deleteInstallationImage'])->name('work-orders.installations.images.delete');
     Route::post('work-orders/{workOrder}/electrical-works/images', [App\Http\Controllers\WorkOrderController::class, 'uploadElectricalWorksImages'])->name('work-orders.electrical-works.images');
 
 
@@ -427,3 +427,5 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/project/current-type', [ProjectController::class, 'getCurrentProjectType'])
         ->name('project.current-type');
 });
+
+Route::post('/admin/work-orders/{workOrder}/installations', [WorkOrderController::class, 'saveInstallations'])->name('work-orders.save-installations');
