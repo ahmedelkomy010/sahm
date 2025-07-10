@@ -117,13 +117,15 @@ class CivilWorksManager {
             console.log('Export summary button listener added');
         }
 
-        // أزرار حذف الصفوف
-        document.addEventListener('click', (e) => {
-            if (e.target.closest('.delete-excavation-btn')) {
-                e.preventDefault();
-                this.deleteExcavationRow(e.target.closest('tr'));
-            }
-        });
+        // زر إفراغ الملخص اليومي
+        const clearButton = document.getElementById('clear-daily-summary-btn');
+        if (clearButton) {
+            clearButton.addEventListener('click', () => this.clearDailySummary());
+            console.log('Clear summary button listener added');
+        }
+
+        // إعداد مستمعي الأحداث الأخرى
+        console.log('Additional event listeners can be added here');
 
         console.log('Button listeners setup completed');
     }
@@ -363,77 +365,82 @@ class CivilWorksManager {
             const formData = collectFormData();
             
             // تحويل البيانات إلى تنسيق قابل للحفظ
-            const summaryData = this.convertFormDataToSummary(formData);
+            const newSummaryData = this.convertFormDataToSummary(formData);
             
-            if (summaryData.length === 0) {
+            // حفظ البيانات الجديدة فقط (بدلاً من الدمج مع القديمة)
+            const allSummaryData = newSummaryData;
+            
+            if (allSummaryData.length === 0) {
                 this.notificationSystem.show('لا توجد بيانات لحفظها', 'warning');
                 this.notificationSystem.hideLoading();
                 return;
             }
 
-            // حفظ البيانات عبر API
-            if (this.workOrderId) {
-                const response = await this.apiClient.saveDailyData({ 
-                    daily_data: JSON.stringify(summaryData) 
+            // حفظ البيانات في قاعدة البيانات
+            await this.apiClient.saveDailyData({ daily_data: JSON.stringify(allSummaryData) });
+            
+            // تحديث البيانات المحفوظة محلياً
+            window.savedDailyData = allSummaryData;
+            
+            // حفظ وقت آخر تحديث
+            const now = new Date();
+            localStorage.setItem('lastUpdateTime', now.toISOString());
+            
+            // تحديث عرض وقت آخر تحديث
+            const timeElement = document.getElementById('last-update-time');
+            if (timeElement) {
+                const timeString = now.toLocaleString('ar-SA', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
                 });
-                
-                if (response.success) {
-                    this.notificationSystem.hideLoading();
-                    this.notificationSystem.show(response.message || `تم حفظ ${summaryData.length} عنصر بنجاح`, 'success');
-                    
-                    // تحديث الجدول بالبيانات المحفوظة
-                    this.updateDailySummaryTable(summaryData);
-                    
-                    console.log('Daily summary saved successfully:', response);
-                } else {
-                    throw new Error(response.message || 'فشل في حفظ البيانات');
-                }
-            } else {
-                throw new Error('معرف أمر العمل غير متوفر');
+                timeElement.textContent = timeString;
             }
             
-        } catch (error) {
-            console.error('Error saving daily summary:', error);
+            // تحديث عرض الجدول لإزالة أي تكرار
+            this.updateDailySummaryTable(allSummaryData);
+            
             this.notificationSystem.hideLoading();
-            this.notificationSystem.show('حدث خطأ في حفظ الملخص: ' + error.message, 'error');
+            this.notificationSystem.show('تم حفظ الملخص اليومي بنجاح', 'success');
+            
+            console.log('Daily summary saved successfully');
+        } catch (error) {
+            this.notificationSystem.hideLoading();
+            this.notificationSystem.show('حدث خطأ في حفظ الملخص اليومي', 'error');
+            console.error('Error saving daily summary:', error);
         }
     }
 
     /**
-     * تحويل بيانات النموذج إلى تنسيق ملخص يومي
-     * Convert form data to daily summary format
+     * تحويل بيانات النموذج إلى ملخص يومي
+     * Convert form data to daily summary
      */
     convertFormDataToSummary(formData) {
         const summaryData = [];
-        const currentDate = new Date();
-        const dateString = currentDate.toISOString().split('T')[0];
-        const timeString = currentDate.toTimeString().split(' ')[0];
+        const currentTime = new Date().toISOString();
 
         // معالجة الحفريات الأساسية
         const excavationTypes = ['unsurfaced_soil', 'surfaced_soil', 'surfaced_rock', 'unsurfaced_rock'];
-        const cableTypes = [
-            '1 كابل منخفض', '2 كابل منخفض', '3 كابل منخفض', '4 كابل منخفض',
-            '1 كابل متوسط', '2 كابل متوسط', '3 كابل متوسط', '4 كابل متوسط'
-        ];
-
+        
         excavationTypes.forEach(type => {
             const typeData = formData[type];
             if (typeData && typeData.length > 0) {
-                typeData.forEach(item => {
-                    if (item.length > 0 && item.price > 0) {
-                        summaryData.push({
-                            work_type: getSoilTypeTitle(type),
-                            cable_type: cableTypes[item.index] || `كابل ${item.index + 1}`,
-                            length: item.length,
-                            width: null,
-                            depth: null,
-                            volume: null,
-                            price: item.price,
-                            total: item.total,
-                            date: dateString,
-                            time: timeString
-                        });
-                    }
+                typeData.forEach((item, index) => {
+                    const cableTypes = ['1 كابل منخفض', '2 كابل منخفض', '3 كابل منخفض', '4 كابل منخفض',
+                                      '1 كابل متوسط', '2 كابل متوسط', '3 كابل متوسط', '4 كابل متوسط'];
+                    
+                    summaryData.push({
+                        work_type: this.getSoilTypeTitle(type),
+                        cable_type: cableTypes[index] || `كابل ${index + 1}`,
+                        length: item.length,
+                        price: item.price,
+                        total: item.total,
+                        created_at: currentTime,
+                        updated_at: currentTime
+                    });
                 });
             }
 
@@ -441,75 +448,61 @@ class CivilWorksManager {
             const openData = formData[type + '_open'];
             if (openData && Object.keys(openData).length > 0) {
                 summaryData.push({
-                    work_type: `حفر مفتوح - ${getSoilTypeTitle(type)}`,
-                    cable_type: '+4 كابل',
+                    work_type: this.getSoilTypeTitle(type) + ' - حفر مفتوح',
+                    cable_type: 'أكبر من 4 كابلات',
                     length: openData.length,
                     width: openData.width,
                     depth: openData.depth,
                     volume: openData.volume,
                     price: openData.price,
                     total: openData.total,
-                    date: dateString,
-                    time: timeString
+                    created_at: currentTime,
+                    updated_at: currentTime
                 });
             }
         });
 
         // معالجة الحفر المفتوح
-        const openExcavation = formData.open_excavation;
-        if (openExcavation && Object.keys(openExcavation).length > 0) {
-            Object.entries(openExcavation).forEach(([type, item]) => {
-                const title = type === 'first_asphalt' ? 'أسفلت طبقة أولى' : 'كشط واعادة السفلتة';
+        if (formData.open_excavation && Object.keys(formData.open_excavation).length > 0) {
+            Object.entries(formData.open_excavation).forEach(([key, value]) => {
                 summaryData.push({
                     work_type: 'حفر مفتوح',
-                    cable_type: title,
-                    length: item.length,
-                    width: null,
-                    depth: null,
-                    volume: null,
-                    price: item.price,
-                    total: item.total,
-                    date: dateString,
-                    time: timeString
+                    cable_type: this.getOpenExcavationTitle(key),
+                    length: value.length,
+                    price: value.price,
+                    total: value.total,
+                    created_at: currentTime,
+                    updated_at: currentTime
                 });
             });
         }
 
         // معالجة الحفريات الدقيقة
-        const preciseExcavation = formData.precise_excavation;
-        if (preciseExcavation && Object.keys(preciseExcavation).length > 0) {
-            Object.entries(preciseExcavation).forEach(([type, item]) => {
-                const title = type === 'medium' ? 'حفر متوسط (20 × 80)' : 'حفر منخفض (20 × 56)';
+        if (formData.precise_excavation && Object.keys(formData.precise_excavation).length > 0) {
+            Object.entries(formData.precise_excavation).forEach(([key, value]) => {
                 summaryData.push({
                     work_type: 'حفريات دقيقة',
-                    cable_type: title,
-                    length: item.length,
-                    width: null,
-                    depth: null,
-                    volume: null,
-                    price: item.price,
-                    total: item.total,
-                    date: dateString,
-                    time: timeString
+                    cable_type: key === 'medium' ? 'متوسط (20×80)' : 'منخفض (20×56)',
+                    length: value.length,
+                    price: value.price,
+                    total: value.total,
+                    created_at: currentTime,
+                    updated_at: currentTime
                 });
             });
         }
 
         // معالجة التمديدات الكهربائية
-        const electricalItems = formData.electrical_items;
-        if (electricalItems && Object.keys(electricalItems).length > 0) {
-            Object.entries(electricalItems).forEach(([type, item]) => {
+        if (formData.electrical_items && Object.keys(formData.electrical_items).length > 0) {
+            Object.entries(formData.electrical_items).forEach(([key, value]) => {
                 summaryData.push({
                     work_type: 'تمديدات كهربائية',
-                    cable_type: getCableTitle(type),
-                    length: item.meters,
-                    width: null,
-                    depth: null,
-                    volume: null,
-                    price: item.price,
-                    total: item.total,
-                    date: dateString,
-                    time: timeString
+                    cable_type: this.getCableTitle(key),
+                    length: value.meters,
+                    price: value.price,
+                    total: value.total,
+                    created_at: currentTime,
+                    updated_at: currentTime
                 });
             });
         }
@@ -525,38 +518,56 @@ class CivilWorksManager {
         const tbody = document.getElementById('daily-excavation-tbody');
         if (!tbody) return;
 
-        // مسح الجدول الحالي
+        // مسح الجدول الحالي بالكامل لتجنب التكرار
         tbody.innerHTML = '';
 
-        if (summaryData.length === 0) {
-            displayEmptyFormattedTable(tbody);
+        if (!summaryData || summaryData.length === 0) {
+            this.displayEmptyTable(tbody);
             return;
         }
 
-        // إضافة البيانات الجديدة
+        // إضافة البيانات الجديدة فقط مع الترتيب الصحيح
         summaryData.forEach((item, index) => {
             const row = document.createElement('tr');
             row.className = 'table-row-hover';
+            row.setAttribute('data-excavation-id', index);
             
             const total = parseFloat(item.total) || 0;
             const volume = item.volume ? parseFloat(item.volume).toFixed(2) : '-';
             const dimensions = item.width && item.depth ? 
-                `${item.length} × ${item.width} × ${item.depth}` : 
-                parseFloat(item.length).toFixed(2);
+                `${parseFloat(item.length || 0).toFixed(2)} × ${parseFloat(item.width || 0).toFixed(2)} × ${parseFloat(item.depth || 0).toFixed(2)}` : 
+                parseFloat(item.length || 0).toFixed(2) + ' متر';
+
+            // تحديد عدد الكابلات من نوع العمل
+            const cableCount = this.getCableCountFromWorkType(item.work_type || item.cable_type || 'غير محدد');
+            
+            // تنسيق آخر تحديث
+            const lastUpdate = this.formatLastUpdateTime(new Date());
 
             row.innerHTML = `
-                <td class="text-center">${index + 1}</td>
-                <td class="text-center">${item.work_type}</td>
-                <td class="text-center">${item.cable_type}</td>
-                <td class="text-center">${dimensions}</td>
-                <td class="text-center">${volume}</td>
-                <td class="text-center">${parseFloat(item.price).toFixed(2)}</td>
-                <td class="text-center text-success fw-bold">${total.toFixed(2)}</td>
                 <td class="text-center">
-                    <button class="btn btn-sm btn-outline-danger delete-excavation-btn" 
-                            data-excavation-id="${index}">
-                        <i class="fas fa-trash"></i>
-                    </button>
+                    <span class="table-number">${index + 1}</span>
+                </td>
+                <td class="text-center">
+                    <div class="work-type-cell">${item.work_type || 'غير محدد'}</div>
+                </td>
+                <td class="text-center">
+                    <span class="cable-type-badge">${cableCount}</span>
+                </td>
+                <td class="text-center">
+                    <div class="dimensions-cell">${dimensions}</div>
+                </td>
+                <td class="text-center">
+                    <div class="volume-cell">${volume}</div>
+                </td>
+                <td class="text-center">
+                    <div class="price-cell">${parseFloat(item.price || 0).toFixed(2)} ريال</div>
+                </td>
+                <td class="text-center">
+                    <div class="total-cell">${total.toFixed(2)} ريال</div>
+                </td>
+                <td class="text-center">
+                    <small class="text-muted">${lastUpdate}</small>
                 </td>
             `;
             
@@ -568,6 +579,8 @@ class CivilWorksManager {
         
         // إضافة التأثيرات البصرية
         addTableEffects();
+        
+        console.log(`تم تحديث الجدول مع ${summaryData.length} عنصر`);
     }
 
     /**
@@ -592,20 +605,79 @@ class CivilWorksManager {
     }
 
     /**
+     * إفراغ الملخص اليومي
+     * Clear daily summary
+     */
+    async clearDailySummary() {
+        if (confirm('هل أنت متأكد من إفراغ جميع بيانات الملخص اليومي؟\nلا يمكن التراجع عن هذا الإجراء.')) {
+            try {
+                this.notificationSystem.showLoading('جاري إفراغ الملخص اليومي...');
+                
+                // مسح البيانات من الخادم
+                await this.apiClient.clearDailyData();
+                
+                // مسح البيانات المحلية
+                window.savedDailyData = [];
+                
+                // مسح وقت آخر تحديث
+                localStorage.removeItem('lastUpdateTime');
+                
+                // تحديث عرض وقت آخر تحديث
+                const timeElement = document.getElementById('last-update-time');
+                if (timeElement) {
+                    timeElement.textContent = 'لا توجد بيانات';
+                }
+                
+                // مسح الجدول وعرض الحالة الفارغة
+                const tbody = document.getElementById('daily-excavation-tbody');
+                if (tbody) {
+                    this.displayEmptyTable(tbody);
+                }
+                
+                // مسح جدول ExcavationLogger إذا كان موجوداً
+                if (this.excavationLogger) {
+                    this.excavationLogger.clearAll();
+                }
+                
+                this.notificationSystem.hideLoading();
+                this.notificationSystem.show('تم إفراغ الملخص اليومي بنجاح', 'success');
+                
+                console.log('Daily summary cleared successfully');
+            } catch (error) {
+                this.notificationSystem.hideLoading();
+                this.notificationSystem.show('حدث خطأ في إفراغ الملخص اليومي', 'error');
+                console.error('Error clearing daily summary:', error);
+            }
+        }
+    }
+
+    /**
+     * عرض جدول فارغ
+     * Display empty table
+     */
+    displayEmptyTable(tbody) {
+        tbody.innerHTML = `
+            <tr id="no-data-row" class="table-light">
+                <td colspan="8" class="text-center text-muted py-5">
+                    <div class="empty-state-content">
+                        <i class="fas fa-clipboard-list fa-3x mb-3 text-secondary"></i>
+                        <h5 class="mb-2 text-secondary">لا توجد بيانات حفريات</h5>
+                        <p class="mb-0 text-muted">سيتم إضافة البيانات تلقائياً عند إدخال القياسات</p>
+                        <small class="text-muted d-block mt-1">
+                            <i class="fas fa-info-circle me-1"></i>
+                            ابدأ بإدخال الطول والسعر في النماذج أعلاه
+                        </small>
+                    </div>
+                </td>
+            </tr>
+        `;
+    }
+
+    /**
      * حذف صف حفرية
      * Delete excavation row
      */
-    deleteExcavationRow(row) {
-        if (confirm('هل تريد حذف هذه الحفرية؟')) {
-            const rowId = row.dataset.excavationId;
-            if (rowId) {
-                this.excavationLogger.removeFromTable(rowId);
-            }
-            row.remove();
-            this.updateStatistics();
-            this.notificationSystem.show('تم حذف الحفرية بنجاح', 'success');
-        }
-    }
+
 
     /**
      * معالجة إرسال النموذج
@@ -643,10 +715,21 @@ class CivilWorksManager {
     async autoSaveAllData() {
         try {
             const formData = collectFormData();
-            const summaryData = this.convertFormDataToSummary(formData);
-            if (summaryData.length > 0) {
-                await this.apiClient.saveDailyData({ daily_data: JSON.stringify(summaryData) });
-                console.log('Auto-save completed');
+            const newSummaryData = this.convertFormDataToSummary(formData);
+            
+            // فقط احفظ إذا كانت هناك بيانات جديدة فعلية
+            if (newSummaryData.length > 0) {
+                // حفظ البيانات الجديدة فقط (بدلاً من الدمج)
+                await this.apiClient.saveDailyData({ daily_data: JSON.stringify(newSummaryData) });
+                
+                // تحديث البيانات المحفوظة
+                window.savedDailyData = newSummaryData;
+                
+                // حفظ وقت آخر تحديث
+                const now = new Date();
+                localStorage.setItem('lastUpdateTime', now.toISOString());
+                
+                console.log('Auto-save completed with', newSummaryData.length, 'items');
             }
         } catch (error) {
             console.warn('Auto-save failed:', error);
@@ -710,14 +793,98 @@ class CivilWorksManager {
     }
 
     /**
-     * تنظيف الموارد
-     * Cleanup resources
+     * إنهاء النظام وتنظيف الموارد
+     * Destroy and cleanup resources
      */
     destroy() {
-        if (this.autoSaveInterval) {
-            clearInterval(this.autoSaveInterval);
+        // إزالة مستمعي الأحداث
+        window.removeEventListener('beforeunload', this.handleBeforeUnload);
+        
+        // إنهاء الخدمات
+        if (this.notificationSystem) {
+            this.notificationSystem = null;
         }
+        
         console.log('CivilWorksManager destroyed');
+    }
+
+    /**
+     * تحديد عدد الكابلات من نوع العمل
+     * Get cable count from work type
+     */
+    getCableCountFromWorkType(workType) {
+        if (workType.includes('1 كابل')) return '1';
+        if (workType.includes('2 كابل')) return '2';
+        if (workType.includes('3 كابل')) return '3';
+        if (workType.includes('4 كابل')) return '4';
+        if (workType.includes('اكبر من 4') || workType.includes('>4')) return '+4';
+        return '-';
+    }
+
+    /**
+     * تنسيق آخر تحديث
+     * Format last update time
+     */
+    formatLastUpdateTime(timestamp) {
+        if (!timestamp) return 'غير محدد';
+        
+        const date = new Date(timestamp);
+        const now = new Date();
+        const diff = now - date;
+        const diffMinutes = Math.floor(diff / 60000);
+        const diffHours = Math.floor(diff / 3600000);
+        const diffDays = Math.floor(diff / 86400000);
+        
+        if (diffMinutes < 1) return 'الآن';
+        if (diffMinutes < 60) return `${diffMinutes} د`;
+        if (diffHours < 24) return `${diffHours} س`;
+        if (diffDays < 7) return `${diffDays} ي`;
+        
+        return date.toLocaleDateString('ar-SA', {
+            month: 'short',
+            day: 'numeric'
+        });
+    }
+
+    /**
+     * الحصول على عنوان نوع التربة
+     * Get soil type title
+     */
+    getSoilTypeTitle(key) {
+        const titles = {
+            'unsurfaced_soil': 'تربة ترابية غير مسفلتة',
+            'surfaced_soil': 'تربة ترابية مسفلتة',
+            'surfaced_rock': 'تربة صخرية مسفلتة',
+            'unsurfaced_rock': 'تربة صخرية غير مسفلتة'
+        };
+        return titles[key] || key;
+    }
+
+    /**
+     * الحصول على عنوان الحفر المفتوح
+     * Get open excavation title
+     */
+    getOpenExcavationTitle(key) {
+        const titles = {
+            'first_asphalt': 'أسفلت طبقة أولى',
+            'asphalt_scraping': 'كشط واعادة السفلتة'
+        };
+        return titles[key] || key;
+    }
+
+    /**
+     * الحصول على عنوان الكابل
+     * Get cable title
+     */
+    getCableTitle(key) {
+        const titles = {
+            'cable_4x70_low': 'كابل 4×70 منخفض',
+            'cable_4x185_low': 'كابل 4×185 منخفض',
+            'cable_4x300_low': 'كابل 4×300 منخفض',
+            'cable_3x500_med': 'كابل 3×500 متوسط',
+            'cable_3x400_med': 'كابل 3×400 متوسط'
+        };
+        return titles[key] || key;
     }
 }
 
@@ -887,6 +1054,16 @@ class ExcavationLogger {
      */
     generateId() {
         return 'exc_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    }
+
+    /**
+     * مسح جميع البيانات
+     * Clear all data
+     */
+    clearAll() {
+        this.excavations.clear();
+        this.renderTable();
+        console.log('All excavation data cleared');
     }
 }
 
@@ -1200,6 +1377,15 @@ class ApiClient {
 
         const response = await this.makeRequest('GET', '/civil-works/today-excavations');
         return response.data;
+    }
+
+    async clearDailyData() {
+        if (!this.workOrderId) {
+            throw new Error('Work Order ID not configured');
+        }
+
+        const response = await this.makeRequest('POST', '/civil-works/clear-daily-data', {});
+        return response;
     }
 
     async makeRequest(method, endpoint, data = null) {
@@ -1669,33 +1855,61 @@ function updateDailySummary() {
 
         // تفريغ الجدول من البيانات السابقة
         const tbody = dailyTable.querySelector('tbody') || dailyTable.createTBody();
-        tbody.innerHTML = '';
-
+        
+        // التحقق من وجود بيانات محفوظة قبل المسح
+        const hasSavedData = window.savedDailyData && window.savedDailyData.length > 0;
+        
         // جمع البيانات من النموذج الفعلي
         const formData = collectFormData();
         
-        // التحقق من وجود بيانات
-        const hasData = checkIfDataExists(formData);
+        // التحقق من وجود بيانات جديدة
+        const hasNewData = checkIfDataExists(formData);
         
-        if (hasData) {
-            // إضافة الأقسام بالترتيب الصحيح
+        if (hasNewData) {
+            // مسح الجدول فقط إذا كانت هناك بيانات جديدة
+            tbody.innerHTML = '';
+            
+            // إضافة بيانات الحفريات الأساسية
             addBasicExcavationsSections(tbody, formData);
+            
+            // إضافة بيانات الحفر المفتوح
             addOpenExcavationsSections(tbody, formData);
+            
+            // إضافة بيانات الحفريات الدقيقة
             addPreciseExcavationsSections(tbody, formData);
+            
+            // إضافة بيانات التمديدات الكهربائية
             addElectricalInstallationsSections(tbody, formData);
             
             // إضافة تأثيرات بصرية للجدول
             addTableEffects();
-        } else {
-            // عرض جدول فارغ منسق
+        } else if (!hasSavedData) {
+            // عرض جدول فارغ منسق فقط إذا لم تكن هناك بيانات محفوظة أو جديدة
             displayEmptyFormattedTable(tbody);
         }
 
         // تحديث الإحصائيات العامة
         updateStatistics();
         
-        // حفظ آخر وقت تحديث
-        localStorage.setItem('lastUpdateTime', new Date().toISOString());
+        // حفظ آخر وقت تحديث فقط إذا كانت هناك بيانات جديدة
+        if (hasNewData) {
+            const now = new Date();
+            localStorage.setItem('lastUpdateTime', now.toISOString());
+            
+            // تحديث عرض آخر تحديث
+            const timeElement = document.getElementById('last-update-time');
+            if (timeElement) {
+                const timeString = now.toLocaleString('ar-SA', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                });
+                timeElement.textContent = timeString;
+            }
+        }
         
     } catch (error) {
         console.error('Error updating daily summary:', error);
@@ -2306,53 +2520,21 @@ function addCustomStyles() {
 // دالة عرض جدول فارغ منسق
 function displayEmptyFormattedTable(tbody) {
     try {
-        // إضافة رسالة ترحيبية
-        const welcomeRow = tbody.insertRow();
-        welcomeRow.className = 'table-primary';
-        const welcomeCell = welcomeRow.insertCell();
-        welcomeCell.colSpan = 8;
-        welcomeCell.className = 'text-center py-4';
-        welcomeCell.innerHTML = `
-            <div class="d-flex flex-column align-items-center">
-                <i class="fas fa-clipboard-list fa-3x text-primary mb-3"></i>
-                <h5 class="text-primary mb-2">الملخص اليومي التلقائي للحفريات</h5>
-                <p class="text-muted mb-0">ابدأ بإدخال البيانات في النموذج أعلاه وسيتم تحديث الملخص تلقائياً</p>
-            </div>
+        tbody.innerHTML = `
+            <tr id="no-data-row" class="table-light">
+                <td colspan="8" class="text-center text-muted py-5">
+                    <div class="empty-state-content">
+                        <i class="fas fa-clipboard-list fa-3x mb-3 text-secondary"></i>
+                        <h5 class="mb-2 text-secondary">لا توجد بيانات حفريات</h5>
+                        <p class="mb-0 text-muted">سيتم إضافة البيانات تلقائياً عند إدخال القياسات</p>
+                        <small class="text-muted d-block mt-1">
+                            <i class="fas fa-info-circle me-1"></i>
+                            ابدأ بإدخال الطول والسعر في النماذج أعلاه
+                        </small>
+                    </div>
+                </td>
+            </tr>
         `;
-        
-        // إضافة أقسام فارغة منسقة لإظهار التنظيم
-        const sections = [
-            { title: 'الحفريات الأساسية - تربة ترابية غير مسفلتة', class: 'table-light', icon: 'fas fa-shovel' },
-            { title: 'الحفريات الأساسية - تربة ترابية مسفلتة', class: 'table-info', icon: 'fas fa-road' },
-            { title: 'الحفريات الأساسية - تربة صخرية مسفلتة', class: 'table-warning', icon: 'fas fa-mountain' },
-            { title: 'الحفريات الأساسية - تربة صخرية غير مسفلتة', class: 'table-secondary', icon: 'fas fa-hammer' },
-            { title: 'الحفر المفتوح', class: 'table-success', icon: 'fas fa-expand-arrows-alt' },
-            { title: 'الحفريات الدقيقة', class: 'table-primary', icon: 'fas fa-crosshairs' },
-            { title: 'التمديدات الكهربائية', class: 'table-danger', icon: 'fas fa-bolt' }
-        ];
-        
-        sections.forEach(section => {
-            const sectionRow = tbody.insertRow();
-            sectionRow.className = section.class;
-            const sectionCell = sectionRow.insertCell();
-            sectionCell.colSpan = 8;
-            sectionCell.className = 'text-center py-3';
-            sectionCell.innerHTML = `
-                <div class="d-flex align-items-center justify-content-center">
-                    <i class="${section.icon} me-2"></i>
-                    <span class="fw-bold">${section.title}</span>
-                    <span class="badge bg-secondary ms-2">0 بنود</span>
-                </div>
-            `;
-            
-            // إضافة صف فرعي يوضح نوع البيانات المطلوبة
-            const detailRow = tbody.insertRow();
-            detailRow.className = 'table-light';
-            const detailCell = detailRow.insertCell();
-            detailCell.colSpan = 8;
-            detailCell.className = 'text-center py-2 text-muted small';
-            detailCell.innerHTML = getEmptyRowDescription(section.title);
-        });
         
         console.log('Empty formatted table displayed successfully');
     } catch (error) {

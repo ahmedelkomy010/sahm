@@ -577,7 +577,11 @@ class WorkOrderController extends Controller
         
         // عرض الصفحة
         $workOrder->load(['civilWorksFiles', 'civilWorksAttachments']);
-        return view('admin.work_orders.civil_works', compact('workOrder'));
+        
+        // تحضير البيانات المحفوظة للملخص اليومي
+        $savedDailyData = $workOrder->daily_civil_works_data ?? $workOrder->excavation_details_table ?? [];
+        
+        return view('admin.work_orders.civil_works', compact('workOrder', 'savedDailyData'));
     }
 
     /**
@@ -693,6 +697,52 @@ class WorkOrderController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'حدث خطأ أثناء حفظ البيانات: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Clear daily civil works data
+     */
+    public function clearDailyData(Request $request, WorkOrder $workOrder)
+    {
+        try {
+            \Log::info('Starting clearDailyData', [
+                'work_order_id' => $workOrder->id
+            ]);
+            
+            // حفظ بيانات فارغة في قاعدة البيانات
+            $updateData = [];
+            
+            // التحقق من وجود العمود
+            if (Schema::hasColumn('work_orders', 'daily_civil_works_data')) {
+                $updateData['daily_civil_works_data'] = [];
+            } else {
+                // استخدام excavation_details_table كبديل
+                $updateData['excavation_details_table'] = [];
+            }
+            
+            $updateResult = $workOrder->update($updateData);
+            
+            \Log::info('Database clear result', [
+                'success' => $updateResult
+            ]);
+            
+            return response()->json([
+                'success' => true,
+                'message' => "تم إفراغ الملخص اليومي بنجاح"
+            ]);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error clearing daily civil works data', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'work_order_id' => $workOrder->id ?? 'unknown'
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء إفراغ البيانات: ' . $e->getMessage()
             ], 500);
         }
     }

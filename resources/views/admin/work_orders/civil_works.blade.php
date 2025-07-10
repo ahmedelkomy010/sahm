@@ -22,6 +22,9 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
+    <!-- Toastr CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css">
+    
     <style>
         body {
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
@@ -715,6 +718,348 @@
                 padding: 0.25rem 0.4rem;
             }
         }
+
+        /* تنسيق الجدول الرئيسي */
+        #daily-excavation-table {
+            border-radius: 12px;
+            overflow: hidden;
+            border: none;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+        }
+        
+        #daily-excavation-table thead th {
+            padding: 15px 8px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+        
+        #daily-excavation-table tbody tr {
+            transition: all 0.3s ease;
+            border-bottom: 1px solid #f1f3f4;
+        }
+        
+        #daily-excavation-table tbody tr:hover {
+            background: #f8f9fa !important;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+        
+        #daily-excavation-table tbody td {
+            padding: 12px 8px;
+            vertical-align: middle;
+            font-size: 0.875rem;
+            border: none;
+            position: relative;
+        }
+        
+        /* تنسيق الأرقام */
+        .table-number {
+            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+            color: white;
+            border-radius: 20px;
+            padding: 4px 10px;
+            font-weight: 600;
+            font-size: 0.75rem;
+            display: inline-block;
+            min-width: 25px;
+            text-align: center;
+        }
+        
+        /* تنسيق نوع العمل */
+        .work-type-cell {
+            font-weight: 600;
+            color: #495057;
+            line-height: 1.3;
+        }
+        
+        /* تنسيق الكابلات */
+        .cable-type-badge {
+            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 4px 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        
+        /* تنسيق الأبعاد */
+        .dimensions-cell {
+            font-family: 'Courier New', monospace;
+            background: #f8f9fa;
+            border-radius: 6px;
+            padding: 6px 10px;
+            font-weight: 600;
+            color: #495057;
+            border: 1px solid #e9ecef;
+        }
+        
+        /* تنسيق الحجم */
+        .volume-cell {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 6px 10px;
+            font-weight: 600;
+            color: #6c757d;
+            text-align: center;
+            border: 1px solid #dee2e6;
+        }
+        
+        /* تنسيق السعر */
+        .price-cell {
+            background: #e9ecef;
+            border-radius: 8px;
+            padding: 6px 10px;
+            font-weight: 600;
+            color: #495057;
+            text-align: center;
+            border: 1px solid #ced4da;
+        }
+        
+        /* تنسيق الإجمالي */
+        .total-cell {
+            background: #d4edda;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-weight: 700;
+            color: #155724;
+            text-align: center;
+            font-size: 0.9rem;
+            border: 1px solid #c3e6cb;
+        }
+        
+        
+        
+        /* تنسيق حالة الفراغ */
+        .empty-state-content {
+            padding: 20px;
+            border: 2px dashed #dee2e6;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 50%, #f8f9fa 100%);
+        }
+        
+        .empty-state-content i {
+            opacity: 0.6;
+        }
+        
+        /* إضافة خطوط فاصلة للأعمدة */
+        #daily-excavation-table tbody td:not(:last-child) {
+            border-right: 1px solid #f1f3f4;
+        }
+        
+        /* تحسين الـ Badge */
+        #daily-excavation-table .badge {
+            font-size: 0.7rem;
+            padding: 3px 8px;
+            border-radius: 10px;
+        }
+        
+        /* تأثيرات النص */
+        .fw-arabic {
+            font-weight: 600;
+        }
+        
+        /* تحسين الظلال */
+        .table-responsive {
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        /* تنسيق الإشعارات */
+        .notification-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            max-width: 400px;
+        }
+        
+        .notification {
+            animation: slideIn 0.3s ease-out;
+            margin-bottom: 10px;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+        
+        /* تحسين الاستجابة للشاشات الصغيرة */
+        @media (max-width: 768px) {
+            #daily-excavation-table {
+                font-size: 0.8rem;
+            }
+            
+            #daily-excavation-table thead th {
+                padding: 10px 5px;
+                font-size: 0.75rem;
+            }
+            
+            #daily-excavation-table tbody td {
+                padding: 8px 5px;
+                font-size: 0.8rem;
+            }
+        }
+        
+        /* تنسيق أزرار التحكم */
+        .btn-lg {
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+            border: none;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-lg::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .btn-lg:hover::before {
+            left: 100%;
+        }
+        
+        .btn-lg:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+        }
+        
+        .btn-success:hover {
+            background: linear-gradient(135deg, #28a745 0%, #218838 100%);
+        }
+        
+        .btn-info:hover {
+            background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+        }
+        
+        .btn-danger:hover {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        }
+        
+        /* تحسين مؤشر آخر تحديث */
+        #last-update-time {
+            font-weight: 600;
+            color: #6c757d;
+            background: #f8f9fa;
+            padding: 4px 8px;
+            border-radius: 6px;
+            border: 1px solid #dee2e6;
+        }
+        
+        /* تحسين الكارد الرئيسي */
+        .card {
+            border-radius: 20px;
+            border: none;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .card-header {
+            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+            color: white;
+            font-weight: 700;
+            font-size: 1.1rem;
+            padding: 20px;
+            border-bottom: none;
+        }
+        
+        .card-body {
+            padding: 25px;
+        }
+        
+        /* تنسيق آخر تحديث */
+        .last-update-cell {
+            color: #6c757d;
+            font-size: 0.75rem;
+            font-style: italic;
+        }
+        
+        /* تنسيق الإشعارات */
+        .notification-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            max-width: 400px;
+        }
+        
+        .notification {
+            animation: slideIn 0.3s ease-out;
+            margin-bottom: 10px;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+        
+        /* تحسين الاستجابة للشاشات الصغيرة */
+        @media (max-width: 768px) {
+            #daily-excavation-table {
+                font-size: 0.8rem;
+            }
+            
+            #daily-excavation-table thead th {
+                padding: 10px 5px;
+                font-size: 0.75rem;
+            }
+            
+            #daily-excavation-table tbody td {
+                padding: 8px 5px;
+                font-size: 0.8rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -850,7 +1195,7 @@
                             <div class="d-flex justify-content-between align-items-center">
                                 <h5 class="mb-0">
                                     <i class="fas fa-magic me-2"></i>
-                                    الملخص اليومي التلقائي للحفريات الأساسية
+                                    الملخص اليومي
                                     <span class="badge bg-light text-dark ms-2">
                                         <i class="fas fa-sync-alt fa-spin"></i>
                                         تحديث تلقائي
@@ -914,24 +1259,55 @@
 
                                                                         <!-- الجدول الديناميكي -->
                             <div class="table-responsive">
-                                <table class="table table-hover align-middle" id="daily-excavation-table">
-                                    <thead style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                                <table class="table table-hover align-middle shadow-sm" id="daily-excavation-table">
+                                    <thead style="background: linear-gradient(135deg, #6c757d 0%, #495057 100%); color: white;">
                                         <tr>
-                                            <th style="width: 25%">نوع الحفرية</th>
-                                            <th style="width: 10%">عدد الكابلات</th>
-                                            <th style="width: 15%">الطول/الحجم</th>
-                                            <th style="width: 15%">السعر لكل وحدة (ريال)</th>
-                                            <th style="width: 15%">إجمالي التكلفة (ريال)</th>
-                                            <th style="width: 15%">آخر تحديث</th>
-                                            <th style="width: 5%">حذف</th>
+                                            <th class="text-center fw-bold" style="width: 5%; border-right: 1px solid rgba(255,255,255,0.2);">
+                                                <i class="fas fa-hashtag me-1"></i>
+                                                #
+                                            </th>
+                                            <th class="text-center fw-bold" style="width: 22%; border-right: 1px solid rgba(255,255,255,0.2);">
+                                                <i class="fas fa-hard-hat me-1"></i>
+                                                نوع العمل
+                                            </th>
+                                            <th class="text-center fw-bold" style="width: 12%; border-right: 1px solid rgba(255,255,255,0.2);">
+                                                <i class="fas fa-plug me-1"></i>
+                                                الكابلات
+                                            </th>
+                                            <th class="text-center fw-bold" style="width: 15%; border-right: 1px solid rgba(255,255,255,0.2);">
+                                                <i class="fas fa-ruler-combined me-1"></i>
+                                                الأبعاد
+                                            </th>
+                                            <th class="text-center fw-bold" style="width: 10%; border-right: 1px solid rgba(255,255,255,0.2);">
+                                                <i class="fas fa-cube me-1"></i>
+                                                الحجم
+                                            </th>
+                                            <th class="text-center fw-bold" style="width: 12%; border-right: 1px solid rgba(255,255,255,0.2);">
+                                                <i class="fas fa-money-bill-wave me-1"></i>
+                                                السعر
+                                            </th>
+                                            <th class="text-center fw-bold" style="width: 14%; border-right: 1px solid rgba(255,255,255,0.2);">
+                                                <i class="fas fa-calculator me-1"></i>
+                                                الإجمالي
+                                            </th>
+                                            <th class="text-center fw-bold" style="width: 5%;">
+                                                <i class="fas fa-clock me-1"></i>
+                                                آخر تحديث
+                                            </th>
                                         </tr>
                                     </thead>
                                     <tbody id="daily-excavation-tbody">
-                                        <tr id="no-data-row">
-                                            <td colspan="7" class="text-center text-muted py-4">
-                                                <i class="fas fa-clipboard-list fa-2x mb-2 d-block"></i>
-                                                <p class="mb-0">لا توجد بيانات حفريات مدخلة اليوم</p>
-                                                <small>سيتم إضافة البيانات تلقائياً عند إدخال القياسات</small>
+                                        <tr id="no-data-row" class="table-light">
+                                            <td colspan="8" class="text-center text-muted py-5">
+                                                <div class="empty-state-content">
+                                                    <i class="fas fa-clipboard-list fa-3x mb-3 text-secondary"></i>
+                                                    <h5 class="mb-2 text-secondary">لا توجد بيانات حفريات</h5>
+                                                    <p class="mb-0 text-muted">سيتم إضافة البيانات تلقائياً عند إدخال القياسات</p>
+                                                    <small class="text-muted d-block mt-1">
+                                                        <i class="fas fa-info-circle me-1"></i>
+                                                        ابدأ بإدخال الطول والسعر في النماذج أعلاه
+                                                    </small>
+                                                </div>
                                             </td>
                                         </tr>
                                     </tbody>
@@ -940,24 +1316,162 @@
                             
                             <!-- إنشاء CSS إضافي للجدول -->
                             <style>
+                                /* تنسيق الجدول الرئيسي */
+                                #daily-excavation-table {
+                                    border-radius: 12px;
+                                    overflow: hidden;
+                                    border: none;
+                                    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+                                }
+                                
+                                #daily-excavation-table thead th {
+                                    padding: 15px 8px;
+                                    font-size: 0.85rem;
+                                    font-weight: 700;
+                                    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+                                    position: relative;
+                                }
+                                
+                                #daily-excavation-table tbody tr {
+                                    transition: all 0.3s ease;
+                                    border-bottom: 1px solid #f1f3f4;
+                                }
+                                
                                 #daily-excavation-table tbody tr:hover {
-                                    background-color: #f8f9fa !important;
+                                    background: #f8f9fa !important;
+                                    transform: translateY(-1px);
+                                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
                                 }
                                 
-                                #daily-excavation-table .badge {
-                                    font-size: 0.75em;
+                                #daily-excavation-table tbody td {
+                                    padding: 12px 8px;
+                                    vertical-align: middle;
+                                    font-size: 0.875rem;
+                                    border: none;
+                                    position: relative;
                                 }
                                 
-                                #daily-excavation-table .delete-excavation-btn {
-                                    padding: 0.25rem 0.5rem;
+                                /* تنسيق الأرقام */
+                                .table-number {
+                                    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+                                    color: white;
+                                    border-radius: 20px;
+                                    padding: 4px 10px;
+                                    font-weight: 600;
                                     font-size: 0.75rem;
-                                    transition: all 0.2s ease;
+                                    display: inline-block;
+                                    min-width: 25px;
+                                    text-align: center;
                                 }
                                 
-                                #daily-excavation-table .delete-excavation-btn:hover {
-                                    transform: scale(1.1);
+                                /* تنسيق نوع العمل */
+                                .work-type-cell {
+                                    font-weight: 600;
+                                    color: #495057;
+                                    line-height: 1.3;
                                 }
                                 
+                                /* تنسيق الكابلات */
+                                .cable-type-badge {
+                                    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+                                    color: white;
+                                    border-radius: 15px;
+                                    padding: 4px 12px;
+                                    font-size: 0.75rem;
+                                    font-weight: 600;
+                                    white-space: nowrap;
+                                }
+                                
+                                /* تنسيق الأبعاد */
+                                .dimensions-cell {
+                                    font-family: 'Courier New', monospace;
+                                    background: #f8f9fa;
+                                    border-radius: 6px;
+                                    padding: 6px 10px;
+                                    font-weight: 600;
+                                    color: #495057;
+                                    border: 1px solid #e9ecef;
+                                }
+                                
+                                /* تنسيق الحجم */
+                                .volume-cell {
+                                    background: #f8f9fa;
+                                    border-radius: 8px;
+                                    padding: 6px 10px;
+                                    font-weight: 600;
+                                    color: #6c757d;
+                                    text-align: center;
+                                    border: 1px solid #dee2e6;
+                                }
+                                
+                                /* تنسيق السعر */
+                                .price-cell {
+                                    background: #e9ecef;
+                                    border-radius: 8px;
+                                    padding: 6px 10px;
+                                    font-weight: 600;
+                                    color: #495057;
+                                    text-align: center;
+                                    border: 1px solid #ced4da;
+                                }
+                                
+                                /* تنسيق الإجمالي */
+                                .total-cell {
+                                    background: #d4edda;
+                                    border-radius: 8px;
+                                    padding: 8px 12px;
+                                    font-weight: 700;
+                                    color: #155724;
+                                    text-align: center;
+                                    font-size: 0.9rem;
+                                    border: 1px solid #c3e6cb;
+                                }
+                                
+
+                                
+                                /* تنسيق حالة الفراغ */
+                                .empty-state-content {
+                                    padding: 20px;
+                                    border: 2px dashed #dee2e6;
+                                    border-radius: 12px;
+                                    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 50%, #f8f9fa 100%);
+                                }
+                                
+                                .empty-state-content i {
+                                    opacity: 0.6;
+                                }
+                                
+                                /* إضافة خطوط فاصلة للأعمدة */
+                                #daily-excavation-table tbody td:not(:last-child) {
+                                    border-right: 1px solid #f1f3f4;
+                                }
+                                
+                                /* تحسين الـ Badge */
+                                #daily-excavation-table .badge {
+                                    font-size: 0.7rem;
+                                    padding: 3px 8px;
+                                    border-radius: 10px;
+                                }
+                                
+                                /* تأثيرات النص */
+                                .fw-arabic {
+                                    font-weight: 600;
+                                }
+                                
+                                /* تحسين الظلال */
+                                .table-responsive {
+                                    border-radius: 12px;
+                                    overflow: hidden;
+                                }
+                                
+                                /* تنسيق آخر تحديث */
+                                .last-update-cell {
+                                    color: #6c757d;
+                                    font-size: 0.75rem;
+                                    font-style: italic;
+                                }
+                                
+                                /* تنسيق الإشعارات */
                                 .notification-container {
                                     position: fixed;
                                     top: 20px;
@@ -969,6 +1483,8 @@
                                 .notification {
                                     animation: slideIn 0.3s ease-out;
                                     margin-bottom: 10px;
+                                    border-radius: 12px;
+                                    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
                                 }
                                 
                                 @keyframes slideIn {
@@ -992,17 +1508,44 @@
                                         opacity: 0;
                                     }
                                 }
+                                
+                                /* تحسين الاستجابة للشاشات الصغيرة */
+                                @media (max-width: 768px) {
+                                    #daily-excavation-table {
+                                        font-size: 0.8rem;
+                                    }
+                                    
+                                    #daily-excavation-table thead th {
+                                        padding: 10px 5px;
+                                        font-size: 0.75rem;
+                                    }
+                                    
+                                    #daily-excavation-table tbody td {
+                                        padding: 8px 5px;
+                                        font-size: 0.8rem;
+                                    }
+                                }
                             </style>
 
                             <!-- أزرار التحكم -->
-                            <div class="d-flex justify-content-between align-items-center mt-3">
-                                <div class="d-flex gap-2">
-                                    <button type="button" class="btn btn-outline-success" id="export-daily-summary-btn">
-                                        <i class="fas fa-file-excel me-2"></i>تصدير الملخص
+                            <div class="d-flex justify-content-between align-items-center mt-4">
+                                <div class="d-flex gap-3">
+                                    <button type="button" class="btn btn-success btn-lg shadow-sm" id="save-daily-summary-btn">
+                                        <i class="fas fa-save me-2"></i>
+                                        <span class="fw-bold">حفظ الملخص</span>
                                     </button>
-                                    <button type="button" class="btn btn-outline-info" id="save-daily-summary-btn">
-                                        <i class="fas fa-save me-2"></i>حفظ الملخص
+                                    <button type="button" class="btn btn-info btn-lg shadow-sm" id="export-daily-summary-btn">
+                                        <i class="fas fa-file-excel me-2"></i>
+                                        <span class="fw-bold">تصدير إكسل</span>
                                     </button>
+                                    <button type="button" class="btn btn-danger btn-lg shadow-sm" id="clear-daily-summary-btn">
+                                        <i class="fas fa-trash-alt me-2"></i>
+                                        <span class="fw-bold">إفراغ الملخص</span>
+                                    </button>
+                                </div>
+                                <div class="text-muted small">
+                                    <i class="fas fa-clock me-1"></i>
+                                    آخر تحديث: <span id="last-update-time">--</span>
                                 </div>
                             </div>
                             
@@ -2017,7 +2560,235 @@
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     
+    <!-- Toastr JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
+    
     <!-- Civil Works Professional System -->
     <script src="{{ asset('js/civil-works-professional.js') }}" defer></script>
+    
+    <!-- تحميل البيانات المحفوظة -->
+    <script>
+        // البيانات المحفوظة من قاعدة البيانات
+        window.savedDailyData = @json($savedDailyData ?? []);
+        
+        // دالة لتحميل البيانات المحفوظة عند تحميل الصفحة
+        function loadSavedDailyData() {
+            // التحقق من عدم وجود البيانات مسبقاً لتجنب التكرار
+            const tbody = document.getElementById('daily-excavation-tbody');
+            if (!tbody) return;
+            
+            const existingRows = tbody.querySelectorAll('tr:not(#no-data-row)');
+            if (existingRows.length > 0) {
+                console.log('البيانات موجودة مسبقاً، تجنب التكرار');
+                return;
+            }
+
+            if (window.savedDailyData && window.savedDailyData.length > 0) {
+                console.log('Loading saved daily data:', window.savedDailyData);
+
+                // مسح الجدول الحالي بالكامل
+                tbody.innerHTML = '';
+
+                // إضافة البيانات المحفوظة مع الترتيب الصحيح
+                window.savedDailyData.forEach((item, index) => {
+                    const row = document.createElement('tr');
+                    row.className = 'table-row-hover';
+                    row.setAttribute('data-excavation-id', index);
+                    
+                    const total = parseFloat(item.total) || 0;
+                    const volume = item.volume ? parseFloat(item.volume).toFixed(2) : '-';
+                    const dimensions = item.width && item.depth ? 
+                        `${parseFloat(item.length || 0).toFixed(2)} × ${parseFloat(item.width || 0).toFixed(2)} × ${parseFloat(item.depth || 0).toFixed(2)}` : 
+                        parseFloat(item.length || 0).toFixed(2) + ' متر';
+
+                    // تحديد عدد الكابلات من نوع العمل
+                    const cableCount = getCableCountFromWorkType(item.work_type || item.cable_type || 'غير محدد');
+                    
+                    // تنسيق آخر تحديث
+                    const lastUpdate = formatLastUpdateTime(item.updated_at || item.created_at);
+
+                    row.innerHTML = `
+                        <td class="text-center">
+                            <span class="table-number">${index + 1}</span>
+                        </td>
+                        <td class="text-center">
+                            <div class="work-type-cell">${item.work_type || 'غير محدد'}</div>
+                        </td>
+                        <td class="text-center">
+                            <span class="cable-type-badge">${cableCount}</span>
+                        </td>
+                        <td class="text-center">
+                            <div class="dimensions-cell">${dimensions}</div>
+                        </td>
+                        <td class="text-center">
+                            <div class="volume-cell">${volume}</div>
+                        </td>
+                        <td class="text-center">
+                            <div class="price-cell">${parseFloat(item.price || 0).toFixed(2)} ريال</div>
+                        </td>
+                        <td class="text-center">
+                            <div class="total-cell">${total.toFixed(2)} ريال</div>
+                        </td>
+                        <td class="text-center">
+                            <small class="text-muted">${lastUpdate}</small>
+                        </td>
+                    `;
+                    
+                    tbody.appendChild(row);
+                });
+
+                console.log(`تم تحميل ${window.savedDailyData.length} عنصر من البيانات المحفوظة`);
+                
+                // إظهار رسالة تأكيد
+                if (typeof toastr !== 'undefined') {
+                    toastr.success(`تم تحميل ${window.savedDailyData.length} عنصر من البيانات المحفوظة`);
+                }
+                
+                // تحديث وقت آخر تحديث من البيانات المحفوظة أو الوقت الحالي
+                const savedUpdateTime = localStorage.getItem('lastUpdateTime');
+                if (savedUpdateTime) {
+                    updateLastUpdateTime(null, savedUpdateTime);
+                } else {
+                    updateLastUpdateTime();
+                }
+            } else {
+                console.log('لا توجد بيانات محفوظة');
+                updateLastUpdateTime('لا توجد بيانات');
+            }
+        }
+
+        // دالة للحصول على عدد الكابلات من نوع العمل
+        function getCableCountFromWorkType(workType) {
+            if (workType.includes('1 كابل')) return '1';
+            if (workType.includes('2 كابل')) return '2';
+            if (workType.includes('3 كابل')) return '3';
+            if (workType.includes('4 كابل')) return '4';
+            if (workType.includes('اكبر من 4') || workType.includes('>4')) return '+4';
+            return '-';
+        }
+
+        // دالة لتنسيق آخر تحديث
+        function formatLastUpdateTime(timestamp) {
+            if (!timestamp) return 'غير محدد';
+            
+            const date = new Date(timestamp);
+            const now = new Date();
+            const diff = now - date;
+            const diffMinutes = Math.floor(diff / 60000);
+            const diffHours = Math.floor(diff / 3600000);
+            const diffDays = Math.floor(diff / 86400000);
+            
+            if (diffMinutes < 1) return 'الآن';
+            if (diffMinutes < 60) return `${diffMinutes} د`;
+            if (diffHours < 24) return `${diffHours} س`;
+            if (diffDays < 7) return `${diffDays} ي`;
+            
+            return date.toLocaleDateString('ar-SA', {
+                month: 'short',
+                day: 'numeric'
+            });
+        }
+
+        // دالة تحديث وقت آخر تحديث
+        function updateLastUpdateTime(customText = null, savedTime = null) {
+            const timeElement = document.getElementById('last-update-time');
+            if (timeElement) {
+                if (customText) {
+                    timeElement.textContent = customText;
+                } else if (savedTime) {
+                    const savedDate = new Date(savedTime);
+                    const timeString = savedDate.toLocaleString('ar-SA', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit'
+                    });
+                    timeElement.textContent = timeString;
+                } else {
+                    const now = new Date();
+                    const timeString = now.toLocaleString('ar-SA', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit'
+                    });
+                    timeElement.textContent = timeString;
+                    // حفظ الوقت في localStorage
+                    localStorage.setItem('lastUpdateTime', now.toISOString());
+                }
+            }
+        }
+
+        // نظام إدارة الأحداث
+        let eventListenersAdded = false;
+
+        // تحديث الصفحة مع البيانات المحفوظة عند التحميل
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, checking for saved data...');
+            
+            // متغير للتحكم في التحميل
+            if (window.dataLoaded) {
+                console.log('البيانات تم تحميلها مسبقاً');
+                return;
+            }
+            
+            // التأكد من أن الجدول لا يحتوي على بيانات مكررة
+            const tbody = document.getElementById('daily-excavation-tbody');
+            if (tbody) {
+                // التحقق من وجود بيانات مسبقاً
+                const existingData = tbody.querySelectorAll('tr:not(#no-data-row)');
+                if (existingData.length > 0) {
+                    console.log('البيانات موجودة مسبقاً في الجدول، تجنب التكرار');
+                    window.dataLoaded = true;
+                    return;
+                }
+                
+                // مسح أي بيانات موجودة مسبقاً
+                tbody.innerHTML = '';
+            }
+            
+            // تحميل البيانات المحفوظة مرة واحدة فقط
+            loadSavedDailyData();
+            
+            // وضع علامة أن البيانات تم تحميلها
+            window.dataLoaded = true;
+            
+            // تحديث الإحصائيات
+            if (typeof updateStatistics === 'function') {
+                updateStatistics();
+            }
+            
+            // إضافة مستمعي الأحداث مرة واحدة فقط
+            if (!eventListenersAdded) {
+                addEventListeners();
+                eventListenersAdded = true;
+            }
+        });
+
+        // دالة إضافة مستمعي الأحداث
+        function addEventListeners() {
+            // إضافة مستمعي أحداث أخرى إذا لزم الأمر
+            console.log('Event listeners added successfully');
+        }
+
+        // إعادة ترقيم صفوف الجدول
+        function reindexTableRows() {
+            const tbody = document.getElementById('daily-excavation-tbody');
+            if (tbody) {
+                const rows = tbody.querySelectorAll('tr:not(#no-data-row)');
+                rows.forEach((row, index) => {
+                    const numberCell = row.querySelector('.table-number');
+                    if (numberCell) {
+                        numberCell.textContent = index + 1;
+                    }
+                    row.setAttribute('data-excavation-id', index);
+                });
+            }
+        }
+    </script>
 </body>
 </html> 
