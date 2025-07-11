@@ -3,7 +3,6 @@
  * يعالج جميع مشاكل JavaScript في صفحات الرخص
  */
 
-// 1. منع جميع أخطاء JavaScript غير المهمة
 (function() {
     'use strict';
     
@@ -34,51 +33,59 @@
         console.warn('Promise rejection:', e.reason);
     });
 
-})();
-
-// 2. دوال التبويبات الأساسية
-window.showSection = function(sectionId) {
-    try {
-        console.log('showSection called with:', sectionId);
-        
-        // إخفاء جميع الأقسام
-        const allSections = document.querySelectorAll('.tab-section, [id$="-section"]');
-        allSections.forEach(function(section) {
-            if (section && section.style) {
-                section.style.display = 'none';
+    // دوال التبويبات الأساسية
+    window.showSection = function(sectionId) {
+        try {
+            console.log('showSection called with:', sectionId);
+            
+            // إخفاء جميع الأقسام
+            const allSections = document.querySelectorAll('.tab-section, [id$="-section"]');
+            allSections.forEach(function(section) {
+                if (section && section.style) {
+                    section.style.display = 'none';
+                }
+            });
+            
+            // إزالة الفئة النشطة من جميع الأزرار
+            const allButtons = document.querySelectorAll('.nav-tab-btn, button[onclick*="showSection"]');
+            allButtons.forEach(function(button) {
+                if (button && button.classList) {
+                    button.classList.remove('active');
+                }
+            });
+            
+            // عرض القسم المطلوب
+            const targetSection = document.getElementById(sectionId);
+            if (targetSection) {
+                targetSection.style.display = 'block';
+                console.log('Section shown:', sectionId);
+            } else {
+                console.warn('Section not found:', sectionId);
             }
-        });
-        
-        // إزالة الفئة النشطة من جميع الأزرار
-        const allButtons = document.querySelectorAll('.nav-tab-btn, button[onclick*="showSection"]');
-        allButtons.forEach(function(button) {
-            if (button && button.classList) {
-                button.classList.remove('active');
+            
+            // تفعيل الزر المناسب
+            const activeButton = document.querySelector(`button[onclick*="${sectionId}"]`);
+            if (activeButton && activeButton.classList) {
+                activeButton.classList.add('active');
             }
-        });
-        
-        // عرض القسم المطلوب
-        const targetSection = document.getElementById(sectionId);
-        if (targetSection) {
-            targetSection.style.display = 'block';
-            console.log('Section shown:', sectionId);
-        } else {
-            console.warn('Section not found:', sectionId);
+            
+            return false;
+        } catch (error) {
+            console.error('Error in showSection:', error);
+            return false;
         }
-        
-        // تفعيل الزر المناسب
-        const activeButton = document.querySelector(`button[onclick*="${sectionId}"]`);
-        if (activeButton && activeButton.classList) {
-            activeButton.classList.add('active');
-        }
-        
-        return false;
-        
-    } catch (error) {
-        console.error('Error in showSection:', error);
-        return false;
     }
-};
+
+    // تهيئة الصفحة عند التحميل
+    document.addEventListener('DOMContentLoaded', function() {
+        // عرض القسم الافتراضي
+        const defaultSection = document.querySelector('.tab-section');
+        if (defaultSection) {
+            showSection(defaultSection.id);
+        }
+    });
+
+})();
 
 // 3. دوال المخالفات
 window.viewViolation = function(violationId) {
@@ -252,41 +259,6 @@ window.printLicense = function() {
         return false;
     }
 };
-
-// 10. تهيئة الصفحة
-function initializePage() {
-    try {
-        console.log('Initializing license page...');
-        
-        // تفعيل التبويب الأول إذا وُجد
-        const firstTab = document.querySelector('.nav-tab-btn.active, button[onclick*="showSection"]:first-of-type');
-        if (firstTab) {
-            const match = firstTab.getAttribute('onclick')?.match(/showSection\('([^']+)'/);
-            if (match && match[1]) {
-                showSection(match[1]);
-            }
-        }
-        
-        // معالجة النقرات على الروابط الفارغة
-        document.querySelectorAll('a[href="#"]').forEach(function(link) {
-            link.addEventListener('click', function(e) {
-                e.preventDefault();
-            });
-        });
-        
-        console.log('License page initialized successfully');
-        
-    } catch (error) {
-        console.error('Error initializing page:', error);
-    }
-}
-
-// 11. انتظار تحميل الصفحة
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initializePage);
-} else {
-    initializePage();
-}
 
 // 12. دعم jQuery إذا كان متوفراً
 if (typeof $ !== 'undefined') {

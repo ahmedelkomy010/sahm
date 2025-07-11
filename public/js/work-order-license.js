@@ -22,7 +22,7 @@
         }
     });
 
-    // 2. دالة showSection للتبويبات (فقط إذا لم تكن موجودة)
+    // 2. دالة showSection للتبويبات
     if (typeof window.showSection === 'undefined') {
         window.showSection = function(sectionId) {
             try {
@@ -65,26 +65,24 @@
                 }
                 
                 return false;
-                
             } catch (error) {
                 console.error('Error in showSection:', error);
                 return false;
             }
-        };
+        }
     }
 
-    // 3. دوال إدارة الصفوف (فقط إذا لم تكن موجودة)
+    // 3. دوال إدارة الصفوف
     if (typeof window.addNewEvacuationRow === 'undefined') {
         window.addNewEvacuationRow = function() {
             try {
                 console.log('Adding new evacuation row...');
-                // يمكن إضافة منطق إضافة الصف هنا لاحقاً
                 return false;
             } catch (error) {
                 console.error('Error in addNewEvacuationRow:', error);
                 return false;
             }
-        };
+        }
     }
 
     if (typeof window.deleteEvacuationRow === 'undefined') {
@@ -101,7 +99,7 @@
                 console.error('Error in deleteEvacuationRow:', error);
                 return false;
             }
-        };
+        }
     }
 
     if (typeof window.deleteEvacStreetRow === 'undefined') {
@@ -253,42 +251,14 @@
         };
     }
 
-    // 8. تهيئة الصفحة
-    function initializePage() {
-        try {
-            console.log('Initializing work order license page...');
-            
-            // تفعيل التبويب الأول
-            setTimeout(function() {
-                const firstTab = document.querySelector('.nav-tab-btn.active, button[onclick*="showSection"]:first-of-type');
-                if (firstTab) {
-                    const match = firstTab.getAttribute('onclick')?.match(/showSection\('([^']+)'/);
-                    if (match && match[1] && typeof window.showSection === 'function') {
-                        window.showSection(match[1]);
-                    }
-                }
-            }, 100);
-            
-            // معالجة الروابط الفارغة
-            document.querySelectorAll('a[href="#"]').forEach(function(link) {
-                link.addEventListener('click', function(e) {
-                    e.preventDefault();
-                });
-            });
-            
-            console.log('Work order license page initialized successfully');
-            
-        } catch (error) {
-            console.error('Error initializing page:', error);
+    // تهيئة الصفحة عند التحميل
+    document.addEventListener('DOMContentLoaded', function() {
+        // عرض القسم الافتراضي
+        const defaultSection = document.querySelector('.tab-section');
+        if (defaultSection) {
+            showSection(defaultSection.id);
         }
-    }
-
-    // 9. انتظار تحميل الصفحة
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initializePage);
-    } else {
-        initializePage();
-    }
+    });
 
     // 10. دعم jQuery إذا كان متوفراً
     if (typeof $ !== 'undefined') {

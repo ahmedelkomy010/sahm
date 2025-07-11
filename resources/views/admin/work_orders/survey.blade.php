@@ -94,9 +94,9 @@
                                     <div class="modal-body">
                                         <div class="row mb-3">
                                             <div class="col-md-6">
-                                                <label for="start_coordinates" class="form-label fw-bold">إحداثيات البداية</label>
+                                                <label for="start_coordinates" class="form-label fw-bold">إحداثيات البداية <span class="text-danger">*</span></label>
                                                 <div class="input-group">
-                                                    <input type="text" class="form-control @error('start_coordinates') is-invalid @enderror" id="start_coordinates" name="start_coordinates" value="{{ old('start_coordinates') }}" placeholder="أدخل رابط إحداثيات نقطة البداية">
+                                                    <input type="text" class="form-control @error('start_coordinates') is-invalid @enderror" id="start_coordinates" name="start_coordinates" value="{{ old('start_coordinates') }}" required placeholder="أدخل رابط إحداثيات نقطة البداية">
                                                     <button class="btn btn-outline-secondary" type="button" onclick="copyCoordinates('start_coordinates')">
                                                         <i class="fas fa-copy"></i>
                                                     </button>
@@ -108,9 +108,9 @@
                                                 @enderror
                                             </div>
                                             <div class="col-md-6">
-                                                <label for="end_coordinates" class="form-label fw-bold">إحداثيات النهاية</label>
+                                                <label for="end_coordinates" class="form-label fw-bold">إحداثيات النهاية <span class="text-danger">*</span></label>
                                                 <div class="input-group">
-                                                    <input type="text" class="form-control @error('end_coordinates') is-invalid @enderror" id="end_coordinates" name="end_coordinates" value="{{ old('end_coordinates') }}" placeholder="أدخل رابط إحداثيات نقطة النهاية">
+                                                    <input type="text" class="form-control @error('end_coordinates') is-invalid @enderror" id="end_coordinates" name="end_coordinates" value="{{ old('end_coordinates') }}" required placeholder="أدخل رابط إحداثيات نقطة النهاية">
                                                     <button class="btn btn-outline-secondary" type="button" onclick="copyCoordinates('end_coordinates')">
                                                         <i class="fas fa-copy"></i>
                                                     </button>
@@ -125,15 +125,15 @@
 
                                         <div class="row mb-3">
                                             <div class="col-md-6">
-                                                <label class="form-label fw-bold">المعوقات</label>
+                                                <label class="form-label fw-bold">المعوقات <span class="text-danger">*</span></label>
                                                 <div class="form-check">
-                                                    <input class="form-check-input" type="radio" name="has_obstacles" id="obstacles_yes" value="1" {{ old('has_obstacles') == 1 ? 'checked' : '' }} onchange="toggleObstaclesNotes()">
+                                                    <input class="form-check-input" type="radio" name="has_obstacles" id="obstacles_yes" value="1" {{ old('has_obstacles') == 1 ? 'checked' : '' }} required onchange="toggleObstaclesNotes()">
                                                     <label class="form-check-label" for="obstacles_yes">
                                                         نعم
                                                     </label>
                                                 </div>
                                                 <div class="form-check">
-                                                    <input class="form-check-input" type="radio" name="has_obstacles" id="obstacles_no" value="0" {{ old('has_obstacles') == 0 ? 'checked' : '' }} onchange="toggleObstaclesNotes()">
+                                                    <input class="form-check-input" type="radio" name="has_obstacles" id="obstacles_no" value="0" {{ old('has_obstacles') == 0 ? 'checked' : '' }} required onchange="toggleObstaclesNotes()">
                                                     <label class="form-check-label" for="obstacles_no">
                                                         لا
                                                     </label>
@@ -145,7 +145,7 @@
                                                 @enderror
                                             </div>
                                             <div class="col-md-6" id="obstacles_notes_container" style="display: none;">
-                                                <label for="obstacles_notes" class="form-label fw-bold">ملاحظات  <span class="text-danger">*</span></label>
+                                                <label for="obstacles_notes" class="form-label fw-bold">ملاحظات المعوقات <span class="text-danger">*</span></label>
                                                 <textarea class="form-control @error('obstacles_notes') is-invalid @enderror" id="obstacles_notes" name="obstacles_notes" rows="3" placeholder="يرجى وصف المعوقات الموجودة...">{{ old('obstacles_notes') }}</textarea>
                                                 @error('obstacles_notes')
                                                     <div class="invalid-feedback">
@@ -153,7 +153,7 @@
                                                     </div>
                                                 @enderror
                                                 <div class="form-text text-muted">
-                                                    <i class="fas fa-info-circle"></i> يرجى تحديد نوع المعوقات  
+                                                    <i class="fas fa-info-circle"></i> يرجى تحديد نوع المعوقات وتفاصيلها
                                                 </div>
                                             </div>
                                         </div>
@@ -161,7 +161,9 @@
                                         <div class="mb-3">
                                             <label for="site_images" class="form-label fw-bold">صور الموقع</label>
                                             <input type="file" class="form-control @error('site_images.*') is-invalid @enderror" id="site_images" name="site_images[]" multiple accept="image/*">
-                                            <div class="form-text">الحد الأقصى لحجم كل صورة هو 30 ميجابايت.</div>
+                                            <div class="form-text">
+                                                <i class="fas fa-info-circle"></i> الحد الأقصى لحجم كل صورة هو 30 ميجابايت. الصيغ المدعومة: JPG, JPEG, PNG
+                                            </div>
                                             @error('site_images.*')
                                                 <div class="invalid-feedback">
                                                     {{ $message }}
@@ -175,8 +177,50 @@
                                                 <label class="form-label fw-bold">الصور الحالية</label>
                                             </div>
                                             <div id="imagesContainer" class="row g-3">
+                                                <!-- سيتم إضافة الصور هنا ديناميكياً -->
                                             </div>
                                         </div>
+
+                                        <!-- Modal for viewing images -->
+                                        @forelse($workOrder->surveys as $survey)
+                                            <div class="modal fade" id="viewImagesModal{{ $survey->id }}" tabindex="-1" aria-labelledby="viewImagesModalLabel{{ $survey->id }}" aria-hidden="true">
+                                                <div class="modal-dialog modal-lg">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title" id="viewImagesModalLabel{{ $survey->id }}">صور المسح</h5>
+                                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            <div class="row g-3">
+                                                                @forelse($survey->files as $file)
+                                                                    @php
+                                                                        $imageUrl = \App\Helpers\FileHelper::getImageUrl($file->file_path);
+                                                                    @endphp
+                                                                    @if($imageUrl)
+                                                                        <div class="col-md-4">
+                                                                            <div class="card h-100">
+                                                                                <img src="{{ $imageUrl }}" class="card-img-top" alt="{{ $file->original_filename }}" style="height: 200px; object-fit: cover;">
+                                                                                <div class="card-body">
+                                                                                    <p class="card-text small">{{ $file->original_filename }}</p>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    @endif
+                                                                @empty
+                                                                    <div class="col-12">
+                                                                        <div class="alert alert-info mb-0">
+                                                                            <i class="fas fa-info-circle me-2"></i>
+                                                                            لا توجد صور لهذا المسح
+                                                                        </div>
+                                                                    </div>
+                                                                @endforelse
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @empty
+                                        @endforelse
                                     </div>
                                     <div class="modal-footer">
                                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
@@ -276,28 +320,22 @@
 
                                             <!-- Modal for viewing images -->
                                             <div class="modal fade" id="viewImagesModal{{ $survey->id }}" tabindex="-1" aria-labelledby="viewImagesModalLabel{{ $survey->id }}" aria-hidden="true">
-                                                <div class="modal-dialog modal-xl">
+                                                <div class="modal-dialog modal-lg">
                                                     <div class="modal-content">
                                                         <div class="modal-header">
-                                                            <h5 class="modal-title" id="viewImagesModalLabel{{ $survey->id }}">صور الموقع</h5>
+                                                            <h5 class="modal-title" id="viewImagesModalLabel{{ $survey->id }}">صور المسح</h5>
                                                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                                         </div>
                                                         <div class="modal-body">
-                                                            <div class="row">
-                                                                @php
-                                                                    $validFiles = $survey->files->filter(function($file) {
-                                                                        return \App\Helpers\FileHelper::getFileUrl($file->file_path) !== null;
-                                                                    });
-                                                                @endphp
-                                                                @forelse($validFiles as $file)
+                                                            <div class="row g-3">
+                                                                @forelse($survey->files as $file)
                                                                     @php
-                                                                        $fileUrl = \App\Helpers\FileHelper::getFileUrl($file->file_path);
+                                                                        $imageUrl = \App\Helpers\FileHelper::getImageUrl($file->file_path);
                                                                     @endphp
-                                                                    @if($fileUrl)
-                                                                        <div class="col-md-4 mb-3">
-                                                                            <div class="card">
-                                                                                <img src="{{ $fileUrl }}" class="card-img-top" alt="{{ $file->original_filename }}" 
-                                                                                     onerror="this.parentElement.parentElement.style.display='none'">
+                                                                    @if($imageUrl)
+                                                                        <div class="col-md-4">
+                                                                            <div class="card h-100">
+                                                                                <img src="{{ $imageUrl }}" class="card-img-top" alt="{{ $file->original_filename }}" style="height: 200px; object-fit: cover;">
                                                                                 <div class="card-body">
                                                                                     <p class="card-text small">{{ $file->original_filename }}</p>
                                                                                 </div>
@@ -306,8 +344,9 @@
                                                                     @endif
                                                                 @empty
                                                                     <div class="col-12">
-                                                                        <div class="alert alert-info">
-                                                                            لا توجد صور مرفوعة
+                                                                        <div class="alert alert-info mb-0">
+                                                                            <i class="fas fa-info-circle me-2"></i>
+                                                                            لا توجد صور لهذا المسح
                                                                         </div>
                                                                     </div>
                                                                 @endforelse
@@ -415,17 +454,23 @@ function editSurvey(surveyId) {
         loadingAlert.remove();
 
         if (data.success) {
+            // تحديث عنوان النموذج
+            document.getElementById('createSurveyModalLabel').textContent = 'تعديل المسح';
+            
             // Fill form with survey data
             document.getElementById('survey_id').value = data.survey.id;
             document.getElementById('start_coordinates').value = data.survey.start_coordinates;
             document.getElementById('end_coordinates').value = data.survey.end_coordinates;
-            document.querySelector(`input[name="has_obstacles"][value="${data.survey.has_obstacles ? 1 : 0}"]`).checked = true;
+            
+            // تحديث حالة المعوقات
+            const hasObstacles = data.survey.has_obstacles ? '1' : '0';
+            document.querySelector(`input[name="has_obstacles"][value="${hasObstacles}"]`).checked = true;
             document.getElementById('obstacles_notes').value = data.survey.obstacles_notes || '';
             
             // تحديث عرض حقل الملاحظات بناءً على حالة المعوقات
             toggleObstaclesNotes();
             
-            // Show existing images
+            // عرض الصور الحالية
             const existingImages = document.getElementById('existingImages');
             const imagesContainer = document.getElementById('imagesContainer');
             imagesContainer.innerHTML = '';
@@ -435,8 +480,8 @@ function editSurvey(surveyId) {
                     const col = document.createElement('div');
                     col.className = 'col-md-4';
                     col.innerHTML = `
-                        <div class="card">
-                            <img src="${image.url}" class="card-img-top" alt="${image.name}">
+                        <div class="card h-100">
+                            <img src="${image.url}" class="card-img-top" alt="${image.name}" style="height: 200px; object-fit: cover;">
                             <div class="card-body">
                                 <p class="card-text small">${image.name}</p>
                             </div>
@@ -449,10 +494,7 @@ function editSurvey(surveyId) {
                 existingImages.style.display = 'none';
             }
             
-            // Update modal title
-            document.getElementById('createSurveyModalLabel').textContent = 'تعديل المسح';
-            
-            // Show modal
+            // فتح النموذج
             const modal = new bootstrap.Modal(document.getElementById('createSurveyModal'));
             modal.show();
         } else {
@@ -462,18 +504,22 @@ function editSurvey(surveyId) {
     .catch(error => {
         // إزالة مؤشر التحميل
         loadingAlert.remove();
-
-        console.error('Error:', error);
         
-        // إظهار رسالة الخطأ
+        // عرض رسالة الخطأ
         const errorAlert = document.createElement('div');
-        errorAlert.className = 'alert alert-danger';
-        errorAlert.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${error.message}`;
+        errorAlert.className = 'alert alert-danger alert-dismissible fade show';
+        errorAlert.innerHTML = `
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            ${error.message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        `;
         document.querySelector('.card-body').prepend(errorAlert);
-
+        
         // إخفاء رسالة الخطأ بعد 5 ثواني
         setTimeout(() => {
-            errorAlert.remove();
+            if (errorAlert.parentNode) {
+                errorAlert.remove();
+            }
         }, 5000);
     });
 }
@@ -523,74 +569,71 @@ document.getElementById('surveyForm').addEventListener('submit', function(e) {
     const originalText = submitButton.innerHTML;
     submitButton.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> جاري الحفظ...';
     submitButton.disabled = true;
+
+    // تحديد URL وطريقة الطلب بناءً على وجود معرف المسح
+    let url = this.action;
+    let method = 'POST';
     
-    fetch(this.action, {
-        method: 'POST',
+    if (surveyId) {
+        url = `/admin/work-orders/survey/${surveyId}`;
+        method = 'PUT';
+        formData.append('_method', 'PUT'); // Laravel method spoofing
+    }
+    
+    fetch(url, {
+        method: method,
         body: formData,
         headers: {
             'X-Requested-With': 'XMLHttpRequest',
-            'Accept': 'application/json',
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-        },
-        credentials: 'same-origin'
+        }
     })
     .then(response => {
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            return response.json().then(err => {
+                throw new Error(err.message || `HTTP error! status: ${response.status}`);
+            });
         }
         return response.json();
     })
     .then(data => {
-        if (data.success) {
-            // Close the modal
-            const modal = bootstrap.Modal.getInstance(document.getElementById('createSurveyModal'));
-            if (modal) {
-                modal.hide();
+        // Show success message
+        const successAlert = document.createElement('div');
+        successAlert.className = 'alert alert-success alert-dismissible fade show';
+        successAlert.innerHTML = `
+            <i class="fas fa-check-circle me-2"></i>
+            ${data.message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        `;
+        
+        // Insert success message at the top of the card body
+        const cardBody = document.querySelector('.card-body');
+        cardBody.insertBefore(successAlert, cardBody.firstChild);
+        
+        // Auto-hide after 5 seconds
+        setTimeout(() => {
+            if (successAlert.parentNode) {
+                successAlert.remove();
             }
-            
-            // Show success message
-            const successAlert = document.createElement('div');
-            successAlert.className = 'alert alert-success alert-dismissible fade show';
-            successAlert.innerHTML = `
-                <i class="fas fa-check-circle me-2"></i>
-                ${data.message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            `;
-            
-            // Insert success message at the top of the card body
-            const cardBody = document.querySelector('.card-body');
-            cardBody.insertBefore(successAlert, cardBody.firstChild);
-            
-            // Auto-hide after 5 seconds
-            setTimeout(() => {
-                if (successAlert.parentNode) {
-                    successAlert.remove();
-                }
-            }, 5000);
-            
-            // Reload the page to show updated data
-            setTimeout(() => {
-                window.location.reload();
-            }, 1000);
-            
-        } else {
-            throw new Error(data.message || 'حدث خطأ أثناء حفظ المسح');
-        }
+        }, 5000);
+        
+        // Reload the page to show updated data
+        setTimeout(() => {
+            window.location.reload();
+        }, 1000);
     })
     .catch(error => {
-        console.error('Error:', error);
-        
         // Show error message
         const errorAlert = document.createElement('div');
         errorAlert.className = 'alert alert-danger alert-dismissible fade show';
         errorAlert.innerHTML = `
-            <i class="fas fa-exclamation-circle me-2"></i>
-            حدث خطأ أثناء حفظ المسح: ${error.message}
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            ${error.message}
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         `;
         
-        // Insert error message at the top of the modal body
-        const modalBody = document.querySelector('#createSurveyModal .modal-body');
+        // Insert error message at the top of the form
+        const modalBody = this.querySelector('.modal-body');
         modalBody.insertBefore(errorAlert, modalBody.firstChild);
         
         // Auto-hide after 5 seconds

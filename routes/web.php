@@ -100,6 +100,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::get('work-orders/{workOrder}/survey', [WorkOrderController::class, 'survey'])->name('work-orders.survey');
     Route::post('work-orders/{workOrder}/survey', [WorkOrderController::class, 'storeSurvey'])->name('work-orders.survey.store');
     Route::get('work-orders/survey/{survey}/edit', [WorkOrderController::class, 'editSurvey'])->name('work-orders.survey.edit');
+    Route::put('work-orders/survey/{survey}', [WorkOrderController::class, 'updateSurvey'])->name('work-orders.survey.update');
     
     // صفحات الرخص والتنفيذ
     Route::get('work-orders/licenses', [WorkOrderController::class, 'licenses'])->name('work-orders.licenses');
@@ -125,6 +126,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::get('work-orders/{workOrder}/survey', [WorkOrderController::class, 'survey'])->name('work-orders.survey');
     Route::post('work-orders/{workOrder}/survey', [WorkOrderController::class, 'storeSurvey'])->name('work-orders.survey.store');
     Route::get('work-orders/survey/{survey}/edit', [WorkOrderController::class, 'editSurvey'])->name('work-orders.survey.edit');
+    Route::put('work-orders/survey/{survey}', [WorkOrderController::class, 'updateSurvey'])->name('work-orders.survey.update');
 
     // Installations Routes
     Route::get('work-orders/{workOrder}/installations', [WorkOrderController::class, 'installations'])->name('work-orders.installations');
