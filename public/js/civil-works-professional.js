@@ -2865,3 +2865,335 @@ document.addEventListener('DOMContentLoaded', function() {
         console.error('خطأ في تهيئة النظام:', error);
     }
 });
+
+// حساب الإجمالي لكل صف
+function calculateRowTotal(row) {
+    const lengthInput = row.querySelector('.electrical-length');
+    const priceInput = row.querySelector('.electrical-price');
+    const totalInput = row.querySelector('.electrical-total');
+    
+    if (lengthInput && priceInput && totalInput) {
+        const length = parseFloat(lengthInput.value) || 0;
+        const price = parseFloat(priceInput.value) || 0;
+        const total = length * price;
+        totalInput.value = total.toFixed(2);
+    }
+}
+
+// حساب الإجمالي الكلي
+function calculateTotalAmount() {
+    let totalAmount = 0;
+    document.querySelectorAll('tr').forEach(row => {
+        const totalInput = row.querySelector('.electrical-total');
+        if (totalInput) {
+            totalAmount += parseFloat(totalInput.value) || 0;
+        }
+    });
+    document.getElementById('total-amount').textContent = totalAmount.toFixed(2);
+}
+
+// إضافة مستمعي الأحداث
+document.addEventListener('DOMContentLoaded', function() {
+    // إضافة مستمعي الأحداث لحقول الطول والسعر
+    document.querySelectorAll('.electrical-length, .electrical-price').forEach(input => {
+        input.addEventListener('input', function() {
+            const row = this.closest('tr');
+            calculateRowTotal(row);
+            calculateTotalAmount();
+            updateSummaryTable();
+            updateStatistics();
+        });
+    });
+    
+    // تحديث الجدول عند التحميل
+    updateSummaryTable();
+    updateStatistics();
+});
+
+// تحديث جدول الملخص
+function updateSummaryTable() {
+    const tbody = document.getElementById('summary-tbody');
+    if (!tbody) return;
+    
+    tbody.innerHTML = '';
+    let totalAmount = 0;
+    
+    document.querySelectorAll('tr').forEach(row => {
+        const label = row.querySelector('td:first-child')?.textContent?.trim();
+        if (!label) return;
+        
+        const lengthInput = row.querySelector('.electrical-length');
+        const priceInput = row.querySelector('.electrical-price');
+        const totalInput = row.querySelector('.electrical-total');
+        
+        if (lengthInput && priceInput && totalInput) {
+            const length = parseFloat(lengthInput.value) || 0;
+            const price = parseFloat(priceInput.value) || 0;
+            const total = parseFloat(totalInput.value) || 0;
+            
+            if (length > 0 && price > 0) {
+                const newRow = tbody.insertRow();
+                newRow.innerHTML = `
+                    <td>${label}</td>
+                    <td class="text-center">${length.toFixed(0)}</td>
+                    <td class="text-center">${price.toFixed(2)}</td>
+                    <td class="text-center">${total.toFixed(2)}</td>
+                `;
+                totalAmount += total;
+            }
+        }
+    });
+    
+    // تحديث الإجمالي الكلي
+    document.getElementById('total-amount').textContent = totalAmount.toFixed(2);
+    
+    // إضافة رسالة إذا لم تكن هناك بيانات
+    if (tbody.children.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="4" class="text-center text-muted py-4">
+                    <i class="fas fa-info-circle fa-2x mb-2"></i><br>
+                    لم يتم إدخال أي بيانات بعد
+                </td>
+            </tr>
+        `;
+    }
+}
+
+// حفظ البيانات
+function saveElectricalWorks() {
+    const form = document.getElementById('electrical-works-form');
+    if (!form) return;
+    
+    const formData = new FormData(form);
+    
+    fetch(form.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAutoSaveIndicator();
+            updateSummaryTable();
+        }
+    })
+    .catch(error => {
+        console.error('Error saving data:', error);
+    });
+}
+
+// عرض مؤشر الحفظ التلقائي
+function showAutoSaveIndicator() {
+    const indicator = document.getElementById('auto-save-indicator');
+    if (indicator) {
+        indicator.style.display = 'block';
+        setTimeout(() => {
+            indicator.style.display = 'none';
+        }, 2000);
+    }
+}
+
+// طباعة الملخص
+function printSummary() {
+    const printWindow = window.open('', '_blank');
+    const summaryTable = document.getElementById('summary-table').cloneNode(true);
+    
+    const printContent = `
+        <html dir="rtl">
+        <head>
+            <title>ملخص الأعمال الكهربائية</title>
+            <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+            <style>
+                body { font-family: Arial, sans-serif; }
+                .table th, .table td { padding: 8px; }
+                @media print {
+                    .table { width: 100%; border-collapse: collapse; }
+                    .table th, .table td { border: 1px solid #ddd; }
+                }
+            </style>
+        </head>
+        <body class="p-4">
+            <h3 class="text-center mb-4">ملخص الأعمال الكهربائية</h3>
+            ${summaryTable.outerHTML}
+        </body>
+        </html>
+    `;
+    
+    printWindow.document.write(printContent);
+    printWindow.document.close();
+    printWindow.print();
+}
+
+// تحديث الإحصائيات
+function updateStatistics() {
+    let totalLength = 0;
+    let totalItems = 0;
+    let totalCost = 0;
+    
+    document.querySelectorAll('tr').forEach(row => {
+        const lengthInput = row.querySelector('.electrical-length');
+        const totalInput = row.querySelector('.electrical-total');
+        
+        if (lengthInput && totalInput) {
+            const length = parseFloat(lengthInput.value) || 0;
+            const total = parseFloat(totalInput.value) || 0;
+            
+            if (length > 0) {
+                totalLength += length;
+                totalItems++;
+                totalCost += total;
+            }
+        }
+    });
+    
+    // تحديث العناصر في الواجهة
+    document.getElementById('total-length').textContent = totalLength.toFixed(0);
+    document.getElementById('total-items').textContent = totalItems;
+    document.getElementById('total-cost').textContent = totalCost.toFixed(2);
+}
+
+// تحديث مستمعي الأحداث
+document.addEventListener('DOMContentLoaded', function() {
+    // إضافة مستمعي الأحداث لحقول الطول والسعر
+    document.querySelectorAll('.electrical-length, .electrical-price').forEach(input => {
+        input.addEventListener('input', function() {
+            const row = this.closest('tr');
+            calculateRowTotal(row);
+            calculateTotalAmount();
+            updateSummaryTable();
+            updateStatistics();
+        });
+    });
+    
+    // تحديث الجداول والإحصائيات عند التحميل
+    updateSummaryTable();
+    updateStatistics();
+});
+
+// تحديث جميع الحسابات والعرض
+function updateAll() {
+    // تحديث إجماليات الصفوف
+    document.querySelectorAll('tr').forEach(row => {
+        calculateRowTotal(row);
+    });
+    
+    // تحديث الإجمالي الكلي
+    calculateTotalAmount();
+    
+    // تحديث جدول الملخص
+    updateSummaryTable();
+    
+    // تحديث الإحصائيات
+    updateStatistics();
+    
+    // حفظ البيانات تلقائياً
+    saveElectricalWorks();
+}
+
+// إضافة مستمعي الأحداث للتحديث التلقائي
+document.addEventListener('DOMContentLoaded', function() {
+    // إضافة مستمعي الأحداث لحقول الطول والسعر
+    document.querySelectorAll('.electrical-length, .electrical-price').forEach(input => {
+        // تحديث عند الكتابة
+        input.addEventListener('input', debounce(() => {
+            updateAll();
+        }, 300));
+        
+        // تحديث عند فقدان التركيز
+        input.addEventListener('blur', () => {
+            updateAll();
+        });
+        
+        // تحديث عند الضغط على Enter
+        input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                updateAll();
+            }
+        });
+    });
+    
+    // التحديث الأولي عند تحميل الصفحة
+    updateAll();
+});
+
+// دالة لتأخير التنفيذ لتحسين الأداء
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+// تحسين دالة حساب إجمالي الصف
+function calculateRowTotal(row) {
+    const lengthInput = row.querySelector('.electrical-length');
+    const priceInput = row.querySelector('.electrical-price');
+    const totalInput = row.querySelector('.electrical-total');
+    
+    if (lengthInput && priceInput && totalInput) {
+        const length = parseFloat(lengthInput.value) || 0;
+        const price = parseFloat(priceInput.value) || 0;
+        const total = length * price;
+        
+        // تنسيق الأرقام
+        lengthInput.value = length ? length.toFixed(0) : '';
+        priceInput.value = price ? price.toFixed(2) : '';
+        totalInput.value = total ? total.toFixed(2) : '';
+        
+        // إضافة تأثير بصري للتحديث
+        totalInput.classList.add('highlight');
+        setTimeout(() => {
+            totalInput.classList.remove('highlight');
+        }, 500);
+    }
+}
+
+// تحسين دالة تحديث الإحصائيات
+function updateStatistics() {
+    let totalLength = 0;
+    let totalItems = 0;
+    let totalCost = 0;
+    
+    document.querySelectorAll('tr').forEach(row => {
+        const lengthInput = row.querySelector('.electrical-length');
+        const totalInput = row.querySelector('.electrical-total');
+        
+        if (lengthInput && totalInput) {
+            const length = parseFloat(lengthInput.value) || 0;
+            const total = parseFloat(totalInput.value) || 0;
+            
+            if (length > 0) {
+                totalLength += length;
+                totalItems++;
+                totalCost += total;
+            }
+        }
+    });
+    
+    // تحديث العناصر في الواجهة مع تأثير بصري
+    const elements = {
+        'total-length': totalLength.toFixed(0),
+        'total-items': totalItems,
+        'total-cost': totalCost.toFixed(2)
+    };
+    
+    Object.entries(elements).forEach(([id, value]) => {
+        const element = document.getElementById(id);
+        if (element && element.textContent !== value) {
+            element.textContent = value;
+            element.classList.add('highlight');
+            setTimeout(() => {
+                element.classList.remove('highlight');
+            }, 500);
+        }
+    });
+}

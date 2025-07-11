@@ -267,14 +267,43 @@
                                                 <td>
                                                     @php
                                                         $preOperationTestsFile = $workOrder->files()
-                                                            ->where('file_category', 'post_execution')
+                                                            ->where('file_category', 'post_execution_files')
                                                             ->where('attachment_type', 'pre_operation_tests_file')
                                                             ->first();
                                                     @endphp
                                                     @if($preOperationTestsFile)
                                                         <div class="d-flex align-items-center justify-content-between">
                                                             <div class="d-flex align-items-center">
-                                                                <i class="fas fa-file-pdf text-danger me-2"></i>
+                                                                @php
+                                                                    $fileExtension = strtolower(pathinfo($preOperationTestsFile->original_filename, PATHINFO_EXTENSION));
+                                                                    $fileIcon = 'fas fa-file';
+                                                                    $iconColor = 'text-secondary';
+                                                                    
+                                                                    switch($fileExtension) {
+                                                                        case 'pdf':
+                                                                            $fileIcon = 'fas fa-file-pdf';
+                                                                            $iconColor = 'text-danger';
+                                                                            break;
+                                                                        case 'doc':
+                                                                        case 'docx':
+                                                                            $fileIcon = 'fas fa-file-word';
+                                                                            $iconColor = 'text-primary';
+                                                                            break;
+                                                                        case 'xls':
+                                                                        case 'xlsx':
+                                                                            $fileIcon = 'fas fa-file-excel';
+                                                                            $iconColor = 'text-success';
+                                                                            break;
+                                                                        case 'jpg':
+                                                                        case 'jpeg':
+                                                                        case 'png':
+                                                                        case 'gif':
+                                                                            $fileIcon = 'fas fa-file-image';
+                                                                            $iconColor = 'text-info';
+                                                                            break;
+                                                                    }
+                                                                @endphp
+                                                                <i class="{{ $fileIcon }} {{ $iconColor }} me-2"></i>
                                                                 <div>
                                                                     <a href="{{ Storage::url($preOperationTestsFile->file_path) }}" 
                                                                        target="_blank" 
@@ -294,16 +323,21 @@
                                                             <div>
                                                                 <a href="{{ Storage::url($preOperationTestsFile->file_path) }}" 
                                                                    target="_blank" 
-                                                                   class="btn btn-sm btn-danger">
+                                                                   class="btn btn-sm btn-primary">
                                                                     <i class="fas fa-eye me-1"></i>عرض
+                                                                </a>
+                                                                <a href="{{ Storage::url($preOperationTestsFile->file_path) }}" 
+                                                                   download="{{ $preOperationTestsFile->original_filename }}"
+                                                                   class="btn btn-sm btn-success ms-1">
+                                                                    <i class="fas fa-download me-1"></i>تحميل
                                                                 </a>
                                                             </div>
                                                         </div>
                                                     @else
                                                         <div class="text-center py-3">
-                                                            <i class="fas fa-file-times fa-2x text-muted mb-2"></i>
+                                                            <i class="fas fa-file-excel fa-2x text-muted mb-2"></i>
                                                             <br>
-                                                            <span class="text-muted">لا يوجد مرفق 211</span>
+                                                            <span class="text-muted">لا يوجد مرفق اختبارات ما قبل التشغيل 211</span>
                                                         </div>
                                                     @endif
                                                 </td>

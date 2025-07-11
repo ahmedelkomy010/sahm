@@ -1,6 +1,34 @@
 @php($hideNavbar = true)
 @extends('layouts.app')
 
+@section('styles')
+<meta name="csrf-token" content="{{ csrf_token() }}">
+<style>
+    .highlight {
+        animation: highlight-animation 0.5s ease-in-out;
+    }
+    
+    @keyframes highlight-animation {
+        0% {
+            background-color: rgba(255, 193, 7, 0.2);
+        }
+        100% {
+            background-color: transparent;
+        }
+    }
+    
+    .electrical-total {
+        background-color: #f8f9fa;
+        font-weight: bold;
+    }
+    
+    .form-control:focus {
+        border-color: #ffc107;
+        box-shadow: 0 0 0 0.2rem rgba(255, 193, 7, 0.25);
+    }
+</style>
+@endsection
+
 @section('content')
 <div class="container py-4">
     <div class="row mb-4">
@@ -23,57 +51,50 @@
                     بيانات الأعمال الكهربائية
                 </div>
                 <div class="card-body">
-                    <form id="electrical-works-form" action="{{ route('admin.work-orders.electrical-works.store', $workOrder) }}" method="POST">
+                    <form id="electrical-works-form" action="{{ route('admin.work-orders.electrical-works.post', $workOrder) }}" method="POST">
                         @csrf
-                        @method('PUT')
                         <div class="table-responsive mb-3">
                             <table class="table table-bordered table-sm align-middle">
                                 <thead class="table-light">
-                                                    <tr>
-                                                        <th style="width: 40%">البند</th>
-                                        <th style="width: 35%">الحالة</th>
-                                        <th style="width: 25%">العدد</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
+                                    <tr>
+                                        <th style="width: 35%">البند</th>
+                                        <th style="width: 25%">الطول</th>
+                                        <th style="width: 20%">السعر</th>
+                                        <th style="width: 20%">الإجمالي</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
                                     @foreach($electricalItems as $key => $label)
-                                                    <tr>
+                                    <tr>
                                         <td>{{ $label }}</td>
-                                                        <td>
-                                                            <div class="btn-group btn-group-sm w-100" role="group">
-                                                <input type="radio" class="btn-check electrical-status" 
-                                                       name="electrical_works[{{ $key }}][status]" 
-                                                       id="{{ $key }}_completed" 
-                                                       value="completed" 
-                                                       {{ old('electrical_works.' . $key . '.status', isset($workOrder->electrical_works[$key]['status']) ? $workOrder->electrical_works[$key]['status'] : '') == 'completed' ? 'checked' : '' }}>
-                                                <label class="btn btn-outline-success" for="{{ $key }}_completed">نعم</label>
-                                                
-                                                <input type="radio" class="btn-check electrical-status" 
-                                                       name="electrical_works[{{ $key }}][status]" 
-                                                       id="{{ $key }}_pending" 
-                                                       value="pending" 
-                                                       {{ old('electrical_works.' . $key . '.status', isset($workOrder->electrical_works[$key]['status']) ? $workOrder->electrical_works[$key]['status'] : '') == 'pending' ? 'checked' : '' }}>
-                                                <label class="btn btn-outline-warning" for="{{ $key }}_pending"> لا</label>
-                                                
-                                                <input type="radio" class="btn-check electrical-status" 
-                                                       name="electrical_works[{{ $key }}][status]" 
-                                                       id="{{ $key }}_na" 
-                                                       value="na" 
-                                                       {{ old('electrical_works.' . $key . '.status', isset($workOrder->electrical_works[$key]['status']) ? $workOrder->electrical_works[$key]['status'] : '') == 'na' ? 'checked' : '' }}>
-                                                <label class="btn btn-outline-secondary" for="{{ $key }}_na">لا ينطبق</label>
-                                                            </div>
-                                                        </td>
-                                                        <td>
+                                        <td>
                                             <input type="number" 
                                                    step="1" 
                                                    min="0" 
-                                                   class="form-control form-control-sm electrical-quantity" 
-                                                   name="electrical_works[{{ $key }}][quantity]" 
-                                                   value="{{ old('electrical_works.' . $key . '.quantity', isset($workOrder->electrical_works[$key]['quantity']) && $workOrder->electrical_works[$key]['quantity'] !== null ? $workOrder->electrical_works[$key]['quantity'] : '') }}" 
+                                                   class="form-control form-control-sm electrical-length" 
+                                                   name="electrical_works[{{ $key }}][length]" 
+                                                   value="{{ old('electrical_works.' . $key . '.length', isset($workOrder->electrical_works[$key]['length']) ? $workOrder->electrical_works[$key]['length'] : '') }}" 
                                                    placeholder="0" 
                                                    data-item="{{ $key }}">
-                                                        </td>
-                                                    </tr>
+                                        </td>
+                                        <td>
+                                            <input type="number" 
+                                                   step="0.01" 
+                                                   min="0" 
+                                                   class="form-control form-control-sm electrical-price" 
+                                                   name="electrical_works[{{ $key }}][price]" 
+                                                   value="{{ old('electrical_works.' . $key . '.price', isset($workOrder->electrical_works[$key]['price']) ? $workOrder->electrical_works[$key]['price'] : '') }}" 
+                                                   placeholder="0.00" 
+                                                   data-item="{{ $key }}">
+                                        </td>
+                                        <td>
+                                            <input type="text" 
+                                                   class="form-control form-control-sm electrical-total" 
+                                                   name="electrical_works[{{ $key }}][total]" 
+                                                   value="{{ old('electrical_works.' . $key . '.total', isset($workOrder->electrical_works[$key]['total']) ? $workOrder->electrical_works[$key]['total'] : '') }}" 
+                                                   readonly>
+                                        </td>
+                                    </tr>
                                     @endforeach
                                 </tbody>
                             </table>
@@ -85,6 +106,18 @@
                                 <i class="fas fa-check me-1"></i>
                                 تم الحفظ التلقائي
                             </small>
+                        </div>
+                        
+                        <!-- أزرار الحفظ والإجراءات -->
+                        <div class="text-center mt-3">
+                            <button type="button" class="btn btn-success px-4" onclick="saveElectricalWorks()">
+                                <i class="fas fa-save me-2"></i>
+                                حفظ البيانات
+                            </button>
+                            <button type="button" class="btn btn-info px-4 ms-2" onclick="updateAll()">
+                                <i class="fas fa-calculator me-2"></i>
+                                إعادة حساب الإجماليات
+                            </button>
                         </div>
                         
                         @if($workOrder->electrical_works && count($workOrder->electrical_works) > 0)
@@ -117,52 +150,53 @@
                     <!-- إحصائيات سريعة -->
                     <div class="row g-3 mb-4">
                         <div class="col-md-4">
+                            <div class="card bg-primary text-white">
+                                <div class="card-body text-center p-3">
+                                    <i class="fas fa-ruler fa-2x mb-2"></i>
+                                    <h3 class="mb-1" id="total-length">0</h3>
+                                    <small>إجمالي الأطوال</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
                             <div class="card bg-success text-white">
                                 <div class="card-body text-center p-3">
-                                    <i class="fas fa-check-circle fa-2x mb-2"></i>
-                                    <h3 class="mb-1" id="total-completed">0</h3>
-                                    <small> نعم</small>
-                                                                </div>
-                                                            </div>
-                                                            </div>
+                                    <i class="fas fa-tasks fa-2x mb-2"></i>
+                                    <h3 class="mb-1" id="total-items">0</h3>
+                                    <small>عدد البنود</small>
+                                </div>
+                            </div>
+                        </div>
                         <div class="col-md-4">
                             <div class="card bg-warning text-dark">
                                 <div class="card-body text-center p-3">
-                                    <i class="fas fa-clock fa-2x mb-2"></i>
-                                    <h3 class="mb-1" id="total-pending">0</h3>
-                                    <small> لا</small>
-                                                                </div>
-                                                            </div>
-                                                            </div>
-                        <div class="col-md-4">
-                            <div class="card bg-secondary text-white">
-                                <div class="card-body text-center p-3">
-                                    <i class="fas fa-minus-circle fa-2x mb-2"></i>
-                                    <h3 class="mb-1" id="total-na">0</h3>
-                                    <small>لا ينطبق</small>
-                                                                </div>
-                                                            </div>
-                                                                </div>
-                                                            </div>
+                                    <i class="fas fa-money-bill-wave fa-2x mb-2"></i>
+                                    <h3 class="mb-1" id="total-cost">0.00</h3>
+                                    <small>التكلفة الإجمالية</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
                     <!-- جدول الملخص -->
                     <div class="table-responsive">
                         <table class="table table-bordered table-hover" id="summary-table">
                             <thead class="table-dark">
                                 <tr>
-                                    <th style="width: 40%">البند</th>
-                                    <th style="width: 35%">الحالة</th>
-                                    <th style="width: 25%">العدد</th>
-                                                    </tr>
+                                    <th style="width: 35%">البند</th>
+                                    <th style="width: 25%">الطول</th>
+                                    <th style="width: 20%">السعر</th>
+                                    <th style="width: 20%">الإجمالي</th>
+                                </tr>
                             </thead>
                             <tbody id="summary-tbody">
                                 <!-- سيتم ملء البيانات تلقائياً بواسطة JavaScript -->
                             </tbody>
                             <tfoot class="table-light">
                                 <tr>
-                                    <td colspan="2" class="text-start fw-bold">إجمالي البنود المنفذة:</td>
-                                    <td class="text-center fw-bold" id="total-items">0</td>
-                                                    </tr>
+                                    <td colspan="3" class="text-start fw-bold">الإجمالي الكلي:</td>
+                                    <td class="text-center fw-bold" id="total-amount">0.00</td>
+                                </tr>
                             </tfoot>
                                             </table>
                                         </div>
@@ -357,357 +391,7 @@
 </div>
 
 @push('scripts')
-<script>
-// المتغيرات العامة
-let autoSaveTimeout;
-
-
-
-// تهيئة الصفحة
-document.addEventListener('DOMContentLoaded', function() {
-    // إعداد الحفظ التلقائي
-    setupAutoSave();
-    
-    // إعداد الحفظ اليدوي
-    const form = document.getElementById('electrical-works-form');
-    if (form) {
-        form.addEventListener('submit', function(e) {
-            // التحقق من أن النموذج جاهز للإرسال
-            console.log('Form submitting...');
-        });
-    }
-    
-    // تحديث الملخص عند تغيير أي حقل
-    document.querySelectorAll('.electrical-status, .electrical-quantity').forEach(input => {
-        input.addEventListener('change', updateElectricalWorksSummary);
-    });
-    
-    // إعداد عرض الصور
-    setupElectricalImagesViewers();
-    
-    // إعداد رفع الصور
-    setupElectricalImagesUpload();
-    
-    // تحديث أولي للملخص
-    updateElectricalWorksSummary();
-});
-
-// إعداد عارضات الصور للأعمال الكهربائية
-function setupElectricalImagesViewers() {
-    // عرض صورة في النافذة المنبثقة
-    const viewElectricalImageButtons = document.querySelectorAll('.view-electrical-image');
-    viewElectricalImageButtons.forEach(button => {
-        button.addEventListener('click', function(e) {
-            e.preventDefault();
-            const imageUrl = this.dataset.imageUrl;
-            const imageName = this.dataset.imageName;
-            const imageDate = this.dataset.imageDate;
-            
-            document.getElementById('modalElectricalImage').src = imageUrl;
-            document.getElementById('modalElectricalImageName').textContent = imageName;
-            document.getElementById('modalElectricalImageDate').textContent = imageDate;
-        });
-    });
-
-    // حذف صورة
-    const deleteElectricalButtons = document.querySelectorAll('.delete-electrical-image');
-    deleteElectricalButtons.forEach(button => {
-        button.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            const imageId = this.dataset.imageId;
-            const form = document.getElementById('deleteElectricalImageForm');
-            const baseUrl = '{{ url("admin/work-orders/" . $workOrder->id . "/electrical-works/images") }}';
-            form.action = `${baseUrl}/${imageId}`;
-        });
-    });
-}
-
-// إعداد رفع صور الأعمال الكهربائية
-function setupElectricalImagesUpload() {
-    const form = document.getElementById('electrical-images-form');
-    const button = document.getElementById('upload-electrical-images-btn');
-    const fileInput = document.getElementById('electrical_works_images');
-    
-    if (form && button && fileInput) {
-        form.addEventListener('submit', function(e) {
-            if (fileInput.files.length === 0) {
-                e.preventDefault();
-                alert('يرجى اختيار صور للرفع');
-                return;
-            }
-            
-            // تغيير نص الزر أثناء الرفع
-            button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>جاري الرفع...';
-            button.disabled = true;
-        });
-        
-                    // إعادة تعيين الزر في حالة الخطأ
-            form.addEventListener('error', function() {
-                button.innerHTML = '<i class="fas fa-upload me-2"></i>رفع الصور';
-                button.disabled = false;
-            });
-        }
-        
-        // معاينة الصور المختارة
-        fileInput.addEventListener('change', function() {
-            const preview = document.getElementById('electrical-images-preview');
-            const container = document.getElementById('electrical-preview-container');
-            
-            container.innerHTML = '';
-            
-            if (this.files.length > 0) {
-                preview.style.display = 'block';
-                
-                Array.from(this.files).slice(0, 10).forEach((file, index) => {
-                    if (file.type.startsWith('image/')) {
-                        const reader = new FileReader();
-                        reader.onload = function(e) {
-                            const col = document.createElement('div');
-                            col.className = 'col-6 col-md-4 col-lg-3';
-                            col.innerHTML = `
-                                <div class="card">
-                                    <img src="${e.target.result}" class="card-img-top" style="height: 100px; object-fit: cover;">
-                                    <div class="card-body p-2">
-                                        <small class="text-muted text-truncate d-block">${file.name}</small>
-                                    </div>
-                                </div>
-                            `;
-                            container.appendChild(col);
-                        };
-                        reader.readAsDataURL(file);
-                    }
-                });
-                
-                if (this.files.length > 10) {
-                    const moreCol = document.createElement('div');
-                    moreCol.className = 'col-6 col-md-4 col-lg-3';
-                    moreCol.innerHTML = `
-                        <div class="card bg-light d-flex align-items-center justify-content-center" style="height: 140px;">
-                            <div class="text-center">
-                                <i class="fas fa-plus fa-2x text-muted mb-2"></i>
-                                <small class="text-muted">+${this.files.length - 10} صور أخرى</small>
-                            </div>
-                        </div>
-                    `;
-                    container.appendChild(moreCol);
-                }
-            } else {
-                preview.style.display = 'none';
-            }
-        });
-    }
-
-// إعداد الحفظ التلقائي
-function setupAutoSave() {
-    const form = document.getElementById('electrical-works-form');
-    if (!form) return;
-    
-    form.addEventListener('change', function(e) {
-        if (e.target.classList.contains('electrical-status') || 
-            e.target.classList.contains('electrical-quantity')) {
-            
-            // إلغاء التايمر السابق
-            clearTimeout(autoSaveTimeout);
-            
-            // تأخير الحفظ لثانية واحدة
-            autoSaveTimeout = setTimeout(() => {
-                autoSaveElectricalWorks();
-            }, 1000);
-        }
-    });
-}
-
-// دالة الحفظ التلقائي
-function autoSaveElectricalWorks() {
-    const form = document.getElementById('electrical-works-form');
-    if (!form) return;
-    
-    const formData = new FormData(form);
-    
-    // التأكد من إرسال جميع قيم quantity بشكل صحيح
-    document.querySelectorAll('input[type="number"].electrical-quantity').forEach(input => {
-        const name = input.name;
-        const value = input.value || '';
-        
-        // تحديث القيمة في FormData مع القيمة الفعلية من الحقل
-        formData.set(name, value);
-        
-        console.log('Sending quantity:', name, '=', value);
-    });
-    
-    // التأكد من إرسال جميع قيم status
-    document.querySelectorAll('input[type="radio"].electrical-status:checked').forEach(input => {
-        const name = input.name;
-        const value = input.value;
-        
-        formData.set(name, value);
-        console.log('Sending status:', name, '=', value);
-    });
-    
-    // طباعة جميع البيانات المرسلة للتشخيص
-    console.log('FormData contents:');
-    for (let pair of formData.entries()) {
-        console.log(pair[0] + ': ' + pair[1]);
-    }
-    
-    fetch('{{ route("admin.work-orders.electrical-works.store.post", $workOrder) }}', {
-        method: 'POST',
-        body: formData,
-        headers: {
-            'X-Requested-With': 'XMLHttpRequest'
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            showAutoSaveIndicator();
-            // تحديث الملخص بعد الحفظ
-            updateElectricalWorksSummary();
-        } else {
-            console.error('Auto-save failed:', data.message);
-        }
-    })
-    .catch(error => {
-        console.error('Auto-save error:', error);
-    });
-}
-
-// عرض مؤشر الحفظ التلقائي
-function showAutoSaveIndicator() {
-    const indicator = document.getElementById('auto-save-indicator');
-    if (indicator) {
-        indicator.style.display = 'block';
-        setTimeout(() => {
-            indicator.style.display = 'none';
-        }, 2000);
-    }
-}
-
-// دالة تحديث ملخص الأعمال الكهربائية
-function updateElectricalWorksSummary() {
-    const tbody = document.getElementById('summary-tbody');
-    const totalCompleted = document.getElementById('total-completed');
-    const totalPending = document.getElementById('total-pending');
-    const totalNA = document.getElementById('total-na');
-    const totalItems = document.getElementById('total-items');
-    
-    if (!tbody) return;
-    
-    tbody.innerHTML = '';
-    let completed = 0;
-    let pending = 0;
-    let na = 0;
-    let totalQuantity = 0;
-    
-    // جمع البيانات من النموذج
-    document.querySelectorAll('tr').forEach(row => {
-        const label = row.querySelector('td')?.textContent?.trim();
-        if (!label) return;
-        
-        const status = row.querySelector('input[type="radio"]:checked')?.value;
-        const quantityValue = row.querySelector('input[type="number"]')?.value;
-        const quantity = quantityValue && quantityValue !== '' ? parseInt(quantityValue) : 0;
-        
-        if (status) {
-            // إضافة صف للجدول
-            const newRow = tbody.insertRow();
-            newRow.innerHTML = `
-                <td>${label}</td>
-                <td class="text-center">
-                    ${getStatusBadge(status)}
-                </td>
-                <td class="text-center">
-                    <span class="badge bg-primary rounded-pill">${quantity}</span>
-                </td>
-            `;
-            
-            // تحديث الإحصائيات
-            if (status === 'completed') {
-                completed++;
-                totalQuantity += quantity;
-            }
-            else if (status === 'pending') pending++;
-            else if (status === 'na') na++;
-        }
-    });
-    
-    // تحديث الإحصائيات
-    totalCompleted.textContent = completed;
-    totalPending.textContent = pending;
-    totalNA.textContent = na;
-    totalItems.textContent = totalQuantity;
-    
-    // إضافة رسالة إذا لم تكن هناك بيانات
-    if (tbody.children.length === 0) {
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="3" class="text-center text-muted py-4">
-                    <i class="fas fa-info-circle fa-2x mb-2"></i><br>
-                    لم يتم إدخال أي بيانات بعد
-                </td>
-            </tr>
-        `;
-    }
-}
-
-// دالة إرجاع شارة الحالة
-function getStatusBadge(status) {
-    switch(status) {
-        case 'completed':
-            return '<span class="badge bg-success"> نعم</span>';
-        case 'pending':
-            return '<span class="badge bg-warning text-dark">لا </span>';
-        case 'na':
-            return '<span class="badge bg-secondary">لا ينطبق</span>';
-        default:
-            return '';
-    }
-}
-
-// دالة طباعة الملخص
-function printSummary() {
-    const printWindow = window.open('', '', 'width=800,height=600');
-    printWindow.document.write(`
-        <html dir="rtl">
-            <head>
-                <title>ملخص الأعمال الكهربائية</title>
-                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-                <style>
-                    body { font-family: Arial, sans-serif; }
-                    .table th, .table td { padding: 8px; }
-                    @media print {
-                        .no-print { display: none; }
-                    }
-                </style>
-            </head>
-            <body class="p-4">
-                <div class="text-center mb-4">
-                    <h3>ملخص الأعمال الكهربائية</h3>
-                    <p class="text-muted">تاريخ الطباعة: ${new Date().toLocaleDateString('ar-SA')}</p>
-                </div>
-                ${document.getElementById('summary-table').outerHTML}
-                <div class="row mt-4">
-                    <div class="col-4 text-center">
-                        <h5> نعم: ${document.getElementById('total-completed').textContent}</h5>
-                    </div>
-                    <div class="col-4 text-center">
-                        <h5>لا : ${document.getElementById('total-pending').textContent}</h5>
-                    </div>
-                    <div class="col-4 text-center">
-                        <h5>لا ينطبق: ${document.getElementById('total-na').textContent}</h5>
-                    </div>
-                </div>
-                <div class="text-center mt-3">
-                    <h5>إجمالي البنود المنفذة: ${document.getElementById('total-items').textContent}</h5>
-                </div>
-                <button class="btn btn-primary mt-4 no-print" onclick="window.print()">طباعة</button>
-            </body>
-        </html>
-    `);
-    printWindow.document.close();
-}
-</script>
+<script src="{{ asset('js/simple-electrical.js') }}"></script>
 @endpush
 
 @endsection 

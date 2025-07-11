@@ -179,7 +179,7 @@
         <div class="card-header bg-primary text-white">المرفقات</div>
         <div class="card-body">
             <!-- فورم رفع الملفات -->
-            <form id="uploadFilesForm" action="{{ route('admin.work-orders.upload-post-execution-file', $workOrder->id) }}" method="POST" enctype="multipart/form-data">
+            <form id="uploadFilesForm" action="{{ route('admin.work-orders.upload-post-execution-file', $workOrder) }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <div class="row">
                     @php
@@ -227,7 +227,7 @@
                     <tbody>
                         @foreach($fileTypes as $field => $label)
                             @php
-                                $file = $workOrder->files->where('file_category', 'post_execution')
+                                $file = $workOrder->files->where('file_category', 'post_execution_files')
                                     ->where('attachment_type', $field)
                                     ->first();
                             @endphp

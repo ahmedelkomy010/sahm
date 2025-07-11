@@ -143,8 +143,10 @@ class WorkOrderController extends Controller
                         'work_order_id' => $workOrder->id,
                         'filename' => $filename,
                         'original_filename' => $originalName,
+                        'file_name' => $originalName,
                         'file_path' => $filePath,
                         'file_type' => $file->getClientMimeType(),
+                        'mime_type' => $file->getClientMimeType(),
                         'file_size' => $file->getSize(),
                         'file_category' => 'basic_attachments',
                         'attachment_type' => $field,
@@ -293,8 +295,10 @@ class WorkOrderController extends Controller
             'work_order_id' => $workOrder->id,
             'filename' => $filename,
             'original_filename' => $originalName,
+            'file_name' => $originalName,
             'file_path' => $filePath,
             'file_type' => $file->getClientMimeType(),
+            'mime_type' => $file->getClientMimeType(),
             'file_size' => $file->getSize(),
         ]);
         return back()->with('success', 'تم رفع الملف بنجاح');
@@ -309,26 +313,90 @@ class WorkOrderController extends Controller
 
     public function execution(WorkOrder $workOrder)
     {
-        try {
-            // تحميل بنود العمل مع تفاصيل البند
-            $workOrder->load(['workOrderItems.workItem']);
-        } catch (\Exception $e) {
-            // في حالة عدم وجود بنود عمل، نتجاهل الخطأ ونكمل
-            Log::warning('Could not load work order items: ' . $e->getMessage());
+        // تحديث البيانات من قاعدة البيانات
+        $workOrder = $workOrder->fresh();
+        
+        $workOrder->load([
+            'files', 
+            'basicAttachments', 
+            'civilWorksFiles', 
+            'civilWorksAttachments',
+            'installationsFiles',
+            'electricalWorksFiles',
+            'workOrderItems.workItem', 
+            'workOrderMaterials.material'
+        ]);
+        
+        $hasWorkItems = $workOrder->workOrderItems()->count() > 0;
+        $hasMaterials = $workOrder->workOrderMaterials()->count() > 0;
+        
+        $totalWorkItemsValue = $workOrder->workOrderItems()->sum(DB::raw('quantity * unit_price'));
+        $totalMaterialsValue = $workOrder->workOrderMaterials()->sum(DB::raw('quantity * unit_price'));
+        
+        $grandTotal = $totalWorkItemsValue + $totalMaterialsValue;
+        
+        return view('admin.work_orders.execution', compact(
+            'workOrder', 
+            'hasWorkItems', 
+            'hasMaterials', 
+            'totalWorkItemsValue', 
+            'totalMaterialsValue', 
+            'grandTotal'
+        ));
+    }
+
+    public function actionsExecution(WorkOrder $workOrder)
+    {
+        // تحديث البيانات من قاعدة البيانات
+        $workOrder = $workOrder->fresh();
+        
+        $workOrder->load([
+            'files', 
+            'basicAttachments', 
+            'civilWorksFiles', 
+            'civilWorksAttachments',
+            'installationsFiles',
+            'electricalWorksFiles',
+            'workOrderItems.workItem', 
+            'workOrderMaterials.material',
+            'invoiceAttachments'
+        ]);
+        
+        // جلب صور التنفيذ من جميع أنواع الملفات
+        $executionImages = collect();
+        
+        // إضافة صور الأعمال المدنية
+        if ($workOrder->civilWorksFiles) {
+            $executionImages = $executionImages->merge($workOrder->civilWorksFiles);
         }
         
-        // جلب السجلات من جدول work_order_logs
-        try {
-            $logs = \DB::table('work_order_logs')
-                ->where('work_order_id', $workOrder->id)
-                ->orderByDesc('created_at')
-                ->get();
-        } catch (\Exception $e) {
-            Log::warning('Could not load work order logs: ' . $e->getMessage());
-            $logs = collect(); // مجموعة فارغة
+        // إضافة صور التركيبات
+        if ($workOrder->installationsFiles) {
+            $executionImages = $executionImages->merge($workOrder->installationsFiles);
         }
         
-        return view('admin.work_orders.execution', compact('workOrder', 'logs'));
+        // إضافة صور الأعمال الكهربائية
+        if ($workOrder->electricalWorksFiles) {
+            $executionImages = $executionImages->merge($workOrder->electricalWorksFiles);
+        }
+        
+        $hasWorkItems = $workOrder->workOrderItems()->count() > 0;
+        $hasMaterials = $workOrder->workOrderMaterials()->count() > 0;
+        
+        $totalWorkItemsValue = $workOrder->workOrderItems()->sum(DB::raw('quantity * unit_price'));
+        $totalMaterialsValue = $workOrder->workOrderMaterials()->sum(DB::raw('quantity * unit_price'));
+        
+        $grandTotal = $totalWorkItemsValue + $totalMaterialsValue;
+        
+        return view('admin.work_orders.actions-execution', compact(
+            'workOrder', 
+            'hasWorkItems', 
+            'hasMaterials', 
+            'totalWorkItemsValue', 
+            'totalMaterialsValue', 
+            'grandTotal',
+            'executionImages'
+        ));
     }
 
     /**
@@ -890,8 +958,10 @@ class WorkOrderController extends Controller
                         'work_order_id' => $workOrder->id,
                         'filename' => $filename,
                         'original_filename' => $originalName,
+                        'file_name' => $originalName,
                         'file_path' => $filePath,
                         'file_type' => $file->getClientMimeType(),
+                        'mime_type' => $file->getClientMimeType(),
                         'file_size' => $file->getSize(),
                         'file_category' => 'electrical_works'
                     ]);
@@ -1468,10 +1538,12 @@ class WorkOrderController extends Controller
                         'work_order_id' => $workOrder->id,
                         'filename' => $filename,
                         'original_filename' => $originalName,
+                        'file_name' => $originalName,
                         'file_path' => $filePath,
                         'file_type' => $file->getClientMimeType(),
+                        'mime_type' => $file->getClientMimeType(),
                         'file_size' => $file->getSize(),
-                        'file_category' => 'civil_exec' // تقصير الاسم
+                        'file_category' => 'civil_attach' // تقصير الاسم
                     ]);
                     
                     $savedImages[] = $savedFile;
@@ -1553,8 +1625,10 @@ class WorkOrderController extends Controller
                         'work_order_id' => $workOrder->id,
                         'filename' => $filename,
                         'original_filename' => $originalName,
+                        'file_name' => $originalName,
                         'file_path' => $filePath,
                         'file_type' => $file->getClientMimeType(),
+                        'mime_type' => $file->getClientMimeType(),
                         'file_size' => $file->getSize(),
                         'file_category' => 'civil_attach' // تقصير الاسم
                     ]);
@@ -1707,45 +1781,111 @@ class WorkOrderController extends Controller
     public function getTodayExcavations(WorkOrder $workOrder)
     {
         try {
-            $todayExcavations = $workOrder->excavationDetails()
-                ->whereDate('created_at', today())
-                ->get()
-                ->map(function ($excavation) {
-                    return [
-                        'excavation_type' => $excavation->excavation_type,
-                        'soil_type' => $excavation->soil_type,
-                        'length' => $excavation->length,
-                        'width' => $excavation->width,
-                        'depth' => $excavation->depth,
-                        'price' => $excavation->price,
-                        'total' => $excavation->total,
-                        'is_open_excavation' => $excavation->is_open_excavation,
-                        'created_at' => $excavation->created_at->format('Y-m-d H:i:s')
-                    ];
-                });
-
-            $summary = [
-                'total_amount' => $todayExcavations->sum('total'),
-                'total_length' => $todayExcavations->sum('length'),
-                'excavation_count' => $todayExcavations->count(),
-                'surfaced_soil_count' => $todayExcavations->where('soil_type', 'مسفلتة')->count(),
-                'unsurfaced_soil_count' => $todayExcavations->where('soil_type', 'غير مسفلتة')->count(),
-                'open_excavation_count' => $todayExcavations->where('is_open_excavation', true)->count()
-            ];
-
+            $today = now()->format('Y-m-d');
+            $excavationDetails = $workOrder->excavationDetails()
+                ->whereDate('created_at', $today)
+                ->orderBy('created_at', 'desc')
+                ->get();
+            
             return response()->json([
                 'success' => true,
-                'data' => [
-                    'excavations' => $todayExcavations,
-                    'summary' => $summary
-                ]
+                'data' => $excavationDetails
             ]);
         } catch (\Exception $e) {
+            \Log::error('Error getting today excavations: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'حدث خطأ أثناء جلب بيانات الحفريات',
-                'error' => $e->getMessage()
+                'message' => 'خطأ في استرجاع بيانات الحفريات'
             ], 500);
+        }
+    }
+
+    public function uploadPostExecutionFile(Request $request, WorkOrder $workOrder)
+    {
+        try {
+            
+            $fileTypes = [
+                'quantities_statement_file' => 'بيان كميات التنفيذ',
+                'final_materials_file' => 'كميات المواد النهائية',
+                'final_measurement_file' => 'ورقة القياس النهائية',
+                'soil_tests_file' => 'اختبارات التربة',
+                'site_drawing_file' => 'الرسم الهندسي للموقع',
+                'modified_estimate_file' => 'تعديل المقايسة',
+                'completion_certificate_file' => 'شهادة الانجاز',
+                'form_200_file' => 'نموذج 200',
+                'form_190_file' => 'نموذج 190',
+                'pre_operation_tests_file' => 'اختبارات ما قبل التشغيل 211',
+                'first_payment_extract_file' => 'مستخلص دفعة أولى',
+                'second_payment_extract_file' => 'مستخلص دفعة ثانية',
+                'total_extract_file' => 'مستخلص كلي',
+            ];
+            
+            $uploadedFiles = [];
+            
+            foreach ($fileTypes as $fieldName => $description) {
+                if ($request->hasFile($fieldName)) {
+                    $file = $request->file($fieldName);
+                    
+                    // التحقق من صحة الملف
+                    $request->validate([
+                        $fieldName => 'file|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png|max:20480'
+                    ]);
+                    
+                    $originalName = $file->getClientOriginalName();
+                    $filename = time() . '_' . uniqid() . '_' . $fieldName . '.' . $file->getClientOriginalExtension();
+                    $path = 'work_orders/' . $workOrder->id . '/post_execution_files';
+                    
+                    if (!Storage::disk('public')->exists($path)) {
+                        Storage::disk('public')->makeDirectory($path);
+                    }
+                    
+                    $filePath = $file->storeAs($path, $filename, 'public');
+                    
+                    WorkOrderFile::create([
+                        'work_order_id' => $workOrder->id,
+                        'filename' => $filename,
+                        'original_filename' => $originalName,
+                        'file_name' => $originalName,
+                        'file_path' => $filePath,
+                        'file_type' => $file->getClientMimeType(),
+                        'mime_type' => $file->getClientMimeType(),
+                        'file_size' => $file->getSize(),
+                        'file_category' => 'post_execution_files',
+                        'attachment_type' => $fieldName,
+                    ]);
+                    
+                    $uploadedFiles[] = $description;
+                }
+            }
+            
+            if (count($uploadedFiles) > 0) {
+                // التحقق من نوع الطلب
+                if ($request->ajax() || $request->wantsJson()) {
+                    return response()->json([
+                        'success' => true,
+                        'message' => 'تم رفع الملفات بنجاح: ' . implode(', ', $uploadedFiles)
+                    ]);
+                }
+                return redirect()->back()->with('success', 'تم رفع الملفات بنجاح: ' . implode(', ', $uploadedFiles));
+            } else {
+                if ($request->ajax() || $request->wantsJson()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'لم يتم اختيار أي ملفات للرفع'
+                    ]);
+                }
+                return redirect()->back()->with('error', 'لم يتم اختيار أي ملفات للرفع');
+            }
+            
+        } catch (\Exception $e) {
+            \Log::error('Error uploading post execution file: ' . $e->getMessage());
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'حدث خطأ أثناء رفع الملفات: ' . $e->getMessage()
+                ], 500);
+            }
+            return redirect()->back()->with('error', 'حدث خطأ أثناء رفع الملفات');
         }
     }
 } 
