@@ -728,23 +728,38 @@ class WorkOrderController extends Controller
     public function saveInstallations(Request $request, WorkOrder $workOrder)
     {
         try {
-            $data = $request->validate([
-                'installations' => 'required|array'
-            ]);
+            DB::beginTransaction();
 
-            // حفظ البيانات في قاعدة البيانات
-            $workOrder->update([
-                'installations_data' => $data['installations']
-            ]);
+            // Delete existing installations for this work order
+            \App\Models\WorkOrderInstallation::where('work_order_id', $workOrder->id)->delete();
+
+            // Save new installations
+            foreach ($request->all() as $type => $data) {
+                if ($data['price'] > 0 && $data['number'] > 0) {
+                    \App\Models\WorkOrderInstallation::create([
+                        'work_order_id' => $workOrder->id,
+                        'installation_type' => $type,
+                        'price' => $data['price'],
+                        'quantity' => $data['number'],
+                        'total' => $data['total']
+                    ]);
+                }
+            }
+
+            DB::commit();
 
             return response()->json([
                 'status' => 'success',
-                'message' => 'تم حفظ بيانات التركيبات بنجاح'
+                'message' => 'تم حفظ التركيبات بنجاح'
             ]);
+
         } catch (\Exception $e) {
+            DB::rollback();
+            \Log::error('Error saving installations: ' . $e->getMessage());
+            
             return response()->json([
                 'status' => 'error',
-                'message' => 'حدث خطأ أثناء حفظ البيانات: ' . $e->getMessage()
+                'message' => 'حدث خطأ أثناء حفظ التركيبات'
             ], 500);
         }
     }

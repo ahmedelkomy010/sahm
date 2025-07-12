@@ -3,15 +3,6 @@ console.log('Simple Electrical Works Script Loaded');
 // متغيرات عامة
 let isInitialized = false;
 
-// دالة للحصول على التاريخ الحالي
-function getCurrentDate() {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const day = String(today.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-}
-
 // دالة للحصول على التاريخ بالتنسيق العربي
 function getFormattedDate() {
     const today = new Date();
@@ -19,9 +10,19 @@ function getFormattedDate() {
         year: 'numeric', 
         month: 'long', 
         day: 'numeric',
-        weekday: 'long'
+        weekday: 'long',
+        calendar: 'gregory'
     };
-    return today.toLocaleDateString('ar-SA', options);
+    return today.toLocaleDateString('ar', options);
+}
+
+// دالة للحصول على التاريخ الحالي
+function getCurrentDate() {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
 }
 
 // تهيئة مستمعي الأحداث عند تحميل الصفحة
@@ -32,7 +33,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // تحديث تاريخ الملخص
     const summaryDateElement = document.getElementById('current-summary-date');
     if (summaryDateElement) {
-        summaryDateElement.textContent = new Date().toLocaleDateString('ar-SA');
+        summaryDateElement.textContent = new Date().toLocaleDateString('ar', { calendar: 'gregory' });
     }
     
     // إضافة مستمعي الأحداث لحقول الطول والسعر
@@ -142,8 +143,8 @@ function updateSummary() {
     const currentDateElement = document.getElementById('current-date');
     if (currentDateElement) {
         const now = new Date();
-        const dateStr = now.toLocaleDateString('ar-SA');
-        const timeStr = now.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' });
+        const dateStr = now.toLocaleDateString('ar', { calendar: 'gregory' });
+        const timeStr = now.toLocaleTimeString('ar', { hour: '2-digit', minute: '2-digit' });
         currentDateElement.textContent = `${dateStr} - ${timeStr}`;
     }
     

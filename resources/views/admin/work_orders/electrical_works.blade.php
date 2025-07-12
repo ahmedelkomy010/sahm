@@ -74,7 +74,7 @@
     </div>
     <div class="row g-4">
         <!-- نموذج بيانات الأعمال الكهربائية -->
-        <div class="col-lg-6">
+        <div class="col-12">
             <div class="card shadow-sm mb-4">
                 <div class="card-header bg-warning text-dark">
                     <i class="fas fa-list-ul me-2"></i>

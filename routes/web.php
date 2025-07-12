@@ -131,11 +131,11 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::put('work-orders/survey/{survey}', [WorkOrderController::class, 'updateSurvey'])->name('work-orders.survey.update');
 
     // Installations Routes
-    Route::get('work-orders/{workOrder}/installations', [WorkOrderController::class, 'installations'])->name('work-orders.installations');
-    Route::post('work-orders/{workOrder}/installations/save', [WorkOrderController::class, 'saveInstallations'])->name('work-orders.installations.save');
-    Route::get('work-orders/{workOrder}/installations/data', [WorkOrderController::class, 'getInstallations'])->name('work-orders.installations.data');
-    Route::post('work-orders/{workOrder}/installations/images', [WorkOrderController::class, 'uploadInstallationsImages'])->name('work-orders.installations.images');
-    Route::delete('work-orders/installations/images/{imageId}', [WorkOrderController::class, 'deleteInstallationImage'])->name('work-orders.installations.images.delete');
+    Route::get('work-orders/{workOrder}/installations', [App\Http\Controllers\Admin\WorkOrderController::class, 'installations'])->name('work-orders.installations');
+    Route::post('work-orders/{workOrder}/installations/save', [App\Http\Controllers\Admin\WorkOrderController::class, 'saveInstallations'])->name('work-orders.installations.save');
+    Route::get('work-orders/{workOrder}/installations/data', [App\Http\Controllers\Admin\WorkOrderController::class, 'getInstallations'])->name('work-orders.installations.data');
+    Route::post('work-orders/{workOrder}/installations/images', [App\Http\Controllers\Admin\WorkOrderController::class, 'uploadInstallationsImages'])->name('work-orders.installations.images');
+    Route::delete('work-orders/installations/images/{imageId}', [App\Http\Controllers\Admin\WorkOrderController::class, 'deleteInstallationImage'])->name('work-orders.installations.images.delete');
 
     // Civil Works Routes
     Route::get('work-orders/{workOrder}/civil-works', [WorkOrderController::class, 'civilWorks'])->name('work-orders.civil-works');
@@ -435,3 +435,6 @@ Route::middleware(['auth'])->group(function () {
 });
 
 Route::post('/admin/work-orders/{workOrder}/installations', [WorkOrderController::class, 'saveInstallations'])->name('work-orders.save-installations');
+
+Route::get('/admin/work-orders/{workOrder}/installations/daily-summary', [App\Http\Controllers\Admin\WorkOrderController::class, 'getDailyInstallationsSummary'])
+    ->name('admin.work-orders.installations.daily-summary');

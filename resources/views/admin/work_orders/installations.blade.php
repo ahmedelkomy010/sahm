@@ -83,6 +83,44 @@
                         </div>
                     </div>
 
+                    <!-- ملخص التركيبات اليومي -->
+                    <div class="card mt-4">
+                        <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0">
+                                <i class="fas fa-calendar-day me-2"></i>
+                                ملخص التركيبات اليومي
+                            </h6>
+                            <div>
+                                <input type="date" id="daily-summary-date" class="form-control form-control-sm" value="{{ date('Y-m-d') }}">
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table id="daily-summary-table" class="table table-striped">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>نوع التركيب</th>
+                                            <th class="text-center">العدد</th>
+                                            <th class="text-center">الإجمالي</th>
+                                            <th class="text-center">وقت التركيب</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="daily-summary-tbody">
+                                        <!-- سيتم ملء البيانات عن طريق JavaScript -->
+                                    </tbody>
+                                    <tfoot class="table-light">
+                                        <tr>
+                                            <td colspan="1"><strong>إجمالي اليوم</strong></td>
+                                            <td class="text-center" id="daily-total-count">0</td>
+                                            <td class="text-center" id="daily-total-amount">0.00 ريال</td>
+                                            <td></td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- إجمالي التركيبات -->
                     <div class="row mt-3">
                         <div class="col-md-6">
@@ -119,17 +157,92 @@
 
 @push('scripts')
 <script>
-console.log('JavaScript loaded successfully!'); // للتأكد من تحميل الملف
+console.log('JavaScript loaded successfully!');
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM Content Loaded');
     
     const saveButton = document.getElementById('save-installations-btn');
     const saveIndicator = document.getElementById('save-indicator');
+    const dailySummaryDate = document.getElementById('daily-summary-date');
+
+    // تحميل البيانات المحفوظة مسبقاً
+    @if(isset($currentInstallations) && $currentInstallations->count() > 0)
+        @foreach($currentInstallations as $installation)
+            const row = document.querySelector(`tr[data-installation="{{ $installation->installation_type }}"]`);
+            if (row) {
+                const priceInput = row.querySelector('.installation-price');
+                const numberInput = row.querySelector('.installation-number');
+                if (priceInput && numberInput) {
+                    priceInput.value = {{ $installation->price }};
+                    numberInput.value = {{ $installation->quantity }};
+                    updateRowTotal(priceInput);
+                }
+            }
+        @endforeach
+    @endif
+
+    // تحديث الملخص اليومي عند تغيير التاريخ
+    dailySummaryDate.addEventListener('change', function() {
+        updateDailySummary(this.value);
+    });
+
+    // تحديث الملخص اليومي
+    async function updateDailySummary(date) {
+        try {
+            const response = await fetch(`/admin/work-orders/{{ $workOrder->id }}/installations/daily-summary?date=${date}`, {
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                }
+            });
+            
+            if (!response.ok) throw new Error('فشل في جلب البيانات');
+            
+            const data = await response.json();
+            const tbody = document.getElementById('daily-summary-tbody');
+            tbody.innerHTML = '';
+            
+            let totalCount = 0;
+            let totalAmount = 0;
+            
+            if (data.installations && data.installations.length > 0) {
+                data.installations.forEach(item => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${item.installation_type}</td>
+                        <td class="text-center">${item.quantity}</td>
+                        <td class="text-center">${parseFloat(item.total).toFixed(2)} ريال</td>
+                        <td class="text-center">${new Date(item.created_at).toLocaleTimeString('ar')}</td>
+                    `;
+                    tbody.appendChild(tr);
+                    
+                    totalCount += parseFloat(item.quantity);
+                    totalAmount += parseFloat(item.total);
+                });
+            } else {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="text-center text-muted">
+                            <i class="fas fa-info-circle me-2"></i>
+                            لا توجد تركيبات لهذا اليوم
+                        </td>
+                    </tr>
+                `;
+            }
+            
+            // تحديث الإجماليات اليومية
+            document.getElementById('daily-total-count').textContent = totalCount.toFixed(0);
+            document.getElementById('daily-total-amount').textContent = totalAmount.toFixed(2) + ' ريال';
+            
+        } catch (error) {
+            console.error('Error fetching daily summary:', error);
+            toastr.error('حدث خطأ أثناء تحديث الملخص اليومي');
+        }
+    }
 
     // تحديث إجمالي الصف والإجمالي الكلي
     function updateRowTotal(input) {
-        console.log('updateRowTotal called'); // للتأكد من استدعاء الدالة
+        console.log('updateRowTotal called');
         const row = input.closest('tr');
         const priceInput = row.querySelector('.installation-price');
         const numberInput = row.querySelector('.installation-number');
@@ -139,7 +252,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const number = parseFloat(numberInput.value) || 0;
         const total = price * number;
         
-        console.log('Price:', price, 'Number:', number, 'Total:', total); // للتتبع
+        console.log('Price:', price, 'Number:', number, 'Total:', total);
         
         totalInput.value = total.toFixed(2);
         updateTotals();
@@ -156,10 +269,10 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
-        console.log('Grand Total:', grandTotal); // للتتبع
+        console.log('Grand Total:', grandTotal);
         
         document.getElementById('total-installations-amount').textContent = grandTotal.toFixed(2) + ' ريال';
-        updateSummaryTable(); // تحديث جدول الملخص تلقائياً
+        updateSummaryTable();
     }
 
     // تحديث جدول الملخص
@@ -239,6 +352,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (!hasData) {
                 toastr.warning('الرجاء إدخال بيانات التركيبات أولاً');
+                saveButton.disabled = false;
+                saveIndicator.style.display = 'none';
                 return;
             }
             
@@ -248,117 +363,36 @@ document.addEventListener('DOMContentLoaded', function() {
                     'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
                 },
-                body: JSON.stringify({ installations: data })
+                body: JSON.stringify(data)
             });
-            
-            if (!response.ok) {
-                throw new Error('فشل حفظ البيانات');
-            }
+
+            if (!response.ok) throw new Error('فشل في حفظ البيانات');
             
             const result = await response.json();
             
-            if (result.status === 'success') {
-                toastr.success('تم حفظ التركيبات بنجاح');
-                updateSummaryTable(); // تحديث جدول الملخص بعد الحفظ
-            } else {
-                throw new Error(result.message || 'فشل حفظ البيانات');
-            }
+            toastr.success('تم حفظ البيانات بنجاح');
+            
+            // تحديث الملخص اليومي بعد الحفظ
+            updateDailySummary(dailySummaryDate.value);
             
         } catch (error) {
-            console.error('Error saving installations:', error);
-            toastr.error(error.message || 'حدث خطأ أثناء حفظ البيانات');
+            console.error('Save error:', error);
+            toastr.error('حدث خطأ أثناء حفظ البيانات');
         } finally {
             saveButton.disabled = false;
             saveIndicator.style.display = 'none';
         }
     }
 
-    // تحميل البيانات المحفوظة
-    async function loadSavedInstallations() {
-        try {
-            const response = await fetch(`/admin/work-orders/{{ $workOrder->id }}/installations/data`);
-            if (!response.ok) {
-                throw new Error('فشل تحميل البيانات');
-            }
-            
-            const result = await response.json();
-            if (result.status === 'success' && result.data) {
-                Object.entries(result.data).forEach(([type, installation]) => {
-                    const row = document.querySelector(`[data-installation="${type}"]`);
-                    if (row) {
-                        const priceInput = row.querySelector('.installation-price');
-                        const numberInput = row.querySelector('.installation-number');
-                        
-                        if (priceInput && numberInput) {
-                            priceInput.value = installation.price || '';
-                            numberInput.value = installation.number || '';
-                            updateRowTotal(priceInput); // تحديث الإجمالي تلقائياً
-                        }
-                    }
-                });
-            }
-        } catch (error) {
-            console.error('Error loading installations:', error);
-            toastr.error('حدث خطأ أثناء تحميل البيانات');
-        }
-    }
+    // إضافة مستمعي الأحداث
+    document.querySelectorAll('.installation-price, .installation-number').forEach(input => {
+        input.addEventListener('input', () => updateRowTotal(input));
+    });
 
-    // إضافة مستمعي الأحداث لحقول الإدخال بطرق متعددة
-    function attachEventListeners() {
-        console.log('Attaching event listeners...');
-        
-        // طريقة 1: مستمعي أحداث input
-        document.querySelectorAll('.installation-price, .installation-number').forEach(input => {
-            input.addEventListener('input', function() {
-                console.log('Input event triggered on:', this.className);
-                updateRowTotal(this);
-            });
-            
-            input.addEventListener('change', function() {
-                console.log('Change event triggered on:', this.className);
-                updateRowTotal(this);
-            });
-            
-            input.addEventListener('keyup', function() {
-                console.log('Keyup event triggered on:', this.className);
-                updateRowTotal(this);
-            });
-        });
-    }
-
-    // دالة لإعادة حساب جميع الإجماليات يدوياً
-    function recalculateAll() {
-        console.log('Recalculating all totals...');
-        document.querySelectorAll('tr[data-installation]').forEach(row => {
-            const priceInput = row.querySelector('.installation-price');
-            const numberInput = row.querySelector('.installation-number');
-            const totalInput = row.querySelector('.installation-total');
-            
-            if (priceInput && numberInput && totalInput) {
-                const price = parseFloat(priceInput.value) || 0;
-                const number = parseFloat(numberInput.value) || 0;
-                const total = price * number;
-                
-                totalInput.value = total.toFixed(2);
-            }
-        });
-        updateTotals();
-    }
-
-    // إضافة مستمع الحدث لزر الحفظ
     saveButton.addEventListener('click', saveInstallations);
 
-    // تحميل البيانات عند تحميل الصفحة
-    loadSavedInstallations();
-    
-    // إضافة مستمعي الأحداث
-    attachEventListeners();
-    
-    // إعادة حساب كل شيء بعد ثانية واحدة
-    setTimeout(recalculateAll, 1000);
-    
-    // إضافة زر إعادة حساب للاختبار (يمكن إزالته لاحقاً)
-    window.recalculateAll = recalculateAll;
+    // تحديث الملخص اليومي عند تحميل الصفحة
+    updateDailySummary(dailySummaryDate.value);
 });
 </script>
 @endpush 
