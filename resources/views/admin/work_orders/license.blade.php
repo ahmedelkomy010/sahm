@@ -5467,5 +5467,5 @@ document.addEventListener('DOMContentLoaded', function() {
 
 @push('scripts')
 <!-- تحميل معالج JavaScript الآمن للرخص -->
-<script src="{{ asset('js/work-order-license.js') }}"></script>
+<script src="{{ asset('js/work-order-license.js') }}?v={{ time() }}"></script>
 @endpush 

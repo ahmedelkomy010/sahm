@@ -2,10 +2,22 @@ class LabLicenseManager {
     constructor(containerId) {
         this.container = document.getElementById(containerId);
         this.data = [];
+        
+        // Check if container exists before initializing
+        if (!this.container) {
+            console.warn(`Container with ID '${containerId}' not found. LabLicenseManager will not initialize.`);
+            return;
+        }
+        
         this.init();
     }
 
     async init() {
+        // Only initialize if container exists
+        if (!this.container) {
+            return;
+        }
+        
         await this.loadData();
         this.render();
     }
@@ -123,6 +135,12 @@ class LabLicenseManager {
     }
 
     render() {
+        // Check if container exists before rendering
+        if (!this.container) {
+            console.warn('Cannot render: container not found');
+            return;
+        }
+        
         this.container.innerHTML = `
             <div class="table-responsive">
                 <table class="table table-bordered">
@@ -199,5 +217,11 @@ class LabLicenseManager {
 // Initialize when page loads
 let labManager;
 document.addEventListener('DOMContentLoaded', function() {
-    labManager = new LabLicenseManager('lab-licenses-fallback');
+    // Only initialize if the container exists
+    const container = document.getElementById('lab-licenses-fallback');
+    if (container) {
+        labManager = new LabLicenseManager('lab-licenses-fallback');
+    } else {
+        console.log('Lab licenses container not found on this page');
+    }
 }); 

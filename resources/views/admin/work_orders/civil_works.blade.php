@@ -762,6 +762,30 @@
             color: #495057;
             line-height: 1.3;
         }
+
+        /* تنسيق نوع الحفرية */
+        .excavation-type {
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-weight: 600;
+            display: inline-block;
+            border: 1px solid #81c784;
+            font-size: 0.9rem;
+        }
+
+        /* تنسيق نوع الكابل */
+        .cable-type {
+            background: #e3f2fd;
+            color: #1565c0;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-weight: 600;
+            display: inline-block;
+            border: 1px solid #64b5f6;
+            font-size: 0.9rem;
+        }
         
         /* تنسيق الكابلات */
         .cable-type-badge {
@@ -1138,6 +1162,164 @@
             padding: 10px 8px;
             vertical-align: middle;
         }
+
+        /* جدول ملخص الحفريات اليومي */
+        <div class="table-responsive">
+            <table id="daily-excavation-table" class="table table-bordered">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="text-center fw-bold" style="width: 5%;">
+                            <i class="fas fa-hashtag me-1"></i>
+                            #
+                        </th>
+                        <th class="text-center fw-bold" style="width: 15%;">
+                            <i class="fas fa-hard-hat me-1"></i>
+                            نوع الحفرية
+                        </th>
+                        <th class="text-center fw-bold" style="width: 12%;">
+                            <i class="fas fa-plug me-1"></i>
+                            نوع الكابل
+                        </th>
+                        <th class="text-center fw-bold" style="width: 10%;">
+                            <i class="fas fa-arrows-alt-h me-1"></i>
+                            الطول (م)
+                        </th>
+                        <th class="text-center fw-bold" style="width: 10%;">
+                            <i class="fas fa-arrows-alt-v me-1"></i>
+                            العرض (م)
+                        </th>
+                        <th class="text-center fw-bold" style="width: 10%;">
+                            <i class="fas fa-compress-arrows-alt me-1"></i>
+                            العمق (م)
+                        </th>
+                        <th class="text-center fw-bold" style="width: 12%;">
+                            <i class="fas fa-tag me-1"></i>
+                            السعر (ريال)
+                        </th>
+                        <th class="text-center fw-bold" style="width: 12%;">
+                            <i class="fas fa-calculator me-1"></i>
+                            الإجمالي (ريال)
+                        </th>
+                        <th class="text-center fw-bold" style="width: 14%;">
+                            <i class="fas fa-clock me-1"></i>
+                            آخر تحديث
+                        </th>
+                    </tr>
+                </thead>
+                <tbody id="daily-excavation-tbody">
+                    <tr id="no-data-row" class="table-light">
+                        <td colspan="9" class="text-center text-muted py-5">
+                            <div class="empty-state-content">
+                                <i class="fas fa-clipboard-list fa-3x mb-3 text-secondary"></i>
+                                <h5 class="mb-2 text-secondary">لا توجد بيانات حفريات</h5>
+                                <p class="mb-0 text-muted">سيتم إضافة البيانات تلقائياً عند إدخال القياسات</p>
+                                <small class="text-muted d-block mt-1">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    ابدأ بإدخال الطول والسعر في النماذج أعلاه
+                                </small>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- تنسيقات إضافية -->
+        <style>
+            #daily-excavation-table {
+                border-radius: 12px;
+                overflow: hidden;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            }
+
+            #daily-excavation-table thead th {
+                background: #f8f9fa;
+                border-bottom: 2px solid #dee2e6;
+                padding: 12px 8px;
+                font-size: 0.9rem;
+                white-space: nowrap;
+            }
+
+            #daily-excavation-table tbody td {
+                padding: 12px 8px;
+                vertical-align: middle;
+                font-size: 0.9rem;
+            }
+
+            #daily-excavation-table tbody tr:hover {
+                background-color: #f8f9fa;
+            }
+
+            .empty-state-content {
+                padding: 30px;
+                border: 2px dashed #dee2e6;
+                border-radius: 8px;
+                background: #f8f9fa;
+            }
+
+            /* تنسيق الأرقام */
+            .number-cell {
+                font-family: "Courier New", monospace;
+                direction: ltr;
+            }
+
+            /* تنسيق نوع الكابل */
+            .cable-type {
+                background: #e9ecef;
+                border-radius: 4px;
+                padding: 4px 8px;
+                font-size: 0.85rem;
+                color: #495057;
+            }
+
+            /* تنسيق التاريخ */
+            .date-cell {
+                direction: ltr;
+                font-family: "Courier New", monospace;
+                font-size: 0.85rem;
+                color: #6c757d;
+            }
+        </style>
+
+
+
+        <!-- تنسيقات إضافية -->
+        <style>
+            .form-select, .form-control {
+                border-radius: 6px;
+                border: 1px solid #dee2e6;
+                padding: 0.5rem;
+            }
+
+            .excavation-type {
+                background: #e8f5e9;
+                border-radius: 4px;
+                padding: 4px 8px;
+                color: #2e7d32;
+                font-weight: 500;
+            }
+
+            .cable-type {
+                background: #e3f2fd;
+                border-radius: 4px;
+                padding: 4px 8px;
+                color: #1565c0;
+                font-weight: 500;
+            }
+
+            .number-cell {
+                font-family: "Courier New", monospace;
+                direction: ltr;
+                font-weight: 500;
+            }
+
+            .date-cell {
+                font-family: "Courier New", monospace;
+                direction: ltr;
+                color: #666;
+                font-size: 0.85rem;
+            }
+        </style>
     </style>
 </head>
 <body>
@@ -1334,6 +1516,21 @@
                                     </div>
                                 </div>
                             </div>
+                            
+                            <!-- إجمالي المبلغ الكلي -->
+                            <div class="row mb-3">
+                                <div class="col-md-12">
+                                    <div class="card bg-success text-white border-0 text-center" style="border-radius: 15px;">
+                                        <div class="card-body py-3">
+                                            <div class="display-6 mb-2">
+                                                <i class="fas fa-calculator"></i>
+                                            </div>
+                                            <h3 class="mb-1" id="total-amount">0.00</h3>
+                                            <h6 class="mb-0">إجمالي المبلغ الكلي (ريال)</h6>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
 
                             <!-- أزرار التحكم في الجدول -->
                             <div class="d-flex justify-content-between align-items-center mb-3">
@@ -1346,38 +1543,42 @@
 
                                                                         <!-- الجدول الديناميكي -->
                             <div class="table-responsive">
-                                <table class="table table-hover align-middle shadow-sm" id="daily-excavation-table">
-                                    <thead class="table-dark">
+                                <table id="daily-excavation-table" class="table table-bordered">
+                                    <thead class="bg-light">
                                         <tr>
-                                            <th class="text-center fw-bold" style="width: 18%;">
-                                                <i class="fas fa-layer-group me-1"></i>
-                                                نوع القسم
+                                            <th class="text-center fw-bold" style="width: 5%;">
+                                                <i class="fas fa-hashtag me-1"></i>
+                                                #
                                             </th>
-                                            <th class="text-center fw-bold" style="width: 18%;">
+                                            <th class="text-center fw-bold" style="width: 15%;">
                                                 <i class="fas fa-hard-hat me-1"></i>
                                                 نوع الحفرية
                                             </th>
-                                            <th class="text-center fw-bold" style="width: 15%;">
+                                            <th class="text-center fw-bold" style="width: 12%;">
                                                 <i class="fas fa-plug me-1"></i>
                                                 نوع الكابل
                                             </th>
                                             <th class="text-center fw-bold" style="width: 10%;">
-                                                <i class="fas fa-list-ol me-1"></i>
-                                                العدد
+                                                <i class="fas fa-arrows-alt-h me-1"></i>
+                                                الطول (م)
                                             </th>
-                                            <th class="text-center fw-bold" style="width: 15%;">
-                                                <i class="fas fa-ruler me-1"></i>
-                                                الطول/الحجم
+                                            <th class="text-center fw-bold" style="width: 10%;">
+                                                <i class="fas fa-arrows-alt-v me-1"></i>
+                                                العرض (م)
+                                            </th>
+                                            <th class="text-center fw-bold" style="width: 10%;">
+                                                <i class="fas fa-compress-arrows-alt me-1"></i>
+                                                العمق (م)
                                             </th>
                                             <th class="text-center fw-bold" style="width: 12%;">
-                                                <i class="fas fa-money-bill me-1"></i>
+                                                <i class="fas fa-tag me-1"></i>
                                                 السعر (ريال)
                                             </th>
                                             <th class="text-center fw-bold" style="width: 12%;">
                                                 <i class="fas fa-calculator me-1"></i>
                                                 الإجمالي (ريال)
                                             </th>
-                                            <th class="text-center fw-bold" style="width: 10%;">
+                                            <th class="text-center fw-bold" style="width: 14%;">
                                                 <i class="fas fa-clock me-1"></i>
                                                 آخر تحديث
                                             </th>
@@ -1385,7 +1586,7 @@
                                     </thead>
                                     <tbody id="daily-excavation-tbody">
                                         <tr id="no-data-row" class="table-light">
-                                            <td colspan="8" class="text-center text-muted py-5">
+                                            <td colspan="9" class="text-center text-muted py-5">
                                                 <div class="empty-state-content">
                                                     <i class="fas fa-clipboard-list fa-3x mb-3 text-secondary"></i>
                                                     <h5 class="mb-2 text-secondary">لا توجد بيانات حفريات</h5>
@@ -1400,232 +1601,6 @@
                                     </tbody>
                                 </table>
                             </div>
-                            
-                            <!-- إنشاء CSS إضافي للجدول -->
-                            <style>
-                                /* تنسيق الجدول الرئيسي */
-                                #daily-excavation-table {
-                                    border-radius: 12px;
-                                    overflow: hidden;
-                                    border: none;
-                                    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
-                                }
-                                
-                                #daily-excavation-table thead th {
-                                    padding: 15px 8px;
-                                    font-size: 0.85rem;
-                                    font-weight: 700;
-                                    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-                                    position: relative;
-                                }
-                                
-                                #daily-excavation-table tbody tr {
-                                    transition: all 0.3s ease;
-                                    border-bottom: 1px solid #f1f3f4;
-                                }
-                                
-                                #daily-excavation-table tbody tr:hover {
-                                    background: #f8f9fa !important;
-                                    transform: translateY(-1px);
-                                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-                                }
-                                
-                                #daily-excavation-table tbody td {
-                                    padding: 12px 8px;
-                                    vertical-align: middle;
-                                    font-size: 0.875rem;
-                                    border: none;
-                                    position: relative;
-                                }
-                                
-
-                                
-                                /* تنسيق نوع العمل */
-                                .work-type-cell {
-                                    font-weight: 600;
-                                    color: #495057;
-                                    line-height: 1.3;
-                                }
-                                
-                                /* تنسيق الكابلات */
-                                .cable-type-badge {
-                                    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
-                                    color: white;
-                                    border-radius: 15px;
-                                    padding: 4px 12px;
-                                    font-size: 0.75rem;
-                                    font-weight: 600;
-                                    white-space: nowrap;
-                                }
-                                
-                                /* تنسيق الأبعاد */
-                                .dimensions-cell {
-                                    font-family: 'Courier New', monospace;
-                                    background: #f8f9fa;
-                                    border-radius: 6px;
-                                    padding: 6px 10px;
-                                    font-weight: 600;
-                                    color: #495057;
-                                    border: 1px solid #e9ecef;
-                                }
-                                
-                                /* تنسيق الحجم */
-                                .volume-cell {
-                                    background: #f8f9fa;
-                                    border-radius: 8px;
-                                    padding: 6px 10px;
-                                    font-weight: 600;
-                                    color: #6c757d;
-                                    text-align: center;
-                                    border: 1px solid #dee2e6;
-                                }
-                                
-                                /* تنسيق السعر */
-                                .price-cell {
-                                    background: #e9ecef;
-                                    border-radius: 8px;
-                                    padding: 6px 10px;
-                                    font-weight: 600;
-                                    color: #495057;
-                                    text-align: center;
-                                    border: 1px solid #ced4da;
-                                }
-                                
-                                /* تنسيق الإجمالي */
-                                .total-cell {
-                                    background: #d4edda;
-                                    border-radius: 8px;
-                                    padding: 8px 12px;
-                                    font-weight: 700;
-                                    color: #155724;
-                                    text-align: center;
-                                    font-size: 0.9rem;
-                                    border: 1px solid #c3e6cb;
-                                }
-                                
-                                /* تنسيق عمود نوع القسم */
-                                .section-type-cell {
-                                    background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);
-                                    color: #2e7d32;
-                                    font-weight: 600;
-                                    padding: 6px 10px;
-                                    border-radius: 8px;
-                                    font-size: 0.8rem;
-                                    border: 1px solid #81c784;
-                                    text-align: center;
-                                }
-                                
-                                /* تنسيق عمود العدد */
-                                .count-cell {
-                                    background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);
-                                    color: #7b1fa2;
-                                    font-weight: bold;
-                                    padding: 8px 12px;
-                                    border-radius: 50%;
-                                    font-size: 0.9rem;
-                                    border: 2px solid #ce93d8;
-                                    min-width: 35px;
-                                    display: inline-block;
-                                }
-
-                                
-                                /* تنسيق حالة الفراغ */
-                                .empty-state-content {
-                                    padding: 20px;
-                                    border: 2px dashed #dee2e6;
-                                    border-radius: 12px;
-                                    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 50%, #f8f9fa 100%);
-                                }
-                                
-                                .empty-state-content i {
-                                    opacity: 0.6;
-                                }
-                                
-                                /* إضافة خطوط فاصلة للأعمدة */
-                                #daily-excavation-table tbody td:not(:last-child) {
-                                    border-right: 1px solid #f1f3f4;
-                                }
-                                
-                                /* تحسين الـ Badge */
-                                #daily-excavation-table .badge {
-                                    font-size: 0.7rem;
-                                    padding: 3px 8px;
-                                    border-radius: 10px;
-                                }
-                                
-                                                                 /* تأثيرات النص */
-                                .fw-arabic {
-                                    font-weight: 600;
-                                }
-                                
-                                /* تحسين الظلال */
-                                .table-responsive {
-                                    border-radius: 12px;
-                                    overflow: hidden;
-                                }
-                                
-                                /* تنسيق آخر تحديث */
-                                .last-update-cell {
-                                    color: #6c757d;
-                                    font-size: 0.75rem;
-                                    font-style: italic;
-                                }
-                                
-                                /* تنسيق الإشعارات */
-                                .notification-container {
-                                    position: fixed;
-                                    top: 20px;
-                                    right: 20px;
-                                    z-index: 9999;
-                                    max-width: 400px;
-                                }
-                                
-                                .notification {
-                                    animation: slideIn 0.3s ease-out;
-                                    margin-bottom: 10px;
-                                    border-radius: 12px;
-                                    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-                                }
-                                
-                                @keyframes slideIn {
-                                    from {
-                                        transform: translateX(100%);
-                                        opacity: 0;
-                                    }
-                                    to {
-                                        transform: translateX(0);
-                                        opacity: 1;
-                                    }
-                                }
-                                
-                                @keyframes slideOut {
-                                    from {
-                                        transform: translateX(0);
-                                        opacity: 1;
-                                    }
-                                    to {
-                                        transform: translateX(100%);
-                                        opacity: 0;
-                                    }
-                                }
-                                
-                                /* تحسين الاستجابة للشاشات الصغيرة */
-                                @media (max-width: 768px) {
-                                    #daily-excavation-table {
-                                        font-size: 0.8rem;
-                                    }
-                                    
-                                    #daily-excavation-table thead th {
-                                        padding: 10px 5px;
-                                        font-size: 0.75rem;
-                                    }
-                                    
-                                    #daily-excavation-table tbody td {
-                                        padding: 8px 5px;
-                                        font-size: 0.8rem;
-                                    }
-                                }
-                            </style>
 
                             <!-- أزرار التحكم -->
                             <div class="d-flex justify-content-between align-items-center mt-4">

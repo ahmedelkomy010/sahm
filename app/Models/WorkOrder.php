@@ -66,6 +66,8 @@ class WorkOrder extends Model
         'installations_locked_by',
         'pre_operation_tests',
         'daily_civil_works_data',
+        'daily_civil_works_last_update',
+        'license_id',
     ];
 
     protected $casts = [
@@ -94,6 +96,7 @@ class WorkOrder extends Model
         'installations_data' => 'array',
         'installations_images' => 'array',
         'daily_civil_works_data' => 'array',
+        'daily_civil_works_last_update' => 'datetime',
     ];
 
     // Relationships

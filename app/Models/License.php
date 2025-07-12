@@ -23,6 +23,10 @@ class License extends Model
         'restriction_reason',
         'restriction_authority',
         'restriction_notes',
+        'user_id',
+        'status',
+        'issue_date',
+        'description',
         // حقول شهادة التنسيق
         'coordination_certificate_number',
         'coordination_certificate_path',

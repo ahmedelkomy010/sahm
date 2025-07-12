@@ -1947,22 +1947,82 @@ class WorkOrderController extends Controller
     public function getTodayExcavations(WorkOrder $workOrder)
     {
         try {
-            $today = now()->format('Y-m-d');
+            \Log::info('Getting today excavations for work order: ' . $workOrder->id);
+            
+            // Get today's date in the correct timezone
+            $today = now()->setTimezone(config('app.timezone', 'UTC'))->format('Y-m-d');
+            
+            \Log::info('Fetching excavations for date: ' . $today);
+            
+            // First try to get data from daily_civil_works_data
+            $dailyData = $workOrder->daily_civil_works_data ?? [];
+            
+            if (!empty($dailyData) && is_array($dailyData)) {
+                \Log::info('Found data in daily_civil_works_data');
+                // Filter today's entries
+                $todayEntries = array_filter($dailyData, function($entry) use ($today) {
+                    return isset($entry['date']) && substr($entry['date'], 0, 10) === $today;
+                });
+                
+                return response()->json([
+                    'success' => true,
+                    'data' => array_values($todayEntries)
+                ]);
+            }
+            
+            // Fallback to excavation_details table
+            \Log::info('Falling back to excavation_details table');
+            
+            // Check if excavation_details table exists and has data
+            if (!\Schema::hasTable('excavation_details')) {
+                \Log::warning('excavation_details table does not exist');
+                return response()->json([
+                    'success' => true,
+                    'data' => []
+                ]);
+            }
+            
             $excavationDetails = $workOrder->excavationDetails()
                 ->whereDate('created_at', $today)
                 ->orderBy('created_at', 'desc')
-                ->get();
+                ->get()
+                ->map(function($detail) {
+                    return [
+                        'work_type' => $detail->excavation_type ?? 'غير محدد',
+                        'cable_type' => $detail->title ?? 'غير محدد',
+                        'length' => $detail->length ?? 0,
+                        'width' => $detail->width ?? 0,
+                        'depth' => $detail->depth ?? 0,
+                        'volume' => ($detail->width && $detail->depth) ? ($detail->length * $detail->width * $detail->depth) : null,
+                        'price' => $detail->price ?? 0,
+                        'total' => $detail->total ?? 0,
+                        'date' => $detail->created_at->format('Y-m-d'),
+                        'time' => $detail->created_at->format('H:i:s'),
+                        'created_at' => $detail->created_at->toISOString()
+                    ];
+                });
+            
+            \Log::info('Found ' . $excavationDetails->count() . ' excavation details');
             
             return response()->json([
                 'success' => true,
                 'data' => $excavationDetails
             ]);
+            
         } catch (\Exception $e) {
-            \Log::error('Error getting today excavations: ' . $e->getMessage());
+            \Log::error('Error getting today excavations: ' . $e->getMessage(), [
+                'work_order_id' => $workOrder->id ?? 'unknown',
+                'trace' => $e->getTraceAsString(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile()
+            ]);
+            
+            // Return empty data instead of error to prevent frontend crashes
             return response()->json([
-                'success' => false,
-                'message' => 'خطأ في استرجاع بيانات الحفريات'
-            ], 500);
+                'success' => true,
+                'data' => [],
+                'message' => 'لا توجد بيانات حفريات لليوم'
+            ]);
         }
     }
 
@@ -2341,6 +2401,191 @@ class WorkOrderController extends Controller
             DB::rollBack();
             \Log::error('خطأ في حذف المسح: ' . $e->getMessage());
             return back()->with('error', 'حدث خطأ أثناء حذف المسح');
+        }
+    }
+
+    /**
+     * حفظ ملخص الأعمال المدنية اليومي
+     */
+    public function saveDailyCivilWorks(Request $request)
+    {
+        try {
+            Log::info('Save daily civil works request received', [
+                'work_order_id' => $request->work_order_id,
+                'data_length' => strlen($request->daily_data ?? ''),
+                'request_data' => $request->all()
+            ]);
+
+            // التحقق من صحة البيانات
+            $validated = $request->validate([
+                'work_order_id' => 'required|integer|exists:work_orders,id',
+                'daily_data' => 'required|string',
+                '_token' => 'required'
+            ]);
+
+            // العثور على أمر العمل
+            $workOrder = WorkOrder::findOrFail($validated['work_order_id']);
+
+            // تحويل البيانات من JSON
+            $dailyData = json_decode($validated['daily_data'], true);
+            
+            if (!is_array($dailyData)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'البيانات المرسلة غير صالحة'
+                ], 400);
+            }
+
+            Log::info('Parsed daily data', ['data' => $dailyData]);
+
+            // بدء معاملة قاعدة البيانات
+            DB::beginTransaction();
+
+            // حفظ البيانات في جدول excavation_details
+            // أولاً نحتاج للعثور على رخصة مرتبطة بأمر العمل أو إنشاء واحدة
+            $license = $workOrder->license;
+            if (!$license || !$license->exists) {
+                // إنشاء رخصة افتراضية لأمر العمل
+                $license = \App\Models\License::create([
+                    'license_number' => 'AUTO-' . $workOrder->id . '-' . time(),
+                    'user_id' => auth()->id(),
+                    'license_type' => 'civil_works',
+                    'status' => 'active',
+                    'issue_date' => now()->toDateString(),
+                    'description' => 'رخصة تلقائية للأعمال المدنية'
+                ]);
+                
+                // ربط الرخصة بأمر العمل
+                $workOrder->update(['license_id' => $license->id]);
+                
+                Log::info('Created automatic license for work order', [
+                    'work_order_id' => $workOrder->id,
+                    'license_id' => $license->id,
+                    'license_number' => $license->license_number
+                ]);
+            }
+            
+            foreach ($dailyData as $item) {
+                \App\Models\ExcavationDetail::create([
+                    'license_id' => $license->id,
+                    'work_order_id' => $workOrder->id,
+                    'title' => $item['work_type'] ?? 'غير محدد',
+                    'location' => $workOrder->address ?? 'غير محدد',
+                    'contractor' => $workOrder->subscriber_name ?? 'غير محدد',
+                    'duration' => 1, // يوم واحد افتراضي
+                    'length' => $item['length'] ?? 0,
+                    'width' => 0, // قيمة افتراضية
+                    'depth' => 0, // قيمة افتراضية
+                    'status' => 'active',
+                    'status_text' => 'تم الحفظ من الملخص اليومي',
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ]);
+            }
+
+            // تحديث أمر العمل بالبيانات الجديدة
+            $workOrder->update([
+                'daily_civil_works_data' => json_encode($dailyData),
+                'daily_civil_works_last_update' => now()
+            ]);
+
+            DB::commit();
+
+            Log::info('Daily civil works data saved successfully', [
+                'work_order_id' => $workOrder->id,
+                'items_count' => count($dailyData)
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'تم حفظ الملخص اليومي بنجاح',
+                'data' => [
+                    'items_count' => count($dailyData),
+                    'total_amount' => array_sum(array_column($dailyData, 'total')),
+                    'last_update' => now()->toISOString()
+                ]
+            ]);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            DB::rollBack();
+            Log::error('Validation error in saveDailyCivilWorks', [
+                'errors' => $e->errors(),
+                'request_data' => $request->all()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'خطأ في التحقق من البيانات',
+                'errors' => $e->errors()
+            ], 422);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error saving daily civil works', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'request_data' => $request->all()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء حفظ البيانات: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * تحديد نوع القسم من نوع العمل
+     */
+    private function getSectionTypeFromWorkType($workType)
+    {
+        if (str_contains($workType, 'حفريات')) {
+            return 'حفريات أساسية';
+        } elseif (str_contains($workType, 'دقيقة')) {
+            return 'حفريات دقيقة';
+        } elseif (str_contains($workType, 'تمديدات')) {
+            return 'تمديدات كهربائية';
+        } elseif (str_contains($workType, 'مفتوح')) {
+            return 'حفر مفتوح';
+        }
+        return 'غير محدد';
+    }
+
+    /**
+     * تحديد نوع الكابل من نوع العمل
+     */
+    private function getCableTypeFromWorkType($workType)
+    {
+        if (str_contains($workType, 'منخفض')) {
+            return 'كابل منخفض';
+        } elseif (str_contains($workType, 'متوسط')) {
+            return 'كابل متوسط';
+        } elseif (str_contains($workType, 'مفتوح')) {
+            return 'أكبر من 4 كابلات';
+        }
+        return 'غير محدد';
+    }
+
+    /**
+     * Get daily civil works data for a work order
+     */
+    public function getDailyCivilWorks($id)
+    {
+        try {
+            $workOrder = WorkOrder::findOrFail($id);
+            
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'daily_data' => $workOrder->daily_civil_works_data
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء جلب البيانات',
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 } 

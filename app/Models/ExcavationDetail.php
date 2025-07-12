@@ -9,6 +9,7 @@ class ExcavationDetail extends Model
 {
     protected $fillable = [
         'license_id',
+        'work_order_id', // Add work_order_id to fillable
         'title',
         'location',
         'contractor',
@@ -17,7 +18,12 @@ class ExcavationDetail extends Model
         'width',
         'depth',
         'status',
-        'status_text'
+        'status_text',
+        'excavation_type',
+        'soil_type',
+        'price',
+        'total',
+        'is_open_excavation'
     ];
 
     protected $casts = [
@@ -25,6 +31,9 @@ class ExcavationDetail extends Model
         'width' => 'decimal:2',
         'depth' => 'decimal:2',
         'duration' => 'integer',
+        'price' => 'decimal:2',
+        'total' => 'decimal:2',
+        'is_open_excavation' => 'boolean'
     ];
 
     /**
@@ -33,6 +42,14 @@ class ExcavationDetail extends Model
     public function license(): BelongsTo
     {
         return $this->belongsTo(License::class);
+    }
+
+    /**
+     * Get the work order that owns the excavation detail.
+     */
+    public function workOrder(): BelongsTo
+    {
+        return $this->belongsTo(WorkOrder::class);
     }
 
     public function getFormattedDimensionsAttribute(): string
