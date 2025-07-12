@@ -300,26 +300,73 @@ function updateSummaryTable(data) {
         const excavationTypeFormatted = `<span class="excavation-type">${excavationType}</span>`;
         
         // تنسيق نوع الكابل
-        const cableType = item.cable_type || 'غير محدد';
-        const cableTypeFormatted = `<span class="cable-type">${cableType}</span>`;
+        let cableTypeDisplay = '';
+        // تنسيق نوع الكابل بالشكل المطلوب
+        if (item.cable_type.includes('منخفض') && !item.cable_type.includes('2') && !item.cable_type.includes('3') && !item.cable_type.includes('4')) {
+            cableTypeDisplay = 'كابل منخفض 4×70';
+        } else if (item.cable_type.includes('متوسط') && !item.cable_type.includes('2') && !item.cable_type.includes('3') && !item.cable_type.includes('4')) {
+            cableTypeDisplay = 'كابل متوسط (20×80)';
+        } else if (item.cable_type.includes('2 كابل منخفض')) {
+            cableTypeDisplay = '2 كابل منخفض';
+        } else if (item.cable_type.includes('3 كابل منخفض')) {
+            cableTypeDisplay = '3 كابل منخفض';
+        } else if (item.cable_type.includes('4 كابل منخفض')) {
+            cableTypeDisplay = '4 كابل منخفض';
+        } else if (item.cable_type.includes('2 كابل متوسط')) {
+            cableTypeDisplay = '2 كابل متوسط';
+        } else if (item.cable_type.includes('3 كابل متوسط')) {
+            cableTypeDisplay = '3 كابل متوسط';
+        } else if (item.cable_type.includes('4 كابل متوسط')) {
+            cableTypeDisplay = '4 كابل متوسط';
+        } else if (item.cable_type.includes('+4 كابل عالي')) {
+            cableTypeDisplay = '+4 كابل عالي';
+        } else {
+            cableTypeDisplay = 'كابل عام';
+        }
         
         // تنسيق الأبعاد والأسعار
-        const length = parseFloat(item.dimensions[0]).toFixed(2);
-        const price = parseFloat(item.price).toFixed(2);
-        const total = parseFloat(item.total).toFixed(2);
+        const length = parseFloat(item.length || 0).toFixed(2);
+        const width = parseFloat(item.width || 0).toFixed(2);
+        const depth = parseFloat(item.depth || 0).toFixed(2);
+        const price = parseFloat(item.price || 0).toFixed(2);
+        const total = parseFloat(item.total || 0).toFixed(2);
         
-        totalAmount += parseFloat(item.total);
+        // تنسيق التاريخ والوقت
+        let timestamp = '-';
+        if (item.updated_at || item.created_at) {
+            const date = new Date(item.updated_at || item.created_at);
+            timestamp = date.toLocaleString('ar-SA', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: true
+            });
+        }
+        
+        totalAmount += parseFloat(total);
         
         row.innerHTML = `
             <td class="text-center border px-2">${index + 1}</td>
             <td class="text-center border px-2">${excavationTypeFormatted}</td>
-            <td class="text-center border px-2">${cableTypeFormatted}</td>
+            <td class="text-center border px-2"><span class="cable-type-badge">${cableTypeDisplay}</span></td>
             <td class="text-center border px-2 number-cell">${length} م</td>
             <td class="text-center border px-2 number-cell">${price} ريال</td>
             <td class="text-center border px-2 number-cell">${total} ريال</td>
-            <td class="text-center border px-2 date-cell">${item.timestamp}</td>
+            <td class="text-center border px-2">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="text-muted small">
+                        <i class="fas fa-clock ms-1"></i>${timestamp}
+                    </span>
+                    <button class="btn btn-sm btn-danger delete-row" type="button" data-row-id="${index}">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </div>
+            </td>
         `;
 
+        // إضافة الصف للجدول
         tbody.appendChild(row);
     });
 
@@ -357,3 +404,37 @@ document.addEventListener('DOMContentLoaded', () => {
     // تحميل البيانات المحفوظة
     loadSavedData();
 }); 
+
+// إضافة مستمع أحداث لأزرار الحذف
+document.addEventListener('click', function(e) {
+    if (e.target.closest('.delete-row')) {
+        const button = e.target.closest('.delete-row');
+        const rowId = button.dataset.rowId;
+        const row = button.closest('tr');
+        
+        if (confirm('هل أنت متأكد من حذف هذا السجل؟')) {
+            // حذف الصف من الجدول
+            row.remove();
+            
+            // تحديث الترقيم
+            updateRowNumbers();
+            
+            // تحديث الإحصائيات
+            updateStatistics();
+        }
+    }
+});
+
+// تحديث أرقام الصفوف
+function updateRowNumbers() {
+    const tbody = document.getElementById('daily-excavation-tbody');
+    if (!tbody) return;
+    
+    const rows = tbody.querySelectorAll('tr');
+    rows.forEach((row, index) => {
+        const numberCell = row.querySelector('.row-number');
+        if (numberCell) {
+            numberCell.textContent = index + 1;
+        }
+    });
+} 
