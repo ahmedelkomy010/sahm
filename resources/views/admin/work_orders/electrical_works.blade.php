@@ -26,6 +26,36 @@
         border-color: #ffc107;
         box-shadow: 0 0 0 0.2rem rgba(255, 193, 7, 0.25);
     }
+    
+    .table-row-item {
+        transition: all 0.3s ease;
+    }
+    
+    .table-row-item:hover {
+        background-color: rgba(255, 193, 7, 0.1);
+        transform: translateY(-1px);
+    }
+    
+    .btn-danger:hover {
+        transform: scale(1.1);
+        transition: transform 0.2s ease;
+    }
+    
+    .highlight {
+        animation: highlight-animation 1s ease-in-out;
+    }
+    
+    @keyframes highlight-animation {
+        0% {
+            background-color: rgba(40, 167, 69, 0.3);
+        }
+        50% {
+            background-color: rgba(40, 167, 69, 0.1);
+        }
+        100% {
+            background-color: transparent;
+        }
+    }
 </style>
 @endsection
 
@@ -132,7 +162,7 @@
                                                             </div>
 
         <!-- جدول ملخص الأعمال الكهربائية -->
-        <div class="col-lg-6">
+        <div class="col-lg-12">
             <div class="card shadow-sm mb-4">
                 <div class="card-header bg-gradient text-white" style="background: linear-gradient(135deg, #ff9f43 0%, #ff6b6b 100%);">
                     <div class="d-flex justify-content-between align-items-center">
@@ -140,25 +170,31 @@
                             <i class="fas fa-clipboard-list me-2"></i>
                             ملخص الأعمال الكهربائية
                         </h5>
-                        <button type="button" class="btn btn-light btn-sm" onclick="printSummary()">
-                            <i class="fas fa-print me-1"></i>
-                            طباعة الملخص
-                        </button>
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-light btn-sm" onclick="printSummary()">
+                                <i class="fas fa-print me-1"></i>
+                                طباعة الملخص
+                            </button>
+                            <button type="button" class="btn btn-warning btn-sm" onclick="clearAllItems()">
+                                <i class="fas fa-trash-alt me-1"></i>
+                                مسح الكل
+                            </button>
+                        </div>
                                                                 </div>
                                                             </div>
                 <div class="card-body">
                     <!-- إحصائيات سريعة -->
                     <div class="row g-3 mb-4">
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <div class="card bg-primary text-white">
                                 <div class="card-body text-center p-3">
                                     <i class="fas fa-ruler fa-2x mb-2"></i>
                                     <h3 class="mb-1" id="total-length">0</h3>
-                                    <small>إجمالي الأطوال</small>
+                                    <small>إجمالي الأطوال (م)</small>
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <div class="card bg-success text-white">
                                 <div class="card-body text-center p-3">
                                     <i class="fas fa-tasks fa-2x mb-2"></i>
@@ -167,12 +203,21 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <div class="card bg-warning text-dark">
                                 <div class="card-body text-center p-3">
                                     <i class="fas fa-money-bill-wave fa-2x mb-2"></i>
                                     <h3 class="mb-1" id="total-cost">0.00</h3>
-                                    <small>التكلفة الإجمالية</small>
+                                    <small>التكلفة الإجمالية (ريال)</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-info text-white">
+                                <div class="card-body text-center p-3">
+                                    <i class="fas fa-calendar-day fa-2x mb-2"></i>
+                                    <h6 class="mb-1" id="current-summary-date">اليوم</h6>
+                                    <small>تاريخ الملخص</small>
                                 </div>
                             </div>
                         </div>
@@ -183,10 +228,11 @@
                         <table class="table table-bordered table-hover" id="summary-table">
                             <thead class="table-dark">
                                 <tr>
-                                    <th style="width: 35%">البند</th>
-                                    <th style="width: 25%">الطول</th>
-                                    <th style="width: 20%">السعر</th>
-                                    <th style="width: 20%">الإجمالي</th>
+                                    <th style="width: 30%">البند</th>
+                                    <th style="width: 15%">الطول</th>
+                                    <th style="width: 15%">السعر</th>
+                                    <th style="width: 15%">الإجمالي</th>
+                                    <th style="width: 25%">التاريخ</th>
                                 </tr>
                             </thead>
                             <tbody id="summary-tbody">
@@ -195,14 +241,15 @@
                             <tfoot class="table-light">
                                 <tr>
                                     <td colspan="3" class="text-start fw-bold">الإجمالي الكلي:</td>
-                                    <td class="text-center fw-bold" id="total-amount">0.00</td>
+                                    <td class="text-center fw-bold text-primary" id="total-amount">0.00 ريال</td>
+                                    <td class="text-center fw-bold text-muted" id="current-date"></td>
                                 </tr>
                             </tfoot>
-                                            </table>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <!-- قسم رفع صور الأعمال الكهربائية -->
         <div class="col-lg-12">

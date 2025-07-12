@@ -37,7 +37,10 @@ class ElectricalWorksController extends Controller
             $workOrder = $workOrder->fresh();
             
             // استرجاع صور الأعمال الكهربائية
-            $electricalWorksImages = collect(); // مبسط للآن
+            $electricalWorksImages = $workOrder->files()
+                ->where('file_category', 'electrical_works')
+                ->orderBy('created_at', 'desc')
+                ->get();
             
             // تسجيل البيانات المسترجعة للتشخيص
             \Log::info('Retrieved electrical works data for work order ' . $workOrder->id);
@@ -52,59 +55,55 @@ class ElectricalWorksController extends Controller
             
         } catch (\Exception $e) {
             \Log::error('Error in ElectricalWorksController index method: ' . $e->getMessage());
-            throw $e;
+            return redirect()->back()->with('error', 'حدث خطأ في تحميل الصفحة: ' . $e->getMessage());
         }
     }
 
     public function store(Request $request, WorkOrder $workOrder)
     {
-        \Log::info('ElectricalWorksController store method called');
-        \Log::info('Work Order ID: ' . $workOrder->id);
-        
         try {
-            // حفظ بيانات الأعمال الكهربائية
-            $electricalWorksData = $request->input('electrical_works', []);
-            \Log::info('Raw electrical works data:', $electricalWorksData);
-            
-            // تنظيف البيانات وضمان وجود الحقول الجديدة
-            $cleanedData = [];
-            foreach ($electricalWorksData as $key => $data) {
-                if (isset($data['length']) || isset($data['price']) || isset($data['total'])) {
-                    $cleanedData[$key] = [
-                        'length' => isset($data['length']) ? (string) floatval($data['length']) : '0',
-                        'price' => isset($data['price']) ? (string) floatval($data['price']) : '0',
-                        'total' => isset($data['total']) ? (string) floatval($data['total']) : '0'
-                    ];
-                }
-            }
-            
-            \Log::info('Cleaned electrical works data:', $cleanedData);
-            
-            $workOrder->update([
-                'electrical_works' => $cleanedData
+            \Log::info('ElectricalWorksController store method called', [
+                'work_order_id' => $workOrder->id,
+                'request_data' => $request->all()
             ]);
-            
-            \Log::info('Work order updated successfully');
-            
-            // التحقق من الحفظ
-            $workOrder = $workOrder->fresh();
-            \Log::info('Saved electrical works data verified:', ['data' => $workOrder->electrical_works]);
 
-            // إذا كان الطلب AJAX، إرجاع استجابة JSON
-            if ($request->ajax()) {
+            // التحقق من صحة البيانات
+            $validatedData = $request->validate([
+                'electrical_works' => 'nullable|array',
+                'electrical_works.*' => 'nullable|array',
+                'electrical_works.*.length' => 'nullable|numeric|min:0',
+                'electrical_works.*.price' => 'nullable|numeric|min:0',
+                'electrical_works.*.total' => 'nullable|numeric|min:0',
+            ]);
+
+            // حفظ البيانات في قاعدة البيانات
+            $workOrder->update([
+                'electrical_works' => $validatedData['electrical_works'] ?? [],
+                'electrical_works_last_update' => now()
+            ]);
+
+            \Log::info('Electrical works data saved successfully', [
+                'work_order_id' => $workOrder->id,
+                'data' => $validatedData['electrical_works'] ?? []
+            ]);
+
+            if ($request->expectsJson()) {
                 return response()->json([
                     'success' => true,
-                    'message' => 'تم حفظ بيانات الأعمال الكهربائية بنجاح'
+                    'message' => 'تم حفظ البيانات بنجاح'
                 ]);
             }
 
-            return redirect()->back()->with('success', 'تم حفظ بيانات الأعمال الكهربائية بنجاح');
-                
-        } catch (\Exception $e) {
-            \Log::error('Error saving electrical works: ' . $e->getMessage());
-            \Log::error('Error trace: ' . $e->getTraceAsString());
+            return redirect()->back()->with('success', 'تم حفظ البيانات بنجاح');
             
-            if ($request->ajax()) {
+        } catch (\Exception $e) {
+            \Log::error('Error saving electrical works data: ' . $e->getMessage(), [
+                'work_order_id' => $workOrder->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            if ($request->expectsJson()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'حدث خطأ أثناء حفظ البيانات: ' . $e->getMessage()
@@ -112,6 +111,42 @@ class ElectricalWorksController extends Controller
             }
 
             return redirect()->back()->with('error', 'حدث خطأ أثناء حفظ البيانات');
+        }
+    }
+
+    public function getDailyData(WorkOrder $workOrder)
+    {
+        try {
+            $dailyData = $workOrder->daily_electrical_works_data ?? [];
+            return response()->json([
+                'success' => true,
+                'data' => $dailyData
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء جلب البيانات اليومية: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function clearDailyData(WorkOrder $workOrder)
+    {
+        try {
+            $workOrder->update([
+                'daily_electrical_works_data' => [],
+                'daily_electrical_works_last_update' => now()
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'تم مسح البيانات اليومية بنجاح'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء مسح البيانات اليومية: ' . $e->getMessage()
+            ], 500);
         }
     }
 
@@ -131,7 +166,7 @@ class ElectricalWorksController extends Controller
                     'file_type' => $image->getMimeType(),
                     'file_size' => $image->getSize(),
                     'original_filename' => $image->getClientOriginalName(),
-                    'category' => 'electrical_works'
+                    'file_category' => 'electrical_works'
                 ]);
             }
         }
@@ -141,8 +176,9 @@ class ElectricalWorksController extends Controller
 
     public function deleteImage(WorkOrder $workOrder, $image)
     {
-        $file = $workOrder->electricalWorksFiles()
+        $file = $workOrder->files()
             ->where('id', $image)
+            ->where('file_category', 'electrical_works')
             ->firstOrFail();
         
         if (Storage::disk('public')->exists($file->file_path)) {

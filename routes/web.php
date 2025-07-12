@@ -160,6 +160,8 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::post('work-orders/{workOrder}/electrical-works/store', [App\Http\Controllers\ElectricalWorksController::class, 'store'])->name('work-orders.electrical-works.store');
     Route::post('work-orders/{workOrder}/electrical-works/images', [App\Http\Controllers\ElectricalWorksController::class, 'storeImages'])->name('work-orders.electrical-works.images');
     Route::delete('work-orders/{workOrder}/electrical-works/images/{image}', [App\Http\Controllers\ElectricalWorksController::class, 'deleteImage'])->name('work-orders.electrical-works.delete-image');
+    Route::get('work-orders/{workOrder}/electrical-works/daily-data', [App\Http\Controllers\ElectricalWorksController::class, 'getDailyData'])->name('work-orders.electrical-works.daily-data');
+    Route::post('work-orders/{workOrder}/electrical-works/clear-daily-data', [App\Http\Controllers\ElectricalWorksController::class, 'clearDailyData'])->name('work-orders.electrical-works.clear-daily-data');
 
     // حذف سجل العمليات المدخلة
     Route::delete('work-orders/logs/{log}', [\App\Http\Controllers\WorkOrderController::class, 'deleteLog'])->name('work-orders.delete-log');
