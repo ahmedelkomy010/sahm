@@ -24,6 +24,11 @@ class WorkOrderFile extends Model
         'description'
     ];
 
+    protected $attributes = [
+        'file_category' => 'survey_images',
+        'file_name' => '' // إضافة قيمة افتراضية فارغة
+    ];
+
     public function workOrder()
     {
         return $this->belongsTo(WorkOrder::class);

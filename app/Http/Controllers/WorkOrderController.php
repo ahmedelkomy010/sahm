@@ -235,83 +235,135 @@ class WorkOrderController extends Controller
 
             \Log::info('البيانات المتحقق منها:', $validated);
 
-            // إنشاء المسح
-            $survey = new Survey([
-                'start_coordinates' => $validated['start_coordinates'],
-                'end_coordinates' => $validated['end_coordinates'],
-                'has_obstacles' => $validated['has_obstacles'],
-                'obstacles_notes' => $validated['obstacles_notes'] ?? null,
-                'survey_type' => 'general', // Set default type
-                'survey_date' => now(), // Set current date
-                'created_by' => auth()->id(), // Set current user
-                'work_order_id' => $workOrder->id, // Set work order relationship
-                'survey_number' => 'SRV-' . date('Ymd') . '-' . str_pad(Survey::count() + 1, 4, '0', STR_PAD_LEFT) // Generate survey number
-            ]);
+            DB::beginTransaction();
 
-            // Save the survey
-            $survey->save();
+            try {
+                // إنشاء المسح
+                $survey = new Survey([
+                    'work_order_id' => $workOrder->id,
+                    'start_coordinates' => $validated['start_coordinates'],
+                    'end_coordinates' => $validated['end_coordinates'],
+                    'has_obstacles' => (bool)$validated['has_obstacles'],
+                    'obstacles_notes' => $validated['obstacles_notes'] ?? null,
+                    'created_by' => auth()->id(),
+                    'survey_number' => 'SV-' . time() . '-' . $workOrder->id,
+                    'survey_type' => 'site',
+                    'survey_date' => now(),
+                ]);
 
-            \Log::info('تم إنشاء المسح:', $survey->toArray());
+                if (!$survey->save()) {
+                    throw new \Exception('فشل في حفظ بيانات المسح');
+                }
 
-            // معالجة الصور
-            if ($request->hasFile('site_images')) {
-                \Log::info('عدد الصور المرفقة:', ['count' => count($request->file('site_images'))]);
-                
-                foreach ($request->file('site_images') as $image) {
-                    try {
-                        $filename = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
-                        $path = 'work_orders/' . $workOrder->id . '/surveys/' . $survey->id;
-                        
-                        // التأكد من وجود المجلد
+                \Log::info('تم إنشاء المسح:', $survey->toArray());
+
+                // معالجة الصور
+                if ($request->hasFile('site_images')) {
+                    \Log::info('عدد الصور المرفقة:', ['count' => count($request->file('site_images'))]);
+                    
+                    // إنشاء المجلد
+                    $path = 'work_orders/' . $workOrder->id . '/surveys/' . $survey->id;
+                    if (!Storage::disk('public')->exists($path)) {
                         Storage::disk('public')->makeDirectory($path, 0755, true);
-                        
-                        // حفظ الصورة
-                        $filePath = $image->storeAs($path, $filename, 'public');
-                        \Log::info('تم حفظ الصورة:', ['path' => $filePath]);
-                        
-                        // إنشاء سجل الملف
-                        $file = new WorkOrderFile([
-                            'work_order_id' => $workOrder->id,
-                            'survey_id' => $survey->id,
-                            'filename' => $filename,
-                            'original_filename' => $image->getClientOriginalName(),
-                            'file_path' => $filePath,
-                            'file_type' => $image->getMimeType(),
-                            'file_size' => $image->getSize(),
-                            'file_category' => 'survey_images'
-                        ]);
-                        $file->save();
-                        
-                        \Log::info('تم إنشاء سجل الملف:', $file->toArray());
-                    } catch (\Exception $e) {
-                        \Log::error('خطأ في معالجة الصورة: ' . $e->getMessage());
-                        \Log::error('Stack trace: ' . $e->getTraceAsString());
-                        // Continue with next image even if one fails
-                        continue;
+                    }
+                    
+                    foreach ($request->file('site_images') as $image) {
+                        try {
+                            // التحقق من صحة الملف
+                            if (!$image->isValid()) {
+                                throw new \Exception('الملف غير صالح: ' . $image->getErrorMessage());
+                            }
+
+                            // التحقق من نوع الملف
+                            $allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+                            if (!in_array($image->getMimeType(), $allowedTypes)) {
+                                throw new \Exception('نوع الملف غير مدعوم: ' . $image->getMimeType());
+                            }
+
+                            // التحقق من حجم الملف
+                            if ($image->getSize() > 30 * 1024 * 1024) { // 30MB
+                                throw new \Exception('حجم الملف يتجاوز الحد المسموح به (30 ميجابايت)');
+                            }
+
+                            // إنشاء اسم فريد للملف
+                            $filename = uniqid('survey_') . '_' . time() . '.' . $image->getClientOriginalExtension();
+                            
+                            // حفظ الصورة
+                            $filePath = $image->storeAs($path, $filename, 'public');
+                            
+                            if (!$filePath) {
+                                throw new \Exception('فشل في حفظ الملف');
+                            }
+
+                            \Log::info('تم حفظ الصورة:', ['path' => $filePath]);
+                            
+                            // إنشاء سجل الملف
+                            $file = new WorkOrderFile([
+                                'work_order_id' => $workOrder->id,
+                                'survey_id' => $survey->id,
+                                'filename' => $filename,
+                                'original_filename' => $image->getClientOriginalName(),
+                                'file_path' => $filePath,
+                                'file_type' => $image->getMimeType(),
+                                'file_size' => $image->getSize(),
+                                'file_category' => 'survey_images',
+                                'file_name' => $image->getClientOriginalName(), // إضافة حقل file_name
+                                'mime_type' => $image->getMimeType() // إضافة حقل mime_type
+                            ]);
+
+                            if (!$file->save()) {
+                                throw new \Exception('فشل في حفظ بيانات الملف في قاعدة البيانات');
+                            }
+                            
+                            \Log::info('تم إنشاء سجل الملف:', $file->toArray());
+                        } catch (\Exception $e) {
+                            \Log::error('خطأ في معالجة الصورة: ' . $e->getMessage());
+                            // حذف الملف إذا تم حفظه
+                            if (isset($filePath) && Storage::disk('public')->exists($filePath)) {
+                                Storage::disk('public')->delete($filePath);
+                            }
+                            throw $e;
+                        }
                     }
                 }
+
+                DB::commit();
+
+                // تحميل المسح مع الملفات
+                $survey->load('files');
+                
+                // تحضير بيانات الصور للرد
+                $images = $survey->files->map(function($file) {
+                    return [
+                        'id' => $file->id,
+                        'name' => $file->original_filename,
+                        'url' => \App\Helpers\FileHelper::getImageUrl($file->file_path)
+                    ];
+                });
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'تم حفظ المسح بنجاح',
+                    'survey' => array_merge($survey->toArray(), ['images' => $images])
+                ]);
+
+            } catch (\Exception $e) {
+                DB::rollBack();
+                
+                // حذف الملفات المحفوظة في حالة الفشل
+                if (isset($survey) && isset($path)) {
+                    Storage::disk('public')->deleteDirectory($path);
+                }
+                
+                throw $e;
             }
-
-            return response()->json([
-                'message' => 'تم حفظ المسح بنجاح',
-                'survey' => $survey->load('files')
-            ]);
-
         } catch (\Exception $e) {
             \Log::error('خطأ في حفظ المسح: ' . $e->getMessage());
             \Log::error('Stack trace: ' . $e->getTraceAsString());
             
-            // Return more specific error message
-            $errorMessage = 'حدث خطأ أثناء حفظ المسح';
-            if ($e instanceof \Illuminate\Validation\ValidationException) {
-                $errorMessage = 'خطأ في التحقق من البيانات: ' . implode(', ', $e->errors());
-            } elseif ($e instanceof \Illuminate\Database\QueryException) {
-                $errorMessage = 'خطأ في قاعدة البيانات';
-            }
-            
             return response()->json([
-                'message' => $errorMessage,
-                'error' => $e->getMessage()
+                'success' => false,
+                'message' => 'حدث خطأ أثناء حفظ المسح: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -2049,80 +2101,246 @@ class WorkOrderController extends Controller
                 'has_obstacles' => 'required|boolean',
                 'obstacles_notes' => 'required_if:has_obstacles,1|nullable|string|max:1000',
                 'site_images.*' => 'nullable|image|mimes:jpeg,png,jpg|max:30720', // 30MB max
+                'deleted_files' => 'nullable|array',
+                'deleted_files.*' => 'exists:work_order_files,id'
             ]);
 
             \Log::info('البيانات المتحقق منها:', $validated);
 
-            // تحديث بيانات المسح
-            $survey->update([
-                'start_coordinates' => $validated['start_coordinates'],
-                'end_coordinates' => $validated['end_coordinates'],
-                'has_obstacles' => $validated['has_obstacles'],
-                'obstacles_notes' => $validated['obstacles_notes'] ?? null
-            ]);
+            DB::beginTransaction();
 
-            \Log::info('تم تحديث المسح:', $survey->toArray());
+            try {
+                // تحديث بيانات المسح
+                $survey->update([
+                    'start_coordinates' => $validated['start_coordinates'],
+                    'end_coordinates' => $validated['end_coordinates'],
+                    'has_obstacles' => (bool)$validated['has_obstacles'],
+                    'obstacles_notes' => $validated['obstacles_notes'] ?? null
+                ]);
 
-            // معالجة الصور الجديدة
-            if ($request->hasFile('site_images')) {
-                \Log::info('عدد الصور المرفقة:', ['count' => count($request->file('site_images'))]);
-                
-                foreach ($request->file('site_images') as $image) {
-                    try {
-                        $filename = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
-                        $path = 'work_orders/' . $survey->work_order_id . '/surveys/' . $survey->id;
-                        
-                        // التأكد من وجود المجلد
-                        Storage::disk('public')->makeDirectory($path, 0755, true);
-                        
-                        // حفظ الصورة
-                        $filePath = $image->storeAs($path, $filename, 'public');
-                        \Log::info('تم حفظ الصورة:', ['path' => $filePath]);
-                        
-                        // إنشاء سجل الملف
-                        $file = new WorkOrderFile([
-                            'work_order_id' => $survey->work_order_id,
-                            'survey_id' => $survey->id,
-                            'filename' => $filename,
-                            'original_filename' => $image->getClientOriginalName(),
-                            'file_path' => $filePath,
-                            'file_type' => $image->getMimeType(),
-                            'file_size' => $image->getSize(),
-                            'file_category' => 'survey_images'
-                        ]);
-                        $file->save();
-                        
-                        \Log::info('تم إنشاء سجل الملف:', $file->toArray());
-                    } catch (\Exception $e) {
-                        \Log::error('خطأ في معالجة الصورة: ' . $e->getMessage());
-                        \Log::error('Stack trace: ' . $e->getTraceAsString());
-                        // Continue with next image even if one fails
-                        continue;
+                \Log::info('تم تحديث المسح:', $survey->toArray());
+
+                // حذف الملفات المحددة
+                if ($request->has('deleted_files')) {
+                    $deletedFiles = $request->input('deleted_files');
+                    if (is_array($deletedFiles)) {
+                        foreach ($deletedFiles as $fileId) {
+                            $file = WorkOrderFile::where('id', (int)$fileId)
+                                ->where('survey_id', $survey->id)
+                                ->first();
+
+                            if ($file) {
+                                try {
+                                    // حذف الملف الفعلي
+                                    if (Storage::disk('public')->exists($file->file_path)) {
+                                        Storage::disk('public')->delete($file->file_path);
+                                    }
+                                    // حذف السجل
+                                    $file->delete();
+                                    \Log::info('تم حذف الملف بنجاح:', ['file_id' => $fileId]);
+                                } catch (\Exception $e) {
+                                    \Log::error('خطأ في حذف الملف:', [
+                                        'file_id' => $fileId,
+                                        'error' => $e->getMessage()
+                                    ]);
+                                    throw $e;
+                                }
+                            }
+                        }
                     }
                 }
-            }
 
-            return response()->json([
-                'message' => 'تم تحديث المسح بنجاح',
-                'survey' => $survey->load('files')
-            ]);
+                // معالجة الصور الجديدة
+                if ($request->hasFile('site_images')) {
+                    \Log::info('عدد الصور المرفقة:', ['count' => count($request->file('site_images'))]);
+                    
+                    $path = 'work_orders/' . $survey->work_order_id . '/surveys/' . $survey->id;
+                    Storage::disk('public')->makeDirectory($path, 0755, true);
+
+                    foreach ($request->file('site_images') as $image) {
+                        try {
+                            // التحقق من صحة الملف
+                            if (!$image->isValid()) {
+                                throw new \Exception('الملف غير صالح: ' . $image->getErrorMessage());
+                            }
+
+                            // التحقق من نوع الملف
+                            $allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+                            if (!in_array($image->getMimeType(), $allowedTypes)) {
+                                throw new \Exception('نوع الملف غير مدعوم: ' . $image->getMimeType());
+                            }
+
+                            // التحقق من حجم الملف
+                            if ($image->getSize() > 30 * 1024 * 1024) { // 30MB
+                                throw new \Exception('حجم الملف يتجاوز الحد المسموح به (30 ميجابايت)');
+                            }
+
+                            // إنشاء اسم فريد للملف
+                            $filename = uniqid('survey_') . '_' . time() . '.' . $image->getClientOriginalExtension();
+                            
+                            // حفظ الصورة
+                            $filePath = $image->storeAs($path, $filename, 'public');
+                            
+                            if (!$filePath) {
+                                throw new \Exception('فشل في حفظ الملف');
+                            }
+
+                            \Log::info('تم حفظ الصورة:', ['path' => $filePath]);
+                            
+                            // إنشاء سجل الملف
+                            $file = new WorkOrderFile([
+                                'work_order_id' => $survey->work_order_id,
+                                'survey_id' => $survey->id,
+                                'filename' => $filename,
+                                'original_filename' => $image->getClientOriginalName(),
+                                'file_path' => $filePath,
+                                'file_type' => $image->getMimeType(),
+                                'file_size' => $image->getSize(),
+                                'file_category' => 'survey_images',
+                                'file_name' => $image->getClientOriginalName(), // إضافة حقل file_name
+                                'mime_type' => $image->getMimeType() // إضافة حقل mime_type
+                            ]);
+                            
+                            if (!$file->save()) {
+                                throw new \Exception('فشل في حفظ بيانات الملف في قاعدة البيانات');
+                            }
+                            
+                            \Log::info('تم إنشاء سجل الملف:', $file->toArray());
+                        } catch (\Exception $e) {
+                            \Log::error('خطأ في معالجة الصورة: ' . $e->getMessage());
+                            // حذف الملف إذا تم حفظه
+                            if (isset($filePath) && Storage::disk('public')->exists($filePath)) {
+                                Storage::disk('public')->delete($filePath);
+                            }
+                            throw $e;
+                        }
+                    }
+                }
+
+                DB::commit();
+
+                // تحميل المسح مع الملفات المحدثة
+                $survey->load('files');
+                
+                // تحضير بيانات الصور للرد
+                $images = $survey->files->map(function($file) {
+                    return [
+                        'id' => $file->id,
+                        'name' => $file->original_filename,
+                        'url' => \App\Helpers\FileHelper::getImageUrl($file->file_path)
+                    ];
+                });
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'تم تحديث المسح بنجاح',
+                    'survey' => array_merge($survey->toArray(), ['images' => $images])
+                ]);
+
+            } catch (\Exception $e) {
+                DB::rollback();
+                
+                // حذف الملفات الجديدة في حالة الفشل
+                if (isset($path)) {
+                    $newFiles = Storage::disk('public')->files($path);
+                    foreach ($newFiles as $file) {
+                        if (strpos($file, uniqid('survey_')) !== false) {
+                            Storage::disk('public')->delete($file);
+                        }
+                    }
+                }
+                
+                throw $e;
+            }
 
         } catch (\Exception $e) {
             \Log::error('خطأ في تحديث المسح: ' . $e->getMessage());
             \Log::error('Stack trace: ' . $e->getTraceAsString());
             
-            // Return more specific error message
             $errorMessage = 'حدث خطأ أثناء تحديث المسح';
             if ($e instanceof \Illuminate\Validation\ValidationException) {
                 $errorMessage = 'خطأ في التحقق من البيانات: ' . implode(', ', $e->errors());
             } elseif ($e instanceof \Illuminate\Database\QueryException) {
                 $errorMessage = 'خطأ في قاعدة البيانات';
+            } else {
+                $errorMessage = $e->getMessage();
             }
             
             return response()->json([
+                'success' => false,
                 'message' => $errorMessage,
                 'error' => $e->getMessage()
             ], 500);
+        }
+    }
+
+    /**
+     * حذف ملف مسح
+     */
+    public function deleteSurveyFile(WorkOrderFile $file)
+    {
+        try {
+            \Log::info('جاري حذف ملف المسح:', ['file_id' => $file->id]);
+
+            // التحقق من وجود الملف
+            if (!$file || !$file->survey_id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'الملف غير موجود أو غير مرتبط بمسح'
+                ], 404);
+            }
+
+            // حذف الملف الفعلي من التخزين
+            if (\Storage::disk('public')->exists($file->file_path)) {
+                \Storage::disk('public')->delete($file->file_path);
+            }
+
+            // حذف السجل من قاعدة البيانات
+            $file->delete();
+
+            \Log::info('تم حذف ملف المسح بنجاح');
+
+            return response()->json([
+                'success' => true,
+                'message' => 'تم حذف الملف بنجاح'
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('خطأ في حذف ملف المسح: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء حذف الملف'
+            ], 500);
+        }
+    }
+
+    public function destroySurvey(WorkOrder $workOrder, Survey $survey)
+    {
+        try {
+            DB::beginTransaction();
+
+            // التحقق من أن المسح ينتمي لأمر العمل المحدد
+            if ($survey->work_order_id !== $workOrder->id) {
+                return back()->with('error', 'المسح غير موجود في أمر العمل المحدد');
+            }
+
+            // حذف الملفات المرتبطة بالمسح
+            foreach ($survey->files as $file) {
+                if (Storage::disk('public')->exists($file->file_path)) {
+                    Storage::disk('public')->delete($file->file_path);
+                }
+                $file->delete();
+            }
+
+            // حذف المسح
+            $survey->delete();
+
+            DB::commit();
+            return back()->with('success', 'تم حذف المسح بنجاح');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('خطأ في حذف المسح: ' . $e->getMessage());
+            return back()->with('error', 'حدث خطأ أثناء حذف المسح');
         }
     }
 } 

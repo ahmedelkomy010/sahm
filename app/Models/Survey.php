@@ -47,7 +47,8 @@ class Survey extends Model
     protected $attributes = [
         'status' => 'pending',
         'has_obstacles' => false,
-        'requires_action' => false
+        'requires_action' => false,
+        'survey_type' => 'site'
     ];
 
     public function workOrder()
@@ -67,26 +68,28 @@ class Survey extends Model
 
     public function files()
     {
-        return $this->hasMany(WorkOrderFile::class, 'survey_id');
+        return $this->hasMany(WorkOrderFile::class, 'survey_id')->where('file_category', 'survey_images');
     }
-
-    // إزالة علاقة history مؤقتاً حيث أن نموذج SurveyHistory غير موجود
-    // public function history()
-    // {
-    //     return $this->hasMany(SurveyHistory::class);
-    // }
 
     protected static function boot()
     {
         parent::boot();
 
         static::creating(function ($survey) {
+            // التأكد من وجود رقم المسح
             if (empty($survey->survey_number)) {
-                $survey->survey_number = 'SRV-' . date('Ymd') . '-' . str_pad(static::count() + 1, 4, '0', STR_PAD_LEFT);
+                $survey->survey_number = 'SV-' . time() . '-' . $survey->work_order_id;
             }
-            if (empty($survey->created_by)) {
-                $survey->created_by = auth()->id();
+        });
+
+        static::deleting(function ($survey) {
+            // حذف الملفات المرتبطة عند حذف المسح
+            foreach ($survey->files as $file) {
+                if (\Storage::disk('public')->exists($file->file_path)) {
+                    \Storage::disk('public')->delete($file->file_path);
+                }
             }
+            $survey->files()->delete();
         });
     }
 } 

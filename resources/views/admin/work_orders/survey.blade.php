@@ -160,7 +160,7 @@
 
                                         <div class="mb-3">
                                             <label for="site_images" class="form-label fw-bold">صور الموقع</label>
-                                            <input type="file" class="form-control @error('site_images.*') is-invalid @enderror" id="site_images" name="site_images[]" multiple accept="image/*">
+                                            <input type="file" class="form-control @error('site_images.*') is-invalid @enderror" id="site_images" name="site_images[]" multiple accept="image/jpeg,image/png,image/jpg">
                                             <div class="form-text">
                                                 <i class="fas fa-info-circle"></i> الحد الأقصى لحجم كل صورة هو 30 ميجابايت. الصيغ المدعومة: JPG, JPEG, PNG
                                             </div>
@@ -180,47 +180,6 @@
                                                 <!-- سيتم إضافة الصور هنا ديناميكياً -->
                                             </div>
                                         </div>
-
-                                        <!-- Modal for viewing images -->
-                                        @forelse($workOrder->surveys as $survey)
-                                            <div class="modal fade" id="viewImagesModal{{ $survey->id }}" tabindex="-1" aria-labelledby="viewImagesModalLabel{{ $survey->id }}" aria-hidden="true">
-                                                <div class="modal-dialog modal-lg">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                            <h5 class="modal-title" id="viewImagesModalLabel{{ $survey->id }}">صور المسح</h5>
-                                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                        </div>
-                                                        <div class="modal-body">
-                                                            <div class="row g-3">
-                                                                @forelse($survey->files as $file)
-                                                                    @php
-                                                                        $imageUrl = \App\Helpers\FileHelper::getImageUrl($file->file_path);
-                                                                    @endphp
-                                                                    @if($imageUrl)
-                                                                        <div class="col-md-4">
-                                                                            <div class="card h-100">
-                                                                                <img src="{{ $imageUrl }}" class="card-img-top" alt="{{ $file->original_filename }}" style="height: 200px; object-fit: cover;">
-                                                                                <div class="card-body">
-                                                                                    <p class="card-text small">{{ $file->original_filename }}</p>
-                                                                                </div>
-                                                                            </div>
-                                                                        </div>
-                                                                    @endif
-                                                                @empty
-                                                                    <div class="col-12">
-                                                                        <div class="alert alert-info mb-0">
-                                                                            <i class="fas fa-info-circle me-2"></i>
-                                                                            لا توجد صور لهذا المسح
-                                                                        </div>
-                                                                    </div>
-                                                                @endforelse
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        @empty
-                                        @endforelse
                                     </div>
                                     <div class="modal-footer">
                                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
@@ -232,6 +191,52 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Modal for viewing images -->
+                    @foreach($workOrder->surveys as $survey)
+                        <div class="modal fade" id="viewImagesModal{{ $survey->id }}" tabindex="-1" aria-labelledby="viewImagesModalLabel{{ $survey->id }}" aria-hidden="true">
+                            <div class="modal-dialog modal-lg">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="viewImagesModalLabel{{ $survey->id }}">صور المسح</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="row g-3">
+                                            @forelse($survey->files as $file)
+                                                @php
+                                                    $imageUrl = \App\Helpers\FileHelper::getImageUrl($file->file_path);
+                                                @endphp
+                                                @if($imageUrl)
+                                                    <div class="col-md-4">
+                                                        <div class="card h-100">
+                                                            <img src="{{ $imageUrl }}" class="card-img-top" alt="{{ $file->original_filename }}" style="height: 200px; object-fit: cover;">
+                                                            <div class="card-body">
+                                                                <p class="card-text small">{{ $file->original_filename }}</p>
+                                                                <button type="button" 
+                                                                        class="btn btn-sm btn-danger delete-survey-image"
+                                                                        data-file-id="{{ $file->id }}"
+                                                                        onclick="deleteSurveyImage({{ $file->id }})">
+                                                                    <i class="fas fa-trash"></i> حذف
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                @endif
+                                            @empty
+                                                <div class="col-12">
+                                                    <div class="alert alert-info mb-0">
+                                                        <i class="fas fa-info-circle me-2"></i>
+                                                        لا توجد صور لهذا المسح
+                                                    </div>
+                                                </div>
+                                            @endforelse
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
 
                     <div class="card mt-4">
                         <div class="card-header bg-light">
@@ -311,9 +316,13 @@
                                                         <button type="button" class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#viewImagesModal{{ $survey->id }}">
                                                             <i class="fas fa-images"></i> عرض الصور
                                                         </button>
-                                                        <button type="button" class="btn btn-sm btn-primary" onclick="editSurvey({{ $survey->id }})">
-                                                            <i class="fas fa-edit"></i> تعديل
-                                                        </button>
+                                                        <form action="{{ route('admin.work-orders.survey.destroy', [$workOrder, $survey]) }}" method="POST" class="d-inline" onsubmit="return confirm('هل أنت متأكد من حذف هذا المسح؟');">
+                                                            @csrf
+                                                            @method('DELETE')
+                                                            <button type="submit" class="btn btn-sm btn-danger">
+                                                                <i class="fas fa-trash"></i> حذف
+                                                            </button>
+                                                        </form>
                                                     </div>
                                                 </td>
                                             </tr>
@@ -414,6 +423,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Function to reset survey form
 function resetSurveyForm() {
+    // إعادة تعيين قائمة الملفات المحذوفة
+    window.deletedFiles = [];
+    
     // Reset form fields
     document.getElementById('surveyForm').reset();
     // Clear survey_id to ensure we're creating a new record, not updating
@@ -426,229 +438,293 @@ function resetSurveyForm() {
     document.getElementById('obstacles_notes_container').style.display = 'none';
 }
 
-function editSurvey(surveyId) {
-    // إظهار مؤشر التحميل
-    const loadingAlert = document.createElement('div');
-    loadingAlert.className = 'alert alert-info';
-    loadingAlert.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري تحميل بيانات المسح...';
-    document.querySelector('.card-body').prepend(loadingAlert);
-
-    // Get survey data
-    fetch(`/admin/work-orders/survey/${surveyId}/edit`, {
-        method: 'GET',
-        headers: {
-            'Accept': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-        },
-        credentials: 'same-origin'
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.json();
-    })
-    .then(data => {
-        // إزالة مؤشر التحميل
-        loadingAlert.remove();
-
-        if (data.success) {
-            // تحديث عنوان النموذج
-            document.getElementById('createSurveyModalLabel').textContent = 'تعديل المسح';
-            
-            // Fill form with survey data
-            document.getElementById('survey_id').value = data.survey.id;
-            document.getElementById('start_coordinates').value = data.survey.start_coordinates;
-            document.getElementById('end_coordinates').value = data.survey.end_coordinates;
-            
-            // تحديث حالة المعوقات
-            const hasObstacles = data.survey.has_obstacles ? '1' : '0';
-            document.querySelector(`input[name="has_obstacles"][value="${hasObstacles}"]`).checked = true;
-            document.getElementById('obstacles_notes').value = data.survey.obstacles_notes || '';
-            
-            // تحديث عرض حقل الملاحظات بناءً على حالة المعوقات
-            toggleObstaclesNotes();
-            
-            // عرض الصور الحالية
-            const existingImages = document.getElementById('existingImages');
-            const imagesContainer = document.getElementById('imagesContainer');
-            imagesContainer.innerHTML = '';
-            
-            if (data.survey.images && data.survey.images.length > 0) {
-                data.survey.images.forEach(image => {
-                    const col = document.createElement('div');
-                    col.className = 'col-md-4';
-                    col.innerHTML = `
-                        <div class="card h-100">
-                            <img src="${image.url}" class="card-img-top" alt="${image.name}" style="height: 200px; object-fit: cover;">
-                            <div class="card-body">
-                                <p class="card-text small">${image.name}</p>
-                            </div>
-                        </div>
-                    `;
-                    imagesContainer.appendChild(col);
-                });
-                existingImages.style.display = 'block';
-            } else {
-                existingImages.style.display = 'none';
-            }
-            
-            // فتح النموذج
-            const modal = new bootstrap.Modal(document.getElementById('createSurveyModal'));
-            modal.show();
-        } else {
-            throw new Error(data.message || 'حدث خطأ أثناء تحميل بيانات المسح');
-        }
-    })
-    .catch(error => {
-        // إزالة مؤشر التحميل
-        loadingAlert.remove();
-        
-        // عرض رسالة الخطأ
-        const errorAlert = document.createElement('div');
-        errorAlert.className = 'alert alert-danger alert-dismissible fade show';
-        errorAlert.innerHTML = `
-            <i class="fas fa-exclamation-triangle me-2"></i>
-            ${error.message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        `;
-        document.querySelector('.card-body').prepend(errorAlert);
-        
-        // إخفاء رسالة الخطأ بعد 5 ثواني
-        setTimeout(() => {
-            if (errorAlert.parentNode) {
-                errorAlert.remove();
-            }
-        }, 5000);
-    });
-}
-
-// Handle form submission
+// تحسين معالجة تحديث المسح
 document.getElementById('surveyForm').addEventListener('submit', function(e) {
     e.preventDefault();
     
     // التحقق من صحة البيانات
     const hasObstacles = document.querySelector('input[name="has_obstacles"]:checked');
     const obstaclesNotes = document.getElementById('obstacles_notes');
+    const submitButton = this.querySelector('button[type="submit"]');
+    const modalBody = this.querySelector('.modal-body');
+    
+    // إزالة رسائل الخطأ السابقة
+    modalBody.querySelectorAll('.alert').forEach(alert => alert.remove());
     
     if (hasObstacles && hasObstacles.value === '1' && !obstaclesNotes.value.trim()) {
-        // إظهار رسالة خطأ
-        const errorAlert = document.createElement('div');
-        errorAlert.className = 'alert alert-danger alert-dismissible fade show';
-        errorAlert.innerHTML = `
-            <i class="fas fa-exclamation-triangle me-2"></i>
-            يرجى إدخال ملاحظات المعوقات عند اختيار "نعم"
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        `;
-        
-        // إدراج رسالة الخطأ في أعلى النموذج
-        const modalBody = this.querySelector('.modal-body');
-        modalBody.insertBefore(errorAlert, modalBody.firstChild);
-        
-        // التركيز على حقل الملاحظات
+        showError('يرجى إدخال ملاحظات المعوقات عند اختيار "نعم"', modalBody);
         obstaclesNotes.focus();
         obstaclesNotes.classList.add('is-invalid');
-        
-        // إزالة رسالة الخطأ بعد 5 ثواني
-        setTimeout(() => {
-            if (errorAlert.parentNode) {
-                errorAlert.remove();
-            }
-            obstaclesNotes.classList.remove('is-invalid');
-        }, 5000);
-        
         return;
+    }
+    
+    // التحقق من الصور
+    const siteImages = document.getElementById('site_images').files;
+    for (let i = 0; i < siteImages.length; i++) {
+        const file = siteImages[i];
+        
+        // التحقق من نوع الملف
+        if (!['image/jpeg', 'image/png', 'image/jpg'].includes(file.type)) {
+            showError(`الملف ${file.name} ليس صورة صالحة. الصيغ المدعومة هي: JPG, JPEG, PNG`, modalBody);
+            return;
+        }
+        
+        // التحقق من حجم الملف
+        if (file.size > 30 * 1024 * 1024) {
+            showError(`الملف ${file.name} أكبر من 30 ميجابايت`, modalBody);
+            return;
+        }
     }
     
     const formData = new FormData(this);
     const surveyId = document.getElementById('survey_id').value;
     
-    // Show loading state
-    const submitButton = this.querySelector('button[type="submit"]');
+    // إضافة الملفات المحذوفة إلى FormData
+    const deletedFiles = window.deletedFiles || [];
+    if (deletedFiles.length > 0) {
+        formData.delete('deleted_files[]'); // حذف أي قيم سابقة
+        deletedFiles.forEach(fileId => {
+            formData.append('deleted_files[]', fileId.toString());
+        });
+    }
+    
+    // إظهار حالة التحميل
     const originalText = submitButton.innerHTML;
     submitButton.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> جاري الحفظ...';
     submitButton.disabled = true;
+    
+    // إضافة مؤشر تقدم رفع الملفات
+    const progressContainer = document.createElement('div');
+    progressContainer.className = 'progress mt-3';
+    progressContainer.innerHTML = `
+        <div class="progress-bar progress-bar-striped progress-bar-animated" 
+             role="progressbar" 
+             style="width: 0%" 
+             aria-valuenow="0" 
+             aria-valuemin="0" 
+             aria-valuemax="100">0%</div>
+    `;
+    modalBody.appendChild(progressContainer);
 
-    // تحديد URL وطريقة الطلب بناءً على وجود معرف المسح
+    // تحديد URL وطريقة الطلب
     let url = this.action;
     let method = 'POST';
     
     if (surveyId) {
         url = `/admin/work-orders/survey/${surveyId}`;
         method = 'PUT';
-        formData.append('_method', 'PUT'); // Laravel method spoofing
+        formData.append('_method', 'PUT');
     }
     
-    fetch(url, {
-        method: method,
-        body: formData,
-        headers: {
-            'X-Requested-With': 'XMLHttpRequest',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+    // إنشاء كائن XMLHttpRequest للتحكم في رفع الملفات
+    const xhr = new XMLHttpRequest();
+    
+    xhr.upload.onprogress = function(e) {
+        if (e.lengthComputable) {
+            const percentComplete = (e.loaded / e.total) * 100;
+            const progressBar = progressContainer.querySelector('.progress-bar');
+            progressBar.style.width = percentComplete + '%';
+            progressBar.setAttribute('aria-valuenow', percentComplete);
+            progressBar.textContent = Math.round(percentComplete) + '%';
         }
-    })
-    .then(response => {
-        if (!response.ok) {
-            return response.json().then(err => {
-                throw new Error(err.message || `HTTP error! status: ${response.status}`);
-            });
+    };
+    
+    xhr.onload = function() {
+        try {
+            const response = JSON.parse(xhr.responseText);
+            if (xhr.status === 200 && response.success) {
+                // إعادة تعيين قائمة الملفات المحذوفة
+                window.deletedFiles = [];
+                showSuccess(response.message);
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            } else {
+                throw new Error(response.message || 'حدث خطأ أثناء حفظ المسح');
+            }
+        } catch (error) {
+            showError(error.message, modalBody);
+        } finally {
+            submitButton.innerHTML = originalText;
+            submitButton.disabled = false;
+            progressContainer.remove();
         }
-        return response.json();
-    })
-    .then(data => {
-        // Show success message
-        const successAlert = document.createElement('div');
-        successAlert.className = 'alert alert-success alert-dismissible fade show';
-        successAlert.innerHTML = `
-            <i class="fas fa-check-circle me-2"></i>
-            ${data.message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        `;
-        
-        // Insert success message at the top of the card body
-        const cardBody = document.querySelector('.card-body');
-        cardBody.insertBefore(successAlert, cardBody.firstChild);
-        
-        // Auto-hide after 5 seconds
-        setTimeout(() => {
-            if (successAlert.parentNode) {
-                successAlert.remove();
-            }
-        }, 5000);
-        
-        // Reload the page to show updated data
-        setTimeout(() => {
-            window.location.reload();
-        }, 1000);
-    })
-    .catch(error => {
-        // Show error message
-        const errorAlert = document.createElement('div');
-        errorAlert.className = 'alert alert-danger alert-dismissible fade show';
-        errorAlert.innerHTML = `
-            <i class="fas fa-exclamation-triangle me-2"></i>
-            ${error.message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        `;
-        
-        // Insert error message at the top of the form
-        const modalBody = this.querySelector('.modal-body');
-        modalBody.insertBefore(errorAlert, modalBody.firstChild);
-        
-        // Auto-hide after 5 seconds
-        setTimeout(() => {
-            if (errorAlert.parentNode) {
-                errorAlert.remove();
-            }
-        }, 5000);
-    })
-    .finally(() => {
-        // Restore button state
+    };
+    
+    xhr.onerror = function() {
+        showError('حدث خطأ في الاتصال بالخادم', modalBody);
         submitButton.innerHTML = originalText;
         submitButton.disabled = false;
-    });
+        progressContainer.remove();
+    };
+    
+    xhr.open(method, url, true);
+    xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+    xhr.setRequestHeader('X-CSRF-TOKEN', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+    xhr.send(formData);
 });
+
+// دالة مساعدة لعرض رسائل الخطأ
+function showError(message, container) {
+    const errorAlert = document.createElement('div');
+    errorAlert.className = 'alert alert-danger alert-dismissible fade show mt-3';
+    errorAlert.innerHTML = `
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    `;
+    container.insertBefore(errorAlert, container.firstChild);
+    
+    setTimeout(() => {
+        if (errorAlert.parentNode) {
+            errorAlert.remove();
+        }
+    }, 5000);
+}
+
+// دالة مساعدة لعرض رسائل النجاح
+function showSuccess(message) {
+    const successAlert = document.createElement('div');
+    successAlert.className = 'alert alert-success alert-dismissible fade show';
+    successAlert.innerHTML = `
+        <i class="fas fa-check-circle me-2"></i>
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    `;
+    
+    document.querySelector('.card-body').insertBefore(successAlert, document.querySelector('.card-body').firstChild);
+    
+    setTimeout(() => {
+        if (successAlert.parentNode) {
+            successAlert.remove();
+        }
+    }, 5000);
+}
+
+// إضافة معاينة الصور قبل الرفع
+document.getElementById('site_images').addEventListener('change', function(e) {
+    const previewContainer = document.createElement('div');
+    previewContainer.className = 'row g-3 mt-3';
+    previewContainer.id = 'imagePreviewContainer';
+    
+    // إزالة المعاينة السابقة إن وجدت
+    const oldPreview = document.getElementById('imagePreviewContainer');
+    if (oldPreview) {
+        oldPreview.remove();
+    }
+    
+    Array.from(this.files).forEach((file, index) => {
+        // التحقق من نوع الملف
+        if (!file.type.match('image/jpeg') && !file.type.match('image/png') && !file.type.match('image/jpg')) {
+            toastr.error(`الملف ${file.name} ليس صورة صالحة. الصيغ المدعومة هي: JPG, JPEG, PNG`);
+            return;
+        }
+        
+        // التحقق من حجم الملف (30MB)
+        if (file.size > 30 * 1024 * 1024) {
+            toastr.error(`الملف ${file.name} أكبر من 30 ميجابايت`);
+            return;
+        }
+        
+        const col = document.createElement('div');
+        col.className = 'col-md-4';
+        
+        const card = document.createElement('div');
+        card.className = 'card h-100';
+        
+        const img = document.createElement('img');
+        img.className = 'card-img-top';
+        img.style.height = '200px';
+        img.style.objectFit = 'cover';
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+        
+        const cardBody = document.createElement('div');
+        cardBody.className = 'card-body';
+        
+        const fileName = document.createElement('p');
+        fileName.className = 'card-text small';
+        fileName.textContent = file.name;
+        
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.className = 'btn btn-sm btn-danger';
+        removeBtn.innerHTML = '<i class="fas fa-times"></i> إزالة';
+        removeBtn.onclick = function() {
+            col.remove();
+            
+            // إنشاء FileList جديد بدون الملف المحذوف
+            const dt = new DataTransfer();
+            const input = document.getElementById('site_images');
+            const { files } = input;
+            
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                if (i !== index) {
+                    dt.items.add(file);
+                }
+            }
+            
+            input.files = dt.files;
+        };
+        
+        cardBody.appendChild(fileName);
+        cardBody.appendChild(removeBtn);
+        card.appendChild(img);
+        card.appendChild(cardBody);
+        col.appendChild(card);
+        previewContainer.appendChild(col);
+    });
+    
+    if (previewContainer.children.length > 0) {
+        this.parentElement.appendChild(previewContainer);
+    }
+});
+
+// تحسين وظيفة حذف الصور
+function deleteSurveyImage(fileId) {
+    if (!confirm('هل أنت متأكد من حذف هذه الصورة؟')) {
+        return;
+    }
+    
+    const imageCard = document.querySelector(`[data-file-id="${fileId}"]`).closest('.col-md-4');
+    const loadingOverlay = document.createElement('div');
+    loadingOverlay.className = 'position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center bg-dark bg-opacity-50';
+    loadingOverlay.innerHTML = '<div class="spinner-border text-light" role="status"></div>';
+    imageCard.style.position = 'relative';
+    imageCard.appendChild(loadingOverlay);
+    
+    // إضافة الملف المحذوف إلى القائمة
+    if (!window.deletedFiles) {
+        window.deletedFiles = [];
+    }
+    // تحويل fileId إلى رقم وإضافته إلى المصفوفة
+    window.deletedFiles.push(parseInt(fileId));
+    
+    // إخفاء الصورة من الواجهة
+    imageCard.remove();
+    
+    // التحقق مما إذا كانت هناك صور متبقية
+    const imagesContainer = document.getElementById('imagesContainer');
+    if (imagesContainer && imagesContainer.children.length === 0) {
+        const noImagesAlert = document.createElement('div');
+        noImagesAlert.className = 'col-12';
+        noImagesAlert.innerHTML = `
+            <div class="alert alert-info mb-0">
+                <i class="fas fa-info-circle me-2"></i>
+                لا توجد صور لهذا المسح
+            </div>
+        `;
+        imagesContainer.appendChild(noImagesAlert);
+    }
+}
+
+// إضافة متغير عام لتتبع الملفات المحذوفة
+window.deletedFiles = [];
 </script>
 
 <style>

@@ -101,6 +101,8 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::post('work-orders/{workOrder}/survey', [WorkOrderController::class, 'storeSurvey'])->name('work-orders.survey.store');
     Route::get('work-orders/survey/{survey}/edit', [WorkOrderController::class, 'editSurvey'])->name('work-orders.survey.edit');
     Route::put('work-orders/survey/{survey}', [WorkOrderController::class, 'updateSurvey'])->name('work-orders.survey.update');
+    Route::delete('work-orders/survey/files/{file}', [WorkOrderController::class, 'deleteSurveyFile'])->name('work-orders.survey.files.delete');
+    Route::delete('work-orders/survey/{workOrder}/{survey}', [WorkOrderController::class, 'destroySurvey'])->name('work-orders.survey.destroy');
     
     // صفحات الرخص والتنفيذ
     Route::get('work-orders/licenses', [WorkOrderController::class, 'licenses'])->name('work-orders.licenses');
