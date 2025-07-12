@@ -94,32 +94,58 @@
                                     <div class="modal-body">
                                         <div class="row mb-3">
                                             <div class="col-md-6">
-                                                <label for="start_coordinates" class="form-label fw-bold">إحداثيات البداية <span class="text-danger">*</span></label>
-                                                <div class="input-group">
-                                                    <input type="text" class="form-control @error('start_coordinates') is-invalid @enderror" id="start_coordinates" name="start_coordinates" value="{{ old('start_coordinates') }}" required placeholder="أدخل رابط إحداثيات نقطة البداية">
-                                                    <button class="btn btn-outline-secondary" type="button" onclick="copyCoordinates('start_coordinates')">
-                                                        <i class="fas fa-copy"></i>
-                                                    </button>
-                                                </div>
-                                                @error('start_coordinates')
-                                                    <div class="invalid-feedback">
-                                                        {{ $message }}
+                                                <div class="form-group">
+                                                    <label for="start_coordinates" class="form-label required">إحداثيات نقطة البداية</label>
+                                                    <div class="input-group">
+                                                        <input type="text" 
+                                                               class="form-control @error('start_coordinates') is-invalid @enderror" 
+                                                               id="start_coordinates" 
+                                                               name="start_coordinates"
+                                                               placeholder="مثال: 24.796583, 46.800361"
+                                                               value="{{ old('start_coordinates') }}"
+                                                               required>
+                                                        <a href="#" 
+                                                           onclick="openGoogleMaps('start_coordinates'); return false;" 
+                                                           class="btn btn-outline-secondary">
+                                                            <i class="fas fa-map-marker-alt"></i>
+                                                        </a>
                                                     </div>
-                                                @enderror
+                                                    <small class="form-text text-muted">
+                                                        انسخ الإحداثيات مباشرة من خرائط جوجل
+                                                    </small>
+                                                    @error('start_coordinates')
+                                                        <span class="invalid-feedback" role="alert">
+                                                            <strong>{{ $message }}</strong>
+                                                        </span>
+                                                    @enderror
+                                                </div>
                                             </div>
                                             <div class="col-md-6">
-                                                <label for="end_coordinates" class="form-label fw-bold">إحداثيات النهاية <span class="text-danger">*</span></label>
-                                                <div class="input-group">
-                                                    <input type="text" class="form-control @error('end_coordinates') is-invalid @enderror" id="end_coordinates" name="end_coordinates" value="{{ old('end_coordinates') }}" required placeholder="أدخل رابط إحداثيات نقطة النهاية">
-                                                    <button class="btn btn-outline-secondary" type="button" onclick="copyCoordinates('end_coordinates')">
-                                                        <i class="fas fa-copy"></i>
-                                                    </button>
-                                                </div>
-                                                @error('end_coordinates')
-                                                    <div class="invalid-feedback">
-                                                        {{ $message }}
+                                                <div class="form-group">
+                                                    <label for="end_coordinates" class="form-label required">إحداثيات نقطة النهاية</label>
+                                                    <div class="input-group">
+                                                        <input type="text" 
+                                                               class="form-control @error('end_coordinates') is-invalid @enderror" 
+                                                               id="end_coordinates" 
+                                                               name="end_coordinates"
+                                                               placeholder="مثال: 24.796583, 46.800361"
+                                                               value="{{ old('end_coordinates') }}"
+                                                               required>
+                                                        <a href="#" 
+                                                           onclick="openGoogleMaps('end_coordinates'); return false;" 
+                                                           class="btn btn-outline-secondary">
+                                                            <i class="fas fa-map-marker-alt"></i>
+                                                        </a>
                                                     </div>
-                                                @enderror
+                                                    <small class="form-text text-muted">
+                                                        انسخ الإحداثيات مباشرة من خرائط جوجل
+                                                    </small>
+                                                    @error('end_coordinates')
+                                                        <span class="invalid-feedback" role="alert">
+                                                            <strong>{{ $message }}</strong>
+                                                        </span>
+                                                    @enderror
+                                                </div>
                                             </div>
                                         </div>
 
@@ -158,17 +184,33 @@
                                             </div>
                                         </div>
 
-                                        <div class="mb-3">
-                                            <label for="site_images" class="form-label fw-bold">صور الموقع</label>
-                                            <input type="file" class="form-control @error('site_images.*') is-invalid @enderror" id="site_images" name="site_images[]" multiple accept="image/jpeg,image/png,image/jpg">
-                                            <div class="form-text">
-                                                <i class="fas fa-info-circle"></i> الحد الأقصى لحجم كل صورة هو 30 ميجابايت. الصيغ المدعومة: JPG, JPEG, PNG
-                                            </div>
-                                            @error('site_images.*')
-                                                <div class="invalid-feedback">
-                                                    {{ $message }}
+                                        <div class="row mb-3">
+                                            <div class="col-12">
+                                                <div class="form-group">
+                                                    <label for="site_images" class="form-label">صور الموقع</label>
+                                                    <div class="input-group">
+                                                        <input type="file" 
+                                                               class="form-control @error('site_images.*') is-invalid @enderror" 
+                                                               id="site_images" 
+                                                               name="site_images[]" 
+                                                               accept="image/*" 
+                                                               multiple>
+                                                        <button type="button" 
+                                                                class="btn btn-outline-primary" 
+                                                                onclick="openCamera()">
+                                                            <i class="fas fa-camera"></i>
+                                                        </button>
+                                                    </div>
+                                                    <small class="form-text text-muted">
+                                                        يمكنك اختيار عدة صور في نفس الوقت
+                                                    </small>
+                                                    @error('site_images.*')
+                                                        <span class="invalid-feedback" role="alert">
+                                                            <strong>{{ $message }}</strong>
+                                                        </span>
+                                                    @enderror
                                                 </div>
-                                            @enderror
+                                            </div>
                                         </div>
 
                                         <!-- Preview of existing images -->
@@ -264,12 +306,12 @@
                                                 <td>
                                                     @if($survey->start_coordinates)
                                                         <div class="d-flex align-items-center">
-                                                            <a href="{{ $survey->start_coordinates }}" target="_blank" class="text-primary me-2">
-                                                                <i class="fas fa-map-marker-alt"></i> عرض الإحداثيات
+                                                            <a href="https://www.google.com/maps/search/?api=1&query={{ $survey->start_coordinates }}" 
+                                                               target="_blank" 
+                                                               class="text-primary text-decoration-none">
+                                                                <i class="fas fa-map-marker-alt me-1"></i>
+                                                                {{ $survey->start_coordinates }}
                                                             </a>
-                                                            <button class="btn btn-sm btn-outline-secondary" onclick="copyCoordinates('{{ $survey->start_coordinates }}')">
-                                                                <i class="fas fa-copy"></i>
-                                                            </button>
                                                         </div>
                                                     @else
                                                         <span class="text-muted">غير متوفر</span>
@@ -278,12 +320,12 @@
                                                 <td>
                                                     @if($survey->end_coordinates)
                                                         <div class="d-flex align-items-center">
-                                                            <a href="{{ $survey->end_coordinates }}" target="_blank" class="text-primary me-2">
-                                                                <i class="fas fa-map-marker-alt"></i> عرض الإحداثيات
+                                                            <a href="https://www.google.com/maps/search/?api=1&query={{ $survey->end_coordinates }}" 
+                                                               target="_blank" 
+                                                               class="text-primary text-decoration-none">
+                                                                <i class="fas fa-map-marker-alt me-1"></i>
+                                                                {{ $survey->end_coordinates }}
                                                             </a>
-                                                            <button class="btn btn-sm btn-outline-secondary" onclick="copyCoordinates('{{ $survey->end_coordinates }}')">
-                                                                <i class="fas fa-copy"></i>
-                                                            </button>
                                                         </div>
                                                     @else
                                                         <span class="text-muted">غير متوفر</span>
@@ -725,6 +767,219 @@ function deleteSurveyImage(fileId) {
 
 // إضافة متغير عام لتتبع الملفات المحذوفة
 window.deletedFiles = [];
+
+function openGoogleMaps(inputId) {
+    const input = document.getElementById(inputId);
+    const coordinates = input.value.trim();
+    
+    if (!coordinates) {
+        alert('الرجاء إدخال الإحداثيات أولاً');
+        return;
+    }
+    
+    // تنظيف وتنسيق الإحداثيات
+    const coords = coordinates.split(',').map(c => c.trim());
+    if (coords.length !== 2) {
+        alert('تنسيق الإحداثيات غير صحيح. الرجاء إدخال الإحداثيات بالشكل: 24.796583, 46.800361');
+        return;
+    }
+    
+    const url = `https://www.google.com/maps/search/?api=1&query=${coords[0]},${coords[1]}`;
+    window.open(url, '_blank');
+}
+
+function parseCoordinates(coordinates) {
+    // تنظيف النص من أي مسافات زائدة
+    coordinates = coordinates.trim();
+    
+    // محاولة تحليل التنسيق العشري (مثل: 24.796583, 46.800361)
+    const decimalFormat = coordinates.match(/^(-?\d+\.?\d*),\s*(-?\d+\.?\d*)$/);
+    if (decimalFormat) {
+        return [parseFloat(decimalFormat[1]), parseFloat(decimalFormat[2])];
+    }
+    
+    // محاولة تحليل تنسيق الدرجات (مثل: 24°47'47.7"N 46°48'01.3"E)
+    const dmsFormat = coordinates.match(/(\d+)°(\d+)'(\d+\.?\d*)"([NS])\s+(\d+)°(\d+)'(\d+\.?\d*)"([EW])/);
+    if (dmsFormat) {
+        const [_, latDeg, latMin, latSec, latDir, lngDeg, lngMin, lngSec, lngDir] = dmsFormat;
+        
+        let latitude = parseFloat(latDeg) + parseFloat(latMin)/60 + parseFloat(latSec)/3600;
+        let longitude = parseFloat(lngDeg) + parseFloat(lngMin)/60 + parseFloat(lngSec)/3600;
+        
+        if (latDir === 'S') latitude = -latitude;
+        if (lngDir === 'W') longitude = -longitude;
+        
+        return [latitude, longitude];
+    }
+    
+    // محاولة تحليل تنسيق URL خرائط جوجل
+    const urlFormat = coordinates.match(/[?&]q=(-?\d+\.?\d*),(-?\d+\.?\d*)/);
+    if (urlFormat) {
+        return [parseFloat(urlFormat[1]), parseFloat(urlFormat[2])];
+    }
+    
+    throw new Error('تنسيق الإحداثيات غير مدعوم');
+}
+
+function openGoogleMapsFromTable(coordinates) {
+    try {
+        const [lat, lng] = parseCoordinates(coordinates);
+        if (lat && lng) {
+            const googleMapsUrl = `https://www.google.com/maps?q=${lat},${lng}`;
+            window.open(googleMapsUrl, '_blank');
+        } else {
+            alert('تنسيق الإحداثيات غير صحيح');
+        }
+    } catch (error) {
+        console.error('خطأ في معالجة الإحداثيات:', error);
+        alert('حدث خطأ في فتح الموقع على الخريطة');
+    }
+}
+
+// تحديث دالة parseCoordinates لتكون أكثر مرونة
+function parseCoordinates(coordinates) {
+    // تنظيف النص من أي مسافات زائدة
+    coordinates = coordinates.trim();
+    
+    // محاولة تحليل التنسيق العشري (مثل: 24.796583, 46.800361)
+    const decimalFormat = coordinates.match(/^(-?\d+\.?\d*)[,\s]+(-?\d+\.?\d*)$/);
+    if (decimalFormat) {
+        return [parseFloat(decimalFormat[1]), parseFloat(decimalFormat[2])];
+    }
+    
+    // محاولة تحليل تنسيق الدرجات (مثل: 24°47'47.7"N 46°48'01.3"E)
+    const dmsFormat = coordinates.match(/(\d+)°(\d+)'(\d+\.?\d*)"([NS])\s+(\d+)°(\d+)'(\d+\.?\d*)"([EW])/);
+    if (dmsFormat) {
+        const [_, latDeg, latMin, latSec, latDir, lngDeg, lngMin, lngSec, lngDir] = dmsFormat;
+        
+        let latitude = parseFloat(latDeg) + parseFloat(latMin)/60 + parseFloat(latSec)/3600;
+        let longitude = parseFloat(lngDeg) + parseFloat(lngMin)/60 + parseFloat(lngSec)/3600;
+        
+        if (latDir === 'S') latitude = -latitude;
+        if (lngDir === 'W') longitude = -longitude;
+        
+        return [latitude, longitude];
+    }
+    
+    // محاولة تحليل تنسيق URL خرائط جوجل
+    const urlFormat = coordinates.match(/[?&]q=(-?\d+\.?\d*),(-?\d+\.?\d*)/);
+    if (urlFormat) {
+        return [parseFloat(urlFormat[1]), parseFloat(urlFormat[2])];
+    }
+
+    // محاولة تحليل أي رقمين عشريين متتاليين
+    const numbers = coordinates.match(/-?\d+\.?\d*/g);
+    if (numbers && numbers.length >= 2) {
+        return [parseFloat(numbers[0]), parseFloat(numbers[1])];
+    }
+    
+    throw new Error('تنسيق الإحداثيات غير مدعوم');
+}
+
+// إضافة مستمع للأحداث للتحقق من الإحداثيات عند الإدخال
+document.addEventListener('DOMContentLoaded', function() {
+    ['start_coordinates', 'end_coordinates'].forEach(inputId => {
+        const input = document.getElementById(inputId);
+        
+        input.addEventListener('input', function() {
+            validateCoordinates(this);
+        });
+        
+        input.addEventListener('paste', function() {
+            setTimeout(() => validateCoordinates(this), 100);
+        });
+    });
+});
+
+function validateCoordinates(input) {
+    const coordinates = input.value.trim();
+    if (!coordinates) return;
+    
+    const coords = coordinates.split(',').map(c => c.trim());
+    const isValid = coords.length === 2 && 
+                   coords.every(c => !isNaN(parseFloat(c)));
+    
+    if (!isValid) {
+        input.setCustomValidity('الرجاء إدخال الإحداثيات بالشكل الصحيح: 24.796583, 46.800361');
+    } else {
+        input.setCustomValidity('');
+    }
+}
+
+function openCamera() {
+    // إنشاء عنصر input جديد من نوع file مع خصائص الكاميرا
+    const cameraInput = document.createElement('input');
+    cameraInput.type = 'file';
+    cameraInput.accept = 'image/*';
+    cameraInput.capture = 'environment'; // استخدام الكاميرا الخلفية
+    cameraInput.style.display = 'none';
+    
+    // إضافة معالج حدث عند اختيار صورة
+    cameraInput.addEventListener('change', function(e) {
+        const files = e.target.files;
+        if (!files.length) return;
+        
+        // إضافة الصورة الملتقطة إلى حقل الصور
+        const siteImagesInput = document.getElementById('site_images');
+        const newFileList = new DataTransfer();
+        
+        // إضافة الملفات الموجودة مسبقاً
+        if (siteImagesInput.files.length) {
+            Array.from(siteImagesInput.files).forEach(file => {
+                newFileList.items.add(file);
+            });
+        }
+        
+        // إضافة الصورة الجديدة
+        newFileList.items.add(files[0]);
+        
+        // تحديث قائمة الملفات
+        siteImagesInput.files = newFileList.files;
+        
+        // إظهار رسالة نجاح
+        showImagePreview(files[0]);
+    });
+    
+    // إضافة العنصر للصفحة وتفعيله
+    document.body.appendChild(cameraInput);
+    cameraInput.click();
+    
+    // حذف العنصر بعد الاستخدام
+    setTimeout(() => {
+        document.body.removeChild(cameraInput);
+    }, 1000);
+}
+
+function showImagePreview(file) {
+    // إنشاء معاينة للصورة
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        // إنشاء تنبيه نجاح مع معاينة الصورة
+        const alert = document.createElement('div');
+        alert.className = 'alert alert-success alert-dismissible fade show mt-2';
+        alert.innerHTML = `
+            <div class="d-flex align-items-center">
+                <img src="${e.target.result}" 
+                     style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px; margin-right: 10px;">
+                <div>
+                    <strong>تم التقاط الصورة بنجاح!</strong><br>
+                    <small>${file.name}</small>
+                </div>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        `;
+        
+        // إضافة التنبيه بعد حقل الصور
+        const inputGroup = document.querySelector('#site_images').closest('.form-group');
+        inputGroup.appendChild(alert);
+        
+        // حذف التنبيه بعد 3 ثواني
+        setTimeout(() => {
+            alert.remove();
+        }, 3000);
+    };
+    reader.readAsDataURL(file);
+}
 </script>
 
 <style>
