@@ -1288,14 +1288,26 @@ class WorkOrderController extends Controller
      */
     public function importWorkOrderMaterials(Request $request)
     {
+        // تحسين الذاكرة للملفات الكبيرة
         ini_set('memory_limit', '2G');
+        ini_set('max_execution_time', 300);
         
         try {
+            // التحقق من صحة الملف
             $request->validate([
-                'file' => 'required|mimes:xlsx,xls,csv|max:10240'
+                'file' => 'required|file|mimes:xlsx,xls,csv|max:10240'
             ]);
 
             $file = $request->file('file');
+            
+            // التحقق من وجود الملف
+            if (!$file || !$file->isValid()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'الملف المرفوع غير صالح'
+                ], 400);
+            }
+
             Log::info('Materials import file details', [
                 'original_name' => $file->getClientOriginalName(),
                 'mime_type' => $file->getMimeType(),
@@ -1304,44 +1316,85 @@ class WorkOrderController extends Controller
 
             // التحقق من أن مكتبة Excel متاحة
             if (!class_exists('\Maatwebsite\Excel\Facades\Excel')) {
+                Log::error('Excel library not available');
                 return response()->json([
                     'success' => false,
-                    'message' => 'مكتبة Excel غير متاحة'
+                    'message' => 'مكتبة Excel غير متاحة. يرجى التأكد من تثبيت maatwebsite/excel'
                 ], 500);
             }
 
             // التحقق من أن كلاس WorkOrderMaterialsImport يعمل
             if (!class_exists('\App\Imports\WorkOrderMaterialsImport')) {
+                Log::error('WorkOrderMaterialsImport class not found');
                 return response()->json([
                     'success' => false,
                     'message' => 'كلاس استيراد المواد غير متاح'
                 ], 500);
             }
 
-            $import = new \App\Imports\WorkOrderMaterialsImport();
-            Log::info('Materials import class created successfully');
+            // إنشاء كائن الاستيراد
+            try {
+                $import = new \App\Imports\WorkOrderMaterialsImport();
+                Log::info('Materials import class created successfully');
+            } catch (\Exception $e) {
+                Log::error('Failed to create import class: ' . $e->getMessage());
+                Log::error('Import class creation stack trace: ' . $e->getTraceAsString());
+                return response()->json([
+                    'success' => false,
+                    'message' => 'فشل في إنشاء كائن الاستيراد: ' . $e->getMessage()
+                ], 500);
+            }
 
-            \Maatwebsite\Excel\Facades\Excel::import($import, $file);
-            Log::info('Materials Excel import completed');
+            // تنفيذ عملية الاستيراد
+            try {
+                // التحقق من وجود مكتبة Excel مرة أخرى
+                if (!class_exists('\Maatwebsite\Excel\Facades\Excel')) {
+                    throw new \Exception('مكتبة Excel غير متاحة');
+                }
+                
+                \Maatwebsite\Excel\Facades\Excel::import($import, $file);
+                Log::info('Materials Excel import completed');
+            } catch (\Exception $e) {
+                Log::error('Excel import failed: ' . $e->getMessage());
+                Log::error('Excel import stack trace: ' . $e->getTraceAsString());
+                return response()->json([
+                    'success' => false,
+                    'message' => 'فشل في قراءة ملف Excel: ' . $e->getMessage()
+                ], 500);
+            }
 
+            // الحصول على النتائج
             $importedMaterials = $import->getFormattedMaterials();
             $errors = $import->errors();
+            $statistics = $import->getImportStatistics();
 
             Log::info('Materials import results', [
                 'imported_count' => count($importedMaterials),
-                'errors_count' => count($errors)
+                'errors_count' => count($errors),
+                'statistics' => $statistics
             ]);
+
+            // التحقق من وجود بيانات مستوردة
+            if (empty($importedMaterials)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'لم يتم العثور على بيانات صالحة في الملف. تأكد من أن الملف يحتوي على عمودين: "كود المادة" و "وصف المادة"',
+                    'statistics' => $statistics
+                ], 400);
+            }
 
             return response()->json([
                 'success' => true,
-                'message' => 'تم استيراد ' . count($importedMaterials) . ' مادة بنجاح',
+                'message' => 'تم استيراد ' . count($importedMaterials) . ' مادة بنجاح من أصل ' . $statistics['total_rows_processed'] . ' سطر',
                 'imported_count' => count($importedMaterials),
                 'errors_count' => count($errors),
                 'errors' => $errors,
-                'imported_materials' => $importedMaterials
+                'imported_materials' => $importedMaterials,
+                'statistics' => $statistics
             ]);
 
         } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::error('Validation error in materials import', ['errors' => $e->errors()]);
             return response()->json([
                 'success' => false,
                 'message' => 'خطأ في تحقق الملف: ' . implode(', ', $e->errors()['file'] ?? ['ملف غير صالح'])
@@ -1355,6 +1408,104 @@ class WorkOrderController extends Controller
                 'message' => 'حدث خطأ أثناء استيراد ملف المواد: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * تحميل نموذج Excel للمواد
+     */
+    public function downloadMaterialsTemplate()
+    {
+        try {
+            // التحقق من وجود PhpSpreadsheet
+            if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
+                // إنشاء ملف CSV بدلاً من Excel
+                return $this->downloadMaterialsCSVTemplate();
+            }
+
+            $headers = [
+                'كود المادة',
+                'وصف المادة'
+            ];
+
+            $sampleData = [
+                ['M001', 'كابل كهرباء 10 مم'],
+                ['M002', 'مفتاح كهرباء'],
+                ['M003', 'علبة توصيل'],
+            ];
+
+            // إنشاء ملف Excel
+            $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+            $sheet = $spreadsheet->getActiveSheet();
+
+            // إضافة العناوين
+            $sheet->fromArray($headers, NULL, 'A1');
+            
+            // إضافة البيانات النموذجية
+            $sheet->fromArray($sampleData, NULL, 'A2');
+
+            // تنسيق العناوين
+            $sheet->getStyle('A1:B1')->applyFromArray([
+                'font' => ['bold' => true],
+                'fill' => [
+                    'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                    'startColor' => ['argb' => 'FFCCCCCC']
+                ]
+            ]);
+
+            // تعديل عرض الأعمدة
+            foreach (range('A', 'B') as $col) {
+                $sheet->getColumnDimension($col)->setAutoSize(true);
+            }
+
+            // حفظ الملف
+            $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+            $fileName = 'materials_template.xlsx';
+            $temp_file = tempnam(sys_get_temp_dir(), $fileName);
+            $writer->save($temp_file);
+
+            return response()->download($temp_file, $fileName)->deleteFileAfterSend(true);
+        } catch (\Exception $e) {
+            Log::error('Error creating Excel template: ' . $e->getMessage());
+            // إنشاء ملف CSV بدلاً من Excel
+            return $this->downloadMaterialsCSVTemplate();
+        }
+    }
+
+    /**
+     * تحميل نموذج CSV للمواد كبديل
+     */
+    private function downloadMaterialsCSVTemplate()
+    {
+                 $headers = [
+             'كود المادة',
+             'وصف المادة'
+         ];
+
+         $sampleData = [
+             ['M001', 'كابل كهرباء 10 مم'],
+             ['M002', 'مفتاح كهرباء'],
+             ['M003', 'علبة توصيل'],
+         ];
+
+        $fileName = 'materials_template.csv';
+        $temp_file = tempnam(sys_get_temp_dir(), $fileName);
+        
+        $handle = fopen($temp_file, 'w');
+        
+        // إضافة UTF-8 BOM للتعامل مع الأحرف العربية
+        fwrite($handle, "\xEF\xBB\xBF");
+        
+        // إضافة العناوين
+        fputcsv($handle, $headers);
+        
+        // إضافة البيانات النموذجية
+        foreach ($sampleData as $row) {
+            fputcsv($handle, $row);
+        }
+        
+        fclose($handle);
+
+        return response()->download($temp_file, $fileName)->deleteFileAfterSend(true);
     }
 
     /**

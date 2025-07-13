@@ -83,6 +83,10 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::get('work-orders/{workOrder}/materials/export/excel', [MaterialsController::class, 'exportExcel'])->name('work-orders.materials.export.excel');
     Route::get('materials/description/{code}', [MaterialsController::class, 'getDescriptionByCode'])->name('materials.description');
         
+    // مسارات Excel للمواد
+    Route::post('work-orders/import-materials', [WorkOrderController::class, 'importWorkOrderMaterials'])->name('work-orders.import-materials');
+    Route::get('work-orders/download-materials-template', [WorkOrderController::class, 'downloadMaterialsTemplate'])->name('work-orders.download-materials-template');
+        
         // روتات الملفات المرفقة للمواد
         Route::post('work-orders/{workOrder}/materials/upload-files', [MaterialsController::class, 'uploadFiles'])->name('work-orders.materials.upload-files');
         Route::delete('work-orders/{workOrder}/materials/{material}/delete-file', [MaterialsController::class, 'deleteFile'])->name('work-orders.materials.delete-file');
@@ -178,9 +182,11 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::get('work-orders/work-items', [WorkOrderController::class, 'getWorkItems'])
         ->name('work-orders.work-items');
         
-    // مسارات Excel للمواد
-    Route::post('work-orders/import-materials', [WorkOrderController::class, 'importWorkOrderMaterials'])
-        ->name('work-orders.import-materials');
+    // مسارات Excel للمواد - نقل إلى admin group
+    // Route::post('work-orders/import-materials', [WorkOrderController::class, 'importWorkOrderMaterials'])
+    //     ->name('work-orders.import-materials');
+    // Route::get('work-orders/download-materials-template', [WorkOrderController::class, 'downloadMaterialsTemplate'])
+    //     ->name('work-orders.download-materials-template');
     
     // مسار البحث في المواد المرجعية
     Route::get('work-orders/search-materials', [WorkOrderController::class, 'searchReferenceMaterials'])

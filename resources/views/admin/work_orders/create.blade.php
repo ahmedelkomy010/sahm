@@ -408,8 +408,7 @@
                     <i class="fas fa-info-circle me-2"></i>
                     <strong>متطلبات الملف:</strong>
                     <ul class="mb-0 mt-2">
-                        <li>يجب أن يحتوي الملف على عمودين على الأقل: <strong>كود المادة</strong> و <strong>وصف المادة</strong></li>
-                        <li>يمكن إضافة عمود <strong>الكمية</strong> و <strong>الوحدة</strong> (اختياري)</li>
+                        <li>يجب أن يحتوي الملف على عمودين فقط: <strong>كود المادة</strong> و <strong>وصف المادة</strong></li>
                         <li>يدعم ملفات Excel (.xlsx, .xls) و CSV (.csv)</li>
                         <li>الحد الأقصى لحجم الملف: 10 ميجا بايت</li>
                     </ul>
@@ -423,7 +422,7 @@
                                accept=".xlsx,.xls,.csv" required>
                         <div class="form-text">
                             <i class="fas fa-download me-1"></i>
-                            <a href="#" class="text-decoration-none" onclick="downloadMaterialsTemplate()">
+                            <a href="{{ route('admin.work-orders.download-materials-template') }}" class="text-decoration-none" target="_blank">
                                 تحميل نموذج Excel للمواد
                             </a>
                         </div>
@@ -1436,11 +1435,27 @@ document.getElementById('materialsImportForm').addEventListener('submit', functi
     showMaterialsImportProgress();
     
     // إرسال الطلب
-                        fetch('{{ route('admin.work-orders.import-materials') }}', {
+    fetch('{{ route('admin.work-orders.import-materials') }}', {
         method: 'POST',
-        body: formData
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
     })
-    .then(response => response.json())
+    .then(response => {
+        // التحقق من نجاح الاستجابة أولاً
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        // التحقق من نوع المحتوى
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            throw new Error('استجابة غير صالحة من الخادم');
+        }
+        
+        return response.json();
+    })
     .then(data => {
         hideMaterialsImportProgress();
         
@@ -1471,7 +1486,7 @@ document.getElementById('materialsImportForm').addEventListener('submit', functi
     .catch(error => {
         console.error('Error:', error);
         hideMaterialsImportProgress();
-        showMaterialsImportError('حدث خطأ في الاتصال بالخادم');
+        showMaterialsImportError('حدث خطأ في الاتصال بالخادم: ' + error.message);
     });
 });
 
@@ -1496,24 +1511,42 @@ function showMaterialsImportSuccess(data) {
     const resultsDiv = document.getElementById('materialsImportResults');
     const importedCount = data.imported_count || 0;
     const errorsCount = data.errors_count || 0;
+    const statistics = data.statistics || {};
     
     let html = `
         <div class="alert alert-success">
-            <h6><i class="fas fa-check-circle me-2"></i>تم الاستيراد بنجاح!</h6>
-            <ul class="mb-0">
-                <li>تم استيراد <strong>${importedCount}</strong> مادة</li>
-    `;
-    
-    if (errorsCount > 0) {
-        html += `<li class="text-warning">تخطي <strong>${errorsCount}</strong> صف بسبب أخطاء</li>`;
-    }
-    
-    html += `
+            <i class="fas fa-check-circle me-2"></i>
+            <strong>تم الاستيراد بنجاح!</strong>
+            <ul class="mb-0 mt-2">
+                <li>تم استيراد ${importedCount} مادة</li>
+                ${statistics.total_rows_processed ? `<li>تم معالجة ${statistics.total_rows_processed} سطر</li>` : ''}
+                ${statistics.materials_skipped ? `<li>تم تخطي ${statistics.materials_skipped} سطر</li>` : ''}
+                ${statistics.success_rate ? `<li>معدل النجاح: ${statistics.success_rate}%</li>` : ''}
             </ul>
         </div>
     `;
     
+    if (errorsCount > 0) {
+        html += `
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                تم العثور على ${errorsCount} تحذير أثناء الاستيراد
+            </div>
+        `;
+    }
+    
     resultsDiv.innerHTML = html;
+}
+
+// إعادة تعيين نموذج الاستيراد
+function resetMaterialsImportForm() {
+    const form = document.getElementById('materialsImportForm');
+    form.reset();
+    
+    const resultsDiv = document.getElementById('materialsImportResults');
+    resultsDiv.innerHTML = '';
+    
+    hideMaterialsImportProgress();
 }
 
 // إظهار رسالة خطأ

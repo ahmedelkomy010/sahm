@@ -101,7 +101,7 @@
                                                                class="form-control @error('start_coordinates') is-invalid @enderror" 
                                                                id="start_coordinates" 
                                                                name="start_coordinates"
-                                                               placeholder="مثال: 24.796583, 46.800361"
+                                                               placeholder="24°48'40.6"N 46°39'00.5"E"
                                                                value="{{ old('start_coordinates') }}"
                                                                required>
                                                         <a href="#" 
@@ -128,7 +128,7 @@
                                                                class="form-control @error('end_coordinates') is-invalid @enderror" 
                                                                id="end_coordinates" 
                                                                name="end_coordinates"
-                                                               placeholder="مثال: 24.796583, 46.800361"
+                                                               placeholder=":24°48'40.6"N 46°39'00.5"E"
                                                                value="{{ old('end_coordinates') }}"
                                                                required>
                                                         <a href="#" 
@@ -480,18 +480,52 @@ function resetSurveyForm() {
     document.getElementById('obstacles_notes_container').style.display = 'none';
 }
 
-// تحسين معالجة تحديث المسح
+// دالة مساعدة لتنسيق الإحداثيات بشكل موحد
+function formatCoordinates(coordinates) {
+    try {
+        const [lat, lng] = parseCoordinates(coordinates);
+        return `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+    } catch (error) {
+        return coordinates; // إرجاع النص الأصلي إذا فشل التحليل
+    }
+}
+
+// تحديث دالة معالجة النموذج لتنسيق الإحداثيات قبل الإرسال
 document.getElementById('surveyForm').addEventListener('submit', function(e) {
     e.preventDefault();
     
     // التحقق من صحة البيانات
     const hasObstacles = document.querySelector('input[name="has_obstacles"]:checked');
     const obstaclesNotes = document.getElementById('obstacles_notes');
+    const startCoordinates = document.getElementById('start_coordinates');
+    const endCoordinates = document.getElementById('end_coordinates');
     const submitButton = this.querySelector('button[type="submit"]');
     const modalBody = this.querySelector('.modal-body');
     
     // إزالة رسائل الخطأ السابقة
     modalBody.querySelectorAll('.alert').forEach(alert => alert.remove());
+    
+    // التحقق من الإحداثيات
+    if (!startCoordinates.value.trim()) {
+        showError('يرجى إدخال إحداثيات نقطة البداية', modalBody);
+        startCoordinates.focus();
+        return;
+    }
+
+    if (!endCoordinates.value.trim()) {
+        showError('يرجى إدخال إحداثيات نقطة النهاية', modalBody);
+        endCoordinates.focus();
+        return;
+    }
+
+    try {
+        // محاولة تحليل الإحداثيات للتأكد من صحتها وتنسيقها
+        startCoordinates.value = formatCoordinates(startCoordinates.value);
+        endCoordinates.value = formatCoordinates(endCoordinates.value);
+    } catch (error) {
+        showError(error.message, modalBody);
+        return;
+    }
     
     if (hasObstacles && hasObstacles.value === '1' && !obstaclesNotes.value.trim()) {
         showError('يرجى إدخال ملاحظات المعوقات عند اختيار "نعم"', modalBody);
@@ -772,20 +806,48 @@ function openGoogleMaps(inputId) {
     const input = document.getElementById(inputId);
     const coordinates = input.value.trim();
     
-    if (!coordinates) {
-        alert('الرجاء إدخال الإحداثيات أولاً');
-        return;
+    let url;
+    if (coordinates) {
+        try {
+            const [lat, lng] = parseCoordinates(coordinates);
+            url = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+        } catch (error) {
+            // إذا فشل تحليل الإحداثيات، افتح الخريطة بدون إحداثيات محددة
+            url = 'https://www.google.com/maps';
+        }
+    } else {
+        // إذا لم تكن هناك إحداثيات، افتح الخريطة في المملكة العربية السعودية
+        url = 'https://www.google.com/maps/@24.7136,46.6753,11z';
     }
     
-    // تنظيف وتنسيق الإحداثيات
-    const coords = coordinates.split(',').map(c => c.trim());
-    if (coords.length !== 2) {
-        alert('تنسيق الإحداثيات غير صحيح. الرجاء إدخال الإحداثيات بالشكل: 24.796583, 46.800361');
-        return;
-    }
+    // فتح الخريطة في نافذة جديدة
+    const mapWindow = window.open(url, '_blank', 'width=800,height=600');
     
-    const url = `https://www.google.com/maps/search/?api=1&query=${coords[0]},${coords[1]}`;
-    window.open(url, '_blank');
+    // إضافة رسالة للمستخدم
+    const modalBody = document.querySelector('.modal-body');
+    const helpText = document.createElement('div');
+    helpText.className = 'alert alert-info alert-dismissible fade show mt-2';
+    helpText.innerHTML = `
+        <i class="fas fa-info-circle me-2"></i>
+        للحصول على الإحداثيات:
+        <ol class="mb-0 mt-2">
+            <li>انقر بزر الماوس الأيمن على الموقع المطلوب</li>
+            <li>انسخ الإحداثيات التي تظهر في أول القائمة</li>
+            <li>الصق الإحداثيات في الحقل المناسب</li>
+        </ol>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    `;
+    
+    // إزالة أي رسائل مساعدة سابقة
+    modalBody.querySelectorAll('.alert-info').forEach(alert => alert.remove());
+    modalBody.appendChild(helpText);
+    
+    // إزالة الرسالة بعد 10 ثواني
+    setTimeout(() => {
+        if (helpText.parentNode) {
+            helpText.remove();
+        }
+    }, 10000);
 }
 
 function parseCoordinates(coordinates) {
@@ -793,9 +855,20 @@ function parseCoordinates(coordinates) {
     coordinates = coordinates.trim();
     
     // محاولة تحليل التنسيق العشري (مثل: 24.796583, 46.800361)
-    const decimalFormat = coordinates.match(/^(-?\d+\.?\d*),\s*(-?\d+\.?\d*)$/);
+    const decimalFormat = coordinates.match(/^(-?\d+\.?\d*)[,\s]+(-?\d+\.?\d*)$/);
     if (decimalFormat) {
-        return [parseFloat(decimalFormat[1]), parseFloat(decimalFormat[2])];
+        const lat = parseFloat(decimalFormat[1]);
+        const lng = parseFloat(decimalFormat[2]);
+        
+        // التحقق من صحة نطاق الإحداثيات
+        if (lat < -90 || lat > 90) {
+            throw new Error('خط العرض يجب أن يكون بين -90 و 90 درجة');
+        }
+        if (lng < -180 || lng > 180) {
+            throw new Error('خط الطول يجب أن يكون بين -180 و 180 درجة');
+        }
+        
+        return [lat, lng];
     }
     
     // محاولة تحليل تنسيق الدرجات (مثل: 24°47'47.7"N 46°48'01.3"E)
@@ -809,16 +882,55 @@ function parseCoordinates(coordinates) {
         if (latDir === 'S') latitude = -latitude;
         if (lngDir === 'W') longitude = -longitude;
         
+        // التحقق من صحة نطاق الإحداثيات
+        if (latitude < -90 || latitude > 90) {
+            throw new Error('خط العرض يجب أن يكون بين -90 و 90 درجة');
+        }
+        if (longitude < -180 || longitude > 180) {
+            throw new Error('خط الطول يجب أن يكون بين -180 و 180 درجة');
+        }
+        
         return [latitude, longitude];
     }
     
     // محاولة تحليل تنسيق URL خرائط جوجل
     const urlFormat = coordinates.match(/[?&]q=(-?\d+\.?\d*),(-?\d+\.?\d*)/);
     if (urlFormat) {
-        return [parseFloat(urlFormat[1]), parseFloat(urlFormat[2])];
+        const lat = parseFloat(urlFormat[1]);
+        const lng = parseFloat(urlFormat[2]);
+        
+        // التحقق من صحة نطاق الإحداثيات
+        if (lat < -90 || lat > 90) {
+            throw new Error('خط العرض يجب أن يكون بين -90 و 90 درجة');
+        }
+        if (lng < -180 || lng > 180) {
+            throw new Error('خط الطول يجب أن يكون بين -180 و 180 درجة');
+        }
+        
+        return [lat, lng];
+    }
+
+    // محاولة تحليل أي رقمين عشريين متتاليين
+    const numbers = coordinates.match(/-?\d+\.?\d*/g);
+    if (numbers && numbers.length >= 2) {
+        const lat = parseFloat(numbers[0]);
+        const lng = parseFloat(numbers[1]);
+        
+        // التحقق من صحة نطاق الإحداثيات
+        if (lat < -90 || lat > 90) {
+            throw new Error('خط العرض يجب أن يكون بين -90 و 90 درجة');
+        }
+        if (lng < -180 || lng > 180) {
+            throw new Error('خط الطول يجب أن يكون بين -180 و 180 درجة');
+        }
+        
+        return [lat, lng];
     }
     
-    throw new Error('تنسيق الإحداثيات غير مدعوم');
+    throw new Error('تنسيق الإحداثيات غير مدعوم. الرجاء استخدام أحد التنسيقات التالية:\n' +
+                   '- عشري: 24.796583, 46.800361\n' +
+                   '- درجات: 24°47\'47.7"N 46°48\'01.3"E\n' +
+                   '- رابط خرائط جوجل');
 }
 
 function openGoogleMapsFromTable(coordinates) {
@@ -880,29 +992,56 @@ function parseCoordinates(coordinates) {
 document.addEventListener('DOMContentLoaded', function() {
     ['start_coordinates', 'end_coordinates'].forEach(inputId => {
         const input = document.getElementById(inputId);
+        const feedbackDiv = document.createElement('div');
+        feedbackDiv.className = 'invalid-feedback';
+        input.parentNode.appendChild(feedbackDiv);
         
         input.addEventListener('input', function() {
-            validateCoordinates(this);
+            validateCoordinatesInput(this);
         });
         
-        input.addEventListener('paste', function() {
-            setTimeout(() => validateCoordinates(this), 100);
+        input.addEventListener('paste', function(e) {
+            // السماح بلصق النص أولاً
+            setTimeout(() => {
+                validateCoordinatesInput(this);
+            }, 100);
+        });
+        
+        // إضافة مستمع لحدث الفقدان التركيز لتنسيق الإحداثيات
+        input.addEventListener('blur', function() {
+            try {
+                const formatted = formatCoordinates(this.value);
+                this.value = formatted;
+                validateCoordinatesInput(this);
+            } catch (error) {
+                // تجاهل الأخطاء هنا لأن التحقق سيتم عند الإرسال
+            }
         });
     });
 });
 
-function validateCoordinates(input) {
-    const coordinates = input.value.trim();
-    if (!coordinates) return;
+function validateCoordinatesInput(input) {
+    const feedbackDiv = input.parentNode.querySelector('.invalid-feedback');
     
-    const coords = coordinates.split(',').map(c => c.trim());
-    const isValid = coords.length === 2 && 
-                   coords.every(c => !isNaN(parseFloat(c)));
-    
-    if (!isValid) {
-        input.setCustomValidity('الرجاء إدخال الإحداثيات بالشكل الصحيح: 24.796583, 46.800361');
-    } else {
-        input.setCustomValidity('');
+    try {
+        if (!input.value.trim()) {
+            input.classList.remove('is-valid', 'is-invalid');
+            feedbackDiv.textContent = '';
+            return;
+        }
+        
+        const [lat, lng] = parseCoordinates(input.value);
+        
+        // إظهار القيم المحللة كتلميح
+        feedbackDiv.textContent = `تم التعرف على: خط العرض ${lat.toFixed(6)}، خط الطول ${lng.toFixed(6)}`;
+        feedbackDiv.style.color = 'green';
+        input.classList.remove('is-invalid');
+        input.classList.add('is-valid');
+    } catch (error) {
+        feedbackDiv.textContent = error.message;
+        feedbackDiv.style.color = '';  // إعادة تعيين اللون للون الافتراضي للخطأ
+        input.classList.remove('is-valid');
+        input.classList.add('is-invalid');
     }
 }
 

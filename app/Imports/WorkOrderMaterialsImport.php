@@ -19,6 +19,8 @@ class WorkOrderMaterialsImport implements ToModel, WithHeadingRow, WithValidatio
 
     private $importedMaterials = [];
     private $columnMappings = [];
+    private $rowCount = 0;
+    private $processedCount = 0;
 
     public function __construct()
     {
@@ -26,29 +28,35 @@ class WorkOrderMaterialsImport implements ToModel, WithHeadingRow, WithValidatio
     }
 
     /**
-     * إعداد خريطة الأعمدة المدعومة
+     * إعداد خريطة الأعمدة المدعومة - مبسطة لعمودين فقط
      */
     private function setupColumnMappings()
     {
         $this->columnMappings = [
-            'code' => ['code', 'material_code', 'كود المادة', 'كود', 'الكود', 'رمز المادة', 'item_code'],
-            'description' => ['description', 'material_description', 'وصف المادة', 'الوصف', 'البيان', 'التفاصيل', 'material_name', 'name'],
-            'quantity' => ['quantity', 'planned_quantity', 'الكمية', 'الكمية المخططة', 'qty', 'amount'],
-            'unit' => ['unit', 'uom', 'الوحدة', 'وحدة القياس', 'units', 'measure_unit']
+            'code' => ['code', 'material_code', 'كود المادة', 'كود', 'الكود', 'رمز المادة'],
+            'description' => ['description', 'material_description', 'وصف المادة', 'الوصف', 'البيان', 'التفاصيل']
         ];
     }
 
     /**
-     * البحث عن قيمة من الصف باستخدام خريطة الأعمدة
+     * البحث عن قيمة من الصف باستخدام خريطة الأعمدة - مبسط
      */
     private function findValueFromRow(array $row, string $field): string
     {
         $possibleKeys = $this->columnMappings[$field] ?? [];
         
+        // البحث المباشر أولاً
+        foreach ($possibleKeys as $key) {
+            if (isset($row[$key]) && !empty(trim($row[$key]))) {
+                return trim((string) $row[$key]);
+            }
+        }
+        
+        // البحث المعياري (بتطبيع الأسماء)
         foreach ($possibleKeys as $key) {
             $normalizedKey = $this->normalizeKey($key);
             foreach ($row as $rowKey => $value) {
-                if ($this->normalizeKey($rowKey) === $normalizedKey && !empty($value)) {
+                if ($this->normalizeKey($rowKey) === $normalizedKey && !empty(trim($value))) {
                     return trim((string) $value);
                 }
             }
@@ -68,73 +76,57 @@ class WorkOrderMaterialsImport implements ToModel, WithHeadingRow, WithValidatio
     }
 
     /**
-     * إنشاء نموذج من الصف
+     * إنشاء نموذج من الصف - مبسط للغاية
      */
     public function model(array $row)
     {
+        $this->rowCount++;
+        
         try {
-            $code = $this->findValueFromRow($row, 'code');
-            $description = $this->findValueFromRow($row, 'description');
-            $quantity = $this->findValueFromRow($row, 'quantity') ?: '1';
-            $unit = $this->findValueFromRow($row, 'unit') ?: 'قطعة';
-
-            // التحقق من وجود الكود والوصف
-            if (empty($code) || empty($description)) {
+            // تسجيل الصف الأول للتحقق من البيانات
+            if ($this->rowCount === 1) {
+                Log::info('First row headers detected', ['headers' => array_keys($row)]);
+            }
+            
+            // استخراج القيم من الصف - عمودين فقط
+            try {
+                $code = $this->findValueFromRow($row, 'code');
+                $description = $this->findValueFromRow($row, 'description');
+            } catch (\Exception $e) {
+                Log::error('Error extracting values from row: ' . $e->getMessage(), [
+                    'row_number' => $this->rowCount,
+                    'row' => $row
+                ]);
                 return null;
             }
 
-            // البحث عن المادة في جدول المراجع أو إنشاؤها
-            try {
-                $referenceMaterial = ReferenceMaterial::firstOrCreate(
-                    ['code' => $code],
-                    [
-                        'name' => $description,
-                        'description' => $description,
-                        'unit' => $unit,
-                        'unit_price' => 0,
-                        'is_active' => true,
-                    ]
-                );
-            } catch (\Exception $e) {
-                // إذا فشل إنشاء المادة المرجعية، نستمر بدونها
-                Log::warning('Failed to create reference material: ' . $e->getMessage(), ['code' => $code]);
+            // التحقق من وجود الكود والوصف (الحد الأدنى المطلوب)
+            if (empty($code) || empty($description)) {
+                Log::warning('Skipping row due to missing code or description', [
+                    'row_number' => $this->rowCount,
+                    'code' => $code,
+                    'description' => $description,
+                    'available_columns' => array_keys($row)
+                ]);
+                return null;
             }
 
-            // نحاول العثور على المادة أولاً، ثم ننشئها إذا لم توجد
-            $material = Material::where('code', $code)->first();
-            if (!$material) {
-                try {
-                    $material = Material::create([
-                        'name' => $description,
-                        'code' => $code,
-                        'description' => $description,
-                        'unit' => $unit,
-                        'unit_price' => 0,
-                        'is_active' => true,
-                    ]);
-                } catch (\Exception $e) {
-                    Log::error('Failed to create material: ' . $e->getMessage(), ['code' => $code]);
-                    return null;
-                }
-            }
+            // تنظيف البيانات
+            $code = trim($code);
+            $description = trim($description);
 
-            // إضافة المادة إلى قائمة المواد المستوردة
+            // إضافة المادة إلى قائمة المواد المستوردة - عمودين فقط
             $this->importedMaterials[] = [
-                'id' => $material->id,
                 'code' => $code,
                 'description' => $description,
-                'quantity' => (float) $quantity,
-                'unit' => $unit,
-                'unit_price' => 0,
-                'notes' => '',
             ];
 
-            return null; // لا نحتاج لإنشاء نموذج جديد هنا
+            $this->processedCount++;
+            return null;
         } catch (\Exception $e) {
             Log::error('Error importing material: ' . $e->getMessage(), [
-                'row' => $row,
-                'code' => $code ?? 'N/A',
-                'description' => $description ?? 'N/A',
+                'row_number' => $this->rowCount,
+                'row_data' => $row,
                 'trace' => $e->getTraceAsString()
             ]);
             return null;
@@ -160,12 +152,21 @@ class WorkOrderMaterialsImport implements ToModel, WithHeadingRow, WithValidatio
     }
 
     /**
-     * الحصول على أخطاء الاستيراد
+     * الحصول على أخطاء الاستيراد - مبسط
      */
     public function errors(): array
     {
         try {
-            return collect($this->failures())->map(function ($failure) {
+            if (!method_exists($this, 'failures')) {
+                return [];
+            }
+            
+            $failures = $this->failures();
+            if (empty($failures)) {
+                return [];
+            }
+            
+            return collect($failures)->map(function ($failure) {
                 return [
                     'row' => $failure->row(),
                     'attribute' => $failure->attribute(),
@@ -180,7 +181,7 @@ class WorkOrderMaterialsImport implements ToModel, WithHeadingRow, WithValidatio
     }
 
     /**
-     * تحويل المواد المستوردة إلى تنسيق مناسب للاستخدام في النموذج
+     * تحويل المواد المستوردة إلى تنسيق مناسب للاستخدام في النموذج - عمودين فقط
      */
     public function getFormattedMaterials(): array
     {
@@ -188,11 +189,24 @@ class WorkOrderMaterialsImport implements ToModel, WithHeadingRow, WithValidatio
             return [
                 'material_code' => $material['code'],
                 'material_description' => $material['description'],
-                'planned_quantity' => $material['quantity'],
-                'unit' => $material['unit'],
-                'unit_price' => $material['unit_price'],
-                'notes' => $material['notes'],
+                'planned_quantity' => 1, // قيمة افتراضية
+                'unit' => 'قطعة', // قيمة افتراضية
+                'unit_price' => 0, // قيمة افتراضية
+                'notes' => '', // قيمة افتراضية
             ];
         })->toArray();
+    }
+
+    /**
+     * الحصول على إحصائيات الاستيراد
+     */
+    public function getImportStatistics(): array
+    {
+        return [
+            'total_rows_processed' => $this->rowCount,
+            'materials_imported' => $this->processedCount,
+            'materials_skipped' => $this->rowCount - $this->processedCount,
+            'success_rate' => $this->rowCount > 0 ? round(($this->processedCount / $this->rowCount) * 100, 2) : 0
+        ];
     }
 } 
