@@ -10,7 +10,10 @@ use Illuminate\Support\Facades\Storage;
     <div class="bg-white rounded-lg shadow-lg p-6">
         <div class="flex justify-between items-center mb-6">
             <h2 class="text-2xl font-bold text-gray-800">تفاصيل رخصة الحفر</h2>
-            <div class="flex space-x-2">
+            <div class="flex space-x-2 gap-2">
+                <a href="{{ route('admin.work-orders.license', $license->workOrder) }}" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
+                    العودة إلى إدارة الجودة والرخص
+                </a>
                 <a href="{{ route('admin.licenses.edit', $license) }}" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
                     تعديل الرخصة
                 </a>
@@ -80,163 +83,122 @@ use Illuminate\Support\Facades\Storage;
         </div>
 
         <!-- مرفقات رخصة الحفر -->
-        <div class="bg-gray-50 p-6 rounded-lg mb-8">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-xl font-semibold text-gray-800">مرفقات رخصة الحفر</h3>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="mt-8">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">مرفقات رخصة الحفر</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <!-- ملف الرخصة -->
-                <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-                    <div class="flex justify-between items-center mb-4">
-                        <h4 class="text-lg font-medium text-gray-800">ملف الرخصة</h4>
+                <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+                    <div class="flex flex-col items-center text-center">
+                        <div class="w-16 h-16 mb-3 flex items-center justify-center rounded-full bg-blue-50">
+                            <i class="fas fa-file-pdf text-2xl text-blue-500"></i>
+                        </div>
+                        <h4 class="font-semibold text-gray-800 mb-2">ملف الرخصة</h4>
                         @if($license->license_file_path)
-                            <a href="{{ asset('storage/' . $license->license_file_path) }}" 
-                               target="_blank"
+                            <a href="{{ route('admin.licenses.download', ['license' => $license, 'type' => 'license']) }}" 
                                class="text-blue-600 hover:text-blue-800 flex items-center">
-                                <svg class="w-5 h-5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                </svg>
+                                <i class="fas fa-download ml-1"></i>
                                 تحميل الملف
                             </a>
                         @else
-                            <div class="text-gray-500">
-                                <svg class="w-5 h-5 inline-block ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                لم يتم إضافة ملف
-                            </div>
+                            <span class="text-gray-500">لم يتم إضافة ملف</span>
                         @endif
                     </div>
                 </div>
 
                 <!-- شهادة التنسيق -->
-                <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-                    <div class="flex justify-between items-center mb-4">
-                        <h4 class="text-lg font-medium text-gray-800">شهادة التنسيق</h4>
+                <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+                    <div class="flex flex-col items-center text-center">
+                        <div class="w-16 h-16 mb-3 flex items-center justify-center rounded-full bg-green-50">
+                            <i class="fas fa-certificate text-2xl text-green-500"></i>
+                        </div>
+                        <h4 class="font-semibold text-gray-800 mb-2">شهادة التنسيق</h4>
                         @if($license->coordination_certificate_path)
-                            <a href="{{ asset('storage/' . $license->coordination_certificate_path) }}" 
-                               target="_blank"
+                            <a href="{{ route('admin.licenses.download', ['license' => $license, 'type' => 'coordination']) }}" 
                                class="text-blue-600 hover:text-blue-800 flex items-center">
-                                <svg class="w-5 h-5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                </svg>
-                                تحميل الشهادة
+                                <i class="fas fa-download ml-1"></i>
+                                تحميل الملف
                             </a>
                         @else
-                            <div class="text-gray-500">
-                                <svg class="w-5 h-5 inline-block ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                لم يتم إضافة ملف
-                            </div>
+                            <span class="text-gray-500">لم يتم إضافة ملف</span>
                         @endif
                     </div>
-                    @if($license->coordination_certificate_notes)
-                        <p class="text-sm text-gray-600">{{ $license->coordination_certificate_notes }}</p>
-                    @endif
                 </div>
 
                 <!-- خطابات التعهدات -->
-                <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-                    <div class="flex justify-between items-center mb-4">
-                        <h4 class="text-lg font-medium text-gray-800">خطابات التعهدات</h4>
+                <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+                    <div class="flex flex-col items-center text-center">
+                        <div class="w-16 h-16 mb-3 flex items-center justify-center rounded-full bg-purple-50">
+                            <i class="fas fa-file-contract text-2xl text-purple-500"></i>
+                        </div>
+                        <h4 class="font-semibold text-gray-800 mb-2">خطابات التعهدات</h4>
                         @if($license->letters_commitments_file_path)
-                            <a href="{{ asset('storage/' . $license->letters_commitments_file_path) }}" 
-                               target="_blank"
+                            <a href="{{ route('admin.licenses.download', ['license' => $license, 'type' => 'commitments']) }}" 
                                class="text-blue-600 hover:text-blue-800 flex items-center">
-                                <svg class="w-5 h-5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                </svg>
-                                تحميل الخطابات
+                                <i class="fas fa-download ml-1"></i>
+                                تحميل الملف
                             </a>
                         @else
-                            <div class="text-gray-500">
-                                <svg class="w-5 h-5 inline-block ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                لم يتم إضافة ملف
-                            </div>
+                            <span class="text-gray-500">لم يتم إضافة ملف</span>
                         @endif
                     </div>
                 </div>
 
                 <!-- ملف تفعيل الرخصة -->
-                <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-                    <div class="flex justify-between items-center mb-4">
-                        <h4 class="text-lg font-medium text-gray-800">ملف تفعيل الرخصة</h4>
-                        @if($license->license_activation_path)
-                            <a href="{{ asset('storage/' . $license->license_activation_path) }}" 
-                               target="_blank"
+                <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+                    <div class="flex flex-col items-center text-center">
+                        <div class="w-16 h-16 mb-3 flex items-center justify-center rounded-full bg-yellow-50">
+                            <i class="fas fa-file-alt text-2xl text-yellow-500"></i>
+                        </div>
+                        <h4 class="font-semibold text-gray-800 mb-2">ملف تفعيل الرخصة</h4>
+                        @if($license->activation_file_path)
+                            <a href="{{ route('admin.licenses.download', ['license' => $license, 'type' => 'activation']) }}" 
                                class="text-blue-600 hover:text-blue-800 flex items-center">
-                                <svg class="w-5 h-5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                </svg>
+                                <i class="fas fa-download ml-1"></i>
                                 تحميل الملف
                             </a>
                         @else
-                            <div class="text-gray-500">
-                                <svg class="w-5 h-5 inline-block ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                لم يتم إضافة ملف
-                            </div>
+                            <span class="text-gray-500">لم يتم إضافة ملف</span>
                         @endif
                     </div>
                 </div>
 
-                @php
-                    $attachmentTypes = [
-                        'excavation_permit' => 'تصريح الحفر',
-                        'site_plan' => 'مخطط الموقع',
-                        'safety_plan' => 'خطة السلامة',
-                        'traffic_diversion_plan' => 'خطة تحويل المرور',
-                        'payment_receipt' => 'إيصال الدفع',
-                        'contractor_letter' => 'خطاب المقاول',
-                        'consultant_letter' => 'خطاب الاستشاري',
-                        'other' => 'مرفقات أخرى'
-                    ];
-                @endphp
-
-                @if($license->attachments && $license->attachments->isNotEmpty())
-                    @foreach($license->attachments as $attachment)
-                        @if(array_key_exists($attachment->attachment_type, $attachmentTypes))
-                            <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-                                <div class="flex justify-between items-center mb-4">
-                                    <h4 class="text-lg font-medium text-gray-800">{{ $attachmentTypes[$attachment->attachment_type] }}</h4>
-                                    <a href="{{ asset('storage/' . $attachment->file_path) }}" 
-                                       target="_blank"
-                                       class="text-blue-600 hover:text-blue-800 flex items-center group relative">
-                                        <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                        </svg>
-                                        <span class="truncate max-w-xs">{{ $attachment->file_name }}</span>
-                                        
-                                        <!-- Tooltip -->
-                                        <div class="absolute bottom-full right-0 mb-2 hidden group-hover:block bg-gray-800 text-white text-xs rounded py-1 px-2 whitespace-nowrap">
-                                            <div>{{ $attachment->file_name }}</div>
-                                            <div>تم الرفع: {{ \Carbon\Carbon::parse($attachment->created_at)->format('Y/m/d') }}</div>
-                                            @if($attachment->description)
-                                                <div>{{ $attachment->description }}</div>
-                                            @endif
-                                        </div>
-                                    </a>
-                                </div>
-                                @if($attachment->description)
-                                    <p class="text-sm text-gray-600">{{ $attachment->description }}</p>
-                                @endif
-                            </div>
+                <!-- فواتير السداد -->
+                <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+                    <div class="flex flex-col items-center text-center">
+                        <div class="w-16 h-16 mb-3 flex items-center justify-center rounded-full bg-red-50">
+                            <i class="fas fa-file-invoice-dollar text-2xl text-red-500"></i>
+                        </div>
+                        <h4 class="font-semibold text-gray-800 mb-2">فواتير السداد</h4>
+                        @if($license->payment_invoices_path)
+                            <a href="{{ route('admin.licenses.download', ['license' => $license, 'type' => 'payment_invoices']) }}" 
+                               class="text-blue-600 hover:text-blue-800 flex items-center">
+                                <i class="fas fa-download ml-1"></i>
+                                تحميل الملف
+                            </a>
+                        @else
+                            <span class="text-gray-500">لم يتم إضافة ملف</span>
                         @endif
-                    @endforeach
-                @else
-                    <div class="col-span-full text-center py-8 text-gray-500">
-                        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M12 12h.01M12 14h.01M12 16h.01M12 18h.01M12 20h.01M12 22h.01"></path>
-                        </svg>
-                        <h3 class="mt-2 text-sm font-medium text-gray-900">لا توجد مرفقات</h3>
-                        <p class="mt-1 text-sm text-gray-500">لم يتم إضافة أي مرفقات للرخصة بعد</p>
                     </div>
-                @endif
+                </div>
+
+                <!-- إثبات سداد البنك -->
+                <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+                    <div class="flex flex-col items-center text-center">
+                        <div class="w-16 h-16 mb-3 flex items-center justify-center rounded-full bg-emerald-50">
+                            <i class="fas fa-receipt text-2xl text-emerald-500"></i>
+                        </div>
+                        <h4 class="font-semibold text-gray-800 mb-2">إثبات سداد البنك</h4>
+                        @if($license->bank_payment_proof_path)
+                            <a href="{{ route('admin.licenses.download', ['license' => $license, 'type' => 'bank_payment']) }}" 
+                               class="text-blue-600 hover:text-blue-800 flex items-center">
+                                <i class="fas fa-download ml-1"></i>
+                                تحميل الملف
+                            </a>
+                        @else
+                            <span class="text-gray-500">لم يتم إضافة ملف</span>
+                        @endif
+                    </div>
+                </div>
             </div>
         </div>
 

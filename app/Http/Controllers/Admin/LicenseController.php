@@ -22,47 +22,116 @@ class LicenseController extends Controller
      */
     public function display(Request $request)
     {
-        $query = License::with('workOrder');
-
-        // البحث
-        if ($request->has('search') && !empty($request->search)) {
-            $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('license_number', 'like', '%' . $search . '%')
-                  ->orWhere('license_type', 'like', '%' . $search . '%')
-                  ->orWhereHas('workOrder', function($q) use ($search) {
-                      $q->where('order_number', 'like', '%' . $search . '%');
-                  });
-            });
-        }
-
-        // تصفية حسب حالة الرخصة
-        if ($request->has('status') && !empty($request->status)) {
+        try {
+            $query = License::query();
             $now = now();
-            if ($request->status === 'active') {
-                $query->where(function($q) use ($now) {
-                    $q->where('license_end_date', '>', $now)
-                      ->orWhere('extension_end_date', '>', $now);
-                });
-            } elseif ($request->status === 'expired') {
-                $query->where(function($q) use ($now) {
-                    $q->where('license_end_date', '<=', $now)
-                      ->orWhere(function($q) use ($now) {
-                          $q->whereNotNull('extension_end_date')
-                            ->where('extension_end_date', '<=', $now);
-                      });
-                });
+
+            // تطبيق فلتر الحالة
+            if ($request->filled('status')) {
+                if ($request->status === 'active') {
+                    $query->where(function($q) use ($now) {
+                        $q->where('license_end_date', '>', $now)
+                          ->orWhereHas('extensions', function($q) use ($now) {
+                              $q->where('end_date', '>', $now);
+                          });
+                    });
+                } elseif ($request->status === 'expired') {
+                    $query->whereNotNull('license_end_date')
+                          ->where('license_end_date', '<=', $now)
+                          ->whereDoesntHave('extensions', function($q) use ($now) {
+                              $q->where('end_date', '>', $now);
+                          });
+                }
             }
+
+            // حساب الإحصائيات
+            $activeCount = License::where(function($q) use ($now) {
+                $q->where('license_end_date', '>', $now)
+                  ->orWhereHas('extensions', function($q) use ($now) {
+                      $q->where('end_date', '>', $now);
+                  });
+            })->count();
+
+            $expiredCount = License::whereNotNull('license_end_date')
+                ->where('license_end_date', '<=', $now)
+                ->whereDoesntHave('extensions', function($q) use ($now) {
+                    $q->where('end_date', '>', $now);
+                })->count();
+
+            $violationsCount = License::has('violations')->count();
+            $extensionsCount = License::has('extensions')->count();
+            $passedTestsCount = License::where('successful_tests_count', '>', 0)->count();
+            $failedTestsCount = License::where('failed_tests_count', '>', 0)->count();
+            $evacuationsCount = License::where('is_evacuated', true)->count();
+
+            $licenses = $query->with(['workOrder', 'extensions'])->latest()->paginate(10);
+
+            // Calculate total license values for filtered data
+            $totalLicenseValue = $licenses->sum('license_value');
+            $totalExtensionValue = $licenses->sum('extension_value');
+
+            return view('admin.licenses.display', compact(
+                'licenses',
+                'activeCount',
+                'expiredCount',
+                'violationsCount',
+                'extensionsCount',
+                'passedTestsCount',
+                'failedTestsCount',
+                'evacuationsCount',
+                'totalLicenseValue',
+                'totalExtensionValue'
+            ));
+
+        } catch (\Exception $e) {
+            \Log::error('Error in license display: ' . $e->getMessage());
+            return view('admin.licenses.display', [
+                'licenses' => collect(),
+                'activeCount' => 0,
+                'expiredCount' => 0,
+                'violationsCount' => 0,
+                'extensionsCount' => 0,
+                'passedTestsCount' => 0,
+                'failedTestsCount' => 0,
+                'evacuationsCount' => 0,
+                'totalLicenseValue' => 0,
+                'totalExtensionValue' => 0
+            ])->withErrors('حدث خطأ أثناء تحميل البيانات');
         }
+    }
 
-        // تصفية حسب نوع الرخصة
-        if ($request->has('type') && !empty($request->type)) {
-            $query->where('license_type', $request->type);
+    /**
+     * Get license status text based on dates and extensions
+     */
+    private function getLicenseStatusText($license, $now)
+    {
+        // تحقق من وجود تمديد ساري
+        $hasActiveExtension = $license->extensions()
+            ->where('end_date', '>', $now)
+            ->exists();
+
+        if ($license->license_end_date > $now || $hasActiveExtension) {
+            return 'سارية';
+        } else {
+            return 'منتهية';
         }
+    }
 
-        $licenses = $query->latest()->paginate(10);
+    /**
+     * Get license status color based on dates and extensions
+     */
+    private function getLicenseStatusColor($license, $now)
+    {
+        // تحقق من وجود تمديد ساري
+        $hasActiveExtension = $license->extensions()
+            ->where('end_date', '>', $now)
+            ->exists();
 
-        return view('admin.licenses.display', compact('licenses'));
+        if ($license->license_end_date > $now || $hasActiveExtension) {
+            return 'bg-green-100 text-green-800'; // سارية
+        } else {
+            return 'bg-red-100 text-red-800'; // منتهية
+        }
     }
 
     public function update(Request $request, License $license)

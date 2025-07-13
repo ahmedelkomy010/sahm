@@ -2623,6 +2623,10 @@ function deleteExtension(extensionId) {
                 </div>
                 
                 <div class="col-lg-4 text-end">
+                    <a href="{{ route('admin.licenses.index') }}" class="btn btn-light btn-lg ms-2">
+                        <i class="fas fa-search me-2"></i>
+                        البحث عن الرخص
+                    </a>
                     <a href="{{ route('admin.work-orders.show', $workOrder) }}" class="btn btn-light btn-lg">
                         <i class="fas fa-arrow-right me-2"></i>
                         العودة لتفاصيل أمر العمل

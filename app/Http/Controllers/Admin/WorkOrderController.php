@@ -190,4 +190,66 @@ class WorkOrderController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * حفظ بيانات العمل اليومي للحفريات
+     */
+    public function saveDailyCivilWorks(Request $request, WorkOrder $workOrder)
+    {
+        try {
+            $dailyWork = $request->input('daily_work', []);
+            
+            if (empty($dailyWork)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'لا توجد بيانات للحفظ'
+                ]);
+            }
+
+            // إضافة البيانات الجديدة للبيانات الموجودة (بدون حذف)
+            $existingData = $workOrder->daily_civil_works_data ? json_decode($workOrder->daily_civil_works_data, true) : [];
+            $allData = array_merge($existingData, $dailyWork);
+
+            // حفظ البيانات
+            $workOrder->update([
+                'daily_civil_works_data' => json_encode($allData),
+                'daily_civil_works_last_update' => now()
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'تم حفظ بيانات العمل اليومي بنجاح',
+                'saved_items' => count($dailyWork)
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء الحفظ: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * جلب بيانات العمل اليومي المحفوظة للحفريات
+     */
+    public function getDailyCivilWorks(WorkOrder $workOrder)
+    {
+        try {
+            $savedData = $workOrder->daily_civil_works_data ? json_decode($workOrder->daily_civil_works_data, true) : [];
+
+            return response()->json([
+                'success' => true,
+                'data' => $savedData,
+                'count' => count($savedData)
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء جلب البيانات: ' . $e->getMessage(),
+                'data' => []
+            ], 500);
+        }
+    }
 } 

@@ -193,6 +193,8 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         ->name('work-orders.search-materials');
 
     // مسارات إدارة الرخص
+    Route::get('licenses', [\App\Http\Controllers\Admin\LicenseController::class, 'display'])->name('licenses.index');
+    Route::get('licenses/display', [\App\Http\Controllers\Admin\LicenseController::class, 'display'])->name('licenses.display');
     Route::get('work-orders/licenses', [WorkOrderController::class, 'licenses'])->name('work-orders.licenses');
     Route::get('work-orders/licenses/data', [\App\Http\Controllers\Admin\LicenseController::class, 'display'])->name('work-orders.licenses.data');
     Route::post('licenses', [\App\Http\Controllers\Admin\LicenseController::class, 'store'])->name('licenses.store');
@@ -444,3 +446,11 @@ Route::post('/admin/work-orders/{workOrder}/installations', [WorkOrderController
 
 Route::get('/admin/work-orders/{workOrder}/installations/daily-summary', [App\Http\Controllers\Admin\WorkOrderController::class, 'getDailyInstallationsSummary'])
     ->name('admin.work-orders.installations.daily-summary');
+
+// حفظ بيانات العمل اليومي للحفريات
+Route::post('/admin/work-orders/{workOrder}/civil-works/save-daily-data', [App\Http\Controllers\Admin\WorkOrderController::class, 'saveDailyCivilWorks'])
+    ->name('admin.work-orders.civil-works.save-daily-data');
+
+// جلب بيانات العمل اليومي المحفوظة للحفريات
+Route::get('/admin/work-orders/{workOrder}/civil-works/get-daily-data', [App\Http\Controllers\Admin\WorkOrderController::class, 'getDailyCivilWorks'])
+    ->name('admin.work-orders.civil-works.get-daily-data');

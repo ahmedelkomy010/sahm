@@ -496,33 +496,29 @@ class License extends Model
     {
         $today = now();
         
-        if (!$this->license_start_date) {
-            return 'غير مفعلة';
-        }
-        
-        if ($this->license_start_date > $today) {
-            return 'مجدولة';
-        }
-        
+        // Check for active extensions
+        $hasActiveExtension = $this->extensions()
+            ->where('end_date', '>', $today)
+            ->exists();
+
+        // تحقق من تاريخ انتهاء الرخصة
         if (!$this->license_end_date) {
+            return 'غير محدد';
+        }
+
+        if ($this->license_end_date > $today || $hasActiveExtension) {
             return 'سارية';
         }
         
-        if ($this->license_end_date < $today) {
-            return 'منتهية';
-        }
-        
-        return 'سارية';
+        return 'منتهية';
     }
 
     public function getStatusColorAttribute(): string
     {
         return match($this->status_text) {
-            'غير مفعلة' => '#9CA3AF', // gray-400
-            'مجدولة' => '#3B82F6', // blue-500
-            'سارية' => '#10B981', // green-500
-            'منتهية' => '#EF4444', // red-500
-            default => '#9CA3AF' // gray-400
+            'سارية' => 'bg-green-100 text-green-800',
+            'منتهية' => 'bg-red-100 text-red-800',
+            default => 'bg-gray-100 text-gray-800'
         };
     }
 
