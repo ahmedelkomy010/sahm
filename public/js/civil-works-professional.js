@@ -296,43 +296,68 @@ function updateSummaryTable(data) {
         row.className = 'daily-excavation-row';
         
         // تنسيق نوع الحفرية
-        const excavationType = item.excavation_type || 'غير محدد';
-        const excavationTypeFormatted = `<span class="excavation-type">${excavationType}</span>`;
+        let excavationTypeDisplay = '';
+        const excavationType = item.excavation_type || '';
         
-        // تنسيق نوع الكابل
+        // تحديد نوع الحفرية بالتنسيق المناسب
+        if (excavationType.includes('ترابية') || excavationType.includes('تربة ترابية')) {
+            if (excavationType.includes('مسفلتة')) {
+                excavationTypeDisplay = 'حفرية ترابية مسفلتة';
+            } else {
+                excavationTypeDisplay = 'حفرية ترابية غير مسفلتة';
+            }
+        } else if (excavationType.includes('صخرية') || excavationType.includes('تربة صخرية')) {
+            if (excavationType.includes('مسفلتة')) {
+                excavationTypeDisplay = 'حفرية صخرية مسفلتة';
+            } else {
+                excavationTypeDisplay = 'حفرية صخرية غير مسفلتة';
+            }
+        } else {
+            excavationTypeDisplay = excavationType || 'غير محدد';
+        }
+
+        const excavationTypeFormatted = `
+            <span class="excavation-type badge ${getExcavationTypeBadgeClass(excavationTypeDisplay)}">
+                ${excavationTypeDisplay}
+            </span>`;
+        
+        // تنسيق نوع الكابل (الكود الحالي لنوع الكابل)
         let cableTypeDisplay = '';
-        // تنسيق نوع الكابل بالشكل المطلوب
-        if (item.cable_type.includes('منخفض') && !item.cable_type.includes('2') && !item.cable_type.includes('3') && !item.cable_type.includes('4')) {
-            cableTypeDisplay = 'كابل منخفض 4×70';
-        } else if (item.cable_type.includes('متوسط') && !item.cable_type.includes('2') && !item.cable_type.includes('3') && !item.cable_type.includes('4')) {
-            cableTypeDisplay = 'كابل متوسط (20×80)';
-        } else if (item.cable_type.includes('2 كابل منخفض')) {
+        const cableType = item.cable_type || '';
+        
+        // تحديد نوع الكابل بالتنسيق المناسب
+        if (cableType.includes('منخفض')) {
+            if (cableType.includes('4×70')) {
+                cableTypeDisplay = 'كابل منخفض 4×70';
+            } else {
+                cableTypeDisplay = 'كابل منخفض';
+            }
+        } else if (cableType.includes('متوسط')) {
+            if (cableType.includes('20×80')) {
+                cableTypeDisplay = 'كابل متوسط 20×80';
+            } else {
+                cableTypeDisplay = 'كابل متوسط';
+            }
+        } else if (cableType.includes('2 كابل')) {
             cableTypeDisplay = '2 كابل منخفض';
-        } else if (item.cable_type.includes('3 كابل منخفض')) {
+        } else if (cableType.includes('3 كابل')) {
             cableTypeDisplay = '3 كابل منخفض';
-        } else if (item.cable_type.includes('4 كابل منخفض')) {
-            cableTypeDisplay = '4 كابل منخفض';
-        } else if (item.cable_type.includes('2 كابل متوسط')) {
-            cableTypeDisplay = '2 كابل متوسط';
-        } else if (item.cable_type.includes('3 كابل متوسط')) {
-            cableTypeDisplay = '3 كابل متوسط';
-        } else if (item.cable_type.includes('4 كابل متوسط')) {
+        } else if (cableType.includes('4 كابل')) {
             cableTypeDisplay = '4 كابل متوسط';
-        } else if (item.cable_type.includes('+4 كابل عالي')) {
+        } else if (cableType.includes('+4 كابل')) {
             cableTypeDisplay = '+4 كابل عالي';
         } else {
-            cableTypeDisplay = 'كابل عام';
+            cableTypeDisplay = cableType || 'غير محدد';
         }
-        
-        // تنسيق الأبعاد والأسعار
+
+        // تنسيق القيم العددية
         const length = parseFloat(item.length || 0).toFixed(2);
-        const width = parseFloat(item.width || 0).toFixed(2);
-        const depth = parseFloat(item.depth || 0).toFixed(2);
         const price = parseFloat(item.price || 0).toFixed(2);
         const total = parseFloat(item.total || 0).toFixed(2);
-        
+        totalAmount += parseFloat(total);
+
         // تنسيق التاريخ والوقت
-        let timestamp = '-';
+        let timestamp = 'غير محدد';
         if (item.updated_at || item.created_at) {
             const date = new Date(item.updated_at || item.created_at);
             timestamp = date.toLocaleString('ar-SA', {
@@ -344,13 +369,13 @@ function updateSummaryTable(data) {
                 hour12: true
             });
         }
-        
-        totalAmount += parseFloat(total);
-        
+
         row.innerHTML = `
             <td class="text-center border px-2">${index + 1}</td>
             <td class="text-center border px-2">${excavationTypeFormatted}</td>
-            <td class="text-center border px-2"><span class="cable-type-badge">${cableTypeDisplay}</span></td>
+            <td class="text-center border px-2">
+                <span class="cable-type-badge badge bg-info text-white">${cableTypeDisplay}</span>
+            </td>
             <td class="text-center border px-2 number-cell">${length} م</td>
             <td class="text-center border px-2 number-cell">${price} ريال</td>
             <td class="text-center border px-2 number-cell">${total} ريال</td>
@@ -366,7 +391,6 @@ function updateSummaryTable(data) {
             </td>
         `;
 
-        // إضافة الصف للجدول
         tbody.appendChild(row);
     });
 
@@ -388,6 +412,16 @@ function updateSummaryTable(data) {
             hour12: true
         });
     }
+}
+
+// دالة مساعدة لتحديد لون الشارة حسب نوع الحفرية
+function getExcavationTypeBadgeClass(excavationType) {
+    if (excavationType.includes('ترابية')) {
+        return excavationType.includes('مسفلتة') ? 'bg-warning text-dark' : 'bg-success text-white';
+    } else if (excavationType.includes('صخرية')) {
+        return excavationType.includes('مسفلتة') ? 'bg-danger text-white' : 'bg-primary text-white';
+    }
+    return 'bg-secondary text-white';
 }
 
 // تهيئة النظام عند تحميل الصفحة

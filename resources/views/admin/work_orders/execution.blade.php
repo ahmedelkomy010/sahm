@@ -259,8 +259,10 @@
                     <div class="p-4 border-bottom bg-light">
                         <div class="row align-items-center">
                             <div class="col-md-8">
-                               
-                                
+                                <button type="button" class="btn btn-primary" onclick="openModal()">
+                                    <i class="fas fa-plus-circle me-1"></i>
+                                    إضافة بند عمل جديد
+                                </button>
                             </div>
                             <div class="col-md-4 text-end">
                                 <div class="d-flex align-items-center justify-content-end gap-3">
@@ -553,64 +555,329 @@
 }
 </style>
 
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // إضافة بند عمل جديد
-    document.getElementById('addWorkItemForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        const formData = new FormData(this);
-        
-        fetch('{{ route("admin.work-orders.add-work-item") }}', {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'تم بنجاح!',
-                    text: 'تم إضافة بند العمل بنجاح',
-                    timer: 2000,
-                    showConfirmButton: false
-                });
+<!-- Custom Modal CSS -->
+<style>
+.custom-modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.4);
+}
+
+.custom-modal-content {
+    background-color: #fefefe;
+    margin: 5% auto;
+    padding: 0;
+    border: none;
+    border-radius: 8px;
+    width: 80%;
+    max-width: 600px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+}
+
+.custom-modal-header {
+    background-color: #007bff;
+    color: white;
+    padding: 20px;
+    border-radius: 8px 8px 0 0;
+    position: relative;
+}
+
+.custom-modal-header h5 {
+    margin: 0;
+    font-size: 1.25rem;
+}
+
+.custom-modal-close {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: white;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    background: none;
+    border: none;
+}
+
+.custom-modal-close:hover {
+    opacity: 0.7;
+}
+
+.custom-modal-body {
+    padding: 20px;
+}
+
+.custom-modal-footer {
+    padding: 20px;
+    border-top: 1px solid #dee2e6;
+    text-align: right;
+}
+
+.custom-modal-footer button {
+    margin-left: 10px;
+}
+</style>
+
+<!-- Custom Modal HTML -->
+<div id="addWorkItemModal" class="custom-modal">
+    <div class="custom-modal-content">
+        <div class="custom-modal-header">
+            <h5>إضافة بند عمل جديد</h5>
+            <button class="custom-modal-close" onclick="closeModal()">&times;</button>
+        </div>
+        <div class="custom-modal-body">
+            <form id="addWorkItemForm">
+                @csrf
+                <input type="hidden" name="work_order_id" value="{{ $workOrder->id }}">
                 
-                // إعادة تحميل الصفحة لعرض البيانات الجديدة
-                setTimeout(() => {
-                    window.location.reload();
-                }, 2000);
+                <div class="mb-3">
+                    <label for="work_item_search" class="form-label">البحث عن بند العمل</label>
+                    <input type="text" id="work_item_search" class="form-control" placeholder="اكتب رقم البند أو الوصف للبحث...">
+                </div>
+                
+                <div class="mb-3">
+                    <label for="work_item_id" class="form-label">اختر بند العمل</label>
+                    <select name="work_item_id" id="work_item_id" class="form-select" required>
+                        <option value="">-- اختر بند العمل --</option>
+                        @foreach(\App\Models\WorkItem::where('is_active', true)->orderBy('code')->get() as $workItem)
+                            <option value="{{ $workItem->id }}" 
+                                    data-unit-price="{{ $workItem->unit_price }}" 
+                                    data-unit="{{ $workItem->unit }}"
+                                    data-code="{{ $workItem->code }}"
+                                    data-description="{{ $workItem->description }}">
+                                {{ $workItem->code }} - {{ $workItem->description }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label for="quantity" class="form-label">الكمية المخططة</label>
+                            <input type="number" step="0.01" class="form-control" id="quantity" name="quantity" readonly style="background-color: #f8f9fa; cursor: not-allowed;">
+                            <small class="text-muted">سيتم تحديد الكمية من خلال الجدول</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label for="unit" class="form-label">الوحدة</label>
+                            <input type="text" class="form-control" id="unit" readonly>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label for="unit_price" class="form-label">سعر الوحدة</label>
+                            <input type="number" step="0.01" class="form-control" id="unit_price" readonly>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="notes" class="form-label">ملاحظات</label>
+                    <textarea class="form-control" id="notes" name="notes" rows="2"></textarea>
+                </div>
+            </form>
+        </div>
+        <div class="custom-modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeModal()">إلغاء</button>
+            <button type="submit" form="addWorkItemForm" class="btn btn-primary">إضافة البند</button>
+        </div>
+    </div>
+</div>
+
+@endsection 
+
+@push('scripts')
+<!-- تأكد من تحميل Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+// وظائف Modal
+function openModal() {
+    document.getElementById('addWorkItemModal').style.display = 'block';
+}
+
+function closeModal() {
+    document.getElementById('addWorkItemModal').style.display = 'none';
+    // مسح النموذج
+    document.getElementById('addWorkItemForm').reset();
+    document.getElementById('unit').value = '';
+    document.getElementById('unit_price').value = '';
+    document.getElementById('quantity').value = '';
+    
+    // إعادة تعيين البحث وإظهار جميع الخيارات
+    const workItemSearch = document.getElementById('work_item_search');
+    const workItemSelect = document.getElementById('work_item_id');
+    
+    if (workItemSearch) {
+        workItemSearch.value = '';
+    }
+    
+    if (workItemSelect) {
+        // إظهار جميع الخيارات
+        for (let i = 1; i < workItemSelect.options.length; i++) {
+            workItemSelect.options[i].style.display = 'block';
+        }
+        workItemSelect.value = '';
+    }
+}
+
+// إغلاق Modal عند الضغط خارجها
+window.onclick = function(event) {
+    const modal = document.getElementById('addWorkItemModal');
+    if (event.target === modal) {
+        closeModal();
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // إضافة مستمع الحدث لزر فتح Modal
+    const addWorkItemButton = document.querySelector('[data-bs-target="#addWorkItemModal"]');
+    if (addWorkItemButton) {
+        addWorkItemButton.removeAttribute('data-bs-toggle');
+        addWorkItemButton.removeAttribute('data-bs-target');
+        addWorkItemButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            openModal();
+        });
+    }
+
+    initializeEventListeners();
+});
+
+function initializeEventListeners() {
+    const workItemIdSelect = document.getElementById('work_item_id');
+    const addWorkItemForm = document.getElementById('addWorkItemForm');
+    const workItemSearch = document.getElementById('work_item_search');
+    const plannedQuantityInputs = document.querySelectorAll('.planned-quantity');
+    const actualQuantityInputs = document.querySelectorAll('.actual-quantity');
+    const deleteButtons = document.querySelectorAll('.delete-item');
+
+    // وظيفة البحث في بنود العمل
+    if (workItemSearch) {
+        workItemSearch.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const options = workItemIdSelect.options;
+            
+            for (let i = 1; i < options.length; i++) { // بدء من 1 لتجنب الخيار الافتراضي
+                const option = options[i];
+                const code = option.dataset.code ? option.dataset.code.toLowerCase() : '';
+                const description = option.dataset.description ? option.dataset.description.toLowerCase() : '';
+                
+                if (code.includes(searchTerm) || description.includes(searchTerm)) {
+                    option.style.display = 'block';
+                } else {
+                    option.style.display = 'none';
+                }
+            }
+            
+            // إذا كان هناك نتيجة واحدة فقط، اختارها تلقائياً
+            const visibleOptions = Array.from(options).filter(option => 
+                option.style.display !== 'none' && option.value !== ''
+            );
+            
+            if (visibleOptions.length === 1) {
+                workItemIdSelect.value = visibleOptions[0].value;
+                workItemIdSelect.dispatchEvent(new Event('change'));
+            }
+        });
+    }
+
+    if (workItemIdSelect) {
+        workItemIdSelect.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            document.getElementById('unit_price').value = selectedOption.dataset.unitPrice || '';
+            document.getElementById('unit').value = selectedOption.dataset.unit || '';
+            
+            // تعيين كمية افتراضية (1) عند اختيار بند
+            if (selectedOption.value) {
+                document.getElementById('quantity').value = '1.00';
             } else {
+                document.getElementById('quantity').value = '';
+            }
+        });
+    }
+
+    if (addWorkItemForm) {
+        addWorkItemForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // التحقق من أن البند محدد
+            if (!document.getElementById('work_item_id').value) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'تنبيه!',
+                    text: 'يرجى اختيار بند العمل أولاً'
+                });
+                return;
+            }
+            
+            const formData = new FormData(this);
+            
+            fetch('{{ route("admin.work-orders.add-work-item") }}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    closeModal();
+                    
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'تم بنجاح!',
+                        text: 'تم إضافة بند العمل بنجاح',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                    
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 2000);
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'خطأ!',
+                        text: data.message || 'حدث خطأ أثناء إضافة بند العمل'
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
                 Swal.fire({
                     icon: 'error',
                     title: 'خطأ!',
-                    text: data.message || 'حدث خطأ أثناء إضافة بند العمل'
+                    text: 'حدث خطأ في الاتصال'
                 });
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            Swal.fire({
-                icon: 'error',
-                title: 'خطأ!',
-                text: 'حدث خطأ في الاتصال'
             });
         });
-    });
+    }
 
-    // تحديث الكميات عند التغيير
-    document.querySelectorAll('.planned-quantity, .actual-quantity').forEach(input => {
+    plannedQuantityInputs.forEach(input => {
         input.addEventListener('change', function() {
             updateWorkItem(this);
         });
     });
 
-    // حذف بند عمل
-    document.querySelectorAll('.delete-item').forEach(button => {
+    actualQuantityInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            updateWorkItem(this);
+        });
+    });
+
+    deleteButtons.forEach(button => {
         button.addEventListener('click', function() {
             const itemId = this.getAttribute('data-id');
             
@@ -630,7 +897,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     });
-});
+}
 
 function updateWorkItem(input) {
     const itemId = input.getAttribute('data-id');
@@ -735,33 +1002,32 @@ function deleteWorkItem(itemId) {
 }
 
 function updateTotals() {
-    let totalPlanned = 0;
-    let totalExecuted = 0;
+    let totalPlannedAmount = 0;
+    let totalExecutedAmount = 0;
     
     document.querySelectorAll('#workItemsTable tbody tr').forEach(row => {
-        const plannedText = row.querySelector('.planned-amount').textContent;
-        const executedText = row.querySelector('.executed-amount').textContent;
+        const plannedAmount = parseFloat(row.querySelector('.planned-amount').textContent.replace(/[^\d.]/g, '')) || 0;
+        const executedAmount = parseFloat(row.querySelector('.executed-amount').textContent.replace(/[^\d.]/g, '')) || 0;
         
-        totalPlanned += parseFloat(plannedText.replace(/[^\d.]/g, '')) || 0;
-        totalExecuted += parseFloat(executedText.replace(/[^\d.]/g, '')) || 0;
+        totalPlannedAmount += plannedAmount;
+        totalExecutedAmount += executedAmount;
     });
     
-    const totalDiff = totalPlanned - totalExecuted;
-    
-    // تحديث الإجماليات
-    document.getElementById('totalPlanned').textContent = totalPlanned.toFixed(2) + ' ريال';
-    document.getElementById('totalExecuted').textContent = totalExecuted.toFixed(2) + ' ريال';
+    // تحديث الإجماليات في الجدول
+    document.getElementById('totalPlanned').textContent = totalPlannedAmount.toFixed(2) + ' ريال';
+    document.getElementById('totalExecuted').textContent = totalExecutedAmount.toFixed(2) + ' ريال';
     
     // تحديث فرق الإجمالي
+    const totalDifference = totalPlannedAmount - totalExecutedAmount;
     const totalDiffElement = document.getElementById('totalDifference');
-    if (totalDiff > 0) {
-        totalDiffElement.innerHTML = `<span class="text-danger">-${totalDiff.toFixed(2)} ريال</span>`;
-    } else if (totalDiff < 0) {
-        totalDiffElement.innerHTML = `<span class="text-success">+${Math.abs(totalDiff).toFixed(2)} ريال</span>`;
+    
+    if (totalDifference > 0) {
+        totalDiffElement.innerHTML = `<span class="text-danger">-${totalDifference.toFixed(2)} ريال</span>`;
+    } else if (totalDifference < 0) {
+        totalDiffElement.innerHTML = `<span class="text-success">+${Math.abs(totalDifference).toFixed(2)} ريال</span>`;
     } else {
         totalDiffElement.innerHTML = `<span class="text-secondary">0.00 ريال</span>`;
     }
 }
 </script>
-
-@endsection 
+@endpush 

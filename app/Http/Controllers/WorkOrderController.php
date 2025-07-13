@@ -578,43 +578,45 @@ class WorkOrderController extends Controller
         try {
             $request->validate([
                 'work_order_id' => 'required|exists:work_orders,id',
-                'work_item_code' => 'required|string|max:255',
-                'work_item_description' => 'required|string|max:500',
-                'unit' => 'required|string|max:50',
-                'unit_price' => 'required|numeric|min:0',
-                'planned_quantity' => 'required|numeric|min:0',
-                'actual_quantity' => 'nullable|numeric|min:0',
+                'work_item_id' => 'required|exists:work_items,id',
+                'notes' => 'nullable|string'
             ]);
 
-            // إنشاء أو العثور على بند العمل
-            $workItem = \App\Models\WorkItem::firstOrCreate([
-                'code' => $request->work_item_code,
-            ], [
-                'description' => $request->work_item_description,
-                'unit' => $request->unit,
-                'unit_price' => $request->unit_price,
-            ]);
+            // الحصول على بيانات بند العمل
+            $workItem = \App\Models\WorkItem::findOrFail($request->work_item_id);
 
-            // إنشاء ربط بين أمر العمل وبند العمل
+            // التحقق من عدم وجود البند مسبقاً في نفس أمر العمل
+            $existingItem = \App\Models\WorkOrderItem::where('work_order_id', $request->work_order_id)
+                ->where('work_item_id', $request->work_item_id)
+                ->first();
+
+            if ($existingItem) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'هذا البند موجود بالفعل في أمر العمل'
+                ]);
+            }
+
+            // إنشاء ربط بين أمر العمل وبند العمل مع كمية افتراضية 1.00
             $workOrderItem = \App\Models\WorkOrderItem::create([
                 'work_order_id' => $request->work_order_id,
                 'work_item_id' => $workItem->id,
-                'quantity' => $request->planned_quantity,
-                'unit_price' => $request->unit_price,
-                'executed_quantity' => $request->actual_quantity ?? 0,
+                'quantity' => 1.00, // كمية افتراضية
+                'unit_price' => $workItem->unit_price ?? 0, // سعر الوحدة من بند العمل
+                'executed_quantity' => 0,
+                'notes' => $request->notes
             ]);
 
             return response()->json([
                 'success' => true,
-                'message' => 'تم إضافة بند العمل بنجاح',
-                'data' => $workOrderItem
+                'message' => 'تم إضافة بند العمل بنجاح'
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'حدث خطأ أثناء إضافة بند العمل: ' . $e->getMessage()
-            ], 500);
+            ]);
         }
     }
 

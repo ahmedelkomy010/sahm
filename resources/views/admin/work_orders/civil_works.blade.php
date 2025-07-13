@@ -1349,10 +1349,6 @@
                                         <i class="fas fa-file-excel me-2"></i>
                                         <span class="fw-bold">تصدير إكسل</span>
                                     </button>
-                                    <button type="button" class="btn btn-danger btn-lg shadow-sm" id="clear-daily-summary-btn">
-                                        <i class="fas fa-trash-alt me-2"></i>
-                                        <span class="fw-bold">إفراغ الملخص</span>
-                                    </button>
                                 </div>
                                 <div class="text-muted small">
                                     <i class="fas fa-clock me-1"></i>
@@ -2371,439 +2367,46 @@
     
     <!-- تحميل البيانات المحفوظة -->
     <script>
-        // البيانات المحفوظة من قاعدة البيانات
+        // تهيئة المتغيرات العامة
+        window.workOrderId = {{ $workOrder->id }};
+        window.csrfToken = document.querySelector('meta[name="csrf-token"]').content;
         window.savedDailyData = @json($savedDailyData ?? []);
         
-        // دالة لتحميل البيانات المحفوظة عند تحميل الصفحة
-        function loadSavedDailyData() {
-            const tbody = document.getElementById('daily-excavation-tbody');
-            if (!tbody) return;
+        // دالة التهيئة الرئيسية
+        function initializeDailyExcavation() {
+            console.log('Initializing daily excavation system...');
             
-            if (window.savedDailyData && window.savedDailyData.length > 0) {
-                tbody.innerHTML = '';
-                
-                window.savedDailyData.forEach((item, index) => {
-                    const row = document.createElement('tr');
-                    row.className = 'daily-excavation-row';
-                    
-                    // تحديد نوع الكابل بالتنسيق المناسب
-                    let cableTypeDisplay = '';
-                    const cableType = item.cable_type || '';
-                    if (cableType.includes('منخفض')) {
-                        cableTypeDisplay = `كابل منخفض ${cableType.includes('4×70') ? '4×70' : ''}`;
-                    } else if (cableType.includes('متوسط')) {
-                        cableTypeDisplay = `كابل متوسط (20×80)`;
-                    } else if (cableType.includes('2 كابل')) {
-                        cableTypeDisplay = '2 كابل منخفض';
-                    } else if (cableType.includes('3 كابل')) {
-                        cableTypeDisplay = '3 كابل منخفض';
-                    } else if (cableType.includes('4 كابل')) {
-                        cableTypeDisplay = '4 كابل متوسط';
-                    } else if (cableType.includes('+4 كابل')) {
-                        cableTypeDisplay = '+4 كابل عالي';
-                    } else {
-                        cableTypeDisplay = 'كابل عام';
-                    }
-                    
-                    const total = parseFloat(item.total) || 0;
-                    const length = parseFloat(item.length || 0).toFixed(2);
-                    const width = parseFloat(item.width || 0).toFixed(2);
-                    const depth = parseFloat(item.depth || 0).toFixed(2);
-                    const price = parseFloat(item.price || 0).toFixed(2);
-                    const lastUpdate = formatLastUpdateTime(item.updated_at || item.created_at);
-                    
-                    row.innerHTML = `
-                        <td class="text-center align-middle">
-                            <span class="row-number">${index + 1}</span>
-                        </td>
-                        <td class="text-center align-middle">
-                            <div class="excavation-type-cell">${item.excavation_type || item.work_type || 'غير محدد'}</div>
-                        </td>
-                        <td class="text-center align-middle">
-                            <span class="cable-type-badge">${cableTypeDisplay}</span>
-                        </td>
-                        <td class="text-center align-middle">
-                            <div class="dimensions-cell">${length}</div>
-                        </td>
-                        <td class="text-center align-middle">
-                            <div class="dimensions-cell">${width}</div>
-                        </td>
-                        <td class="text-center align-middle">
-                            <div class="dimensions-cell">${depth}</div>
-                        </td>
-                        <td class="text-center align-middle">
-                            <div class="price-cell">
-                                <div class="price-value">${price} ريال</div>
-                            </div>
-                        </td>
-                        <td class="text-center align-middle">
-                            <div class="total-cell">${total.toFixed(2)} ريال</div>
-                        </td>
-                        <td class="text-center align-middle">
-                            <div class="last-update-cell">
-                                <i class="far fa-clock me-1"></i>
-                                ${lastUpdate}
-                            </div>
-                        </td>
-                    `;
-                    
-                    tbody.appendChild(row);
+            // تحميل البيانات المحفوظة
+            loadSavedData();
+            
+            // إضافة مستمعي الأحداث
+            const saveButton = document.getElementById('save-daily-summary-btn');
+            if (saveButton) {
+                saveButton.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    saveData();
                 });
-            } else {
-                // عرض رسالة لا توجد بيانات
-                tbody.innerHTML = `
-                    <tr id="no-data-row">
-                        <td colspan="9">
-                            <div class="empty-state-content">
-                                <i class="fas fa-clipboard-list fa-3x"></i>
-                                <h5>لا توجد بيانات حفريات</h5>
-                                <p>سيتم إضافة البيانات تلقائياً عند إدخال القياسات</p>
-                                <small class="text-muted">
-                                    <i class="fas fa-info-circle"></i>
-                                    ابدأ بإدخال الطول والسعر في النماذج أعلاه
-                                </small>
-                            </div>
-                        </td>
-                    </tr>
-                `;
             }
             
-            // تحديث الإحصائيات
-            updateStatistics();
-        }
-
-        
-            
-            sampleData.forEach((item, index) => {
-                const row = document.createElement('tr');
-                row.className = 'daily-excavation-row';
-                row.setAttribute('data-excavation-id', index);
-                
-                row.innerHTML = `
-                    <td class="text-center align-middle">
-                        <span class="row-number">${index + 1}</span>
-                    </td>
-                    <td class="text-center align-middle">
-                        <div class="excavation-type-cell">${item.excavation_type}</div>
-                    </td>
-                    <td class="text-center align-middle">
-                        <span class="cable-type-badge">${item.cable_type}</span>
-                    </td>
-                    <td class="text-center align-middle">
-                        <div class="dimensions-cell">${item.length}</div>
-                    </td>
-                    <td class="text-center align-middle">
-                        <div class="dimensions-cell">${item.width}</div>
-                    </td>
-                    <td class="text-center align-middle">
-                        <div class="dimensions-cell">${item.depth}</div>
-                    </td>
-                    <td class="text-center align-middle">
-                        <div class="price-cell">
-                            <div class="price-value">${item.price} ريال</div>
-                            <small class="text-muted d-block mt-1">
-                                <i class="far fa-clock me-1"></i>
-                                ${item.last_update}
-                            </small>
-                        </div>
-                    </td>
-                    <td class="text-center align-middle">
-                        <div class="total-cell">${item.total} ريال</div>
-                    </td>
-                `;
-                
-                tbody.appendChild(row);
-            });
-            
-            // تحديث الإحصائيات
-            updateStatistics();
-        }
-
-        // دالة تحديث الإحصائيات
-        function updateStatistics() {
-            const rows = document.querySelectorAll('#daily-excavation-tbody tr:not(#no-data-row)');
-            
-            let totalItems = rows.length;
-            let totalCables = 0;
-            let totalLength = 0;
-            let totalCost = 0;
-            
-            rows.forEach(row => {
-                // حساب الكابلات
-                const cableText = row.querySelector('.cable-type-badge')?.textContent || '';
-                if (cableText.includes('2 كابل')) totalCables += 2;
-                else if (cableText.includes('3 كابل')) totalCables += 3;
-                else if (cableText.includes('4 كابل')) totalCables += 4;
-                else if (cableText.includes('+4 كابل')) totalCables += 6;
-                else totalCables += 1;
-                
-                // حساب الطول الإجمالي
-                const lengthText = row.querySelector('.dimensions-cell')?.textContent || '0';
-                totalLength += parseFloat(lengthText) || 0;
-                
-                // حساب التكلفة الإجمالية
-                const costText = row.querySelector('.total-cell')?.textContent || '0';
-                const cost = parseFloat(costText.replace(' ريال', '')) || 0;
-                totalCost += cost;
-            });
-            
-            // تحديث العناصر في الواجهة
-            document.getElementById('daily-items-count').textContent = totalItems;
-            document.getElementById('daily-cables-count').textContent = totalCables;
-            document.getElementById('daily-total-length').textContent = totalLength.toFixed(2);
-            document.getElementById('daily-total-cost').textContent = totalCost.toFixed(2);
-            document.getElementById('total-amount').textContent = totalCost.toFixed(2);
-        }
-
-        // دالة تنسيق وقت آخر تحديث
-        function formatLastUpdateTime(timestamp) {
-            if (!timestamp) return 'غير محدد';
-            
-            const date = new Date(timestamp);
-            const now = new Date();
-            const diff = Math.floor((now - date) / 1000); // الفرق بالثواني
-            
-            if (diff < 60) return 'منذ لحظات';
-            if (diff < 3600) return `منذ ${Math.floor(diff / 60)} دقيقة`;
-            if (diff < 86400) return `منذ ${Math.floor(diff / 3600)} ساعة`;
-            
-            return date.toLocaleDateString('ar-SA', {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-        }
-
-        // دالة مسح البيانات من الجدول
-        function clearDailyData() {
-            const tbody = document.getElementById('daily-excavation-tbody');
-            if (!tbody) return;
-            
-            tbody.innerHTML = `
-                <tr id="no-data-row">
-                    <td colspan="7">
-                        <div class="empty-state-content">
-                            <i class="fas fa-clipboard-list fa-3x"></i>
-                            <h5>لا توجد بيانات حفريات</h5>
-                            <p>سيتم إضافة البيانات تلقائياً عند إدخال القياسات</p>
-                            <small class="text-muted">
-                                <i class="fas fa-info-circle"></i>
-                                ابدأ بإدخال الطول والسعر في النماذج أعلاه
-                            </small>
-                        </div>
-                    </td>
-                </tr>
-            `;
-            
-            // إعادة تعيين الإحصائيات
-            document.getElementById('daily-items-count').textContent = '0';
-            document.getElementById('daily-cables-count').textContent = '0';
-            document.getElementById('daily-total-length').textContent = '0.00';
-            document.getElementById('daily-total-cost').textContent = '0.00';
-            document.getElementById('total-amount').textContent = '0.00';
-            
-            console.log('تم مسح البيانات من الجدول');
-        }
-
-        
-
-
-
-        // دالة للحصول على نوع القسم من نوع العمل
-        function getSectionType(workType) {
-            if (!workType) return 'غير محدد';
-            
-            if (workType.includes('تربة ترابية')) return 'حفريات أساسية';
-            if (workType.includes('تربة صخرية')) return 'حفريات أساسية';
-            if (workType.includes('حفر مفتوح')) return 'حفر مفتوح';
-            if (workType.includes('حفريات دقيقة')) return 'حفريات دقيقة';
-            if (workType.includes('تمديدات كهربائية')) return 'تمديدات كهربائية';
-            
-            return 'أعمال مدنية';
-        }
-
-        // دالة لعرض جدول فارغ محدثة
-        function displayEmptyTable(tbody) {
-            tbody.innerHTML = `
-                <tr id="no-data-row" class="table-light">
-                    <td colspan="7" class="text-center text-muted py-5">
-                        <div class="empty-state-content">
-                            <i class="fas fa-clipboard-list fa-3x mb-3 text-secondary"></i>
-                            <h5 class="mb-2 text-secondary">لا توجد بيانات حفريات</h5>
-                            <p class="mb-0 text-muted">سيتم إضافة البيانات تلقائياً عند إدخال القياسات</p>
-                            <small class="text-muted d-block mt-1">
-                                <i class="fas fa-info-circle me-1"></i>
-                                ابدأ بإدخال الطول والسعر في النماذج أعلاه
-                            </small>
-                        </div>
-                    </td>
-                </tr>
-            `;
-        }
-
-        // دالة لإضافة بيانات تجريبية للاختبار
-        function addSampleData() {
-            const tbody = document.getElementById('daily-excavation-tbody');
-            if (!tbody) return;
-            
-            // مسح الجدول الحالي
-            tbody.innerHTML = '';
-            
-           
-            
-            // إضافة البيانات
-            sampleData.forEach((item, index) => {
-                const row = document.createElement('tr');
-                row.className = 'table-row-hover';
-                row.setAttribute('data-excavation-id', index);
-                
-                row.innerHTML = `
-                    <td class="text-center">
-                        <div class="section-type-cell">${item.section_type}</div>
-                    </td>
-                    <td class="text-center">
-                        <div class="work-type-cell">${item.work_type}</div>
-                    </td>
-                    <td class="text-center">
-                        <span class="cable-type-badge">${item.cable_type}</span>
-                    </td>
-                    <td class="text-center">
-                        <span class="count-cell">${item.count}</span>
-                    </td>
-                    <td class="text-center">
-                        <div class="dimensions-cell">${item.dimensions}</div>
-                    </td>
-                    <td class="text-center">
-                        <div class="price-cell">${item.price} ريال</div>
-                    </td>
-                    <td class="text-center">
-                        <div class="total-cell">${item.total} ريال</div>
-                    </td>
-                    <td class="text-center">
-                        <small class="text-muted">${item.last_update}</small>
-                    </td>
-                `;
-                
-                tbody.appendChild(row);
-            });
-            
-            console.log('Sample data added successfully');
-        }
-
-                 // دالة لمسح البيانات من الجدول
-         function clearTableData() {
-             const tbody = document.getElementById('daily-excavation-tbody');
-             if (tbody) {
-                 tbody.innerHTML = `
-                     <tr id="no-data-row" class="table-light">
-                         <td colspan="7" class="text-center text-muted py-5">
-                             <div class="empty-state-content">
-                                 <i class="fas fa-clipboard-list fa-3x mb-3 text-secondary"></i>
-                                 <h5 class="mb-2 text-secondary">لا توجد بيانات حفريات</h5>
-                                 <p class="mb-0 text-muted">سيتم إضافة البيانات تلقائياً عند إدخال القياسات</p>
-                                 <small class="text-muted d-block mt-1">
-                                     <i class="fas fa-info-circle me-1"></i>
-                                     ابدأ بإدخال الطول والسعر في النماذج أعلاه
-                                 </small>
-                             </div>
-                         </td>
-                     </tr>
-                 `;
-                 console.log('Table data cleared');
-             }
-         }
-
-         // دالة للحصول على نوع القسم من نوع العمل
-        function getSectionType(workType) {
-            if (!workType) return 'غير محدد';
-            
-            if (workType.includes('تربة ترابية')) return 'حفريات أساسية';
-            if (workType.includes('تربة صخرية')) return 'حفريات أساسية';
-            if (workType.includes('حفر مفتوح')) return 'حفر مفتوح';
-            if (workType.includes('حفريات دقيقة')) return 'حفريات دقيقة';
-            if (workType.includes('تمديدات كهربائية')) return 'تمديدات كهربائية';
-            
-            return 'أعمال مدنية';
-        }
-
-        // نظام إدارة الأحداث
-        let eventListenersAdded = false;
-
-        // تحديث الصفحة مع البيانات المحفوظة عند التحميل
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM loaded, checking for saved data...');
-            
-            // متغير للتحكم في التحميل
-            if (window.dataLoaded) {
-                console.log('البيانات تم تحميلها مسبقاً');
-                return;
-            }
-            
-            // التأكد من أن الجدول لا يحتوي على بيانات مكررة
+            // إضافة مستمع لأحداث التغيير في الجدول
             const tbody = document.getElementById('daily-excavation-tbody');
             if (tbody) {
-                // التحقق من وجود بيانات مسبقاً
-                const existingData = tbody.querySelectorAll('tr:not(#no-data-row)');
-                if (existingData.length > 0) {
-                    console.log('البيانات موجودة مسبقاً في الجدول، تجنب التكرار');
-                    window.dataLoaded = true;
-                    return;
-                }
-                
-                // مسح أي بيانات موجودة مسبقاً
-                tbody.innerHTML = '';
+                tbody.addEventListener('change', function() {
+                    // تحديث الإحصائيات عند تغيير البيانات
+                    updateStatistics();
+                });
             }
             
-            // تحميل البيانات المحفوظة مرة واحدة فقط
-            if (window.savedDailyData && window.savedDailyData.length > 0) {
-                loadSavedDailyData();
-            } else {
-                // إضافة بيانات تجريبية للاختبار
-                console.log('لا توجد بيانات محفوظة، سيتم إضافة بيانات تجريبية للاختبار');
-                addRealisticSampleData();
-            }
+            // تحديث الإحصائيات الأولية
+            updateStatistics();
             
-            // وضع علامة أن البيانات تم تحميلها
-            window.dataLoaded = true;
-            
-            // تحديث الإحصائيات
-            if (typeof updateStatistics === 'function') {
-                updateStatistics();
-            }
-            
-            // إضافة مستمعي الأحداث مرة واحدة فقط
-            if (!eventListenersAdded) {
-                addEventListeners();
-                eventListenersAdded = true;
-            }
-        });
-
-        // دالة إضافة مستمعي الأحداث
-        function addEventListeners() {
-            // زر حفظ الملخص
-            document.getElementById('save-daily-summary-btn')?.addEventListener('click', function() {
-                // هنا يمكن إضافة منطق حفظ البيانات
-                toastr.success('تم حفظ الملخص بنجاح');
-            });
-            
-            // زر تصدير إكسل
-            document.getElementById('export-daily-summary-btn')?.addEventListener('click', function() {
-                // هنا يمكن إضافة منطق تصدير البيانات
-                toastr.info('جاري تصدير البيانات...');
-            });
-            
-            // زر إفراغ الملخص
-            document.getElementById('clear-daily-summary-btn')?.addEventListener('click', function() {
-                if (confirm('هل أنت متأكد من إفراغ الملخص؟')) {
-                    clearDailyData();
-                    toastr.warning('تم إفراغ الملخص');
-                }
-            });
-            
-            console.log('Event listeners added successfully');
+            console.log('Daily excavation system initialized successfully');
         }
+        
+        // تهيئة النظام عند تحميل الصفحة
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeDailyExcavation();
+        });
     </script>
 </body>
 </html> 
