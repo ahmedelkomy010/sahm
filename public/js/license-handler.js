@@ -260,6 +260,148 @@ window.printLicense = function() {
     }
 };
 
+// تحديث دالة حفظ القسم
+window.saveSection = async function(sectionId, data = null) {
+    try {
+        const formData = data || new FormData(document.getElementById(`${sectionId}-form`));
+        
+        const response = await fetch('/admin/licenses/save-section', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: formData
+        });
+
+        const result = await response.json();
+        
+        if (!result.success) {
+            console.warn('حدث خطأ أثناء حفظ القسم:', result.message);
+            return false;
+        }
+        
+        return true;
+    } catch (error) {
+        console.error('خطأ في حفظ القسم:', error);
+        return false;
+    }
+};
+
+// تحديث دالة الحفظ التلقائي
+window.autoSaveTestsToServer = async function() {
+    try {
+        const testsData = collectTestsData();
+        const formData = new FormData();
+        formData.append('section', 'lab_tests');
+        formData.append('tests_data', JSON.stringify(testsData));
+        formData.append('totals', JSON.stringify(calculateTotals()));
+        
+        const response = await fetch('/admin/licenses/save-section', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: formData
+        });
+
+        const result = await response.json();
+        if (!result.success) {
+            console.warn('تحذير: ', result.message);
+        }
+    } catch (error) {
+        console.error('خطأ في حفظ البيانات:', error);
+    }
+};
+
+// تحديث دالة حذف الاختبار
+window.removeTest = function(element) {
+    const row = element.closest('tr');
+    if (row) {
+        row.remove();
+        updateTestTotals();
+        autoSaveTestsToServer().catch(error => {
+            console.error('خطأ في حفظ البيانات:', error);
+        });
+    }
+};
+
+// تحديث دالة جمع بيانات الاختبارات
+window.collectTestsData = function() {
+    const testsTable = document.getElementById('tests-table');
+    if (!testsTable) return [];
+
+    const tests = [];
+    const rows = testsTable.querySelectorAll('tbody tr');
+    
+    rows.forEach(row => {
+        const test = {
+            date: row.querySelector('[name="test_date[]"]')?.value,
+            type: row.querySelector('[name="test_type[]"]')?.value,
+            points: row.querySelector('[name="test_points[]"]')?.value,
+            price: row.querySelector('[name="test_price[]"]')?.value,
+            total: row.querySelector('[name="test_total[]"]')?.value,
+            result: row.querySelector('[name="test_result[]"]')?.value,
+            notes: row.querySelector('[name="test_notes[]"]')?.value
+        };
+        
+        if (test.date || test.type || test.points || test.price || test.total || test.result || test.notes) {
+            tests.push(test);
+        }
+    });
+    
+    return tests;
+};
+
+// تحديث دالة حساب الإجماليات
+window.calculateTotals = function() {
+    const testsTable = document.getElementById('tests-table');
+    if (!testsTable) return {
+        total_tests: 0,
+        passed_tests: 0,
+        failed_tests: 0,
+        total_amount: 0,
+        passed_amount: 0,
+        failed_amount: 0
+    };
+
+    let totalTests = 0;
+    let passedTests = 0;
+    let failedTests = 0;
+    let totalAmount = 0;
+    let passedAmount = 0;
+    let failedAmount = 0;
+
+    const rows = testsTable.querySelectorAll('tbody tr');
+    rows.forEach(row => {
+        const result = row.querySelector('[name="test_result[]"]')?.value;
+        const total = parseFloat(row.querySelector('[name="test_total[]"]')?.value) || 0;
+
+        if (result) {
+            totalTests++;
+            totalAmount += total;
+
+            if (result.toLowerCase() === 'ناجح') {
+                passedTests++;
+                passedAmount += total;
+            } else if (result.toLowerCase() === 'راسب') {
+                failedTests++;
+                failedAmount += total;
+            }
+        }
+    });
+
+    return {
+        total_tests: totalTests,
+        passed_tests: passedTests,
+        failed_tests: failedTests,
+        total_amount: totalAmount,
+        passed_amount: passedAmount,
+        failed_amount: failedAmount
+    };
+};
+
 // 12. دعم jQuery إذا كان متوفراً
 if (typeof $ !== 'undefined') {
     $(document).ready(function() {

@@ -592,64 +592,43 @@ use Illuminate\Support\Facades\Storage;
                         <table class="min-w-full divide-y divide-gray-200 bg-white rounded-lg shadow">
                             <thead class="bg-gray-50">
                                 <tr>
-                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
-                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">حالة الإخلاء</th>
-                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">تاريخ الإخلاء</th>
-                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">المبلغ</th>
-                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">تاريخ ووقت الإخلاء</th>
-                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">رقم السداد</th>
-                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الملاحظات</th>
+                                    <th style="min-width: 60px;">#</th>
+                                    <th style="min-width: 120px;">تم الإخلاء؟</th>
+                                    <th style="min-width: 120px;">تاريخ الإخلاء</th>
+                                    <th style="min-width: 120px;">مبلغ الإخلاء (ريال)</th>
+                                    <th style="min-width: 150px;">تاريخ ووقت الإخلاء</th>
+                                    <th style="min-width: 130px;">رقم سداد الإخلاء</th>
+                                    <th style="min-width: 200px;">ملاحظات</th>
+                                    <th style="min-width: 120px;">المرفق</th>
                                 </tr>
                             </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                @foreach($evacuationData as $index => $evacuation)
-                                    <tr class="hover:bg-gray-50">
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $index + 1 }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            @if(($evacuation['is_evacuated'] ?? 0) == 1)
-                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                                    <i class="fas fa-check-circle mr-1"></i>
-                                                    تم الإخلاء
-                                                </span>
-                                            @elseif(isset($evacuation['is_evacuated']) && $evacuation['is_evacuated'] == 0)
-                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                                    <i class="fas fa-times-circle mr-1"></i>
-                                                    لم يتم الإخلاء
-                                                </span>
-                                            @else
-                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                                    <i class="fas fa-question-circle mr-1"></i>
-                                                    غير محدد
-                                                </span>
-                                            @endif
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            {{ isset($evacuation['evacuation_date']) && $evacuation['evacuation_date'] ? \Carbon\Carbon::parse($evacuation['evacuation_date'])->format('Y/m/d') : '-' }}
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">
-                                            {{ number_format($evacuation['evacuation_amount'] ?? 0, 2) }} ريال
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            {{ isset($evacuation['evacuation_datetime']) && $evacuation['evacuation_datetime'] ? \Carbon\Carbon::parse($evacuation['evacuation_datetime'])->format('Y/m/d H:i') : '-' }}
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            {{ $evacuation['payment_number'] ?? '-' }}
-                                        </td>
-                                        <td class="px-6 py-4 text-sm text-gray-900">
-                                            {{ $evacuation['notes'] ?? '-' }}
-                                        </td>
-                                    </tr>
-                                @endforeach
+                            <tbody>
+                                @if(isset($evacTable1Data) && count($evacTable1Data) > 0)
+                                    @foreach($evacTable1Data as $index => $evacuation)
+                                        <tr>
+                                            <td class="text-center">{{ $index + 1 }}</td>
+                                            <td>{{ $evacuation['is_evacuated'] == 1 ? 'نعم' : 'لا' }}</td>
+                                            <td>{{ $evacuation['evacuation_date'] ?? '-' }}</td>
+                                            <td>{{ $evacuation['evacuation_amount'] ?? '0.00' }}</td>
+                                            <td>{{ $evacuation['evacuation_datetime'] ?? '-' }}</td>
+                                            <td>{{ $evacuation['payment_number'] ?? '-' }}</td>
+                                            <td>{{ $evacuation['notes'] ?? '-' }}</td>
+                                            <td>
+                                                @if(isset($evacuation['evacuation_file']))
+                                                    <a href="{{ route('licenses.evacuation-file', ['license' => $license->id, 'index' => $index]) }}" 
+                                                       class="btn btn-sm btn-primary" 
+                                                       target="_blank">
+                                                        <i class="fas fa-file-download"></i>
+                                                        عرض المرفق
+                                                    </a>
+                                                @else
+                                                    <span class="text-muted">لا يوجد مرفق</span>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                @endif
                             </tbody>
-                            <tfoot>
-                                <tr class="bg-gray-50">
-                                    <td colspan="3" class="px-6 py-4 text-sm font-medium text-gray-900 text-right">إجمالي المبلغ</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                        {{ number_format($totalEvacuationAmount, 2) }} ريال
-                                    </td>
-                                    <td colspan="3"></td>
-                                </tr>
-                            </tfoot>
                         </table>
                     </div>
                 </div>
@@ -1163,6 +1142,178 @@ use Illuminate\Support\Facades\Storage;
             <h3 class="text-lg font-semibold mb-2">ملاحظات</h3>
             <p class="text-gray-700">{{ $license->notes }}</p>
         </div>
+        @endif
+
+        <!-- بيانات الإخلاءات -->
+        <div class="mt-8">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">بيانات الإخلاءات</h3>
+            
+            <!-- ملخص الإخلاءات -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div class="bg-blue-50 p-4 rounded-lg">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-clipboard-list text-blue-500 text-2xl"></i>
+                        </div>
+                        <div class="ml-4">
+                            <h4 class="text-sm font-medium text-blue-900">عدد الإخلاءات</h4>
+                            <p class="mt-1 text-2xl font-semibold text-blue-700">
+                                {{ isset($additionalDetails['evacuation_data']) ? count($additionalDetails['evacuation_data']) : 0 }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-green-50 p-4 rounded-lg">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-money-bill-wave text-green-500 text-2xl"></i>
+                        </div>
+                        <div class="ml-4">
+                            <h4 class="text-sm font-medium text-green-900">إجمالي المبالغ</h4>
+                            <p class="mt-1 text-2xl font-semibold text-green-700">
+                                {{ isset($additionalDetails['evacuation_data']) ? 
+                                   number_format(collect($additionalDetails['evacuation_data'])->sum('evacuation_amount'), 2) : 
+                                   '0.00' }} ريال
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-purple-50 p-4 rounded-lg">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-file-alt text-purple-500 text-2xl"></i>
+                        </div>
+                        <div class="ml-4">
+                            <h4 class="text-sm font-medium text-purple-900">المرفقات</h4>
+                            <p class="mt-1 text-2xl font-semibold text-purple-700">
+                                {{ isset($additionalDetails['evacuation_data']) ? 
+                                   collect($additionalDetails['evacuation_data'])->filter(function($item) {
+                                       return isset($item['evacuation_file']);
+                                   })->count() : 0 }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- جدول بيانات الإخلاءات -->
+            <div class="bg-white rounded-lg shadow overflow-hidden">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">#</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">تم الإخلاء؟</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">تاريخ الإخلاء</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">مبلغ الإخلاء</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">تاريخ ووقت الإخلاء</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">رقم سداد الإخلاء</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">ملاحظات</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">المرفق</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        @if(isset($additionalDetails['evacuation_data']) && count($additionalDetails['evacuation_data']) > 0)
+                            @foreach($additionalDetails['evacuation_data'] as $index => $evacuation)
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">{{ $index + 1 }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                        @if($evacuation['is_evacuated'] == 1)
+                                            <span class="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">
+                                                نعم
+                                            </span>
+                                        @else
+                                            <span class="px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full">
+                                                لا
+                                            </span>
+                                        @endif
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        {{ $evacuation['evacuation_date'] ?? '-' }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">
+                                        {{ number_format($evacuation['evacuation_amount'] ?? 0, 2) }} ريال
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        {{ $evacuation['evacuation_datetime'] ?? '-' }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        {{ $evacuation['payment_number'] ?? '-' }}
+                                    </td>
+                                    <td class="px-6 py-4 text-sm text-gray-900">
+                                        {{ $evacuation['notes'] ?? '-' }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        @if(isset($evacuation['evacuation_file']))
+                                            <a href="{{ route('licenses.evacuation-file', ['license' => $license->id, 'index' => $index]) }}" 
+                                               class="text-blue-600 hover:text-blue-800 inline-flex items-center gap-1"
+                                               target="_blank">
+                                                <i class="fas fa-file-download"></i>
+                                                عرض
+                                            </a>
+                                        @else
+                                            <span class="text-gray-400">-</span>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endforeach
+                        @else
+                            <tr>
+                                <td colspan="8" class="px-6 py-4 text-center text-gray-500">
+                                    <i class="fas fa-inbox text-gray-400 text-3xl mb-2"></i>
+                                    <p>لا توجد بيانات إخلاء مسجلة</p>
+                                </td>
+                            </tr>
+                        @endif
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- مرفقات الإخلاء المنفصلة -->
+        @if(isset($additionalDetails['evacuation_attachments']) && count($additionalDetails['evacuation_attachments']) > 0)
+            <div class="mt-8">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">
+                    <i class="fas fa-paperclip text-blue-500 me-2"></i>
+                    مرفقات الإخلاء
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    @foreach($additionalDetails['evacuation_attachments'] as $index => $attachment)
+                        <div class="bg-white rounded-lg shadow border border-gray-200 hover:shadow-md transition-shadow p-4">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center space-x-3">
+                                    <div class="flex-shrink-0">
+                                        <i class="fas fa-file-pdf text-red-500 text-2xl"></i>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-sm font-medium text-gray-900 truncate">
+                                            {{ $attachment['name'] ?? 'مرفق إخلاء ' . ($index + 1) }}
+                                        </p>
+                                        <p class="text-sm text-gray-500">
+                                            تاريخ الرفع: {{ isset($attachment['uploaded_at']) ? \Carbon\Carbon::parse($attachment['uploaded_at'])->format('Y/m/d H:i') : 'غير محدد' }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-3 flex justify-center space-x-2 gap-2">
+                                <a href="{{ \Storage::disk('public')->url($attachment['path']) }}" 
+                                   target="_blank" 
+                                   class="inline-flex items-center px-3 py-1 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                    <i class="fas fa-eye mr-1"></i>
+                                    عرض
+                                </a>
+                                <a href="{{ \Storage::disk('public')->url($attachment['path']) }}" 
+                                   download="{{ $attachment['name'] ?? 'evacuation_attachment_' . ($index + 1) }}"
+                                   class="inline-flex items-center px-3 py-1 border border-gray-300 text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                    <i class="fas fa-download mr-1"></i>
+                                    تحميل
+                                </a>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
         @endif
     </div>
 </div>

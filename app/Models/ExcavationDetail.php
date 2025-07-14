@@ -23,7 +23,8 @@ class ExcavationDetail extends Model
         'soil_type',
         'price',
         'total',
-        'is_open_excavation'
+        'is_open_excavation',
+        'evacuation_file'
     ];
 
     protected $casts = [

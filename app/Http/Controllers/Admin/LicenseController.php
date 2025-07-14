@@ -230,6 +230,8 @@ class LicenseController extends Controller
         }
         
         // تحضير البيانات المطلوبة للعرض
+        $additionalDetails = $license->additional_details ? json_decode($license->additional_details, true) : [];
+        
         $labTechnicalData = [];
         if ($license->lab_table2_data) {
             $labTechnicalData = json_decode($license->lab_table2_data, true) ?: [];
@@ -240,7 +242,7 @@ class LicenseController extends Controller
             $evacTable1Data = json_decode($license->evac_table1_data, true) ?: [];
         }
         
-        return view('admin.licenses.show', compact('license', 'labTechnicalData', 'evacTable1Data'));
+        return view('admin.licenses.show', compact('license', 'labTechnicalData', 'evacTable1Data', 'additionalDetails'));
     }
 
     /**
@@ -1065,82 +1067,40 @@ class LicenseController extends Controller
      */
     private function saveLabSection(Request $request, License $license)
     {
-        // تسجيل جميع البيانات المُرسلة
-        \Log::info('saveLabSection - All request data:', $request->all());
-        
-        $license->has_depth_test = $request->input('has_depth_test', 0) == '1';
-        $license->has_soil_compaction_test = $request->input('has_soil_compaction_test', 0) == '1';
-        $license->has_rc1_mc1_test = $request->input('has_rc1_mc1_test', 0) == '1';
-        $license->has_asphalt_test = $request->input('has_asphalt_test', 0) == '1';
-        $license->has_soil_test = $request->input('has_soil_test', 0) == '1';
-        $license->has_interlock_test = $request->input('has_interlock_test', 0) == '1';
-        
-        // حفظ نتائج الاختبارات الجديدة
-        $license->successful_tests_value = $request->input('successful_tests_value');
-        $license->failed_tests_value = $request->input('failed_tests_value');
-        $license->test_failure_reasons = $request->input('test_failure_reasons');
-        
-        // تسجيل القيم للتحقق من الحفظ
-        \Log::info('Saving test results values:', [
-            'successful_tests_value' => $request->input('successful_tests_value'),
-            'failed_tests_value' => $request->input('failed_tests_value'),
-            'test_failure_reasons' => $request->input('test_failure_reasons'),
-            'license_id' => $license->id ?? 'new'
-        ]);
-        
-        // تسجيل القيم بعد التعيين
-        \Log::info('License values after assignment:', [
-            'successful_tests_value' => $license->successful_tests_value,
-            'failed_tests_value' => $license->failed_tests_value,
-            'test_failure_reasons' => $license->test_failure_reasons,
-        ]);
-        
-        // معالجة بيانات جدول المختبر الأول
-        if ($request->has('lab_table1')) {
-            $labTable1Data = $request->input('lab_table1');
-            $cleanedTable1Data = [];
+        try {
+            // تحديث حالة الاختبارات
+            $license->has_depth_test = $request->boolean('has_depth_test');
+            $license->has_soil_compaction_test = $request->boolean('has_soil_compaction_test');
+            $license->has_rc1_mc1_test = $request->boolean('has_rc1_mc1_test');
+            $license->has_asphalt_test = $request->boolean('has_asphalt_test');
+            $license->has_soil_test = $request->boolean('has_soil_test');
+            $license->has_interlock_test = $request->boolean('has_interlock_test');
             
-            foreach ($labTable1Data as $row) {
-                // تنظيف البيانات وإزالة الصفوف الفارغة
-                $cleanRow = array_filter($row, function($value, $key) {
-                    if (in_array($key, ['is_dirt', 'is_asphalt', 'is_tile'])) {
-                        return true; // احتفظ بقيم checkbox حتى لو كانت false
-                    }
-                    return !empty(trim($value));
-                }, ARRAY_FILTER_USE_BOTH);
+            // حفظ بيانات الاختبارات
+            if ($request->has('tests_data')) {
+                $testsData = is_string($request->tests_data) ? 
+                    json_decode($request->tests_data, true) : 
+                    $request->tests_data;
                 
-                if (!empty($cleanRow) && (isset($row['clearance_number']) || isset($row['clearance_date']))) {
-                    $cleanedTable1Data[] = $row;
+                if (is_array($testsData)) {
+                    $license->lab_tests_data = $testsData;
+                    $license->updateLabTestsSummary();
                 }
             }
             
-            $license->lab_table1_data = !empty($cleanedTable1Data) ? json_encode($cleanedTable1Data) : null;
-        }
-        
-        // معالجة بيانات جدول المختبر الثاني
-        if ($request->has('lab_table2')) {
-            $labTable2Data = $request->input('lab_table2');
-            $cleanedTable2Data = [];
+            // حفظ التغييرات
+            $license->save();
             
-            foreach ($labTable2Data as $row) {
-                // تنظيف البيانات وإزالة الصفوف الفارغة
-                $cleanRow = array_filter($row, function($value, $key) {
-                    if (in_array($key, ['soil_compaction', 'mc1rc2', 'asphalt_compaction', 'is_dirt'])) {
-                        return true; // احتفظ بقيم checkbox حتى لو كانت false
-                    }
-                    return !empty(trim($value));
-                }, ARRAY_FILTER_USE_BOTH);
-                
-                if (!empty($cleanRow) && (isset($row['year']) || isset($row['work_type']))) {
-                    $cleanedTable2Data[] = $row;
-                }
-            }
+            return response()->json([
+                'success' => true,
+                'message' => 'تم حفظ بيانات المختبر بنجاح',
+                'license' => $license
+            ]);
             
-            $license->lab_table2_data = !empty($cleanedTable2Data) ? json_encode($cleanedTable2Data) : null;
+        } catch (\Exception $e) {
+            \Log::error('Error saving lab section: ' . $e->getMessage());
+            throw $e;
         }
-        
-        // معالجة ملفات الاختبارات
-        $this->handleLabFiles($request, $license);
     }
     
     /**
@@ -1601,57 +1561,60 @@ class LicenseController extends Controller
     public function saveEvacuationDataSimple(Request $request)
     {
         try {
-            \Log::info('Simple evacuation save attempt', $request->all());
+            $license = License::findOrFail($request->license_id);
             
-            // تحقق بسيط
-            if (!$request->has('license_id') || !$request->has('evacuation_data')) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'البيانات المطلوبة مفقودة'
-                ], 422);
+            // تحويل بيانات الإخلاء من JSON إلى مصفوفة
+            $evacuationDataArray = json_decode($request->evacuation_data, true);
+            
+            // التأكد من أن البيانات في تنسيق array صحيح
+            if (!is_array($evacuationDataArray)) {
+                throw new \Exception('بيانات الإخلاء غير صحيحة');
             }
             
-            $license = License::find($request->license_id);
-            if (!$license) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'الرخصة غير موجودة'
-                ], 404);
-            }
+            // معالجة بيانات الإخلاء (بدون مرفقات في الجدول)
+            $processedEvacuationData = $evacuationDataArray;
             
-            // محاولة حفظ بسيط بدون ملفات مع الحفاظ على المرفقات الموجودة
-            $evacuationData = json_decode($request->evacuation_data, true);
-            if (!$evacuationData) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'بيانات الإخلاء غير صحيحة'
-                ], 422);
-            }
-            
-            $additionalDetails = $license->additional_details ? json_decode($license->additional_details, true) : [];
-            $existingEvacuationData = $additionalDetails['evacuation_data'] ?? [];
-            
-            // دمج البيانات مع الحفاظ على المرفقات الموجودة
-            $mergedEvacuationData = [];
-            foreach ($evacuationData as $index => $newEvacuation) {
-                $mergedEvacuation = $newEvacuation;
+            // معالجة المرفق المنفصل
+            $evacuationAttachmentPath = null;
+            if ($request->hasFile('evacuation_attachment')) {
+                $file = $request->file('evacuation_attachment');
                 
-                // احتفظ بالمرفقات الموجودة إذا لم تكن هناك مرفقات جديدة
-                if (isset($existingEvacuationData[$index]['attachments']) 
-                    && !empty($existingEvacuationData[$index]['attachments'])) {
-                    $mergedEvacuation['attachments'] = $existingEvacuationData[$index]['attachments'];
+                // التأكد من وجود المجلد
+                if (!\Storage::disk('public')->exists('licenses/evacuations')) {
+                    \Storage::disk('public')->makeDirectory('licenses/evacuations');
                 }
                 
-                $mergedEvacuationData[] = $mergedEvacuation;
+                // حفظ الملف
+                if ($file->isValid()) {
+                    $filename = time() . '_evacuation_attachment_' . $file->getClientOriginalName();
+                    $evacuationAttachmentPath = $file->storeAs('licenses/evacuations', $filename, 'public');
+                }
             }
             
-            $additionalDetails['evacuation_data'] = $mergedEvacuationData;
+            // الحصول على البيانات الإضافية الحالية أو إنشاء مصفوفة فارغة
+            $additionalDetails = $license->additional_details ? json_decode($license->additional_details, true) : [];
+            
+            // تحديث بيانات الإخلاء
+            $additionalDetails['evacuation_data'] = $processedEvacuationData;
+            
+            // إضافة المرفق الجديد إذا تم رفعه
+            if ($evacuationAttachmentPath) {
+                if (!isset($additionalDetails['evacuation_attachments'])) {
+                    $additionalDetails['evacuation_attachments'] = [];
+                }
+                $additionalDetails['evacuation_attachments'][] = [
+                    'path' => $evacuationAttachmentPath,
+                    'name' => $file->getClientOriginalName(),
+                    'uploaded_at' => now()->format('Y-m-d H:i:s')
+                ];
+            }
+            
             $license->additional_details = json_encode($additionalDetails, JSON_UNESCAPED_UNICODE);
             $license->save();
             
             return response()->json([
                 'success' => true,
-                'message' => 'تم حفظ البيانات بنجاح (مع الحفاظ على المرفقات الموجودة)',
+                'message' => 'تم حفظ البيانات بنجاح',
                 'license_name' => $license->license_number
             ]);
             
@@ -1660,6 +1623,74 @@ class LicenseController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'خطأ: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * جلب مرفقات الإخلاء
+     */
+    public function getEvacuationAttachments($licenseId)
+    {
+        try {
+            $license = License::findOrFail($licenseId);
+            $additionalDetails = $license->additional_details ? json_decode($license->additional_details, true) : [];
+            
+            $attachments = [];
+            if (isset($additionalDetails['evacuation_attachments']) && is_array($additionalDetails['evacuation_attachments'])) {
+                foreach ($additionalDetails['evacuation_attachments'] as $attachment) {
+                    $attachments[] = [
+                        'name' => $attachment['name'] ?? 'مرفق إخلاء',
+                        'path' => $attachment['path'] ?? '',
+                        'url' => \Storage::disk('public')->url($attachment['path'] ?? ''),
+                        'download_url' => \Storage::disk('public')->url($attachment['path'] ?? ''),
+                        'date' => isset($attachment['uploaded_at']) ? 
+                            \Carbon\Carbon::parse($attachment['uploaded_at'])->format('Y-m-d H:i') : 
+                            'غير محدد'
+                    ];
+                }
+            }
+            
+            return response()->json([
+                'success' => true,
+                'attachments' => $attachments
+            ]);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error fetching evacuation attachments: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'خطأ في تحميل المرفقات: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * عرض مرفق الإخلاء
+     */
+    public function showEvacuationFile($licenseId, $index)
+    {
+        try {
+            $license = License::findOrFail($licenseId);
+            $additionalDetails = json_decode($license->additional_details, true);
+            
+            if (isset($additionalDetails['evacuation_data'][$index]['evacuation_file'])) {
+                $filePath = $additionalDetails['evacuation_data'][$index]['evacuation_file'];
+                
+                if (Storage::disk('public')->exists($filePath)) {
+                    return response()->file(storage_path('app/public/' . $filePath));
+                }
+            }
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'الملف غير موجود'
+            ], 404);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'خطأ في عرض الملف'
             ], 500);
         }
     }
@@ -2368,30 +2399,115 @@ class LicenseController extends Controller
             $testsData = $request->input('tests_data', []);
             $totals = $request->input('totals', []);
             
-            if (empty($testsData)) {
-                throw new \Exception('لا توجد بيانات اختبارات للحفظ');
-            }
+            // تحديث بيانات الاختبارات
+            $license->lab_tests_data = !empty($testsData) ? json_encode($testsData) : null;
             
-            // حفظ بيانات الاختبارات في حقل JSON (الملفات تم رفعها بالفعل)
-            $license->lab_tests_data = json_encode($testsData);
-            
-            // حفظ الإجماليات للحقول الموجودة فقط
+            // تحديث الإجماليات
             $license->successful_tests_value = $totals['passed_amount'] ?? 0;
             $license->failed_tests_value = $totals['failed_amount'] ?? 0;
             $license->total_tests_count = $totals['total_tests'] ?? 0;
             $license->total_tests_amount = $totals['total_amount'] ?? 0;
             
-            \Log::info('New lab tests saved successfully', [
+            \Log::info('Lab tests data updated', [
                 'license_id' => $license->id,
-                'tests_count' => count($testsData),
+                'tests_count' => is_array($testsData) ? count($testsData) : 0,
                 'total_amount' => $totals['total_amount'] ?? 0
             ]);
             
             return $license;
             
         } catch (\Exception $e) {
-            \Log::error('Error saving new lab tests: ' . $e->getMessage());
+            \Log::error('Error saving lab tests: ' . $e->getMessage());
             throw $e;
+        }
+    }
+
+    /**
+     * تحميل ملفات الرخص
+     */
+    public function downloadFile(License $license, $type)
+    {
+        try {
+            $filePath = null;
+            
+            switch ($type) {
+                case 'license':
+                    $filePath = $license->license_file_path;
+                    break;
+                case 'coordination':
+                    $filePath = $license->coordination_certificate_path;
+                    break;
+                case 'commitments':
+                    $filePath = $license->letters_commitments_file_path;
+                    break;
+                case 'activation':
+                    $filePath = $license->activation_file_path;
+                    break;
+                case 'payment_invoices':
+                    $filePath = $license->payment_invoices_path;
+                    break;
+                case 'bank_payment':
+                    $filePath = $license->bank_payment_proof_path;
+                    break;
+                default:
+                    return response()->json(['success' => false, 'message' => 'نوع الملف غير مدعوم'], 400);
+            }
+            
+            if (!$filePath) {
+                return response()->json(['success' => false, 'message' => 'الملف غير موجود'], 404);
+            }
+            
+            // التعامل مع الملفات المتعددة
+            if (in_array($type, ['payment_invoices', 'bank_payment'])) {
+                $files = json_decode($filePath, true);
+                if (is_array($files) && count($files) > 0) {
+                    $filePath = $files[0]; // أول ملف
+                } else {
+                    return response()->json(['success' => false, 'message' => 'الملف غير موجود'], 404);
+                }
+            }
+            
+            if (Storage::disk('public')->exists($filePath)) {
+                return response()->file(storage_path('app/public/' . $filePath));
+            }
+            
+            return response()->json(['success' => false, 'message' => 'الملف غير موجود'], 404);
+            
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'خطأ في تحميل الملف'], 500);
+        }
+    }
+
+    /**
+     * حذف مرفق إخلاء محدد
+     */
+    public function deleteEvacuationAttachment(License $license, $index)
+    {
+        try {
+            $additionalDetails = $license->additional_details ? json_decode($license->additional_details, true) : [];
+            
+            if (!isset($additionalDetails['evacuation_attachments']) || !isset($additionalDetails['evacuation_attachments'][$index])) {
+                return response()->json(['success' => false, 'message' => 'المرفق غير موجود']);
+            }
+
+            // حذف الملف من التخزين
+            $attachment = $additionalDetails['evacuation_attachments'][$index];
+            if (\Storage::disk('public')->exists($attachment['path'])) {
+                \Storage::disk('public')->delete($attachment['path']);
+            }
+
+            // حذف المرفق من المصفوفة
+            array_splice($additionalDetails['evacuation_attachments'], $index, 1);
+
+            // تحديث قاعدة البيانات
+            $license->additional_details = json_encode($additionalDetails, JSON_UNESCAPED_UNICODE);
+            $license->save();
+
+            return response()->json(['success' => true, 'message' => 'تم حذف المرفق بنجاح']);
+
+        } catch (\Exception $e) {
+            \Log::error('Error deleting evacuation attachment: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'حدث خطأ أثناء حذف المرفق']);
         }
     }
 } 

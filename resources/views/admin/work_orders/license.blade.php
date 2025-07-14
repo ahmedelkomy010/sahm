@@ -1432,29 +1432,7 @@
         }
     }
     
-         // دالة للحصول على اسم الاختبار باللغة العربية
-     function getTestLabel(testName) {
-         const testLabels = {
-             'has_interlock_test': 'اختبار تقييم بلاط والأرصفة والبردورات',
-             'has_asphalt_ratio_gradation_test': 'اختبار تعيين نسبة الأسفلت والتدرج الحبيبي',
-             'has_concrete_molds_test': 'اختبار إعداد القوالب الخرسانية وصبها مع الكسر',
-             'has_protection_depth_test': 'اختبار تحديد الأعماق لمواد الحماية',
-             'has_concrete_temperature_test': 'اختبار درجة حرارة الخرسانة'
-         };
-         return testLabels[testName] || testName;
-     }
-     
-          // دالة للحصول على اسم الاختبار من اسم الملف
-     function getFileTestLabel(fileName) {
-         const fileTestLabels = {
-             'interlock_test_file_path': 'مرفق اختبار تقييم بلاط والأرصفة والبردورات',
-             'asphalt_ratio_gradation_test_file_path': 'مرفق اختبار تعيين نسبة الأسفلت والتدرج الحبيبي',
-             'concrete_molds_test_file_path': 'مرفق اختبار إعداد القوالب الخرسانية وصبها مع الكسر',
-             'protection_depth_test_file_path': 'مرفق اختبار تحديد الأعماق لمواد الحماية',
-             'concrete_temperature_test_file_path': 'مرفق اختبار درجة حرارة الخرسانة'
-         };
-         return fileTestLabels[fileName] || fileName;
-     }
+ 
      
      // دالة إشعار عند رفع الملفات
      function onFileUpload(input, testName) {
@@ -1945,7 +1923,7 @@ function selectEvacuationLicense() {
         const tbody = document.getElementById('evacuationDataTable').getElementsByTagName('tbody')[0];
         tbody.innerHTML = `
             <tr id="no-evacuation-data-row">
-                <td colspan="9" class="text-center text-muted py-4">
+                <td colspan="8" class="text-center text-muted py-4">
                     <i class="fas fa-truck fa-2x mb-2"></i>
                     <br>لا توجد بيانات إخلاء مسجلة
                 </td>
@@ -3468,13 +3446,6 @@ function deleteExtension(extensionId) {
                                 <i class="fas fa-plus me-1"></i>
                                 إضافة بيانات إخلاء جديدة
                             </button>
-                            <div>
-                               
-                                <button type="button" class="btn btn-primary btn-sm" onclick="saveAllEvacuationData()">
-                                    <i class="fas fa-save me-1"></i>
-                                    حفظ جميع بيانات الإخلاء
-                                </button>
-                            </div>
                         </div>
 
                         <div class="table-responsive">
@@ -3500,6 +3471,65 @@ function deleteExtension(extensionId) {
                                     </tr>
                                 </tbody>
                             </table>
+                        </div>
+
+                        <!-- قسم مرفقات الإخلاء منفصل -->
+                        <div class="row mb-4 mt-4">
+                            <div class="col-12">
+                                <h5 class="text-info mb-3">
+                                    <i class="fas fa-paperclip me-2"></i>
+                                    مرفقات الإخلاء
+                                </h5>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-file-upload me-2"></i>
+                                    رفع مرفق جديد للإخلاء
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-paperclip"></i></span>
+                                    <input type="file" class="form-control" id="evacuation-attachment" 
+                                           name="evacuation_attachment" 
+                                           accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                                </div>
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    الملفات المدعومة: PDF، الصور (JPG, PNG)، مستندات Word - الحد الأقصى: 10 MB
+                                </div>
+                                <div id="evacuation-file-preview" class="mt-2" style="display: none;">
+                                    <div class="alert alert-info mb-0">
+                                        <i class="fas fa-file me-2"></i>
+                                        <span id="evacuation-file-name"></span>
+                                        <button type="button" class="btn btn-sm btn-outline-danger ms-2" onclick="clearEvacuationFile()">
+                                            <i class="fas fa-times"></i> إزالة
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-folder me-2"></i>
+                                    المرفقات المحفوظة
+                                </label>
+                                <div id="saved-evacuation-attachments" class="border rounded p-3 bg-light">
+                                    <div class="text-center text-muted">
+                                        <i class="fas fa-folder-open fa-2x mb-2"></i>
+                                        <br>لا توجد مرفقات محفوظة
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- زر الحفظ الموحد -->
+                        <div class="d-flex justify-content-center mb-3">
+                            <button type="button" class="btn btn-primary btn-lg" onclick="saveAllEvacuationData()">
+                                <i class="fas fa-save me-2"></i>
+                                حفظ جميع بيانات ومرفقات الإخلاء
+                            </button>
                         </div>
 
                         <!-- جدول الفسح للإخلاء -->
@@ -4810,10 +4840,18 @@ function loadLabTestsFromServer(licenseId) {
         })
         .then(response => {
             console.log('Response status:', response.status);
+            console.log('Response headers:', response.headers.get('content-type'));
+            
             if (!response.ok) {
                 throw new Error(`خطأ HTTP: ${response.status} - ${response.statusText}`);
             }
-            return response.json();
+            
+            const contentType = response.headers.get('content-type');
+            if (contentType && contentType.indexOf('application/json') !== -1) {
+                return response.json();
+            } else {
+                throw new Error('الاستجابة ليست JSON صالح');
+            }
         })
         .then(data => {
             console.log('License data received:', data);
@@ -4882,13 +4920,19 @@ function loadLabTestsFromServer(licenseId) {
         })
         .catch(error => {
             console.error('Error loading tests from server:', error);
+            
             // عرض رسالة أكثر تفصيلاً للخطأ
             if (error.message.includes('404')) {
-                toastr.error('الرخصة المحددة غير موجودة');
+                console.log('License not found, trying local backup');
+                // لا تظهر رسالة خطأ للمستخدم، فقط جرب النسخة الاحتياطية
             } else if (error.message.includes('500')) {
-                toastr.error('خطأ في الخادم، يرجى المحاولة مرة أخرى');
+                console.warn('Server error, trying local backup');
+                // لا تظهر رسالة خطأ للمستخدم، فقط جرب النسخة الاحتياطية
+            } else if (error.message.includes('JSON')) {
+                console.warn('JSON parsing error, trying local backup');
+                // لا تظهر رسالة خطأ للمستخدم، فقط جرب النسخة الاحتياطية
             } else {
-                toastr.error(`خطأ في تحميل البيانات: ${error.message}`);
+                console.warn('Unknown error loading tests, trying local backup:', error.message);
             }
             
             // جرب تحميل النسخة الاحتياطية المحلية
@@ -4908,7 +4952,25 @@ function tryLoadLocalBackup(licenseId) {
                 updateTestsTable();
                 updateTestsSummary();
                 console.log(`Loaded ${testsArray.length} tests from local backup`);
-                toastr.info(`تم تحميل ${testsArray.length} اختبار من النسخة الاحتياطية المحلية`);
+                
+                // عرض رسالة تنبيه بسيطة
+                const tableBody = document.getElementById('testsTableBody');
+                if (tableBody && testsArray.length > 0) {
+                    const backupRow = document.createElement('tr');
+                    backupRow.className = 'table-warning';
+                    backupRow.innerHTML = `
+                        <td colspan="8" class="text-center py-2">
+                            <small class="text-muted">
+                                <i class="fas fa-info-circle me-1"></i>
+                                تم تحميل ${testsArray.length} اختبار من النسخة المحلية
+                                <button type="button" class="btn btn-sm btn-link p-0 ms-2" onclick="this.parentElement.parentElement.parentElement.remove()">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </small>
+                        </td>
+                    `;
+                    tableBody.insertBefore(backupRow, tableBody.firstChild);
+                }
                 return;
             }
         }
@@ -4920,6 +4982,9 @@ function tryLoadLocalBackup(licenseId) {
     testsArray = [];
     updateTestsTable();
     updateTestsSummary();
+    
+    // لا تعرض رسالة خطأ للمستخدم، فقط اتركه فارغ
+    console.log('No backup data found, showing empty table');
 }
 
 // دالة الحفظ التلقائي على الخادم
@@ -5039,6 +5104,12 @@ document.addEventListener('DOMContentLoaded', function() {
     loadLicenses();
     loadViolations();
     
+    // تحميل بيانات الإخلاء المحفوظة
+    const currentLicenseId = @if($workOrder->license) {{ $workOrder->license->id }} @else null @endif;
+    if (currentLicenseId) {
+        loadEvacuationDataForLicense(currentLicenseId);
+    }
+    
     // تهيئة ملخص الاختبارات
     updateTestsSummary();
     
@@ -5079,6 +5150,8 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }, 100);
     }
+
+    // ملاحظة: تم نقل معالجات الإخلاء إلى ملف evacuation-handler.js
 });
 
 // ========== دوال التمديدات تم نقلها للأعلى ==========
@@ -5142,6 +5215,63 @@ function addNewEvacuationRow() {
     updateEvacuationRowNumbers();
 }
 
+// تحميل بيانات الإخلاء المحفوظة
+function loadEvacuationDataForLicense(licenseId) {
+    if (!licenseId) return;
+    
+    fetch(`/admin/licenses/get-evacuation-data/${licenseId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.evacuation_data && data.evacuation_data.length > 0) {
+                const tbody = document.getElementById('evacuationDataTable').getElementsByTagName('tbody')[0];
+                
+                // مسح البيانات الموجودة
+                tbody.innerHTML = '';
+                
+                // إضافة البيانات المحفوظة
+                data.evacuation_data.forEach((evacuation, index) => {
+                    const newRow = document.createElement('tr');
+                    newRow.innerHTML = `
+                        <td class="text-center fw-bold">${index + 1}</td>
+                        <td>
+                            <select class="form-select form-select-sm" name="evacuation_data[${index + 1}][is_evacuated]" required>
+                                <option value="">-- اختر --</option>
+                                <option value="1" ${evacuation.is_evacuated == 1 ? 'selected' : ''}>نعم</option>
+                                <option value="0" ${evacuation.is_evacuated == 0 ? 'selected' : ''}>لا</option>
+                            </select>
+                        </td>
+                        <td>
+                            <input type="date" class="form-control form-control-sm" name="evacuation_data[${index + 1}][evacuation_date]" value="${evacuation.evacuation_date || ''}" required>
+                        </td>
+                        <td>
+                            <input type="number" step="0.01" class="form-control form-control-sm" name="evacuation_data[${index + 1}][evacuation_amount]" value="${evacuation.evacuation_amount || ''}" placeholder="0.00" required>
+                        </td>
+                        <td>
+                            <input type="datetime-local" class="form-control form-control-sm" name="evacuation_data[${index + 1}][evacuation_datetime]" value="${evacuation.evacuation_datetime || ''}" required>
+                        </td>
+                        <td>
+                            <input type="text" class="form-control form-control-sm" name="evacuation_data[${index + 1}][payment_number]" value="${evacuation.payment_number || ''}" placeholder="رقم سداد الإخلاء" required>
+                        </td>
+                        <td>
+                            <textarea class="form-control form-control-sm" name="evacuation_data[${index + 1}][notes]" rows="2" placeholder="ملاحظات الإخلاء">${evacuation.notes || ''}</textarea>
+                        </td>
+                        <td class="text-center">
+                            <button type="button" class="btn btn-danger btn-sm" onclick="deleteEvacuationRow(this)" title="حذف الصف">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(newRow);
+                });
+                
+                updateEvacuationRowNumbers();
+            }
+        })
+        .catch(error => {
+            console.error('Error loading evacuation data:', error);
+        });
+}
+
 function deleteEvacuationRow(button) {
     const row = button.closest('tr');
     
@@ -5179,14 +5309,16 @@ function updateEvacuationRowNumbers() {
 }
 
 function saveAllEvacuationDataSimple() {
-    // دالة حفظ مبسطة للاختبار
     const licenseId = @if($workOrder->license) {{ $workOrder->license->id }} @else null @endif;
     if (!licenseId) {
         toastr.error('لا توجد رخصة مرتبطة بأمر العمل هذا');
         return;
     }
 
-    // تجميع بيانات الجدول بدون مرفقات
+    const formData = new FormData();
+    formData.append('work_order_id', {{ $workOrder->id }});
+    formData.append('license_id', licenseId);
+
     const rows = document.getElementById('evacuationDataTable').getElementsByTagName('tbody')[0].rows;
     let evacuationDataArray = [];
     
@@ -5214,29 +5346,38 @@ function saveAllEvacuationDataSimple() {
         return;
     }
 
-    // إرسال البيانات بصيغة JSON بسيطة
-    const requestData = {
-        work_order_id: {{ $workOrder->id }},
-        license_id: licenseId,
-        evacuation_data: JSON.stringify(evacuationDataArray),
-        _token: document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-    };
+    // إضافة المرفق المنفصل إذا تم اختياره
+    const evacuationAttachment = document.getElementById('evacuation-attachment');
+    if (evacuationAttachment && evacuationAttachment.files.length > 0) {
+        formData.append('evacuation_attachment', evacuationAttachment.files[0]);
+    }
 
-    console.log('Simple evacuation data to be sent:', requestData);
+    formData.append('evacuation_data', JSON.stringify(evacuationDataArray));
+
+    console.log('Simple evacuation data to be sent:', evacuationDataArray);
 
     fetch(`/admin/licenses/save-evacuation-data-simple`, {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json',
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
         },
-        body: JSON.stringify(requestData)
+        body: formData
     })
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            toastr.success(data.message);
-            loadEvacuationDataForLicense(licenseId);
+            toastr.success(data.message + ' - تم حفظ البيانات والمرفقات بنجاح');
+            // مسح حقل المرفق بعد الحفظ الناجح
+            if (evacuationAttachment) {
+                evacuationAttachment.value = '';
+                clearEvacuationFile();
+            }
+            // تحديث قائمة المرفقات المحفوظة
+            loadSavedEvacuationAttachments(licenseId);
+            // إعادة تحميل البيانات
+            setTimeout(() => {
+                loadEvacuationDataForLicense(licenseId);
+            }, 1000);
         } else {
             toastr.error(data.message || 'حدث خطأ أثناء حفظ البيانات');
         }
@@ -5245,6 +5386,63 @@ function saveAllEvacuationDataSimple() {
         console.error('Error:', error);
         toastr.error('حدث خطأ أثناء حفظ البيانات: ' + error.message);
     });
+}
+
+// دوال التعامل مع المرفق المنفصل
+function clearEvacuationFile() {
+    const input = document.getElementById('evacuation-attachment');
+    const preview = document.getElementById('evacuation-file-preview');
+    
+    if (input) input.value = '';
+    if (preview) preview.style.display = 'none';
+}
+
+function loadSavedEvacuationAttachments(licenseId) {
+    const container = document.getElementById('saved-evacuation-attachments');
+    
+    fetch(`/admin/licenses/get-evacuation-attachments/${licenseId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.attachments && data.attachments.length > 0) {
+                let attachmentsHtml = '';
+                data.attachments.forEach((attachment, index) => {
+                    attachmentsHtml += `
+                        <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+                            <div>
+                                <i class="fas fa-file-pdf text-danger me-2"></i>
+                                <span class="fw-bold">${attachment.name}</span>
+                                <small class="text-muted d-block">${attachment.date}</small>
+                            </div>
+                            <div class="btn-group btn-group-sm">
+                                <a href="${attachment.url}" target="_blank" class="btn btn-outline-primary" title="عرض">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="${attachment.download_url}" class="btn btn-outline-success" title="تحميل">
+                                    <i class="fas fa-download"></i>
+                                </a>
+                            </div>
+                        </div>
+                    `;
+                });
+                container.innerHTML = attachmentsHtml;
+            } else {
+                container.innerHTML = `
+                    <div class="text-center text-muted">
+                        <i class="fas fa-folder-open fa-2x mb-2"></i>
+                        <br>لا توجد مرفقات محفوظة
+                    </div>
+                `;
+            }
+        })
+        .catch(error => {
+            console.error('Error loading attachments:', error);
+            container.innerHTML = `
+                <div class="text-center text-danger">
+                    <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
+                    <br>خطأ في تحميل المرفقات
+                </div>
+            `;
+        });
 }
 
 function saveAllEvacuationData() {
@@ -5472,4 +5670,6 @@ document.addEventListener('DOMContentLoaded', function() {
 @push('scripts')
 <!-- تحميل معالج JavaScript الآمن للرخص -->
 <script src="{{ asset('js/work-order-license.js') }}?v={{ time() }}"></script>
+<!-- تحميل معالج الإخلاءات -->
+<script src="{{ asset('js/evacuation-handler.js') }}?v={{ time() }}"></script>
 @endpush 

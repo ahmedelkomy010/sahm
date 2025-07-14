@@ -260,6 +260,13 @@ class License extends Model
         'has_rc1_mc1_test' => 'boolean',
         'has_interlock_test' => 'boolean',
         'is_evacuated' => 'boolean',
+        'lab_tests_data' => 'array',
+        'total_tests_count' => 'integer',
+        'successful_tests_count' => 'integer',
+        'failed_tests_count' => 'integer',
+        'total_tests_amount' => 'decimal:2',
+        'successful_tests_amount' => 'decimal:2',
+        'failed_tests_amount' => 'decimal:2',
     ];
 
     public function getIsRestrictedAttribute(): bool
@@ -436,19 +443,19 @@ class License extends Model
      */
     public function updateLabTestsSummary()
     {
-        $tests = json_decode($this->lab_tests_data ?? '[]', true);
+        $tests = $this->lab_tests_data ?? [];
         
         $this->total_tests_count = count($tests);
-        $this->successful_tests_count = collect($tests)->where('result', 'ناجح')->count();
-        $this->failed_tests_count = collect($tests)->where('result', 'راسب')->count();
+        $this->successful_tests_count = collect($tests)->where('result', 'pass')->count();
+        $this->failed_tests_count = collect($tests)->where('result', 'fail')->count();
         
-        $this->total_tests_amount = collect($tests)->sum('price');
+        $this->total_tests_amount = collect($tests)->sum('total');
         $this->successful_tests_amount = collect($tests)
-            ->where('result', 'ناجح')
-            ->sum('price');
+            ->where('result', 'pass')
+            ->sum('total');
         $this->failed_tests_amount = collect($tests)
-            ->where('result', 'راسب')
-            ->sum('price');
+            ->where('result', 'fail')
+            ->sum('total');
             
         $this->save();
     }
