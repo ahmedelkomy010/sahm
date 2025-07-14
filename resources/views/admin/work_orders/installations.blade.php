@@ -167,25 +167,33 @@ document.addEventListener('DOMContentLoaded', function() {
     const dailySummaryDate = document.getElementById('daily-summary-date');
 
     // تحميل البيانات المحفوظة مسبقاً
-    @if(isset($currentInstallations) && $currentInstallations->count() > 0)
-        @foreach($currentInstallations as $installation)
-            const row = document.querySelector(`tr[data-installation="{{ $installation->installation_type }}"]`);
-            if (row) {
-                const priceInput = row.querySelector('.installation-price');
-                const numberInput = row.querySelector('.installation-number');
-                if (priceInput && numberInput) {
-                    priceInput.value = {{ $installation->price }};
-                    numberInput.value = {{ $installation->quantity }};
-                    updateRowTotal(priceInput);
+    function loadSavedData() {
+        @if(isset($currentInstallations) && $currentInstallations->count() > 0)
+            @foreach($currentInstallations as $index => $installation)
+                try {
+                    const savedRow = document.querySelector(`tr[data-installation="{{ $installation->installation_type }}"]`);
+                    if (savedRow) {
+                        const savedPriceInput = savedRow.querySelector('.installation-price');
+                        const savedNumberInput = savedRow.querySelector('.installation-number');
+                        if (savedPriceInput && savedNumberInput) {
+                            savedPriceInput.value = {{ $installation->price }};
+                            savedNumberInput.value = {{ $installation->quantity }};
+                            calculateRowTotal(savedPriceInput);
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error loading saved data for installation {{ $index }}:', error);
                 }
-            }
-        @endforeach
-    @endif
+            @endforeach
+        @endif
+    }
 
     // تحديث الملخص اليومي عند تغيير التاريخ
-    dailySummaryDate.addEventListener('change', function() {
-        updateDailySummary(this.value);
-    });
+    if (dailySummaryDate) {
+        dailySummaryDate.addEventListener('change', function() {
+            updateDailySummary(this.value);
+        });
+    }
 
     // تحديث الملخص اليومي
     async function updateDailySummary(date) {
@@ -200,6 +208,8 @@ document.addEventListener('DOMContentLoaded', function() {
             
             const data = await response.json();
             const tbody = document.getElementById('daily-summary-tbody');
+            if (!tbody) return;
+            
             tbody.innerHTML = '';
             
             let totalCount = 0;
@@ -207,20 +217,21 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (data.installations && data.installations.length > 0) {
                 data.installations.forEach(item => {
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
+                    const dailyTableRow = document.createElement('tr');
+                    dailyTableRow.innerHTML = `
                         <td>${item.installation_type}</td>
                         <td class="text-center">${item.quantity}</td>
                         <td class="text-center">${parseFloat(item.total).toFixed(2)} ريال</td>
                         <td class="text-center">${new Date(item.created_at).toLocaleTimeString('ar')}</td>
                     `;
-                    tbody.appendChild(tr);
+                    tbody.appendChild(dailyTableRow);
                     
                     totalCount += parseFloat(item.quantity);
                     totalAmount += parseFloat(item.total);
                 });
             } else {
-                tbody.innerHTML = `
+                const emptyRow = document.createElement('tr');
+                emptyRow.innerHTML = `
                     <tr>
                         <td colspan="4" class="text-center text-muted">
                             <i class="fas fa-info-circle me-2"></i>
@@ -228,132 +239,170 @@ document.addEventListener('DOMContentLoaded', function() {
                         </td>
                     </tr>
                 `;
+                tbody.appendChild(emptyRow);
             }
             
             // تحديث الإجماليات اليومية
-            document.getElementById('daily-total-count').textContent = totalCount.toFixed(0);
-            document.getElementById('daily-total-amount').textContent = totalAmount.toFixed(2) + ' ريال';
+            const dailyTotalCount = document.getElementById('daily-total-count');
+            const dailyTotalAmount = document.getElementById('daily-total-amount');
+            
+            if (dailyTotalCount) dailyTotalCount.textContent = totalCount.toFixed(0);
+            if (dailyTotalAmount) dailyTotalAmount.textContent = totalAmount.toFixed(2) + ' ريال';
             
         } catch (error) {
             console.error('Error fetching daily summary:', error);
-            toastr.error('حدث خطأ أثناء تحديث الملخص اليومي');
+            console.log('حدث خطأ أثناء تحديث الملخص اليومي');
         }
     }
 
     // تحديث إجمالي الصف والإجمالي الكلي
-    function updateRowTotal(input) {
-        console.log('updateRowTotal called');
-        const row = input.closest('tr');
-        const priceInput = row.querySelector('.installation-price');
-        const numberInput = row.querySelector('.installation-number');
-        const totalInput = row.querySelector('.installation-total');
+    function calculateRowTotal(inputElement) {
+        console.log('calculateRowTotal called for input:', inputElement);
         
-        const price = parseFloat(priceInput.value) || 0;
-        const number = parseFloat(numberInput.value) || 0;
-        const total = price * number;
+        if (!inputElement) {
+            console.error('Input element is null');
+            return;
+        }
         
-        console.log('Price:', price, 'Number:', number, 'Total:', total);
+        const currentRow = inputElement.closest('tr');
+        if (!currentRow) {
+            console.error('Row not found for input:', inputElement);
+            return;
+        }
         
-        totalInput.value = total.toFixed(2);
-        updateTotals();
+        const priceField = currentRow.querySelector('.installation-price');
+        const numberField = currentRow.querySelector('.installation-number');
+        const totalField = currentRow.querySelector('.installation-total');
+        
+        if (!priceField || !numberField || !totalField) {
+            console.error('Required inputs not found in row');
+            console.log('priceField:', priceField);
+            console.log('numberField:', numberField);
+            console.log('totalField:', totalField);
+            return;
+        }
+        
+        const priceValue = parseFloat(priceField.value) || 0;
+        const numberValue = parseFloat(numberField.value) || 0;
+        const totalValue = priceValue * numberValue;
+        
+        console.log('Calculation - Price:', priceValue, 'Number:', numberValue, 'Total:', totalValue);
+        
+        totalField.value = totalValue.toFixed(2);
+        
+        // تحديث الإجماليات
+        calculateTotals();
+        refreshSummaryTable();
     }
 
     // تحديث الإجمالي الكلي
-    function updateTotals() {
+    function calculateTotals() {
         let grandTotal = 0;
         
-        document.querySelectorAll('tr[data-installation]').forEach(row => {
-            const totalInput = row.querySelector('.installation-total');
-            if (totalInput && totalInput.value) {
-                grandTotal += parseFloat(totalInput.value) || 0;
+        document.querySelectorAll('tr[data-installation]').forEach(dataRow => {
+            const totalField = dataRow.querySelector('.installation-total');
+            if (totalField && totalField.value) {
+                const value = parseFloat(totalField.value) || 0;
+                grandTotal += value;
+                console.log('Adding to total:', value, 'Current total:', grandTotal);
             }
         });
         
-        console.log('Grand Total:', grandTotal);
+        console.log('Final Grand Total:', grandTotal);
         
-        document.getElementById('total-installations-amount').textContent = grandTotal.toFixed(2) + ' ريال';
-        updateSummaryTable();
+        const totalElement = document.getElementById('total-installations-amount');
+        if (totalElement) {
+            totalElement.textContent = grandTotal.toFixed(2) + ' ريال';
+        }
     }
 
     // تحديث جدول الملخص
-    function updateSummaryTable() {
+    function refreshSummaryTable() {
         const summaryTbody = document.getElementById('summary-tbody');
+        if (!summaryTbody) {
+            console.error('Summary tbody not found');
+            return;
+        }
+        
         summaryTbody.innerHTML = '';
         let hasData = false;
         
-        document.querySelectorAll('tr[data-installation]').forEach(row => {
-            const label = row.querySelector('td:first-child')?.textContent;
-            const priceInput = row.querySelector('.installation-price');
-            const numberInput = row.querySelector('.installation-number');
-            const totalInput = row.querySelector('.installation-total');
+        document.querySelectorAll('tr[data-installation]').forEach(dataRow => {
+            const label = dataRow.querySelector('td:first-child')?.textContent;
+            const priceField = dataRow.querySelector('.installation-price');
+            const numberField = dataRow.querySelector('.installation-number');
+            const totalField = dataRow.querySelector('.installation-total');
             
-            if (label && priceInput && numberInput && totalInput) {
-                const price = parseFloat(priceInput.value) || 0;
-                const number = parseFloat(numberInput.value) || 0;
-                const total = parseFloat(totalInput.value) || 0;
+            if (label && priceField && numberField && totalField) {
+                const priceValue = parseFloat(priceField.value) || 0;
+                const numberValue = parseFloat(numberField.value) || 0;
+                const totalValue = parseFloat(totalField.value) || 0;
                 
-                if (price > 0 || number > 0) {
+                if (priceValue > 0 || numberValue > 0) {
                     hasData = true;
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
+                    const summaryTableRow = document.createElement('tr');
+                    summaryTableRow.innerHTML = `
                         <td>${label}</td>
-                        <td class="text-center">${price.toFixed(2)} ريال</td>
-                        <td class="text-center">${number}</td>
-                        <td class="text-center">${total.toFixed(2)} ريال</td>
+                        <td class="text-center">${priceValue.toFixed(2)} ريال</td>
+                        <td class="text-center">${numberValue}</td>
+                        <td class="text-center">${totalValue.toFixed(2)} ريال</td>
                     `;
-                    summaryTbody.appendChild(tr);
+                    summaryTbody.appendChild(summaryTableRow);
                 }
             }
         });
         
         if (!hasData) {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
+            const emptyDataRow = document.createElement('tr');
+            emptyDataRow.innerHTML = `
                 <td colspan="4" class="text-center text-muted">
                     <i class="fas fa-info-circle me-2"></i>
                     لا توجد بيانات مدخلة بعد
                 </td>
             `;
-            summaryTbody.appendChild(tr);
+            summaryTbody.appendChild(emptyDataRow);
         }
     }
 
     // حفظ البيانات
     async function saveInstallations() {
         try {
+            console.log('Starting save process...');
             saveButton.disabled = true;
             saveIndicator.style.display = 'block';
             
-            const data = {};
-            let hasData = false;
+            const installationsData = {};
+            let hasValidData = false;
             
-            document.querySelectorAll('tr[data-installation]').forEach(row => {
-                const installationType = row.dataset.installation;
-                const priceInput = row.querySelector('.installation-price');
-                const numberInput = row.querySelector('.installation-number');
-                const totalInput = row.querySelector('.installation-total');
+            document.querySelectorAll('tr[data-installation]').forEach(dataRow => {
+                const installationType = dataRow.dataset.installation;
+                const priceField = dataRow.querySelector('.installation-price');
+                const numberField = dataRow.querySelector('.installation-number');
+                const totalField = dataRow.querySelector('.installation-total');
                 
-                if (priceInput && numberInput && totalInput) {
-                    const price = parseFloat(priceInput.value) || 0;
-                    const number = parseFloat(numberInput.value) || 0;
-                    const total = parseFloat(totalInput.value) || 0;
+                if (priceField && numberField && totalField) {
+                    const priceValue = parseFloat(priceField.value) || 0;
+                    const numberValue = parseFloat(numberField.value) || 0;
+                    const totalValue = parseFloat(totalField.value) || 0;
                     
-                    if (price > 0 && number > 0) {
-                        hasData = true;
-                        data[installationType] = {
+                    console.log(`Processing ${installationType}: price=${priceValue}, number=${numberValue}, total=${totalValue}`);
+                    
+                    if (priceValue > 0 && numberValue > 0) {
+                        hasValidData = true;
+                        installationsData[installationType] = {
                             type: installationType,
-                            price: price,
-                            number: number,
-                            total: total
+                            price: priceValue,
+                            quantity: numberValue,
+                            total: totalValue
                         };
                     }
                 }
             });
 
-            if (!hasData) {
-                toastr.warning('الرجاء إدخال بيانات التركيبات أولاً');
-                saveButton.disabled = false;
-                saveIndicator.style.display = 'none';
+            console.log('Data to save:', installationsData);
+
+            if (!hasValidData) {
+                alert('الرجاء إدخال بيانات التركيبات أولاً');
                 return;
             }
             
@@ -363,36 +412,81 @@ document.addEventListener('DOMContentLoaded', function() {
                     'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
                 },
-                body: JSON.stringify(data)
+                body: JSON.stringify(installationsData)
             });
 
-            if (!response.ok) throw new Error('فشل في حفظ البيانات');
+            console.log('Response status:', response.status);
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('Save failed:', errorText);
+                throw new Error('فشل في حفظ البيانات');
+            }
             
             const result = await response.json();
+            console.log('Save result:', result);
             
-            toastr.success('تم حفظ البيانات بنجاح');
+            alert('تم حفظ البيانات بنجاح');
             
             // تحديث الملخص اليومي بعد الحفظ
-            updateDailySummary(dailySummaryDate.value);
+            if (dailySummaryDate) {
+                updateDailySummary(dailySummaryDate.value);
+            }
             
         } catch (error) {
             console.error('Save error:', error);
-            toastr.error('حدث خطأ أثناء حفظ البيانات');
+            alert('حدث خطأ أثناء حفظ البيانات: ' + error.message);
         } finally {
             saveButton.disabled = false;
             saveIndicator.style.display = 'none';
         }
     }
 
-    // إضافة مستمعي الأحداث
-    document.querySelectorAll('.installation-price, .installation-number').forEach(input => {
-        input.addEventListener('input', () => updateRowTotal(input));
-    });
+    // إضافة مستمعي الأحداث للحسابات
+    function setupEventListeners() {
+        console.log('Setting up event listeners...');
+        
+        // إزالة المستمعات القديمة أولاً
+        document.querySelectorAll('.installation-price, .installation-number').forEach(inputField => {
+            inputField.removeEventListener('input', handleInputChange);
+            inputField.removeEventListener('change', handleInputChange);
+            inputField.removeEventListener('keyup', handleInputChange);
+        });
+        
+        // إضافة المستمعات الجديدة
+        document.querySelectorAll('.installation-price, .installation-number').forEach(inputField => {
+            console.log('Adding listener to:', inputField.className, inputField);
+            inputField.addEventListener('input', handleInputChange);
+            inputField.addEventListener('change', handleInputChange);
+            inputField.addEventListener('keyup', handleInputChange);
+        });
+    }
+    
+    // معالج تغيير الإدخال
+    function handleInputChange(event) {
+        console.log('Input changed:', event.target.value, 'Element:', event.target);
+        calculateRowTotal(event.target);
+    }
 
-    saveButton.addEventListener('click', saveInstallations);
+    // إضافة مستمع للحفظ
+    if (saveButton) {
+        saveButton.addEventListener('click', saveInstallations);
+        console.log('Save button listener attached');
+    }
 
+    // تهيئة الصفحة
+    console.log('Initializing page...');
+    loadSavedData();
+    setupEventListeners();
+    calculateTotals();
+    refreshSummaryTable();
+    
     // تحديث الملخص اليومي عند تحميل الصفحة
-    updateDailySummary(dailySummaryDate.value);
+    if (dailySummaryDate) {
+        updateDailySummary(dailySummaryDate.value);
+    }
+    
+    console.log('Initialization complete');
 });
 </script>
 @endpush 

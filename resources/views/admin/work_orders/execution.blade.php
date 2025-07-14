@@ -8,6 +8,7 @@
                 <div class="card-header bg-primary text-white py-3">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
+                            
                             <h3 class="mb-0 fs-4">صفحة التنفيذ</h3>
                             <small class="text-white-50">أمر العمل رقم: {{ $workOrder->work_order_number ?? $workOrder->order_number }}</small>
                         </div>
@@ -30,25 +31,14 @@
                                 } elseif ($daysPassed <= 30) {
                                     $daysText = $daysPassed . ' يوم';
                                     $badgeColor = 'danger';
-                                } else {
-                                    $daysText = $daysPassed . ' يوم';
-                                    $badgeColor = 'dark';
                                 }
                             @endphp
-                            
-                            <div class="bg-white bg-opacity-20 rounded-pill px-3 py-2 duration-counter">
-                                <div class="d-flex align-items-center gap-2">
-                                    <i class="fas fa-calendar-alt"></i>
-                                    <span class="fw-medium">مدة أمر العمل:</span>
-                                    <span class="badge bg-{{ $badgeColor }} fw-bold">{{ $daysText }}</span>
-                                </div>
-                                <small class="text-white-50 d-block mt-1">
-                                    تم الإنشاء: {{ $createdDate->format('Y-m-d H:i') }}
-                                </small>
-                            </div>
-                            
+                            <span class="badge bg-{{ $badgeColor }} fs-6">
+                                <i class="fas fa-clock me-1"></i>
+                                {{ $daysText }}
+                            </span>
                             <a href="{{ route('admin.work-orders.show', $workOrder) }}" class="btn btn-success">
-                            <i class="fas fa-arrow-right"></i> عودة الي تفاصيل أمر العمل  
+                            <i class="fas fa-arrow-left"></i> عودة الي تفاصيل أمر العمل  
                         </a>
                         </div>
                     </div>
@@ -95,90 +85,39 @@
                                         <div class="col-md-3">
                                             <div class="d-flex align-items-center">
                                                 <i class="fas fa-tasks text-warning me-2"></i>
-                                                                                <div>
-                                    <small class="text-muted d-block">حالة التنفيذ</small>
-                                    @php
-                                        $executionStatusValue = $workOrder->execution_status ?? $workOrder->status ?? 'غير محدد';
-                                        
-                                        // تحويل الرقم إلى النص العربي المقابل
-                                        switch($executionStatusValue) {
-                                            case 2:
-                                            case '2':
-                                                $executionStatusText = 'تم تسليم 155 ولم تصدر شهادة انجاز';
-                                                $statusColor = 'info';
-                                                break;
-                                            case 1:
-                                            case '1':
-                                                $executionStatusText = 'جاري العمل ...';
-                                                $statusColor = 'warning';
-                                                break;
-                                            case 3:
-                                            case '3':
-                                                $executionStatusText = 'صدرت شهادة ولم تعتمد';
-                                                $statusColor = 'info';
-                                                break;
-                                            case 4:
-                                            case '4':
-                                                $executionStatusText = 'تم اعتماد شهادة الانجاز';
-                                                $statusColor = 'success';
-                                                break;
-                                            case 5:
-                                            case '5':
-                                                $executionStatusText = 'مؤكد ولم تدخل مستخلص';
-                                                $statusColor = 'primary';
-                                                break;
-                                            case 6:
-                                            case '6':
-                                                $executionStatusText = 'دخلت مستخلص ولم تصرف';
-                                                $statusColor = 'info';
-                                                break;
-                                            case 7:
-                                            case '7':
-                                                $executionStatusText = 'منتهي تم الصرف';
-                                                $statusColor = 'success';
-                                                break;
-                                            default:
-                                                $executionStatusText = $executionStatusValue;
-                                                $statusColor = 'secondary';
-                                        }
-                                    @endphp
-                                    <span class="badge bg-{{ $statusColor }} px-3 py-2 fs-6">
-                                        <i class="fas fa-circle me-1" style="font-size: 0.6em;"></i>
-                                        {{ $executionStatusText }}
-                                    </span>
-                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- معلومات إضافية -->
-                                    @if($workOrder->location || $workOrder->address || $workOrder->description)
-                                    <hr class="my-3">
-                                    <div class="row g-3">
-                                        @if($workOrder->location || $workOrder->address)
-                                        <div class="col-md-6">
-                                            <div class="d-flex align-items-center">
-                                                <i class="fas fa-map-marker-alt text-danger me-2"></i>
                                                 <div>
-                                                    <small class="text-muted d-block">الموقع</small>
-                                                    <strong class="text-dark">{{ $workOrder->location ?? $workOrder->address ?? 'غير محدد' }}</strong>
+                                                    <small class="text-muted d-block">حالة التنفيذ</small>
+                                                    <strong class="text-dark">
+                                                        @switch($workOrder->execution_status)
+                                                            @case(1)
+                                                                جاري العمل
+                                                                @break
+                                                            @case(2)
+                                                                تم تسليم 155
+                                                                @break
+                                                            @case(3)
+                                                                صدرت شهادة
+                                                                @break
+                                                            @case(4)
+                                                                تم اعتماد الشهادة
+                                                                @break
+                                                            @case(5)
+                                                                مؤكد
+                                                                @break
+                                                            @case(6)
+                                                                دخل مستخلص
+                                                                @break
+                                                            @case(7)
+                                                                منتهي
+                                                                @break
+                                                            @default
+                                                                غير محدد
+                                                        @endswitch
+                                                    </strong>
                                                 </div>
                                             </div>
                                         </div>
-                                        @endif
-                                        @if($workOrder->description)
-                                        <div class="col-md-6">
-                                            <div class="d-flex align-items-start">
-                                                <i class="fas fa-file-alt text-secondary me-2 mt-1"></i>
-                                                <div>
-                                                    <small class="text-muted d-block">الوصف</small>
-                                                    <strong class="text-dark">{{ Str::limit($workOrder->description, 50) }}</strong>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        @endif
                                     </div>
-                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -247,6 +186,112 @@
     <!-- جدول بنود العمل -->
     <div class="row justify-content-center mt-4">
         <div class="col-md-12">
+            <!-- قسم الإجمالي اليومي -->
+            <div class="card shadow-lg border-0 mb-4">
+                <div class="card-body p-3">
+                    <h5 class="card-title text-primary mb-3">
+                        <i class="fas fa-chart-bar me-2"></i>
+                        الإجمالي اليومي
+                    </h5>
+                    <div class="row g-3">
+                        <!-- الأعمال المدنية -->
+                        @php
+                            $civilWorksData = $workOrder->daily_civil_works_data ?? [];
+                            // إذا كانت البيانات string، حولها إلى array
+                            if (is_string($civilWorksData)) {
+                                $civilWorksData = json_decode($civilWorksData, true) ?: [];
+                            }
+                            $civilWorksTotal = 0;
+                            if (is_array($civilWorksData)) {
+                                foreach ($civilWorksData as $item) {
+                                    $civilWorksTotal += floatval($item['total'] ?? 0);
+                                }
+                            }
+
+                            // حساب إجمالي التركيبات
+                            $installationsTotal = $workOrder->installations()
+                                ->whereDate('created_at', now()->toDateString())
+                                ->sum('total');
+
+                            // حساب إجمالي الأعمال الكهربائية
+                            $electricalWorksData = $workOrder->electrical_works ?? [];
+                            $electricalWorksTotal = 0;
+                            if (is_array($electricalWorksData)) {
+                                foreach ($electricalWorksData as $item) {
+                                    if (isset($item['length']) && isset($item['price'])) {
+                                        $electricalWorksTotal += floatval($item['length']) * floatval($item['price']);
+                                    }
+                                }
+                            }
+
+                            // حساب الإجمالي الكلي
+                            $grandTotal = $civilWorksTotal + $installationsTotal + $electricalWorksTotal;
+                        @endphp
+
+                        <!-- الأعمال المدنية -->
+                        <div class="col-md-3">
+                            <div class="card border-0 bg-primary bg-opacity-10">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-hard-hat text-primary fs-3 me-3"></i>
+                                        <div>
+                                            <h6 class="card-subtitle mb-1 text-muted">الأعمال المدنية</h6>
+                                            <h5 class="card-title mb-0 text-primary">{{ number_format($civilWorksTotal, 2) }} ريال</h5>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- التركيبات -->
+                        <div class="col-md-3">
+                            <div class="card border-0 bg-success bg-opacity-10">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-tools text-success fs-3 me-3"></i>
+                                        <div>
+                                            <h6 class="card-subtitle mb-1 text-muted">التركيبات</h6>
+                                            <h5 class="card-title mb-0 text-success">{{ number_format($installationsTotal, 2) }} ريال</h5>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- الأعمال الكهربائية -->
+                        <div class="col-md-3">
+                            <div class="card border-0 bg-warning bg-opacity-10">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-bolt text-warning fs-3 me-3"></i>
+                                        <div>
+                                            <h6 class="card-subtitle mb-1 text-muted">أعمال الكهرباء</h6>
+                                            <h5 class="card-title mb-0 text-warning">{{ number_format($electricalWorksTotal, 2) }} ريال</h5>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- الإجمالي الكلي -->
+                        <div class="col-md-3">
+                            <div class="card border-0 bg-info bg-opacity-10">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-calculator text-info fs-3 me-3"></i>
+                                        <div>
+                                            <h6 class="card-subtitle mb-1 text-muted">الإجمالي الكلي</h6>
+                                            <h5 class="card-title mb-0 text-info">{{ number_format($grandTotal, 2) }} ريال</h5>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- جدول بنود العمل -->
             <div class="card shadow-lg border-0">
                 <div class="card-header bg-success text-white py-3">
                     <h4 class="mb-0 fs-5">
