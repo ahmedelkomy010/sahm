@@ -160,7 +160,9 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::put('work-orders/{workOrder}/civil-works', [WorkOrderController::class, 'civilWorks'])->name('work-orders.civil-works.update');
     Route::get('work-orders/{workOrder}/civil-works/excavation-details', [WorkOrderController::class, 'getExcavationDetails'])->name('work-orders.civil-works.excavation-details');
     Route::post('work-orders/{workOrder}/civil-works/images', [WorkOrderController::class, 'saveCivilWorksImages'])->name('work-orders.civil-works.images');
+    Route::delete('work-orders/{workOrder}/civil-works/images/{image}', [WorkOrderController::class, 'deleteCivilWorksImage'])->name('work-orders.civil-works.images.delete');
     Route::post('work-orders/{workOrder}/civil-works/attachments', [WorkOrderController::class, 'saveCivilWorksAttachments'])->name('work-orders.civil-works.attachments');
+    Route::delete('work-orders/{workOrder}/civil-works/attachments/{attachment}', [WorkOrderController::class, 'deleteAttachment'])->name('work-orders.civil-works.attachments.delete');
     Route::post('work-orders/{workOrder}/civil-works/lock', [WorkOrderController::class, 'lockCivilWorksImages'])->name('work-orders.civil-works.lock');
     Route::post('work-orders/{workOrder}/civil-works/save-daily-data', [WorkOrderController::class, 'saveDailyData'])->name('work-orders.civil-works.save-daily-data');
     Route::post('work-orders/{workOrder}/civil-works/clear-daily-data', [WorkOrderController::class, 'clearDailyData'])->name('work-orders.civil-works.clear-daily-data');
@@ -467,3 +469,13 @@ Route::post('/admin/work-orders/{workOrder}/civil-works/save-daily-data', [App\H
 // جلب بيانات العمل اليومي المحفوظة للحفريات
 Route::get('/admin/work-orders/{workOrder}/civil-works/get-daily-data', [App\Http\Controllers\Admin\WorkOrderController::class, 'getDailyCivilWorks'])
     ->name('admin.work-orders.civil-works.get-daily-data');
+
+// صور ومرفقات الأعمال المدنية
+Route::post('/admin/work-orders/{workOrder}/civil-works/images', [WorkOrderController::class, 'saveCivilWorksImages'])
+    ->name('admin.work-orders.civil-works.images');
+Route::delete('/admin/work-orders/{workOrder}/civil-works/images/{image}', [WorkOrderController::class, 'deleteCivilWorksImage'])
+    ->name('admin.work-orders.civil-works.images.delete');
+Route::post('/admin/work-orders/{workOrder}/civil-works/attachments', [WorkOrderController::class, 'saveCivilWorksAttachments'])
+    ->name('admin.work-orders.civil-works.attachments');
+Route::delete('/admin/work-orders/{workOrder}/civil-works/attachments/{attachment}', [WorkOrderController::class, 'deleteAttachment'])
+    ->name('admin.work-orders.civil-works.attachments.delete');

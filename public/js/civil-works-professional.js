@@ -3,6 +3,105 @@
  * Civil Works System - Version 8.1
  */
 
+/**
+ * عرض رسالة للمستخدم
+ */
+function showMessage(message, type = 'info') {
+    // إنشاء عنصر HTML لعرض الرسالة بدلاً من toastr
+    const messageContainer = createMessageElement(message, type);
+    
+    // تحديد موضع الرسالة (تحت الرسائل الموجودة)
+    const existingMessages = document.querySelectorAll('.custom-message');
+    const topOffset = 20 + (existingMessages.length * 70); // 70px لكل رسالة
+    messageContainer.style.top = topOffset + 'px';
+    
+    document.body.appendChild(messageContainer);
+    
+    // إزالة الرسالة بعد 4 ثوان
+    setTimeout(() => {
+        if (messageContainer && messageContainer.parentNode) {
+            messageContainer.style.opacity = '0';
+            setTimeout(() => {
+                if (messageContainer.parentNode) {
+                    messageContainer.parentNode.removeChild(messageContainer);
+                    // إعادة ترتيب الرسائل المتبقية
+                    repositionMessages();
+                }
+            }, 300);
+        }
+    }, 4000);
+}
+
+/**
+ * إعادة ترتيب الرسائل المتبقية
+ */
+function repositionMessages() {
+    const messages = document.querySelectorAll('.custom-message');
+    messages.forEach((message, index) => {
+        message.style.top = (20 + (index * 70)) + 'px';
+    });
+}
+
+/**
+ * إنشاء عنصر HTML للرسالة
+ */
+function createMessageElement(message, type) {
+    const div = document.createElement('div');
+    div.className = 'custom-message';
+    
+    // تحديد الألوان والأيقونات حسب النوع
+    let bgColor, textColor, icon;
+    switch(type) {
+        case 'success':
+            bgColor = '#d4edda';
+            textColor = '#155724';
+            icon = '✅';
+            break;
+        case 'error':
+            bgColor = '#f8d7da';
+            textColor = '#721c24';
+            icon = '❌';
+            break;
+        case 'warning':
+            bgColor = '#fff3cd';
+            textColor = '#856404';
+            icon = '⚠️';
+            break;
+        default:
+            bgColor = '#d1ecf1';
+            textColor = '#0c5460';
+            icon = 'ℹ️';
+    }
+    
+    div.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        background-color: ${bgColor};
+        color: ${textColor};
+        border: 1px solid ${textColor}40;
+        border-radius: 8px;
+        padding: 12px 20px;
+        max-width: 350px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        font-family: 'Tajawal', Arial, sans-serif;
+        font-size: 14px;
+        transition: opacity 0.3s ease;
+        direction: rtl;
+        text-align: right;
+    `;
+    
+    div.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 16px;">${icon}</span>
+            <span>${message}</span>
+        </div>
+    `;
+    
+    return div;
+}
+
 // تعريف أنواع الحفريات
 const EXCAVATION_TYPES = {
     UNSURFACED_SOIL: 'unsurfaced_soil',
@@ -1092,8 +1191,500 @@ function getExcavationTypeBadgeClass(excavationType) {
     return 'bg-secondary text-white';
 }
 
-// تهيئة الصفحة
-document.addEventListener('DOMContentLoaded', () => {
+/**
+ * تهيئة معاينة الصور
+ */
+function initializeImagePreview() {
+    const imageInput = document.getElementById('civil_works_images');
+    const previewContainer = document.getElementById('images-preview');
+    
+    if (!imageInput || !previewContainer) return;
+
+    imageInput.addEventListener('change', function() {
+        previewContainer.innerHTML = ''; // مسح المعاينات السابقة
+        
+        // التحقق من عدد الملفات
+        if (this.files.length > 50) {
+            showMessage('لا يمكن رفع أكثر من 50 صورة في المرة الواحدة', 'error');
+            this.value = '';
+            return;
+        }
+        
+        // التحقق من الحجم الإجمالي
+        let totalSize = 0;
+        for (const file of this.files) {
+            totalSize += file.size;
+        }
+        
+        if (totalSize > 31457280) { // 30MB
+            showMessage('الحجم الإجمالي للصور يتجاوز 30 ميجابايت', 'error');
+            this.value = '';
+            return;
+        }
+        
+        // إنشاء معاينات الصور
+        for (const file of this.files) {
+            const reader = new FileReader();
+            const col = document.createElement('div');
+            col.className = 'col-6 col-md-4 col-lg-3 mb-2';
+            
+            reader.onload = function(e) {
+                col.innerHTML = `
+                    <div class="card h-100">
+                        <img src="${e.target.result}" class="card-img-top" style="height: 120px; object-fit: cover;">
+                        <div class="card-body p-2">
+                            <p class="card-text small text-muted mb-0">
+                                ${file.name}<br>
+                                ${(file.size / (1024 * 1024)).toFixed(2)} MB
+                            </p>
+                        </div>
+                    </div>
+                `;
+            };
+            
+            reader.readAsDataURL(file);
+            previewContainer.appendChild(col);
+        }
+    });
+}
+
+/**
+ * حفظ الصور
+ */
+async function saveImages() {
+    const imageInput = document.getElementById('civil_works_images');
+    if (!imageInput || !imageInput.files.length) {
+        showMessage('الرجاء اختيار الصور أولاً', 'warning');
+        return;
+    }
+    
+    try {
+        console.log('Starting image upload...');
+        console.log('Number of files:', imageInput.files.length);
+        
+        const formData = new FormData();
+        for (const file of imageInput.files) {
+            console.log('Adding file to FormData:', file.name, file.type, file.size);
+            formData.append('civil_works_images[]', file);
+        }
+        
+        // Get work order ID from meta tag
+        const workOrderId = document.querySelector('meta[name="work-order-id"]')?.getAttribute('content');
+        if (!workOrderId) {
+            showMessage('لم يتم العثور على معرف أمر العمل', 'error');
+            return;
+        }
+        
+        // Get CSRF token
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        if (csrfToken) {
+            formData.append('_token', csrfToken);
+        }
+        
+        console.log('Work Order ID:', workOrderId);
+        console.log('CSRF Token:', csrfToken ? 'Present' : 'Missing');
+        console.log('Sending request...');
+        const response = await fetch(`/admin/work-orders/${workOrderId}/civil-works/images`, {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': csrfToken
+            },
+            body: formData
+        });
+        
+        console.log('Response status:', response.status);
+        console.log('Response headers:', response.headers);
+        console.log('Response ok:', response.ok);
+        
+        if (!response.ok) {
+            console.error('Response not ok. Status:', response.status, response.statusText);
+            showMessage(`خطأ في الخادم: ${response.status} ${response.statusText}`, 'error');
+            return;
+        }
+        
+        const responseText = await response.text();
+        console.log('Raw response:', responseText);
+        
+        let result;
+        try {
+            result = JSON.parse(responseText);
+        } catch (e) {
+            console.error('Error parsing JSON response:', e);
+            showMessage('حدث خطأ في تحليل استجابة الخادم', 'error');
+            return;
+        }
+        
+        console.log('Parsed response:', result);
+        
+        if (result.success) {
+            showMessage(result.message, 'success');
+            // تحديث عرض الصور المرفوعة
+            if (result.images && result.images.length) {
+                const uploadedImagesContainer = document.querySelector('.uploaded-images .row');
+                if (uploadedImagesContainer) {
+                    result.images.forEach(image => {
+                        const col = document.createElement('div');
+                        col.className = 'col-6';
+                        col.setAttribute('data-image-id', image.id);
+                        col.innerHTML = `
+                            <div class="card">
+                                <img src="${image.url}" 
+                                     class="card-img-top" 
+                                     style="height: 100px; object-fit: cover;">
+                                <div class="card-body p-2 d-flex justify-content-between align-items-center">
+                                    <small class="text-muted">${(image.size / (1024 * 1024)).toFixed(2)} MB</small>
+                                    <button type="button" 
+                                            class="btn btn-danger btn-sm" 
+                                            onclick="deleteImage(${image.id})"
+                                            title="حذف الصورة">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                        uploadedImagesContainer.appendChild(col);
+                    });
+                }
+            }
+            // تبقى الصور في مكانها بعد الحفظ
+            // imageInput.value = '';
+            // document.getElementById('images-preview').innerHTML = '';
+        } else {
+            showMessage(result.message || 'حدث خطأ أثناء حفظ الصور', 'error');
+        }
+    } catch (error) {
+        console.error('Error saving images:', error);
+        showMessage('حدث خطأ أثناء حفظ الصور', 'error');
+    }
+}
+
+/**
+ * تهيئة معاينة المرفقات
+ */
+function initializeAttachmentsPreview() {
+    const attachmentInput = document.getElementById('civil_works_attachments');
+    const previewContainer = document.getElementById('attachments-preview');
+    
+    if (!attachmentInput || !previewContainer) return;
+
+    attachmentInput.addEventListener('change', function() {
+        previewContainer.innerHTML = ''; // مسح المعاينات السابقة
+        
+        // التحقق من عدد الملفات
+        if (this.files.length > 20) {
+            showMessage('لا يمكن رفع أكثر من 20 ملف في المرة الواحدة', 'error');
+            this.value = '';
+            return;
+        }
+        
+        // التحقق من الحجم الإجمالي
+        let totalSize = 0;
+        for (const file of this.files) {
+            totalSize += file.size;
+            // التحقق من حجم الملف الواحد (20MB)
+            if (file.size > 20971520) {
+                showMessage(`الملف "${file.name}" يتجاوز الحد الأقصى 20 ميجابايت`, 'error');
+                this.value = '';
+                return;
+            }
+        }
+        
+        if (totalSize > 104857600) { // 100MB إجمالي
+            showMessage('الحجم الإجمالي للمرفقات يتجاوز 100 ميجابايت', 'error');
+            this.value = '';
+            return;
+        }
+        
+        // إنشاء معاينات المرفقات
+        for (const file of this.files) {
+            const attachmentDiv = document.createElement('div');
+            attachmentDiv.className = 'd-flex align-items-center border rounded p-2 mb-2';
+            
+            const fileIcon = getFileIconClass(file.name);
+            
+            attachmentDiv.innerHTML = `
+                <i class="fas fa-file-${fileIcon} text-primary me-2"></i>
+                <div class="flex-grow-1">
+                    <div class="text-truncate" title="${file.name}">
+                        ${file.name}
+                    </div>
+                    <small class="text-muted">${(file.size / (1024 * 1024)).toFixed(2)} MB</small>
+                </div>
+                <span class="badge bg-success">جديد</span>
+            `;
+            
+            previewContainer.appendChild(attachmentDiv);
+        }
+    });
+}
+
+/**
+ * تحديد أيقونة الملف حسب النوع
+ */
+function getFileIconClass(filename) {
+    const extension = filename.split('.').pop().toLowerCase();
+    
+    switch (extension) {
+        case 'pdf':
+            return 'pdf';
+        case 'doc':
+        case 'docx':
+            return 'word';
+        case 'xls':
+        case 'xlsx':
+            return 'excel';
+        case 'ppt':
+        case 'pptx':
+            return 'powerpoint';
+        case 'txt':
+            return 'alt';
+        case 'zip':
+        case 'rar':
+            return 'archive';
+        default:
+            return 'alt';
+    }
+}
+
+/**
+ * حفظ المرفقات
+ */
+async function saveAttachments() {
+    const attachmentInput = document.getElementById('civil_works_attachments');
+    if (!attachmentInput || !attachmentInput.files.length) {
+        showMessage('الرجاء اختيار المرفقات أولاً', 'warning');
+        return;
+    }
+    
+    try {
+        console.log('Starting attachments upload...');
+        console.log('Number of files:', attachmentInput.files.length);
+        
+        const formData = new FormData();
+        for (const file of attachmentInput.files) {
+            console.log('Adding attachment to FormData:', file.name, file.type, file.size);
+            formData.append('civil_works_attachments[]', file);
+        }
+        
+        // Get work order ID from meta tag
+        const workOrderId = document.querySelector('meta[name="work-order-id"]')?.getAttribute('content');
+        if (!workOrderId) {
+            showMessage('لم يتم العثور على معرف أمر العمل', 'error');
+            return;
+        }
+        
+        // Get CSRF token
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        if (csrfToken) {
+            formData.append('_token', csrfToken);
+        }
+        
+        console.log('Work Order ID:', workOrderId);
+        console.log('CSRF Token:', csrfToken ? 'Present' : 'Missing');
+        console.log('Sending attachments request...');
+        
+        const response = await fetch(`/admin/work-orders/${workOrderId}/civil-works/attachments`, {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': csrfToken
+            },
+            body: formData
+        });
+        
+        console.log('Response status:', response.status);
+        console.log('Response headers:', response.headers);
+        console.log('Response ok:', response.ok);
+        
+        if (!response.ok) {
+            console.error('Response not ok. Status:', response.status, response.statusText);
+            showMessage(`خطأ في الخادم: ${response.status} ${response.statusText}`, 'error');
+            return;
+        }
+        
+        const responseText = await response.text();
+        console.log('Raw response:', responseText);
+        
+        let result;
+        try {
+            result = JSON.parse(responseText);
+        } catch (e) {
+            console.error('Error parsing JSON response:', e);
+            showMessage('حدث خطأ في تحليل استجابة الخادم', 'error');
+            return;
+        }
+        
+        console.log('Parsed response:', result);
+        
+        if (result.success) {
+            showMessage(result.message, 'success');
+            // تحديث عرض المرفقات المرفوعة
+            if (result.attachments && result.attachments.length) {
+                const uploadedAttachmentsContainer = document.querySelector('.uploaded-attachments');
+                if (!uploadedAttachmentsContainer) {
+                    // إنشاء قسم جديد للمرفقات المرفوعة
+                    const newSection = document.createElement('div');
+                    newSection.className = 'uploaded-attachments mt-3';
+                    newSection.innerHTML = '<h6 class="mb-2">المرفقات المرفوعة</h6>';
+                    
+                    const cardBody = document.querySelector('#civil_works_attachments').closest('.card-body');
+                    cardBody.appendChild(newSection);
+                }
+                
+                const container = document.querySelector('.uploaded-attachments');
+                result.attachments.forEach(attachment => {
+                    const attachmentDiv = document.createElement('div');
+                    attachmentDiv.className = 'd-flex align-items-center border rounded p-2 mb-2 attachment-item';
+                    attachmentDiv.setAttribute('data-attachment-id', attachment.id);
+                    
+                    const fileIcon = getFileIconClass(attachment.filename);
+                    
+                    attachmentDiv.innerHTML = `
+                        <i class="fas fa-file-${fileIcon} text-primary me-2"></i>
+                        <div class="flex-grow-1">
+                            <div class="text-truncate" title="${attachment.filename}">
+                                ${attachment.filename}
+                            </div>
+                            <small class="text-muted">${(attachment.size / (1024 * 1024)).toFixed(2)} MB</small>
+                        </div>
+                        <div class="btn-group btn-group-sm ms-2">
+                            <a href="${attachment.url}" class="btn btn-outline-primary" target="_blank" title="عرض الملف">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <button type="button" class="btn btn-outline-danger" onclick="deleteAttachment(${attachment.id})" title="حذف الملف">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    `;
+                    
+                    container.appendChild(attachmentDiv);
+                });
+            }
+            // تبقى المرفقات في مكانها بعد الحفظ
+            // attachmentInput.value = '';
+            // document.getElementById('attachments-preview').innerHTML = '';
+        } else {
+            showMessage(result.message || 'حدث خطأ أثناء حفظ المرفقات', 'error');
+        }
+    } catch (error) {
+        console.error('Error saving attachments:', error);
+        showMessage('حدث خطأ أثناء حفظ المرفقات', 'error');
+    }
+}
+
+/**
+ * حذف مرفق
+ */
+async function deleteAttachment(attachmentId) {
+    if (!confirm('هل أنت متأكد من حذف هذا المرفق؟')) {
+        return;
+    }
+    
+    try {
+        // Get work order ID from meta tag
+        const workOrderId = document.querySelector('meta[name="work-order-id"]')?.getAttribute('content');
+        if (!workOrderId) {
+            showMessage('لم يتم العثور على معرف أمر العمل', 'error');
+            return;
+        }
+        
+        const response = await fetch(`/admin/work-orders/${workOrderId}/civil-works/attachments/${attachmentId}`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showMessage(result.message, 'success');
+            // حذف عنصر المرفق من العرض
+            const attachmentElement = document.querySelector(`[data-attachment-id="${attachmentId}"]`);
+            if (attachmentElement) {
+                attachmentElement.remove();
+            }
+        } else {
+            showMessage(result.message || 'حدث خطأ أثناء حذف المرفق', 'error');
+        }
+    } catch (error) {
+        console.error('Error deleting attachment:', error);
+        showMessage('حدث خطأ أثناء حذف المرفق', 'error');
+    }
+}
+
+/**
+ * تحميل الملفات الموجودة مسبقاً
+ */
+function loadExistingFiles() {
+    // تحميل الصور الموجودة من الـ HTML إلى منطقة العرض
+    const existingImages = document.querySelectorAll('.uploaded-images [data-image-id]');
+    console.log(`تم العثور على ${existingImages.length} صورة محفوظة مسبقاً`);
+    
+    // تحميل المرفقات الموجودة من الـ HTML إلى منطقة العرض
+    const existingAttachments = document.querySelectorAll('.uploaded-attachments [data-attachment-id]');
+    console.log(`تم العثور على ${existingAttachments.length} مرفق محفوظ مسبقاً`);
+    
+    // إضافة رسالة توضيحية إذا لم توجد ملفات
+    if (existingImages.length === 0 && existingAttachments.length === 0) {
+        console.log('لا توجد ملفات محفوظة مسبقاً');
+    } else {
+        console.log(`تم تحميل ${existingImages.length} صورة و ${existingAttachments.length} مرفق محفوظ مسبقاً`);
+        // يمكن إضافة رسالة إذا رغبت في ذلك
+        // showMessage(`تم تحميل ${existingImages.length} صورة و ${existingAttachments.length} مرفق محفوظ مسبقاً`, 'success');
+    }
+}
+
+/**
+ * حذف صورة
+ */
+async function deleteImage(imageId) {
+    if (!confirm('هل أنت متأكد من حذف هذه الصورة؟')) {
+        return;
+    }
+    
+    try {
+        // Get work order ID from meta tag
+        const workOrderId = document.querySelector('meta[name="work-order-id"]')?.getAttribute('content');
+        if (!workOrderId) {
+            showMessage('لم يتم العثور على معرف أمر العمل', 'error');
+            return;
+        }
+        
+        const response = await fetch(`/admin/work-orders/${workOrderId}/civil-works/images/${imageId}`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showMessage(result.message, 'success');
+            // حذف عنصر الصورة من العرض
+            const imageElement = document.querySelector(`[data-image-id="${imageId}"]`);
+            if (imageElement) {
+                imageElement.remove();
+            }
+        } else {
+            showMessage(result.message || 'حدث خطأ أثناء حذف الصورة', 'error');
+        }
+    } catch (error) {
+        console.error('Error deleting image:', error);
+        showMessage('حدث خطأ أثناء حذف الصورة', 'error');
+    }
+}
+
+// تهيئة النظام عند تحميل الصفحة
+document.addEventListener('DOMContentLoaded', function() {
     setupCalculations();
     setupOpenExcavationListeners();
     
@@ -1154,6 +1745,24 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('إحصائيات الحقول:', counts);
         console.log('تم تحديث جميع الحسابات بنجاح');
     }, 100);
+
+    // تهيئة معاينة الصور
+    initializeImagePreview();
+    
+    // تهيئة معاينة المرفقات
+    initializeAttachmentsPreview();
+    
+    // تحميل الصور والمرفقات المحفوظة مسبقاً
+    loadExistingFiles();
+    
+    // إضافة مستمع لزر حفظ المرفقات
+    const saveAttachmentsBtn = document.getElementById('saveAttachmentsBtn');
+    if (saveAttachmentsBtn) {
+        saveAttachmentsBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            saveAttachments();
+        });
+    }
 }); 
 
 // إضافة مستمع أحداث لأزرار الحذف

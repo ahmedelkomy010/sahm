@@ -115,12 +115,12 @@ class WorkOrder extends Model
 
     public function civilWorksFiles()
     {
-        return $this->hasMany(WorkOrderFile::class)->where('file_category', 'civil_works_execution');
+        return $this->hasMany(WorkOrderFile::class)->where('file_category', 'civil_exec');
     }
 
     public function civilWorksAttachments()
     {
-        return $this->hasMany(WorkOrderFile::class)->where('file_category', 'civil_works_attachments');
+        return $this->hasMany(WorkOrderFile::class)->where('file_category', 'civil_attach');
     }
 
     public function installationsFiles()

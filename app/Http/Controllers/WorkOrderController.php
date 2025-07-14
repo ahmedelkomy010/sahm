@@ -1838,9 +1838,16 @@ class WorkOrderController extends Controller
     public function saveCivilWorksImages(Request $request, WorkOrder $workOrder)
     {
         try {
-            Log::info('Saving civil works images', [
+            Log::info('Starting saveCivilWorksImages', [
                 'work_order_id' => $workOrder->id,
-                'user_id' => auth()->id()
+                'user_id' => auth()->id(),
+                'request_has_files' => $request->hasFile('civil_works_images'),
+                'request_all' => $request->all(),
+                'files_count' => $request->hasFile('civil_works_images') ? count($request->file('civil_works_images')) : 0,
+                'content_type' => $request->header('Content-Type'),
+                'is_ajax' => $request->ajax(),
+                'is_json' => $request->isJson(),
+                'headers' => $request->headers->all()
             ]);
 
             $request->validate([
@@ -1853,6 +1860,21 @@ class WorkOrderController extends Controller
                 $files = $request->file('civil_works_images');
 
                 foreach ($files as $file) {
+                    Log::info('Processing file', [
+                        'original_name' => $file->getClientOriginalName(),
+                        'mime_type' => $file->getClientMimeType(),
+                        'size' => $file->getSize()
+                    ]);
+
+                    if (!$file->isValid()) {
+                        Log::error('Invalid file', [
+                            'original_name' => $file->getClientOriginalName(),
+                            'error' => $file->getError(),
+                            'error_message' => $file->getErrorMessage()
+                        ]);
+                        continue;
+                    }
+
                     $originalName = $file->getClientOriginalName();
                     $extension = $file->getClientOriginalExtension();
                     // تحسين اسم الملف للخادم العالمي
@@ -1867,6 +1889,15 @@ class WorkOrderController extends Controller
                     
                     $filePath = $file->storeAs($directory, $filename, 'public');
                     
+                    if (!$filePath) {
+                        Log::error('Failed to store file', [
+                            'original_name' => $originalName,
+                            'directory' => $directory,
+                            'filename' => $filename
+                        ]);
+                        continue;
+                    }
+                    
                     // حفظ بيانات الملف في قاعدة البيانات
                     $savedFile = \App\Models\WorkOrderFile::create([
                         'work_order_id' => $workOrder->id,
@@ -1877,7 +1908,7 @@ class WorkOrderController extends Controller
                         'file_type' => $file->getClientMimeType(),
                         'mime_type' => $file->getClientMimeType(),
                         'file_size' => $file->getSize(),
-                        'file_category' => 'civil_attach' // تقصير الاسم
+                        'file_category' => 'civil_exec' // تغيير التصنيف للصور
                     ]);
                     
                     $savedImages[] = $savedFile;
@@ -1888,9 +1919,11 @@ class WorkOrderController extends Controller
                         'size' => $file->getSize()
                     ]);
                 }
+            } else {
+                Log::warning('No files found in request');
             }
 
-            return response()->json([
+            $response = [
                 'success' => true,
                 'message' => 'تم حفظ ' . count($savedImages) . ' صورة بنجاح',
                 'images_count' => count($savedImages),
@@ -1899,17 +1932,22 @@ class WorkOrderController extends Controller
                         'id' => $img->id,
                         'filename' => $img->filename,
                         'original_filename' => $img->original_filename,
-                        'url' => asset('storage/' . $img->file_path)
+                        'url' => asset('storage/' . $img->file_path),
+                        'size' => $img->file_size
                     ];
                 })
-            ]);
+            ];
+
+            Log::info('Returning response', $response);
+            return response()->json($response);
 
         } catch (\Exception $e) {
             Log::error('Error saving civil works images', [
                 'error' => $e->getMessage(),
                 'line' => $e->getLine(),
                 'file' => $e->getFile(),
-                'work_order_id' => $workOrder->id
+                'work_order_id' => $workOrder->id,
+                'trace' => $e->getTraceAsString()
             ]);
 
             return response()->json([
@@ -2753,6 +2791,50 @@ class WorkOrderController extends Controller
                 'success' => false,
                 'message' => 'حدث خطأ أثناء جلب البيانات',
                 'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * حذف صورة من صور الأعمال المدنية
+     */
+    public function deleteCivilWorksImage(WorkOrder $workOrder, $image)
+    {
+        try {
+            Log::info('Deleting civil works image', [
+                'work_order_id' => $workOrder->id,
+                'image_id' => $image,
+                'user_id' => auth()->id()
+            ]);
+
+            $file = \App\Models\WorkOrderFile::where('id', $image)
+                ->where('work_order_id', $workOrder->id)
+                ->where('file_category', 'civil_exec') // تغيير التصنيف للصور
+                ->firstOrFail();
+
+            // حذف الملف من التخزين
+            if (Storage::disk('public')->exists($file->file_path)) {
+                Storage::disk('public')->delete($file->file_path);
+            }
+
+            // حذف السجل من قاعدة البيانات
+            $file->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'تم حذف الصورة بنجاح'
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error deleting civil works image', [
+                'error' => $e->getMessage(),
+                'work_order_id' => $workOrder->id,
+                'image_id' => $image
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء حذف الصورة: ' . $e->getMessage()
             ], 500);
         }
     }

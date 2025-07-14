@@ -2252,17 +2252,23 @@
 
                                 <!-- عرض الصور المرفوعة -->
                                 @if(isset($workOrder->civilWorksFiles) && $workOrder->civilWorksFiles->count() > 0)
-                                    <div class="mt-3">
+                                    <div class="mt-3 uploaded-images">
                                         <h6 class="mb-2">الصور المرفوعة</h6>
                                         <div class="row g-2">
                                             @foreach($workOrder->civilWorksFiles as $file)
-                                                <div class="col-6">
+                                                <div class="col-6" data-image-id="{{ $file->id }}">
                                                     <div class="card">
                                                         <img src="{{ asset('storage/' . $file->file_path) }}" 
                                                              class="card-img-top" 
                                                              style="height: 100px; object-fit: cover;">
-                                                        <div class="card-body p-2">
+                                                        <div class="card-body p-2 d-flex justify-content-between align-items-center">
                                                             <small class="text-muted">{{ round($file->file_size / 1024 / 1024, 2) }} MB</small>
+                                                            <button type="button" 
+                                                                    class="btn btn-danger btn-sm" 
+                                                                    onclick="deleteImage({{ $file->id }})"
+                                                                    title="حذف الصورة">
+                                                                <i class="fas fa-trash"></i>
+                                                            </button>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -2316,13 +2322,38 @@
                                     <div class="uploaded-attachments mt-3">
                                         <h6 class="mb-2">المرفقات المرفوعة</h6>
                                         @foreach($workOrder->civilWorksAttachments as $file)
+                                            @php
+                                                // دالة تحديد أيقونة الملف
+                                                $extension = pathinfo($file->original_filename, PATHINFO_EXTENSION);
+                                                $fileIcon = match(strtolower($extension)) {
+                                                    'pdf' => 'pdf',
+                                                    'doc', 'docx' => 'word',
+                                                    'xls', 'xlsx' => 'excel',
+                                                    'ppt', 'pptx' => 'powerpoint',
+                                                    'txt' => 'alt',
+                                                    'zip', 'rar' => 'archive',
+                                                    default => 'alt'
+                                                };
+                                                
+                                                // دالة تنسيق حجم الملف
+                                                $fileSize = $file->file_size;
+                                                if ($fileSize >= 1073741824) {
+                                                    $formattedSize = number_format($fileSize / 1073741824, 2) . ' GB';
+                                                } elseif ($fileSize >= 1048576) {
+                                                    $formattedSize = number_format($fileSize / 1048576, 2) . ' MB';
+                                                } elseif ($fileSize >= 1024) {
+                                                    $formattedSize = number_format($fileSize / 1024, 2) . ' KB';
+                                                } else {
+                                                    $formattedSize = $fileSize . ' bytes';
+                                                }
+                                            @endphp
                                             <div class="d-flex align-items-center border rounded p-2 mb-2 attachment-item" data-attachment-id="{{ $file->id }}">
-                                                <i class="fas fa-file-{{ getFileIcon($file->original_filename) }} text-primary me-2"></i>
+                                                <i class="fas fa-file-{{ $fileIcon }} text-primary me-2"></i>
                                                 <div class="flex-grow-1">
                                                     <div class="text-truncate" title="{{ $file->original_filename }}">
                                                         {{ $file->original_filename }}
                                                     </div>
-                                                    <small class="text-muted">{{ formatFileSize($file->file_size) }}</small>
+                                                    <small class="text-muted">{{ $formattedSize }}</small>
                                                 </div>
                                                 <div class="btn-group btn-group-sm ms-2">
                                                     <a href="{{ asset('storage/' . $file->file_path) }}" class="btn btn-outline-primary" target="_blank" title="عرض الملف">
@@ -2347,7 +2378,6 @@
                             </div>
                         </div>
                     </div>
-
                     </div>
                 </div>
                 <!-- زر التثبيت النهائي -->
@@ -2361,6 +2391,29 @@
     
     <!-- Toastr JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
+    
+    <!-- تهيئة Toastr -->
+    <script>
+        // تهيئة Toastr
+        toastr.options = {
+            "closeButton": true,
+            "debug": false,
+            "newestOnTop": true,
+            "progressBar": true,
+            "positionClass": "toast-top-right",
+            "preventDuplicates": false,
+            "onclick": null,
+            "showDuration": "300",
+            "hideDuration": "1000",
+            "timeOut": "5000",
+            "extendedTimeOut": "1000",
+            "showEasing": "swing",
+            "hideEasing": "linear",
+            "showMethod": "fadeIn",
+            "hideMethod": "fadeOut",
+            "rtl": true
+        };
+    </script>
     
     <!-- Civil Works Professional System -->
     <script src="{{ asset('js/civil-works-professional.js') }}" defer></script>

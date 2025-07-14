@@ -14,6 +14,12 @@ class VerifyCsrfToken extends Middleware
     protected $except = [
         'api/*',
         'lab-licenses',
-        'lab-licenses/*'
+        'lab-licenses/*',
+        'admin/work-orders/*/civil-works/images',
+        'admin/work-orders/*/civil-works/attachments',
+        'work-orders/*/civil-works/images',
+        'work-orders/*/civil-works/attachments',
+        'admin/work-orders/*/civil-works/attachments/*',
+        'work-orders/*/civil-works/attachments/*'
     ];
 } 
