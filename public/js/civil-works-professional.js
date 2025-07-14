@@ -61,6 +61,54 @@ function updateStatistics() {
             }
         });
 
+        // حساب إجماليات الحفريات الدقيقة
+        document.querySelectorAll('.calc-precise-length').forEach(input => {
+            const length = parseFloat(input.value) || 0;
+            if (length > 0) {
+                totalLength += length;
+                itemsCount++;
+            }
+        });
+
+        document.querySelectorAll('.precise-total-calc').forEach(input => {
+            const total = parseFloat(input.value) || 0;
+            if (total > 0) {
+                totalAmount += total;
+            }
+        });
+
+        // حساب إجماليات أسفلت طبقة أولى
+        document.querySelectorAll('.calc-area-length').forEach(input => {
+            const length = parseFloat(input.value) || 0;
+            if (length > 0) {
+                totalLength += length;
+                itemsCount++;
+            }
+        });
+
+        document.querySelectorAll('.area-total-calc').forEach(input => {
+            const total = parseFloat(input.value) || 0;
+            if (total > 0) {
+                totalAmount += total;
+            }
+        });
+
+        // حساب إجماليات عناصر التمديد الكهربائية
+        document.querySelectorAll('.calc-electrical-length').forEach(input => {
+            const length = parseFloat(input.value) || 0;
+            if (length > 0) {
+                totalLength += length;
+                itemsCount++;
+            }
+        });
+
+        document.querySelectorAll('.electrical-total-calc').forEach(input => {
+            const total = parseFloat(input.value) || 0;
+            if (total > 0) {
+                totalAmount += total;
+            }
+        });
+
         // تحديث عناصر الإحصائيات في الواجهة
         const statsElements = {
             totalLength: document.getElementById('total-length'),
@@ -77,6 +125,8 @@ function updateStatistics() {
         if (statsElements.itemsCount) {
             statsElements.itemsCount.textContent = itemsCount;
         }
+        
+        console.log(`تحديث الإحصائيات: الطول الكلي=${totalLength.toFixed(2)}, المبلغ الكلي=${totalAmount.toFixed(2)}, عدد العناصر=${itemsCount}`);
 
     } catch (error) {
         console.error('خطأ في تحديث الإحصائيات:', error);
@@ -87,19 +137,86 @@ function updateStatistics() {
  * إعداد الحسابات
  */
 function setupCalculations() {
-    // إعداد حسابات الطول والسعر
+    // إعداد حسابات الطول والسعر للحفريات العادية
     document.querySelectorAll('.calc-length, .calc-price').forEach(input => {
         input.addEventListener('input', () => {
             const row = input.closest('tr');
             if (row) calculateRowTotal(row);
         });
+        
+        input.addEventListener('change', () => {
+            const row = input.closest('tr');
+            if (row) calculateRowTotal(row);
+        });
     });
 
-    // إعداد حسابات الحجم
+    // إعداد حسابات الحجم للحفر المفتوح
     document.querySelectorAll('.calc-volume-length, .calc-volume-width, .calc-volume-depth, .calc-volume-price').forEach(input => {
         input.addEventListener('input', () => {
             const row = input.closest('tr');
-            if (row) calculateVolumeTotal(row);
+            if (row) {
+                // تحقق من وجود حقول الحفر المفتوح في نفس الصف
+                const hasOpenExcavationFields = row.querySelector('[id^="total_"][id$="_open"]') && row.querySelector('[id^="final_total_"][id$="_open"]');
+                if (hasOpenExcavationFields) {
+                    console.log('تم العثور على حقول الحفر المفتوح في نفس الصف، استخدام calculateVolumeTotal');
+                    calculateVolumeTotal(row);
+                } else {
+                    console.log('لم يتم العثور على حقول في نفس الصف، استخدام calculateOpenExcavation');
+                    calculateOpenExcavation();
+                }
+            }
+        });
+        
+        // إضافة مستمع للحدث change أيضاً
+        input.addEventListener('change', () => {
+            const row = input.closest('tr');
+            if (row) {
+                const hasOpenExcavationFields = row.querySelector('[id^="total_"][id$="_open"]') && row.querySelector('[id^="final_total_"][id$="_open"]');
+                if (hasOpenExcavationFields) {
+                    calculateVolumeTotal(row);
+                } else {
+                    calculateOpenExcavation();
+                }
+            }
+        });
+    });
+
+    // إعداد حسابات الحفريات الدقيقة
+    document.querySelectorAll('.calc-precise-length, .calc-precise-price').forEach(input => {
+        input.addEventListener('input', () => {
+            const row = input.closest('tr');
+            if (row) calculatePreciseTotal(row);
+        });
+        
+        input.addEventListener('change', () => {
+            const row = input.closest('tr');
+            if (row) calculatePreciseTotal(row);
+        });
+    });
+
+    // إعداد حسابات أسفلت طبقة أولى
+    document.querySelectorAll('.calc-area-length, .calc-area-price').forEach(input => {
+        input.addEventListener('input', () => {
+            const row = input.closest('tr');
+            if (row) calculateAreaTotal(row);
+        });
+        
+        input.addEventListener('change', () => {
+            const row = input.closest('tr');
+            if (row) calculateAreaTotal(row);
+        });
+    });
+
+    // إعداد حسابات عناصر التمديد الكهربائية
+    document.querySelectorAll('.calc-electrical-length, .calc-electrical-price').forEach(input => {
+        input.addEventListener('input', () => {
+            const row = input.closest('tr');
+            if (row) calculateElectricalTotal(row);
+        });
+        
+        input.addEventListener('change', () => {
+            const row = input.closest('tr');
+            if (row) calculateElectricalTotal(row);
         });
     });
 }
@@ -152,12 +269,11 @@ function calculateVolumeTotal(row) {
         price: row.querySelector('.calc-volume-price')
     };
     
-    const outputs = {
-        volume: row.querySelector('[id^="total_"][id$="_open"]'),
-        total: row.querySelector('[id^="final_total_"][id$="_open"]')
-    };
+    // البحث عن حقول الإخراج بطريقة أكثر دقة
+    const volumeOutput = row.querySelector('[id^="total_"][id$="_open"]');
+    const totalOutput = row.querySelector('[id^="final_total_"][id$="_open"]');
     
-    if (Object.values(inputs).every(Boolean) && Object.values(outputs).every(Boolean)) {
+    if (Object.values(inputs).every(Boolean) && volumeOutput && totalOutput) {
         const values = {
             length: parseFloat(inputs.length.value) || 0,
             width: parseFloat(inputs.width.value) || 0,
@@ -168,14 +284,21 @@ function calculateVolumeTotal(row) {
         const volume = values.length * values.width * values.depth;
         const total = volume * values.price;
         
-        outputs.volume.value = volume.toFixed(2);
-        outputs.total.value = total.toFixed(2);
+        volumeOutput.value = volume.toFixed(2);
+        totalOutput.value = total.toFixed(2);
+        
+        // تحديث الإحصائيات
         updateTotalSummary();
+        
+        // طباعة للتأكد من أن الحساب يعمل (للتطوير فقط)
+        console.log(`حساب الحفر المفتوح: الطول=${values.length}, العرض=${values.width}, العمق=${values.depth}, السعر=${values.price}, الحجم=${volume.toFixed(2)}, الإجمالي=${total.toFixed(2)}`);
+    } else {
+        console.log('لم يتم العثور على جميع حقول الحفر المفتوح المطلوبة');
     }
 }
 
 /**
- * حساب إجمالي الحفر المفتوح
+ * حساب إجمالي الحفر المفتوح (دالة محسنة)
  */
 function calculateOpenExcavation() {
     // أنواع الحفر المفتوح
@@ -205,10 +328,95 @@ function calculateOpenExcavation() {
 
             volumeOutput.value = volume.toFixed(2);
             totalOutput.value = total.toFixed(2);
+            
+            // طباعة للتأكد من أن الحساب يعمل (للتطوير فقط)
+            if (length > 0 || width > 0 || depth > 0 || price > 0) {
+                console.log(`حساب ${type}: الطول=${length}, العرض=${width}, العمق=${depth}, السعر=${price}, الحجم=${volume.toFixed(2)}, الإجمالي=${total.toFixed(2)}`);
+            }
+        } else {
+            console.log(`لم يتم العثور على جميع حقول ${type}`);
         }
     });
 
     updateTotalSummary();
+}
+
+/**
+ * حساب إجمالي الحفريات الدقيقة
+ */
+function calculatePreciseTotal(row) {
+    const lengthInput = row.querySelector('.calc-precise-length');
+    const priceInput = row.querySelector('.calc-precise-price');
+    const totalOutput = row.querySelector('.precise-total-calc');
+    
+    if (lengthInput && priceInput && totalOutput) {
+        const length = parseFloat(lengthInput.value) || 0;
+        const price = parseFloat(priceInput.value) || 0;
+        const dataType = lengthInput.getAttribute('data-type') || 'unknown';
+        
+        // الحفريات الدقيقة: الطول × السعر (كما هو مطلوب من المستخدم)
+        const total = length * price;
+        
+        totalOutput.value = total.toFixed(2);
+        
+        console.log(`حساب الحفريات الدقيقة (${dataType}): الطول=${length}, السعر=${price}, الإجمالي=${total.toFixed(2)}`);
+        
+        updateTotalSummary();
+    } else {
+        console.log('لم يتم العثور على جميع حقول الحفريات الدقيقة المطلوبة');
+    }
+}
+
+/**
+ * حساب إجمالي أسفلت طبقة أولى
+ */
+function calculateAreaTotal(row) {
+    const lengthInput = row.querySelector('.calc-area-length');
+    const priceInput = row.querySelector('.calc-area-price');
+    const totalOutput = row.querySelector('.area-total-calc');
+    
+    if (lengthInput && priceInput && totalOutput) {
+        const length = parseFloat(lengthInput.value) || 0;
+        const price = parseFloat(priceInput.value) || 0;
+        
+        // أسفلت طبقة أولى: السعر × الطول × العرض القياسي (0.5 متر)
+        const standardWidth = 0.5;
+        const total = length * standardWidth * price;
+        
+        totalOutput.value = total.toFixed(2);
+        
+        console.log(`حساب أسفلت طبقة أولى: الطول=${length}, العرض=${standardWidth}, السعر=${price}, الإجمالي=${total.toFixed(2)}`);
+        
+        updateTotalSummary();
+    } else {
+        console.log('لم يتم العثور على جميع حقول أسفلت طبقة أولى المطلوبة');
+    }
+}
+
+/**
+ * حساب إجمالي عناصر التمديد الكهربائية
+ */
+function calculateElectricalTotal(row) {
+    const lengthInput = row.querySelector('.calc-electrical-length');
+    const priceInput = row.querySelector('.calc-electrical-price');
+    const totalOutput = row.querySelector('.electrical-total-calc');
+    
+    if (lengthInput && priceInput && totalOutput) {
+        const length = parseFloat(lengthInput.value) || 0;
+        const price = parseFloat(priceInput.value) || 0;
+        const dataType = lengthInput.getAttribute('data-type') || 'unknown';
+        
+        // عناصر التمديد: الطول × السعر
+        const total = length * price;
+        
+        totalOutput.value = total.toFixed(2);
+        
+        console.log(`حساب عناصر التمديد (${dataType}): الطول=${length}, السعر=${price}, الإجمالي=${total.toFixed(2)}`);
+        
+        updateTotalSummary();
+    } else {
+        console.log('لم يتم العثور على جميع حقول التمديد الكهربائية المطلوبة');
+    }
 }
 
 /**
@@ -245,10 +453,26 @@ function updateTotalSummary() {
         grandTotal += parseFloat(input.value) || 0;
     });
     
+    // جمع إجماليات الحفريات الدقيقة
+    document.querySelectorAll('.precise-total-calc').forEach(input => {
+        grandTotal += parseFloat(input.value) || 0;
+    });
+    
+    // جمع إجماليات أسفلت طبقة أولى
+    document.querySelectorAll('.area-total-calc').forEach(input => {
+        grandTotal += parseFloat(input.value) || 0;
+    });
+    
+    // جمع إجماليات عناصر التمديد الكهربائية
+    document.querySelectorAll('.electrical-total-calc').forEach(input => {
+        grandTotal += parseFloat(input.value) || 0;
+    });
+    
     // تحديث المجموع الكلي
     const grandTotalElement = document.getElementById('excavation_grand_total');
     if (grandTotalElement) {
         grandTotalElement.value = grandTotal.toFixed(2);
+        console.log(`تحديث المجموع الكلي: ${grandTotal.toFixed(2)}`);
     }
     
     // تحديث الإحصائيات
@@ -259,7 +483,8 @@ function updateTotalSummary() {
  * إعداد مستمعي الأحداث للحفر المفتوح
  */
 function setupOpenExcavationListeners() {
-    // إضافة مستمعي الأحداث لحقول الحفر المفتوح
+    // إضافة مستمعي الأحداث لجميع حقول الحفر المفتوح
+    // سنضيف مستمعين إضافيين للتأكد من أن الحسابات تعمل بشكل صحيح
     const openExcavationInputs = document.querySelectorAll(`
         [name^="excavation_"][name$="[length]"],
         [name^="excavation_"][name$="[width]"],
@@ -268,8 +493,90 @@ function setupOpenExcavationListeners() {
     `);
 
     openExcavationInputs.forEach(input => {
-        input.addEventListener('input', calculateOpenExcavation);
-    });
+        // إضافة مستمع للحدث input
+        input.addEventListener('input', function() {
+            calculateOpenExcavation();
+        });
+        
+                 // إضافة مستمع للحدث change للتأكد من التحديث
+         input.addEventListener('change', function() {
+             calculateOpenExcavation();
+         });
+     });
+
+     // إضافة مستمعي أحداث للحفريات الدقيقة
+     const preciseInputs = document.querySelectorAll(`
+         [name="excavation_precise[medium]"],
+         [name="excavation_precise[medium_price]"],
+         [name="excavation_precise[low]"],
+         [name="excavation_precise[low_price]"]
+     `);
+
+     if (preciseInputs.length === 0) {
+         console.log('لم يتم العثور على حقول الحفريات الدقيقة في الصفحة');
+     } else {
+         console.log(`تم العثور على ${preciseInputs.length} حقل للحفريات الدقيقة`);
+     }
+
+     preciseInputs.forEach(input => {
+         input.addEventListener('input', function() {
+             const row = input.closest('tr');
+             if (row) calculatePreciseTotal(row);
+         });
+         
+         input.addEventListener('change', function() {
+             const row = input.closest('tr');
+             if (row) calculatePreciseTotal(row);
+         });
+     });
+
+     // إضافة مستمعي أحداث لأسفلت طبقة أولى
+     const areaInputs = document.querySelectorAll(`
+         [name="open_excavation[first_asphalt][length]"],
+         [name="open_excavation[first_asphalt][price]"]
+     `);
+
+     if (areaInputs.length === 0) {
+         console.log('لم يتم العثور على حقول أسفلت طبقة أولى في الصفحة');
+     } else {
+         console.log(`تم العثور على ${areaInputs.length} حقل لأسفلت طبقة أولى`);
+     }
+
+     areaInputs.forEach(input => {
+         input.addEventListener('input', function() {
+             const row = input.closest('tr');
+             if (row) calculateAreaTotal(row);
+         });
+         
+         input.addEventListener('change', function() {
+             const row = input.closest('tr');
+             if (row) calculateAreaTotal(row);
+         });
+     });
+
+     // إضافة مستمعي أحداث لعناصر التمديد الكهربائية
+     const electricalInputs = document.querySelectorAll(`
+         [name*="electrical_items"][name*="[meters]"],
+         [name*="electrical_items"][name*="[price]"]
+     `);
+
+     if (electricalInputs.length === 0) {
+         console.log('لم يتم العثور على حقول التمديد الكهربائية في الصفحة');
+     } else {
+         console.log(`تم العثور على ${electricalInputs.length} حقل للتمديد الكهربائية`);
+     }
+
+     electricalInputs.forEach(input => {
+         input.addEventListener('input', function() {
+             const row = input.closest('tr');
+             if (row) calculateElectricalTotal(row);
+         });
+         
+         input.addEventListener('change', function() {
+             const row = input.closest('tr');
+             if (row) calculateElectricalTotal(row);
+         });
+     });
 }
 
 /**
@@ -311,6 +618,7 @@ async function loadSavedDailyWork() {
             // عرض البيانات في جدول الملخص
             displaySavedData(result.data);
             console.log(`تم تحميل ${result.data.length} عنصر من البيانات المحفوظة`);
+            console.log('البيانات المحملة:', result.data);
         } else {
             console.log('لا توجد بيانات محفوظة');
         }
@@ -341,8 +649,11 @@ function displaySavedData(savedData) {
                     </div>
                 </td>
             </tr>`;
+        console.log('لا توجد بيانات محفوظة للعرض');
         return;
     }
+
+    console.log(`عرض ${savedData.length} عنصر من البيانات المحفوظة`);
 
     // إضافة البيانات للجدول
     savedData.forEach((item, index) => {
@@ -368,7 +679,7 @@ function displaySavedData(savedData) {
         }
 
         // تحديد محتوى الخلايا بناءً على نوع الحفر
-        let lengthDisplay, priceDisplay;
+        let lengthDisplay, badgeClass;
         if (item.is_open_excavation) {
             lengthDisplay = `
                 <div>الطول: ${parseFloat(item.length || 0).toFixed(2)} م</div>
@@ -376,14 +687,25 @@ function displaySavedData(savedData) {
                 <div>العمق: ${parseFloat(item.depth || 0).toFixed(2)} م</div>
                 <div class="mt-1 fw-bold">الحجم: ${parseFloat(item.volume || 0).toFixed(2)} م³</div>
             `;
+            badgeClass = 'bg-warning text-dark';
+        } else if (item.is_precise_excavation) {
+            lengthDisplay = `${parseFloat(item.length || 0).toFixed(2)} م`;
+            badgeClass = 'bg-purple text-white';
+        } else if (item.is_area_excavation) {
+            lengthDisplay = `${parseFloat(item.length || 0).toFixed(2)} م`;
+            badgeClass = 'bg-success text-white';
+        } else if (item.is_electrical_item) {
+            lengthDisplay = `${parseFloat(item.length || 0).toFixed(2)} م`;
+            badgeClass = 'bg-primary text-white';
         } else {
             lengthDisplay = `${parseFloat(item.length || 0).toFixed(2)} م`;
+            badgeClass = 'bg-info';
         }
         
         row.innerHTML = `
             <td class="text-center">${index + 1}</td>
             <td class="text-center">
-                <span class="badge ${item.is_open_excavation ? 'bg-warning text-dark' : 'bg-info'}">${item.excavation_type || 'غير محدد'}</span>
+                <span class="badge ${badgeClass}">${item.excavation_type || 'غير محدد'}</span>
             </td>
             <td class="text-center">
                 <span class="badge bg-secondary">${item.cable_name || 'غير محدد'}</span>
@@ -477,7 +799,9 @@ function collectTodayWorkData() {
             const volume = parseFloat(volumeOutput.value) || 0;
             const total = parseFloat(totalOutput.value) || 0;
 
-            if (length > 0 && width > 0 && depth > 0) {
+            // إضافة شرط أكثر مرونة للحفظ
+            if ((length > 0 && width > 0 && depth > 0) || (volume > 0 && price > 0) || total > 0) {
+                console.log(`إضافة بيانات الحفر المفتوح: ${typeName} - الطول=${length}, العرض=${width}, العمق=${depth}, الحجم=${volume}, السعر=${price}, الإجمالي=${total}`);
                 todayWork.push({
                     excavation_type: typeName,
                     cable_name: 'حفر مفتوح',
@@ -491,6 +815,106 @@ function collectTodayWorkData() {
                     work_time: currentTime,
                     is_open_excavation: true
                 });
+            } else {
+                console.log(`تخطي ${typeName} - لا توجد بيانات صالحة للحفظ`);
+            }
+        }
+    });
+
+    // جمع بيانات الحفريات الدقيقة
+    const preciseTypes = {
+        'medium': 'حفريات دقيقة - متوسط (20×80)',
+        'low': 'حفريات دقيقة - منخفض (20×56)'
+    };
+
+    Object.entries(preciseTypes).forEach(([type, typeName]) => {
+        const lengthInput = document.querySelector(`[name="excavation_precise[${type}]"]`);
+        const priceInput = document.querySelector(`[name="excavation_precise[${type}_price]"]`);
+        const totalOutput = document.querySelector(`#final_total_precise_${type}`);
+
+        if (lengthInput && priceInput && totalOutput) {
+            const length = parseFloat(lengthInput.value) || 0;
+            const price = parseFloat(priceInput.value) || 0;
+            const total = parseFloat(totalOutput.value) || 0;
+
+            if (length > 0 || price > 0 || total > 0) {
+                console.log(`إضافة بيانات الحفريات الدقيقة: ${typeName} - الطول=${length}, السعر=${price}, الإجمالي=${total}`);
+                todayWork.push({
+                    excavation_type: typeName,
+                    cable_name: 'حفريات دقيقة',
+                    length: length,
+                    price: price,
+                    total: total,
+                    work_date: today,
+                    work_time: currentTime,
+                    is_precise_excavation: true
+                });
+            } else {
+                console.log(`تخطي ${typeName} - لا توجد بيانات صالحة للحفظ`);
+            }
+        }
+    });
+
+    // جمع بيانات أسفلت طبقة أولى
+    const lengthInput = document.querySelector('[name="open_excavation[first_asphalt][length]"]');
+    const priceInput = document.querySelector('[name="open_excavation[first_asphalt][price]"]');
+    const totalOutput = document.querySelector('#final_total_first_asphalt');
+
+    if (lengthInput && priceInput && totalOutput) {
+        const length = parseFloat(lengthInput.value) || 0;
+        const price = parseFloat(priceInput.value) || 0;
+        const total = parseFloat(totalOutput.value) || 0;
+
+        if (length > 0 || price > 0 || total > 0) {
+            console.log(`إضافة بيانات أسفلت طبقة أولى: الطول=${length}, السعر=${price}, الإجمالي=${total}`);
+            todayWork.push({
+                excavation_type: 'أسفلت طبقة أولى',
+                cable_name: 'أسفلت طبقة أولى',
+                length: length,
+                price: price,
+                total: total,
+                work_date: today,
+                work_time: currentTime,
+                is_area_excavation: true
+            });
+        } else {
+            console.log('تخطي أسفلت طبقة أولى - لا توجد بيانات صالحة للحفظ');
+        }
+    }
+
+    // جمع بيانات عناصر التمديد الكهربائية
+    const electricalTypes = {
+        'cable_4x70_low': 'تمديد كيبل 4x70 منخفض',
+        'cable_4x185_low': 'تمديد كيبل 4x185 منخفض',
+        'cable_4x300_low': 'تمديد كيبل 4x300 منخفض',
+        'cable_3x500_med': 'تمديد كيبل 3x500 متوسط',
+        'cable_3x400_med': 'تمديد كيبل 3x400 متوسط'
+    };
+
+    Object.entries(electricalTypes).forEach(([type, typeName]) => {
+        const lengthInput = document.querySelector(`[name="electrical_items[${type}][meters]"]`);
+        const priceInput = document.querySelector(`[name="electrical_items[${type}][price]"]`);
+        const totalOutput = document.querySelector(`#final_total_${type}`);
+
+        if (lengthInput && priceInput && totalOutput) {
+            const length = parseFloat(lengthInput.value) || 0;
+            const price = parseFloat(priceInput.value) || 0;
+            const total = parseFloat(totalOutput.value) || 0;
+
+            if (length > 0 || price > 0 || total > 0) {
+                console.log(`إضافة بيانات التمديد: ${typeName} - الطول=${length}, السعر=${price}, الإجمالي=${total}`);
+                todayWork.push({
+                    excavation_type: typeName,
+                    cable_name: 'تمديد كهربائي',
+                    length: length,
+                    price: price,
+                    total: total,
+                    work_date: today,
+                    work_time: currentTime,
+                    is_electrical_item: true
+                });
+            } else {
+                console.log(`تخطي ${typeName} - لا توجد بيانات صالحة للحفظ`);
             }
         }
     });
@@ -504,6 +928,9 @@ function collectTodayWorkData() {
 async function saveTodayWork() {
     try {
         const workData = collectTodayWorkData();
+        
+        console.log(`محاولة حفظ ${workData.length} عنصر من البيانات`);
+        console.log('البيانات المراد حفظها:', workData);
         
         if (workData.length === 0) {
             alert('لا توجد بيانات للحفظ. يرجى إدخال الطول أو السعر لأحد الكابلات.');
@@ -573,15 +1000,39 @@ function updateDailySummaryTable(workData) {
         const currentRowCount = tbody.querySelectorAll('tr').length;
         const rowNumber = currentRowCount > 0 && tbody.querySelector('#no-data-row') ? 1 : currentRowCount + 1;
         
+        // تحديد محتوى الخلايا بناءً على نوع الحفر
+        let lengthDisplay, badgeClass;
+        if (item.is_open_excavation) {
+            lengthDisplay = `
+                <div>الطول: ${parseFloat(item.length || 0).toFixed(2)} م</div>
+                <div>العرض: ${parseFloat(item.width || 0).toFixed(2)} م</div>
+                <div>العمق: ${parseFloat(item.depth || 0).toFixed(2)} م</div>
+                <div class="mt-1 fw-bold">الحجم: ${parseFloat(item.volume || 0).toFixed(2)} م³</div>
+            `;
+            badgeClass = 'bg-warning text-dark';
+        } else if (item.is_precise_excavation) {
+            lengthDisplay = `${parseFloat(item.length || 0).toFixed(2)} م`;
+            badgeClass = 'bg-purple text-white';
+        } else if (item.is_area_excavation) {
+            lengthDisplay = `${parseFloat(item.length || 0).toFixed(2)} م`;
+            badgeClass = 'bg-success text-white';
+        } else if (item.is_electrical_item) {
+            lengthDisplay = `${parseFloat(item.length || 0).toFixed(2)} م`;
+            badgeClass = 'bg-primary text-white';
+        } else {
+            lengthDisplay = `${parseFloat(item.length || 0).toFixed(2)} م`;
+            badgeClass = 'bg-info';
+        }
+
         row.innerHTML = `
             <td class="text-center">${rowNumber + index}</td>
             <td class="text-center">
-                <span class="badge bg-info">${item.excavation_type}</span>
+                <span class="badge ${badgeClass}">${item.excavation_type}</span>
             </td>
             <td class="text-center">
                 <span class="badge bg-secondary">${item.cable_name}</span>
             </td>
-            <td class="text-center">${item.length.toFixed(2)} م</td>
+            <td class="text-center">${lengthDisplay}</td>
             <td class="text-center">${item.price.toFixed(2)} ريال</td>
             <td class="text-center">${item.total.toFixed(2)} ريال</td>
             <td class="text-center">
@@ -624,11 +1075,15 @@ function getExcavationTypeDisplay(type) {
  */
 function getExcavationTypeBadgeClass(excavationType) {
     if (excavationType.includes('دقيقة')) {
-        return 'bg-info text-white';
-    } else if (excavationType.includes('طبقة أولى')) {
         return 'bg-purple text-white';
+    } else if (excavationType.includes('طبقة أولى')) {
+        return 'bg-success text-white';
+    } else if (excavationType.includes('تمديد')) {
+        return 'bg-primary text-white';
     } else if (excavationType.includes('كشط')) {
         return 'bg-orange text-white';
+    } else if (excavationType.includes('حفر مفتوح')) {
+        return 'bg-warning text-dark';
     } else if (excavationType.includes('ترابية')) {
         return excavationType.includes('مسفلتة') ? 'bg-warning text-dark' : 'bg-success text-white';
     } else if (excavationType.includes('صخرية')) {
@@ -640,7 +1095,7 @@ function getExcavationTypeBadgeClass(excavationType) {
 // تهيئة الصفحة
 document.addEventListener('DOMContentLoaded', () => {
     setupCalculations();
-    setupOpenExcavationListeners(); // Add this line to setup listeners for open excavations
+    setupOpenExcavationListeners();
     
     // تحميل البيانات المحفوظة عند تحميل الصفحة
     loadSavedDailyWork();
@@ -653,6 +1108,52 @@ document.addEventListener('DOMContentLoaded', () => {
             saveTodayWork();
         });
     }
+    
+    // تحديث الحسابات عند تحميل الصفحة لأول مرة
+    setTimeout(() => {
+        console.log('تحديث جميع الحسابات عند تحميل الصفحة...');
+        
+        // تحديث حسابات الحفر المفتوح
+        calculateOpenExcavation();
+        
+        // تحديث حسابات الحفريات الدقيقة
+        document.querySelectorAll('.calc-precise-length').forEach(input => {
+            const row = input.closest('tr');
+            if (row) calculatePreciseTotal(row);
+        });
+        
+        // تحديث حسابات أسفلت طبقة أولى
+        document.querySelectorAll('.calc-area-length').forEach(input => {
+            const row = input.closest('tr');
+            if (row) calculateAreaTotal(row);
+        });
+        
+        // تحديث حسابات الحفريات العادية
+        document.querySelectorAll('.calc-length').forEach(input => {
+            const row = input.closest('tr');
+            if (row) calculateRowTotal(row);
+        });
+        
+        // تحديث حسابات التمديد الكهربائية
+        document.querySelectorAll('.calc-electrical-length').forEach(input => {
+            const row = input.closest('tr');
+            if (row) calculateElectricalTotal(row);
+        });
+        
+        updateTotalSummary();
+        
+        // طباعة إحصائيات التحديث
+        const counts = {
+            openExcavation: document.querySelectorAll('[name^="excavation_"][name$="[length]"]').length,
+            preciseExcavation: document.querySelectorAll('.calc-precise-length').length,
+            areaExcavation: document.querySelectorAll('.calc-area-length').length,
+            normalExcavation: document.querySelectorAll('.calc-length').length,
+            electricalItems: document.querySelectorAll('.calc-electrical-length').length
+        };
+        
+        console.log('إحصائيات الحقول:', counts);
+        console.log('تم تحديث جميع الحسابات بنجاح');
+    }, 100);
 }); 
 
 // إضافة مستمع أحداث لأزرار الحذف
