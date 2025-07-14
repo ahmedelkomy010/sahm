@@ -654,7 +654,7 @@
                             <div class="col-md-6 mb-3">
                                 <label for="check_out_file" class="form-label">
                                     <i class="fas fa-check-circle me-2 text-success"></i>
-                                     UPLUAD FILE
+                                     UPLUOD
                                 </label>
                                 <input type="file" class="form-control @error('check_out_file') is-invalid @enderror" 
                                        id="check_out_file" name="check_out_file" 

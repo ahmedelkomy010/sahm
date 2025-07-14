@@ -627,13 +627,11 @@ class WorkOrderController extends Controller
     {
         try {
             $request->validate([
-                'quantity' => 'required|numeric|min:0',
-                'executed_quantity' => 'nullable|numeric|min:0',
+                'executed_quantity' => 'required|numeric|min:0',
             ]);
 
             $workOrderItem->update([
-                'quantity' => $request->quantity,
-                'executed_quantity' => $request->executed_quantity ?? 0,
+                'executed_quantity' => $request->executed_quantity,
             ]);
 
             return response()->json([

@@ -335,10 +335,9 @@
                                                             </div>
                                                         </div>
                                                     @else
-                                                        <div class="text-center py-3">
-                                                            <i class="fas fa-file-excel fa-2x text-muted mb-2"></i>
-                                                            <br>
-                                                            <span class="text-muted">لا يوجد مرفق اختبارات ما قبل التشغيل 211</span>
+                                                        <div class="text-center py-2
+                                                            
+                                                            <span class="text-muted">لا يوجد مرفق</span>
                                                         </div>
                                                     @endif
                                                 </td>

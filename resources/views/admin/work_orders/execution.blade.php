@@ -377,7 +377,7 @@
                                             <td class="text-center">
                                                 <input type="number" step="0.01" value="{{ $plannedQuantity }}" 
                                                        class="form-control form-control-sm text-center planned-quantity" 
-                                                       data-id="{{ $workOrderItem->id }}" style="width: 80px;">
+                                                       data-id="{{ $workOrderItem->id }}" style="width: 80px; background-color: #f8f9fa;" readonly>
                                             </td>
                                             <td class="text-center">
                                                 <span class="text-primary fw-bold planned-amount">{{ number_format($plannedAmount, 2) }} ريال</span>
@@ -982,21 +982,25 @@ function updateWorkItem(input) {
     // إرسال التحديث للخادم
     const formData = new FormData();
     formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
-    formData.append('quantity', plannedQuantity);
     formData.append('executed_quantity', actualQuantity);
     
-    fetch(`{{ url('admin/work-orders/update-work-item') }}/${itemId}`, {
+    fetch(`/admin/work-orders/update-work-item/${itemId}`, {
         method: 'POST',
         body: formData
     })
     .then(response => response.json())
     .then(data => {
-        if (!data.success) {
+        if (data.success) {
+            // إظهار رسالة نجاح
+            toastr.success('تم تحديث الكمية المنفذة بنجاح');
+        } else {
             console.error('Failed to update work item');
+            toastr.error('حدث خطأ أثناء تحديث الكمية المنفذة');
         }
     })
     .catch(error => {
         console.error('Error updating work item:', error);
+        toastr.error('حدث خطأ أثناء تحديث الكمية المنفذة');
     });
 }
 
