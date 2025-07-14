@@ -2377,7 +2377,7 @@
             console.log('Initializing daily excavation system...');
             
             // تحميل البيانات المحفوظة
-            loadSavedData();
+            loadSavedDailyWork();
             
             // إضافة مستمعي الأحداث
             const saveButton = document.getElementById('save-daily-summary-btn');

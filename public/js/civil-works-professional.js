@@ -8,7 +8,10 @@ const EXCAVATION_TYPES = {
     UNSURFACED_SOIL: 'unsurfaced_soil',
     SURFACED_SOIL: 'surfaced_soil',
     SURFACED_ROCK: 'surfaced_rock',
-    UNSURFACED_ROCK: 'unsurfaced_rock'
+    UNSURFACED_ROCK: 'unsurfaced_rock',
+    PRECISE: 'precise',                   // حفريات دقيقة
+    FIRST_LAYER: 'first_layer',           // أسفلت طبقة أولى
+    SCRAPE_RESURFACE: 'scrape_resurface'  // كشط واعادة السفلتة
 };
 
 // تعريف أنواع الحفريات المفتوحة
@@ -112,7 +115,26 @@ function calculateRowTotal(row) {
     if (lengthInput && priceInput && totalInput) {
         const length = parseFloat(lengthInput.value) || 0;
         const price = parseFloat(priceInput.value) || 0;
-        const total = length * price;
+        let total = length * price;
+        
+        // تطبيق معاملات خاصة للأنواع الجديدة
+        const excavationType = row.querySelector('[data-table]')?.getAttribute('data-table');
+        if (excavationType) {
+            switch (excavationType) {
+                case EXCAVATION_TYPES.PRECISE:
+                    // حفريات دقيقة: سعر مضاعف × 1.5
+                    total = length * (price * 1.5);
+                    break;
+                case EXCAVATION_TYPES.FIRST_LAYER:
+                    // أسفلت طبقة أولى: السعر × الطول × العرض القياسي (0.5 متر)
+                    total = length * price * 0.5;
+                    break;
+                case EXCAVATION_TYPES.SCRAPE_RESURFACE:
+                    // كشط واعادة السفلتة: السعر × الطول × العرض القياسي (1 متر)
+                    total = length * price * 1.0;
+                    break;
+            }
+        }
         
         totalInput.value = total.toFixed(2);
         updateTotalSummary();
@@ -153,6 +175,43 @@ function calculateVolumeTotal(row) {
 }
 
 /**
+ * حساب إجمالي الحفر المفتوح
+ */
+function calculateOpenExcavation() {
+    // أنواع الحفر المفتوح
+    const openTypes = [
+        'unsurfaced_soil_open',
+        'surfaced_soil_open',
+        'surfaced_rock_open',
+        'unsurfaced_rock_open'
+    ];
+
+    openTypes.forEach(type => {
+        const lengthInput = document.querySelector(`[name="excavation_${type}[length]"]`);
+        const widthInput = document.querySelector(`[name="excavation_${type}[width]"]`);
+        const depthInput = document.querySelector(`[name="excavation_${type}[depth]"]`);
+        const priceInput = document.querySelector(`[name="excavation_${type}_price"]`);
+        const volumeOutput = document.getElementById(`total_${type}`);
+        const totalOutput = document.getElementById(`final_total_${type}`);
+
+        if (lengthInput && widthInput && depthInput && priceInput && volumeOutput && totalOutput) {
+            const length = parseFloat(lengthInput.value) || 0;
+            const width = parseFloat(widthInput.value) || 0;
+            const depth = parseFloat(depthInput.value) || 0;
+            const price = parseFloat(priceInput.value) || 0;
+
+            const volume = length * width * depth;
+            const total = volume * price;
+
+            volumeOutput.value = volume.toFixed(2);
+            totalOutput.value = total.toFixed(2);
+        }
+    });
+
+    updateTotalSummary();
+}
+
+/**
  * تحديث المجموع الكلي
  */
 function updateTotalSummary() {
@@ -160,11 +219,29 @@ function updateTotalSummary() {
     
     // جمع إجماليات الحفريات العادية
     document.querySelectorAll('.total-calc').forEach(input => {
-        grandTotal += parseFloat(input.value) || 0;
+        const row = input.closest('tr');
+        const excavationType = row.querySelector('[data-table]')?.getAttribute('data-table');
+        let total = parseFloat(input.value) || 0;
+        
+        // إضافة معاملات إضافية للأنواع الجديدة في المجموع الكلي
+        if (excavationType) {
+            switch (excavationType) {
+                case EXCAVATION_TYPES.PRECISE:
+                case EXCAVATION_TYPES.FIRST_LAYER:
+                case EXCAVATION_TYPES.SCRAPE_RESURFACE:
+                    // تم تطبيق المعاملات في حساب الصف
+                    break;
+                default:
+                    // الحفريات العادية
+                    break;
+            }
+        }
+        
+        grandTotal += total;
     });
     
     // جمع إجماليات الحفر المفتوح
-    document.querySelectorAll('.volume-total-calc').forEach(input => {
+    document.querySelectorAll('[id^="final_total_"][id$="_open"]').forEach(input => {
         grandTotal += parseFloat(input.value) || 0;
     });
     
@@ -173,6 +250,26 @@ function updateTotalSummary() {
     if (grandTotalElement) {
         grandTotalElement.value = grandTotal.toFixed(2);
     }
+    
+    // تحديث الإحصائيات
+    updateStatistics();
+}
+
+/**
+ * إعداد مستمعي الأحداث للحفر المفتوح
+ */
+function setupOpenExcavationListeners() {
+    // إضافة مستمعي الأحداث لحقول الحفر المفتوح
+    const openExcavationInputs = document.querySelectorAll(`
+        [name^="excavation_"][name$="[length]"],
+        [name^="excavation_"][name$="[width]"],
+        [name^="excavation_"][name$="[depth]"],
+        [name$="_open_price"]
+    `);
+
+    openExcavationInputs.forEach(input => {
+        input.addEventListener('input', calculateOpenExcavation);
+    });
 }
 
 /**
@@ -269,16 +366,29 @@ function displaySavedData(savedData) {
                 console.error('خطأ في تنسيق التاريخ:', e);
             }
         }
+
+        // تحديد محتوى الخلايا بناءً على نوع الحفر
+        let lengthDisplay, priceDisplay;
+        if (item.is_open_excavation) {
+            lengthDisplay = `
+                <div>الطول: ${parseFloat(item.length || 0).toFixed(2)} م</div>
+                <div>العرض: ${parseFloat(item.width || 0).toFixed(2)} م</div>
+                <div>العمق: ${parseFloat(item.depth || 0).toFixed(2)} م</div>
+                <div class="mt-1 fw-bold">الحجم: ${parseFloat(item.volume || 0).toFixed(2)} م³</div>
+            `;
+        } else {
+            lengthDisplay = `${parseFloat(item.length || 0).toFixed(2)} م`;
+        }
         
         row.innerHTML = `
             <td class="text-center">${index + 1}</td>
             <td class="text-center">
-                <span class="badge bg-info">${item.excavation_type || 'غير محدد'}</span>
+                <span class="badge ${item.is_open_excavation ? 'bg-warning text-dark' : 'bg-info'}">${item.excavation_type || 'غير محدد'}</span>
             </td>
             <td class="text-center">
                 <span class="badge bg-secondary">${item.cable_name || 'غير محدد'}</span>
             </td>
-            <td class="text-center">${parseFloat(item.length || 0).toFixed(2)} م</td>
+            <td class="text-center">${lengthDisplay}</td>
             <td class="text-center">${parseFloat(item.price || 0).toFixed(2)} ريال</td>
             <td class="text-center">${parseFloat(item.total || 0).toFixed(2)} ريال</td>
             <td class="text-center">
@@ -306,9 +416,13 @@ function collectTodayWorkData() {
         'unsurfaced_soil': 'حفرية ترابية غير مسفلتة',
         'surfaced_soil': 'حفرية ترابية مسفلتة', 
         'surfaced_rock': 'حفرية صخرية مسفلتة',
-        'unsurfaced_rock': 'حفرية صخرية غير مسفلتة'
+        'unsurfaced_rock': 'حفرية صخرية غير مسفلتة',
+        'precise': 'حفريات دقيقة',
+        'first_layer': 'أسفلت طبقة أولى',
+        'scrape_resurface': 'كشط واعادة السفلتة'
     };
 
+    // جمع بيانات الحفريات العادية
     Object.entries(excavationTypes).forEach(([type, typeName]) => {
         document.querySelectorAll(`[data-table="${type}"]`).forEach((input, index) => {
             if (input.classList.contains('calc-length')) {
@@ -322,7 +436,6 @@ function collectTodayWorkData() {
                 const price = parseFloat(priceInput?.value) || 0;
                 const total = parseFloat(totalInput?.value) || 0;
                 
-                // حفظ فقط البيانات التي تم إدخالها (الطول أو السعر أكبر من صفر)
                 if (length > 0 || price > 0) {
                     const cableName = cableNameCell ? cableNameCell.textContent.trim().split(' ')[0] + ' ' + cableNameCell.textContent.trim().split(' ')[1] : `كابل ${index + 1}`;
                     
@@ -338,6 +451,48 @@ function collectTodayWorkData() {
                 }
             }
         });
+    });
+
+    // جمع بيانات الحفر المفتوح
+    const openExcavationTypes = {
+        'unsurfaced_soil_open': 'حفر مفتوح - ترابية غير مسفلتة',
+        'surfaced_soil_open': 'حفر مفتوح - ترابية مسفلتة',
+        'surfaced_rock_open': 'حفر مفتوح - صخرية مسفلتة',
+        'unsurfaced_rock_open': 'حفر مفتوح - صخرية غير مسفلتة'
+    };
+
+    Object.entries(openExcavationTypes).forEach(([type, typeName]) => {
+        const lengthInput = document.querySelector(`[name="excavation_${type}[length]"]`);
+        const widthInput = document.querySelector(`[name="excavation_${type}[width]"]`);
+        const depthInput = document.querySelector(`[name="excavation_${type}[depth]"]`);
+        const priceInput = document.querySelector(`[name="excavation_${type}_price"]`);
+        const volumeOutput = document.getElementById(`total_${type}`);
+        const totalOutput = document.getElementById(`final_total_${type}`);
+
+        if (lengthInput && widthInput && depthInput && priceInput && volumeOutput && totalOutput) {
+            const length = parseFloat(lengthInput.value) || 0;
+            const width = parseFloat(widthInput.value) || 0;
+            const depth = parseFloat(depthInput.value) || 0;
+            const price = parseFloat(priceInput.value) || 0;
+            const volume = parseFloat(volumeOutput.value) || 0;
+            const total = parseFloat(totalOutput.value) || 0;
+
+            if (length > 0 && width > 0 && depth > 0) {
+                todayWork.push({
+                    excavation_type: typeName,
+                    cable_name: 'حفر مفتوح',
+                    length: length,
+                    width: width,
+                    depth: depth,
+                    volume: volume,
+                    price: price,
+                    total: total,
+                    work_date: today,
+                    work_time: currentTime,
+                    is_open_excavation: true
+                });
+            }
+        }
     });
 
     return todayWork;
@@ -453,6 +608,9 @@ function getExcavationTypeDisplay(type) {
         'surfaced_soil': 'حفرية ترابية مسفلتة',
         'surfaced_rock': 'حفرية صخرية مسفلتة',
         'unsurfaced_rock': 'حفرية صخرية غير مسفلتة',
+        'precise': 'حفريات دقيقة',
+        'first_layer': 'أسفلت طبقة أولى',
+        'scrape_resurface': 'كشط واعادة السفلتة',
         'unsurfaced_soil_open': 'حفرية ترابية غير مسفلتة',
         'surfaced_soil_open': 'حفرية ترابية مسفلتة',
         'surfaced_rock_open': 'حفرية صخرية مسفلتة',
@@ -465,7 +623,13 @@ function getExcavationTypeDisplay(type) {
  * تحديد لون الشارة حسب نوع الحفرية
  */
 function getExcavationTypeBadgeClass(excavationType) {
-    if (excavationType.includes('ترابية')) {
+    if (excavationType.includes('دقيقة')) {
+        return 'bg-info text-white';
+    } else if (excavationType.includes('طبقة أولى')) {
+        return 'bg-purple text-white';
+    } else if (excavationType.includes('كشط')) {
+        return 'bg-orange text-white';
+    } else if (excavationType.includes('ترابية')) {
         return excavationType.includes('مسفلتة') ? 'bg-warning text-dark' : 'bg-success text-white';
     } else if (excavationType.includes('صخرية')) {
         return excavationType.includes('مسفلتة') ? 'bg-danger text-white' : 'bg-primary text-white';
@@ -476,6 +640,7 @@ function getExcavationTypeBadgeClass(excavationType) {
 // تهيئة الصفحة
 document.addEventListener('DOMContentLoaded', () => {
     setupCalculations();
+    setupOpenExcavationListeners(); // Add this line to setup listeners for open excavations
     
     // تحميل البيانات المحفوظة عند تحميل الصفحة
     loadSavedDailyWork();
