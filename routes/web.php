@@ -49,6 +49,19 @@ Route::get('/test-admin', function () {
     return response()->json($data);
 })->middleware('auth');
 
+// مسار لجعل المستخدم مشرفاً
+Route::get('/make-me-admin', function () {
+    if (!auth()->check()) {
+        return redirect()->route('login');
+    }
+    
+    $user = auth()->user();
+    $user->is_admin = 1;
+    $user->save();
+    
+    return redirect()->back()->with('success', 'تم تعيينك كمشرف بنجاح!');
+})->middleware('auth');
+
 // Admin Routes
 Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');

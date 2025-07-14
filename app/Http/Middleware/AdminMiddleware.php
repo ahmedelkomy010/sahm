@@ -15,12 +15,25 @@ class AdminMiddleware
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
-    public function handle(Request $request, Closure $next): Response
+    public function handle(Request $request, Closure $next, $permission = null): Response
     {
-        if (!Auth::check() || Auth::user()->is_admin != 1) {
-            return redirect()->route('dashboard')->with('error', 'لا تملك صلاحية الوصول لهذه الصفحة.');
+        if (!Auth::check()) {
+            return redirect()->route('login');
         }
 
-        return $next($request);
+        $user = Auth::user();
+
+        // إذا كان المستخدم مشرفاً، السماح له بالوصول مباشرة
+        if ($user->is_admin == 1) {
+            return $next($request);
+        }
+
+        // إذا تم تحديد صلاحية معينة، تحقق منها
+        if ($permission && $user->hasPermission($permission)) {
+            return $next($request);
+        }
+
+        // إذا لم يكن مشرفاً ولا يملك الصلاحية المطلوبة
+        return redirect()->route('dashboard')->with('error', 'لا تملك صلاحية الوصول لهذه الصفحة.');
     }
 } 

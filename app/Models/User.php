@@ -13,6 +13,19 @@ class User extends Authenticatable
     use HasFactory, Notifiable;
 
     /**
+     * الصلاحيات المتاحة في النظام
+     */
+    const PERMISSIONS = [
+        'manage_users' => 'إدارة المستخدمين',
+        'manage_work_orders' => 'إدارة أوامر العمل',
+        'manage_materials' => 'إدارة المواد',
+        'manage_licenses' => 'إدارة التراخيص',
+        'manage_violations' => 'إدارة المخالفات',
+        'view_reports' => 'عرض التقارير',
+        'manage_settings' => 'إدارة إعدادات النظام',
+    ];
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var array<int, string>
