@@ -192,6 +192,18 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->timestamps();
         });
+
+        // Work order installations table
+        Schema::create('work_order_installations', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('work_order_id')->constrained()->onDelete('cascade');
+            $table->string('installation_type');
+            $table->decimal('price', 10, 2);
+            $table->decimal('quantity', 10, 2);
+            $table->decimal('total', 10, 2);
+            $table->date('installation_date')->nullable();
+            $table->timestamps();
+        });
     }
 
     public function down()
@@ -205,5 +217,6 @@ return new class extends Migration
         Schema::dropIfExists('work_items');
         Schema::dropIfExists('work_orders');
         Schema::dropIfExists('reference_materials');
+        Schema::dropIfExists('work_order_installations');
     }
 }; 

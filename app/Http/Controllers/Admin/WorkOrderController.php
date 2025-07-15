@@ -48,10 +48,14 @@ class WorkOrderController extends Controller
             DB::beginTransaction();
 
             // Get the installations data from the request
-            $installationsData = $request->all();
+            $installationsData = $request->input('installations', []);
+            $installationDate = $request->input('installation_date');
             
             // Log the received data for debugging
-            Log::info('Received installations data:', $installationsData);
+            Log::info('Received installations data:', [
+                'data' => $installationsData,
+                'date' => $installationDate
+            ]);
 
             // Check if we have valid data
             $hasValidData = false;
@@ -72,22 +76,28 @@ class WorkOrderController extends Controller
                     $processedData[$type] = [
                         'price' => $price,
                         'quantity' => $quantity,
-                        'total' => $total
+                        'total' => $total,
+                        'installation_date' => $installationDate
                     ];
                 }
             }
 
             if (!$hasValidData) {
                 return response()->json([
-                    'status' => 'error',
+                    'success' => false,
                     'message' => 'لا توجد بيانات صحيحة للحفظ'
                 ], 400);
             }
 
-            // Try to save to work_order_installations table, if it doesn't exist, save to work_orders table
+            // Try to save to work_order_installations table
             try {
-                // Delete existing installations for this work order
-                DB::table('work_order_installations')->where('work_order_id', $workOrder->id)->delete();
+                // Delete existing installations for this work order and date
+                if ($installationDate) {
+                    DB::table('work_order_installations')
+                        ->where('work_order_id', $workOrder->id)
+                        ->where('installation_date', $installationDate)
+                        ->delete();
+                }
 
                 // Save new installations
                 foreach ($processedData as $type => $data) {
@@ -97,6 +107,7 @@ class WorkOrderController extends Controller
                         'price' => $data['price'],
                         'quantity' => $data['quantity'],
                         'total' => $data['total'],
+                        'installation_date' => $data['installation_date'],
                         'created_at' => now(),
                         'updated_at' => now()
                     ]);
@@ -105,20 +116,14 @@ class WorkOrderController extends Controller
                 Log::info("Saved installations to work_order_installations table");
                 
             } catch (\Exception $e) {
-                Log::warning("work_order_installations table not found, saving to work_orders table: " . $e->getMessage());
-                
-                // Save to work_orders table as JSON
-                $workOrder->update([
-                    'installations_data' => json_encode($processedData)
-                ]);
-                
-                Log::info("Saved installations to work_orders table as JSON");
+                Log::warning("Error saving to work_order_installations table: " . $e->getMessage());
+                throw $e;
             }
 
             DB::commit();
 
             return response()->json([
-                'status' => 'success',
+                'success' => true,
                 'message' => 'تم حفظ التركيبات بنجاح'
             ]);
 
@@ -129,7 +134,7 @@ class WorkOrderController extends Controller
             Log::error('Request data: ' . json_encode($request->all()));
             
             return response()->json([
-                'status' => 'error',
+                'success' => false,
                 'message' => 'حدث خطأ أثناء حفظ التركيبات: ' . $e->getMessage()
             ], 500);
         }
