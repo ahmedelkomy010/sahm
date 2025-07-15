@@ -353,7 +353,10 @@ class MaterialsController extends Controller
     public function getDescriptionByCode($code)
     {
         try {
-            $material = ReferenceMaterial::where('code', $code)->first();
+            $normalizedCode = trim(mb_strtolower($code));
+\Log::info('Searching for material code', ['code' => $normalizedCode]);
+$material = ReferenceMaterial::whereRaw('LOWER(TRIM(code)) = ?', [$normalizedCode])->first();
+\Log::info('Material search result', ['found' => (bool)$material, 'material' => $material]);
             
             if ($material) {
                 return response()->json([
@@ -364,7 +367,8 @@ class MaterialsController extends Controller
             
             return response()->json([
                 'success' => false,
-                'message' => 'لم يتم العثور على المادة'
+                'message' => 'لم يتم العثور على المادة',
+                'code' => $code
             ]);
         } catch (\Exception $e) {
             \Log::error('Error getting material description: ' . $e->getMessage());
@@ -474,12 +478,12 @@ class MaterialsController extends Controller
     public function uploadFiles(Request $request, WorkOrder $workOrder)
     {
         $request->validate([
-            'check_in_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
-            'check_out_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
-            'stock_in_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
-            'stock_out_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
-            'gate_pass_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
-            'ddo_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
+            'check_in_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx,xlsx,xls|max:10240',
+            'check_out_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx,xlsx,xls|max:10240',
+            'stock_in_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx,xlsx,xls|max:10240',
+            'stock_out_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx,xlsx,xls|max:10240',
+            'gate_pass_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx,xlsx,xls|max:10240',
+            'ddo_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx,xlsx,xls|max:10240',
         ]);
 
         try {
@@ -508,6 +512,32 @@ class MaterialsController extends Controller
             \Log::error('Error uploading material files: ' . $e->getMessage());
             return redirect()->back()
                 ->with('error', 'حدث خطأ أثناء رفع الملفات');
+        }
+    }
+
+    /**
+     * Import reference materials from Excel and save to DB
+     */
+    public function importReferenceMaterials(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:xlsx,xls,csv|max:10240'
+        ]);
+        try {
+            $import = new \App\Imports\ReferenceMaterialsImport();
+            \Maatwebsite\Excel\Facades\Excel::import($import, $request->file('file'));
+            $imported = $import->getImportedMaterials();
+            return response()->json([
+                'success' => true,
+                'imported_count' => count($imported),
+                'imported_materials' => $imported
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error importing reference materials: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء استيراد المواد: ' . $e->getMessage()
+            ], 500);
         }
     }
 

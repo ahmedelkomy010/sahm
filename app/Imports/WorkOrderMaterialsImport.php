@@ -112,7 +112,7 @@ class WorkOrderMaterialsImport implements ToModel, WithHeadingRow, WithValidatio
             }
 
             // تنظيف البيانات
-            $code = trim($code);
+            $code = trim(mb_strtolower($code));
             $description = trim($description);
 
             // إضافة المادة إلى قائمة المواد المستوردة - عمودين فقط
@@ -120,6 +120,13 @@ class WorkOrderMaterialsImport implements ToModel, WithHeadingRow, WithValidatio
                 'code' => $code,
                 'description' => $description,
             ];
+
+            // Save the material to the reference_materials table
+            \Log::info('Saving material', ['code' => $code, 'description' => $description]);
+            \App\Models\ReferenceMaterial::updateOrCreate(
+                ['code' => $code],
+                ['description' => $description]
+            );
 
             $this->processedCount++;
             return null;

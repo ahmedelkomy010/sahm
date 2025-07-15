@@ -100,9 +100,9 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::post('work-orders/import-materials', [WorkOrderController::class, 'importWorkOrderMaterials'])->name('work-orders.import-materials');
     Route::get('work-orders/download-materials-template', [WorkOrderController::class, 'downloadMaterialsTemplate'])->name('work-orders.download-materials-template');
         
-        // روتات الملفات المرفقة للمواد
-        Route::post('work-orders/{workOrder}/materials/upload-files', [MaterialsController::class, 'uploadFiles'])->name('work-orders.materials.upload-files');
-        Route::delete('work-orders/{workOrder}/materials/{material}/delete-file', [MaterialsController::class, 'deleteFile'])->name('work-orders.materials.delete-file');
+    // روتات الملفات المرفقة للمواد
+    Route::post('work-orders/{workOrder}/materials/upload-files', [MaterialsController::class, 'uploadFiles'])->name('work-orders.materials.upload-files');
+    Route::delete('work-orders/{workOrder}/materials/{material}/delete-file', [MaterialsController::class, 'deleteFile'])->name('work-orders.materials.delete-file');
     
     // وظائف أوامر العمل الأخرى
     Route::delete('work-orders/files/{id}', [WorkOrderController::class, 'deleteFile'])->name('work-orders.files.delete');

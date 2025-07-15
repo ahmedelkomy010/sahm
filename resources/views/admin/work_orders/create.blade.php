@@ -1445,6 +1445,7 @@ document.getElementById('materialsImportForm').addEventListener('submit', functi
     .then(response => {
         // التحقق من نجاح الاستجابة أولاً
         if (!response.ok) {
+            // console.error (response); // MWD32 // for debug
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         
@@ -1689,7 +1690,7 @@ function quickSearchMaterials(searchTerm) {
     `;
     
     // البحث في المواد المرجعية عبر API
-    fetch(`{{ route('admin.work-orders.search-materials') }}?search=${encodeURIComponent(searchTerm)}`)
+    fetch(`{{ route('admin.materials.description', ['code' => 'CODE_PLACEHOLDER']) }}`.replace('CODE_PLACEHOLDER', encodeURIComponent(searchTerm)))
         .then(response => response.json())
         .then(data => {
             if (data.success && data.data.length > 0) {
@@ -1780,7 +1781,7 @@ function searchMaterials() {
     if (descriptionSearch) searchParams.append('description', descriptionSearch);
     
     // البحث عبر API
-    fetch(`{{ route('admin.work-orders.search-materials') }}?${searchParams.toString()}`)
+    fetch(`{{ route('admin.materials.description', ['code' => ':code']) }}`.replace(':code', encodeURIComponent(codeSearch)))
         .then(response => response.json())
         .then(data => {
             if (data.success && data.data.length > 0) {

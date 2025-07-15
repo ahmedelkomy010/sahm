@@ -1421,8 +1421,8 @@ class WorkOrderController extends Controller
             }
 
             $headers = [
-                'كود المادة',
-                'وصف المادة'
+                'code',
+                'description'
             ];
 
             $sampleData = [
