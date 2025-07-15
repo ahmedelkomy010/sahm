@@ -2416,7 +2416,7 @@
     </script>
     
     <!-- Civil Works Professional System -->
-    <script src="{{ asset('js/civil-works-professional.js') }}" defer></script>
+    <script src="{{ asset('js/civil-works-professional.js') }}"></script>
     
     <!-- تحميل البيانات المحفوظة -->
     <script>
@@ -2425,11 +2425,58 @@
         window.csrfToken = document.querySelector('meta[name="csrf-token"]').content;
         window.savedDailyData = @json($savedDailyData ?? []);
         
+        // دالة حفظ البيانات (نسخة محلية للتوافق)
+        function saveData() {
+            if (typeof saveTodayWork === 'function') {
+                saveTodayWork();
+            } else {
+                console.error('saveTodayWork function not found');
+                alert('خطأ: لم يتم العثور على دالة الحفظ');
+            }
+        }
+        
+        // دالة تحديث الإحصائيات من البيانات المحفوظة
+        function updateStatisticsFromSavedData(dataArray) {
+            if (typeof window.updateStatisticsFromSavedData === 'function') {
+                window.updateStatisticsFromSavedData(dataArray);
+            } else {
+                console.log('updateStatisticsFromSavedData function not found');
+            }
+        }
+        
         // دالة تحميل البيانات المحفوظة
         async function loadSavedDailyWork() {
             console.log('Loading saved daily work data...');
             if (window.savedDailyData && window.savedDailyData.length > 0) {
                 displaySavedData(window.savedDailyData);
+                updateStatisticsFromSavedData(window.savedDailyData);
+            } else {
+                // محاولة تحميل البيانات من الخادم
+                try {
+                    const response = await fetch(`/admin/work-orders/${window.workOrderId}/civil-works/get-daily-data`, {
+                        method: 'GET',
+                        headers: {
+                            'X-CSRF-TOKEN': window.csrfToken,
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    const data = await response.json();
+                    console.log('Server response:', data);
+                    
+                    if (data.success && data.data && Array.isArray(data.data)) {
+                        const serverData = data.data;
+                        console.log('Loaded data from server:', serverData);
+                        
+                        if (serverData.length > 0) {
+                            displaySavedData(serverData);
+                            updateStatisticsFromSavedData(serverData);
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error loading data from server:', error);
+                }
             }
         }
 
@@ -2438,7 +2485,9 @@
             console.log('Initializing daily excavation system...');
             
             // تحميل البيانات المحفوظة
-            loadSavedDailyWork();
+            setTimeout(() => {
+                loadSavedDailyWork();
+            }, 300);
             
             // إضافة مستمعي الأحداث
             const saveButton = document.getElementById('save-daily-summary-btn');
@@ -2467,6 +2516,13 @@
         // تهيئة النظام عند تحميل الصفحة
         document.addEventListener('DOMContentLoaded', function() {
             initializeDailyExcavation();
+        });
+        
+        // تحميل البيانات عند تحميل النافذة
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                loadSavedDailyWork();
+            }, 500);
         });
     </script>
 </body>
