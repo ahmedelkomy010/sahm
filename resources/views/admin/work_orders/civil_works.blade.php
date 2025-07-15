@@ -2425,6 +2425,14 @@
         window.csrfToken = document.querySelector('meta[name="csrf-token"]').content;
         window.savedDailyData = @json($savedDailyData ?? []);
         
+        // دالة تحميل البيانات المحفوظة
+        async function loadSavedDailyWork() {
+            console.log('Loading saved daily work data...');
+            if (window.savedDailyData && window.savedDailyData.length > 0) {
+                displaySavedData(window.savedDailyData);
+            }
+        }
+
         // دالة التهيئة الرئيسية
         function initializeDailyExcavation() {
             console.log('Initializing daily excavation system...');

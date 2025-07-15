@@ -3,6 +3,48 @@
  * Civil Works System - Version 8.1
  */
 
+// تعريف أنواع الحفريات
+const EXCAVATION_TYPES = {
+    UNSURFACED_SOIL: 'unsurfaced_soil',
+    SURFACED_SOIL: 'surfaced_soil',
+    SURFACED_ROCK: 'surfaced_rock',
+    UNSURFACED_ROCK: 'unsurfaced_rock',
+    PRECISE: 'precise',                   // حفريات دقيقة
+    FIRST_LAYER: 'first_layer',           // أسفلت طبقة أولى
+    SCRAPE_RESURFACE: 'scrape_resurface'  // كشط واعادة السفلتة
+};
+
+// تعريف أنواع الحفريات المفتوحة
+const OPEN_EXCAVATION_TYPES = {
+    UNSURFACED_SOIL: 'unsurfaced_soil_open',
+    SURFACED_SOIL: 'surfaced_soil_open',
+    SURFACED_ROCK: 'surfaced_rock_open',
+    UNSURFACED_ROCK: 'unsurfaced_rock_open'
+};
+
+// تعريف مسجل الحفريات
+class ExcavationLogger {
+    constructor() {
+        this.excavationTypes = {
+            'unsurfaced_soil': 'حفرية ترابية غير مسفلتة',
+            'surfaced_soil': 'حفرية ترابية مسفلتة',
+            'surfaced_rock': 'حفرية صخرية مسفلتة',
+            'unsurfaced_rock': 'حفرية صخرية غير مسفلتة',
+            'precise': 'حفريات دقيقة',
+            'first_layer': 'أسفلت طبقة أولى',
+            'scrape_resurface': 'كشط واعادة السفلتة'
+        };
+    }
+
+    // دالة الحصول على نوع القسم
+    getSectionType(excavationType) {
+        return this.excavationTypes[excavationType] || excavationType;
+    }
+}
+
+// تهيئة مسجل الحفريات
+const excavationLogger = new ExcavationLogger();
+
 /**
  * عرض رسالة للمستخدم
  */
@@ -101,25 +143,6 @@ function createMessageElement(message, type) {
     
     return div;
 }
-
-// تعريف أنواع الحفريات
-const EXCAVATION_TYPES = {
-    UNSURFACED_SOIL: 'unsurfaced_soil',
-    SURFACED_SOIL: 'surfaced_soil',
-    SURFACED_ROCK: 'surfaced_rock',
-    UNSURFACED_ROCK: 'unsurfaced_rock',
-    PRECISE: 'precise',                   // حفريات دقيقة
-    FIRST_LAYER: 'first_layer',           // أسفلت طبقة أولى
-    SCRAPE_RESURFACE: 'scrape_resurface'  // كشط واعادة السفلتة
-};
-
-// تعريف أنواع الحفريات المفتوحة
-const OPEN_EXCAVATION_TYPES = {
-    UNSURFACED_SOIL: 'unsurfaced_soil_open',
-    SURFACED_SOIL: 'surfaced_soil_open',
-    SURFACED_ROCK: 'surfaced_rock_open',
-    UNSURFACED_ROCK: 'unsurfaced_rock_open'
-};
 
 /**
  * تحديث الإحصائيات
