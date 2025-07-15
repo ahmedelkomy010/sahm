@@ -225,6 +225,14 @@ class WorkOrder extends Model
         return $this->hasMany(ExcavationDetail::class);
     }
 
+    /**
+     * Get the daily installations for this work order.
+     */
+    public function dailyInstallations()
+    {
+        return $this->hasMany(DailyInstallation::class);
+    }
+
     // Scopes
     public function scopeActive($query)
     {

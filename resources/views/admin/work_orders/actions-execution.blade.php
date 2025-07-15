@@ -272,13 +272,19 @@
                 @foreach($executionImages as $img)
                     <div class="col-6 col-md-3 col-lg-2 mb-3">
                         <div class="card h-100">
-                            <img src="{{ Storage::url($img->file_path) }}" 
+                            @php
+                                // تحديد مسار الصورة بناءً على نوع الملف
+                                $imagePath = isset($img->file_category) && $img->file_category === 'installations_json' 
+                                    ? asset('storage/' . $img->file_path) 
+                                    : Storage::url($img->file_path);
+                            @endphp
+                            <img src="{{ $imagePath }}" 
                                  class="card-img-top" 
                                  style="height: 120px; object-fit: cover;"
                                  alt="صورة التنفيذ"
                                  data-bs-toggle="modal" 
                                  data-bs-target="#viewImageModal"
-                                 data-image-url="{{ Storage::url($img->file_path) }}"
+                                 data-image-url="{{ $imagePath }}"
                                  data-image-name="{{ $img->original_filename }}"
                                  data-image-date="{{ $img->created_at->format('Y-m-d H:i') }}"
                                  style="cursor: pointer;">
@@ -326,11 +332,17 @@
                         @foreach($executionImages as $img)
                             <div class="col-6 col-md-4 col-lg-3 mb-3">
                                 <div class="card h-100">
-                                    <img src="{{ Storage::url($img->file_path) }}" 
+                                    @php
+                                        // تحديد مسار الصورة بناءً على نوع الملف
+                                        $imagePath = isset($img->file_category) && $img->file_category === 'installations_json' 
+                                            ? asset('storage/' . $img->file_path) 
+                                            : Storage::url($img->file_path);
+                                    @endphp
+                                    <img src="{{ $imagePath }}" 
                                          class="card-img-top" 
                                          style="height: 150px; object-fit: cover; cursor: pointer;"
                                          onclick="openImageModal(this)"
-                                         data-image-url="{{ Storage::url($img->file_path) }}"
+                                         data-image-url="{{ $imagePath }}"
                                          data-image-name="{{ $img->original_filename }}"
                                          data-image-date="{{ $img->created_at->format('Y-m-d H:i') }}"
                                          alt="صورة التنفيذ">

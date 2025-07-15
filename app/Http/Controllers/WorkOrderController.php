@@ -541,9 +541,21 @@ class WorkOrderController extends Controller
             $executionImages = $executionImages->merge($workOrder->civilWorksFiles);
         }
         
-        // إضافة صور التركيبات
+        // إضافة صور التركيبات من work_order_files
         if ($workOrder->installationsFiles) {
             $executionImages = $executionImages->merge($workOrder->installationsFiles);
+        }
+        
+        // إضافة صور التركيبات من installations_images JSON field
+        if ($workOrder->installations_images && is_array($workOrder->installations_images)) {
+            foreach ($workOrder->installations_images as $index => $imagePath) {
+                $executionImages->push((object) [
+                    'file_path' => $imagePath,
+                    'original_filename' => 'صورة تركيب ' . ($index + 1),
+                    'created_at' => $workOrder->updated_at ?? now(),
+                    'file_category' => 'installations_json'
+                ]);
+            }
         }
         
         // إضافة صور الأعمال الكهربائية

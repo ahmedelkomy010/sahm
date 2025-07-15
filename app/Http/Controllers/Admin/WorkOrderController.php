@@ -6,10 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Models\WorkOrder;
 use App\Models\WorkOrderFile;
 use App\Models\WorkOrderInstallation;
+use App\Models\DailyInstallation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 
 class WorkOrderController extends Controller
 {
@@ -45,20 +47,72 @@ class WorkOrderController extends Controller
         try {
             DB::beginTransaction();
 
-            // Delete existing installations for this work order
-            WorkOrderInstallation::where('work_order_id', $workOrder->id)->delete();
+            // Get the installations data from the request
+            $installationsData = $request->all();
+            
+            // Log the received data for debugging
+            Log::info('Received installations data:', $installationsData);
 
-            // Save new installations
-            foreach ($request->all() as $type => $data) {
-                if ($data['price'] > 0 && $data['number'] > 0) {
-                    WorkOrderInstallation::create([
+            // Check if we have valid data
+            $hasValidData = false;
+            $processedData = [];
+            
+            foreach ($installationsData as $type => $data) {
+                // Skip non-installation data and ensure it's array with required fields
+                if (!is_array($data) || !isset($data['price']) || !isset($data['quantity']) || !isset($data['total'])) {
+                    continue;
+                }
+
+                $price = (float) $data['price'];
+                $quantity = (float) $data['quantity'];
+                $total = (float) $data['total'];
+
+                if ($price > 0 && $quantity > 0) {
+                    $hasValidData = true;
+                    $processedData[$type] = [
+                        'price' => $price,
+                        'quantity' => $quantity,
+                        'total' => $total
+                    ];
+                }
+            }
+
+            if (!$hasValidData) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'لا توجد بيانات صحيحة للحفظ'
+                ], 400);
+            }
+
+            // Try to save to work_order_installations table, if it doesn't exist, save to work_orders table
+            try {
+                // Delete existing installations for this work order
+                DB::table('work_order_installations')->where('work_order_id', $workOrder->id)->delete();
+
+                // Save new installations
+                foreach ($processedData as $type => $data) {
+                    DB::table('work_order_installations')->insert([
                         'work_order_id' => $workOrder->id,
                         'installation_type' => $type,
                         'price' => $data['price'],
-                        'quantity' => $data['number'],
-                        'total' => $data['total']
+                        'quantity' => $data['quantity'],
+                        'total' => $data['total'],
+                        'created_at' => now(),
+                        'updated_at' => now()
                     ]);
                 }
+                
+                Log::info("Saved installations to work_order_installations table");
+                
+            } catch (\Exception $e) {
+                Log::warning("work_order_installations table not found, saving to work_orders table: " . $e->getMessage());
+                
+                // Save to work_orders table as JSON
+                $workOrder->update([
+                    'installations_data' => json_encode($processedData)
+                ]);
+                
+                Log::info("Saved installations to work_orders table as JSON");
             }
 
             DB::commit();
@@ -71,10 +125,12 @@ class WorkOrderController extends Controller
         } catch (\Exception $e) {
             DB::rollback();
             Log::error('Error saving installations: ' . $e->getMessage());
+            Log::error('Stack trace: ' . $e->getTraceAsString());
+            Log::error('Request data: ' . json_encode($request->all()));
             
             return response()->json([
                 'status' => 'error',
-                'message' => 'حدث خطأ أثناء حفظ التركيبات'
+                'message' => 'حدث خطأ أثناء حفظ التركيبات: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -94,22 +150,41 @@ class WorkOrderController extends Controller
         try {
             $date = $request->query('date', now()->format('Y-m-d'));
             
-            $installations = WorkOrderInstallation::where('work_order_id', $workOrder->id)
-                ->whereDate('created_at', $date)
-                ->orderBy('created_at', 'asc')
-                ->get()
-                ->map(function ($installation) {
+            // البحث عن البيانات اليومية أولاً
+            $dailyInstallation = DailyInstallation::where('work_order_id', $workOrder->id)
+                ->where('work_date', $date)
+                ->first();
+            
+            if ($dailyInstallation) {
+                // إذا وجدت بيانات يومية، اعرضها
+                $installations = collect($dailyInstallation->installation_data)->map(function ($installation) {
                     return [
-                        'installation_type' => $installation->installation_type,
-                        'quantity' => $installation->quantity,
-                        'total' => $installation->total,
-                        'created_at' => $installation->created_at
+                        'installation_type' => $installation['installation_type'] ?? 'غير محدد',
+                        'quantity' => $installation['quantity'] ?? 0,
+                        'total' => $installation['total'] ?? 0,
+                        'created_at' => $dailyInstallation->created_at
                     ];
                 });
+            } else {
+                // إذا لم توجد بيانات يومية، اعرض البيانات من الجدول القديم
+                $installations = WorkOrderInstallation::where('work_order_id', $workOrder->id)
+                    ->whereDate('created_at', $date)
+                    ->orderBy('created_at', 'asc')
+                    ->get()
+                    ->map(function ($installation) {
+                        return [
+                            'installation_type' => $installation->installation_type,
+                            'quantity' => $installation->quantity,
+                            'total' => $installation->total,
+                            'created_at' => $installation->created_at
+                        ];
+                    });
+            }
             
             return response()->json([
                 'status' => 'success',
-                'installations' => $installations
+                'installations' => $installations,
+                'has_daily_data' => $dailyInstallation !== null
             ]);
         } catch (\Exception $e) {
             Log::error('Error fetching daily installations summary: ' . $e->getMessage());
@@ -120,73 +195,272 @@ class WorkOrderController extends Controller
         }
     }
 
-    public function uploadInstallationsImages(Request $request, WorkOrder $workOrder)
+    /**
+     * حفظ بيانات التركيبات اليومية
+     */
+    public function saveDailyInstallations(Request $request, WorkOrder $workOrder)
     {
         try {
             $request->validate([
-                'electrical_works_images.*' => 'required|image|mimes:jpeg,png,jpg|max:30720' // 30MB max
+                'work_date' => 'required|date',
+                'installation_data' => 'required|array',
+                'notes' => 'nullable|string|max:1000'
             ]);
 
-            $uploadedFiles = [];
-            
-            if ($request->hasFile('electrical_works_images')) {
-                foreach ($request->file('electrical_works_images') as $image) {
-                    $filename = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
-                    $path = $image->storeAs('work_orders/' . $workOrder->id . '/installations', $filename, 'public');
-                    
-                    $file = WorkOrderFile::create([
-                        'work_order_id' => $workOrder->id,
-                        'file_path' => $path,
-                        'original_filename' => $image->getClientOriginalName(),
-                        'file_type' => $image->getMimeType(),
-                        'file_size' => $image->getSize(),
-                        'file_category' => 'installations'
-                    ]);
-                    
-                    $uploadedFiles[] = $file;
+            DB::beginTransaction();
+
+            // حساب الإجماليات
+            $totalAmount = 0;
+            $totalItems = 0;
+            $installationData = [];
+
+            foreach ($request->installation_data as $type => $data) {
+                if (isset($data['quantity']) && $data['quantity'] > 0) {
+                    $installationData[] = [
+                        'installation_type' => $type,
+                        'quantity' => floatval($data['quantity']),
+                        'price' => floatval($data['price'] ?? 0),
+                        'total' => floatval($data['total'] ?? 0)
+                    ];
+                    $totalAmount += floatval($data['total'] ?? 0);
+                    $totalItems += intval($data['quantity'] ?? 0);
                 }
             }
-            
+
+            // حفظ أو تحديث البيانات اليومية
+            $dailyInstallation = DailyInstallation::updateOrCreate(
+                [
+                    'work_order_id' => $workOrder->id,
+                    'work_date' => $request->work_date
+                ],
+                [
+                    'installation_data' => $installationData,
+                    'total_amount' => $totalAmount,
+                    'total_items' => $totalItems,
+                    'user_id' => Auth::id(),
+                    'notes' => $request->notes
+                ]
+            );
+
+            DB::commit();
+
             return response()->json([
                 'status' => 'success',
-                'message' => 'تم رفع الصور بنجاح',
-                'files' => $uploadedFiles
+                'message' => 'تم حفظ البيانات اليومية بنجاح',
+                'data' => [
+                    'id' => $dailyInstallation->id,
+                    'work_date' => $dailyInstallation->work_date->format('Y-m-d'),
+                    'total_amount' => $dailyInstallation->total_amount,
+                    'total_items' => $dailyInstallation->total_items
+                ]
             ]);
-            
+
         } catch (\Exception $e) {
-            Log::error('Error uploading installation images: ' . $e->getMessage());
-            
+            DB::rollback();
+            Log::error('Error saving daily installations: ' . $e->getMessage());
             return response()->json([
                 'status' => 'error',
-                'message' => 'حدث خطأ أثناء رفع الصور'
+                'message' => 'حدث خطأ أثناء حفظ البيانات: ' . $e->getMessage()
             ], 500);
         }
     }
 
-    public function deleteInstallationImage($imageId)
+    /**
+     * جلب بيانات التركيبات اليومية
+     */
+    public function getDailyInstallations(Request $request, WorkOrder $workOrder)
     {
         try {
-            $file = WorkOrderFile::findOrFail($imageId);
+            $date = $request->query('date', now()->format('Y-m-d'));
             
-            // Delete the physical file
-            if (Storage::disk('public')->exists($file->file_path)) {
-                Storage::disk('public')->delete($file->file_path);
+            $dailyInstallation = DailyInstallation::where('work_order_id', $workOrder->id)
+                ->where('work_date', $date)
+                ->first();
+            
+            if ($dailyInstallation) {
+                return response()->json([
+                    'status' => 'success',
+                    'data' => [
+                        'id' => $dailyInstallation->id,
+                        'work_date' => $dailyInstallation->work_date->format('Y-m-d'),
+                        'installation_data' => $dailyInstallation->installation_data,
+                        'total_amount' => $dailyInstallation->total_amount,
+                        'total_items' => $dailyInstallation->total_items,
+                        'notes' => $dailyInstallation->notes,
+                        'created_at' => $dailyInstallation->created_at->format('Y-m-d H:i:s')
+                    ]
+                ]);
+            } else {
+                return response()->json([
+                    'status' => 'success',
+                    'data' => null,
+                    'message' => 'لا توجد بيانات لهذا التاريخ'
+                ]);
             }
-            
-            // Delete the database record
-            $file->delete();
-            
-            return response()->json([
-                'status' => 'success',
-                'message' => 'تم حذف الصورة بنجاح'
-            ]);
-            
         } catch (\Exception $e) {
-            Log::error('Error deleting installation image: ' . $e->getMessage());
-            
+            Log::error('Error fetching daily installations: ' . $e->getMessage());
             return response()->json([
                 'status' => 'error',
-                'message' => 'حدث خطأ أثناء حذف الصورة'
+                'message' => 'حدث خطأ أثناء جلب البيانات'
+            ], 500);
+        }
+    }
+
+    /**
+     * حذف بيانات التركيبات اليومية
+     */
+    public function deleteDailyInstallation($id)
+    {
+        try {
+            $dailyInstallation = DailyInstallation::findOrFail($id);
+            $dailyInstallation->delete();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'تم حذف البيانات اليومية بنجاح'
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error deleting daily installation: ' . $e->getMessage());
+            return response()->json([
+                'status' => 'error',
+                'message' => 'حدث خطأ أثناء حذف البيانات'
+            ], 500);
+        }
+    }
+
+    /**
+     * جلب جميع البيانات اليومية لأمر عمل معين
+     */
+    public function getAllDailyInstallations(WorkOrder $workOrder)
+    {
+        try {
+            $dailyInstallations = DailyInstallation::where('work_order_id', $workOrder->id)
+                ->orderBy('work_date', 'desc')
+                ->get()
+                ->map(function ($installation) {
+                    return [
+                        'id' => $installation->id,
+                        'work_date' => $installation->work_date->format('Y-m-d'),
+                        'formatted_date' => $installation->work_date->format('d-m-Y'),
+                        'total_amount' => $installation->total_amount,
+                        'total_items' => $installation->total_items,
+                        'notes' => $installation->notes,
+                        'created_at' => $installation->created_at->format('Y-m-d H:i:s')
+                    ];
+                });
+
+            return response()->json([
+                'status' => 'success',
+                'data' => $dailyInstallations
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error fetching all daily installations: ' . $e->getMessage());
+            return response()->json([
+                'status' => 'error',
+                'message' => 'حدث خطأ أثناء جلب البيانات'
+            ], 500);
+        }
+    }
+
+    public function uploadInstallationsImages(Request $request, WorkOrder $workOrder)
+    {
+        try {
+            $request->validate([
+                'images.*' => 'required|image|mimes:jpeg,png,jpg|max:30720' // 30MB max
+            ]);
+
+            if (!$request->hasFile('images')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'لم يتم اختيار أي صور للرفع'
+                ], 400);
+            }
+
+            $uploadedImages = [];
+            $currentImages = $workOrder->installations_images ?? [];
+
+            foreach ($request->file('images') as $image) {
+                $filename = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+                $path = $image->storeAs('work_orders/' . $workOrder->id . '/installations', $filename, 'public');
+                $uploadedImages[] = $path;
+            }
+
+            // Update work order with new images
+            $workOrder->update([
+                'installations_images' => array_merge($currentImages, $uploadedImages)
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'تم رفع الصور بنجاح',
+                'images' => $uploadedImages
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error uploading installation images: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء رفع الصور: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function deleteInstallationImage(Request $request, WorkOrder $workOrder, $index)
+    {
+        try {
+            $images = $workOrder->installations_images ?? [];
+
+            if (!isset($images[$index])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'الصورة غير موجودة'
+                ], 404);
+            }
+
+            $imagePath = $images[$index];
+
+            // Delete the physical file
+            if (Storage::disk('public')->exists($imagePath)) {
+                Storage::disk('public')->delete($imagePath);
+            }
+
+            // Remove the image from the array
+            unset($images[$index]);
+            $images = array_values($images); // Reindex array
+
+            // Update work order with remaining images
+            $workOrder->update([
+                'installations_images' => $images
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'تم حذف الصورة بنجاح'
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error deleting installation image: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء حذف الصورة: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getInstallationImages(WorkOrder $workOrder)
+    {
+        try {
+            $images = $workOrder->installations_images ?? [];
+            
+            return response()->json([
+                'success' => true,
+                'images' => $images
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error getting installation images: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء جلب الصور'
             ], 500);
         }
     }

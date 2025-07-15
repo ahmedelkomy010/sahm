@@ -151,8 +151,16 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::get('work-orders/{workOrder}/installations', [App\Http\Controllers\Admin\WorkOrderController::class, 'installations'])->name('work-orders.installations');
     Route::post('work-orders/{workOrder}/installations/save', [App\Http\Controllers\Admin\WorkOrderController::class, 'saveInstallations'])->name('work-orders.installations.save');
     Route::get('work-orders/{workOrder}/installations/data', [App\Http\Controllers\Admin\WorkOrderController::class, 'getInstallations'])->name('work-orders.installations.data');
-    Route::post('work-orders/{workOrder}/installations/images', [App\Http\Controllers\Admin\WorkOrderController::class, 'uploadInstallationsImages'])->name('work-orders.installations.images');
-    Route::delete('work-orders/installations/images/{imageId}', [App\Http\Controllers\Admin\WorkOrderController::class, 'deleteInstallationImage'])->name('work-orders.installations.images.delete');
+    Route::post('work-orders/{workOrder}/upload-installation-images', [App\Http\Controllers\Admin\WorkOrderController::class, 'uploadInstallationsImages'])->name('work-orders.upload-installation-images');
+    Route::delete('work-orders/{workOrder}/delete-installation-image/{index}', [App\Http\Controllers\Admin\WorkOrderController::class, 'deleteInstallationImage'])->name('work-orders.delete-installation-image');
+    Route::get('work-orders/{workOrder}/installation-images', [App\Http\Controllers\Admin\WorkOrderController::class, 'getInstallationImages'])->name('work-orders.installation-images');
+    Route::get('work-orders/{workOrder}/installations/daily-summary', [App\Http\Controllers\Admin\WorkOrderController::class, 'getDailyInstallationsSummary'])->name('work-orders.installations.daily-summary');
+    
+    // Daily Installations Routes
+    Route::post('work-orders/{workOrder}/daily-installations/save', [App\Http\Controllers\Admin\WorkOrderController::class, 'saveDailyInstallations'])->name('work-orders.daily-installations.save');
+    Route::get('work-orders/{workOrder}/daily-installations/get', [App\Http\Controllers\Admin\WorkOrderController::class, 'getDailyInstallations'])->name('work-orders.daily-installations.get');
+    Route::get('work-orders/{workOrder}/daily-installations/all', [App\Http\Controllers\Admin\WorkOrderController::class, 'getAllDailyInstallations'])->name('work-orders.daily-installations.all');
+    Route::delete('daily-installations/{id}', [App\Http\Controllers\Admin\WorkOrderController::class, 'deleteDailyInstallation'])->name('daily-installations.delete');
 
     // Civil Works Routes
     Route::get('work-orders/{workOrder}/civil-works', [WorkOrderController::class, 'civilWorks'])->name('work-orders.civil-works');
