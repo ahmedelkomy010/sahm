@@ -510,7 +510,6 @@ use Illuminate\Support\Facades\Storage;
         <!-- قسم الإخلاءات -->
         <div class="bg-gray-50 p-6 rounded-lg mb-8">
             <div class="flex justify-between items-center mb-6">
-                <h3 class="text-xl font-semibold text-gray-800">الإخلاءات</h3>
                 <div class="flex items-center space-x-4">
                     <div class="stats flex space-x-4 ml-4">
                         @php
@@ -546,18 +545,7 @@ use Illuminate\Support\Facades\Storage;
                             
                             
                         @endphp
-                        <div class="stat-item bg-blue-100 text-blue-800 px-4 py-2 rounded-lg">
-                            <span class="font-medium">عدد الإخلاءات:</span>
-                            <span class="ml-1">{{ $totalEvacuations }}</span>
-                        </div>
-                        <div class="stat-item bg-green-100 text-green-800 px-4 py-2 rounded-lg">
-                            <span class="font-medium">إجمالي المبلغ:</span>
-                            <span class="ml-1">{{ number_format($totalEvacuationAmount, 2) }} ريال</span>
-                        </div>
-                        <div class="stat-item bg-purple-100 text-purple-800 px-4 py-2 rounded-lg">
-                            <span class="font-medium">عدد المرفقات:</span>
-                            <span class="ml-1">{{ $totalAttachments }}</span>
-                        </div>
+                        
                     </div>
                 </div>
             </div>
@@ -586,567 +574,12 @@ use Illuminate\Support\Facades\Storage;
             @endphp
             
             @if($hasCompleteEvacuationData)
-                <div class="mb-8">
-                    <h4 class="text-lg font-medium text-gray-800 mb-4">بيانات الإخلاءات الأساسية</h4>
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200 bg-white rounded-lg shadow">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th style="min-width: 60px;">#</th>
-                                    <th style="min-width: 120px;">تم الإخلاء؟</th>
-                                    <th style="min-width: 120px;">تاريخ الإخلاء</th>
-                                    <th style="min-width: 120px;">مبلغ الإخلاء (ريال)</th>
-                                    <th style="min-width: 150px;">تاريخ ووقت الإخلاء</th>
-                                    <th style="min-width: 130px;">رقم سداد الإخلاء</th>
-                                    <th style="min-width: 200px;">ملاحظات</th>
-                                    <th style="min-width: 120px;">المرفق</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @if(isset($evacTable1Data) && count($evacTable1Data) > 0)
-                                    @foreach($evacTable1Data as $index => $evacuation)
-                                        <tr>
-                                            <td class="text-center">{{ $index + 1 }}</td>
-                                            <td>{{ $evacuation['is_evacuated'] == 1 ? 'نعم' : 'لا' }}</td>
-                                            <td>{{ $evacuation['evacuation_date'] ?? '-' }}</td>
-                                            <td>{{ $evacuation['evacuation_amount'] ?? '0.00' }}</td>
-                                            <td>{{ $evacuation['evacuation_datetime'] ?? '-' }}</td>
-                                            <td>{{ $evacuation['payment_number'] ?? '-' }}</td>
-                                            <td>{{ $evacuation['notes'] ?? '-' }}</td>
-                                            <td>
-                                                @if(isset($evacuation['evacuation_file']))
-                                                    <a href="{{ route('licenses.evacuation-file', ['license' => $license->id, 'index' => $index]) }}" 
-                                                       class="btn btn-sm btn-primary" 
-                                                       target="_blank">
-                                                        <i class="fas fa-file-download"></i>
-                                                        عرض المرفق
-                                                    </a>
-                                                @else
-                                                    <span class="text-muted">لا يوجد مرفق</span>
-                                                @endif
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                @endif
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+                
             @endif
 
-            <!-- عرض المرفقات فقط إذا كانت موجودة ولكن البيانات ناقصة -->
-            @if($hasEvacuationData && !$hasCompleteEvacuationData)
-                <div class="mb-8">
-                    <div class="bg-orange-50 p-6 rounded-lg border border-orange-200">
-                        <div class="flex items-center mb-4">
-                            <i class="fas fa-info-circle text-orange-600 text-xl mr-3"></i>
-                            <h4 class="text-lg font-medium text-orange-900">مرفقات الإخلاءات</h4>
-                        </div>
-                        
-                        <div class="mb-4 p-3 bg-orange-100 rounded border border-orange-300">
-                            <p class="text-sm text-orange-800">
-                                <i class="fas fa-exclamation-triangle mr-2"></i>
-                                توجد مرفقات للإخلاء ولكن البيانات التفصيلية (التاريخ، المبلغ، إلخ) غير مكتملة. يرجى التحقق من البيانات أو إضافة المعلومات المفقودة.
-                            </p>
-                        </div>
-                        
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            @foreach($evacuationData as $index => $evacuation)
-                                @php
-                                    $evacuationFiles = [];
-                                    
-                                    // البحث عن المرفقات
-                                    if (isset($evacuation['attachments']) && is_array($evacuation['attachments']) && count($evacuation['attachments']) > 0) {
-                                        $evacuationFiles = $evacuation['attachments'];
-                                    } elseif (isset($evacuation['attachment']) && !empty($evacuation['attachment'])) {
-                                        $evacuationFiles = [$evacuation['attachment']];
-                                    }
-                                @endphp
-                                
-                                @if(count($evacuationFiles) > 0)
-                                    <div class="bg-white rounded-lg shadow p-4 border border-orange-200">
-                                        <div class="flex items-center justify-between mb-3">
-                                            <h5 class="text-sm font-medium text-orange-900">
-                                                مرفقات إخلاء رقم {{ $index + 1 }}
-                                            </h5>
-                                            <span class="text-xs text-orange-600 bg-orange-100 px-2 py-1 rounded-full">
-                                                {{ count($evacuationFiles) }} ملف
-                                            </span>
-                                        </div>
-                                        
-                                        <div class="space-y-2">
-                                            @foreach($evacuationFiles as $fileIndex => $attachment)
-                                                @if(!empty($attachment))
-                                                    <a href="{{ asset('storage/' . $attachment) }}" 
-                                                       target="_blank" 
-                                                       class="flex items-center justify-between p-2 bg-gray-50 hover:bg-gray-100 rounded border transition-colors duration-200">
-                                                        <div class="flex items-center">
-                                                            <i class="fas fa-file text-blue-600 mr-2"></i>
-                                                            <span class="text-sm text-gray-700">{{ basename($attachment) }}</span>
-                                                        </div>
-                                                        <i class="fas fa-external-link-alt text-gray-400 text-xs"></i>
-                                                    </a>
-                                                @endif
-                                            @endforeach
-                                        </div>
-                                    </div>
-                                @endif
-                            @endforeach
-                        </div>
-                    </div>
-                </div>
-            @endif
-
-            <!-- قسم مرفقات الإخلاءات منفصل -->
-            @if($hasEvacuationData)
-                <div class="mb-8">
-                    <div class="bg-blue-50 p-6 rounded-lg">
-                        <div class="flex items-center mb-4">
-                            <i class="fas fa-paperclip text-blue-600 text-xl mr-3"></i>
-                            <h4 class="text-lg font-medium text-blue-900">مرفقات بيانات الإخلاءات</h4>
-                        </div>
-                        
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            @foreach($evacuationData as $index => $evacuation)
-                                @php
-                                    $evacuationFiles = [];
-                                    
-                                    // البحث عن المرفقات الفردية
-                                    if (isset($evacuation['attachments']) && is_array($evacuation['attachments']) && count($evacuation['attachments']) > 0) {
-                                        $evacuationFiles = $evacuation['attachments'];
-                                    } elseif (isset($evacuation['attachment']) && !empty($evacuation['attachment'])) {
-                                        $evacuationFiles = [$evacuation['attachment']];
-                                    }
-                                @endphp
-                                
-                                @if(count($evacuationFiles) > 0)
-                                    <div class="bg-white rounded-lg shadow p-4 border border-blue-200">
-                                        <div class="flex items-center justify-between mb-3">
-                                            <h5 class="text-sm font-medium text-blue-900">
-                                                إخلاء رقم {{ $index + 1 }}
-                                            </h5>
-                                            <span class="text-xs text-blue-600 bg-blue-100 px-2 py-1 rounded-full">
-                                                {{ count($evacuationFiles) }} ملف
-                                            </span>
-                                        </div>
-                                        
-                                        <div class="space-y-2">
-                                            @if(isset($evacuation['evacuation_date']) && !empty($evacuation['evacuation_date']))
-                                                <div class="text-xs text-gray-600">
-                                                    <i class="fas fa-calendar mr-1"></i>
-                                                    {{ \Carbon\Carbon::parse($evacuation['evacuation_date'])->format('Y/m/d') }}
-                                                </div>
-                                            @endif
-                                            
-                                            @if(isset($evacuation['evacuation_amount']) && !empty($evacuation['evacuation_amount']))
-                                                <div class="text-xs text-gray-600">
-                                                    <i class="fas fa-money-bill mr-1"></i>
-                                                    {{ number_format($evacuation['evacuation_amount'], 2) }} ريال
-                                                </div>
-                                            @endif
-                                        </div>
-                                        
-                                        <div class="mt-3 space-y-2">
-                                            @foreach($evacuationFiles as $fileIndex => $attachment)
-                                                @if(!empty($attachment))
-                                                    @php
-                                                        $fileName = basename($attachment);
-                                                        $fileExtension = pathinfo($fileName, PATHINFO_EXTENSION);
-                                                        $fileSize = '';
-                                                        
-                                                        // محاولة الحصول على حجم الملف
-                                                        $fullPath = storage_path('app/public/' . $attachment);
-                                                        if (file_exists($fullPath)) {
-                                                            $fileSize = ' (' . round(filesize($fullPath) / 1024, 2) . ' KB)';
-                                                        }
-                                                        
-                                                        // تحديد أيقونة الملف
-                                                        $fileIcon = 'fas fa-file';
-                                                        if (in_array(strtolower($fileExtension), ['pdf'])) {
-                                                            $fileIcon = 'fas fa-file-pdf text-red-600';
-                                                        } elseif (in_array(strtolower($fileExtension), ['jpg', 'jpeg', 'png', 'gif'])) {
-                                                            $fileIcon = 'fas fa-image text-green-600';
-                                                        } elseif (in_array(strtolower($fileExtension), ['doc', 'docx'])) {
-                                                            $fileIcon = 'fas fa-file-word text-blue-600';
-                                                        }
-                                                    @endphp
-                                                    
-                                                    <a href="{{ asset('storage/' . $attachment) }}" 
-                                                       target="_blank" 
-                                                       class="flex items-center p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200 group"
-                                                       title="تحميل الملف: {{ $fileName }}">
-                                                        <i class="{{ $fileIcon }} mr-2"></i>
-                                                        <div class="flex-1 min-w-0">
-                                                            <div class="text-sm font-medium text-gray-900 truncate">
-                                                                {{ Str::limit($fileName, 20) }}
-                                                            </div>
-                                                            <div class="text-xs text-gray-500">
-                                                                {{ strtoupper($fileExtension) }}{{ $fileSize }}
-                                                            </div>
-                                                        </div>
-                                                        <i class="fas fa-external-link-alt text-gray-400 group-hover:text-blue-600 ml-2"></i>
-                                                    </a>
-                                                @endif
-                                            @endforeach
-                                        </div>
-                                        
-                                        @if(isset($evacuation['notes']) && !empty($evacuation['notes']))
-                                            <div class="mt-3 p-2 bg-yellow-50 rounded border border-yellow-200">
-                                                <div class="text-xs text-yellow-800">
-                                                    <i class="fas fa-sticky-note mr-1"></i>
-                                                    {{ $evacuation['notes'] }}
-                                                </div>
-                                            </div>
-                                        @endif
-                                    </div>
-                                @endif
-                            @endforeach
-                            
-                            <!-- إضافة المرفقات العامة للإخلاءات إذا كانت موجودة -->
-                            @if($license->evacuations_file_path)
-                                @php
-                                    $generalFiles = json_decode($license->evacuations_file_path, true);
-                                @endphp
-                                
-                                @if(is_array($generalFiles) && count($generalFiles) > 0)
-                                    <div class="bg-white rounded-lg shadow p-4 border border-gray-200">
-                                        <div class="flex items-center justify-between mb-3">
-                                            <h5 class="text-sm font-medium text-gray-900">
-                                                مرفقات عامة للإخلاءات
-                                            </h5>
-                                            <span class="text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded-full">
-                                                {{ count($generalFiles) }} ملف
-                                            </span>
-                                        </div>
-                                        
-                                        <div class="space-y-2">
-                                            @foreach($generalFiles as $attachment)
-                                                @if(!empty($attachment))
-                                                    @php
-                                                        $fileName = basename($attachment);
-                                                        $fileExtension = pathinfo($fileName, PATHINFO_EXTENSION);
-                                                        $fileSize = '';
-                                                        
-                                                        // محاولة الحصول على حجم الملف
-                                                        $fullPath = storage_path('app/public/' . $attachment);
-                                                        if (file_exists($fullPath)) {
-                                                            $fileSize = ' (' . round(filesize($fullPath) / 1024, 2) . ' KB)';
-                                                        }
-                                                        
-                                                        // تحديد أيقونة الملف
-                                                        $fileIcon = 'fas fa-file';
-                                                        if (in_array(strtolower($fileExtension), ['pdf'])) {
-                                                            $fileIcon = 'fas fa-file-pdf text-red-600';
-                                                        } elseif (in_array(strtolower($fileExtension), ['jpg', 'jpeg', 'png', 'gif'])) {
-                                                            $fileIcon = 'fas fa-image text-green-600';
-                                                        } elseif (in_array(strtolower($fileExtension), ['doc', 'docx'])) {
-                                                            $fileIcon = 'fas fa-file-word text-blue-600';
-                                                        }
-                                                    @endphp
-                                                    
-                                                    <a href="{{ asset('storage/' . $attachment) }}" 
-                                                       target="_blank" 
-                                                       class="flex items-center p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200 group"
-                                                       title="تحميل الملف: {{ $fileName }}">
-                                                        <i class="{{ $fileIcon }} mr-2"></i>
-                                                        <div class="flex-1 min-w-0">
-                                                            <div class="text-sm font-medium text-gray-900 truncate">
-                                                                {{ Str::limit($fileName, 20) }}
-                                                            </div>
-                                                            <div class="text-xs text-gray-500">
-                                                                {{ strtoupper($fileExtension) }}{{ $fileSize }}
-                                                            </div>
-                                                        </div>
-                                                        <i class="fas fa-external-link-alt text-gray-400 group-hover:text-blue-600 ml-2"></i>
-                                                    </a>
-                                                @endif
-                                            @endforeach
-                                        </div>
-                                    </div>
-                                @endif
-                            @endif
-                        </div>
-                        
-                        @if(collect($evacuationData)->filter(function($evacuation) {
-                            return isset($evacuation['attachments']) && is_array($evacuation['attachments']) && count($evacuation['attachments']) > 0;
-                        })->isEmpty() && (!$license->evacuations_file_path || !json_decode($license->evacuations_file_path, true)))
-                            <div class="text-center py-8 text-gray-500">
-                                <i class="fas fa-folder-open text-3xl text-gray-400 mb-2"></i>
-                                <h3 class="text-sm font-medium text-gray-900">لا توجد مرفقات</h3>
-                                <p class="text-xs text-gray-500">لم يتم إرفاق أي ملفات مع بيانات الإخلاءات</p>
-                            </div>
-                        @endif
-                    </div>
-                </div>
-            @endif
-
-            <!-- جدول بيانات الإخلاءات التفصيلي - الجدول الأول -->
-            @if(is_array($evacTable1Data) && count($evacTable1Data) > 0)
-                <div class="mb-8">
-                    <h4 class="text-lg font-medium text-gray-800 mb-4">جدول الفسح ونوع الشارع للإخلاء</h4>
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead>
-                                <tr class="bg-gray-100">
-                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
-                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">رقم الفسح</th>
-                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">تاريخ الفسح</th>
-                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">طول الفسح</th>
-                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">طول المختبر</th>
-                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">نوع الشارع</th>
-                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">كمية التربة</th>
-                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">كمية الأسفلت</th>
-                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">كمية البلاط</th>
-                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">فحص التربة</th>
-                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">فحص MC1</th>
-                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">فحص الأسفلت</th>
-                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">ملاحظات</th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                @foreach($evacTable1Data as $index => $row)
-                                    <tr class="hover:bg-gray-50">
-                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $index + 1 }}</td>
-                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $row['clearance_number'] ?? '-' }}</td>
-                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            {{ isset($row['clearance_date']) ? \Carbon\Carbon::parse($row['clearance_date'])->format('Y/m/d') : '-' }}
-                                        </td>
-                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $row['length'] ?? '-' }}</td>
-                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $row['lab_length'] ?? '-' }}</td>
-                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $row['street_type'] ?? '-' }}</td>
-                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $row['soil_quantity'] ?? '-' }}</td>
-                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $row['asphalt_quantity'] ?? '-' }}</td>
-                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $row['tile_quantity'] ?? '-' }}</td>
-                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $row['soil_test'] ?? '-' }}</td>
-                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $row['mc1_test'] ?? '-' }}</td>
-                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $row['asphalt_test'] ?? '-' }}</td>
-                                        <td class="px-4 py-4 text-sm text-gray-900">{{ $row['notes'] ?? '-' }}</td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            @endif
-
-            <!-- جدول التفاصيل الفنية للمختبر -->
-            @php
-                $labTechnicalData = $license->lab_table2_data ? json_decode($license->lab_table2_data, true) : [];
-            @endphp
-            
-            @if(is_array($labTechnicalData) && count($labTechnicalData) > 0)
-                <div class="mb-8">
-                    <h4 class="text-lg font-medium text-gray-800 mb-4">التفاصيل الفنية للمختبر</h4>
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead>
-                                <tr class="bg-gray-100">
-                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 80px;">السنة</th>
-                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 120px;">نوع العمل</th>
-                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 80px;">العمق</th>
-                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 100px;">دك التربة</th>
-                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 100px;">MC1-RC2</th>
-                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 100px;">دك أسفلت</th>
-                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 80px;">ترابي</th>
-                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 120px;">الكثافة القصوى للأسفلت</th>
-                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 120px;">نسبة الأسفلت</th>
-                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 120px;">تجربة مارشال</th>
-                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 120px;">تقييم البلاط</th>
-                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 120px;">تصنيف التربة</th>
-                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 120px;">تجربة بروكتور</th>
-                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 100px;">الخرسانة</th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                @foreach($labTechnicalData as $index => $row)
-                                    <tr class="hover:bg-gray-50">
-                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $row['year'] ?? '-' }}</td>
-                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $row['work_type'] ?? '-' }}</td>
-                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $row['depth'] ?? '-' }}</td>
-                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $row['soil_compaction'] ?? '-' }}</td>
-                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $row['mc1rc2'] ?? '-' }}</td>
-                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $row['asphalt_compaction'] ?? '-' }}</td>
-                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $row['soil_type'] ?? '-' }}</td>
-                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $row['max_asphalt_density'] ?? '-' }}</td>
-                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $row['asphalt_percentage'] ?? '-' }}</td>
-                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $row['marshall_test'] ?? '-' }}</td>
-                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $row['tile_evaluation'] ?? '-' }}</td>
-                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $row['soil_classification'] ?? '-' }}</td>
-                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $row['proctor_test'] ?? '-' }}</td>
-                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $row['concrete'] ?? '-' }}</td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            @endif
-
-            <!-- رسالة عدم وجود بيانات -->
-            @if(!$hasEvacuationData && (!is_array($evacTable1Data) || count($evacTable1Data) == 0) && (!is_array($labTechnicalData) || count($labTechnicalData) == 0))
-                <div class="text-center py-8 text-gray-500">
-                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M12 12h.01M12 14h.01M12 16h.01M12 18h.01M12 20h.01M12 22h.01"></path>
-                    </svg>
-                    <h3 class="mt-2 text-sm font-medium text-gray-900">لا توجد بيانات إخلاء</h3>
-                    <p class="mt-1 text-sm text-gray-500">لم يتم إضافة أي بيانات إخلاء للرخصة بعد</p>
-                </div>
-            @endif
-        </div>
-
-        <!-- المخالفات -->
-        @if($license->violations->count() > 0)
-        <div class="bg-gray-50 p-4 rounded-lg mb-8">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-semibold text-gray-800">
-                    <i class="fas fa-exclamation-triangle text-red-500 mr-2"></i>
-                    المخالفات ({{ $license->violations->count() }})
-                </h3>
-                <div class="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-medium">
-                    الإجمالي: {{ number_format($license->violations->sum('violation_amount'), 2) }} ريال
-                </div>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200 bg-white rounded-lg shadow">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
-                            <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">رقم المخالفة</th>
-                            <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">نوع المخالفة</th>
-                            <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">تاريخ المخالفة</th>
-                            <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الجهة المسؤولة</th>
-                            <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">قيمة المخالفة</th>
-                            <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">تاريخ الاستحقاق</th>
-                            <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">حالة الدفع</th>
-                            <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">المرفقات</th>
-                            <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الحالة</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        @foreach($license->violations as $index => $violation)
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $index + 1 }}</td>
-                            <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-blue-600">
-                                {{ $violation->violation_number ?? '-' }}
-                            </td>
-                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                    {{ $violation->violation_type ?? '-' }}
-                                </span>
-                            </td>
-                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {{ $violation->violation_date ? $violation->violation_date->format('Y/m/d') : '-' }}
-                            </td>
-                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {{ $violation->responsible_party ?? '-' }}
-                            </td>
-                            <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-green-600">
-                                {{ $violation->violation_amount ? number_format($violation->violation_amount, 2) . ' ريال' : '-' }}
-                            </td>
-                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                                @if($violation->payment_due_date)
-                                    <span class="@if($violation->payment_due_date < now()) text-red-600 @else text-gray-900 @endif">
-                                        {{ $violation->payment_due_date->format('Y/m/d') }}
-                                    </span>
-                                @else
-                                    -
-                                @endif
-                            </td>
-                            <td class="px-4 py-4 whitespace-nowrap text-sm">
-                                @if($violation->payment_status === 'pending')
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                        <i class="fas fa-clock mr-1"></i>
-                                        في انتظار السداد
-                                    </span>
-                                @elseif($violation->payment_status === '1' || $violation->payment_status === 'paid')
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                        <i class="fas fa-check-circle mr-1"></i>
-                                        تم السداد
-                                    </span>
-                                @else
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                        <i class="fas fa-question-circle mr-1"></i>
-                                        غير محدد
-                                    </span>
-                                @endif
-                            </td>
-                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                                @if($violation->attachment_path)
-                                    <a href="{{ asset('storage/' . $violation->attachment_path) }}" 
-                                       target="_blank" 
-                                       class="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full hover:bg-blue-200 transition-colors duration-200"
-                                       title="عرض المرفق">
-                                        <i class="fas fa-paperclip mr-1"></i>
-                                        عرض المرفق
-                                    </a>
-                                @else
-                                    <span class="text-gray-500 text-xs">لا يوجد</span>
-                                @endif
-                            </td>
-                            <td class="px-4 py-4 whitespace-nowrap text-sm">
-                                @if($violation->status === 'resolved')
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                        <i class="fas fa-check-circle mr-1"></i>
-                                        تم الحل
-                                    </span>
-                                @else
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                        <i class="fas fa-exclamation-circle mr-1"></i>
-                                        معلق
-                                    </span>
-                                @endif
-                            </td>
-                        </tr>
-                        @if($violation->violation_description || $violation->notes)
-                        <tr class="bg-gray-50">
-                            <td colspan="10" class="px-4 py-3 text-sm text-gray-700">
-                                @if($violation->violation_description)
-                                    <div class="mb-2">
-                                        <strong class="text-gray-900">وصف المخالفة:</strong>
-                                        <span class="ml-2">{{ $violation->violation_description }}</span>
-                                    </div>
-                                @endif
-                                @if($violation->notes)
-                                    <div>
-                                        <strong class="text-gray-900">ملاحظات:</strong>
-                                        <span class="ml-2">{{ $violation->notes }}</span>
-                                    </div>
-                                @endif
-                                @if($violation->payment_invoice_number)
-                                    <div class="mt-2">
-                                        <strong class="text-gray-900">رقم فاتورة الدفع:</strong>
-                                        <span class="ml-2 text-blue-600">{{ $violation->payment_invoice_number }}</span>
-                                    </div>
-                                @endif
-                            </td>
-                        </tr>
-                        @endif
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        @else
-        <div class="bg-gray-50 p-8 rounded-lg mb-8 text-center">
-            <div class="text-gray-400 mb-4">
-                <i class="fas fa-shield-alt text-4xl"></i>
-            </div>
-            <h3 class="text-lg font-medium text-gray-900 mb-2">لا توجد مخالفات</h3>
-            <p class="text-gray-500">لم يتم تسجيل أي مخالفات لهذه الرخصة</p>
-        </div>
-        @endif
-
-        <!-- ملاحظات -->
-        @if($license->notes)
-        <div class="bg-gray-50 p-4 rounded-lg">
-            <h3 class="text-lg font-semibold mb-2">ملاحظات</h3>
-            <p class="text-gray-700">{{ $license->notes }}</p>
-        </div>
-        @endif
-
-        <!-- بيانات الإخلاءات -->
+           <!-- بيانات الإخلاءات -->
         <div class="mt-8">
-            <h3 class="text-xl font-bold text-gray-800 mb-4">بيانات الإخلاءات</h3>
+            <h3 class="text-xl font-bold text-gray-800 mb-4"> الإخلاءات</h3>
             
             <!-- ملخص الإخلاءات -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -1315,6 +748,274 @@ use Illuminate\Support\Facades\Storage;
                 </div>
             </div>
         @endif
+            
+
+            <!-- جدول بيانات الإخلاءات التفصيلي - الجدول الأول -->
+            @if(is_array($evacTable1Data) && count($evacTable1Data) > 0)
+                <div class="mb-8">
+                    <h4 class="text-lg font-medium text-gray-800 mb-4">جدول الفسح ونوع الشارع للإخلاء</h4>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead>
+                                <tr class="bg-gray-100">
+                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
+                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">رقم الفسح</th>
+                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">تاريخ الفسح</th>
+                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">طول الفسح</th>
+                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">طول المختبر</th>
+                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">نوع الشارع</th>
+                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">كمية التربة</th>
+                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">كمية الأسفلت</th>
+                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">كمية البلاط</th>
+                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">فحص التربة</th>
+                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">فحص MC1</th>
+                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">فحص الأسفلت</th>
+                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">ملاحظات</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                @foreach($evacTable1Data as $index => $row)
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $index + 1 }}</td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $row['clearance_number'] ?? '-' }}</td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                                            {{ isset($row['clearance_date']) ? \Carbon\Carbon::parse($row['clearance_date'])->format('Y/m/d') : '-' }}
+                                        </td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $row['length'] ?? '-' }}</td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $row['lab_length'] ?? '-' }}</td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $row['street_type'] ?? '-' }}</td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $row['soil_quantity'] ?? '-' }}</td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $row['asphalt_quantity'] ?? '-' }}</td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $row['tile_quantity'] ?? '-' }}</td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $row['soil_test'] ?? '-' }}</td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $row['mc1_test'] ?? '-' }}</td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $row['asphalt_test'] ?? '-' }}</td>
+                                        <td class="px-4 py-4 text-sm text-gray-900">{{ $row['notes'] ?? '-' }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            @endif
+
+            <!-- جدول التفاصيل الفنية للمختبر -->
+            @php
+                $labTechnicalData = $license->lab_table2_data ? json_decode($license->lab_table2_data, true) : [];
+            @endphp
+            
+            @if(is_array($labTechnicalData) && count($labTechnicalData) > 0)
+                <div class="mb-8">
+                    <h4 class="text-lg font-medium text-gray-800 mb-4">التفاصيل الفنية للمختبر</h4>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead>
+                                <tr class="bg-gray-100">
+                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 80px;">السنة</th>
+                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 120px;">نوع العمل</th>
+                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 80px;">العمق</th>
+                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 100px;">دك التربة</th>
+                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 100px;">MC1-RC2</th>
+                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 100px;">دك أسفلت</th>
+                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 80px;">ترابي</th>
+                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 120px;">الكثافة القصوى للأسفلت</th>
+                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 120px;">نسبة الأسفلت</th>
+                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 120px;">تجربة مارشال</th>
+                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 120px;">تقييم البلاط</th>
+                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 120px;">تصنيف التربة</th>
+                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 120px;">تجربة بروكتور</th>
+                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 100px;">الخرسانة</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                @foreach($labTechnicalData as $index => $row)
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $row['year'] ?? '-' }}</td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $row['work_type'] ?? '-' }}</td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $row['depth'] ?? '-' }}</td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $row['soil_compaction'] ?? '-' }}</td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $row['mc1rc2'] ?? '-' }}</td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $row['asphalt_compaction'] ?? '-' }}</td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $row['soil_type'] ?? '-' }}</td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $row['max_asphalt_density'] ?? '-' }}</td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $row['asphalt_percentage'] ?? '-' }}</td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $row['marshall_test'] ?? '-' }}</td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $row['tile_evaluation'] ?? '-' }}</td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $row['soil_classification'] ?? '-' }}</td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $row['proctor_test'] ?? '-' }}</td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $row['concrete'] ?? '-' }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            @endif
+
+            <!-- رسالة عدم وجود بيانات -->
+            @if(!$hasEvacuationData && (!is_array($evacTable1Data) || count($evacTable1Data) == 0) && (!is_array($labTechnicalData) || count($labTechnicalData) == 0))
+                <div class="text-center py-8 text-gray-500">
+                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M12 12h.01M12 14h.01M12 16h.01M12 18h.01M12 20h.01M12 22h.01"></path>
+                    </svg>
+                    <h3 class="mt-2 text-sm font-medium text-gray-900">لا توجد بيانات إخلاء</h3>
+                    <p class="mt-1 text-sm text-gray-500">لم يتم إضافة أي بيانات إخلاء للرخصة بعد</p>
+                </div>
+            @endif
+        </div>
+
+        
+        <!-- ملاحظات -->
+        @if($license->notes)
+        <div class="bg-gray-50 p-4 rounded-lg">
+            <h3 class="text-lg font-semibold mb-2">ملاحظات</h3>
+            <p class="text-gray-700">{{ $license->notes }}</p>
+        </div>
+        @endif
+
+        
+        <!-- المخالفات -->
+        @if($license->violations->count() > 0)
+        <div class="bg-gray-50 p-4 rounded-lg mb-8">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold text-gray-800">
+                    <i class="fas fa-exclamation-triangle text-red-500 mr-2"></i>
+                    المخالفات ({{ $license->violations->count() }})
+                </h3>
+                <div class="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-medium">
+                    الإجمالي: {{ number_format($license->violations->sum('violation_amount'), 2) }} ريال
+                </div>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200 bg-white rounded-lg shadow">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
+                            <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">رقم المخالفة</th>
+                            <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">نوع المخالفة</th>
+                            <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">تاريخ المخالفة</th>
+                            <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الجهة المسؤولة</th>
+                            <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">قيمة المخالفة</th>
+                            <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">تاريخ الاستحقاق</th>
+                            <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">حالة الدفع</th>
+                            <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">المرفقات</th>
+                            <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الحالة</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        @foreach($license->violations as $index => $violation)
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $index + 1 }}</td>
+                            <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-blue-600">
+                                {{ $violation->violation_number ?? '-' }}
+                            </td>
+                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                    {{ $violation->violation_type ?? '-' }}
+                                </span>
+                            </td>
+                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {{ $violation->violation_date ? $violation->violation_date->format('Y/m/d') : '-' }}
+                            </td>
+                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {{ $violation->responsible_party ?? '-' }}
+                            </td>
+                            <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-green-600">
+                                {{ $violation->violation_amount ? number_format($violation->violation_amount, 2) . ' ريال' : '-' }}
+                            </td>
+                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                                @if($violation->payment_due_date)
+                                    <span class="@if($violation->payment_due_date < now()) text-red-600 @else text-gray-900 @endif">
+                                        {{ $violation->payment_due_date->format('Y/m/d') }}
+                                    </span>
+                                @else
+                                    -
+                                @endif
+                            </td>
+                            <td class="px-4 py-4 whitespace-nowrap text-sm">
+                                @if($violation->payment_status === 'pending')
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                        <i class="fas fa-clock mr-1"></i>
+                                        في انتظار السداد
+                                    </span>
+                                @elseif($violation->payment_status === '1' || $violation->payment_status === 'paid')
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                        <i class="fas fa-check-circle mr-1"></i>
+                                        تم السداد
+                                    </span>
+                                @else
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                        <i class="fas fa-question-circle mr-1"></i>
+                                        غير محدد
+                                    </span>
+                                @endif
+                            </td>
+                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                                @if($violation->attachment_path)
+                                    <a href="{{ asset('storage/' . $violation->attachment_path) }}" 
+                                       target="_blank" 
+                                       class="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full hover:bg-blue-200 transition-colors duration-200"
+                                       title="عرض المرفق">
+                                        <i class="fas fa-paperclip mr-1"></i>
+                                        عرض المرفق
+                                    </a>
+                                @else
+                                    <span class="text-gray-500 text-xs">لا يوجد</span>
+                                @endif
+                            </td>
+                            <td class="px-4 py-4 whitespace-nowrap text-sm">
+                                @if($violation->status === 'resolved')
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                        <i class="fas fa-check-circle mr-1"></i>
+                                        تم الحل
+                                    </span>
+                                @else
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                        <i class="fas fa-exclamation-circle mr-1"></i>
+                                        معلق
+                                    </span>
+                                @endif
+                            </td>
+                        </tr>
+                        @if($violation->violation_description || $violation->notes)
+                        <tr class="bg-gray-50">
+                            <td colspan="10" class="px-4 py-3 text-sm text-gray-700">
+                                @if($violation->violation_description)
+                                    <div class="mb-2">
+                                        <strong class="text-gray-900">وصف المخالفة:</strong>
+                                        <span class="ml-2">{{ $violation->violation_description }}</span>
+                                    </div>
+                                @endif
+                                @if($violation->notes)
+                                    <div>
+                                        <strong class="text-gray-900">ملاحظات:</strong>
+                                        <span class="ml-2">{{ $violation->notes }}</span>
+                                    </div>
+                                @endif
+                                @if($violation->payment_invoice_number)
+                                    <div class="mt-2">
+                                        <strong class="text-gray-900">رقم فاتورة الدفع:</strong>
+                                        <span class="ml-2 text-blue-600">{{ $violation->payment_invoice_number }}</span>
+                                    </div>
+                                @endif
+                            </td>
+                        </tr>
+                        @endif
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        @else
+        <div class="bg-gray-50 p-8 rounded-lg mb-8 text-center">
+            <div class="text-gray-400 mb-4">
+                <i class="fas fa-shield-alt text-4xl"></i>
+            </div>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">لا توجد مخالفات</h3>
+            <p class="text-gray-500">لم يتم تسجيل أي مخالفات لهذه الرخصة</p>
+        </div>
+        @endif
+
     </div>
 </div>
 @endsection
