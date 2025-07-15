@@ -189,4 +189,94 @@ class ElectricalWorksController extends Controller
 
         return redirect()->back()->with('success', 'تم حذف صورة الأعمال الكهربائية بنجاح');
     }
+
+    /**
+     * حفظ البيانات اليومية للأعمال الكهربائية
+     */
+    public function saveDailyElectricalWorks(Request $request, WorkOrder $workOrder)
+    {
+        try {
+            $request->validate([
+                'electrical_works' => 'required|array',
+                'electrical_works.*.item_name' => 'required|string',
+                'electrical_works.*.length' => 'required|numeric|min:0',
+                'electrical_works.*.price' => 'required|numeric|min:0',
+                'electrical_works.*.total' => 'required|numeric|min:0',
+                'work_date' => 'required|date'
+            ]);
+
+            $workDate = $request->input('work_date');
+            $electricalWorks = $request->input('electrical_works');
+
+            // حفظ البيانات في daily_electrical_works_data
+            $dailyElectricalWorks = $workOrder->daily_electrical_works_data ?? [];
+            
+            // إزالة البيانات القديمة لنفس التاريخ
+            $dailyElectricalWorks = collect($dailyElectricalWorks)->filter(function ($item) use ($workDate) {
+                return $item['work_date'] !== $workDate;
+            })->toArray();
+
+            // إضافة البيانات الجديدة
+            foreach ($electricalWorks as $work) {
+                $dailyElectricalWorks[] = [
+                    'item_name' => $work['item_name'],
+                    'length' => (float) $work['length'],
+                    'price' => (float) $work['price'],
+                    'total' => (float) $work['total'],
+                    'work_date' => $workDate,
+                    'created_at' => now()->toDateTimeString()
+                ];
+            }
+
+            // حفظ البيانات في قاعدة البيانات
+            $workOrder->update([
+                'daily_electrical_works_data' => $dailyElectricalWorks,
+                'daily_electrical_works_last_update' => now()
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'تم حفظ البيانات اليومية بنجاح',
+                'data' => $electricalWorks
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error saving daily electrical works: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء حفظ البيانات: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * الحصول على الملخص اليومي للأعمال الكهربائية
+     */
+    public function getDailySummary(Request $request, WorkOrder $workOrder)
+    {
+        try {
+            $date = $request->query('date', now()->format('Y-m-d'));
+            
+            // استرجاع البيانات من daily_electrical_works_data
+            $dailyElectricalWorks = $workOrder->daily_electrical_works_data ?? [];
+            
+            // تصفية البيانات حسب التاريخ
+            $filteredWorks = collect($dailyElectricalWorks)->filter(function ($item) use ($date) {
+                return isset($item['work_date']) && $item['work_date'] === $date;
+            })->values();
+
+            return response()->json([
+                'success' => true,
+                'electrical_works' => $filteredWorks,
+                'date' => $date
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error getting daily electrical works summary: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء جلب الملخص اليومي: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 } 

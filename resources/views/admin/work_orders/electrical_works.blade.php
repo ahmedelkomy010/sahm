@@ -148,6 +148,10 @@
                                 <i class="fas fa-calculator me-2"></i>
                                 إعادة حساب الإجماليات
                             </button>
+                            <button type="button" class="btn btn-warning px-4 ms-2" onclick="saveDailyElectricalWorks()">
+                                <i class="fas fa-calendar-check me-2"></i>
+                                حفظ البيانات اليومية
+                            </button>
                         </div>
                         
                         @if($workOrder->electrical_works && count($workOrder->electrical_works) > 0)
@@ -180,9 +184,33 @@
                                 مسح الكل
                             </button>
                         </div>
-                                                                </div>
-                                                            </div>
+                    </div>
+                </div>
                 <div class="card-body">
+                    <!-- حقل التاريخ -->
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="electrical_work_date" class="form-label fw-bold">
+                                    <i class="fas fa-calendar-alt me-2"></i>
+                                    تاريخ العمل
+                                </label>
+                                <input type="date" 
+                                       class="form-control" 
+                                       id="electrical_work_date" 
+                                       name="electrical_work_date" 
+                                       value="{{ date('Y-m-d') }}"
+                                       onchange="updateDailySummary(this.value)">
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="alert alert-info mb-0" role="alert">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>ملاحظة:</strong> سيتم حفظ البيانات حسب التاريخ المحدد. يمكنك تغيير التاريخ لعرض أو إضافة بيانات ليوم آخر.
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- إحصائيات سريعة -->
                     <div class="row g-3 mb-4">
                         <div class="col-md-3">

@@ -40,10 +40,60 @@ class ExcavationLogger {
     getSectionType(excavationType) {
         return this.excavationTypes[excavationType] || excavationType;
     }
+
+    // دالة إضافة إلى الجدول
+    addToTable(data) {
+        console.log('Adding to table:', data);
+        // Implementation for adding data to table
+    }
+
+    // دالة عرض الجدول
+    renderTable(data) {
+        console.log('Rendering table:', data);
+        // Implementation for rendering table
+    }
+
+    // دالة إنشاء صف الجدول
+    createTableRow(item) {
+        console.log('Creating table row:', item);
+        const sectionType = this.getSectionType(item.excavation_type);
+        // Implementation for creating table row
+        return sectionType;
+    }
 }
 
 // تهيئة مسجل الحفريات
 const excavationLogger = new ExcavationLogger();
+
+// تعريف مدير الأعمال المدنية
+class CivilWorksManager {
+    constructor() {
+        this.excavationLogger = new ExcavationLogger();
+    }
+
+    // دالة تسجيل بيانات الحفريات
+    logExcavationData(data) {
+        console.log('Logging excavation data:', data);
+        try {
+            return this.excavationLogger.addToTable(data);
+        } catch (error) {
+            console.error('Error logging excavation data:', error);
+        }
+    }
+
+    // دالة التعامل مع الحسابات العادية
+    handleRegularCalculation(data) {
+        console.log('Handling regular calculation:', data);
+        try {
+            return this.logExcavationData(data);
+        } catch (error) {
+            console.error('Error in regular calculation:', error);
+        }
+    }
+}
+
+// تهيئة مدير الأعمال المدنية
+const civilWorksManager = new CivilWorksManager();
 
 /**
  * عرض رسالة للمستخدم
