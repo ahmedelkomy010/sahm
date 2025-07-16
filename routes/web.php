@@ -302,6 +302,26 @@ Route::post('licenses/save-evacuation-data-simple', [\App\Http\Controllers\Admin
     Route::delete('excavation-details/{excavationDetail}', [ExcavationDetailController::class, 'destroy'])->name('excavation-details.destroy');
 });
 
+// Project Selection Routes
+Route::middleware(['auth'])->group(function () {
+    // Changed from closure to controller method
+    Route::get('/project/type-selection', [App\Http\Controllers\ProjectController::class, 'showProjectTypeSelection'])
+        ->name('project.type-selection');
+    
+    Route::post('/project/set-type', [App\Http\Controllers\ProjectController::class, 'setProjectType'])
+        ->name('project.set-type');
+    
+    Route::get('/project/current-type', [App\Http\Controllers\ProjectController::class, 'getCurrentProjectType'])
+        ->name('project.current-type');
+
+    Route::get('/projects/create', [App\Http\Controllers\ProjectController::class, 'create'])
+        ->name('projects.create');
+    Route::post('/projects', [App\Http\Controllers\ProjectController::class, 'store'])
+        ->name('projects.store');
+    Route::get('/projects/{project}', [App\Http\Controllers\ProjectController::class, 'show'])->name('projects.show');
+    Route::post('/projects/{project}/upload', [App\Http\Controllers\ProjectController::class, 'upload'])->name('projects.upload');
+});
+
 // Project Selection Route
 Route::get('/project-selection', function () {
     return view('project-selection', ['hideNavbar' => false]);

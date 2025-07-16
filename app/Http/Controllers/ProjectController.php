@@ -2,50 +2,60 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Project;
+use App\Models\ProjectAttachment;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class ProjectController extends Controller
 {
-    /**
-     * Show the project type selection page.
-     *
-     * @return \Illuminate\View\View
-     */
     public function showProjectTypeSelection()
     {
-        return view('projects.project-selection-key');
+        return view('projects.type-selection');
     }
 
-    /**
-     * Set the project type in session.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function setProjectType(Request $request)
+    public function create()
+    {
+        return view('projects.create');
+    }
+
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'contract_number' => 'required|string|max:255|unique:projects',
+            'project_type' => 'required|in:civil,electrical,mixed',
+            'location' => 'required|string|max:255',
+            'description' => 'nullable|string',
+        ]);
+
+        $project = Project::create($validated);
+
+        return redirect()->route('projects.show', $project)
+            ->with('success', 'تم إنشاء المشروع بنجاح');
+    }
+
+    public function show(Project $project)
+    {
+        $project->load('attachments');
+        return view('projects.show', compact('project'));
+    }
+
+    public function upload(Request $request, Project $project)
     {
         $request->validate([
-            'project_type' => 'required|in:transport,fire'
+            'attachment' => 'required|file|max:10240', // 10MB max
         ]);
 
-        // Store project type in session
-        session(['project_type' => $request->project_type]);
+        $file = $request->file('attachment');
+        $path = $file->store('project-attachments/' . $project->id, 'public');
 
-        return response()->json([
-            'message' => 'تم اختيار نوع المشروع بنجاح',
-            'project_type' => $request->project_type
+        ProjectAttachment::create([
+            'project_id' => $project->id,
+            'file_path' => $path,
+            'original_filename' => $file->getClientOriginalName(),
         ]);
-    }
 
-    /**
-     * Get the current project type from session.
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function getCurrentProjectType()
-    {
-        return response()->json([
-            'project_type' => session('project_type')
-        ]);
+        return back()->with('success', 'تم رفع الملف بنجاح');
     }
 } 
