@@ -253,9 +253,10 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function setTodayFilter() {
-    const today = new Date().toISOString().split('T')[0];
-    document.getElementById('start_date').value = today;
-    document.getElementById('end_date').value = today;
+    const today = new Date();
+    document.getElementById('start_date').value = today.toISOString().split('T')[0];
+    document.getElementById('end_date').value = today.toISOString().split('T')[0];
+    loadProductivityReport();
 }
 
 function setWeekFilter() {
@@ -265,6 +266,7 @@ function setWeekFilter() {
     
     document.getElementById('start_date').value = startOfWeek.toISOString().split('T')[0];
     document.getElementById('end_date').value = today.toISOString().split('T')[0];
+    loadProductivityReport();
 }
 
 function setMonthFilter() {
@@ -273,6 +275,7 @@ function setMonthFilter() {
     
     document.getElementById('start_date').value = startOfMonth.toISOString().split('T')[0];
     document.getElementById('end_date').value = today.toISOString().split('T')[0];
+    loadProductivityReport();
 }
 
 function loadProductivityReport() {
@@ -312,8 +315,16 @@ function displayProductivityReport(data) {
     document.getElementById('productivityDetails').style.display = 'block';
     
     // تحديث فترة التقرير
-    const startDate = new Date(data.period.start_date).toLocaleDateString('ar-SA');
-    const endDate = new Date(data.period.end_date).toLocaleDateString('ar-SA');
+    const startDate = new Date(data.period.start_date).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+    });
+    const endDate = new Date(data.period.end_date).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+    });
     document.getElementById('reportPeriod').textContent = `${startDate} - ${endDate}`;
     
     // تحديث الملخص
@@ -337,6 +348,14 @@ function displayProductivityReport(data) {
     updateElectricalWorksTable(data.electrical_works.details);
 }
 
+function formatDate(dateString) {
+    return new Date(dateString).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+    });
+}
+
 function updateCivilWorksTable(details) {
     const tbody = document.getElementById('civilWorksTableBody');
     tbody.innerHTML = '';
@@ -347,17 +366,16 @@ function updateCivilWorksTable(details) {
     }
     
     details.forEach(item => {
-        const row = `
-            <tr>
-                <td>${new Date(item.date).toLocaleDateString('ar-SA')}</td>
-                <td>${item.description}</td>
-                <td>${formatNumber(item.quantity)}</td>
-                <td>${item.unit}</td>
-                <td>${formatCurrency(item.price)}</td>
-                <td>${formatCurrency(item.total)}</td>
-            </tr>
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${formatDate(item.date)}</td>
+            <td>${item.description}</td>
+            <td class="text-center">${formatNumber(item.quantity)}</td>
+            <td class="text-center">${item.unit}</td>
+            <td class="text-center">${formatCurrency(item.price)}</td>
+            <td class="text-center">${formatCurrency(item.total)}</td>
         `;
-        tbody.innerHTML += row;
+        tbody.appendChild(row);
     });
 }
 
@@ -371,16 +389,15 @@ function updateInstallationsTable(details) {
     }
     
     details.forEach(item => {
-        const row = `
-            <tr>
-                <td>${new Date(item.date).toLocaleDateString('ar-SA')}</td>
-                <td>${item.type}</td>
-                <td>${formatNumber(item.quantity)}</td>
-                <td>${formatCurrency(item.price)}</td>
-                <td>${formatCurrency(item.total)}</td>
-            </tr>
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${formatDate(item.date)}</td>
+            <td>${item.type}</td>
+            <td class="text-center">${formatNumber(item.quantity)}</td>
+            <td class="text-center">${formatCurrency(item.price)}</td>
+            <td class="text-center">${formatCurrency(item.total)}</td>
         `;
-        tbody.innerHTML += row;
+        tbody.appendChild(row);
     });
 }
 
@@ -394,16 +411,15 @@ function updateElectricalWorksTable(details) {
     }
     
     details.forEach(item => {
-        const row = `
-            <tr>
-                <td>${new Date(item.date).toLocaleDateString('ar-SA')}</td>
-                <td>${item.type}</td>
-                <td>${formatNumber(item.length)} متر</td>
-                <td>${formatCurrency(item.price)}</td>
-                <td>${formatCurrency(item.total)}</td>
-            </tr>
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${formatDate(item.date)}</td>
+            <td>${item.type}</td>
+            <td class="text-center">${formatNumber(item.length)}</td>
+            <td class="text-center">${formatCurrency(item.price)}</td>
+            <td class="text-center">${formatCurrency(item.total)}</td>
         `;
-        tbody.innerHTML += row;
+        tbody.appendChild(row);
     });
 }
 
