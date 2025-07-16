@@ -1349,6 +1349,10 @@
                                         <i class="fas fa-file-excel me-2"></i>
                                         <span class="fw-bold">تصدير إكسل</span>
                                     </button>
+                                    <button type="button" class="btn btn-warning btn-lg shadow-sm" onclick="window.clearSavedData()">
+                                        <i class="fas fa-trash-alt me-2"></i>
+                                        <span class="fw-bold">مسح البيانات</span>
+                                    </button>
                                 </div>
                                 <div class="text-muted small">
                                     <i class="fas fa-clock me-1"></i>
@@ -2420,110 +2424,54 @@
     
     <!-- تحميل البيانات المحفوظة -->
     <script>
-        // تهيئة المتغيرات العامة
-        window.workOrderId = {{ $workOrder->id }};
-        window.csrfToken = document.querySelector('meta[name="csrf-token"]').content;
-        window.savedDailyData = @json($savedDailyData ?? []);
+        // تهيئة نظام الأعمال المدنية المحترف v2.0
+        const workOrderId = {{ $workOrder->id }};
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+        const savedDailyData = @json($savedDailyData ?? []);
         
-        // دالة حفظ البيانات (نسخة محلية للتوافق)
-        function saveData() {
-            if (typeof saveTodayWork === 'function') {
-                saveTodayWork();
-            } else {
-                console.error('saveTodayWork function not found');
-                alert('خطأ: لم يتم العثور على دالة الحفظ');
+        console.log('🏗️ بدء تهيئة نظام الأعمال المدنية المحترف v2.0');
+        console.log('📋 معرف أمر العمل:', workOrderId);
+        console.log('💾 البيانات المحفوظة:', savedDailyData);
+        
+        // متغير للتحكم في التهيئة لمنع التكرار
+        let systemInitialized = false;
+        
+        // دالة التهيئة الآمنة
+        async function initializeSystem() {
+            if (systemInitialized) {
+                console.log('🟡 النظام تم تهيئته مسبقاً');
+                return;
             }
-        }
-        
-        // دالة تحديث الإحصائيات من البيانات المحفوظة
-        function updateStatisticsFromSavedData(dataArray) {
-            if (typeof window.updateStatisticsFromSavedData === 'function') {
-                window.updateStatisticsFromSavedData(dataArray);
-            } else {
-                console.log('updateStatisticsFromSavedData function not found');
-            }
-        }
-        
-        // دالة تحميل البيانات المحفوظة
-        async function loadSavedDailyWork() {
-            console.log('Loading saved daily work data...');
-            if (window.savedDailyData && window.savedDailyData.length > 0) {
-                displaySavedData(window.savedDailyData);
-                updateStatisticsFromSavedData(window.savedDailyData);
-            } else {
-                // محاولة تحميل البيانات من الخادم
-                try {
-                    const response = await fetch(`/admin/work-orders/${window.workOrderId}/civil-works/get-daily-data`, {
-                        method: 'GET',
-                        headers: {
-                            'X-CSRF-TOKEN': window.csrfToken,
-                            'Accept': 'application/json',
-                            'Content-Type': 'application/json'
-                        }
-                    });
+            
+            try {
+                systemInitialized = true;
+                
+                // تهيئة النظام الجديد
+                const success = await window.initializeCivilWorks(workOrderId, csrfToken, savedDailyData);
+                
+                if (success) {
+                    console.log('✅ تم تهيئة النظام بنجاح');
                     
-                    const data = await response.json();
-                    console.log('Server response:', data);
-                    
-                    if (data.success && data.data && Array.isArray(data.data)) {
-                        const serverData = data.data;
-                        console.log('Loaded data from server:', serverData);
-                        
-                        if (serverData.length > 0) {
-                            displaySavedData(serverData);
-                            updateStatisticsFromSavedData(serverData);
-                        }
-                    }
-                } catch (error) {
-                    console.error('Error loading data from server:', error);
+                    // عرض إحصائيات النظام
+                    const stats = window.civilWorksSystem.getSystemStats();
+                    console.log('📊 إحصائيات النظام:', stats);
+                } else {
+                    console.error('❌ فشل في تهيئة النظام');
                 }
+                
+            } catch (error) {
+                console.error('❌ خطأ في تهيئة النظام:', error);
+                systemInitialized = false;
             }
-        }
-
-        // دالة التهيئة الرئيسية
-        function initializeDailyExcavation() {
-            console.log('Initializing daily excavation system...');
-            
-            // تحميل البيانات المحفوظة
-            setTimeout(() => {
-                loadSavedDailyWork();
-            }, 300);
-            
-            // إضافة مستمعي الأحداث
-            const saveButton = document.getElementById('save-daily-summary-btn');
-            if (saveButton) {
-                saveButton.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    saveData();
-                });
-            }
-            
-            // إضافة مستمع لأحداث التغيير في الجدول
-            const tbody = document.getElementById('daily-excavation-tbody');
-            if (tbody) {
-                tbody.addEventListener('change', function() {
-                    // تحديث الإحصائيات عند تغيير البيانات
-                    updateStatistics();
-                });
-            }
-            
-            // تحديث الإحصائيات الأولية
-            updateStatistics();
-            
-            console.log('Daily excavation system initialized successfully');
         }
         
         // تهيئة النظام عند تحميل الصفحة
-        document.addEventListener('DOMContentLoaded', function() {
-            initializeDailyExcavation();
-        });
-        
-        // تحميل البيانات عند تحميل النافذة
-        window.addEventListener('load', function() {
-            setTimeout(() => {
-                loadSavedDailyWork();
-            }, 500);
-        });
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeSystem);
+        } else {
+            // إذا كان المستند محمّل بالفعل
+            initializeSystem();
+        }
     </script>
 </body>
 </html> 
