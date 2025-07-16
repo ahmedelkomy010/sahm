@@ -37,6 +37,9 @@
                                 <i class="fas fa-clock me-1"></i>
                                 {{ $daysText }}
                             </span>
+                            <a href="{{ route('admin.work-orders.productivity', $workOrder) }}" class="btn btn-warning">
+                                <i class="fas fa-chart-line"></i> الإنتاجية
+                            </a>
                             <a href="{{ route('admin.work-orders.show', $workOrder) }}" class="btn btn-success">
                             <i class="fas fa-arrow-left"></i> عودة الي تفاصيل أمر العمل  
                         </a>

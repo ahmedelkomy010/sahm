@@ -124,6 +124,8 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     // صفحات الرخص والتنفيذ
     Route::get('work-orders/licenses', [WorkOrderController::class, 'licenses'])->name('work-orders.licenses');
     Route::get('work-orders/{workOrder}/execution', [WorkOrderController::class, 'execution'])->name('work-orders.execution');
+    Route::get('work-orders/{workOrder}/productivity', [App\Http\Controllers\Admin\WorkOrderController::class, 'productivity'])->name('work-orders.productivity');
+    Route::get('work-orders/{workOrder}/productivity-report', [App\Http\Controllers\Admin\WorkOrderController::class, 'getProductivityReport'])->name('work-orders.productivity-report');
     Route::get('work-orders/{workOrder}/daily-totals', [App\Http\Controllers\Admin\WorkOrderController::class, 'getDailyTotals'])->name('work-orders.daily-totals');
     Route::put('work-orders/{workOrder}/execution', [WorkOrderController::class, 'updateExecution'])->name('work-orders.update-execution');
     Route::delete('work-orders/{workOrder}/execution-file', [WorkOrderController::class, 'deleteExecutionFile'])->name('work-orders.delete-execution-file');

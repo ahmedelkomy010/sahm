@@ -681,4 +681,185 @@ class WorkOrderController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * عرض صفحة الإنتاجية
+     */
+    public function productivity(WorkOrder $workOrder)
+    {
+        return view('admin.work_orders.productivity', compact('workOrder'));
+    }
+
+    /**
+     * حساب الإنتاجية لفترة محددة
+     */
+    public function getProductivityReport(Request $request, WorkOrder $workOrder)
+    {
+        try {
+            $startDate = $request->input('start_date');
+            $endDate = $request->input('end_date');
+
+            if (!$startDate || !$endDate) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'يجب تحديد تاريخ البداية والنهاية'
+                ], 400);
+            }
+
+            // حساب الأعمال المدنية
+            $civilWorksData = $workOrder->daily_civil_works_data ?? [];
+            if (is_string($civilWorksData)) {
+                $civilWorksData = json_decode($civilWorksData, true) ?: [];
+            }
+
+            $civilWorksReport = [
+                'total_amount' => 0,
+                'total_quantity' => 0,
+                'items_count' => 0,
+                'details' => []
+            ];
+
+            if (is_array($civilWorksData)) {
+                foreach ($civilWorksData as $item) {
+                    $itemDate = null;
+                    if (isset($item['date'])) {
+                        $itemDate = substr($item['date'], 0, 10);
+                    } elseif (isset($item['work_date'])) {
+                        $itemDate = substr($item['work_date'], 0, 10);
+                    } elseif (isset($item['created_at'])) {
+                        $itemDate = substr($item['created_at'], 0, 10);
+                    }
+
+                    if ($itemDate && $itemDate >= $startDate && $itemDate <= $endDate) {
+                        $total = 0;
+                        $quantity = 0;
+                        
+                        if (isset($item['total'])) {
+                            $total = floatval($item['total']);
+                        } elseif (isset($item['quantity']) && isset($item['price'])) {
+                            $total = floatval($item['quantity']) * floatval($item['price']);
+                        }
+
+                        if (isset($item['quantity'])) {
+                            $quantity = floatval($item['quantity']);
+                        }
+
+                        $civilWorksReport['total_amount'] += $total;
+                        $civilWorksReport['total_quantity'] += $quantity;
+                        $civilWorksReport['items_count']++;
+                        
+                        $civilWorksReport['details'][] = [
+                            'date' => $itemDate,
+                            'description' => $item['description'] ?? $item['work_type'] ?? 'غير محدد',
+                            'quantity' => $quantity,
+                            'unit' => $item['unit'] ?? 'متر',
+                            'price' => floatval($item['price'] ?? 0),
+                            'total' => $total
+                        ];
+                    }
+                }
+            }
+
+            // حساب التركيبات
+            $installationsReport = [
+                'total_amount' => 0,
+                'total_quantity' => 0,
+                'items_count' => 0,
+                'details' => []
+            ];
+
+            $installations = $workOrder->installations()
+                ->whereBetween('installation_date', [$startDate, $endDate])
+                ->get();
+
+            foreach ($installations as $installation) {
+                $installationsReport['total_amount'] += $installation->total;
+                $installationsReport['total_quantity'] += $installation->quantity;
+                $installationsReport['items_count']++;
+                
+                $installationsReport['details'][] = [
+                    'date' => $installation->installation_date,
+                    'type' => $installation->installation_type,
+                    'quantity' => $installation->quantity,
+                    'price' => $installation->price,
+                    'total' => $installation->total
+                ];
+            }
+
+            // حساب الأعمال الكهربائية
+            $electricalWorksData = $workOrder->daily_electrical_works_data ?? $workOrder->electrical_works_data ?? $workOrder->electrical_works ?? [];
+            if (is_string($electricalWorksData)) {
+                $electricalWorksData = json_decode($electricalWorksData, true) ?: [];
+            }
+
+            $electricalWorksReport = [
+                'total_amount' => 0,
+                'total_length' => 0,
+                'items_count' => 0,
+                'details' => []
+            ];
+
+            if (is_array($electricalWorksData)) {
+                foreach ($electricalWorksData as $item) {
+                    $itemDate = null;
+                    if (isset($item['work_date'])) {
+                        $itemDate = substr($item['work_date'], 0, 10);
+                    } elseif (isset($item['date'])) {
+                        $itemDate = substr($item['date'], 0, 10);
+                    } elseif (isset($item['created_at'])) {
+                        $itemDate = substr($item['created_at'], 0, 10);
+                    }
+
+                    if ($itemDate && $itemDate >= $startDate && $itemDate <= $endDate) {
+                        $total = 0;
+                        $length = 0;
+
+                        if (isset($item['total'])) {
+                            $total = floatval($item['total']);
+                        } elseif (isset($item['length']) && isset($item['price'])) {
+                            $total = floatval($item['length']) * floatval($item['price']);
+                        }
+
+                        if (isset($item['length'])) {
+                            $length = floatval($item['length']);
+                        }
+
+                        $electricalWorksReport['total_amount'] += $total;
+                        $electricalWorksReport['total_length'] += $length;
+                        $electricalWorksReport['items_count']++;
+                        
+                        $electricalWorksReport['details'][] = [
+                            'date' => $itemDate,
+                            'type' => $item['cable_type'] ?? $item['type'] ?? 'غير محدد',
+                            'length' => $length,
+                            'price' => floatval($item['price'] ?? 0),
+                            'total' => $total
+                        ];
+                    }
+                }
+            }
+
+            // حساب الإجمالي العام
+            $grandTotal = $civilWorksReport['total_amount'] + $installationsReport['total_amount'] + $electricalWorksReport['total_amount'];
+
+            return response()->json([
+                'success' => true,
+                'period' => [
+                    'start_date' => $startDate,
+                    'end_date' => $endDate
+                ],
+                'civil_works' => $civilWorksReport,
+                'installations' => $installationsReport,
+                'electrical_works' => $electricalWorksReport,
+                'grand_total' => $grandTotal
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error generating productivity report: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء إنشاء تقرير الإنتاجية'
+            ], 500);
+        }
+    }
 } 
