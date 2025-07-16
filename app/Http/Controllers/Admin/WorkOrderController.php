@@ -172,6 +172,134 @@ class WorkOrderController extends Controller
         }
     }
 
+    public function getDailyTotals(WorkOrder $workOrder)
+    {
+        try {
+            $today = now()->toDateString();
+            Log::info('Calculating daily totals for date: ' . $today);
+
+            // حساب إجمالي الأعمال المدنية
+            $civilWorksData = $workOrder->daily_civil_works_data ?? [];
+            if (is_string($civilWorksData)) {
+                $civilWorksData = json_decode($civilWorksData, true) ?: [];
+            }
+            
+            Log::info('Civil works data:', ['data' => $civilWorksData]);
+            
+            $civilWorksTotal = 0;
+            if (is_array($civilWorksData)) {
+                foreach ($civilWorksData as $item) {
+                    // التحقق من التاريخ بطرق مختلفة
+                    $itemDate = null;
+                    if (isset($item['date'])) {
+                        $itemDate = substr($item['date'], 0, 10);
+                    } elseif (isset($item['work_date'])) {
+                        $itemDate = substr($item['work_date'], 0, 10);
+                    } elseif (isset($item['created_at'])) {
+                        $itemDate = substr($item['created_at'], 0, 10);
+                    }
+                    
+                    Log::info('Processing civil works item:', [
+                        'item' => $item,
+                        'itemDate' => $itemDate,
+                        'today' => $today
+                    ]);
+                    
+                    if ($itemDate === $today) {
+                        $total = 0;
+                        if (isset($item['total'])) {
+                            $total = floatval($item['total']);
+                        } elseif (isset($item['quantity']) && isset($item['price'])) {
+                            $total = floatval($item['quantity']) * floatval($item['price']);
+                        }
+                        $civilWorksTotal += $total;
+                        
+                        Log::info('Added to civil works total:', [
+                            'item_total' => $total,
+                            'running_total' => $civilWorksTotal
+                        ]);
+                    }
+                }
+            }
+
+            // حساب إجمالي التركيبات
+            $installationsTotal = $workOrder->installations()
+                ->whereDate('installation_date', $today)
+                ->sum('total');
+
+            Log::info('Installations total:', ['total' => $installationsTotal]);
+
+            // حساب إجمالي الأعمال الكهربائية
+            $electricalWorksData = $workOrder->daily_electrical_works_data ?? $workOrder->electrical_works_data ?? $workOrder->electrical_works ?? [];
+            if (is_string($electricalWorksData)) {
+                $electricalWorksData = json_decode($electricalWorksData, true) ?: [];
+            }
+            
+            Log::info('Electrical works data:', ['data' => $electricalWorksData]);
+            
+            $electricalWorksTotal = 0;
+            if (is_array($electricalWorksData)) {
+                foreach ($electricalWorksData as $item) {
+                    // التحقق من التاريخ بطرق مختلفة
+                    $itemDate = null;
+                    if (isset($item['work_date'])) {
+                        $itemDate = substr($item['work_date'], 0, 10);
+                    } elseif (isset($item['date'])) {
+                        $itemDate = substr($item['date'], 0, 10);
+                    } elseif (isset($item['created_at'])) {
+                        $itemDate = substr($item['created_at'], 0, 10);
+                    }
+                    
+                    Log::info('Processing electrical works item:', [
+                        'item' => $item,
+                        'itemDate' => $itemDate,
+                        'today' => $today
+                    ]);
+                    
+                    if ($itemDate === $today) {
+                        if (isset($item['total'])) {
+                            $electricalWorksTotal += floatval($item['total']);
+                        } elseif (isset($item['length']) && isset($item['price'])) {
+                            $electricalWorksTotal += floatval($item['length']) * floatval($item['price']);
+                        }
+                        
+                        Log::info('Added to electrical works total:', [
+                            'item_total' => isset($item['total']) ? floatval($item['total']) : (floatval($item['length'] ?? 0) * floatval($item['price'] ?? 0)),
+                            'running_total' => $electricalWorksTotal
+                        ]);
+                    }
+                }
+            }
+
+            // حساب الإجمالي الكلي
+            $grandTotal = $civilWorksTotal + $installationsTotal + $electricalWorksTotal;
+
+            Log::info('Final totals:', [
+                'civil_works_total' => $civilWorksTotal,
+                'installations_total' => $installationsTotal,
+                'electrical_works_total' => $electricalWorksTotal,
+                'grand_total' => $grandTotal
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'civil_works_total' => $civilWorksTotal,
+                'installations_total' => $installationsTotal,
+                'electrical_works_total' => $electricalWorksTotal,
+                'grand_total' => $grandTotal,
+                'date' => $today
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error calculating daily totals: ' . $e->getMessage());
+            Log::error('Stack trace: ' . $e->getTraceAsString());
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء حساب الإجماليات اليومية'
+            ], 500);
+        }
+    }
+
     public function getDailyInstallationsSummary(Request $request, WorkOrder $workOrder)
     {
         try {

@@ -192,42 +192,12 @@
                     <h5 class="card-title text-primary mb-3">
                         <i class="fas fa-chart-bar me-2"></i>
                         الإجمالي اليومي
+                        <button type="button" class="btn btn-sm btn-outline-primary ms-2" onclick="updateDailyTotals()">
+                            <i class="fas fa-sync-alt"></i>
+                            تحديث
+                        </button>
                     </h5>
                     <div class="row g-3">
-                        <!-- الأعمال المدنية -->
-                        @php
-                            $civilWorksData = $workOrder->daily_civil_works_data ?? [];
-                            // إذا كانت البيانات string، حولها إلى array
-                            if (is_string($civilWorksData)) {
-                                $civilWorksData = json_decode($civilWorksData, true) ?: [];
-                            }
-                            $civilWorksTotal = 0;
-                            if (is_array($civilWorksData)) {
-                                foreach ($civilWorksData as $item) {
-                                    $civilWorksTotal += floatval($item['total'] ?? 0);
-                                }
-                            }
-
-                            // حساب إجمالي التركيبات
-                            $installationsTotal = $workOrder->installations()
-                                ->whereDate('created_at', now()->toDateString())
-                                ->sum('total');
-
-                            // حساب إجمالي الأعمال الكهربائية
-                            $electricalWorksData = $workOrder->electrical_works ?? [];
-                            $electricalWorksTotal = 0;
-                            if (is_array($electricalWorksData)) {
-                                foreach ($electricalWorksData as $item) {
-                                    if (isset($item['length']) && isset($item['price'])) {
-                                        $electricalWorksTotal += floatval($item['length']) * floatval($item['price']);
-                                    }
-                                }
-                            }
-
-                            // حساب الإجمالي الكلي
-                            $grandTotal = $civilWorksTotal + $installationsTotal + $electricalWorksTotal;
-                        @endphp
-
                         <!-- الأعمال المدنية -->
                         <div class="col-md-3">
                             <div class="card border-0 bg-primary bg-opacity-10">
@@ -236,7 +206,7 @@
                                         <i class="fas fa-hard-hat text-primary fs-3 me-3"></i>
                                         <div>
                                             <h6 class="card-subtitle mb-1 text-muted">الأعمال المدنية</h6>
-                                            <h5 class="card-title mb-0 text-primary">{{ number_format($civilWorksTotal, 2) }} ريال</h5>
+                                            <h5 class="card-title mb-0 text-primary">0.00 ريال</h5>
                                         </div>
                                     </div>
                                 </div>
@@ -251,7 +221,7 @@
                                         <i class="fas fa-tools text-success fs-3 me-3"></i>
                                         <div>
                                             <h6 class="card-subtitle mb-1 text-muted">التركيبات</h6>
-                                            <h5 class="card-title mb-0 text-success">{{ number_format($installationsTotal, 2) }} ريال</h5>
+                                            <h5 class="card-title mb-0 text-success">0.00 ريال</h5>
                                         </div>
                                     </div>
                                 </div>
@@ -266,22 +236,22 @@
                                         <i class="fas fa-bolt text-warning fs-3 me-3"></i>
                                         <div>
                                             <h6 class="card-subtitle mb-1 text-muted">أعمال الكهرباء</h6>
-                                            <h5 class="card-title mb-0 text-warning">{{ number_format($electricalWorksTotal, 2) }} ريال</h5>
+                                            <h5 class="card-title mb-0 text-warning">0.00 ريال</h5>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- الإجمالي الكلي -->
+                        <!-- الإجمالي -->
                         <div class="col-md-3">
                             <div class="card border-0 bg-info bg-opacity-10">
                                 <div class="card-body">
                                     <div class="d-flex align-items-center">
                                         <i class="fas fa-calculator text-info fs-3 me-3"></i>
                                         <div>
-                                            <h6 class="card-subtitle mb-1 text-muted">الإجمالي الكلي</h6>
-                                            <h5 class="card-title mb-0 text-info">{{ number_format($grandTotal, 2) }} ريال</h5>
+                                            <h6 class="card-subtitle mb-1 text-muted">الإجمالي</h6>
+                                            <h5 class="card-title mb-0 text-info">0.00 ريال</h5>
                                         </div>
                                     </div>
                                 </div>
@@ -1078,5 +1048,74 @@ function updateTotals() {
         totalDiffElement.innerHTML = `<span class="text-secondary">0.00 ريال</span>`;
     }
 }
+</script>
+
+<script>
+// تحديث الإجمالي اليومي
+function updateDailyTotals() {
+    console.log('Updating daily totals...');
+    const workOrderId = {{ $workOrder->id }};
+    fetch(`/admin/work-orders/${workOrderId}/daily-totals`)
+        .then(response => response.json())
+        .then(data => {
+            console.log('Received data:', data);
+            if (data.success) {
+                // تحديث الأعمال المدنية
+                const civilWorksElement = document.querySelector('.card-title.mb-0.text-primary');
+                if (civilWorksElement) {
+                    civilWorksElement.textContent = number_format(data.civil_works_total, 2) + ' ريال';
+                    console.log('Updated civil works:', civilWorksElement.textContent);
+                } else {
+                    console.warn('Civil works element not found');
+                }
+                
+                // تحديث التركيبات
+                const installationsElement = document.querySelector('.card-title.mb-0.text-success');
+                if (installationsElement) {
+                    installationsElement.textContent = number_format(data.installations_total, 2) + ' ريال';
+                    console.log('Updated installations:', installationsElement.textContent);
+                } else {
+                    console.warn('Installations element not found');
+                }
+                
+                // تحديث الأعمال الكهربائية
+                const electricalWorksElement = document.querySelector('.card-title.mb-0.text-warning');
+                if (electricalWorksElement) {
+                    electricalWorksElement.textContent = number_format(data.electrical_works_total, 2) + ' ريال';
+                    console.log('Updated electrical works:', electricalWorksElement.textContent);
+                } else {
+                    console.warn('Electrical works element not found');
+                }
+                
+                // تحديث الإجمالي الكلي
+                const grandTotalElement = document.querySelector('.card-title.mb-0.text-info');
+                if (grandTotalElement) {
+                    grandTotalElement.textContent = number_format(data.grand_total, 2) + ' ريال';
+                    console.log('Updated grand total:', grandTotalElement.textContent);
+                } else {
+                    console.warn('Grand total element not found');
+                }
+            } else {
+                console.error('Failed to update daily totals:', data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching daily totals:', error);
+        });
+}
+
+// تنسيق الأرقام
+function number_format(number, decimals) {
+    return parseFloat(number).toFixed(decimals);
+}
+
+// تشغيل التحديث عند تحميل الصفحة
+document.addEventListener('DOMContentLoaded', function() {
+    // التحديث الأولي
+    updateDailyTotals();
+    
+    // تحديث كل دقيقة
+    setInterval(updateDailyTotals, 60000);
+});
 </script>
 @endpush 
