@@ -24,8 +24,22 @@ use App\Http\Controllers\ExcavationDetailController;
 |
 */
 
+// المسار الرئيسي
 Route::get('/', function () {
-    return redirect()->route('login');
+    if (auth()->check()) {
+        return redirect()->route('unified.contract');
+    }
+    return view('welcome');
+});
+
+// مسارات العقد الموحد
+Route::middleware(['auth'])->group(function () {
+    Route::get('/unified-contract', function () {
+        return view('unified-contract');
+    })->name('unified.contract');
+    
+    Route::post('/projects', [ProjectController::class, 'store'])->name('projects.store');
+    Route::post('/projects/{project}/select', [ProjectController::class, 'select'])->name('projects.select');
 });
 
 // Use Laravel Breeze Routes
