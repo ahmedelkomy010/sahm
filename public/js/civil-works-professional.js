@@ -1,10 +1,16 @@
 /**
  * ========================================
- * نظام الأعمال المدنية المحترف - إعادة كتابة كاملة
+ * نظام الأعمال المدنية المحترف - إصدار نظيف
  * ========================================
  */
 
-// 1. إعدادات النظام والثوابت
+// 1. تنظيف النظام من أي تضارب سابق
+if (window.civilWorksSystem) {
+    console.log('🧹 تنظيف النظام السابق...');
+    delete window.civilWorksSystem;
+}
+
+// 2. إعدادات النظام والثوابت
 const SYSTEM_CONFIG = {
     MAX_RETRIES: 3,
     RETRY_DELAY: 1000,
@@ -13,7 +19,7 @@ const SYSTEM_CONFIG = {
     API_TIMEOUT: 30000
 };
 
-// 2. إدارة الحالة المركزية
+// 3. إدارة الحالة المركزية
 class CivilWorksStateManager {
     constructor() {
         this.state = {
@@ -33,7 +39,6 @@ class CivilWorksStateManager {
         this.initialized = false;
     }
 
-    // إنشاء نسخة وحيدة (Singleton)
     static getInstance() {
         if (!CivilWorksStateManager.instance) {
             CivilWorksStateManager.instance = new CivilWorksStateManager();
@@ -41,7 +46,6 @@ class CivilWorksStateManager {
         return CivilWorksStateManager.instance;
     }
 
-    // تهيئة النظام
     initialize(workOrderId, csrfToken, savedData = []) {
         if (this.initialized) {
             console.warn('🟡 النظام تم تهيئته مسبقاً');
@@ -57,19 +61,24 @@ class CivilWorksStateManager {
         this.notify('SYSTEM_INITIALIZED');
     }
 
-    // تحديث الحالة
     setState(updates) {
         const oldState = { ...this.state };
         this.state = { ...this.state, ...updates };
         this.notify('STATE_UPDATED', { oldState, newState: this.state });
     }
 
-    // الحصول على الحالة
     getState() {
         return { ...this.state };
     }
 
-    // إضافة مستمع للأحداث
+    addError(error) {
+        this.state.errors.push({
+            message: error.message || error,
+            timestamp: new Date().toISOString()
+        });
+        this.notify('ERROR_ADDED', error);
+    }
+
     addEventListener(event, callback) {
         if (!this.listeners.has(event)) {
             this.listeners.set(event, new Set());
@@ -77,14 +86,6 @@ class CivilWorksStateManager {
         this.listeners.get(event).add(callback);
     }
 
-    // إزالة مستمع الأحداث
-    removeEventListener(event, callback) {
-        if (this.listeners.has(event)) {
-            this.listeners.get(event).delete(callback);
-        }
-    }
-
-    // إشعار المستمعين
     notify(event, data = null) {
         if (this.listeners.has(event)) {
             this.listeners.get(event).forEach(callback => {
@@ -97,141 +98,118 @@ class CivilWorksStateManager {
         }
     }
 
-    // إضافة خطأ
-    addError(error) {
-        this.state.errors.push({
-            message: error.message || error,
-            timestamp: new Date().toISOString(),
-            stack: error.stack
-        });
-        this.notify('ERROR_ADDED', error);
-    }
-
-    // مسح الأخطاء
-    clearErrors() {
-        this.state.errors = [];
-        this.notify('ERRORS_CLEARED');
+    reset() {
+        this.state = {
+            workOrderId: null,
+            csrfToken: null,
+            isLoading: false,
+            isSaving: false,
+            dailyData: [],
+            statistics: {
+                totalLength: 0,
+                totalAmount: 0,
+                itemsCount: 0
+            },
+            errors: []
+        };
+        this.initialized = false;
+        this.listeners.clear();
     }
 }
 
-// 3. إدارة البيانات المحلية
+// 4. إدارة التخزين المحلي
 class LocalStorageManager {
     constructor() {
         this.stateManager = CivilWorksStateManager.getInstance();
     }
 
-    // بناء مفتاح التخزين
     getStorageKey(suffix = 'dailyData') {
         const { workOrderId } = this.stateManager.getState();
         return `${SYSTEM_CONFIG.STORAGE_KEY_PREFIX}${workOrderId}_${suffix}`;
     }
 
-    // حفظ البيانات محلياً
-    save(data, suffix = 'dailyData') {
+    save(data) {
         try {
-            const key = this.getStorageKey(suffix);
-            const jsonData = JSON.stringify(data);
-            localStorage.setItem(key, jsonData);
-            console.log(`💾 تم حفظ البيانات محلياً: ${key}`);
+            const key = this.getStorageKey();
+            const serializedData = JSON.stringify(data);
+            localStorage.setItem(key, serializedData);
+            console.log(`💾 تم حفظ البيانات محلياً في ${key}`);
             return true;
         } catch (error) {
-            console.error('خطأ في حفظ البيانات محلياً:', error);
-            this.stateManager.addError(error);
+            console.error('❌ خطأ في حفظ البيانات محلياً:', error);
             return false;
         }
     }
 
-    // تحميل البيانات محلياً
-    load(suffix = 'dailyData') {
+    load() {
         try {
-            const key = this.getStorageKey(suffix);
-            const data = localStorage.getItem(key);
-            return data ? JSON.parse(data) : null;
+            const key = this.getStorageKey();
+            const serializedData = localStorage.getItem(key);
+            if (serializedData) {
+                const data = JSON.parse(serializedData);
+                console.log(`📥 تم تحميل البيانات المحلية من ${key}`);
+                return Array.isArray(data) ? data : [];
+            }
+            return [];
         } catch (error) {
-            console.error('خطأ في تحميل البيانات محلياً:', error);
-            this.stateManager.addError(error);
-            return null;
+            console.error('❌ خطأ في تحميل البيانات المحلية:', error);
+            return [];
         }
     }
 
-    // حذف البيانات محلياً
-    remove(suffix = 'dailyData') {
-        try {
-            const key = this.getStorageKey(suffix);
-            localStorage.removeItem(key);
-            console.log(`🗑️ تم حذف البيانات محلياً: ${key}`);
-            return true;
-        } catch (error) {
-            console.error('خطأ في حذف البيانات محلياً:', error);
-            this.stateManager.addError(error);
-            return false;
-        }
-    }
-
-    // مسح جميع البيانات
     clearAll() {
         try {
-            const keys = Object.keys(localStorage).filter(key => 
-                key.startsWith(SYSTEM_CONFIG.STORAGE_KEY_PREFIX)
-            );
-            keys.forEach(key => localStorage.removeItem(key));
-            console.log(`🧹 تم مسح ${keys.length} عنصر من البيانات المحلية`);
-            return true;
+            const keys = Object.keys(localStorage);
+            const prefix = SYSTEM_CONFIG.STORAGE_KEY_PREFIX;
+            keys.forEach(key => {
+                if (key.startsWith(prefix)) {
+                    localStorage.removeItem(key);
+                }
+            });
+            console.log('🧹 تم مسح جميع البيانات المحلية');
         } catch (error) {
-            console.error('خطأ في مسح البيانات المحلية:', error);
-            this.stateManager.addError(error);
-            return false;
+            console.error('❌ خطأ في مسح البيانات المحلية:', error);
         }
     }
 }
 
-// 4. إدارة API والتفاعل مع الخادم
+// 5. إدارة API
 class ApiManager {
     constructor() {
         this.stateManager = CivilWorksStateManager.getInstance();
-        this.localStorage = new LocalStorageManager();
     }
 
-    // إنشاء رأس الطلب
-    getHeaders() {
+    async request(url, options = {}) {
         const { csrfToken } = this.stateManager.getState();
-        return {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'X-CSRF-TOKEN': csrfToken
+        
+        const defaultOptions = {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken,
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            timeout: SYSTEM_CONFIG.API_TIMEOUT
         };
-    }
 
-    // إرسال طلب مع إعادة المحاولة
-    async request(url, options = {}, retries = SYSTEM_CONFIG.MAX_RETRIES) {
+        const mergedOptions = { ...defaultOptions, ...options };
+
         try {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), SYSTEM_CONFIG.API_TIMEOUT);
-
-            const response = await fetch(url, {
-                ...options,
-                headers: { ...this.getHeaders(), ...options.headers },
-                signal: controller.signal
-            });
-
-            clearTimeout(timeoutId);
-
+            const response = await fetch(url, mergedOptions);
+            
             if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
 
-            return await response.json();
+            const data = await response.json();
+            return data;
         } catch (error) {
-            if (retries > 0 && !error.name === 'AbortError') {
-                console.warn(`⚠️ إعادة المحاولة... المتبقي: ${retries}`);
-                await new Promise(resolve => setTimeout(resolve, SYSTEM_CONFIG.RETRY_DELAY));
-                return this.request(url, options, retries - 1);
-            }
+            console.error(`❌ خطأ في طلب API ${url}:`, error);
             throw error;
         }
     }
 
-    // حفظ البيانات في الخادم
     async saveToServer(data) {
         const { workOrderId } = this.stateManager.getState();
         const url = `/admin/work-orders/${workOrderId}/civil-works/save-daily-data`;
@@ -257,7 +235,6 @@ class ApiManager {
         }
     }
 
-    // تحميل البيانات من الخادم
     async loadFromServer() {
         const { workOrderId } = this.stateManager.getState();
         const url = `/admin/work-orders/${workOrderId}/get-daily-civil-works`;
@@ -273,13 +250,12 @@ class ApiManager {
     }
 }
 
-// 5. جمع البيانات من النماذج
+// 6. جمع البيانات
 class DataCollector {
     constructor() {
         this.stateManager = CivilWorksStateManager.getInstance();
     }
 
-    // جمع البيانات من النماذج
     collectFormData() {
         const data = [];
         const timestamp = new Date();
@@ -287,19 +263,10 @@ class DataCollector {
         const workTime = timestamp.toLocaleTimeString('ar-SA');
 
         try {
-            // جمع بيانات الحفريات العادية
             this.collectExcavationData(data, workDate, workTime);
-            
-            // جمع بيانات الحفر المفتوح
             this.collectOpenExcavationData(data, workDate, workTime);
-            
-            // جمع بيانات الأعمال الكهربائية
             this.collectElectricalData(data, workDate, workTime);
-
-            // جمع بيانات الأسفلت
             this.collectAsphaltData(data, workDate, workTime);
-
-            // جمع بيانات الحفريات الدقيقة
             this.collectPreciseExcavationData(data, workDate, workTime);
 
             console.log(`📊 تم جمع ${data.length} عنصر من البيانات`);
@@ -311,14 +278,12 @@ class DataCollector {
         }
     }
 
-    // جمع بيانات الحفريات العادية
     collectExcavationData(data, workDate, workTime) {
         const excavationTypes = {
             'unsurfaced_soil': 'حفرية ترابية غير مسفلتة',
             'surfaced_soil': 'حفرية ترابية مسفلتة',
             'surfaced_rock': 'حفرية صخرية مسفلتة',
-            'unsurfaced_rock': 'حفرية صخرية غير مسفلتة',
-            'precise': 'حفريات دقيقة'
+            'unsurfaced_rock': 'حفرية صخرية غير مسفلتة'
         };
 
         Object.entries(excavationTypes).forEach(([type, typeName]) => {
@@ -365,7 +330,6 @@ class DataCollector {
         });
     }
 
-    // جمع بيانات الحفر المفتوح
     collectOpenExcavationData(data, workDate, workTime) {
         const openTypes = {
             'unsurfaced_soil_open': 'حفر مفتوح - ترابية غير مسفلتة',
@@ -410,7 +374,6 @@ class DataCollector {
         });
     }
 
-    // جمع بيانات الأعمال الكهربائية
     collectElectricalData(data, workDate, workTime) {
         const electricalTypes = {
             'cable_4x70_low': 'تمديد كيبل 4x70 منخفض',
@@ -447,7 +410,6 @@ class DataCollector {
         });
     }
 
-    // جمع بيانات الأسفلت
     collectAsphaltData(data, workDate, workTime) {
         const asphaltTypes = {
             'first_asphalt': 'أسفلت طبقة أولى',
@@ -481,7 +443,6 @@ class DataCollector {
         });
     }
 
-    // جمع بيانات الحفريات الدقيقة
     collectPreciseExcavationData(data, workDate, workTime) {
         const preciseTypes = {
             'medium': {
@@ -522,15 +483,13 @@ class DataCollector {
     }
 }
 
-// 6. عرض البيانات في الواجهة
+// 7. إدارة الواجهة
 class UIManager {
     constructor() {
         this.stateManager = CivilWorksStateManager.getInstance();
         this.setupEventListeners();
-        this.setupCalculationListeners();
     }
 
-    // إعداد مستمعي الأحداث
     setupEventListeners() {
         this.stateManager.addEventListener('STATE_UPDATED', (data) => {
             this.updateUI(data.newState);
@@ -539,9 +498,13 @@ class UIManager {
         this.stateManager.addEventListener('ERROR_ADDED', (error) => {
             this.showError(error);
         });
+
+        // تأخير إعداد مستمعي الحسابات للتأكد من تحميل DOM
+        setTimeout(() => {
+            this.setupCalculationListeners();
+        }, 100);
     }
 
-    // إعداد مستمعي الحسابات
     setupCalculationListeners() {
         // مستمعي الحفريات العادية
         document.querySelectorAll('.calc-length, .calc-price').forEach(input => {
@@ -571,14 +534,12 @@ class UIManager {
         console.log('✅ تم إعداد مستمعي الحسابات');
     }
 
-    // تحديث الواجهة
     updateUI(state) {
         this.updateStatistics(state.statistics);
         this.updateTable(state.dailyData);
         this.updateLoadingState(state.isLoading, state.isSaving);
     }
 
-    // تحديث الإحصائيات
     updateStatistics(statistics) {
         const elements = {
             'total-length': statistics.totalLength,
@@ -597,7 +558,6 @@ class UIManager {
         });
     }
 
-    // تحديث الجدول
     updateTable(data) {
         const tbody = document.getElementById('daily-excavation-tbody');
         if (!tbody) return;
@@ -639,7 +599,6 @@ class UIManager {
         }).join('');
     }
 
-    // تنسيق عرض الطول
     formatLengthDisplay(item) {
         if (item.category === 'open_excavation') {
             return `
@@ -652,40 +611,42 @@ class UIManager {
         return `${parseFloat(item.length || 0).toFixed(2)} م`;
     }
 
-    // الحصول على كلاس البادج
     getBadgeClass(category) {
         const classes = {
-            'excavation': 'bg-info',
-            'open_excavation': 'bg-warning text-dark',
-            'electrical': 'bg-primary'
+            'excavation': 'bg-primary',
+            'open_excavation': 'bg-success',
+            'electrical': 'bg-warning',
+            'asphalt': 'bg-info',
+            'precise_excavation': 'bg-danger'
         };
         return classes[category] || 'bg-secondary';
     }
 
-    // تحديث حالة التحميل
     updateLoadingState(isLoading, isSaving) {
-        const saveButton = document.getElementById('save-daily-summary-btn');
-        if (saveButton) {
-            saveButton.disabled = isLoading || isSaving;
-            saveButton.innerHTML = isSaving ? 
-                '<i class="fas fa-spinner fa-spin me-2"></i>جاري الحفظ...' : 
-                '<i class="fas fa-save me-2"></i>حفظ الملخص';
+        const saveBtn = document.getElementById('save-daily-summary-btn');
+        if (saveBtn) {
+            saveBtn.disabled = isLoading || isSaving;
+            saveBtn.textContent = isSaving ? 'جاري الحفظ...' : 'حفظ البيانات';
         }
     }
 
-    // عرض الأخطاء
     showError(error) {
-        console.error('خطأ:', error);
-        
-        // يمكن إضافة نظام إشعارات أكثر تقدماً هنا
-        const message = error.message || 'حدث خطأ غير متوقع';
-        alert(`خطأ: ${message}`);
+        const message = error.message || error;
+        console.error('❌ خطأ:', message);
+        if (typeof toastr !== 'undefined') {
+            toastr.error(message);
+        } else {
+            alert(`خطأ: ${message}`);
+        }
     }
 
-    // عرض رسالة نجاح
     showSuccess(message) {
-        console.log('نجح:', message);
-        alert(`تم بنجاح: ${message}`);
+        console.log('✅ نجح:', message);
+        if (typeof toastr !== 'undefined') {
+            toastr.success(message);
+        } else {
+            alert(`تم بنجاح: ${message}`);
+        }
     }
 
     // حساب الحفريات العادية
@@ -843,7 +804,7 @@ class UIManager {
     }
 }
 
-// 7. التحكم الرئيسي في النظام
+// 8. التحكم الرئيسي
 class CivilWorksController {
     constructor() {
         this.stateManager = CivilWorksStateManager.getInstance();
@@ -851,11 +812,9 @@ class CivilWorksController {
         this.apiManager = new ApiManager();
         this.dataCollector = new DataCollector();
         this.uiManager = new UIManager();
-        
         this.debounceTimer = null;
     }
 
-    // تهيئة النظام
     async initialize(workOrderId, csrfToken, savedData = []) {
         try {
             console.log('🚀 بدء تهيئة نظام الأعمال المدنية المحترف');
@@ -878,21 +837,20 @@ class CivilWorksController {
         }
     }
 
-    // تحميل البيانات
     async loadData() {
         this.stateManager.setState({ isLoading: true });
         
         try {
             let data = [];
             
-            // أولاً: البيانات المحفوظة في الحالة
+            // البيانات المحفوظة في الحالة
             const currentData = this.stateManager.getState().dailyData;
             if (currentData && currentData.length > 0) {
                 data = currentData;
                 console.log('📋 تم تحميل البيانات من الحالة الحالية');
             }
             
-            // ثانياً: البيانات المحلية
+            // البيانات المحلية
             if (data.length === 0) {
                 const localData = this.localStorage.load();
                 if (localData && localData.length > 0) {
@@ -901,15 +859,13 @@ class CivilWorksController {
                 }
             }
             
-            // ثالثاً: البيانات من الخادم
+            // البيانات من الخادم
             if (data.length === 0) {
                 try {
                     const serverResponse = await this.apiManager.loadFromServer();
                     if (serverResponse.success && serverResponse.data) {
                         data = Array.isArray(serverResponse.data) ? serverResponse.data : [];
                         console.log('🌐 تم تحميل البيانات من الخادم');
-                        
-                        // حفظ البيانات محلياً للمرة القادمة
                         this.localStorage.save(data);
                     }
                 } catch (error) {
@@ -928,7 +884,6 @@ class CivilWorksController {
         }
     }
 
-    // تحديث الحالة مع البيانات
     updateStateWithData(data) {
         const statistics = this.calculateStatistics(data);
         
@@ -938,7 +893,6 @@ class CivilWorksController {
         });
     }
 
-    // حساب الإحصائيات
     calculateStatistics(data) {
         if (!Array.isArray(data)) {
             return { totalLength: 0, totalAmount: 0, itemsCount: 0 };
@@ -954,7 +908,6 @@ class CivilWorksController {
         return statistics;
     }
 
-    // إعداد واجهة المستخدم
     setupUI() {
         const saveButton = document.getElementById('save-daily-summary-btn');
         if (saveButton && !saveButton.hasAttribute('data-civil-works-listener')) {
@@ -972,7 +925,6 @@ class CivilWorksController {
         }
     }
 
-    // حفظ البيانات
     async saveData() {
         if (this.stateManager.getState().isSaving) {
             console.log('⏳ عملية حفظ جارية بالفعل');
@@ -986,7 +938,7 @@ class CivilWorksController {
             const formData = this.dataCollector.collectFormData();
             
             if (formData.length === 0) {
-                this.uiManager.showError({ message: 'لا توجد بيانات للحفظ' });
+                this.uiManager.showError('لا توجد بيانات للحفظ');
                 return;
             }
 
@@ -1027,14 +979,10 @@ class CivilWorksController {
         }
     }
 
-    // مسح البيانات
     clearData() {
         if (confirm('هل تريد فعلاً مسح جميع البيانات المحفوظة؟')) {
             try {
-                // مسح البيانات المحلية
                 this.localStorage.clearAll();
-                
-                // إعادة تعيين الحالة
                 this.stateManager.setState({
                     dailyData: [],
                     statistics: { totalLength: 0, totalAmount: 0, itemsCount: 0 }
@@ -1049,7 +997,6 @@ class CivilWorksController {
         }
     }
 
-    // الحصول على إحصائيات النظام
     getSystemStats() {
         const state = this.stateManager.getState();
         return {
@@ -1063,44 +1010,52 @@ class CivilWorksController {
     }
 }
 
-// 8. إنشاء النسخة الوحيدة من النظام
+// 9. إنشاء النظام وتصديره
 const civilWorksSystem = new CivilWorksController();
 
-// 9. الدوال العامة للتوافق مع النظام القديم
+// 10. إنشاء الدوال العامة
 window.saveData = function() {
-    console.log('🔄 استدعاء saveData من النظام القديم');
+    console.log('🔄 استدعاء saveData');
     civilWorksSystem.saveData();
 };
 
 window.clearSavedData = function() {
-    console.log('🔄 استدعاء clearSavedData من النظام القديم');
+    console.log('🔄 استدعاء clearSavedData');
     civilWorksSystem.clearData();
 };
 
 window.loadSavedDailyWork = function() {
-    console.log('🔄 استدعاء loadSavedDailyWork من النظام القديم');
+    console.log('🔄 استدعاء loadSavedDailyWork');
     civilWorksSystem.loadData();
 };
 
 window.updateStatisticsFromSavedData = function(data) {
-    console.log('🔄 استدعاء updateStatisticsFromSavedData من النظام القديم');
+    console.log('🔄 استدعاء updateStatisticsFromSavedData');
     if (data && Array.isArray(data)) {
         civilWorksSystem.updateStateWithData(data);
     }
 };
 
-// 10. تهيئة النظام عند تحميل الصفحة
+// 11. دالة التهيئة الرئيسية
 window.initializeCivilWorks = async function(workOrderId, csrfToken, savedData = []) {
-    console.log('🚀 بدء تهيئة نظام الأعمال المدنية المحترف v2.0');
+    console.log('🚀 بدء تهيئة نظام الأعمال المدنية المحترف');
     
     try {
+        // تنظيف أي حالة سابقة
+        if (civilWorksSystem.stateManager.initialized) {
+            console.log('🔄 إعادة تهيئة النظام...');
+            civilWorksSystem.stateManager.reset();
+        }
+
         const success = await civilWorksSystem.initialize(workOrderId, csrfToken, savedData);
+        
         if (success) {
             console.log('✅ تم تهيئة النظام بنجاح');
             console.log('📊 إحصائيات النظام:', civilWorksSystem.getSystemStats());
         } else {
             console.error('❌ فشل في تهيئة النظام');
         }
+        
         return success;
     } catch (error) {
         console.error('❌ خطأ في تهيئة النظام:', error);
@@ -1108,9 +1063,11 @@ window.initializeCivilWorks = async function(workOrderId, csrfToken, savedData =
     }
 };
 
-// 11. جعل النظام متاح عالمياً للتطوير والصيانة
+// 12. جعل النظام متاح عالمياً
 window.civilWorksSystem = civilWorksSystem;
 
-console.log('🏗️ تم تحميل نظام الأعمال المدنية المحترف v2.0');
+// 13. تأكيد تحميل النظام
+console.log('🏗️ تم تحميل نظام الأعمال المدنية المحترف - إصدار نظيف');
 console.log('📋 الوظائف المتاحة: saveData, clearSavedData, loadSavedDailyWork, updateStatisticsFromSavedData');
 console.log('🔧 للتطوير: civilWorksSystem متاح في window');
+console.log('🎯 دالة التهيئة: initializeCivilWorks');
