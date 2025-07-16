@@ -151,6 +151,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::get('work-orders/{workOrder}/installations', [App\Http\Controllers\Admin\WorkOrderController::class, 'installations'])->name('work-orders.installations');
     Route::post('work-orders/{workOrder}/installations/save', [App\Http\Controllers\Admin\WorkOrderController::class, 'saveInstallations'])->name('work-orders.installations.save');
     Route::get('work-orders/{workOrder}/installations/data', [App\Http\Controllers\Admin\WorkOrderController::class, 'getInstallations'])->name('work-orders.installations.data');
+    Route::get('work-orders/{workOrder}/installations/get-by-date', [App\Http\Controllers\Admin\WorkOrderController::class, 'getInstallationsByDate'])->name('work-orders.installations.get-by-date');
     Route::post('work-orders/{workOrder}/upload-installation-images', [App\Http\Controllers\Admin\WorkOrderController::class, 'uploadInstallationsImages'])->name('work-orders.upload-installation-images');
     Route::delete('work-orders/{workOrder}/delete-installation-image/{index}', [App\Http\Controllers\Admin\WorkOrderController::class, 'deleteInstallationImage'])->name('work-orders.delete-installation-image');
     Route::get('work-orders/{workOrder}/installation-images', [App\Http\Controllers\Admin\WorkOrderController::class, 'getInstallationImages'])->name('work-orders.installation-images');

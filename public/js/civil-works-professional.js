@@ -115,7 +115,7 @@ class CivilWorksStateManager {
             this.listeners.get(event).forEach(callback => {
                 try {
                     callback(data);
-                } catch (error) {
+    } catch (error) {
                     console.error(`خطأ في مستمع الحدث ${event}:`, error);
                 }
             });
@@ -175,7 +175,7 @@ class LocalStorageManager {
                 return Array.isArray(data) ? data : [];
             }
             return [];
-        } catch (error) {
+    } catch (error) {
             console.error('❌ خطأ في تحميل البيانات المحلية:', error);
             return [];
         }
@@ -295,7 +295,7 @@ class DataCollector {
 
             console.log(`📊 تم جمع ${data.length} عنصر من البيانات`);
             return data;
-        } catch (error) {
+    } catch (error) {
             console.error('خطأ في جمع البيانات:', error);
             this.stateManager.addError(error);
             return [];
@@ -303,14 +303,14 @@ class DataCollector {
     }
 
     collectExcavationData(data, workDate, workTime) {
-        const excavationTypes = {
-            'unsurfaced_soil': 'حفرية ترابية غير مسفلتة',
-            'surfaced_soil': 'حفرية ترابية مسفلتة',
-            'surfaced_rock': 'حفرية صخرية مسفلتة',
+    const excavationTypes = {
+        'unsurfaced_soil': 'حفرية ترابية غير مسفلتة',
+        'surfaced_soil': 'حفرية ترابية مسفلتة', 
+        'surfaced_rock': 'حفرية صخرية مسفلتة',
             'unsurfaced_rock': 'حفرية صخرية غير مسفلتة'
-        };
+    };
 
-        Object.entries(excavationTypes).forEach(([type, typeName]) => {
+    Object.entries(excavationTypes).forEach(([type, typeName]) => {
             const elements = document.querySelectorAll(`[data-table="${type}"]`);
             
             elements.forEach((element, index) => {
@@ -319,14 +319,14 @@ class DataCollector {
                     if (!row) return;
 
                     const lengthInput = element;
-                    const priceInput = row.querySelector('.calc-price');
-                    const totalInput = row.querySelector('.total-calc');
+                const priceInput = row.querySelector('.calc-price');
+                const totalInput = row.querySelector('.total-calc');
                     const cableCell = row.querySelector('td:first-child');
-
-                    const length = parseFloat(lengthInput.value) || 0;
-                    const price = parseFloat(priceInput?.value) || 0;
-                    const total = parseFloat(totalInput?.value) || 0;
-
+                
+                const length = parseFloat(lengthInput.value) || 0;
+                const price = parseFloat(priceInput?.value) || 0;
+                const total = parseFloat(totalInput?.value) || 0;
+                
                     if (length > 0 || price > 0 || total > 0) {
                         let cableName = `كابل ${index + 1}`;
                         
@@ -339,41 +339,41 @@ class DataCollector {
 
                         data.push({
                             id: `${type}_${index}_${Date.now()}`,
-                            excavation_type: typeName,
-                            cable_name: cableName,
-                            length: length,
-                            price: price,
-                            total: total,
+                        excavation_type: typeName,
+                        cable_name: cableName,
+                        length: length,
+                        price: price,
+                        total: total,
                             work_date: workDate,
                             work_time: workTime,
                             category: 'excavation'
-                        });
-                    }
+                    });
                 }
-            });
+            }
         });
+    });
     }
 
     collectOpenExcavationData(data, workDate, workTime) {
         const openTypes = {
-            'unsurfaced_soil_open': 'حفر مفتوح - ترابية غير مسفلتة',
-            'surfaced_soil_open': 'حفر مفتوح - ترابية مسفلتة',
-            'surfaced_rock_open': 'حفر مفتوح - صخرية مسفلتة',
-            'unsurfaced_rock_open': 'حفر مفتوح - صخرية غير مسفلتة'
-        };
+        'unsurfaced_soil_open': 'حفر مفتوح - ترابية غير مسفلتة',
+        'surfaced_soil_open': 'حفر مفتوح - ترابية مسفلتة',
+        'surfaced_rock_open': 'حفر مفتوح - صخرية مسفلتة',
+        'unsurfaced_rock_open': 'حفر مفتوح - صخرية غير مسفلتة'
+    };
 
         Object.entries(openTypes).forEach(([type, typeName]) => {
-            const lengthInput = document.querySelector(`[name="excavation_${type}[length]"]`);
-            const widthInput = document.querySelector(`[name="excavation_${type}[width]"]`);
-            const depthInput = document.querySelector(`[name="excavation_${type}[depth]"]`);
-            const priceInput = document.querySelector(`[name="excavation_${type}_price"]`);
+        const lengthInput = document.querySelector(`[name="excavation_${type}[length]"]`);
+        const widthInput = document.querySelector(`[name="excavation_${type}[width]"]`);
+        const depthInput = document.querySelector(`[name="excavation_${type}[depth]"]`);
+        const priceInput = document.querySelector(`[name="excavation_${type}_price"]`);
             const volumeElement = document.getElementById(`total_${type}`);
             const totalElement = document.getElementById(`final_total_${type}`);
 
             if (lengthInput && widthInput && depthInput) {
-                const length = parseFloat(lengthInput.value) || 0;
-                const width = parseFloat(widthInput.value) || 0;
-                const depth = parseFloat(depthInput.value) || 0;
+            const length = parseFloat(lengthInput.value) || 0;
+            const width = parseFloat(widthInput.value) || 0;
+            const depth = parseFloat(depthInput.value) || 0;
                 const price = parseFloat(priceInput?.value) || 0;
                 const volume = parseFloat(volumeElement?.value) || 0;
                 const total = parseFloat(totalElement?.value) || 0;
@@ -381,21 +381,21 @@ class DataCollector {
                 if (length > 0 || width > 0 || depth > 0 || volume > 0 || total > 0) {
                     data.push({
                         id: `${type}_${Date.now()}`,
-                        excavation_type: typeName,
-                        cable_name: 'حفر مفتوح',
-                        length: length,
-                        width: width,
-                        depth: depth,
-                        volume: volume,
-                        price: price,
-                        total: total,
+                    excavation_type: typeName,
+                    cable_name: 'حفر مفتوح',
+                    length: length,
+                    width: width,
+                    depth: depth,
+                    volume: volume,
+                    price: price,
+                    total: total,
                         work_date: workDate,
                         work_time: workTime,
                         category: 'open_excavation'
                     });
-                }
             }
-        });
+        }
+    });
     }
 
     collectElectricalData(data, workDate, workTime) {
@@ -413,25 +413,25 @@ class DataCollector {
             const totalElement = document.querySelector(`#final_total_${type}`);
 
             if (lengthInput && priceInput) {
-                const length = parseFloat(lengthInput.value) || 0;
-                const price = parseFloat(priceInput.value) || 0;
+            const length = parseFloat(lengthInput.value) || 0;
+            const price = parseFloat(priceInput.value) || 0;
                 const total = parseFloat(totalElement?.value) || 0;
 
-                if (length > 0 || price > 0 || total > 0) {
+            if (length > 0 || price > 0 || total > 0) {
                     data.push({
                         id: `${type}_${Date.now()}`,
-                        excavation_type: typeName,
+                    excavation_type: typeName,
                         cable_name: 'تمديد كهربائي',
-                        length: length,
-                        price: price,
-                        total: total,
+                    length: length,
+                    price: price,
+                    total: total,
                         work_date: workDate,
                         work_time: workTime,
                         category: 'electrical'
                     });
-                }
             }
-        });
+        }
+    });
     }
 
     collectAsphaltData(data, workDate, workTime) {
@@ -446,18 +446,18 @@ class DataCollector {
             const totalElement = document.getElementById(`final_total_${type}`);
 
             if (lengthInput && priceInput) {
-                const length = parseFloat(lengthInput.value) || 0;
-                const price = parseFloat(priceInput.value) || 0;
+        const length = parseFloat(lengthInput.value) || 0;
+        const price = parseFloat(priceInput.value) || 0;
                 const total = parseFloat(totalElement?.value) || 0;
 
-                if (length > 0 || price > 0 || total > 0) {
+        if (length > 0 || price > 0 || total > 0) {
                     data.push({
                         id: `${type}_${Date.now()}`,
                         excavation_type: typeName,
                         cable_name: 'أسفلت',
-                        length: length,
-                        price: price,
-                        total: total,
+                length: length,
+                price: price,
+                total: total,
                         work_date: workDate,
                         work_time: workTime,
                         category: 'asphalt'
@@ -485,25 +485,25 @@ class DataCollector {
             const totalElement = document.getElementById(`final_total_precise_${type}`);
 
             if (lengthInput && priceInput) {
-                const length = parseFloat(lengthInput.value) || 0;
-                const price = parseFloat(priceInput.value) || 0;
+            const length = parseFloat(lengthInput.value) || 0;
+            const price = parseFloat(priceInput.value) || 0;
                 const total = parseFloat(totalElement?.value) || 0;
 
-                if (length > 0 || price > 0 || total > 0) {
+            if (length > 0 || price > 0 || total > 0) {
                     data.push({
                         id: `precise_${type}_${Date.now()}`,
                         excavation_type: info.name,
                         cable_name: `حفر دقيق ${info.dimensions}`,
-                        length: length,
-                        price: price,
-                        total: total,
+                    length: length,
+                    price: price,
+                    total: total,
                         work_date: workDate,
                         work_time: workTime,
                         category: 'precise_excavation'
                     });
-                }
             }
-        });
+        }
+    });
     }
 }
 
@@ -583,21 +583,21 @@ class UIManager {
     }
 
     updateTable(data) {
-        const tbody = document.getElementById('daily-excavation-tbody');
+    const tbody = document.getElementById('daily-excavation-tbody');
         if (!tbody) return;
 
         if (!data || data.length === 0) {
-            tbody.innerHTML = `
-                <tr id="no-data-row">
-                    <td colspan="7" class="text-center text-muted py-4">
-                        <i class="fas fa-clipboard-list fa-2x mb-2"></i>
-                        <br>
-                        لا توجد بيانات حفريات
-                    </td>
-                </tr>
-            `;
-            return;
-        }
+        tbody.innerHTML = `
+            <tr id="no-data-row">
+                <td colspan="7" class="text-center text-muted py-4">
+                    <i class="fas fa-clipboard-list fa-2x mb-2"></i>
+                    <br>
+                    لا توجد بيانات حفريات
+                </td>
+            </tr>
+        `;
+        return;
+    }
 
         tbody.innerHTML = data.map((item, index) => {
             const badgeClass = this.getBadgeClass(item.category);
@@ -605,19 +605,19 @@ class UIManager {
             
             return `
                 <tr class="daily-excavation-row">
-                    <td class="text-center">${index + 1}</td>
-                    <td class="text-center">
-                        <span class="badge ${badgeClass}">${item.excavation_type || 'غير محدد'}</span>
-                    </td>
-                    <td class="text-center">
-                        <span class="badge bg-secondary">${item.cable_name || 'غير محدد'}</span>
-                    </td>
-                    <td class="text-center">${lengthDisplay}</td>
-                    <td class="text-center">${parseFloat(item.price || 0).toFixed(2)} ريال</td>
-                    <td class="text-center">${parseFloat(item.total || 0).toFixed(2)} ريال</td>
-                    <td class="text-center">
-                        <small class="text-muted">${item.work_date || ''} ${item.work_time || ''}</small>
-                    </td>
+            <td class="text-center">${index + 1}</td>
+            <td class="text-center">
+                <span class="badge ${badgeClass}">${item.excavation_type || 'غير محدد'}</span>
+            </td>
+            <td class="text-center">
+                <span class="badge bg-secondary">${item.cable_name || 'غير محدد'}</span>
+            </td>
+            <td class="text-center">${lengthDisplay}</td>
+            <td class="text-center">${parseFloat(item.price || 0).toFixed(2)} ريال</td>
+            <td class="text-center">${parseFloat(item.total || 0).toFixed(2)} ريال</td>
+            <td class="text-center">
+                <small class="text-muted">${item.work_date || ''} ${item.work_time || ''}</small>
+            </td>
                 </tr>
             `;
         }).join('');
@@ -900,7 +900,7 @@ class CivilWorksController {
             // تحديث الحالة والإحصائيات
             this.updateStateWithData(data);
             
-        } catch (error) {
+    } catch (error) {
             console.error('❌ خطأ في تحميل البيانات:', error);
             this.stateManager.addError(error);
         } finally {
@@ -952,8 +952,8 @@ class CivilWorksController {
     async saveData() {
         if (this.stateManager.getState().isSaving) {
             console.log('⏳ عملية حفظ جارية بالفعل');
-            return;
-        }
+        return;
+    }
 
         this.stateManager.setState({ isSaving: true });
         
@@ -963,9 +963,9 @@ class CivilWorksController {
             
             if (formData.length === 0) {
                 this.uiManager.showError('لا توجد بيانات للحفظ');
-                return;
-            }
-
+            return;
+        }
+        
             console.log(`💾 بدء حفظ ${formData.length} عنصر`);
 
             // حفظ في الخادم
@@ -975,8 +975,8 @@ class CivilWorksController {
                 if (serverResponse.success) {
                     serverSuccess = true;
                     console.log('✅ تم حفظ البيانات في الخادم');
-                }
-            } catch (error) {
+        }
+    } catch (error) {
                 console.error('❌ فشل في حفظ البيانات في الخادم:', error);
             }
 

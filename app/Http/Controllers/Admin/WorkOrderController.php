@@ -150,6 +150,28 @@ class WorkOrderController extends Controller
         ]);
     }
 
+    public function getInstallationsByDate(Request $request, WorkOrder $workOrder)
+    {
+        try {
+            $date = $request->query('date', now()->format('Y-m-d'));
+            
+            $installations = WorkOrderInstallation::where('work_order_id', $workOrder->id)
+                ->where('installation_date', $date)
+                ->get();
+            
+            return response()->json([
+                'success' => true,
+                'installations' => $installations
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error fetching installations by date: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء جلب البيانات'
+            ], 500);
+        }
+    }
+
     public function getDailyInstallationsSummary(Request $request, WorkOrder $workOrder)
     {
         try {
