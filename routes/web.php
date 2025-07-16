@@ -473,13 +473,17 @@ Route::post('/admin/work-orders/{workOrder}/installations', [WorkOrderController
 Route::get('/admin/work-orders/{workOrder}/installations/daily-summary', [App\Http\Controllers\Admin\WorkOrderController::class, 'getDailyInstallationsSummary'])
     ->name('admin.work-orders.installations.daily-summary');
 
-// حفظ بيانات العمل اليومي للحفريات
-Route::post('/admin/work-orders/{workOrder}/civil-works/save-daily-data', [App\Http\Controllers\Admin\WorkOrderController::class, 'saveDailyCivilWorks'])
-    ->name('admin.work-orders.civil-works.save-daily-data');
+    // حفظ بيانات العمل اليومي للحفريات
+    Route::post('/admin/work-orders/{workOrder}/civil-works/save-daily-data', [App\Http\Controllers\Admin\WorkOrderController::class, 'saveDailyCivilWorks'])
+        ->name('admin.work-orders.civil-works.save-daily-data');
 
-// جلب بيانات العمل اليومي المحفوظة للحفريات
-Route::get('/admin/work-orders/{workOrder}/civil-works/get-daily-data', [App\Http\Controllers\Admin\WorkOrderController::class, 'getDailyCivilWorks'])
-    ->name('admin.work-orders.civil-works.get-daily-data');
+    // جلب بيانات العمل اليومي المحفوظة للحفريات
+    Route::get('/admin/work-orders/{workOrder}/civil-works/get-daily-data', [App\Http\Controllers\Admin\WorkOrderController::class, 'getDailyCivilWorks'])
+        ->name('admin.work-orders.civil-works.get-daily-data');
+
+    // جلب بيانات العمل اليومي المحفوظة للحفريات (للنظام الجديد)
+    Route::get('/admin/work-orders/{workOrder}/get-daily-civil-works', [App\Http\Controllers\Admin\WorkOrderController::class, 'getDailyCivilWorks'])
+        ->name('admin.work-orders.get-daily-civil-works');
 
 // صور ومرفقات الأعمال المدنية
 Route::post('/admin/work-orders/{workOrder}/civil-works/images', [WorkOrderController::class, 'saveCivilWorksImages'])

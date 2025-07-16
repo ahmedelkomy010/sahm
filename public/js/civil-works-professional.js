@@ -4,11 +4,35 @@
  * ========================================
  */
 
-// 1. تنظيف النظام من أي تضارب سابق
-if (window.civilWorksSystem) {
-    console.log('🧹 تنظيف النظام السابق...');
-    delete window.civilWorksSystem;
-}
+// 1. تنظيف شامل للنظام من أي تضارب سابق
+console.log('🧹 بدء تنظيف النظام من أي تضارب سابق...');
+
+// إزالة أي كائنات قديمة
+const oldObjects = [
+    'civilWorksSystem',
+    'CivilWorksManager',
+    'ExcavationLogger',
+    'saveData',
+    'clearSavedData',
+    'loadSavedDailyWork',
+    'updateStatisticsFromSavedData',
+    'initializeCivilWorks'
+];
+
+oldObjects.forEach(obj => {
+    if (window[obj]) {
+        console.log(`🗑️ إزالة ${obj}...`);
+        delete window[obj];
+    }
+});
+
+// إزالة أي event listeners قديمة
+const oldEventListeners = document.querySelectorAll('[data-civil-works-listener]');
+oldEventListeners.forEach(element => {
+    element.removeAttribute('data-civil-works-listener');
+});
+
+console.log('✅ تم تنظيف النظام بنجاح');
 
 // 2. إعدادات النظام والثوابت
 const SYSTEM_CONFIG = {
@@ -215,7 +239,7 @@ class ApiManager {
         const url = `/admin/work-orders/${workOrderId}/civil-works/save-daily-data`;
         
         const payload = {
-            daily_data: JSON.stringify(data),
+            daily_work: data,
             work_order_id: workOrderId
         };
 
@@ -1071,3 +1095,20 @@ console.log('🏗️ تم تحميل نظام الأعمال المدنية ال
 console.log('📋 الوظائف المتاحة: saveData, clearSavedData, loadSavedDailyWork, updateStatisticsFromSavedData');
 console.log('🔧 للتطوير: civilWorksSystem متاح في window');
 console.log('🎯 دالة التهيئة: initializeCivilWorks');
+
+// 14. تشخيص النظام
+console.log('🔍 تشخيص النظام:');
+console.log('  - civilWorksSystem:', typeof window.civilWorksSystem);
+console.log('  - initializeCivilWorks:', typeof window.initializeCivilWorks);
+console.log('  - saveData:', typeof window.saveData);
+console.log('  - clearSavedData:', typeof window.clearSavedData);
+
+// 15. التحقق من عدم وجود كائنات قديمة
+const checkOldObjects = ['CivilWorksManager', 'ExcavationLogger'];
+checkOldObjects.forEach(obj => {
+    if (window[obj]) {
+        console.warn(`⚠️ تم العثور على كائن قديم: ${obj}`);
+    }
+});
+
+console.log('✅ تم التحقق من النظام بنجاح');

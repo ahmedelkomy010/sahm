@@ -2420,23 +2420,23 @@
     </script>
     
     <!-- Civil Works Professional System -->
-    <script src="{{ asset('js/civil-works-professional.js') }}"></script>
+    <script src="{{ asset('js/civil-works-professional.js') }}?v={{ time() }}"></script>
     
     <!-- تحميل البيانات المحفوظة -->
     <script>
-        // تهيئة نظام الأعمال المدنية المحترف v2.0
+        // تهيئة نظام الأعمال المدنية المحترف
         const workOrderId = {{ $workOrder->id }};
         const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
         const savedDailyData = @json($savedDailyData ?? []);
         
-        console.log('🏗️ بدء تهيئة نظام الأعمال المدنية المحترف v2.0');
+        console.log('🏗️ بدء تهيئة نظام الأعمال المدنية المحترف');
         console.log('📋 معرف أمر العمل:', workOrderId);
         console.log('💾 البيانات المحفوظة:', savedDailyData);
         
         // متغير للتحكم في التهيئة لمنع التكرار
         let systemInitialized = false;
         
-        // دالة التهيئة الآمنة
+        // دالة التهيئة الآمنة مع التحقق من وجود الدالة
         async function initializeSystem() {
             if (systemInitialized) {
                 console.log('🟡 النظام تم تهيئته مسبقاً');
@@ -2444,6 +2444,13 @@
             }
             
             try {
+                // التحقق من وجود الدالة قبل الاستدعاء
+                if (typeof window.initializeCivilWorks !== 'function') {
+                    console.error('❌ دالة initializeCivilWorks غير موجودة. التحقق من تحميل الملف...');
+                    console.log('📋 الكائنات المتاحة:', Object.keys(window).filter(key => key.includes('civil') || key.includes('Civil')));
+                    return;
+                }
+                
                 systemInitialized = true;
                 
                 // تهيئة النظام الجديد
@@ -2453,8 +2460,10 @@
                     console.log('✅ تم تهيئة النظام بنجاح');
                     
                     // عرض إحصائيات النظام
-                    const stats = window.civilWorksSystem.getSystemStats();
-                    console.log('📊 إحصائيات النظام:', stats);
+                    if (window.civilWorksSystem && typeof window.civilWorksSystem.getSystemStats === 'function') {
+                        const stats = window.civilWorksSystem.getSystemStats();
+                        console.log('📊 إحصائيات النظام:', stats);
+                    }
                 } else {
                     console.error('❌ فشل في تهيئة النظام');
                 }
@@ -2465,12 +2474,18 @@
             }
         }
         
-        // تهيئة النظام عند تحميل الصفحة
+        // تهيئة النظام عند تحميل الصفحة مع تأخير للتأكد من تحميل الملف
+        function startInitialization() {
+            // تأخير بسيط للتأكد من تحميل الملف
+            setTimeout(() => {
+                initializeSystem();
+            }, 500);
+        }
+        
         if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initializeSystem);
+            document.addEventListener('DOMContentLoaded', startInitialization);
         } else {
-            // إذا كان المستند محمّل بالفعل
-            initializeSystem();
+            startInitialization();
         }
     </script>
 </body>
