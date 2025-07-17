@@ -837,8 +837,14 @@ function addWorkItem() {
                    class="form-control form-control-sm" step="0.01" min="0" placeholder="الكمية" required>
         </td>
         <td>
-            <input type="text" class="form-control form-control-sm work-item-unit" 
-                   name="work_items[${window.workItemRowIndex}][unit]" placeholder="الوحدة">
+            <select name="work_items[${window.workItemRowIndex}][unit]" class="form-select form-select-sm work-item-unit">
+                <option value="EA">EA</option>
+                <option value="M">M</option>
+                <option value="KIT">KIT</option>
+                <option value="ST">ST</option>
+                <option value="M2">M2</option>
+                <option value="%">%</option>
+            </select>
         </td>
         <td>
             <input type="number" class="form-control form-control-sm work-item-price" 
@@ -910,7 +916,15 @@ function selectWorkItem(index, id, code, description, unit, price) {
     row.querySelector('.work-item-search').value = code;
     row.querySelector('.work-item-id').value = id;
     row.querySelector('.work-item-description').value = description;
-    row.querySelector('.work-item-unit').value = unit;
+    
+    // تحديث قائمة الوحدات
+    const unitSelect = row.querySelector('.work-item-unit');
+    const validUnits = ['EA', 'M', 'KIT', 'ST', 'M2', '%'];
+    const defaultUnit = 'EA';
+    
+    // تحديد الوحدة المناسبة
+    unitSelect.value = validUnits.includes(unit) ? unit : defaultUnit;
+    
     row.querySelector('.work-item-price').value = price ? parseFloat(price).toFixed(2) : '';
     
     // إخفاء القائمة
@@ -940,9 +954,11 @@ function addMaterial() {
                    value="1" min="1" step="1">
         </td>
         <td>
-            <input type="text" name="materials[${window.materialRowIndex}][unit]" 
-                   class="form-control form-control-sm material-unit" 
-                   value="قطعة">
+            <select name="materials[${window.materialRowIndex}][unit]" class="form-select form-select-sm material-unit">
+                <option value="L.M">L.M</option>
+                <option value="Kit">Kit</option>
+                <option value="Ech">Ech</option>
+            </select>
         </td>
         <td>
             <button type="button" class="btn btn-danger btn-sm" onclick="removeMaterialRow(this)">
@@ -1260,11 +1276,17 @@ function displayPagination(pagination) {
 function addWorkItemFromSearch(id, code, description, unit, price) {
     const tbody = document.getElementById('workItemsBody');
     const row = document.createElement('tr');
+    
+    // تحديد الوحدة المناسبة
+    const validUnits = ['EA', 'M', 'KIT', 'ST', 'M2', '%'];
+    const defaultUnit = 'EA';
+    const selectedUnit = validUnits.includes(unit) ? unit : defaultUnit;
+    
     row.innerHTML = `
         <td>
             <div class="position-relative">
                 <input type="text" class="form-control form-control-sm work-item-search" 
-                       value="${code}">
+                       value="${code}" readonly>
                 <input type="hidden" name="work_items[${window.workItemRowIndex}][work_item_id]" class="work-item-id" value="${id}">
             </div>
         </td>
@@ -1277,8 +1299,14 @@ function addWorkItemFromSearch(id, code, description, unit, price) {
                    class="form-control form-control-sm" step="0.01" min="0" placeholder="الكمية" required>
         </td>
         <td>
-            <input type="text" class="form-control form-control-sm work-item-unit" 
-                   name="work_items[${window.workItemRowIndex}][unit]" value="${unit}" placeholder="الوحدة">
+            <select name="work_items[${window.workItemRowIndex}][unit]" class="form-select form-select-sm work-item-unit">
+                <option value="EA" ${selectedUnit === 'EA' ? 'selected' : ''}>EA</option>
+                <option value="M" ${selectedUnit === 'M' ? 'selected' : ''}>M</option>
+                <option value="KIT" ${selectedUnit === 'KIT' ? 'selected' : ''}>KIT</option>
+                <option value="ST" ${selectedUnit === 'ST' ? 'selected' : ''}>ST</option>
+                <option value="M2" ${selectedUnit === 'M2' ? 'selected' : ''}>M2</option>
+                <option value="%" ${selectedUnit === '%' ? 'selected' : ''}>%</option>
+            </select>
         </td>
         <td>
             <input type="number" class="form-control form-control-sm work-item-price" 
@@ -1290,11 +1318,15 @@ function addWorkItemFromSearch(id, code, description, unit, price) {
             </button>
         </td>
     `;
+    
     tbody.appendChild(row);
     window.workItemRowIndex++;
     
-    // إغلاق نافذة البحث
-    bootstrap.Modal.getInstance(document.getElementById('workItemsSearchModal')).hide();
+    // إظهار رسالة نجاح
+    toastr.success(`تم إضافة البند: ${code}`);
+    
+    // مسح البحث
+    clearContractSearch();
 }
 
 function refreshWorkItemsDropdowns(newItems) {
@@ -1425,6 +1457,11 @@ function addItemFromSearch(id, code, description, unit, price) {
     const tbody = document.getElementById('workItemsBody');
     const row = document.createElement('tr');
     
+    // تحديد الوحدة المناسبة
+    const validUnits = ['EA', 'M', 'KIT', 'ST', 'M2', '%'];
+    const defaultUnit = 'EA';
+    const selectedUnit = validUnits.includes(unit) ? unit : defaultUnit;
+    
     row.innerHTML = `
         <td>
             <div class="position-relative">
@@ -1442,8 +1479,14 @@ function addItemFromSearch(id, code, description, unit, price) {
                    class="form-control form-control-sm" step="0.01" min="0" placeholder="الكمية" required>
         </td>
         <td>
-            <input type="text" class="form-control form-control-sm work-item-unit" 
-                   name="work_items[${window.workItemRowIndex}][unit]" value="${unit}" placeholder="الوحدة">
+            <select name="work_items[${window.workItemRowIndex}][unit]" class="form-select form-select-sm work-item-unit">
+                <option value="EA" ${selectedUnit === 'EA' ? 'selected' : ''}>EA</option>
+                <option value="M" ${selectedUnit === 'M' ? 'selected' : ''}>M</option>
+                <option value="KIT" ${selectedUnit === 'KIT' ? 'selected' : ''}>KIT</option>
+                <option value="ST" ${selectedUnit === 'ST' ? 'selected' : ''}>ST</option>
+                <option value="M2" ${selectedUnit === 'M2' ? 'selected' : ''}>M2</option>
+                <option value="%" ${selectedUnit === '%' ? 'selected' : ''}>%</option>
+            </select>
         </td>
         <td>
             <input type="number" class="form-control form-control-sm work-item-price" 
@@ -1680,25 +1723,17 @@ function addImportedMaterialsToTable(materials) {
             <td>
                 <input type="number" name="materials[${materialRowIndex}][planned_quantity]" 
                        class="form-control form-control-sm" 
-                       step="0.01" min="0" value="${material.planned_quantity || ''}">
+                       step="0.01" min="0" value="${material.planned_quantity || 1}">
             </td>
             <td>
                 <select name="materials[${materialRowIndex}][unit]" class="form-select form-select-sm">
                     <option value="L.M" ${material.unit === 'L.M' ? 'selected' : ''}>L.M</option>
                     <option value="Kit" ${material.unit === 'Kit' ? 'selected' : ''}>Kit</option>
                     <option value="Ech" ${material.unit === 'Ech' ? 'selected' : ''}>Ech</option>
-                    <option value="قطعة" ${material.unit === 'قطعة' ? 'selected' : ''}>قطعة</option>
-                    <option value="متر" ${material.unit === 'متر' ? 'selected' : ''}>متر</option>
-                    <option value="كيلو" ${material.unit === 'كيلو' ? 'selected' : ''}>كيلو</option>
                 </select>
             </td>
             <td>
-                <input type="text" name="materials[${materialRowIndex}][notes]" 
-                       class="form-control form-control-sm" 
-                       value="${material.notes || ''}" placeholder="ملاحظات">
-            </td>
-            <td>
-                <button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">
+                <button type="button" class="btn btn-danger btn-sm" onclick="removeMaterialRow(this)">
                     <i class="fas fa-trash"></i>
                 </button>
             </td>
@@ -1836,7 +1871,7 @@ if (materialsImportModal) {
 
                         const code = material.code || '';
                         const description = material.description || '';
-                        const unit = material.unit || 'قطعة';
+                        const unit = material.unit || 'L.M';
                         const quantity = material.planned_quantity || 1;
                         
                         // إنشاء صف جديد
@@ -1951,7 +1986,7 @@ function quickSearchMaterials(searchTerm) {
                         <div class="border-bottom py-1 cursor-pointer" onclick="addMaterialFromQuickSearch('${material.code}', '${material.description}', '${material.unit}')">
                             <small>
                                 <strong>${material.code}</strong> - ${material.description}
-                                <span class="text-muted">(${material.unit || 'قطعة'})</span>
+                                <span class="text-muted">(${material.unit || ''})</span>
                             </small>
                         </div>
                     `;
@@ -2040,11 +2075,11 @@ function searchMaterials() {
                         <tr>
                             <td><small class="fw-bold">${material.code}</small></td>
                             <td><small>${material.description}</small></td>
-                            <td><small class="text-muted">${material.unit || 'قطعة'}</small></td>
+                            <td><small class="text-muted">${material.unit || 'L.M'}</small></td>
                             <td><small class="text-success">${material.unit_price || 0}</small></td>
                             <td>
                                 <button type="button" class="btn btn-success btn-sm" 
-                                        onclick="addMaterialFromSearch('${material.code}', '${material.description}', '${material.unit || 'قطعة'}', '${material.unit_price || 0}')">
+                                        onclick="addMaterialFromSearch('${material.code}', '${material.description}', '${material.unit || 'L.M'}', '${material.unit_price || 0}')">
                                     <i class="fas fa-plus"></i>
                                 </button>
                             </td>
@@ -2119,7 +2154,7 @@ function addMaterialRow(code, description, quantity, unit, notes) {
         <td>
             <input type="number" name="materials[${materialRowIndex}][planned_quantity]" 
                    class="form-control form-control-sm" 
-                   step="0.01" min="0" value="${quantity}" placeholder="الكمية">
+                   step="0.01" min="0" value="${quantity || 1}" placeholder="الكمية">
         </td>
         <td>
             <select name="materials[${materialRowIndex}][unit]" class="form-select form-select-sm">
@@ -2129,12 +2164,7 @@ function addMaterialRow(code, description, quantity, unit, notes) {
             </select>
         </td>
         <td>
-            <input type="text" name="materials[${materialRowIndex}][notes]" 
-                   class="form-control form-control-sm" 
-                   value="${notes}" placeholder="ملاحظات">
-        </td>
-        <td>
-            <button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">
+            <button type="button" class="btn btn-danger btn-sm" onclick="removeMaterialRow(this)">
                 <i class="fas fa-trash"></i>
             </button>
         </td>

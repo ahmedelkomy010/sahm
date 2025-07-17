@@ -3452,14 +3452,39 @@ function deleteExtension(extensionId) {
                             <table class="table table-bordered table-striped" id="evacuationDataTable">
                                 <thead class="table-success">
                                     <tr>
-                                        <th style="min-width: 60px;">#</th>
-                                        <th style="min-width: 120px;">تم الإخلاء؟</th>
-                                        <th style="min-width: 120px;">تاريخ الإخلاء</th>
-                                        <th style="min-width: 120px;">مبلغ الإخلاء (ريال)</th>
-                                        <th style="min-width: 150px;">تاريخ ووقت الإخلاء</th>
-                                        <th style="min-width: 130px;">رقم سداد الإخلاء</th>
-                                        <th style="min-width: 200px;">ملاحظات</th>
-                                        <th style="min-width: 100px;">الإجراءات</th>
+                                        <th class="text-center" style="min-width: 60px;">
+                                            <i class="fas fa-hashtag"></i>
+                                            #
+                                        </th>
+                                        <th class="text-center" style="min-width: 120px;">
+                                            <i class="fas fa-check-circle"></i>
+                                            تم الإخلاء؟
+                                        </th>
+                                        <th class="text-center" style="min-width: 120px;">
+                                            <i class="fas fa-calendar-alt"></i>
+                                            تاريخ الإخلاء
+                                        </th>
+                                        <th class="text-center" style="min-width: 120px;">
+                                            <i class="fas fa-money-bill-wave"></i>
+                                            مبلغ الإخلاء (ريال)
+                                        </th>
+                                        <th class="text-center" style="min-width: 150px;">
+                                            <i class="fas fa-clock"></i>
+                                            تاريخ ووقت الإخلاء
+                                        </th>
+                                        <th class="text-center" style="min-width: 130px;">
+                                            <i class="fas fa-receipt"></i>
+                                            رقم سداد الإخلاء
+                                        </th>
+                                        <th class="text-center" style="min-width: 200px;">
+                                            <i class="fas fa-sticky-note"></i>
+                                            ملاحظات
+                                        </th>
+                                        <th class="text-center" style="min-width: 120px;">
+                                            <i class="fas fa-cogs me-1"></i>
+                                            <i class="fas fa-paperclip"></i>
+                                            الإجراءات / مرفق
+                                        </th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -3474,55 +3499,7 @@ function deleteExtension(extensionId) {
                         </div>
 
                         <!-- قسم مرفقات الإخلاء منفصل -->
-                        <div class="row mb-4 mt-4">
-                            <div class="col-12">
-                                <h5 class="text-info mb-3">
-                                    <i class="fas fa-paperclip me-2"></i>
-                                    مرفقات الإخلاء
-                                </h5>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label fw-bold">
-                                    <i class="fas fa-file-upload me-2"></i>
-                                    رفع مرفق جديد للإخلاء
-                                </label>
-                                <div class="input-group">
-                                    <span class="input-group-text"><i class="fas fa-paperclip"></i></span>
-                                    <input type="file" class="form-control" id="evacuation-attachment" 
-                                           name="evacuation_attachment" 
-                                           accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
-                                </div>
-                                <div class="form-text">
-                                    <i class="fas fa-info-circle me-1"></i>
-                                    الملفات المدعومة: PDF، الصور (JPG, PNG)، مستندات Word - الحد الأقصى: 10 MB
-                                </div>
-                                <div id="evacuation-file-preview" class="mt-2" style="display: none;">
-                                    <div class="alert alert-info mb-0">
-                                        <i class="fas fa-file me-2"></i>
-                                        <span id="evacuation-file-name"></span>
-                                        <button type="button" class="btn btn-sm btn-outline-danger ms-2" onclick="clearEvacuationFile()">
-                                            <i class="fas fa-times"></i> إزالة
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label fw-bold">
-                                    <i class="fas fa-folder me-2"></i>
-                                    المرفقات المحفوظة
-                                </label>
-                                <div id="saved-evacuation-attachments" class="border rounded p-3 bg-light">
-                                    <div class="text-center text-muted">
-                                        <i class="fas fa-folder-open fa-2x mb-2"></i>
-                                        <br>لا توجد مرفقات محفوظة
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        
 
                         <!-- زر الحفظ الموحد -->
                         <div class="d-flex justify-content-center mb-3">
@@ -3621,9 +3598,8 @@ function deleteExtension(extensionId) {
                                         </thead>
                                         <tbody>
                                             <tr id="no-lab-details-row">
-                                                <td colspan="15" class="text-center text-muted py-5">
-                                                    <i class="fas fa-flask fa-3x mb-3 text-muted"></i>
-                                                    <br><strong>لا توجد بيانات اختبارات مختبرية</strong>
+                                                <td colspan="15" class="text-center text-muted py-3">
+                                                    <br><strong>لا توجد بيانات اختبارات </strong>
                                                 </td>
                                             </tr>
                                         </tbody>
@@ -5194,9 +5170,18 @@ function addNewEvacuationRow() {
             <textarea class="form-control form-control-sm" name="evacuation_data[${rowCount}][notes]" rows="2" placeholder="ملاحظات الإخلاء"></textarea>
         </td>
         <td class="text-center">
-            <button type="button" class="btn btn-danger btn-sm" onclick="deleteEvacuationRow(this)" title="حذف الصف">
-                <i class="fas fa-trash"></i>
-            </button>
+            <div class="d-flex align-items-center justify-content-center">
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-info btn-sm me-1" onclick="viewAttachments(this)" title="عرض المرفقات">
+                        <i class="fas fa-paperclip"></i>
+                        <span class="attachment-count">0</span>
+                    </button>
+                    <button type="button" class="btn btn-danger btn-sm" onclick="deleteEvacuationRow(this)" title="حذف الصف">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+                <input type="file" class="d-none" name="evacuation_data[${rowCount}][attachments][]" multiple onchange="updateAttachmentCount(this)">
+            </div>
         </td>
     `;
     
@@ -5256,9 +5241,15 @@ function loadEvacuationDataForLicense(licenseId) {
                             <textarea class="form-control form-control-sm" name="evacuation_data[${index + 1}][notes]" rows="2" placeholder="ملاحظات الإخلاء">${evacuation.notes || ''}</textarea>
                         </td>
                         <td class="text-center">
-                            <button type="button" class="btn btn-danger btn-sm" onclick="deleteEvacuationRow(this)" title="حذف الصف">
-                                <i class="fas fa-trash"></i>
-                            </button>
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-info btn-sm me-1" onclick="viewAttachments(this)" title="عرض المرفقات">
+                                    <i class="fas fa-paperclip"></i>
+                                    <span class="attachment-count">1</span>
+                                </button>
+                                <button type="button" class="btn btn-danger btn-sm" onclick="deleteEvacuationRow(this)" title="حذف الصف">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
                         </td>
                     `;
                     tbody.appendChild(newRow);
