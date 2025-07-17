@@ -2441,13 +2441,32 @@ class LicenseController extends Controller
                     $filePath = $license->letters_commitments_file_path;
                     break;
                 case 'activation':
-                    $filePath = $license->activation_file_path;
+                    $filePath = $license->license_activation_path;
                     break;
                 case 'payment_invoices':
                     $filePath = $license->payment_invoices_path;
                     break;
                 case 'bank_payment':
-                    $filePath = $license->bank_payment_proof_path;
+                    $filePath = $license->payment_proof_path;
+                    break;
+                // إضافة معالجة ملفات المختبر
+                case 'depth_test':
+                    $filePath = $license->depth_test_file_path;
+                    break;
+                case 'soil_compaction':
+                    $filePath = $license->soil_compaction_file_path;
+                    break;
+                case 'rc1_mc1':
+                    $filePath = $license->rc1_mc1_file_path;
+                    break;
+                case 'asphalt':
+                    $filePath = $license->asphalt_test_file_path;
+                    break;
+                case 'soil':
+                    $filePath = $license->soil_test_file_path;
+                    break;
+                case 'interlock':
+                    $filePath = $license->interlock_test_file_path;
                     break;
                 default:
                     return response()->json(['success' => false, 'message' => 'نوع الملف غير مدعوم'], 400);
@@ -2458,23 +2477,36 @@ class LicenseController extends Controller
             }
             
             // التعامل مع الملفات المتعددة
-            if (in_array($type, ['payment_invoices', 'bank_payment'])) {
-                $files = json_decode($filePath, true);
-                if (is_array($files) && count($files) > 0) {
-                    $filePath = $files[0]; // أول ملف
-                } else {
-                    return response()->json(['success' => false, 'message' => 'الملف غير موجود'], 404);
+            if (in_array($type, ['payment_invoices', 'bank_payment', 'commitments'])) {
+                try {
+                    $files = json_decode($filePath, true);
+                    if (is_array($files) && count($files) > 0) {
+                        $filePath = $files[0];
+                    }
+                } catch (\Exception $e) {
+                    \Log::warning('Failed to parse JSON for file path: ' . $e->getMessage());
                 }
             }
             
             if (Storage::disk('public')->exists($filePath)) {
-                return response()->file(storage_path('app/public/' . $filePath));
+                $file = Storage::disk('public')->path($filePath);
+                $mimeType = Storage::disk('public')->mimeType($filePath);
+                
+                return response()->file($file, [
+                    'Content-Type' => $mimeType,
+                    'Content-Disposition' => 'inline; filename="' . basename($filePath) . '"'
+                ]);
             }
             
             return response()->json(['success' => false, 'message' => 'الملف غير موجود'], 404);
             
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'خطأ في تحميل الملف'], 500);
+            \Log::error('Error downloading file: ' . $e->getMessage(), [
+                'license_id' => $license->id,
+                'type' => $type,
+                'file_path' => $filePath ?? 'null'
+            ]);
+            return response()->json(['success' => false, 'message' => 'خطأ في تحميل الملف: ' . $e->getMessage()], 500);
         }
     }
 

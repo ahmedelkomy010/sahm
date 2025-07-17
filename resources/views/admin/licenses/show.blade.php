@@ -20,6 +20,19 @@ use Illuminate\Support\Facades\Storage;
             </div>
         </div>
 
+        <!-- رقم شهادة التنسيق -->
+        <div class="mb-6 bg-gray-50 p-4 rounded-lg">
+            <h3 class="text-xl font-bold mb-4">رقم شهادة التنسيق</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <p class="mb-2">
+                        <span class="font-medium">رقم شهادة التنسيق:</span>
+                        <span class="text-gray-700">{{ $license->coordination_certificate_number ?? 'غير محدد' }}</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+
         <!-- معلومات الحظر -->
         <div class="mb-6 bg-gray-50 p-4 rounded-lg">
             <h3 class="text-xl font-bold mb-4">معلومات الحظر</h3>
@@ -150,7 +163,7 @@ use Illuminate\Support\Facades\Storage;
                             <i class="fas fa-file-alt text-2xl text-yellow-500"></i>
                         </div>
                         <h4 class="font-semibold text-gray-800 mb-2">ملف تفعيل الرخصة</h4>
-                        @if($license->activation_file_path)
+                        @if($license->license_activation_path)
                             <a href="{{ route('admin.licenses.download', ['license' => $license, 'type' => 'activation']) }}" 
                                class="text-blue-600 hover:text-blue-800 flex items-center">
                                 <i class="fas fa-download ml-1"></i>
@@ -188,7 +201,7 @@ use Illuminate\Support\Facades\Storage;
                             <i class="fas fa-receipt text-2xl text-emerald-500"></i>
                         </div>
                         <h4 class="font-semibold text-gray-800 mb-2">إثبات سداد البنك</h4>
-                        @if($license->bank_payment_proof_path)
+                        @if($license->payment_proof_path)
                             <a href="{{ route('admin.licenses.download', ['license' => $license, 'type' => 'bank_payment']) }}" 
                                class="text-blue-600 hover:text-blue-800 flex items-center">
                                 <i class="fas fa-download ml-1"></i>
@@ -197,6 +210,45 @@ use Illuminate\Support\Facades\Storage;
                         @else
                             <span class="text-gray-500">لم يتم إضافة ملف</span>
                         @endif
+                    </div>
+                </div>
+
+                <!-- مرفقات المختبر -->
+                <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+                    <div class="flex flex-col items-center text-center">
+                        <div class="w-16 h-16 mb-3 flex items-center justify-center rounded-full bg-indigo-50">
+                            <i class="fas fa-flask text-2xl text-indigo-500"></i>
+                        </div>
+                        <h4 class="font-semibold text-gray-800 mb-2">مرفقات المختبر</h4>
+                        @php
+                            $labFiles = [
+                                ['path' => 'depth_test_file_path', 'name' => 'اختبار العمق', 'type' => 'depth_test'],
+                                ['path' => 'soil_compaction_file_path', 'name' => 'اختبار دمك التربة', 'type' => 'soil_compaction'],
+                                ['path' => 'rc1_mc1_file_path', 'name' => 'اختبار RC1/MC1', 'type' => 'rc1_mc1'],
+                                ['path' => 'asphalt_test_file_path', 'name' => 'اختبار الأسفلت', 'type' => 'asphalt'],
+                                ['path' => 'soil_test_file_path', 'name' => 'اختبار التربة', 'type' => 'soil'],
+                                ['path' => 'interlock_test_file_path', 'name' => 'اختبار الإنترلوك', 'type' => 'interlock']
+                            ];
+                            $hasAnyFile = false;
+                        @endphp
+                        
+                        <div class="flex flex-col gap-2">
+                            @foreach($labFiles as $file)
+                                @if($license->{$file['path']})
+                                    @php $hasAnyFile = true; @endphp
+                                    <a href="{{ Storage::disk('public')->url($license->{$file['path']}) }}" 
+                                       class="text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                                       target="_blank">
+                                        <i class="fas fa-download"></i>
+                                        {{ $file['name'] }}
+                                    </a>
+                                @endif
+                            @endforeach
+                            
+                            @if(!$hasAnyFile)
+                                <span class="text-gray-500">لم يتم إضافة ملفات</span>
+                            @endif
+                        </div>
                     </div>
                 </div>
             </div>

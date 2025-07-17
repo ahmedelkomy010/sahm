@@ -773,30 +773,46 @@ function deleteSurveyImage(fileId) {
     loadingOverlay.innerHTML = '<div class="spinner-border text-light" role="status"></div>';
     imageCard.style.position = 'relative';
     imageCard.appendChild(loadingOverlay);
-    
-    // إضافة الملف المحذوف إلى القائمة
-    if (!window.deletedFiles) {
-        window.deletedFiles = [];
-    }
-    // تحويل fileId إلى رقم وإضافته إلى المصفوفة
-    window.deletedFiles.push(parseInt(fileId));
-    
-    // إخفاء الصورة من الواجهة
-    imageCard.remove();
-    
-    // التحقق مما إذا كانت هناك صور متبقية
-    const imagesContainer = document.getElementById('imagesContainer');
-    if (imagesContainer && imagesContainer.children.length === 0) {
-        const noImagesAlert = document.createElement('div');
-        noImagesAlert.className = 'col-12';
-        noImagesAlert.innerHTML = `
-            <div class="alert alert-info mb-0">
-                <i class="fas fa-info-circle me-2"></i>
-                لا توجد صور لهذا المسح
-            </div>
-        `;
-        imagesContainer.appendChild(noImagesAlert);
-    }
+
+    // إرسال طلب حذف إلى الخادم
+    fetch(`/admin/work-orders/survey/files/${fileId}`, {
+        method: 'DELETE',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            'Accept': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // إخفاء الصورة من الواجهة
+            imageCard.remove();
+            
+            // التحقق مما إذا كانت هناك صور متبقية
+            const imagesContainer = document.getElementById('imagesContainer');
+            if (imagesContainer && imagesContainer.children.length === 0) {
+                const noImagesAlert = document.createElement('div');
+                noImagesAlert.className = 'col-12';
+                noImagesAlert.innerHTML = `
+                    <div class="alert alert-info mb-0">
+                        <i class="fas fa-info-circle me-2"></i>
+                        لا توجد صور لهذا المسح
+                    </div>
+                `;
+                imagesContainer.appendChild(noImagesAlert);
+            }
+        } else {
+            // إزالة شاشة التحميل وإظهار رسالة الخطأ
+            loadingOverlay.remove();
+            alert('حدث خطأ أثناء حذف الصورة');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        // إزالة شاشة التحميل وإظهار رسالة الخطأ
+        loadingOverlay.remove();
+        alert('حدث خطأ أثناء حذف الصورة');
+    });
 }
 
 // إضافة متغير عام لتتبع الملفات المحذوفة

@@ -158,6 +158,7 @@
         <div class="card-body">
             <!-- نموذج رفع الصور -->
             <form id="installation-images-form" class="mb-4">
+                @csrf
                 <div class="row">
                     <div class="col-md-8">
                         <div class="mb-3">
@@ -184,7 +185,7 @@
             <div id="installation-images-preview" class="row g-3">
                 @if(isset($workOrder->installations_images) && is_array($workOrder->installations_images))
                     @foreach($workOrder->installations_images as $index => $image)
-                        <div class="col-md-3 col-sm-6 image-container">
+                        <div class="col-md-3 col-sm-6 image-container" id="image-container-{{ $index }}">
                             <div class="card h-100">
                                 <img src="{{ asset('storage/' . $image) }}" 
                                      class="card-img-top" 
@@ -193,7 +194,7 @@
                                 <div class="card-body p-2 text-center">
                                     <button type="button" 
                                             class="btn btn-danger btn-sm delete-image"
-                                            data-image-index="{{ $index }}">
+                                            onclick="deleteInstallationImage({{ $index }})">
                                         <i class="fas fa-trash-alt"></i>
                                         حذف
                                     </button>
@@ -495,6 +496,112 @@ document.addEventListener('DOMContentLoaded', function() {
     // تحديث الإجمالي الكلي عند بدء التشغيل
     calculateTotals();
     refreshSummaryTable();
+
+    // تهيئة نموذج رفع الصور
+    const imageForm = document.getElementById('installation-images-form');
+    if (imageForm) {
+        imageForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const submitButton = this.querySelector('button[type="submit"]');
+            const originalText = submitButton.innerHTML;
+            
+            // التحقق من اختيار الصور
+            const imagesInput = document.getElementById('installation-images');
+            if (!imagesInput.files.length) {
+                toastr.warning('الرجاء اختيار الصور أولاً');
+                return;
+            }
+
+            // التحقق من عدد وحجم الصور
+            if (imagesInput.files.length > 50) {
+                toastr.error('لا يمكن رفع أكثر من 50 صورة في المرة الواحدة');
+                return;
+            }
+
+            let totalSize = 0;
+            for (let file of imagesInput.files) {
+                totalSize += file.size;
+                if (!file.type.startsWith('image/')) {
+                    toastr.error(`الملف ${file.name} ليس صورة`);
+                    return;
+                }
+            }
+
+            if (totalSize > 30 * 1024 * 1024) { // 30MB
+                toastr.error('الحجم الإجمالي للصور يتجاوز 30 ميجابايت');
+                return;
+            }
+
+            // تعطيل زر الرفع وإظهار حالة التحميل
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>جاري الرفع...';
+
+            try {
+                const response = await fetch(`/admin/work-orders/${workOrderId}/upload-installation-images`, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    }
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    toastr.success('تم رفع الصور بنجاح');
+                    // تحديث عرض الصور
+                    location.reload();
+                } else {
+                    toastr.error(result.message || 'حدث خطأ أثناء رفع الصور');
+                }
+            } catch (error) {
+                console.error('Error uploading images:', error);
+                toastr.error('حدث خطأ أثناء رفع الصور');
+            } finally {
+                // إعادة تفعيل زر الرفع
+                submitButton.disabled = false;
+                submitButton.innerHTML = originalText;
+            }
+        });
+    }
+
+    // دالة حذف الصورة
+    window.deleteInstallationImage = async function(imageIndex) {
+        if (!confirm('هل أنت متأكد من حذف هذه الصورة؟')) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`/admin/work-orders/${workOrderId}/delete-installation-image/${imageIndex}`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                // إزالة عنصر الصورة من DOM
+                const imageContainer = document.getElementById(`image-container-${imageIndex}`);
+                if (imageContainer) {
+                    imageContainer.remove();
+                    toastr.success('تم حذف الصورة بنجاح');
+                } else {
+                    console.error('Image container not found:', imageIndex);
+                    toastr.error('حدث خطأ في تحديث الصفحة');
+                }
+            } else {
+                toastr.error(result.message || 'حدث خطأ أثناء حذف الصورة');
+            }
+        } catch (error) {
+            console.error('Error deleting image:', error);
+            toastr.error('حدث خطأ أثناء حذف الصورة');
+        }
+    };
 });
 </script>
 @endpush 
