@@ -526,3 +526,7 @@ Route::delete('/admin/work-orders/{workOrder}/civil-works/attachments/{attachmen
 
 // حذف مرفق إخلاء
 Route::delete('/admin/licenses/{license}/evacuation-attachments/{index}', [LicenseController::class, 'deleteEvacuationAttachment'])->name('licenses.delete-evacuation-attachment');
+
+// مسارات البحث والحفظ التلقائي للمواد
+Route::get('admin/materials/search', [MaterialsController::class, 'search'])->name('admin.materials.search');
+Route::post('admin/materials/save', [MaterialsController::class, 'saveReference'])->name('admin.materials.save');

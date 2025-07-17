@@ -1298,124 +1298,122 @@ class WorkOrderController extends Controller
      */
     public function importWorkOrderMaterials(Request $request)
     {
-        // تحسين الذاكرة للملفات الكبيرة
-        ini_set('memory_limit', '2G');
-        ini_set('max_execution_time', 300);
-        
         try {
-            // التحقق من صحة الملف
-            $request->validate([
-                'file' => 'required|file|mimes:xlsx,xls,csv|max:10240'
-            ]);
+            Log::info('Starting materials import');
+            
+            // التحقق من وجود الملف
+            if (!$request->hasFile('file')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'لم يتم تحديد ملف للاستيراد'
+                ], 400);
+            }
 
             $file = $request->file('file');
             
-            // التحقق من وجود الملف
-            if (!$file || !$file->isValid()) {
+            // التحقق من نوع الملف
+            if (!in_array($file->getClientOriginalExtension(), ['xlsx', 'xls', 'csv'])) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'الملف المرفوع غير صالح'
+                    'message' => 'نوع الملف غير مدعوم. الأنواع المدعومة هي: xlsx, xls, csv'
                 ], 400);
             }
 
-            Log::info('Materials import file details', [
-                'original_name' => $file->getClientOriginalName(),
-                'mime_type' => $file->getMimeType(),
-                'size' => $file->getSize()
-            ]);
+            // قراءة الملف باستخدام PhpSpreadsheet
+            $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($file->getPathname());
+            $worksheet = $spreadsheet->getActiveSheet();
+            $rows = $worksheet->toArray();
 
-            // التحقق من أن مكتبة Excel متاحة
-            if (!class_exists('\Maatwebsite\Excel\Facades\Excel')) {
-                Log::error('Excel library not available');
-                return response()->json([
-                    'success' => false,
-                    'message' => 'مكتبة Excel غير متاحة. يرجى التأكد من تثبيت maatwebsite/excel'
-                ], 500);
-            }
+            // تجاهل الصف الأول (العناوين)
+            array_shift($rows);
 
-            // التحقق من أن كلاس WorkOrderMaterialsImport يعمل
-            if (!class_exists('\App\Imports\WorkOrderMaterialsImport')) {
-                Log::error('WorkOrderMaterialsImport class not found');
-                return response()->json([
-                    'success' => false,
-                    'message' => 'كلاس استيراد المواد غير متاح'
-                ], 500);
-            }
+            $importedMaterials = [];
+            $errors = [];
 
-            // إنشاء كائن الاستيراد
+            DB::beginTransaction();
+
             try {
-                $import = new \App\Imports\WorkOrderMaterialsImport();
-                Log::info('Materials import class created successfully');
-            } catch (\Exception $e) {
-                Log::error('Failed to create import class: ' . $e->getMessage());
-                Log::error('Import class creation stack trace: ' . $e->getTraceAsString());
-                return response()->json([
-                    'success' => false,
-                    'message' => 'فشل في إنشاء كائن الاستيراد: ' . $e->getMessage()
-                ], 500);
-            }
+                foreach ($rows as $index => $row) {
+                    // تجاهل الصفوف الفارغة
+                    if (empty(array_filter($row))) {
+                        continue;
+                    }
 
-            // تنفيذ عملية الاستيراد
-            try {
-                // التحقق من وجود مكتبة Excel مرة أخرى
-                if (!class_exists('\Maatwebsite\Excel\Facades\Excel')) {
-                    throw new \Exception('مكتبة Excel غير متاحة');
+                    $code = trim($row[0] ?? '');
+                    $description = trim($row[1] ?? '');
+
+                    // التحقق من وجود البيانات المطلوبة
+                    if (empty($code) || empty($description)) {
+                        $errors[] = "الصف " . ($index + 2) . ": كود المادة أو الوصف مفقود";
+                        continue;
+                    }
+
+                    try {
+                        // البحث عن المادة في جدول المواد المرجعية أو إنشاء واحدة جديدة
+                        $material = \App\Models\ReferenceMaterial::firstOrCreate(
+                            ['code' => $code],
+                            [
+                                'description' => $description,
+                                'unit' => 'قطعة', // وحدة افتراضية
+                                'is_active' => true
+                            ]
+                        );
+
+                        // تنسيق البيانات للعرض في الواجهة
+                        $importedMaterials[] = [
+                            'code' => $material->code,
+                            'description' => $material->description,
+                            'unit' => $material->unit,
+                            'planned_quantity' => 1
+                        ];
+
+                        Log::info('Material imported successfully', [
+                            'code' => $material->code,
+                            'description' => $material->description
+                        ]);
+
+                    } catch (\Exception $e) {
+                        Log::error("Error processing row " . ($index + 2) . ": " . $e->getMessage());
+                        $errors[] = "خطأ في معالجة الصف " . ($index + 2) . ": " . $e->getMessage();
+                    }
                 }
-                
-                \Maatwebsite\Excel\Facades\Excel::import($import, $file);
-                Log::info('Materials Excel import completed');
+
+                if (empty($importedMaterials) && !empty($errors)) {
+                    DB::rollBack();
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'فشل استيراد المواد',
+                        'errors' => $errors
+                    ], 422);
+                }
+
+                DB::commit();
+
+                Log::info('Import completed successfully', [
+                    'imported_count' => count($importedMaterials),
+                    'errors_count' => count($errors)
+                ]);
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'تم استيراد ' . count($importedMaterials) . ' مادة بنجاح',
+                    'imported_materials' => $importedMaterials,
+                    'errors' => $errors
+                ]);
+
             } catch (\Exception $e) {
-                Log::error('Excel import failed: ' . $e->getMessage());
-                Log::error('Excel import stack trace: ' . $e->getTraceAsString());
-                return response()->json([
-                    'success' => false,
-                    'message' => 'فشل في قراءة ملف Excel: ' . $e->getMessage()
-                ], 500);
+                DB::rollBack();
+                Log::error("Transaction error: " . $e->getMessage());
+                throw $e;
             }
 
-            // الحصول على النتائج
-            $importedMaterials = $import->getFormattedMaterials();
-            $errors = $import->errors();
-            $statistics = $import->getImportStatistics();
-
-            Log::info('Materials import results', [
-                'imported_count' => count($importedMaterials),
-                'errors_count' => count($errors),
-                'statistics' => $statistics
-            ]);
-
-            // التحقق من وجود بيانات مستوردة
-            if (empty($importedMaterials)) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'لم يتم العثور على بيانات صالحة في الملف. تأكد من أن الملف يحتوي على عمودين: "كود المادة" و "وصف المادة"',
-                    'statistics' => $statistics
-                ], 400);
-            }
-
-            return response()->json([
-                'success' => true,
-                'message' => 'تم استيراد ' . count($importedMaterials) . ' مادة بنجاح من أصل ' . $statistics['total_rows_processed'] . ' سطر',
-                'imported_count' => count($importedMaterials),
-                'errors_count' => count($errors),
-                'errors' => $errors,
-                'imported_materials' => $importedMaterials,
-                'statistics' => $statistics
-            ]);
-
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            Log::error('Validation error in materials import', ['errors' => $e->errors()]);
-            return response()->json([
-                'success' => false,
-                'message' => 'خطأ في تحقق الملف: ' . implode(', ', $e->errors()['file'] ?? ['ملف غير صالح'])
-            ], 422);
         } catch (\Exception $e) {
-            Log::error('Import materials error: ' . $e->getMessage());
-            Log::error('Stack trace: ' . $e->getTraceAsString());
+            Log::error("Import error: " . $e->getMessage());
+            Log::error("Stack trace: " . $e->getTraceAsString());
             
             return response()->json([
                 'success' => false,
-                'message' => 'حدث خطأ أثناء استيراد ملف المواد: ' . $e->getMessage()
+                'message' => 'حدث خطأ أثناء استيراد الملف: ' . $e->getMessage()
             ], 500);
         }
     }

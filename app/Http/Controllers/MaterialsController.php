@@ -610,4 +610,70 @@ $material = ReferenceMaterial::whereRaw('LOWER(TRIM(code)) = ?', [$normalizedCod
             }
         }
     }
+
+    /**
+     * البحث عن مادة بالكود
+     */
+    public function search(Request $request)
+    {
+        try {
+            $code = $request->query('code');
+            
+            if (empty($code)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'كود المادة مطلوب'
+                ], 400);
+            }
+
+            $material = ReferenceMaterial::where('code', $code)->first();
+            
+            return response()->json([
+                'success' => true,
+                'material' => $material
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error searching material: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء البحث عن المادة'
+            ], 500);
+        }
+    }
+
+    /**
+     * حفظ مادة في جدول المواد المرجعية
+     */
+    public function saveReference(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'code' => 'required|string|max:255',
+                'description' => 'required|string',
+                'unit' => 'nullable|string|max:50'
+            ]);
+
+            $material = ReferenceMaterial::updateOrCreate(
+                ['code' => $validated['code']],
+                [
+                    'description' => $validated['description'],
+                    'name' => $validated['description'],
+                    'unit' => $validated['unit'] ?? 'قطعة',
+                    'is_active' => true
+                ]
+            );
+
+            return response()->json([
+                'success' => true,
+                'message' => 'تم حفظ المادة بنجاح',
+                'material' => $material
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error saving reference material: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء حفظ المادة'
+            ], 500);
+        }
+    }
 }

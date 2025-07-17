@@ -40,7 +40,7 @@
                                                 <option value="901" {{ old('work_type') == '901' ? 'selected' : '' }}> -   اضافة  عداد  طاقة  شمسية</option>
                                                 <option value="440" {{ old('work_type') == '440' ? 'selected' : '' }}> - الرفع المساحي</option>
                                                 <option value="410" {{ old('work_type') == '410' ? 'selected' : '' }}> -  انشاء محطة/محول لمشترك/مشتركين </option>
-                                                <option value="801" {{ old('work_type') == '801' ? 'selected' : '' }}> -  تركيب عداد  ايصال سريع </option>
+                                                <option value="801" {{ old('work_type') == '801' ? 'selected' : '' }}> -  تركيب عداد ايصال سريع </option>
                                                 <option value="804" {{ old('work_type') == '804' ? 'selected' : '' }}> -  تركيب محطة ش ارضية VM ايصال سريع</option>
                                                 <option value="805" {{ old('work_type') == '805' ? 'selected' : '' }}> - تركيب محطة ش هوائية VM ايصال سريع</option>
                                                 <option value="480" {{ old('work_type') == '480' ? 'selected' : '' }}> -  (تسليم مفتاح) تمويل خارجي </option>
@@ -298,9 +298,6 @@
                                             <button type="button" class="btn btn-outline-info btn-sm" data-bs-toggle="modal" data-bs-target="#materialsImportModal">
                                                 <i class="fas fa-file-excel"></i> استيراد من Excel
                                             </button>
-                                            <button type="button" class="btn btn-outline-warning btn-sm" data-bs-toggle="modal" data-bs-target="#materialsSearchModal">
-                                                <i class="fas fa-search"></i> بحث في المواد
-                                            </button>
                                             <button type="button" class="btn btn-outline-success btn-sm" onclick="addMaterial()">
                                                 <i class="fas fa-plus"></i> إضافة مادة
                                             </button>
@@ -309,19 +306,7 @@
                                     
                                     <!-- حقل البحث السريع -->
                                     <div class="row mb-3">
-                                        <div class="col-md-6">
-                                            <div class="input-group">
-                                                <span class="input-group-text">
-                                                    <i class="fas fa-search text-muted"></i>
-                                                </span>
-                                                <input type="text" class="form-control" id="quickMaterialSearch" 
-                                                       placeholder="بحث سريع في كود المادة..." 
-                                                       onkeyup="quickSearchMaterials(this.value)">
-                                                <button class="btn btn-outline-secondary" type="button" onclick="clearQuickSearch()">
-                                                    <i class="fas fa-times"></i>
-                                                </button>
-                                            </div>
-                                        </div>
+                                        
                                         <div class="col-md-6">
                                             <div id="quickSearchResults" class="position-relative">
                                                 <!-- نتائج البحث السريع ستظهر هنا -->
@@ -333,12 +318,11 @@
                                         <table class="table table-bordered" id="materialsTable">
                                             <thead class="table-light">
                                                 <tr>
-                                                    <th style="width: 20%">كود المادة</th>
+                                                    <th style="width: 25%">كود المادة</th>
                                                     <th style="width: 35%">وصف المادة</th>
                                                     <th style="width: 15%">الكمية المخططة</th>
-                                                    <th style="width: 10%">الوحدة</th>
-                                                    <th style="width: 15%">ملاحظات</th>
-                                                    <th style="width: 5%">حذف</th>
+                                                    <th style="width: 15%">الوحدة</th>
+                                                    <th style="width: 10%">إجراءات</th>
                                                 </tr>
                                             </thead>
                                             <tbody id="materialsBody">
@@ -393,15 +377,21 @@
 </div>
 
 <!-- Modal for Materials Excel Import -->
-<div class="modal fade" id="materialsImportModal" tabindex="-1" aria-labelledby="materialsImportModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
+<div class="modal fade" 
+    id="materialsImportModal" 
+    tabindex="-1" 
+    role="dialog"
+    aria-labelledby="materialsImportModalLabel"
+    data-bs-backdrop="static"
+    data-bs-keyboard="true">
+    <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header bg-success text-white">
                 <h5 class="modal-title" id="materialsImportModalLabel">
                     <i class="fas fa-file-excel me-2"></i>
                     استيراد مقايسة المواد من ملف Excel
                 </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="إغلاق"></button>
             </div>
             <div class="modal-body">
                 <div class="alert alert-info">
@@ -933,68 +923,157 @@ function addMaterial() {
     const row = document.createElement('tr');
     row.innerHTML = `
         <td>
-            <input type="text" name="materials[${materialRowIndex}][material_code]" 
+            <input type="text" name="materials[${window.materialRowIndex}][material_code]" 
+                   class="form-control form-control-sm material-code" 
+                   onchange="handleMaterialCodeChange(this)"
+                   placeholder="أدخل كود المادة">
+        </td>
+        <td>
+            <input type="text" name="materials[${window.materialRowIndex}][material_description]" 
+                   class="form-control form-control-sm material-description"
+                   onchange="handleMaterialDescriptionChange(this)"
+                   placeholder="أدخل وصف المادة">
+        </td>
+        <td>
+            <input type="number" name="materials[${window.materialRowIndex}][planned_quantity]" 
                    class="form-control form-control-sm" 
-                   placeholder="كود المادة" 
-                   onchange="updateMaterialDescription(this, ${materialRowIndex})"
-                   list="materialCodes_${materialRowIndex}" required>
-            <datalist id="materialCodes_${materialRowIndex}">
-                ${referenceMaterials.map(material => `<option value="${material.code}">${material.description}</option>`).join('')}
-            </datalist>
+                   value="1" min="1" step="1">
         </td>
         <td>
-            <input type="text" name="materials[${materialRowIndex}][material_description]" 
-                   class="form-control form-control-sm" 
-                   placeholder="وصف المادة" required>
+            <input type="text" name="materials[${window.materialRowIndex}][unit]" 
+                   class="form-control form-control-sm material-unit" 
+                   value="قطعة">
         </td>
         <td>
-            <input type="number" name="materials[${materialRowIndex}][planned_quantity]" 
-                   class="form-control form-control-sm" 
-                   step="0.01" min="0" placeholder="الكمية" required>
-        </td>
-        <td>
-            <select name="materials[${materialRowIndex}][unit]" class="form-select form-select-sm" required>
-                <option value="L.M">L.M</option>
-                <option value="Kit">Kit</option>
-                <option value=" Ech"> Ech</option>
-             
-            </select>
-        </td>
-        <td>
-            <input type="text" name="materials[${materialRowIndex}][notes]" 
-                   class="form-control form-control-sm" placeholder="ملاحظات">
-        </td>
-        <td>
-            <button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">
+            <button type="button" class="btn btn-danger btn-sm" onclick="removeMaterialRow(this)">
                 <i class="fas fa-trash"></i>
             </button>
         </td>
     `;
     tbody.appendChild(row);
-    materialRowIndex++;
+    window.materialRowIndex++;
 }
 
-// تحديث وصف المادة تلقائياً عند اختيار الكود
-function updateMaterialDescription(input, index) {
-    const code = input.value;
-    const material = referenceMaterials.find(m => m.code === code);
-    if (material) {
-        const descriptionInput = input.closest('tr').querySelector('input[name*="[material_description]"]');
-        descriptionInput.value = material.description;
+// معالجة تغيير كود المادة
+async function handleMaterialCodeChange(input) {
+    const row = input.closest('tr');
+    const code = input.value.trim();
+    const descriptionInput = row.querySelector('.material-description');
+    const unitInput = row.querySelector('.material-unit');
+
+    if (code) {
+        try {
+            // البحث عن المادة في قاعدة البيانات
+            const response = await fetch(`/admin/materials/search?code=${encodeURIComponent(code)}`, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (data.success && data.material) {
+                // تعبئة البيانات الموجودة
+                descriptionInput.value = data.material.description;
+                unitInput.value = data.material.unit || 'قطعة';
+            }
+        } catch (error) {
+            console.error('Error searching material:', error);
+        }
     }
 }
 
-// حذف صف
-function removeRow(button) {
-    button.closest('tr').remove();
+// معالجة تغيير وصف المادة
+async function handleMaterialDescriptionChange(input) {
+    const row = input.closest('tr');
+    const code = row.querySelector('.material-code').value.trim();
+    const description = input.value.trim();
+
+    if (code && description) {
+        try {
+            // حفظ المادة في قاعدة البيانات
+            const response = await fetch('/admin/materials/save', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    code: code,
+                    description: description,
+                    unit: row.querySelector('.material-unit').value.trim()
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                // إظهار رسالة نجاح صغيرة
+                showToast('success', 'تم حفظ المادة بنجاح');
+            }
+        } catch (error) {
+            console.error('Error saving material:', error);
+            showToast('error', 'حدث خطأ أثناء حفظ المادة');
+        }
+    }
 }
 
-// إضافة صف افتراضي عند تحميل الصفحة
+// إظهار رسالة توست
+function showToast(type, message) {
+    const toast = document.createElement('div');
+    toast.className = `toast align-items-center text-white bg-${type === 'success' ? 'success' : 'danger'} border-0 position-fixed bottom-0 end-0 m-3`;
+    toast.setAttribute('role', 'alert');
+    toast.setAttribute('aria-live', 'assertive');
+    toast.setAttribute('aria-atomic', 'true');
+    
+    toast.innerHTML = `
+        <div class="d-flex">
+            <div class="toast-body">
+                ${message}
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    `;
+    
+    document.body.appendChild(toast);
+    const bsToast = new bootstrap.Toast(toast);
+    bsToast.show();
+    
+    // حذف التوست بعد إغلاقه
+    toast.addEventListener('hidden.bs.toast', () => {
+        toast.remove();
+    });
+}
+
+// حذف صف مادة
+function removeMaterialRow(button) {
+    const row = button.closest('tr');
+    if (row) {
+        row.remove();
+        
+        // إضافة صف جديد إذا كان الجدول فارغاً
+        const tbody = document.getElementById('materialsBody');
+        if (tbody && tbody.children.length === 0) {
+            addMaterial();
+        }
+    }
+}
+
+// تهيئة المتغيرات عند تحميل الصفحة
 document.addEventListener('DOMContentLoaded', function() {
-    // إضافة بند عمل افتراضي
-    addWorkItem();
-    // إضافة مادة افتراضية  
-    addMaterial();
+    // تهيئة مؤشر صفوف المواد إذا لم يكن موجوداً
+    if (typeof window.materialRowIndex === 'undefined') {
+        window.materialRowIndex = 0;
+    }
+    
+    // إضافة صف افتراضي إذا كان الجدول فارغاً
+    const tbody = document.getElementById('materialsBody');
+    if (tbody && tbody.children.length === 0) {
+        addMaterial();
+    }
 });
 
 // وظائف رفع ملف Excel
@@ -1663,8 +1742,175 @@ function downloadMaterialsTemplate() {
 // إعادة تعيين نموذج الاستيراد عند إغلاق النافذة
 const materialsImportModal = document.getElementById('materialsImportModal');
 if (materialsImportModal) {
+    // تهيئة النموذج
+    const form = document.getElementById('materialsImportForm');
+    let lastFocusedElement = null;
+
+    materialsImportModal.addEventListener('show.bs.modal', function() {
+        lastFocusedElement = document.activeElement;
+    });
+
+    materialsImportModal.addEventListener('shown.bs.modal', function() {
+        const fileInput = document.getElementById('materialsFile');
+        if (fileInput) {
+            fileInput.focus();
+        }
+    });
+
     materialsImportModal.addEventListener('hidden.bs.modal', function() {
+        if (lastFocusedElement) {
+            lastFocusedElement.focus();
+        }
         resetMaterialsImportForm();
+    });
+
+    // إدارة التنقل بين العناصر باستخدام Tab
+    materialsImportModal.addEventListener('keydown', function(e) {
+        if (e.key === 'Tab') {
+            const focusableElements = materialsImportModal.querySelectorAll(
+                'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+            );
+            
+            const firstElement = focusableElements[0];
+            const lastElement = focusableElements[focusableElements.length - 1];
+            
+            if (e.shiftKey && document.activeElement === firstElement) {
+                e.preventDefault();
+                lastElement.focus();
+            } else if (!e.shiftKey && document.activeElement === lastElement) {
+                e.preventDefault();
+                firstElement.focus();
+            }
+        }
+    });
+
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const fileInput = document.getElementById('materialsFile');
+        const progressDiv = document.getElementById('materialsUploadProgress');
+        const resultsDiv = document.getElementById('materialsImportResults');
+        
+        if (!fileInput.files[0]) {
+            showToast('error', 'يرجى اختيار ملف أولاً');
+            return;
+        }
+        
+        // إظهار شريط التقدم
+        progressDiv.classList.remove('d-none');
+        const progressBar = progressDiv.querySelector('.progress-bar');
+        progressBar.style.width = '0%';
+        progressBar.setAttribute('aria-valuenow', '0');
+        
+        try {
+            const formData = new FormData(form);
+            
+            // إظهار حالة التحميل
+            progressBar.style.width = '50%';
+            progressBar.setAttribute('aria-valuenow', '50');
+            
+            const response = await fetch('/admin/work-orders/import-materials', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                progressBar.style.width = '100%';
+                progressBar.setAttribute('aria-valuenow', '100');
+                
+                // إضافة المواد المستوردة للجدول
+                if (data.imported_materials?.length > 0) {
+                    const tbody = document.getElementById('materialsBody');
+                    
+                    data.imported_materials.forEach(material => {
+                        // التحقق من وجود البيانات قبل استخدامها
+                        if (!material || typeof material !== 'object') {
+                            console.error('Invalid material data:', material);
+                            return;
+                        }
+
+                        const code = material.code || '';
+                        const description = material.description || '';
+                        const unit = material.unit || 'قطعة';
+                        const quantity = material.planned_quantity || 1;
+                        
+                        // إنشاء صف جديد
+                        const row = document.createElement('tr');
+                        
+                        // إضافة البيانات للصف
+                        row.innerHTML = `
+                            <td>
+                                <input type="text" name="materials[${window.materialRowIndex}][material_code]" 
+                                       class="form-control form-control-sm material-code" 
+                                       value="${code}" readonly>
+                            </td>
+                            <td>
+                                <input type="text" name="materials[${window.materialRowIndex}][material_description]" 
+                                       class="form-control form-control-sm material-description"
+                                       value="${description}" readonly>
+                            </td>
+                            <td>
+                                <input type="number" name="materials[${window.materialRowIndex}][planned_quantity]" 
+                                       class="form-control form-control-sm" 
+                                       value="${quantity}" min="1">
+                            </td>
+                            <td>
+                                <input type="text" name="materials[${window.materialRowIndex}][unit]" 
+                                       class="form-control form-control-sm material-unit" 
+                                       value="${unit}" readonly>
+                            </td>
+                            <td>
+                                <button type="button" class="btn btn-danger btn-sm" onclick="removeMaterialRow(this)">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        `;
+                        
+                        // إضافة الصف للجدول
+                        tbody.appendChild(row);
+                        window.materialRowIndex++;
+                    });
+                }
+                
+                // إظهار رسالة النجاح
+                resultsDiv.innerHTML = `
+                    <div class="alert alert-success mb-0">
+                        <i class="fas fa-check-circle me-2"></i>
+                        تم استيراد ${data.imported_materials?.length || 0} مادة بنجاح
+                    </div>
+                `;
+                
+                // إغلاق النافذة بعد ثانيتين
+                setTimeout(() => {
+                    const modal = bootstrap.Modal.getInstance(materialsImportModal);
+                    if (modal) modal.hide();
+                }, 2000);
+                
+            } else {
+                throw new Error(data.message || 'حدث خطأ أثناء الاستيراد');
+            }
+            
+        } catch (error) {
+            console.error('Error:', error);
+            resultsDiv.innerHTML = `
+                <div class="alert alert-danger mb-0">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    ${error.message || 'حدث خطأ أثناء استيراد الملف'}
+                </div>
+            `;
+        } finally {
+            // إخفاء شريط التقدم بعد انتهاء العملية
+            setTimeout(() => {
+                progressDiv.classList.add('d-none');
+                progressBar.style.width = '0%';
+                progressBar.setAttribute('aria-valuenow', '0');
+            }, 500);
+        }
     });
 }
 

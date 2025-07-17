@@ -173,11 +173,9 @@ return new class extends Migration
         // Reference materials table
         Schema::create('reference_materials', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
             $table->string('code')->unique();
             $table->text('description')->nullable();
-            $table->string('unit');
-            $table->decimal('unit_price', 10, 2)->nullable();
+            $table->string('unit')->default('قطعة');
             $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
