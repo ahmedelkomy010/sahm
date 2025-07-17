@@ -158,7 +158,7 @@
                                     <table class="custom-table">
                                         <tbody>
                                             <tr>
-                                                <th style="width: 40%">رقم المسلسل</th>
+                                                <th style="width: 40%">رقم التسلسلي</th>
                                                 <td>{{ $workOrder->id }}</td>
                                             </tr>
                                             <tr>
