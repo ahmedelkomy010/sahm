@@ -3477,13 +3477,16 @@ function deleteExtension(extensionId) {
                                             رقم سداد الإخلاء
                                         </th>
                                         <th class="text-center" style="min-width: 200px;">
+                                            <i class="fas fa-file"></i>
+                                            رقم الفسح 
+                                        </th>
+                                        <th class="text-center" style="min-width: 200px;">
                                             <i class="fas fa-sticky-note"></i>
                                             ملاحظات
                                         </th>
                                         <th class="text-center" style="min-width: 120px;">
                                             <i class="fas fa-cogs me-1"></i>
-                                            <i class="fas fa-paperclip"></i>
-                                            الإجراءات / مرفق
+                                            الإجراءات 
                                         </th>
                                     </tr>
                                 </thead>
@@ -3498,14 +3501,15 @@ function deleteExtension(extensionId) {
                             </table>
                         </div>
 
-                        <!-- قسم مرفقات الإخلاء منفصل -->
-                        
+                        <!-- حقل معرف الرخصة المخفي -->
+                        <input type="hidden" name="license_id" id="evacuation-license-id" value="">
+                        <input type="hidden" name="work_order_id" value="{{ $workOrder->id }}">
 
                         <!-- زر الحفظ الموحد -->
                         <div class="d-flex justify-content-center mb-3">
                             <button type="button" class="btn btn-primary btn-lg" onclick="saveAllEvacuationData()">
                                 <i class="fas fa-save me-2"></i>
-                                حفظ جميع بيانات ومرفقات الإخلاء
+                                حفظ  بيانات الإخلاء
                             </button>
                         </div>
 

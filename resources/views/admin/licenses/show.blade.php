@@ -695,7 +695,6 @@ use Illuminate\Support\Facades\Storage;
                             <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">تاريخ ووقت الإخلاء</th>
                             <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">رقم سداد الإخلاء</th>
                             <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">ملاحظات</th>
-                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">المرفق</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
@@ -729,18 +728,7 @@ use Illuminate\Support\Facades\Storage;
                                     <td class="px-6 py-4 text-sm text-gray-900">
                                         {{ $evacuation['notes'] ?? '-' }}
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        @if(isset($evacuation['evacuation_file']))
-                                            <a href="{{ route('licenses.evacuation-file', ['license' => $license->id, 'index' => $index]) }}" 
-                                               class="text-blue-600 hover:text-blue-800 inline-flex items-center gap-1"
-                                               target="_blank">
-                                                <i class="fas fa-file-download"></i>
-                                                عرض
-                                            </a>
-                                        @else
-                                            <span class="text-gray-400">-</span>
-                                        @endif
-                                    </td>
+                                    
                                 </tr>
                             @endforeach
                         @else
@@ -757,49 +745,7 @@ use Illuminate\Support\Facades\Storage;
         </div>
 
         <!-- مرفقات الإخلاء المنفصلة -->
-        @if(isset($additionalDetails['evacuation_attachments']) && count($additionalDetails['evacuation_attachments']) > 0)
-            <div class="mt-8">
-                <h3 class="text-xl font-bold text-gray-800 mb-4">
-                    <i class="fas fa-paperclip text-blue-500 me-2"></i>
-                    مرفقات الإخلاء
-                </h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    @foreach($additionalDetails['evacuation_attachments'] as $index => $attachment)
-                        <div class="bg-white rounded-lg shadow border border-gray-200 hover:shadow-md transition-shadow p-4">
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center space-x-3">
-                                    <div class="flex-shrink-0">
-                                        <i class="fas fa-file-pdf text-red-500 text-2xl"></i>
-                                    </div>
-                                    <div class="flex-1 min-w-0">
-                                        <p class="text-sm font-medium text-gray-900 truncate">
-                                            {{ $attachment['name'] ?? 'مرفق إخلاء ' . ($index + 1) }}
-                                        </p>
-                                        <p class="text-sm text-gray-500">
-                                            تاريخ الرفع: {{ isset($attachment['uploaded_at']) ? \Carbon\Carbon::parse($attachment['uploaded_at'])->format('Y/m/d H:i') : 'غير محدد' }}
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="mt-3 flex justify-center space-x-2 gap-2">
-                                <a href="{{ \Storage::disk('public')->url($attachment['path']) }}" 
-                                   target="_blank" 
-                                   class="inline-flex items-center px-3 py-1 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                                    <i class="fas fa-eye mr-1"></i>
-                                    عرض
-                                </a>
-                                <a href="{{ \Storage::disk('public')->url($attachment['path']) }}" 
-                                   download="{{ $attachment['name'] ?? 'evacuation_attachment_' . ($index + 1) }}"
-                                   class="inline-flex items-center px-3 py-1 border border-gray-300 text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                                    <i class="fas fa-download mr-1"></i>
-                                    تحميل
-                                </a>
-                            </div>
-                        </div>
-                    @endforeach
-                </div>
-            </div>
-        @endif
+        
             
 
             <!-- جدول بيانات الإخلاءات التفصيلي - الجدول الأول -->

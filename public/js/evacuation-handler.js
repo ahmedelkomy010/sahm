@@ -80,21 +80,7 @@ function loadEvacuationDataForLicense(licenseId) {
                                       name="evacuation_data[${index + 1}][notes]" 
                                       rows="1" placeholder="ملاحظات الإخلاء">${item.notes || ''}</textarea>
                         </td>
-                        <td>
-                            <div class="d-flex flex-column gap-1">
-                                ${item.attachments && item.attachments.length > 0 ? `
-                                    <div class="mb-1">
-                                        <small class="text-success">
-                                            <i class="fas fa-paperclip"></i>
-                                            ${item.attachments.length} مرفق
-                                        </small>
-                                    </div>
-                                ` : ''}
-                                <input type="file" class="form-control form-control-sm" 
-                                       name="evacuation_data[${index + 1}][attachments][]" 
-                                       accept=".pdf,.jpg,.jpeg,.png" multiple>
-                            </div>
-                        </td>
+
                         <td class="text-center">
                             <button type="button" class="btn btn-danger btn-sm" 
                                     onclick="deleteEvacuationRow(this)" 
@@ -316,13 +302,7 @@ function addNewEvacuationRow() {
                       name="evacuation_data[${rowCount}][notes]" 
                       rows="1" placeholder="ملاحظات الإخلاء"></textarea>
         </td>
-        <td>
-            <div class="d-flex flex-column gap-1">
-                <input type="file" class="form-control form-control-sm" 
-                       name="evacuation_data[${rowCount}][attachments][]" 
-                       accept=".pdf,.jpg,.jpeg,.png" multiple>
-            </div>
-        </td>
+       
         <td class="text-center">
             <button type="button" class="btn btn-danger btn-sm" 
                     onclick="deleteEvacuationRow(this)" 
@@ -395,36 +375,72 @@ if (document.readyState === 'loading') {
 } 
 
 function saveAllEvacuationData() {
-    const licenseId = document.getElementById('evacuation-license-id').value;
+    const licenseIdField = document.getElementById('evacuation-license-id');
+    if (!licenseIdField) {
+        toastr.error('عنصر معرف الرخصة غير موجود');
+        return;
+    }
+
+    const licenseId = licenseIdField.value;
     if (!licenseId) {
         toastr.error('يرجى اختيار رخصة أولاً');
         return;
     }
 
-    // تجميع البيانات من الجدول
-    const rows = document.getElementById('evacuationDataTable').getElementsByTagName('tbody')[0].rows;
+    const table = document.getElementById('evacuationDataTable');
+    if (!table) {
+        toastr.error('جدول بيانات الإخلاء غير موجود');
+        return;
+    }
+
+    const tbody = table.getElementsByTagName('tbody')[0];
+    if (!tbody) {
+        toastr.error('لا يوجد جسم لجدول بيانات الإخلاء');
+        return;
+    }
+
+    const rows = tbody.rows;
     let hasValidData = false;
     let evacuationDataArray = [];
     
     for (let i = 0; i < rows.length; i++) {
         if (rows[i].id !== 'no-evacuation-data-row') {
             const row = rows[i];
-            const rowData = {
-                is_evacuated: row.querySelector('[name*="[is_evacuated]"]').value,
-                evacuation_date: row.querySelector('[name*="[evacuation_date]"]').value,
-                evacuation_amount: row.querySelector('[name*="[evacuation_amount]"]').value,
-                evacuation_datetime: row.querySelector('[name*="[evacuation_datetime]"]').value,
-                payment_number: row.querySelector('[name*="[payment_number]"]').value,
-                clearance_number: row.querySelector('[name*="[clearance_number]"]').value,
-                notes: row.querySelector('[name*="[notes]"]').value,
-                attachments: Array.from(row.querySelector('[name*="[attachments]"]').files)
-            };
-            
-            // التحقق من وجود البيانات المطلوبة
-            if (rowData.is_evacuated && rowData.evacuation_date && rowData.evacuation_amount && 
-                rowData.evacuation_datetime && rowData.payment_number) {
-                evacuationDataArray.push(rowData);
-                hasValidData = true;
+            try {
+                const isEvacuatedField = row.querySelector('[name*="[is_evacuated]"]');
+                const evacuationDateField = row.querySelector('[name*="[evacuation_date]"]');
+                const evacuationAmountField = row.querySelector('[name*="[evacuation_amount]"]');
+                const evacuationDatetimeField = row.querySelector('[name*="[evacuation_datetime]"]');
+                const paymentNumberField = row.querySelector('[name*="[payment_number]"]');
+                const clearanceNumberField = row.querySelector('[name*="[clearance_number]"]');
+                const notesField = row.querySelector('[name*="[notes]"]');
+
+                // التحقق من وجود جميع الحقول المطلوبة
+                if (!isEvacuatedField || !evacuationDateField || !evacuationAmountField || 
+                    !evacuationDatetimeField || !paymentNumberField) {
+                    console.error('بعض الحقول المطلوبة غير موجودة في الصف', i + 1);
+                    continue;
+                }
+
+                const rowData = {
+                    is_evacuated: isEvacuatedField.value,
+                    evacuation_date: evacuationDateField.value,
+                    evacuation_amount: evacuationAmountField.value,
+                    evacuation_datetime: evacuationDatetimeField.value,
+                    payment_number: paymentNumberField.value,
+                    clearance_number: clearanceNumberField ? clearanceNumberField.value : '',
+                    notes: notesField ? notesField.value : ''
+                };
+                
+                // التحقق من وجود البيانات المطلوبة
+                if (rowData.is_evacuated && rowData.evacuation_date && rowData.evacuation_amount && 
+                    rowData.evacuation_datetime && rowData.payment_number) {
+                    evacuationDataArray.push(rowData);
+                    hasValidData = true;
+                }
+            } catch (error) {
+                console.error('خطأ في معالجة الصف', i + 1, error);
+                continue;
             }
         }
     }
@@ -437,24 +453,28 @@ function saveAllEvacuationData() {
     // إنشاء FormData وإضافة البيانات
     const formData = new FormData();
     formData.append('license_id', licenseId);
-    formData.append('work_order_id', document.querySelector('input[name="work_order_id"]').value);
+    
+    const workOrderIdField = document.querySelector('input[name="work_order_id"]');
+    if (!workOrderIdField) {
+        toastr.error('حقل معرف أمر العمل غير موجود');
+        return;
+    }
+    formData.append('work_order_id', workOrderIdField.value);
     
     // إضافة بيانات الإخلاءات
     evacuationDataArray.forEach((data, index) => {
         Object.keys(data).forEach(key => {
-            if (key === 'attachments') {
-                // إضافة المرفقات
-                data[key].forEach(file => {
-                    formData.append(`evacuation_data[${index}][attachments][]`, file);
-                });
-            } else {
-                formData.append(`evacuation_data[${index}][${key}]`, data[key]);
-            }
+            formData.append(`evacuation_data[${index}][${key}]`, data[key]);
         });
     });
 
     // إظهار مؤشر التحميل
     const saveButton = document.querySelector('button[onclick="saveAllEvacuationData()"]');
+    if (!saveButton) {
+        toastr.error('زر الحفظ غير موجود');
+        return;
+    }
+
     const originalButtonHtml = saveButton.innerHTML;
     saveButton.disabled = true;
     saveButton.innerHTML = `
@@ -468,7 +488,7 @@ function saveAllEvacuationData() {
         body: formData,
         headers: {
             'X-Requested-With': 'XMLHttpRequest',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
         }
     })
     .then(response => {
