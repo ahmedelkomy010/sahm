@@ -143,14 +143,48 @@ class MaterialsController extends Controller
             $data['name'] = $data['description'];
         }
 
-        // إنشاء المادة
-        $material = Material::create($data);
+        // فحص وجود المادة بنفس الكود في نفس أمر العمل
+        if ($this->materialCodeExists($data['code'], $workOrder->id)) {
+            // بدلاً من منع الإضافة، نقوم بإنشاء كود فريد
+            $originalCode = $data['code'];
+            $counter = 1;
+            
+            do {
+                $data['code'] = $originalCode . '-' . $counter;
+                $counter++;
+            } while ($this->materialCodeExists($data['code'], $workOrder->id));
+            
+            // إضافة ملاحظة للمستخدم عن تغيير الكود
+            $codeChangeMessage = "تم تغيير كود المادة من '{$originalCode}' إلى '{$data['code']}' لتجنب التكرار";
+        }
+
+        try {
+            // إنشاء المادة
+            $material = Material::create($data);
+        } catch (\Illuminate\Database\QueryException $e) {
+            // التعامل مع خطأ الكود المكرر كإجراء احتياطي
+            if ($e->getCode() == 23000) {
+                // محاولة أخيرة بكود عشوائي
+                $data['code'] = $data['code'] . '-' . time();
+                $material = Material::create($data);
+                $codeChangeMessage = "تم تغيير كود المادة إلى '{$data['code']}' لتجنب التكرار";
+            } else {
+                throw $e; // إعادة رمي الخطأ إذا لم يكن خطأ كود مكرر
+            }
+        }
 
         // التعامل مع الملفات المرفقة
         $this->handleFileUploads($request, $material);
 
+        $successMessage = 'تم إضافة المادة بنجاح - ' . ($data['name'] ?? $data['code']);
+        
+        // إضافة رسالة تغيير الكود إذا حدث
+        if (isset($codeChangeMessage)) {
+            $successMessage .= '. ' . $codeChangeMessage;
+        }
+
         return redirect()->route('admin.work-orders.materials.index', $workOrder)
-            ->with('success', 'تم إضافة المادة بنجاح - ' . ($data['name'] ?? $data['code']));
+            ->with('success', $successMessage);
     }
 
     /**
@@ -168,11 +202,15 @@ class MaterialsController extends Controller
             
             foreach ($workOrderMaterials as $workOrderMaterial) {
                 $materialCode = $workOrderMaterial->material->code ?? '';
+                $originalCode = $materialCode;
                 
-                // تخطي المواد المضافة بالفعل
-                if ($existingMaterials->has($materialCode)) {
-                    $skippedCount++;
-                    continue;
+                // إنشاء كود فريد إذا كان الكود موجوداً
+                if ($this->materialCodeExists($materialCode, $workOrder->id)) {
+                    $counter = 1;
+                    do {
+                        $materialCode = $originalCode . '-' . $counter;
+                        $counter++;
+                    } while ($this->materialCodeExists($materialCode, $workOrder->id));
                 }
                 
                 try {
@@ -195,8 +233,28 @@ class MaterialsController extends Controller
                     Material::create($data);
                     $addedCount++;
                     
+                    // إضافة ملاحظة إذا تم تغيير الكود
+                    if ($materialCode !== $originalCode) {
+                        $errors[] = "تم إضافة المادة {$originalCode} بكود جديد: {$materialCode}";
+                    }
+                    
+                } catch (\Illuminate\Database\QueryException $e) {
+                    // التعامل مع خطأ الكود المكرر
+                    if ($e->getCode() == 23000) {
+                        // محاولة بكود عشوائي
+                        try {
+                            $data['code'] = $originalCode . '-' . time() . '-' . rand(100, 999);
+                            Material::create($data);
+                            $addedCount++;
+                            $errors[] = "تم إضافة المادة {$originalCode} بكود جديد: {$data['code']}";
+                        } catch (\Exception $e2) {
+                            $errors[] = "فشل في إضافة المادة {$originalCode}: " . $e2->getMessage();
+                        }
+                    } else {
+                        $errors[] = "خطأ في إضافة المادة {$originalCode}: " . $e->getMessage();
+                    }
                 } catch (\Exception $e) {
-                    $errors[] = "خطأ في إضافة المادة {$materialCode}: " . $e->getMessage();
+                    $errors[] = "خطأ في إضافة المادة {$originalCode}: " . $e->getMessage();
                 }
             }
             
@@ -208,11 +266,11 @@ class MaterialsController extends Controller
             
             // إرجاع JSON response للتعامل مع AJAX
             if (!empty($errors)) {
-                $message .= ". حدثت أخطاء في بعض المواد.";
+                $message .= ". ملاحظات إضافية متوفرة.";
                 return response()->json([
-                    'success' => false,
+                    'success' => true, // تغيير إلى true لأن العملية نجحت مع ملاحظات
                     'message' => $message,
-                    'errors' => $errors,
+                    'notes' => $errors, // تغيير من errors إلى notes
                     'added_count' => $addedCount,
                     'skipped_count' => $skippedCount
                 ]);
@@ -224,13 +282,25 @@ class MaterialsController extends Controller
                 'added_count' => $addedCount,
                 'skipped_count' => $skippedCount
             ]);
-                
+            
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'حدث خطأ أثناء إضافة المواد: ' . $e->getMessage()
-            ], 500);
+                'message' => 'حدث خطأ أثناء إضافة المواد: ' . $e->getMessage(),
+                'added_count' => 0,
+                'skipped_count' => 0
+            ]);
         }
+    }
+
+    /**
+     * Helper method to check if material code already exists for a work order
+     */
+    private function materialCodeExists($code, $workOrderId)
+    {
+        return Material::where('code', $code)
+                      ->where('work_order_id', $workOrderId)
+                      ->exists();
     }
 
     /**
@@ -673,6 +743,46 @@ $material = ReferenceMaterial::whereRaw('LOWER(TRIM(code)) = ?', [$normalizedCod
             return response()->json([
                 'success' => false,
                 'message' => 'حدث خطأ أثناء حفظ المادة'
+            ], 500);
+        }
+    }
+
+    /**
+     * Update material quantity via AJAX
+     */
+    public function updateQuantity(Request $request, WorkOrder $workOrder)
+    {
+        try {
+            $validated = $request->validate([
+                'material_id' => 'required|exists:materials,id',
+                'quantity_type' => 'required|in:spent,executed',
+                'value' => 'required|numeric|min:0'
+            ]);
+            
+            $material = Material::findOrFail($validated['material_id']);
+            
+            // التأكد من أن المادة تنتمي لأمر العمل
+            if ($material->work_order_id !== $workOrder->id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'المادة غير موجودة في أمر العمل هذا'
+                ], 403);
+            }
+            
+            // تحديث الكمية المناسبة
+            $field = $validated['quantity_type'] . '_quantity';
+            $material->$field = $validated['value'];
+            $material->save();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'تم تحديث الكمية بنجاح'
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء تحديث الكمية: ' . $e->getMessage()
             ], 500);
         }
     }

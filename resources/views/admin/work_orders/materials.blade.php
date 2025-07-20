@@ -181,14 +181,95 @@
                         <span class="badge bg-light text-primary ms-2">{{ $materials->total() }} مادة</span>
                     </div>
                     <div>
-                        <a href="{{ route('admin.work-orders.materials.create', $workOrder) }}" class="btn btn-outline-light btn-sm">
-                            <i class="fas fa-plus"></i> إضافة مادة جديدة
-                        </a>
-                        <a href="{{ route('admin.work-orders.show', $workOrder) }}" class="btn btn-outline-light btn-sm ms-2">
+                        <a href="{{ route('admin.work-orders.show', $workOrder) }}" class="btn btn-outline-light btn-sm">
                             <i class="fas fa-arrow-right"></i> عودة الي تفاصيل أمر العمل
                         </a>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal إضافة مادة جديدة -->
+    <div class="modal fade" id="addMaterialModal" tabindex="-1" aria-labelledby="addMaterialModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form action="{{ route('admin.work-orders.materials.store', $workOrder) }}" method="POST">
+                    @csrf
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title" id="addMaterialModalLabel">
+                            <i class="fas fa-plus-circle me-2"></i>
+                            إضافة مادة جديدة
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="code" class="form-label required">
+                                <i class="fas fa-barcode me-1"></i>
+                                كود المادة
+                            </label>
+                            <input type="text" class="form-control" id="code" name="code" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="description" class="form-label">
+                                <i class="fas fa-align-left me-1"></i>
+                                وصف المادة
+                            </label>
+                            <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="unit" class="form-label required">
+                                        <i class="fas fa-ruler me-1"></i>
+                                        الوحدة
+                                    </label>
+                                    <select class="form-select" id="unit" name="unit" required>
+                                        <option value="L.M">L.M</option>
+                                        <option value="Ech">Ech</option>
+                                        <option value="Kit">Kit</option>
+                                        <option value="قطعة">قطعة</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="spent_quantity" class="form-label">
+                                        <i class="fas fa-box me-1"></i>
+                                        الكمية المصروفة
+                                    </label>
+                                    <input type="number" class="form-control" id="spent_quantity" name="spent_quantity" 
+                                           step="0.01" min="0" value="0">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="executed_quantity" class="form-label">
+                                        <i class="fas fa-tasks me-1"></i>
+                                        الكمية المنفذة
+                                    </label>
+                                    <input type="number" class="form-control" id="executed_quantity" name="executed_quantity" 
+                                           step="0.01" min="0" value="0">
+                                </div>
+                            </div>
+                        </div>
+                        <!-- إضافة حقل مخفي للكمية المخططة -->
+                        <input type="hidden" name="planned_quantity" value="0">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="fas fa-times me-1"></i>
+                            إلغاء
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i>
+                            حفظ المادة
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -239,72 +320,7 @@
         </div>
     </div>
 
-    @if($workOrderMaterials && $workOrderMaterials->count() > 0)
-    <!-- Work Order Materials Section -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card shadow">
-                <div class="card-header py-3 bg-gradient-success">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h6 class="m-0 font-weight-bold text-white">
-                            <i class="fas fa-clipboard-list me-2"></i>
-                            مقايسة المواد - قائمة المواد المخططة ({{ $workOrderMaterials->count() }} مادة)
-                        </h6>
-                        <div class="text-white">
-                            <small>
-                                <span class="badge bg-light text-primary">
-                                    <i class="fas fa-list"></i> إجمالي المواد: {{ $workOrderMaterials->count() }}
-                                </span>
-                            </small>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-bordered table-hover work-order-materials-table">
-                            <thead>
-                                <tr>
-                                    <th width="10%">#</th>
-                                    <th width="20%">كود المادة</th>
-                                    <th width="40%">وصف المادة</th>
-                                    <th width="15%">الكمية المخططة</th>
-                                    <th width="15%">الوحدة</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($workOrderMaterials as $index => $workOrderMaterial)
-                                <tr>
-                                    <td class="text-center">{{ $index + 1 }}</td>
-                                    <td class="text-center">
-                                        <strong class="text-primary">{{ $workOrderMaterial->material->code ?? 'غير محدد' }}</strong>
-                                    </td>
-                                    <td class="text-right">
-                                        {{ $workOrderMaterial->material->description ?? $workOrderMaterial->material->name ?? 'بدون وصف' }}
-                                    </td>
-                                    <td class="text-center">
-                                        <span class="badge bg-info fs-6">{{ number_format($workOrderMaterial->quantity, 2) }}</span>
-                                    </td>
-                                    <td class="text-center">
-                                        <span class="badge bg-secondary">{{ $workOrderMaterial->material->unit ?? 'غير محدد' }}</span>
-                                    </td>
-                                </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="row mt-3">
-                        <div class="col-12">
-                            <div class="alert alert-info mb-0">
-                                <i class="fas fa-info-circle me-2"></i>
-                                <strong>مقايسة المواد:</strong> .
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    @endif
+
 
     <!-- Search and Filter -->
     <div class="row mb-4">
@@ -348,24 +364,181 @@
         </div>
     </div>
 
+   
+
+    <!-- قسم عرض جميع مواد المقايسة -->
+    @if($workOrderMaterials && $workOrderMaterials->count() > 0)
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow border-info">
+                <div class="card-header bg-info text-white py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="m-0 font-weight-bold">
+                            <i class="fas fa-clipboard-list me-2"></i>
+                            جدول مقايسة المواد الكاملة
+                            <span class="badge bg-light text-info ms-2">{{ $workOrderMaterials->count() }} مادة</span>
+                        </h5>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-outline-light btn-sm" id="addAllMaterialsBtn">
+                                <i class="fas fa-plus-circle me-1"></i>
+                                إضافة الجميع الي قائمة المواد 
+                            </button>
+                            <button type="button" class="btn btn-outline-light btn-sm" onclick="toggleWorkOrderTable()">
+                                <i class="fas fa-eye me-1"></i>
+                                <span id="toggleText">إخفاء الجدول</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body" id="workOrderMaterialsTable">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover work-order-materials-table">
+                            <thead class="table-info">
+                                <tr>
+                                    <th width="8%" class="text-center">
+                                        <i class="fas fa-list-ol me-1"></i>
+                                        #
+                                    </th>
+                                    <th width="15%" class="text-center">
+                                        <i class="fas fa-barcode me-1"></i>
+                                        كود المادة
+                                    </th>
+                                    <th width="35%">
+                                        <i class="fas fa-align-left me-1"></i>
+                                        وصف المادة
+                                    </th>
+                                    <th width="12%" class="text-center">
+                                        <i class="fas fa-ruler me-1"></i>
+                                        الوحدة
+                                    </th>
+                                    <th width="12%" class="text-center">
+                                        <i class="fas fa-calculator me-1"></i>
+                                        الكمية
+                                    </th>
+                                    <th width="10%" class="text-center">
+                                        <i class="fas fa-check-circle me-1"></i>
+                                        الحالة
+                                    </th>
+                                    <th width="8%" class="text-center">
+                                        <i class="fas fa-cogs me-1"></i>
+                                        إجراء
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($workOrderMaterials as $index => $workOrderMaterial)
+                                @php
+                                    $existsInSystem = $materials->where('code', $workOrderMaterial->material->code ?? '')->count() > 0;
+                                @endphp
+                                <tr class="{{ $existsInSystem ? 'table-success' : 'table-warning' }}">
+                                    <td class="text-center">
+                                        <span class="badge bg-light text-dark">{{ $index + 1 }}</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="d-flex align-items-center justify-content-center">
+                                            <span class="badge {{ $existsInSystem ? 'bg-success' : 'bg-warning' }} text-white">
+                                                {{ $workOrderMaterial->material->code ?? 'غير محدد' }}
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="material-description">
+                                            {{ $workOrderMaterial->material->description ?? $workOrderMaterial->material->name ?? 'بدون وصف' }}
+                                        </div>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-secondary">
+                                            {{ $workOrderMaterial->material->unit ?? 'غير محدد' }}
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-primary fs-6">
+                                            {{ number_format($workOrderMaterial->quantity, 2) }}
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        @if($existsInSystem)
+                                            <span class="badge bg-success">
+                                                <i class="fas fa-check me-1"></i>
+                                                مضافة
+                                            </span>
+                                        @else
+                                            <span class="badge bg-warning text-dark">
+                                                <i class="fas fa-clock me-1"></i>
+                                                غير مضافة
+                                            </span>
+                                        @endif
+                                    </td>
+                                    <td class="text-center">
+                                        @if(!$existsInSystem)
+                                            <form class="create-material-form d-inline" 
+                                                  action="{{ route('admin.work-orders.materials.store', $workOrder) }}" 
+                                                  method="POST"
+                                                  data-material-name="{{ $workOrderMaterial->material->description ?? $workOrderMaterial->material->name ?? 'غير محدد' }}"
+                                                  data-material-code="{{ $workOrderMaterial->material->code ?? 'غير محدد' }}"
+                                                  data-quantity="{{ $workOrderMaterial->quantity }}">
+                                                @csrf
+                                                <input type="hidden" name="code" value="{{ $workOrderMaterial->material->code ?? '' }}">
+                                                <input type="hidden" name="description" value="{{ $workOrderMaterial->material->description ?? '' }}">
+                                                <input type="hidden" name="name" value="{{ $workOrderMaterial->material->name ?? $workOrderMaterial->material->description ?? '' }}">
+                                                <input type="hidden" name="planned_quantity" value="{{ $workOrderMaterial->quantity ?? 0 }}">
+                                                <input type="hidden" name="unit" value="{{ $workOrderMaterial->material->unit ?? '' }}">
+                                                <input type="hidden" name="spent_quantity" value="0">
+                                                <input type="hidden" name="executed_quantity" value="0">
+                                                
+                                                <button type="submit" class="btn btn-sm btn-outline-success" title="إضافة للنظام">
+                                                    <i class="fas fa-plus"></i>
+                                                </button>
+                                            </form>
+                                        @else
+                                            <span class="text-success">
+                                                <i class="fas fa-check-circle"></i>
+                                            </span>
+                                        @endif
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- معلومات إضافية -->
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            
+                        </div>
+                        <div class="col-md-6">
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+
     <!-- قسم قائمة المواد -->
     <div class="row mb-5">
         <div class="col-12">
             <div class="card shadow">
                 <div class="card-header py-3 d-flex justify-content-between align-items-center bg-primary text-white">
-                    <h5 class="m-0 font-weight-bold">
-                        <i class="fas fa-boxes me-2"></i>
-                        قائمة المواد
-                        <span class="badge bg-light text-primary ms-2">{{ $materials->total() }} مادة</span>
-                    </h5>
+                    <div class="d-flex align-items-center">
+                        <h5 class="m-0 font-weight-bold">
+                            <i class="fas fa-boxes me-2"></i>
+                            قائمة المواد
+                            <span class="badge bg-light text-primary ms-2">{{ $materials->total() }} مادة</span>
+                        </h5>
+                    </div>
                     <div class="d-flex align-items-center gap-2">
+                        <button type="button" class="btn btn-outline-light btn-sm" data-bs-toggle="modal" data-bs-target="#addMaterialModal">
+                            <i class="fas fa-plus"></i> إضافة مادة جديدة
+                        </button>
                         @if(request()->hasAny(['search_code', 'search_description', 'unit_filter']))
                             <span class="badge bg-warning text-dark">
                                 <i class="fas fa-filter"></i> 
                                 نتائج البحث: {{ $materials->total() }} من أصل {{ $materials->total() }}
                             </span>
                         @endif
-                        
                     </div>
                 </div>
                 <div class="card-body">
@@ -374,49 +547,49 @@
                             <table class="table table-bordered table-hover align-middle" id="materialsTable">
                                 <thead>
                                     <tr class="bg-light">
-                                        <th class="text-center" style="width: 50px">
+                                        <th class="text-center" width="5%">
                                             <i class="fas fa-list-ol text-muted me-1"></i>
-                                            رقم المسلسل
+                                            #
                                         </th>
-                                        <th class="text-center" style="width: 50px">
+                                        <th class="text-center" width="5%">
                                             <i class="fas fa-hashtag text-muted me-1"></i>
                                             السطر
                                         </th>
-                                        <th style="width: 120px">
+                                        <th width="12%">
                                             <i class="fas fa-barcode text-secondary me-1"></i>
                                             الكود
                                         </th>
-                                        <th>
+                                        <th width="25%">
                                             <i class="fas fa-align-left text-primary me-1"></i>
                                             الوصف
                                         </th>
-                                        <th style="width: 80px">
+                                        <th class="text-center" width="8%">
                                             <i class="fas fa-ruler text-secondary me-1"></i>
                                             الوحدة
                                         </th>
-                                        <th style="width: 110px">
+                                        <th class="text-center" width="9%">
                                             <i class="fas fa-chart-line text-info me-1"></i>
-                                            الكمية المخططة
+                                            الكمية<br>المخططة
                                         </th>
-                                        <th style="width: 110px">
+                                        <th class="text-center" width="9%">
                                             <i class="fas fa-box text-danger me-1"></i>
-                                            الكمية المصروفة
+                                            الكمية<br>المصروفة
                                         </th>
-                                        <th style="width: 100px">
+                                        <th class="text-center" width="7%">
                                             <i class="fas fa-calculator text-warning me-1"></i>
-                                            الفرق (مخططة - مصروفة)
+                                            الفرق<br>(مخططة - مصروفة)
                                         </th>
-                                        <th style="width: 110px">
+                                        <th class="text-center" width="9%">
                                             <i class="fas fa-tasks text-success me-1"></i>
-                                            الكمية المنفذة
+                                            الكمية<br>المنفذة
                                         </th>
-                                        <th style="width: 100px">
+                                        <th class="text-center" width="7%">
                                             <i class="fas fa-calculator text-primary me-1"></i>
-                                            الفرق (منفذة - مصروفة)
+                                            الفرق<br>(منفذة - مصروفة)
                                         </th>
-                                        <th style="width: 120px" class="text-center">
+                                        <th class="text-center" width="4%">
                                             <i class="fas fa-cogs text-secondary me-1"></i>
-                                            الإجراءات
+                                            إجراءات
                                         </th>
                                     </tr>
                                 </thead>
@@ -430,17 +603,24 @@
                                                 <span class="badge bg-light text-dark border">{{ $material->line ?: '-' }}</span>
                                             </td>
                                             <td>
+                                                @php
+                                                    $workOrderMaterial = $workOrderMaterials->where('material.code', $material->code)->first();
+                                                @endphp
                                                 <div class="d-flex align-items-center">
-                                                    <span class="badge bg-light text-dark border">{{ $material->code }}</span>
+                                                    <span class="badge bg-light text-dark border">
+                                                        {{ $workOrderMaterial ? $workOrderMaterial->material->code : $material->code }}
+                                                    </span>
                                                 </div>
                                             </td>
                                             <td>
                                                 <div class="text-wrap" style="max-width: 300px;">
-                                                    {{ $material->description }}
+                                                    {{ $workOrderMaterial ? ($workOrderMaterial->material->description ?? $workOrderMaterial->material->name) : $material->description }}
                                                 </div>
                                             </td>
                                             <td class="text-center">
-                                                <span class="badge bg-light text-dark border">{{ $material->unit }}</span>
+                                                <span class="badge bg-light text-dark border">
+                                                    {{ $workOrderMaterial ? $workOrderMaterial->material->unit : $material->unit }}
+                                                </span>
                                             </td>
                                             <td class="text-center">
                                                 <div class="quantity-badge planned">
@@ -448,8 +628,16 @@
                                                 </div>
                                             </td>
                                             <td class="text-center">
-                                                <div class="quantity-badge spent">
-                                                    {{ number_format($material->spent_quantity, 2) }}
+                                                <div class="quantity-badge">
+                                                    <input type="number" 
+                                                           class="quantity-input spent-quantity" 
+                                                           value="{{ number_format($material->spent_quantity, 2) }}"
+                                                           data-material-id="{{ $material->id }}"
+                                                           data-original-value="{{ $material->spent_quantity }}"
+                                                           data-planned-quantity="{{ $material->planned_quantity }}"
+                                                           step="0.01"
+                                                           min="0"
+                                                           style="width: 60px; text-align: center; padding: 2px 5px; font-size: 0.9rem;">
                                                 </div>
                                             </td>
                                             <td class="text-center">
@@ -457,18 +645,29 @@
                                                     $plannedSpentDiff = ($material->planned_quantity ?? 0) - ($material->spent_quantity ?? 0);
                                                 @endphp
                                                 <div class="quantity-badge difference {{ $plannedSpentDiff > 0 ? 'warning' : ($plannedSpentDiff < 0 ? 'danger' : 'success') }}"
+                                                     id="planned-spent-diff-{{ $material->id }}"
                                                      data-bs-toggle="tooltip" 
                                                      title="{{ $plannedSpentDiff > 0 ? 'يوجد كمية مخططة لم يتم صرفها' : ($plannedSpentDiff < 0 ? 'تم صرف كمية أكثر من المخطط' : 'متطابقة') }}">
-                                                    @if($plannedSpentDiff == 0)
-                                                        <i class="fas fa-check"></i>
-                                                    @else
-                                                        {{ $plannedSpentDiff > 0 ? '+' : '' }}{{ number_format($plannedSpentDiff, 2) }}
-                                                    @endif
+                                                    <span class="diff-value">
+                                                        @if($plannedSpentDiff == 0)
+                                                            <i class="fas fa-check"></i>
+                                                        @else
+                                                            {{ $plannedSpentDiff > 0 ? '+' : '' }}{{ number_format($plannedSpentDiff, 2) }}
+                                                        @endif
+                                                    </span>
                                                 </div>
                                             </td>
                                             <td class="text-center">
-                                                <div class="quantity-badge executed">
-                                                    {{ number_format($material->executed_quantity ?? 0, 2) }}
+                                                <div class="quantity-badge">
+                                                    <input type="number" 
+                                                           class="quantity-input executed-quantity" 
+                                                           value="{{ number_format($material->executed_quantity ?? 0, 2) }}"
+                                                           data-material-id="{{ $material->id }}"
+                                                           data-original-value="{{ $material->executed_quantity }}"
+                                                           data-spent-quantity="{{ $material->spent_quantity }}"
+                                                           step="0.01"
+                                                           min="0"
+                                                           style="width: 60px; text-align: center; padding: 2px 5px; font-size: 0.9rem;">
                                                 </div>
                                             </td>
                                             <td class="text-center">
@@ -476,18 +675,20 @@
                                                     $executedSpentDiff = ($material->executed_quantity ?? 0) - ($material->spent_quantity ?? 0);
                                                 @endphp
                                                 <div class="quantity-badge difference {{ $executedSpentDiff > 0 ? 'warning' : ($executedSpentDiff < 0 ? 'danger' : 'success') }}"
+                                                     id="executed-spent-diff-{{ $material->id }}"
                                                      data-bs-toggle="tooltip" 
                                                      title="{{ $executedSpentDiff > 0 ? 'تم تنفيذ كمية أكثر من المصروفة' : ($executedSpentDiff < 0 ? 'تم صرف كمية أكثر من المنفذة' : 'متطابقة') }}">
-                                                    @if($executedSpentDiff == 0)
-                                                        <i class="fas fa-check"></i>
-                                                    @else
-                                                        {{ $executedSpentDiff > 0 ? '+' : '' }}{{ number_format($executedSpentDiff, 2) }}
-                                                    @endif
+                                                    <span class="diff-value">
+                                                        @if($executedSpentDiff == 0)
+                                                            <i class="fas fa-check"></i>
+                                                        @else
+                                                            {{ $executedSpentDiff > 0 ? '+' : '' }}{{ number_format($executedSpentDiff, 2) }}
+                                                        @endif
+                                                    </span>
                                                 </div>
                                             </td>
                                             <td class="text-center">
                                                 <div class="action-buttons">
-                                                    <!-- Edit/Delete Group -->
                                                     <div class="btn-group">
                                                         <a href="{{ route('admin.work-orders.materials.edit', [$workOrder, $material]) }}" 
                                                            class="btn btn-action btn-edit"
@@ -654,7 +855,7 @@
                             <div class="col-md-6 mb-3">
                                 <label for="check_out_file" class="form-label">
                                     <i class="fas fa-check-circle me-2 text-success"></i>
-                                     UPLUOD
+                                     Upload
                                 </label>
                                 <input type="file" class="form-control @error('check_out_file') is-invalid @enderror" 
                                        id="check_out_file" name="check_out_file" 
@@ -1031,7 +1232,7 @@
 
 }
 
-/* تحسينات إضافية للشاشات الصغيرة جداً */
+/* تحسين الشاشات الصغيرة جداً */
 @media (max-width: 480px) {
     .action-buttons {
         gap: 0.25rem;
@@ -1048,6 +1249,456 @@
     
 
 
+}
+
+/* تحسين عرض مقايسة المواد */
+.work-order-indicator {
+    position: relative;
+    display: inline-block;
+}
+
+.work-order-indicator .badge {
+    position: relative;
+    z-index: 1;
+}
+
+.work-order-indicator::after {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(45deg, #28a745, #20c997);
+    border-radius: 50px;
+    z-index: 0;
+    opacity: 0.1;
+}
+
+.material-description-container {
+    max-height: 80px;
+    overflow-y: auto;
+}
+
+.material-description-container::-webkit-scrollbar {
+    width: 4px;
+}
+
+.material-description-container::-webkit-scrollbar-thumb {
+    background-color: #dee2e6;
+    border-radius: 2px;
+}
+
+.material-description-container::-webkit-scrollbar-thumb:hover {
+    background-color: #adb5bd;
+}
+
+/* تحسين عرض الوحدات المختلفة */
+.unit-comparison {
+    position: relative;
+}
+
+.unit-comparison .badge {
+    transition: all 0.3s ease;
+}
+
+.unit-comparison:hover .badge {
+    transform: scale(1.05);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* تحسين مظهر الملخص */
+.summary-stat {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.summary-stat:hover {
+    transform: translateY(-2px);
+}
+
+.summary-stat .display-6 {
+    font-weight: 700;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+}
+
+/* تحسين جدول مقايسة المواد */
+.work-order-materials-table {
+    font-size: 0.9rem;
+    margin-bottom: 0;
+}
+
+.work-order-materials-table th {
+    background: linear-gradient(135deg, #17a2b8, #138496);
+    color: white;
+    font-weight: 600;
+    text-align: center;
+    vertical-align: middle;
+    border: none;
+    padding: 12px 8px;
+    white-space: nowrap;
+}
+
+.work-order-materials-table td {
+    vertical-align: middle;
+    padding: 10px 8px;
+    border-bottom: 1px solid #e3e6f0;
+}
+
+.work-order-materials-table tbody tr {
+    transition: all 0.3s ease;
+}
+
+.work-order-materials-table tbody tr:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.work-order-materials-table .table-success {
+    background-color: rgba(25, 135, 84, 0.1) !important;
+    border-left: 4px solid #198754;
+}
+
+.work-order-materials-table .table-warning {
+    background-color: rgba(255, 193, 7, 0.1) !important;
+    border-left: 4px solid #ffc107;
+}
+
+.work-order-materials-table .material-description {
+    max-width: 250px;
+    word-wrap: break-word;
+    line-height: 1.4;
+}
+
+.work-order-materials-table .badge {
+    font-size: 0.8rem;
+    padding: 0.4em 0.6em;
+    font-weight: 500;
+}
+
+/* تحسين أزرار الإضافة */
+.create-material-form .btn {
+    transition: all 0.3s ease;
+}
+
+.create-material-form .btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+}
+
+/* تحسين الـ alerts */
+.alert {
+    border: none;
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+}
+
+.alert-success {
+    background: linear-gradient(135deg, rgba(25, 135, 84, 0.1), rgba(25, 135, 84, 0.05));
+    border-left: 4px solid #198754;
+}
+
+.alert-warning {
+    background: linear-gradient(135deg, rgba(255, 193, 7, 0.1), rgba(255, 193, 7, 0.05));
+    border-left: 4px solid #ffc107;
+}
+
+/* تحسين card الجدول */
+.border-info {
+    border-color: #17a2b8 !important;
+    border-width: 2px !important;
+}
+
+.card-header.bg-info {
+    background: linear-gradient(135deg, #17a2b8, #138496) !important;
+}
+
+/* تأثيرات الانتقال */
+#workOrderMaterialsTable {
+    transition: all 0.3s ease;
+}
+
+/* تحسين responsive */
+@media (max-width: 768px) {
+    .work-order-materials-table {
+        font-size: 0.8rem;
+    }
+    
+    .work-order-materials-table th,
+    .work-order-materials-table td {
+        padding: 8px 4px;
+    }
+    
+    .work-order-materials-table .material-description {
+        max-width: 150px;
+        font-size: 0.75rem;
+    }
+    
+    .work-order-materials-table .badge {
+        font-size: 0.7rem;
+        padding: 0.3em 0.5em;
+    }
+}
+
+/* تنسيق حقول الإدخال */
+.quantity-input {
+    background: transparent;
+    border: 1px solid rgba(0,0,0,0.1);
+    border-radius: 4px;
+    padding: 4px;
+    color: inherit;
+    font-weight: inherit;
+    transition: all 0.3s ease;
+    width: 80px;
+    text-align: center;
+}
+
+.quantity-input:focus {
+    outline: none;
+    border-color: #4e73df;
+    box-shadow: 0 0 0 2px rgba(78,115,223,0.25);
+    background-color: rgba(78,115,223,0.05);
+}
+
+.quantity-input:hover {
+    border-color: #4e73df;
+}
+
+.quantity-input::-webkit-inner-spin-button,
+.quantity-input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.quantity-input[type=number] {
+    -moz-appearance: textfield;
+}
+
+/* تنسيق مؤشر التحميل */
+.quantity-badge {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 100px;
+}
+
+.spinner-border {
+    position: absolute;
+    right: -1.5rem;
+}
+
+/* تنسيق أيقونة النجاح */
+.fa-check.text-success {
+    position: absolute;
+    right: -1.5rem;
+    animation: fadeInOut 1s ease;
+}
+
+@keyframes fadeInOut {
+    0% { opacity: 0; transform: scale(0.8); }
+    20% { opacity: 1; transform: scale(1.2); }
+    50% { opacity: 1; transform: scale(1); }
+    100% { opacity: 0; transform: scale(0.8); }
+}
+
+/* تحسين مظهر الفروق */
+.quantity-badge.difference {
+    min-width: 60px;
+    position: relative;
+}
+
+.quantity-badge.difference.success {
+    background-color: rgba(40, 167, 69, 0.1);
+    border: 1px solid #28a745;
+    color: #28a745;
+}
+
+.quantity-badge.difference.warning {
+    background-color: rgba(255, 193, 7, 0.1);
+    border: 1px solid #ffc107;
+    color: #ffc107;
+}
+
+.quantity-badge.difference.danger {
+    background-color: rgba(220, 53, 69, 0.1);
+    border: 1px solid #dc3545;
+    color: #dc3545;
+}
+
+/* تحسين التفاعلية */
+.quantity-badge {
+    transition: all 0.3s ease;
+}
+
+.quantity-badge:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* تنسيق الخلية عند التحرير */
+td.editing {
+    background-color: rgba(78,115,223,0.05);
+    box-shadow: inset 0 0 0 2px #4e73df;
+    border-radius: 4px;
+}
+
+/* تحسين عرض الأرقام */
+.quantity-input {
+    font-family: 'Courier New', monospace;
+    letter-spacing: 0.5px;
+}
+
+/* تنسيق النافذة المنبثقة */
+.modal-content {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.modal-header {
+    border-radius: 15px 15px 0 0;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.modal-footer {
+    border-top: 1px solid #dee2e6;
+    background-color: #f8f9fa;
+    border-radius: 0 0 15px 15px;
+}
+
+/* تنسيق الحقول */
+.form-control, .form-select {
+    border-radius: 8px;
+    border: 1px solid #e3e6f0;
+    padding: 0.75rem 1rem;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #4e73df;
+    box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+}
+
+/* تنسيق الأيقونات */
+.modal-body .fas {
+    color: #4e73df;
+    width: 20px;
+    text-align: center;
+}
+
+/* تمييز الحقول المطلوبة */
+.required::after {
+    content: ' *';
+    color: #e74a3b;
+}
+
+/* تحسين أزرار النافذة */
+.modal .btn {
+    padding: 0.5rem 1.5rem;
+    font-weight: 500;
+    border-radius: 8px;
+}
+
+.modal .btn-primary {
+    background: linear-gradient(45deg, #4e73df, #2e59d9);
+    border: none;
+}
+
+.modal .btn-primary:hover {
+    background: linear-gradient(45deg, #2e59d9, #1d3db7);
+    transform: translateY(-1px);
+}
+
+/* تحسين حقول الإدخال */
+.quantity-input {
+    width: 60px !important;
+    text-align: center;
+    padding: 2px 5px;
+    font-size: 0.9rem;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    background-color: #fff;
+    transition: all 0.2s ease;
+}
+
+.quantity-input:focus {
+    border-color: #4e73df;
+    box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+    outline: none;
+    background-color: #f8f9fa;
+}
+
+.quantity-input:hover {
+    border-color: #4e73df;
+}
+
+/* إخفاء أسهم الزيادة والنقصان */
+.quantity-input::-webkit-inner-spin-button,
+.quantity-input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.quantity-input[type=number] {
+    -moz-appearance: textfield;
+}
+
+/* تحسين مظهر الخلية */
+.quantity-badge {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    min-height: 28px;
+}
+
+/* تحسين مظهر الفروق */
+.difference {
+    min-width: 50px;
+    font-size: 0.85rem;
+    padding: 2px 5px;
+}
+
+/* تحسين عرض الأرقام */
+.quantity-input, .difference {
+    font-family: 'Courier New', monospace;
+    letter-spacing: 0.5px;
+}
+
+/* تحسين مؤشر التحميل */
+.spinner-border {
+    width: 1rem !important;
+    height: 1rem !important;
+    position: absolute;
+    right: -1.2rem;
+}
+
+/* تحسين أيقونة النجاح */
+.fa-check.text-success {
+    position: absolute;
+    right: -1.2rem;
+    font-size: 0.8rem;
+}
+
+/* تحسين الخلية عند التحرير */
+td.editing {
+    background-color: rgba(78, 115, 223, 0.05);
+}
+
+/* تحسين عرض الأخطاء */
+.invalid-feedback {
+    position: absolute;
+    bottom: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    font-size: 0.75rem;
+    background-color: #fff;
+    padding: 2px 5px;
+    border: 1px solid #e74a3b;
+    border-radius: 3px;
+    z-index: 1;
 }
 </style>
 @endpush
@@ -1293,8 +1944,8 @@ function clearHighlights() {
     toastr.success('{{ session('success') }}', '', {
         progressBar: true,
         closeButton: true,
-        timeOut: 5000,
-        extendedTimeOut: 2000,
+        timeOut: 7000,
+        extendedTimeOut: 3000,
         positionClass: 'toast-top-center',
         rtl: true
     });
@@ -1585,22 +2236,51 @@ document.addEventListener('DOMContentLoaded', function() {
                         Swal.close();
                         
                         if (data.success) {
+                            let successMessage = data.message || `تم إضافة جميع المواد بنجاح`;
+                            
+                            // إضافة الملاحظات إذا كانت متوفرة
+                            if (data.notes && data.notes.length > 0) {
+                                successMessage += '\n\nملاحظات:\n' + data.notes.join('\n');
+                            }
+                            
                             Swal.fire({
                                 title: 'تم بنجاح!',
-                                text: data.message || `تم إضافة جميع المواد بنجاح`,
+                                text: successMessage,
                                 icon: 'success',
                                 confirmButtonColor: '#28a745',
-                                confirmButtonText: 'ممتاز'
+                                confirmButtonText: 'ممتاز',
+                                customClass: {
+                                    popup: data.notes && data.notes.length > 0 ? 'swal2-large' : ''
+                                }
                             }).then(() => {
                                 location.reload(); // إعادة تحميل الصفحة لإظهار التحديثات
                             });
                         } else {
+                            let errorMessage = data.message || 'حدث خطأ أثناء إضافة المواد';
+                            
+                            // إضافة تفاصيل الأخطاء إذا كانت متوفرة
+                            if (data.errors && data.errors.length > 0) {
+                                errorMessage += '\n\nتفاصيل الأخطاء:\n' + data.errors.join('\n');
+                            }
+                            
+                            // إضافة إحصائيات العملية
+                            if (data.added_count !== undefined && data.skipped_count !== undefined) {
+                                errorMessage += `\n\nالإحصائيات:\n`;
+                                errorMessage += `• تم إضافة: ${data.added_count} مادة\n`;
+                                errorMessage += `• تم تخطي: ${data.skipped_count} مادة`;
+                            }
+                            
                             Swal.fire({
-                                title: 'خطأ!',
-                                text: data.message || 'حدث خطأ أثناء إضافة المواد',
-                                icon: 'error',
-                                confirmButtonColor: '#dc3545',
+                                title: 'تنبيه!',
+                                text: errorMessage,
+                                icon: 'warning',
+                                confirmButtonColor: '#ffc107',
                                 confirmButtonText: 'حسناً'
+                            }).then(() => {
+                                // إعادة تحميل الصفحة إذا تم إضافة مواد حتى لو حدثت أخطاء
+                                if (data.added_count && data.added_count > 0) {
+                                    location.reload();
+                                }
                             });
                         }
                     })
@@ -1609,16 +2289,198 @@ document.addEventListener('DOMContentLoaded', function() {
                         console.error('Error:', error);
                         Swal.fire({
                             title: 'خطأ!',
-                            text: 'حدث خطأ أثناء إضافة المواد',
+                            html: `
+                                <div class="text-center">
+                                    <i class="fas fa-exclamation-triangle text-danger mb-3" style="font-size: 3rem;"></i>
+                                    <h5 class="text-danger mb-3">حدث خطأ أثناء إضافة المواد</h5>
+                                    <p class="text-muted">قد يكون السبب:</p>
+                                    <ul class="text-start text-muted">
+                                        <li>مشكلة في الاتصال بالخادم</li>
+                                        <li>وجود مواد بأكواد مكررة</li>
+                                        <li>خطأ في قاعدة البيانات</li>
+                                    </ul>
+                                    <div class="alert alert-warning mt-3">
+                                        <i class="fas fa-lightbulb me-2"></i>
+                                        <strong>نصيحة:</strong> جرب إضافة المواد واحدة تلو الأخرى لتحديد المشكلة
+                                    </div>
+                                </div>
+                            `,
                             icon: 'error',
                             confirmButtonColor: '#dc3545',
-                            confirmButtonText: 'حسناً'
+                            confirmButtonText: 'حسناً',
+                            customClass: {
+                                popup: 'swal2-large'
+                            }
                         });
                     });
                 }
             });
         });
     }
+});
+
+// وظيفة إخفاء/إظهار جدول مقايسة المواد
+function toggleWorkOrderTable() {
+    const table = document.getElementById('workOrderMaterialsTable');
+    const toggleText = document.getElementById('toggleText');
+    const icon = document.querySelector('[onclick="toggleWorkOrderTable()"] i');
+    
+    if (table.style.display === 'none') {
+        table.style.display = 'block';
+        toggleText.textContent = 'إخفاء الجدول';
+        icon.className = 'fas fa-eye me-1';
+        
+        // تأثير الظهور
+        table.style.opacity = '0';
+        table.style.transform = 'translateY(-10px)';
+        setTimeout(() => {
+            table.style.transition = 'all 0.3s ease';
+            table.style.opacity = '1';
+            table.style.transform = 'translateY(0)';
+        }, 10);
+    } else {
+        table.style.transition = 'all 0.3s ease';
+        table.style.opacity = '0';
+        table.style.transform = 'translateY(-10px)';
+        
+        setTimeout(() => {
+            table.style.display = 'none';
+            toggleText.textContent = 'إظهار الجدول';
+            icon.className = 'fas fa-eye-slash me-1';
+        }, 300);
+    }
+}
+
+// دالة تحديث الفروق
+function updateDifferences(materialId, spentValue, executedValue) {
+    // تحويل القيم إلى أرقام
+    spentValue = parseFloat(spentValue) || 0;
+    executedValue = parseFloat(executedValue) || 0;
+    
+    // الحصول على الكمية المخططة
+    const plannedQuantity = parseFloat(document.querySelector(`.spent-quantity[data-material-id="${materialId}"]`).dataset.plannedQuantity) || 0;
+    
+    // حساب الفروق
+    const plannedSpentDiff = plannedQuantity - spentValue;
+    const executedSpentDiff = executedValue - spentValue;
+    
+    // تحديث فرق المخطط والمصروف
+    const plannedDiffElement = document.querySelector(`#planned-spent-diff-${materialId} .diff-value`);
+    if (plannedDiffElement) {
+        plannedDiffElement.innerHTML = getDifferenceDisplay(plannedSpentDiff);
+        plannedDiffElement.parentElement.className = `quantity-badge difference ${getDifferenceClass(plannedSpentDiff)}`;
+        plannedDiffElement.parentElement.title = getDifferenceTitle(plannedSpentDiff, 'planned');
+    }
+    
+    // تحديث فرق المنفذ والمصروف
+    const executedDiffElement = document.querySelector(`#executed-spent-diff-${materialId} .diff-value`);
+    if (executedDiffElement) {
+        executedDiffElement.innerHTML = getDifferenceDisplay(executedSpentDiff);
+        executedDiffElement.parentElement.className = `quantity-badge difference ${getDifferenceClass(executedSpentDiff)}`;
+        executedDiffElement.parentElement.title = getDifferenceTitle(executedSpentDiff, 'executed');
+    }
+}
+
+// دالة إرجاع عرض الفرق
+function getDifferenceDisplay(diff) {
+    if (diff === 0) return '<i class="fas fa-check"></i>';
+    return (diff > 0 ? '+' : '') + diff.toFixed(2);
+}
+
+// دالة إرجاع class الفرق
+function getDifferenceClass(diff) {
+    if (diff === 0) return 'success';
+    return diff > 0 ? 'warning' : 'danger';
+}
+
+// دالة إرجاع عنوان الفرق
+function getDifferenceTitle(diff, type) {
+    if (diff === 0) return 'متطابقة';
+    if (type === 'planned') {
+        return diff > 0 ? 'يوجد كمية مخططة لم يتم صرفها' : 'تم صرف كمية أكثر من المخطط';
+    }
+    return diff > 0 ? 'تم تنفيذ كمية أكثر من المصروفة' : 'تم صرف كمية أكثر من المنفذة';
+}
+
+// معالجة تحديث الكميات
+document.querySelectorAll('.quantity-input').forEach(input => {
+    let updateTimeout;
+    
+    input.addEventListener('input', function() {
+        const materialId = this.dataset.materialId;
+        const newValue = parseFloat(this.value) || 0;
+        
+        // التحقق من القيمة
+        if (newValue < 0) {
+            this.value = this.dataset.originalValue;
+            toastr.error('لا يمكن إدخال قيمة سالبة');
+            return;
+        }
+        
+        // الحصول على القيم الحالية
+        const spentInput = document.querySelector(`.spent-quantity[data-material-id="${materialId}"]`);
+        const executedInput = document.querySelector(`.executed-quantity[data-material-id="${materialId}"]`);
+        const spentValue = this.classList.contains('spent-quantity') ? newValue : parseFloat(spentInput.value) || 0;
+        const executedValue = this.classList.contains('executed-quantity') ? newValue : parseFloat(executedInput.value) || 0;
+        
+        // تحديث الفروق
+        updateDifferences(materialId, spentValue, executedValue);
+        
+        // إلغاء التوقيت السابق
+        if (updateTimeout) clearTimeout(updateTimeout);
+        
+        // إنشاء مؤشر التحميل
+        const loadingSpinner = document.createElement('div');
+        loadingSpinner.className = 'spinner-border spinner-border-sm text-primary ms-2';
+        loadingSpinner.style.width = '1rem';
+        loadingSpinner.style.height = '1rem';
+        this.parentElement.appendChild(loadingSpinner);
+        
+        // تحديث القيمة في قاعدة البيانات
+        updateTimeout = setTimeout(() => {
+            fetch(`{{ route('admin.work-orders.materials.update-quantity', ['workOrder' => $workOrder->id]) }}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    material_id: materialId,
+                    quantity_type: this.classList.contains('spent-quantity') ? 'spent' : 'executed',
+                    value: newValue
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                loadingSpinner.remove();
+                
+                if (data.success) {
+                    // تحديث القيم المخزنة
+                    this.dataset.originalValue = newValue;
+                    
+                    // إظهار أيقونة النجاح
+                    const successIcon = document.createElement('i');
+                    successIcon.className = 'fas fa-check text-success ms-2';
+                    this.parentElement.appendChild(successIcon);
+                    setTimeout(() => successIcon.remove(), 1000);
+                    
+                    toastr.success('تم تحديث الكمية بنجاح');
+                } else {
+                    // إرجاع القيمة السابقة
+                    this.value = this.dataset.originalValue;
+                    updateDifferences(materialId, spentValue, executedValue);
+                    toastr.error(data.message || 'حدث خطأ أثناء تحديث الكمية');
+                }
+            })
+            .catch(error => {
+                loadingSpinner.remove();
+                console.error('Error:', error);
+                this.value = this.dataset.originalValue;
+                updateDifferences(materialId, spentValue, executedValue);
+                toastr.error('حدث خطأ أثناء تحديث الكمية');
+            });
+        }, 500);
+    });
 });
 </script>
 
@@ -1750,5 +2612,136 @@ document.addEventListener('DOMContentLoaded', function() {
     background-color: rgba(255, 193, 7, 0.2) !important;
 }
 </style>
+@endpush
+
+@push('scripts')
+<script>
+// تهيئة النافذة المنبثقة
+const addMaterialModal = document.getElementById('addMaterialModal');
+if (addMaterialModal) {
+    addMaterialModal.addEventListener('shown.bs.modal', function () {
+        document.getElementById('code').focus();
+    });
+
+    // تنظيف النموذج عند إغلاق النافذة
+    addMaterialModal.addEventListener('hidden.bs.modal', function () {
+        const form = this.querySelector('form');
+        form.reset();
+        clearValidation(form);
+    });
+
+    // التحقق من النموذج قبل الإرسال
+    const form = addMaterialModal.querySelector('form');
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        if (validateForm(this)) {
+            // إظهار مؤشر التحميل
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> جاري الحفظ...';
+            submitBtn.disabled = true;
+            
+            // إرسال النموذج
+            this.submit();
+        }
+    });
+
+    // التحقق من الكميات عند الإدخال
+    const quantityInputs = form.querySelectorAll('input[type="number"]');
+    quantityInputs.forEach(input => {
+        input.addEventListener('input', function() {
+            validateQuantity(this);
+        });
+    });
+}
+
+// دالة التحقق من النموذج
+function validateForm(form) {
+    let isValid = true;
+    clearValidation(form);
+
+    // التحقق من الكود
+    const codeInput = form.querySelector('#code');
+    if (!codeInput.value.trim()) {
+        showError(codeInput, 'كود المادة مطلوب');
+        isValid = false;
+    }
+
+    // التحقق من الكميات
+    const spentQuantityInput = form.querySelector('#spent_quantity');
+    const executedQuantityInput = form.querySelector('#executed_quantity');
+    
+    if (!validateQuantity(spentQuantityInput) || !validateQuantity(executedQuantityInput)) {
+        isValid = false;
+    }
+
+    return isValid;
+}
+
+// دالة التحقق من الكمية
+function validateQuantity(input) {
+    const value = parseFloat(input.value);
+    
+    if (isNaN(value) || value < 0) {
+        showError(input, 'يجب إدخال رقم موجب');
+        return false;
+    }
+    
+    return true;
+}
+
+// دالة إظهار الخطأ
+function showError(input, message) {
+    const formGroup = input.closest('.mb-3');
+    formGroup.classList.add('has-error');
+    
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'invalid-feedback d-block';
+    errorDiv.textContent = message;
+    
+    input.classList.add('is-invalid');
+    formGroup.appendChild(errorDiv);
+}
+
+// دالة إظهار التحذير
+function showWarning(input, message) {
+    const formGroup = input.closest('.mb-3');
+    
+    const warningDiv = document.createElement('div');
+    warningDiv.className = 'text-warning small mt-1';
+    warningDiv.innerHTML = `<i class="fas fa-exclamation-triangle me-1"></i>${message}`;
+    
+    formGroup.appendChild(warningDiv);
+}
+
+// دالة مسح رسائل التحقق
+function clearValidation(form) {
+    form.querySelectorAll('.is-invalid').forEach(input => {
+        input.classList.remove('is-invalid');
+    });
+    
+    form.querySelectorAll('.invalid-feedback, .text-warning').forEach(element => {
+        element.remove();
+    });
+}
+
+// إضافة تنسيق للحقول التي بها أخطاء
+const style = document.createElement('style');
+style.textContent = `
+    .has-error .form-control {
+        border-color: #e74a3b;
+    }
+    .has-error .form-control:focus {
+        box-shadow: 0 0 0 0.2rem rgba(231, 74, 59, 0.25);
+    }
+    .invalid-feedback {
+        color: #e74a3b;
+        font-size: 80%;
+        margin-top: 0.25rem;
+    }
+`;
+document.head.appendChild(style);
+</script>
 @endpush
 @endsection 
