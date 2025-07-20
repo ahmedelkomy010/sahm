@@ -152,15 +152,15 @@
                             </div>
                             <div class="card-body">
                                 <div class="table-responsive">
-                                    <table class="table table-striped" id="civilWorksTable">
+                                    <table class="table table-striped civil-works-table" id="civilWorksTable">
                                         <thead>
                                             <tr>
-                                                <th>التاريخ</th>
-                                                <th>الوصف</th>
-                                                <th>الكمية</th>
-                                                <th>الوحدة</th>
-                                                <th>السعر</th>
-                                                <th>الإجمالي</th>
+                                                <th style="width: 12%">التاريخ</th>
+                                                <th style="width: 20%">نوع الحفرية</th>
+                                                <th style="width: 25%">نوع الكابل</th>
+                                                <th style="width: 13%">الطول</th>
+                                                <th style="width: 15%">السعر</th>
+                                                <th style="width: 15%">الإجمالي</th>
                                             </tr>
                                         </thead>
                                         <tbody id="civilWorksTableBody">
@@ -213,7 +213,7 @@
                                         <thead>
                                             <tr>
                                                 <th>التاريخ</th>
-                                                <th>نوع الكابل</th>
+                                                <th>البند</th>
                                                 <th>الطول</th>
                                                 <th>السعر</th>
                                                 <th>الإجمالي</th>
@@ -369,11 +369,11 @@ function updateCivilWorksTable(details) {
         const row = document.createElement('tr');
         row.innerHTML = `
             <td>${formatDate(item.date)}</td>
-            <td>${item.description}</td>
-            <td class="text-center">${formatNumber(item.quantity)}</td>
-            <td class="text-center">${item.unit}</td>
-            <td class="text-center">${formatCurrency(item.price)}</td>
-            <td class="text-center">${formatCurrency(item.total)}</td>
+            <td class="text-center">${item.excavation_type || 'غير محدد'}</td>
+            <td class="text-center">${item.cable_type || 'غير محدد'}</td>
+            <td class="text-center">${formatNumber(item.length || 0)}</td>
+            <td class="text-center">${formatCurrency(item.price || 0)}</td>
+            <td class="text-center">${formatCurrency(item.total || 0)}</td>
         `;
         tbody.appendChild(row);
     });
@@ -414,10 +414,10 @@ function updateElectricalWorksTable(details) {
         const row = document.createElement('tr');
         row.innerHTML = `
             <td>${formatDate(item.date)}</td>
-            <td>${item.type}</td>
-            <td class="text-center">${formatNumber(item.length)}</td>
-            <td class="text-center">${formatCurrency(item.price)}</td>
-            <td class="text-center">${formatCurrency(item.total)}</td>
+            <td class="text-center">${item.item_name || 'غير محدد'}</td>
+            <td class="text-center">${formatNumber(item.length || 0)}</td>
+            <td class="text-center">${formatCurrency(item.price || 0)}</td>
+            <td class="text-center">${formatCurrency(item.total || 0)}</td>
         `;
         tbody.appendChild(row);
     });
@@ -458,6 +458,67 @@ function formatNumber(number) {
 
 .fs-2 {
     font-size: 2rem !important;
+}
+
+/* تنسيق جدول الأعمال المدنية */
+.civil-works-table {
+    font-size: 0.95rem;
+}
+
+.civil-works-table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    text-align: center;
+    vertical-align: middle;
+    padding: 12px 8px;
+    white-space: nowrap;
+}
+
+.civil-works-table td {
+    vertical-align: middle;
+    padding: 10px 8px;
+}
+
+.civil-works-table tbody tr:hover {
+    background-color: rgba(0, 123, 255, 0.05);
+}
+
+/* تنسيق الأرقام في الجدول */
+.civil-works-table td:nth-child(4),
+.civil-works-table td:nth-child(5),
+.civil-works-table td:nth-child(6) {
+    font-family: "Courier New", monospace;
+    direction: ltr;
+}
+
+/* تنسيق التاريخ */
+.civil-works-table td:first-child {
+    font-family: "Courier New", monospace;
+    direction: ltr;
+    text-align: center;
+}
+
+/* تنسيق النصوص */
+.civil-works-table td:nth-child(2),
+.civil-works-table td:nth-child(3) {
+    text-align: right;
+}
+
+/* تنسيق الخلايا الرقمية */
+.civil-works-table .text-center {
+    text-align: center !important;
+}
+
+/* تحسين مظهر الجدول على الشاشات الصغيرة */
+@media (max-width: 768px) {
+    .civil-works-table {
+        font-size: 0.85rem;
+    }
+    
+    .civil-works-table th,
+    .civil-works-table td {
+        padding: 8px 4px;
+    }
 }
 </style>
 @endsection 

@@ -333,11 +333,7 @@
                             <input type="text" class="form-control" id="search_code" name="search_code" 
                                    value="{{ request('search_code') }}" placeholder="أدخل كود المادة">
                         </div>
-                        <div class="col-md-4">
-                            <label for="search_description" class="form-label">البحث بالوصف</label>
-                            <input type="text" class="form-control" id="search_description" name="search_description" 
-                                   value="{{ request('search_description') }}" placeholder="أدخل وصف المادة">
-                        </div>
+                        
                         <div class="col-md-2">
                             <label for="unit_filter" class="form-label">الوحدة</label>
                             <select class="form-select" id="unit_filter" name="unit_filter">
@@ -353,9 +349,7 @@
                                 <button type="submit" class="btn btn-primary">
                                     <i class="fas fa-search"></i> بحث
                                 </button>
-                                <a href="{{ route('admin.work-orders.materials.index', $workOrder) }}" class="btn btn-secondary">
-                                    <i class="fas fa-times"></i> مسح
-                                </a>
+                               
                             </div>
                         </div>
                     </form>
@@ -2742,6 +2736,96 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+
+// دالة إضافة جميع المواد تلقائياً
+function addAllMaterialsAutomatically() {
+    // إظهار مؤشر التحميل
+    Swal.fire({
+        title: 'جاري إضافة المواد...',
+        html: `
+            <div class="progress mb-3" style="height: 20px;">
+                <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" 
+                     role="progressbar" style="width: 100%">
+                    جاري المعالجة...
+                </div>
+            </div>
+            <p>جاري إضافة جميع المواد من مقايسة المواد إلى القائمة...</p>
+        `,
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        showConfirmButton: false
+    });
+    
+    // إرسال طلب إضافة جميع المواد
+    fetch('{{ route('admin.work-orders.materials.add-all-from-work-order', $workOrder) }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        Swal.close();
+        
+        if (data.success) {
+            Swal.fire({
+                title: 'تم بنجاح!',
+                text: data.message || 'تم إضافة جميع المواد بنجاح',
+                icon: 'success',
+                confirmButtonColor: '#28a745',
+                confirmButtonText: 'تم'
+            }).then(() => {
+                location.reload(); // إعادة تحميل الصفحة لإظهار التحديثات
+            });
+        } else {
+            let errorMessage = data.message || 'حدث خطأ أثناء إضافة المواد';
+            
+            if (data.notes && data.notes.length > 0) {
+                errorMessage += '\n\nملاحظات:\n' + data.notes.join('\n');
+            }
+            
+            Swal.fire({
+                title: 'تنبيه!',
+                text: errorMessage,
+                icon: 'warning',
+                confirmButtonColor: '#ffc107',
+                confirmButtonText: 'حسناً'
+            }).then(() => {
+                if (data.added_count && data.added_count > 0) {
+                    location.reload();
+                }
+            });
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        Swal.fire({
+            title: 'خطأ!',
+            text: 'حدث خطأ أثناء إضافة المواد',
+            icon: 'error',
+            confirmButtonColor: '#dc3545',
+            confirmButtonText: 'حسناً'
+        });
+    });
+}
+
+// تشغيل الدالة عند تحميل الصفحة
+document.addEventListener('DOMContentLoaded', function() {
+    // التحقق من وجود مواد في المقايسة وعدم وجودها في قائمة المواد
+    const workOrderMaterialsCount = {{ $workOrderMaterials->count() ?? 0 }};
+    const materialsInWorkOrder = {{ $materials->filter(function($material) use ($workOrderMaterials) { 
+        return $workOrderMaterials->where('material.code', $material->code)->count() > 0; 
+    })->count() }};
+    
+    if (workOrderMaterialsCount > materialsInWorkOrder) {
+        // هناك مواد في المقايسة لم تتم إضافتها بعد
+        addAllMaterialsAutomatically();
+    }
+});
+
+// تحديث زر إضافة الجميع ليعمل يدوياً أيضاً
+document.getElementById('addAllMaterialsBtn').addEventListener('click', addAllMaterialsAutomatically);
 </script>
 @endpush
 @endsection 

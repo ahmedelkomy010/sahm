@@ -693,6 +693,38 @@ class WorkOrderController extends Controller
     /**
      * حساب الإنتاجية لفترة محددة
      */
+    private function getArabicInstallationType($type) {
+        $translations = [
+            'installation_1600' => 'تركيب 1600',
+            'installation_3000' => 'تركيب 3000',
+            'aluminum_500_3_connection_13kv' => 'تركيب الومنيوم 500×3 جهد 13ك.ف',
+            'copper_500_3_connection_13kv' => 'تركيب نحاس 500×3 جهد 13ك.ف',
+            'copper_300_3_connection_13kv' => 'تركيب نحاس 300×3 جهد 13ك.ف',
+            'copper_185_3_connection_13kv' => 'تركيب نحاس 185×3 جهد 13ك.ف',
+            'copper_95_3_connection_13kv' => 'تركيب نحاس 95×3 جهد 13ك.ف',
+            'copper_35_3_connection_13kv' => 'تركيب نحاس 35×3 جهد 13ك.ف',
+            'aluminum_300_3_connection_13kv' => 'تركيب الومنيوم 300×3 جهد 13ك.ف',
+            'aluminum_185_3_connection_13kv' => 'تركيب الومنيوم 185×3 جهد 13ك.ف',
+            'aluminum_95_3_connection_13kv' => 'تركيب الومنيوم 95×3 جهد 13ك.ف',
+            'aluminum_35_3_connection_13kv' => 'تركيب الومنيوم 35×3 جهد 13ك.ف'
+        ];
+
+        return $translations[$type] ?? $type;
+    }
+
+    private function getArabicExcavationType($type) {
+        $translations = [
+            'unsurfaced_soil' => 'حفرية ترابية غير مسفلتة',
+            'surfaced_soil' => 'حفرية ترابية مسفلتة',
+            'unsurfaced_rock' => 'حفرية صخرية غير مسفلتة',
+            'surfaced_rock' => 'حفرية صخرية مسفلتة',
+            'manual_excavation' => 'حفرية يدوية',
+            'mechanical_excavation' => 'حفرية ميكانيكية'
+        ];
+
+        return $translations[$type] ?? $type;
+    }
+
     public function getProductivityReport(Request $request, WorkOrder $workOrder)
     {
         try {
@@ -731,28 +763,18 @@ class WorkOrderController extends Controller
                     }
 
                     if ($itemDate && $itemDate >= $startDate && $itemDate <= $endDate) {
-                        $total = 0;
-                        $quantity = 0;
-                        
-                        if (isset($item['total'])) {
-                            $total = floatval($item['total']);
-                        } elseif (isset($item['quantity']) && isset($item['price'])) {
-                            $total = floatval($item['quantity']) * floatval($item['price']);
-                        }
-
-                        if (isset($item['quantity'])) {
-                            $quantity = floatval($item['quantity']);
-                        }
+                        $total = floatval($item['total'] ?? 0);
+                        $length = floatval($item['length'] ?? 0);
 
                         $civilWorksReport['total_amount'] += $total;
-                        $civilWorksReport['total_quantity'] += $quantity;
+                        $civilWorksReport['total_quantity'] += $length;
                         $civilWorksReport['items_count']++;
                         
                         $civilWorksReport['details'][] = [
                             'date' => $itemDate,
-                            'description' => $item['description'] ?? $item['work_type'] ?? 'غير محدد',
-                            'quantity' => $quantity,
-                            'unit' => $item['unit'] ?? 'متر',
+                            'excavation_type' => $this->getArabicExcavationType($item['excavation_type'] ?? $item['work_type'] ?? ''),
+                            'cable_type' => $item['work_type'] ?? $item['title'] ?? $item['cable_type'] ?? 'غير محدد',
+                            'length' => $length,
                             'price' => floatval($item['price'] ?? 0),
                             'total' => $total
                         ];
@@ -779,7 +801,7 @@ class WorkOrderController extends Controller
                 
                 $installationsReport['details'][] = [
                     'date' => $installation->installation_date,
-                    'type' => $installation->installation_type,
+                    'type' => $this->getArabicInstallationType($installation->installation_type),
                     'quantity' => $installation->quantity,
                     'price' => $installation->price,
                     'total' => $installation->total
@@ -811,26 +833,16 @@ class WorkOrderController extends Controller
                     }
 
                     if ($itemDate && $itemDate >= $startDate && $itemDate <= $endDate) {
-                        $total = 0;
-                        $length = 0;
-
-                        if (isset($item['total'])) {
-                            $total = floatval($item['total']);
-                        } elseif (isset($item['length']) && isset($item['price'])) {
-                            $total = floatval($item['length']) * floatval($item['price']);
-                        }
-
-                        if (isset($item['length'])) {
-                            $length = floatval($item['length']);
-                        }
+                        $total = floatval($item['total'] ?? 0);
+                        $length = floatval($item['length'] ?? 0);
 
                         $electricalWorksReport['total_amount'] += $total;
                         $electricalWorksReport['total_length'] += $length;
                         $electricalWorksReport['items_count']++;
-                        
+
                         $electricalWorksReport['details'][] = [
                             'date' => $itemDate,
-                            'type' => $item['cable_type'] ?? $item['type'] ?? 'غير محدد',
+                            'item_name' => $item['item_name'] ?? $item['work_type'] ?? 'غير محدد',
                             'length' => $length,
                             'price' => floatval($item['price'] ?? 0),
                             'total' => $total
