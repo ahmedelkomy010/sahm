@@ -169,9 +169,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::delete('daily-installations/{id}', [App\Http\Controllers\Admin\WorkOrderController::class, 'deleteDailyInstallation'])->name('daily-installations.delete');
 
     // Civil Works Routes
-    Route::get('work-orders/{workOrder}/civil-works', [WorkOrderController::class, 'civilWorks'])->name('work-orders.civil-works');
-    Route::post('work-orders/{workOrder}/civil-works', [WorkOrderController::class, 'civilWorks'])->name('work-orders.civil-works.store');
-    Route::put('work-orders/{workOrder}/civil-works', [WorkOrderController::class, 'civilWorks'])->name('work-orders.civil-works.update');
+    Route::get('work-orders/{workOrder}/civil-works', [WorkOrderController::class, 'civilWorksNew'])->name('work-orders.civil-works');
     Route::get('work-orders/{workOrder}/civil-works/excavation-details', [WorkOrderController::class, 'getExcavationDetails'])->name('work-orders.civil-works.excavation-details');
     Route::post('work-orders/{workOrder}/civil-works/images', [WorkOrderController::class, 'saveCivilWorksImages'])->name('work-orders.civil-works.images');
     Route::delete('work-orders/{workOrder}/civil-works/images/{image}', [WorkOrderController::class, 'deleteCivilWorksImage'])->name('work-orders.civil-works.images.delete');
@@ -499,6 +497,10 @@ Route::post('/admin/work-orders/{workOrder}/installations', [WorkOrderController
 Route::get('/admin/work-orders/{workOrder}/installations/daily-summary', [App\Http\Controllers\Admin\WorkOrderController::class, 'getDailyInstallationsSummary'])
     ->name('admin.work-orders.installations.daily-summary');
 
+    // عرض صفحة الأعمال المدنية
+    Route::get('/admin/work-orders/{workOrder}/civil-works', [WorkOrderController::class, 'civilWorksNew'])
+        ->name('admin.work-orders.civil-works');
+
     // حفظ بيانات العمل اليومي للحفريات
     Route::post('/admin/work-orders/{workOrder}/civil-works/save-daily-data', [App\Http\Controllers\Admin\WorkOrderController::class, 'saveDailyCivilWorks'])
         ->name('admin.work-orders.civil-works.save-daily-data');
@@ -510,6 +512,31 @@ Route::get('/admin/work-orders/{workOrder}/installations/daily-summary', [App\Ht
     // جلب بيانات العمل اليومي المحفوظة للحفريات (للنظام الجديد)
     Route::get('/admin/work-orders/{workOrder}/get-daily-civil-works', [App\Http\Controllers\Admin\WorkOrderController::class, 'getDailyCivilWorks'])
         ->name('admin.work-orders.get-daily-civil-works');
+
+    // وظائف إدارة البيانات حسب التاريخ
+    Route::get('/admin/work-orders/{workOrder}/civil-works/by-date', [App\Http\Controllers\Admin\WorkOrderController::class, 'getDailyCivilWorksByDate'])
+        ->name('admin.work-orders.civil-works.by-date');
+    
+    Route::delete('/admin/work-orders/{workOrder}/civil-works/by-date', [App\Http\Controllers\Admin\WorkOrderController::class, 'deleteDailyCivilWorksByDate'])
+        ->name('admin.work-orders.civil-works.delete-by-date');
+    
+    Route::get('/admin/work-orders/{workOrder}/civil-works/statistics', [App\Http\Controllers\Admin\WorkOrderController::class, 'getDailyCivilWorksStatistics'])
+        ->name('admin.work-orders.civil-works.statistics');
+    
+    Route::post('/admin/work-orders/{workOrder}/civil-works/copy-date', [App\Http\Controllers\Admin\WorkOrderController::class, 'copyDailyCivilWorksDate'])
+        ->name('admin.work-orders.civil-works.copy-date');
+
+    // الأعمال المدنية (النظام الجديد المحسن)
+    Route::get('/admin/work-orders/{workOrder}/civil-works-new', [WorkOrderController::class, 'civilWorksNew'])
+        ->name('admin.work-orders.civil-works-new');
+    Route::post('/admin/work-orders/{workOrder}/civil-works/save', [WorkOrderController::class, 'saveDailyCivilWork'])
+        ->name('admin.work-orders.civil-works.save');
+    Route::get('/admin/work-orders/{workOrder}/civil-works/data', [WorkOrderController::class, 'getDailyCivilWorksData'])
+        ->name('admin.work-orders.civil-works.data');
+    Route::delete('/admin/work-orders/{workOrder}/civil-works/delete/{itemId}', [WorkOrderController::class, 'deleteDailyCivilWork'])
+        ->name('admin.work-orders.civil-works.delete');
+    Route::delete('/admin/work-orders/{workOrder}/civil-works/clear', [WorkOrderController::class, 'clearDailyCivilWorksByDate'])
+        ->name('admin.work-orders.civil-works.clear');
 
 // صور ومرفقات الأعمال المدنية
 Route::post('/admin/work-orders/{workOrder}/civil-works/images', [WorkOrderController::class, 'saveCivilWorksImages'])
@@ -526,7 +553,7 @@ Route::delete('/admin/work-orders/{workOrder}/civil-works/attachments/{attachmen
     Route::get('licenses/{license}/download/{type}', [\App\Http\Controllers\Admin\LicenseController::class, 'downloadFile'])->name('admin.licenses.download');
 
 // حذف مرفق إخلاء
-Route::delete('/admin/licenses/{license}/evacuation-attachments/{index}', [LicenseController::class, 'deleteEvacuationAttachment'])->name('licenses.delete-evacuation-attachment');
+Route::delete('/admin/licenses/{license}/evacuation-attachments/{index}', [\App\Http\Controllers\Admin\LicenseController::class, 'deleteEvacuationAttachment'])->name('licenses.delete-evacuation-attachment');
 
 // مسارات البحث والحفظ التلقائي للمواد
 Route::get('admin/materials/search', [MaterialsController::class, 'search'])->name('admin.materials.search');

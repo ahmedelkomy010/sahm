@@ -51,6 +51,14 @@ class WorkOrder extends Model
         'excavation_unsurfaced_rock_open',
         'excavation_surfaced_rock_open',
         'open_excavation',
+        'excavation_unsurfaced_soil_price',
+        'excavation_surfaced_soil_price',
+        'excavation_unsurfaced_rock_price',
+        'excavation_surfaced_rock_price',
+        'excavation_unsurfaced_soil_open_price',
+        'excavation_surfaced_soil_open_price',
+        'excavation_unsurfaced_rock_open_price',
+        'excavation_surfaced_rock_open_price',
         'excavation_details_table',
         'entry_sheet',
         'actual_execution_value_consultant',
@@ -94,6 +102,10 @@ class WorkOrder extends Model
         'excavation_unsurfaced_rock_open' => 'array',
         'excavation_surfaced_rock_open' => 'array',
         'open_excavation' => 'array',
+        'excavation_unsurfaced_soil_price' => 'array',
+        'excavation_surfaced_soil_price' => 'array',
+        'excavation_unsurfaced_rock_price' => 'array',
+        'excavation_surfaced_rock_price' => 'array',
         'excavation_details_table' => 'array',
         'invoice_images' => 'array',
         'electrical_works' => 'array',
@@ -233,6 +245,14 @@ class WorkOrder extends Model
         return $this->hasMany(DailyInstallation::class);
     }
 
+    /**
+     * العلاقة مع الأعمال المدنية اليومية
+     */
+    public function dailyCivilWorks()
+    {
+        return $this->hasMany(DailyCivilWork::class);
+    }
+
     // Scopes
     public function scopeActive($query)
     {
@@ -258,6 +278,103 @@ class WorkOrder extends Model
             'high' => 'عالي',
             'urgent' => 'عاجل',
         ][$this->priority] ?? $this->priority;
+    }
+
+    // Accessor لرقم أمر العمل
+    public function getWorkOrderNumberAttribute()
+    {
+        return $this->order_number;
+    }
+
+    // Helper method للحصول على قيم الحفريات بطريقة آمنة
+    public function getExcavationValue($fieldName, $index)
+    {
+        $data = $this->getAttribute($fieldName);
+        
+        if (!is_array($data)) {
+            return '';
+        }
+        
+        if (!isset($data[$index])) {
+            return '';
+        }
+        
+        $value = $data[$index];
+        
+        // إذا كانت القيمة array، أرجع فراغ
+        if (is_array($value)) {
+            return '';
+        }
+        
+        // إذا كانت القيمة string أو number، أرجعها
+        return (string) $value;
+    }
+
+    // Helper method عام للحصول على قيم الحقول بطريقة آمنة
+    public function getSafeFieldValue($fieldName, $default = '')
+    {
+        $value = $this->getAttribute($fieldName);
+        
+        // إذا كانت القيمة array، أرجع القيمة الافتراضية
+        if (is_array($value)) {
+            return $default;
+        }
+        
+        // إذا كانت القيمة null، أرجع القيمة الافتراضية
+        if ($value === null) {
+            return $default;
+        }
+        
+        // أرجع القيمة كـ string
+        return (string) $value;
+    }
+
+    // Helper method للحصول على قيم أسعار الحفريات بطريقة آمنة  
+    public function getExcavationPrice($fieldName, $index)
+    {
+        $data = $this->getAttribute($fieldName);
+        
+        if (!is_array($data)) {
+            return '';
+        }
+        
+        if (!isset($data[$index])) {
+            return '';
+        }
+        
+        $value = $data[$index];
+        
+        // إذا كانت القيمة array، أرجع فراغ
+        if (is_array($value)) {
+            return '';
+        }
+        
+        // تحويل للرقم وإرجاع string
+        return number_format((float) $value, 2, '.', '');
+    }
+
+    // Helper method للحصول على قيم الحفريات بالمفتاح بطريقة آمنة
+    public function getExcavationValueByKey($fieldName, $key)
+    {
+        $data = $this->getAttribute($fieldName);
+        
+        if (!is_array($data)) {
+            return '';
+        }
+        
+        if (!isset($data[$key])) {
+            return '';
+        }
+        
+        $value = $data[$key];
+        
+        // إذا كانت القيمة array، أرجع فراغ
+        if (is_array($value)) {
+            return '';
+        }
+        
+        // إذا كانت القيمة string أو number، أرجعها
+        return (string) $value;
     }
 
     // Accessor للتركيبات

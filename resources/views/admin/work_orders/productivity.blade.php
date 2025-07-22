@@ -148,6 +148,7 @@
                                 <h5 class="mb-0">
                                     <i class="fas fa-hard-hat me-2"></i>
                                     تفاصيل الأعمال المدنية
+                                    <span class="badge bg-light text-primary ms-2" id="civilWorksItemsCount">0 عنصر</span>
                                 </h5>
                             </div>
                             <div class="card-body">
@@ -155,17 +156,26 @@
                                     <table class="table table-striped civil-works-table" id="civilWorksTable">
                                         <thead>
                                             <tr>
+                                                <th style="width: 5%">#</th>
                                                 <th style="width: 12%">التاريخ</th>
                                                 <th style="width: 20%">نوع الحفرية</th>
                                                 <th style="width: 25%">نوع الكابل</th>
                                                 <th style="width: 13%">الطول</th>
-                                                <th style="width: 15%">السعر</th>
-                                                <th style="width: 15%">الإجمالي</th>
+                                                <th style="width: 12%">السعر</th>
+                                                <th style="width: 13%">الإجمالي</th>
                                             </tr>
                                         </thead>
                                         <tbody id="civilWorksTableBody">
                                             <!-- سيتم ملؤها بواسطة JavaScript -->
                                         </tbody>
+                                        <tfoot class="table-light">
+                                            <tr class="fw-bold">
+                                                <td colspan="4" class="text-end">الإجمالي:</td>
+                                                <td class="text-center" id="civilWorksTotalLength">0.00</td>
+                                                <td class="text-center">-</td>
+                                                <td class="text-center" id="civilWorksTotalAmount">0.00 ريال</td>
+                                            </tr>
+                                        </tfoot>
                                     </table>
                                 </div>
                             </div>
@@ -177,23 +187,33 @@
                                 <h5 class="mb-0">
                                     <i class="fas fa-tools me-2"></i>
                                     تفاصيل التركيبات
+                                    <span class="badge bg-light text-success ms-2" id="installationsItemsCount">0 عنصر</span>
                                 </h5>
                             </div>
                             <div class="card-body">
                                 <div class="table-responsive">
-                                    <table class="table table-striped" id="installationsTable">
+                                    <table class="table table-striped installations-table" id="installationsTable">
                                         <thead>
                                             <tr>
-                                                <th>التاريخ</th>
-                                                <th>نوع التركيب</th>
-                                                <th>الكمية</th>
-                                                <th>السعر</th>
-                                                <th>الإجمالي</th>
+                                                <th style="width: 5%">#</th>
+                                                <th style="width: 12%">التاريخ</th>
+                                                <th style="width: 38%">نوع التركيب</th>
+                                                <th style="width: 15%">الكمية</th>
+                                                <th style="width: 15%">السعر</th>
+                                                <th style="width: 15%">الإجمالي</th>
                                             </tr>
                                         </thead>
                                         <tbody id="installationsTableBody">
                                             <!-- سيتم ملؤها بواسطة JavaScript -->
                                         </tbody>
+                                        <tfoot class="table-light">
+                                            <tr class="fw-bold">
+                                                <td colspan="3" class="text-end">الإجمالي:</td>
+                                                <td class="text-center" id="installationsTotalQuantity">0</td>
+                                                <td class="text-center">-</td>
+                                                <td class="text-center" id="installationsTotalAmount">0.00 ريال</td>
+                                            </tr>
+                                        </tfoot>
                                     </table>
                                 </div>
                             </div>
@@ -205,23 +225,33 @@
                                 <h5 class="mb-0">
                                     <i class="fas fa-bolt me-2"></i>
                                     تفاصيل الأعمال الكهربائية
+                                    <span class="badge bg-light text-warning ms-2" id="electricalWorksItemsCount">0 عنصر</span>
                                 </h5>
                             </div>
                             <div class="card-body">
                                 <div class="table-responsive">
-                                    <table class="table table-striped" id="electricalWorksTable">
+                                    <table class="table table-striped electrical-works-table" id="electricalWorksTable">
                                         <thead>
                                             <tr>
-                                                <th>التاريخ</th>
-                                                <th>البند</th>
-                                                <th>الطول</th>
-                                                <th>السعر</th>
-                                                <th>الإجمالي</th>
+                                                <th style="width: 5%">#</th>
+                                                <th style="width: 12%">التاريخ</th>
+                                                <th style="width: 35%">البند</th>
+                                                <th style="width: 13%">الطول (متر)</th>
+                                                <th style="width: 15%">السعر</th>
+                                                <th style="width: 20%">الإجمالي</th>
                                             </tr>
                                         </thead>
                                         <tbody id="electricalWorksTableBody">
                                             <!-- سيتم ملؤها بواسطة JavaScript -->
                                         </tbody>
+                                        <tfoot class="table-light">
+                                            <tr class="fw-bold">
+                                                <td colspan="3" class="text-end">الإجمالي:</td>
+                                                <td class="text-center" id="electricalWorksTotalLength">0.00</td>
+                                                <td class="text-center">-</td>
+                                                <td class="text-center" id="electricalWorksTotalAmount">0.00 ريال</td>
+                                            </tr>
+                                        </tfoot>
                                     </table>
                                 </div>
                             </div>
@@ -361,22 +391,44 @@ function updateCivilWorksTable(details) {
     tbody.innerHTML = '';
     
     if (details.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">لا توجد أعمال مدنية في هذه الفترة</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">لا توجد أعمال مدنية في هذه الفترة</td></tr>';
+        document.getElementById('civilWorksItemsCount').textContent = '0 عنصر';
+        document.getElementById('civilWorksTotalLength').textContent = '0.00';
+        document.getElementById('civilWorksTotalAmount').textContent = '0.00 ريال';
         return;
     }
     
-    details.forEach(item => {
+    let totalLength = 0;
+    let totalAmount = 0;
+    
+    details.forEach((item, index) => {
         const row = document.createElement('tr');
+        const length = parseFloat(item.length || 0);
+        const total = parseFloat(item.total || 0);
+        
+        totalLength += length;
+        totalAmount += total;
+        
         row.innerHTML = `
-            <td>${formatDate(item.date)}</td>
-            <td class="text-center">${item.excavation_type || 'غير محدد'}</td>
-            <td class="text-center">${item.cable_type || 'غير محدد'}</td>
-            <td class="text-center">${formatNumber(item.length || 0)}</td>
-            <td class="text-center">${formatCurrency(item.price || 0)}</td>
-            <td class="text-center">${formatCurrency(item.total || 0)}</td>
+            <td class="text-center">${index + 1}</td>
+            <td class="text-center">${formatDate(item.date)}</td>
+            <td class="text-center">
+                <span class="badge bg-primary">${item.excavation_type || 'غير محدد'}</span>
+            </td>
+            <td class="text-center">
+                <span class="badge bg-info">${item.cable_type || 'غير محدد'}</span>
+            </td>
+            <td class="text-center fw-bold">${formatNumber(length)} متر</td>
+            <td class="text-center">${formatCurrency(item.price)}</td>
+            <td class="text-center fw-bold text-success">${formatCurrency(total)}</td>
         `;
         tbody.appendChild(row);
     });
+    
+    // تحديث الإجماليات
+    document.getElementById('civilWorksItemsCount').textContent = `${details.length} عنصر`;
+    document.getElementById('civilWorksTotalLength').textContent = `${formatNumber(totalLength)} متر`;
+    document.getElementById('civilWorksTotalAmount').textContent = formatCurrency(totalAmount);
 }
 
 function updateInstallationsTable(details) {
@@ -384,21 +436,42 @@ function updateInstallationsTable(details) {
     tbody.innerHTML = '';
     
     if (details.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">لا توجد تركيبات في هذه الفترة</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">لا توجد تركيبات في هذه الفترة</td></tr>';
+        document.getElementById('installationsItemsCount').textContent = '0 عنصر';
+        document.getElementById('installationsTotalQuantity').textContent = '0';
+        document.getElementById('installationsTotalAmount').textContent = '0.00 ريال';
         return;
     }
     
-    details.forEach(item => {
+    let totalQuantity = 0;
+    let totalAmount = 0;
+    
+    details.forEach((item, index) => {
         const row = document.createElement('tr');
+        const quantity = parseFloat(item.quantity || 0);
+        const price = parseFloat(item.price || 0);
+        const total = parseFloat(item.total || 0);
+        
+        totalQuantity += quantity;
+        totalAmount += total;
+        
         row.innerHTML = `
-            <td>${formatDate(item.date)}</td>
-            <td>${item.type}</td>
-            <td class="text-center">${formatNumber(item.quantity)}</td>
-            <td class="text-center">${formatCurrency(item.price)}</td>
-            <td class="text-center">${formatCurrency(item.total)}</td>
+            <td class="text-center">${index + 1}</td>
+            <td class="text-center">${formatDate(item.date)}</td>
+            <td>
+                <span class="badge bg-success text-white">${item.type || 'غير محدد'}</span>
+            </td>
+            <td class="text-center fw-bold">${formatNumber(quantity)}</td>
+            <td class="text-center">${formatCurrency(price)}</td>
+            <td class="text-center fw-bold text-success">${formatCurrency(total)}</td>
         `;
         tbody.appendChild(row);
     });
+    
+    // تحديث الإجماليات
+    document.getElementById('installationsItemsCount').textContent = `${details.length} عنصر`;
+    document.getElementById('installationsTotalQuantity').textContent = formatNumber(totalQuantity);
+    document.getElementById('installationsTotalAmount').textContent = formatCurrency(totalAmount);
 }
 
 function updateElectricalWorksTable(details) {
@@ -406,21 +479,42 @@ function updateElectricalWorksTable(details) {
     tbody.innerHTML = '';
     
     if (details.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">لا توجد أعمال كهربائية في هذه الفترة</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">لا توجد أعمال كهربائية في هذه الفترة</td></tr>';
+        document.getElementById('electricalWorksItemsCount').textContent = '0 عنصر';
+        document.getElementById('electricalWorksTotalLength').textContent = '0.00';
+        document.getElementById('electricalWorksTotalAmount').textContent = '0.00 ريال';
         return;
     }
     
-    details.forEach(item => {
+    let totalLength = 0;
+    let totalAmount = 0;
+    
+    details.forEach((item, index) => {
         const row = document.createElement('tr');
+        const length = parseFloat(item.length || 0);
+        const price = parseFloat(item.price || 0);
+        const total = parseFloat(item.total || 0);
+        
+        totalLength += length;
+        totalAmount += total;
+        
         row.innerHTML = `
-            <td>${formatDate(item.date)}</td>
-            <td class="text-center">${item.item_name || 'غير محدد'}</td>
-            <td class="text-center">${formatNumber(item.length || 0)}</td>
-            <td class="text-center">${formatCurrency(item.price || 0)}</td>
-            <td class="text-center">${formatCurrency(item.total || 0)}</td>
+            <td class="text-center">${index + 1}</td>
+            <td class="text-center">${formatDate(item.date)}</td>
+            <td>
+                <span class="badge bg-warning text-dark">${item.item_name || 'غير محدد'}</span>
+            </td>
+            <td class="text-center fw-bold">${formatNumber(length)} متر</td>
+            <td class="text-center">${formatCurrency(price)}</td>
+            <td class="text-center fw-bold text-success">${formatCurrency(total)}</td>
         `;
         tbody.appendChild(row);
     });
+    
+    // تحديث الإجماليات
+    document.getElementById('electricalWorksItemsCount').textContent = `${details.length} عنصر`;
+    document.getElementById('electricalWorksTotalLength').textContent = `${formatNumber(totalLength)} متر`;
+    document.getElementById('electricalWorksTotalAmount').textContent = formatCurrency(totalAmount);
 }
 
 function showNoDataMessage() {
@@ -506,6 +600,103 @@ function formatNumber(number) {
 
 /* تنسيق الخلايا الرقمية */
 .civil-works-table .text-center {
+    text-align: center !important;
+}
+
+/* تنسيق جدول الأعمال الكهربائية */
+.electrical-works-table {
+    font-size: 0.95rem;
+}
+
+.electrical-works-table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    text-align: center;
+    vertical-align: middle;
+    padding: 12px 8px;
+    white-space: nowrap;
+}
+
+.electrical-works-table td {
+    vertical-align: middle;
+    padding: 10px 8px;
+}
+
+.electrical-works-table tbody tr:hover {
+    background-color: rgba(0, 123, 255, 0.05);
+}
+
+/* تنسيق الأرقام في الجدول */
+.electrical-works-table td:nth-child(4),
+.electrical-works-table td:nth-child(5),
+.electrical-works-table td:nth-child(6) {
+    font-family: "Courier New", monospace;
+    direction: ltr;
+}
+
+/* تنسيق التاريخ */
+.electrical-works-table td:first-child {
+    font-family: "Courier New", monospace;
+    direction: ltr;
+    text-align: center;
+}
+
+/* تنسيق النصوص */
+.electrical-works-table td:nth-child(2),
+.electrical-works-table td:nth-child(3) {
+    text-align: right;
+}
+
+/* تنسيق الخلايا الرقمية */
+.electrical-works-table .text-center {
+    text-align: center !important;
+}
+
+/* تنسيق جدول التركيبات */
+.installations-table {
+    font-size: 0.95rem;
+}
+
+.installations-table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    text-align: center;
+    vertical-align: middle;
+    padding: 12px 8px;
+    white-space: nowrap;
+}
+
+.installations-table td {
+    vertical-align: middle;
+    padding: 10px 8px;
+}
+
+.installations-table tbody tr:hover {
+    background-color: rgba(40, 167, 69, 0.05);
+}
+
+/* تنسيق الأرقام في جدول التركيبات */
+.installations-table td:nth-child(4),
+.installations-table td:nth-child(5),
+.installations-table td:nth-child(6) {
+    font-family: "Courier New", monospace;
+    direction: ltr;
+}
+
+/* تنسيق التاريخ في جدول التركيبات */
+.installations-table td:nth-child(2) {
+    font-family: "Courier New", monospace;
+    direction: ltr;
+    text-align: center;
+}
+
+/* تنسيق النصوص في جدول التركيبات */
+.installations-table td:nth-child(3) {
+    text-align: right;
+}
+
+/* تنسيق الخلايا الرقمية في جدول التركيبات */
+.installations-table .text-center {
     text-align: center !important;
 }
 

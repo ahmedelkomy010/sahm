@@ -138,21 +138,7 @@
                             </small>
                         </div>
                         
-                        <!-- أزرار الحفظ والإجراءات -->
-                        <div class="text-center mt-3">
-                            <button type="button" class="btn btn-success px-4" onclick="saveElectricalWorks()">
-                                <i class="fas fa-save me-2"></i>
-                                حفظ البيانات
-                            </button>
-                            <button type="button" class="btn btn-info px-4 ms-2" onclick="updateAll()">
-                                <i class="fas fa-calculator me-2"></i>
-                                إعادة حساب الإجماليات
-                            </button>
-                            <button type="button" class="btn btn-warning px-4 ms-2" onclick="saveDailyElectricalWorks()">
-                                <i class="fas fa-calendar-check me-2"></i>
-                                حفظ البيانات اليومية
-                            </button>
-                        </div>
+                       
                         
                         @if($workOrder->electrical_works && count($workOrder->electrical_works) > 0)
                             

@@ -137,10 +137,13 @@
                                     <h4 class="card-title mb-3">الأعمال المدنية</h4>
                                     <p class="card-text text-muted mb-2">إدارة وتوثيق الأعمال المدنية للمشروع</p>
                                     <small class="text-muted d-block mb-3">أمر العمل: {{ $workOrder->work_order_number ?? $workOrder->order_number }}</small>
-                                    <a href="{{ route('admin.work-orders.civil-works', $workOrder) }}" class="btn btn-primary w-100">
-                                        <i class="fas fa-arrow-left ml-1"></i>
-                                        الانتقال إلى الأعمال المدنية
-                                    </a>
+                                    <div class="d-grid gap-2">
+                                        <a href="{{ route('admin.work-orders.civil-works-new', $workOrder) }}" class="btn btn-primary">
+                                            <i class="fas fa-arrow-left ml-1"></i>
+                                            الانتقال إلى الأعمال المدنية
+                                        </a>
+                                       
+                                    </div>
                                 </div>
                             </div>
                         </div>

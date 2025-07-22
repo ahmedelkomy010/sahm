@@ -853,92 +853,169 @@ class WorkOrderController extends Controller
         }
     }
 
-    public function civilWorks(Request $request, WorkOrder $workOrder)
+
+
+    /**
+     * عرض صفحة الأعمال المدنية الجديدة (النظام المحسن)
+     */
+    public function civilWorksNew(Request $request, WorkOrder $workOrder)
     {
-        // إذا كان الطلب POST أو PUT، احفظ البيانات
-        if ($request->isMethod('put') || $request->isMethod('post')) {
-            // تحديث بيانات الحفريات
-            $updateData = [];
-            
-            // حفظ بيانات الحفريات التربة الترابية غير مسفلتة
-            if ($request->has('excavation_unsurfaced_soil')) {
-                $updateData['excavation_unsurfaced_soil'] = $request->input('excavation_unsurfaced_soil');
-            }
-            
-            // حفظ بيانات الحفريات التربة الترابية مسفلتة
-            if ($request->has('excavation_surfaced_soil')) {
-                $updateData['excavation_surfaced_soil'] = $request->input('excavation_surfaced_soil');
-            }
-            
-            // حفظ بيانات الحفريات التربة الصخرية غير مسفلتة
-            if ($request->has('excavation_unsurfaced_rock')) {
-                $updateData['excavation_unsurfaced_rock'] = $request->input('excavation_unsurfaced_rock');
-            }
-            
-            // حفظ بيانات الحفريات التربة الصخرية مسفلتة
-            if ($request->has('excavation_surfaced_rock')) {
-                $updateData['excavation_surfaced_rock'] = $request->input('excavation_surfaced_rock');
-            }
-            
-            // حفظ بيانات الحفر المفتوح للحفريات التربة الترابية غير مسفلتة
-            if ($request->has('excavation_unsurfaced_soil_open')) {
-                $updateData['excavation_unsurfaced_soil_open'] = $request->input('excavation_unsurfaced_soil_open');
-            }
-            
-            // حفظ بيانات الحفر المفتوح للحفريات التربة الترابية مسفلتة
-            if ($request->has('excavation_surfaced_soil_open')) {
-                $updateData['excavation_surfaced_soil_open'] = $request->input('excavation_surfaced_soil_open');
-            }
-            
-            // حفظ بيانات الحفر المفتوح للحفريات التربة الصخرية غير مسفلتة
-            if ($request->has('excavation_unsurfaced_rock_open')) {
-                $updateData['excavation_unsurfaced_rock_open'] = $request->input('excavation_unsurfaced_rock_open');
-            }
-            
-            // حفظ بيانات الحفر المفتوح للحفريات التربة الصخرية مسفلتة
-            if ($request->has('excavation_surfaced_rock_open')) {
-                $updateData['excavation_surfaced_rock_open'] = $request->input('excavation_surfaced_rock_open');
-            }
-            
-            // حفظ بيانات الأعمال الكهربائية
-            if ($request->has('electrical_items')) {
-                $updateData['electrical_works'] = $request->input('electrical_items');
-            }
-            
-            // حفظ بيانات أعمال الأسفلت والحفر المفتوح
-            if ($request->has('open_excavation')) {
-                $updateData['open_excavation'] = $request->input('open_excavation');
-            }
-            
-            // حفظ بيانات الجدول التفصيلي
-            if ($request->has('excavation_details_table')) {
-                $updateData['excavation_details_table'] = $request->input('excavation_details_table');
-            }
-            
-            // تحديث البيانات في قاعدة البيانات
-            if (!empty($updateData)) {
-                $workOrder->update($updateData);
-            }
-            
-            // إذا كان الطلب AJAX، أرجع JSON response
-            if ($request->ajax()) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'تم حفظ بيانات الأعمال المدنية بنجاح'
-                ]);
-            }
-            
-            return redirect()->route('admin.work-orders.civil-works', $workOrder)
-                ->with('success', 'تم حفظ بيانات الأعمال المدنية بنجاح');
+        // الحصول على التاريخ المطلوب، الافتراضي هو اليوم
+        $workDate = $request->get('date', now()->format('Y-m-d'));
+        
+        // الحصول على البيانات المحفوظة لهذا التاريخ
+        $savedDailyData = \App\Models\DailyCivilWork::getByWorkOrderAndDate($workOrder->id, $workDate);
+        
+        // الحصول على التواريخ المتاحة
+        $availableDates = \App\Models\DailyCivilWork::getAvailableDatesByWorkOrder($workOrder->id);
+        
+        // حساب الإحصائيات اليومية
+        $dailyStats = [
+            'total_items' => $savedDailyData->count(),
+            'total_cost' => $savedDailyData->sum('total_cost'),
+            'total_length' => $savedDailyData->sum('length'),
+            'total_volume' => $savedDailyData->sum('volume'),
+        ];
+        
+        return view('admin.work_orders.civil_works_new', compact(
+            'workOrder', 
+            'savedDailyData', 
+            'workDate', 
+            'availableDates', 
+            'dailyStats'
+        ));
+    }
+
+    /**
+     * حفظ بيانات الأعمال المدنية اليومية (النظام الجديد)
+     */
+    public function saveDailyCivilWork(Request $request, WorkOrder $workOrder)
+    {
+        try {
+            $validated = $request->validate([
+                'work_date' => 'required|date',
+                'work_type' => 'required|string|max:255',
+                'cable_type' => 'required|string|max:255',
+                'length' => 'required|numeric|min:0',
+                'width' => 'nullable|numeric|min:0',
+                'depth' => 'nullable|numeric|min:0',
+                'unit_price' => 'required|numeric|min:0'
+            ]);
+
+            $dailyCivilWork = \App\Models\DailyCivilWork::create([
+                'work_order_id' => $workOrder->id,
+                'work_date' => $validated['work_date'],
+                'work_type' => $validated['work_type'],
+                'cable_type' => $validated['cable_type'],
+                'length' => $validated['length'],
+                'width' => $validated['width'],
+                'depth' => $validated['depth'],
+                'unit_price' => $validated['unit_price']
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'تم حفظ البيانات بنجاح',
+                'data' => $dailyCivilWork
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error saving daily civil work', [
+                'error' => $e->getMessage(),
+                'work_order_id' => $workOrder->id
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'خطأ في حفظ البيانات: ' . $e->getMessage()
+            ], 500);
         }
+    }
+
+    /**
+     * الحصول على بيانات الأعمال المدنية لتاريخ معين (النظام الجديد)
+     */
+    public function getDailyCivilWorksData(Request $request, WorkOrder $workOrder)
+    {
+        $workDate = $request->get('date', now()->format('Y-m-d'));
         
-        // عرض الصفحة
-        $workOrder->load(['civilWorksFiles', 'civilWorksAttachments']);
+        $data = \App\Models\DailyCivilWork::getByWorkOrderAndDate($workOrder->id, $workDate);
         
-        // تحضير البيانات المحفوظة للملخص اليومي
-        $savedDailyData = $workOrder->daily_civil_works_data ?? $workOrder->excavation_details_table ?? [];
-        
-        return view('admin.work_orders.civil_works', compact('workOrder', 'savedDailyData'));
+        $stats = [
+            'total_items' => $data->count(),
+            'total_cost' => $data->sum('total_cost'),
+            'total_length' => $data->sum('length'),
+            'total_volume' => $data->sum('volume'),
+        ];
+
+        return response()->json([
+            'success' => true,
+            'data' => $data,
+            'stats' => $stats,
+            'date' => $workDate
+        ]);
+    }
+
+    /**
+     * حذف عنصر من الأعمال المدنية اليومية
+     */
+    public function deleteDailyCivilWork(Request $request, WorkOrder $workOrder, $itemId)
+    {
+        try {
+            $item = \App\Models\DailyCivilWork::where('work_order_id', $workOrder->id)
+                                               ->where('id', $itemId)
+                                               ->first();
+            
+            if (!$item) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'العنصر غير موجود'
+                ], 404);
+            }
+
+            $item->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'تم حذف العنصر بنجاح'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'خطأ في حذف العنصر: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * مسح جميع بيانات تاريخ معين
+     */
+    public function clearDailyCivilWorksByDate(Request $request, WorkOrder $workOrder)
+    {
+        try {
+            $workDate = $request->get('date');
+            
+            if (!$workDate) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'التاريخ مطلوب'
+                ], 400);
+            }
+
+            $deletedCount = \App\Models\DailyCivilWork::clearByWorkOrderAndDate($workOrder->id, $workDate);
+
+            return response()->json([
+                'success' => true,
+                'message' => "تم حذف {$deletedCount} عنصر بنجاح"
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'خطأ في حذف البيانات: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**

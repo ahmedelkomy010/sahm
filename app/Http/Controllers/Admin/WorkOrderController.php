@@ -179,48 +179,11 @@ class WorkOrderController extends Controller
             Log::info('Calculating daily totals for date: ' . $today);
 
             // حساب إجمالي الأعمال المدنية
-            $civilWorksData = $workOrder->daily_civil_works_data ?? [];
-            if (is_string($civilWorksData)) {
-                $civilWorksData = json_decode($civilWorksData, true) ?: [];
-            }
-            
-            Log::info('Civil works data:', ['data' => $civilWorksData]);
-            
-            $civilWorksTotal = 0;
-            if (is_array($civilWorksData)) {
-                foreach ($civilWorksData as $item) {
-                    // التحقق من التاريخ بطرق مختلفة
-                    $itemDate = null;
-                    if (isset($item['date'])) {
-                        $itemDate = substr($item['date'], 0, 10);
-                    } elseif (isset($item['work_date'])) {
-                        $itemDate = substr($item['work_date'], 0, 10);
-                    } elseif (isset($item['created_at'])) {
-                        $itemDate = substr($item['created_at'], 0, 10);
-                    }
-                    
-                    Log::info('Processing civil works item:', [
-                        'item' => $item,
-                        'itemDate' => $itemDate,
-                        'today' => $today
-                    ]);
-                    
-                    if ($itemDate === $today) {
-                        $total = 0;
-                        if (isset($item['total'])) {
-                            $total = floatval($item['total']);
-                        } elseif (isset($item['quantity']) && isset($item['price'])) {
-                            $total = floatval($item['quantity']) * floatval($item['price']);
-                        }
-                        $civilWorksTotal += $total;
-                        
-                        Log::info('Added to civil works total:', [
-                            'item_total' => $total,
-                            'running_total' => $civilWorksTotal
-                        ]);
-                    }
-                }
-            }
+            $civilWorksTotal = $workOrder->dailyCivilWorks()
+                ->whereDate('work_date', $today)
+                ->sum('total_cost');
+
+            Log::info('Civil works total:', ['total' => $civilWorksTotal]);
 
             // حساب إجمالي التركيبات
             $installationsTotal = $workOrder->installations()
@@ -620,64 +583,336 @@ class WorkOrderController extends Controller
         }
     }
 
+
+
     /**
      * حفظ بيانات العمل اليومي للحفريات
      */
     public function saveDailyCivilWorks(Request $request, WorkOrder $workOrder)
     {
         try {
-            $dailyWork = $request->input('daily_work', []);
+            \Log::info('Saving daily civil works data', [
+                'work_order_id' => $workOrder->id,
+                'request_data' => $request->all()
+            ]);
             
+            $dailyWork = $request->input('daily_work', []);
+            $requestedWorkDate = $request->input('work_date'); // التاريخ المحدد للعمل
+            
+            // التحقق من وجود البيانات
             if (empty($dailyWork)) {
+                \Log::warning('No data to save', ['work_order_id' => $workOrder->id]);
                 return response()->json([
                     'success' => false,
                     'message' => 'لا توجد بيانات للحفظ'
+                ], 400);
+            }
+            
+            \Log::info('Received work date', [
+                'work_order_id' => $workOrder->id,
+                'requested_work_date' => $requestedWorkDate
+            ]);
+            
+            // فلترة البيانات: حفظ العناصر التي تحتوي على طول وسعر/إجمالي فقط
+            $originalCount = count($dailyWork);
+            $validItems = [];
+            $skippedItems = 0;
+            
+            foreach ($dailyWork as $index => $item) {
+                if (!is_array($item)) {
+                    \Log::warning('Skipping non-array item', [
+                        'work_order_id' => $workOrder->id,
+                        'index' => $index,
+                        'type' => gettype($item)
+                    ]);
+                    $skippedItems++;
+                    continue;
+                }
+                
+                $length = (float) ($item['length'] ?? 0);
+                $price = (float) ($item['price'] ?? 0);
+                $total = (float) ($item['total'] ?? 0);
+                
+                // شرط الحفظ: يجب وجود طول > 0 و (سعر > 0 أو إجمالي > 0)
+                if ($length > 0 && ($price > 0 || $total > 0)) {
+                    // استخدام التاريخ المحدد في الطلب أو التاريخ المرسل مع العنصر أو التاريخ الحالي
+                    $workDate = $requestedWorkDate ?? $item['work_date'] ?? now()->format('Y-m-d');
+                    
+                    $validItems[] = [
+                        'excavation_type' => $item['excavation_type'] ?? 'غير محدد',
+                        'cable_name' => $item['cable_name'] ?? 'كابل ' . ($index + 1),
+                        'length' => $length,
+                        'width' => (float) ($item['width'] ?? 0),
+                        'depth' => (float) ($item['depth'] ?? 0),
+                        'volume' => (float) ($item['volume'] ?? 0),
+                        'price' => $price,
+                        'total' => $total,
+                        'work_date' => $workDate,
+                        'work_time' => $item['work_time'] ?? now()->format('H:i:s'),
+                        'category' => $item['category'] ?? 'excavation',
+                        'id' => $item['id'] ?? 'item_' . time() . '_' . $index,
+                        'created_at' => now()->toISOString(),
+                        'source' => $item['source'] ?? 'user_input'
+                    ];
+                } else {
+                    \Log::info('Skipping item without valid length and price/total', [
+                        'work_order_id' => $workOrder->id,
+                        'index' => $index,
+                        'length' => $length,
+                        'price' => $price,
+                        'total' => $total
+                    ]);
+                    $skippedItems++;
+                }
+            }
+            
+            // تحديث البيانات للمعالجة
+            $dailyWork = $validItems;
+            
+            \Log::info('Data filtering completed', [
+                'work_order_id' => $workOrder->id,
+                'original_items' => $originalCount,
+                'valid_items' => count($dailyWork),
+                'skipped_items' => $skippedItems
+            ]);
+            
+            // التحقق من وجود عناصر صالحة بعد الفلترة
+            if (empty($dailyWork)) {
+                \Log::warning('No valid items after filtering', ['work_order_id' => $workOrder->id]);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'لا توجد عناصر صالحة للحفظ (يجب إدخال الطول والسعر أو الإجمالي)',
+                    'original_items' => $originalCount,
+                    'skipped_items' => $skippedItems
+                ], 400);
+            }
+            
+            // التأكد من أن البيانات الواردة array
+            if (!is_array($dailyWork)) {
+                \Log::error('Daily work data is not an array', [
+                    'work_order_id' => $workOrder->id,
+                    'data_type' => gettype($dailyWork)
                 ]);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'تنسيق البيانات غير صحيح'
+                ], 400);
             }
 
-            // إضافة البيانات الجديدة للبيانات الموجودة (بدون حذف)
-            $existingData = $workOrder->daily_civil_works_data ? json_decode($workOrder->daily_civil_works_data, true) : [];
-            $allData = array_merge($existingData, $dailyWork);
+            // جلب البيانات الموجودة وتنظيفها
+            $existingData = [];
+            
+            if ($workOrder->daily_civil_works_data) {
+                if (is_string($workOrder->daily_civil_works_data)) {
+                    $decodedData = json_decode($workOrder->daily_civil_works_data, true);
+                    
+                    if (json_last_error() === JSON_ERROR_NONE && is_array($decodedData)) {
+                        $existingData = $decodedData;
+                        \Log::info('Successfully decoded existing data', [
+                            'work_order_id' => $workOrder->id,
+                            'existing_count' => count($existingData)
+                        ]);
+                    } else {
+                        \Log::warning('Failed to decode existing JSON data, starting fresh', [
+                            'work_order_id' => $workOrder->id,
+                            'json_error' => json_last_error_msg()
+                        ]);
+                        $existingData = [];
+                    }
+                } elseif (is_array($workOrder->daily_civil_works_data)) {
+                    $existingData = $workOrder->daily_civil_works_data;
+                } else {
+                    \Log::warning('Existing data type is not string or array', [
+                        'work_order_id' => $workOrder->id,
+                        'data_type' => gettype($workOrder->daily_civil_works_data)
+                    ]);
+                    $existingData = [];
+                }
+            }
+            
+            // التأكد من أن البيانات الموجودة array
+            if (!is_array($existingData)) {
+                \Log::warning('Existing data converted to empty array', ['work_order_id' => $workOrder->id]);
+                $existingData = [];
+            }
 
-            // حفظ البيانات
-            $workOrder->update([
-                'daily_civil_works_data' => json_encode($allData),
+            // دمج البيانات بطريقة آمنة
+            try {
+                $allData = array_merge($existingData, $dailyWork);
+                \Log::info('Successfully merged data', [
+                    'work_order_id' => $workOrder->id,
+                    'existing_count' => count($existingData),
+                    'new_count' => count($dailyWork),
+                    'total_count' => count($allData)
+                ]);
+            } catch (\Exception $mergeError) {
+                \Log::error('Failed to merge arrays', [
+                    'work_order_id' => $workOrder->id,
+                    'error' => $mergeError->getMessage()
+                ]);
+                throw new \Exception('فشل في دمج البيانات: ' . $mergeError->getMessage());
+            }
+
+            // تحويل إلى JSON بطريقة آمنة
+            $jsonData = json_encode($allData, JSON_UNESCAPED_UNICODE);
+            
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                \Log::error('Failed to encode data to JSON', [
+                    'work_order_id' => $workOrder->id,
+                    'json_error' => json_last_error_msg()
+                ]);
+                throw new \Exception('فشل في تحويل البيانات إلى JSON: ' . json_last_error_msg());
+            }
+
+            // حفظ في قاعدة البيانات
+            $updateData = [
+                'daily_civil_works_data' => $jsonData,
                 'daily_civil_works_last_update' => now()
+            ];
+            
+            $updateResult = $workOrder->update($updateData);
+            
+            if (!$updateResult) {
+                \Log::error('Failed to update database', ['work_order_id' => $workOrder->id]);
+                throw new \Exception('فشل في حفظ البيانات في قاعدة البيانات');
+            }
+            
+            \Log::info('Successfully saved daily civil works data', [
+                'work_order_id' => $workOrder->id,
+                'saved_items' => count($dailyWork),
+                'total_items' => count($allData)
             ]);
+
+            $message = 'تم حفظ بيانات العمل اليومي بنجاح';
+            if ($skippedItems > 0) {
+                $message .= " (تم حفظ " . count($dailyWork) . " من إجمالي " . $originalCount . " عنصر)";
+            }
 
             return response()->json([
                 'success' => true,
-                'message' => 'تم حفظ بيانات العمل اليومي بنجاح',
-                'saved_items' => count($dailyWork)
+                'message' => $message,
+                'saved_items' => count($dailyWork),
+                'total_items' => count($allData),
+                'skipped_items' => $skippedItems,
+                'work_order_id' => $workOrder->id,
+                'timestamp' => now()->toISOString()
             ]);
 
         } catch (\Exception $e) {
+            \Log::error('Error in saveDailyCivilWorks', [
+                'work_order_id' => $workOrder->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
             return response()->json([
                 'success' => false,
-                'message' => 'حدث خطأ أثناء الحفظ: ' . $e->getMessage()
+                'message' => 'حدث خطأ أثناء الحفظ: ' . $e->getMessage(),
+                'work_order_id' => $workOrder->id,
+                'timestamp' => now()->toISOString()
             ], 500);
         }
     }
 
     /**
      * جلب بيانات العمل اليومي المحفوظة للحفريات
+     * دعم اختياري للاستعلام بالتاريخ
      */
-    public function getDailyCivilWorks(WorkOrder $workOrder)
+    public function getDailyCivilWorks(Request $request, WorkOrder $workOrder)
     {
         try {
-            $savedData = $workOrder->daily_civil_works_data ? json_decode($workOrder->daily_civil_works_data, true) : [];
+            $date = $request->query('date');
+            \Log::info('Fetching daily civil works data', [
+                'work_order_id' => $workOrder->id,
+                'requested_date' => $date
+            ]);
+            
+            $savedData = [];
+            
+            // محاولة جلب البيانات من daily_civil_works_data أولاً
+            if ($workOrder->daily_civil_works_data) {
+                if (is_string($workOrder->daily_civil_works_data)) {
+                    $decodedData = json_decode($workOrder->daily_civil_works_data, true);
+                    if (json_last_error() === JSON_ERROR_NONE) {
+                        $savedData = $decodedData;
+                    } else {
+                        \Log::warning('Failed to decode daily_civil_works_data JSON', [
+                            'work_order_id' => $workOrder->id,
+                            'json_error' => json_last_error_msg()
+                        ]);
+                    }
+                } elseif (is_array($workOrder->daily_civil_works_data)) {
+                    $savedData = $workOrder->daily_civil_works_data;
+                }
+            }
+            
+            // إذا لم توجد بيانات، جرب excavation_details_table
+            if (empty($savedData) && $workOrder->excavation_details_table) {
+                if (is_string($workOrder->excavation_details_table)) {
+                    $decodedData = json_decode($workOrder->excavation_details_table, true);
+                    if (json_last_error() === JSON_ERROR_NONE) {
+                        $savedData = $decodedData;
+                        \Log::info('Using excavation_details_table as fallback', ['work_order_id' => $workOrder->id]);
+                    }
+                } elseif (is_array($workOrder->excavation_details_table)) {
+                    $savedData = $workOrder->excavation_details_table;
+                }
+            }
+            
+            // تأكد من أن البيانات array
+            if (!is_array($savedData)) {
+                $savedData = [];
+            }
+
+            // إذا تم طلب تاريخ محدد، قم بالفلترة
+            if ($date) {
+                $originalCount = count($savedData);
+                $savedData = array_filter($savedData, function($item) use ($date) {
+                    $itemDate = $item['work_date'] ?? $item['date'] ?? null;
+                    if (!$itemDate && isset($item['created_at'])) {
+                        $itemDate = substr($item['created_at'], 0, 10);
+                    }
+                    return $itemDate === $date;
+                });
+                // إعادة ترقيم المفاتيح
+                $savedData = array_values($savedData);
+                
+                \Log::info('Filtered data by date', [
+                    'work_order_id' => $workOrder->id,
+                    'date' => $date,
+                    'original_count' => $originalCount,
+                    'filtered_count' => count($savedData)
+                ]);
+            }
+            
+            \Log::info('Successfully fetched daily civil works data', [
+                'work_order_id' => $workOrder->id,
+                'data_count' => count($savedData),
+                'filtered_by_date' => $date !== null
+            ]);
 
             return response()->json([
                 'success' => true,
                 'data' => $savedData,
-                'count' => count($savedData)
+                'count' => count($savedData),
+                'work_order_id' => $workOrder->id,
+                'date_filter' => $date,
+                'timestamp' => now()->toISOString()
             ]);
 
         } catch (\Exception $e) {
+            \Log::error('Error fetching daily civil works data', [
+                'work_order_id' => $workOrder->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
             return response()->json([
                 'success' => false,
                 'message' => 'حدث خطأ أثناء جلب البيانات: ' . $e->getMessage(),
-                'data' => []
+                'data' => [],
+                'work_order_id' => $workOrder->id,
+                'timestamp' => now()->toISOString()
             ], 500);
         }
     }
@@ -695,21 +930,48 @@ class WorkOrderController extends Controller
      */
     private function getArabicInstallationType($type) {
         $translations = [
-            'installation_1600' => 'تركيب 1600',
-            'installation_3000' => 'تركيب 3000',
-            'aluminum_500_3_connection_13kv' => 'تركيب الومنيوم 500×3 جهد 13ك.ف',
-            'copper_500_3_connection_13kv' => 'تركيب نحاس 500×3 جهد 13ك.ف',
-            'copper_300_3_connection_13kv' => 'تركيب نحاس 300×3 جهد 13ك.ف',
-            'copper_185_3_connection_13kv' => 'تركيب نحاس 185×3 جهد 13ك.ف',
-            'copper_95_3_connection_13kv' => 'تركيب نحاس 95×3 جهد 13ك.ف',
-            'copper_35_3_connection_13kv' => 'تركيب نحاس 35×3 جهد 13ك.ف',
-            'aluminum_300_3_connection_13kv' => 'تركيب الومنيوم 300×3 جهد 13ك.ف',
-            'aluminum_185_3_connection_13kv' => 'تركيب الومنيوم 185×3 جهد 13ك.ف',
-            'aluminum_95_3_connection_13kv' => 'تركيب الومنيوم 95×3 جهد 13ك.ف',
-            'aluminum_35_3_connection_13kv' => 'تركيب الومنيوم 35×3 جهد 13ك.ف'
+            'installation_1600' => 'تركيب لوحة منخفض 1600',
+            'installation_3000' => 'تركيب لوحة منخفض 3000',
+            'ground_installation' => 'تأريض عداد',
+            'mini_pillar_installation' => 'تأريض ميني بلر',
+            'multiple_installation' => 'تأريض متعدد',
+            'aluminum_4x70_1kv' => 'أطراف ألومنيوم 4x70 1 kv',
+            'copper_1x50_13kv' => 'نهاية نحاس 1x50 13.8 kv',
+            'aluminum_3x70_13kv' => 'نهاية ألومنيوم 3x70 13.8 kv',
+            'aluminum_500_3_13kv' => 'نهاية 3 × 500 ألومنيوم 13.8kv',
+            'aluminum_500_3_connection_13kv' => 'وصلة 3 × 500 ألومنيوم 13.8kv',
+            'aluminum_70_4_1kv' => 'نهاية 4 × 70 ألومنيوم 1kv',
+            'aluminum_185_4_1kv' => 'نهاية 4 × 185 ألومنيوم 1kv',
+            'aluminum_300_4_1kv' => 'نهاية 4 × 300 ألومنيوم 1kv',
+            'connection_33kv' => 'وصلة 33kv',
+            'end_33kv' => 'نهاية 33kv',
+            // إضافة المزيد من الترجمات
+            'aluminum_500_3_13kv_end' => 'نهاية 3 × 500 ألومنيوم 13.8kv',
+            'aluminum_300_3_13kv_end' => 'نهاية 3 × 300 ألومنيوم 13.8kv',
+            'aluminum_185_3_13kv_end' => 'نهاية 3 × 185 ألومنيوم 13.8kv',
+            'aluminum_95_3_13kv_end' => 'نهاية 3 × 95 ألومنيوم 13.8kv',
+            'aluminum_35_3_13kv_end' => 'نهاية 3 × 35 ألومنيوم 13.8kv',
+            'copper_500_3_13kv_end' => 'نهاية 3 × 500 نحاس 13.8kv',
+            'copper_300_3_13kv_end' => 'نهاية 3 × 300 نحاس 13.8kv',
+            'copper_185_3_13kv_end' => 'نهاية 3 × 185 نحاس 13.8kv',
+            'copper_95_3_13kv_end' => 'نهاية 3 × 95 نحاس 13.8kv',
+            'copper_35_3_13kv_end' => 'نهاية 3 × 35 نحاس 13.8kv',
+            'aluminum_300_4_1kv_end' => 'نهاية 4 × 300 ألومنيوم 1kv',
+            'aluminum_185_4_1kv_end' => 'نهاية 4 × 185 ألومنيوم 1kv',
+            'aluminum_95_4_1kv_end' => 'نهاية 4 × 95 ألومنيوم 1kv',
+            'aluminum_35_4_1kv_end' => 'نهاية 4 × 35 ألومنيوم 1kv'
         ];
 
-        return $translations[$type] ?? $type;
+        // إذا كان النوع موجود في الترجمات، استخدمه
+        if (isset($translations[$type])) {
+            return $translations[$type];
+        }
+
+        // إذا لم يكن موجود، حاول تحسين عرض النص
+        $type = str_replace('_', ' ', $type);
+        $type = ucwords($type);
+        
+        return $type;
     }
 
     private function getArabicExcavationType($type) {
@@ -739,48 +1001,26 @@ class WorkOrderController extends Controller
             }
 
             // حساب الأعمال المدنية
-            $civilWorksData = $workOrder->daily_civil_works_data ?? [];
-            if (is_string($civilWorksData)) {
-                $civilWorksData = json_decode($civilWorksData, true) ?: [];
-            }
+            $civilWorksData = $workOrder->dailyCivilWorks()
+                ->whereBetween('work_date', [$startDate, $endDate])
+                ->orderBy('work_date', 'asc')
+                ->get();
 
             $civilWorksReport = [
-                'total_amount' => 0,
-                'total_quantity' => 0,
-                'items_count' => 0,
-                'details' => []
-            ];
-
-            if (is_array($civilWorksData)) {
-                foreach ($civilWorksData as $item) {
-                    $itemDate = null;
-                    if (isset($item['date'])) {
-                        $itemDate = substr($item['date'], 0, 10);
-                    } elseif (isset($item['work_date'])) {
-                        $itemDate = substr($item['work_date'], 0, 10);
-                    } elseif (isset($item['created_at'])) {
-                        $itemDate = substr($item['created_at'], 0, 10);
-                    }
-
-                    if ($itemDate && $itemDate >= $startDate && $itemDate <= $endDate) {
-                        $total = floatval($item['total'] ?? 0);
-                        $length = floatval($item['length'] ?? 0);
-
-                        $civilWorksReport['total_amount'] += $total;
-                        $civilWorksReport['total_quantity'] += $length;
-                        $civilWorksReport['items_count']++;
-                        
-                        $civilWorksReport['details'][] = [
-                            'date' => $itemDate,
-                            'excavation_type' => $this->getArabicExcavationType($item['excavation_type'] ?? $item['work_type'] ?? ''),
-                            'cable_type' => $item['work_type'] ?? $item['title'] ?? $item['cable_type'] ?? 'غير محدد',
-                            'length' => $length,
-                            'price' => floatval($item['price'] ?? 0),
-                            'total' => $total
+                'total_amount' => $civilWorksData->sum('total_cost'),
+                'total_quantity' => $civilWorksData->sum('length'),
+                'items_count' => $civilWorksData->count(),
+                'details' => $civilWorksData->map(function($item) {
+                    return [
+                        'date' => $item->work_date->format('Y-m-d'),
+                        'excavation_type' => $item->work_type,
+                        'cable_type' => $item->cable_type,
+                        'length' => $item->length,
+                        'price' => $item->unit_price,
+                        'total' => $item->total_cost
                         ];
-                    }
-                }
-            }
+                })->toArray()
+            ];
 
             // حساب التركيبات
             $installationsReport = [
@@ -871,6 +1111,354 @@ class WorkOrderController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'حدث خطأ أثناء إنشاء تقرير الإنتاجية'
+            ], 500);
+        }
+    }
+
+    /**
+     * جلب بيانات الأعمال المدنية لتاريخ محدد
+     */
+    public function getDailyCivilWorksByDate(Request $request, WorkOrder $workOrder)
+    {
+        try {
+            $request->validate([
+                'date' => 'required|date'
+            ]);
+
+            $date = $request->input('date');
+            
+            \Log::info('Fetching civil works data for specific date', [
+                'work_order_id' => $workOrder->id,
+                'date' => $date
+            ]);
+
+            // استخدام الوظيفة الموجودة مع تمرير التاريخ
+            $request->merge(['date' => $date]);
+            return $this->getDailyCivilWorks($request, $workOrder);
+
+        } catch (\Exception $e) {
+            \Log::error('Error fetching civil works data by date', [
+                'work_order_id' => $workOrder->id,
+                'error' => $e->getMessage()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء جلب البيانات: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * حذف بيانات الأعمال المدنية لتاريخ محدد
+     */
+    public function deleteDailyCivilWorksByDate(Request $request, WorkOrder $workOrder)
+    {
+        try {
+            $request->validate([
+                'date' => 'required|date'
+            ]);
+
+            $date = $request->input('date');
+            
+            \Log::info('Deleting civil works data for specific date', [
+                'work_order_id' => $workOrder->id,
+                'date' => $date
+            ]);
+
+            DB::beginTransaction();
+
+            // جلب البيانات الحالية
+            $savedData = [];
+            if ($workOrder->daily_civil_works_data) {
+                if (is_string($workOrder->daily_civil_works_data)) {
+                    $decodedData = json_decode($workOrder->daily_civil_works_data, true);
+                    if (json_last_error() === JSON_ERROR_NONE) {
+                        $savedData = $decodedData;
+                    }
+                } elseif (is_array($workOrder->daily_civil_works_data)) {
+                    $savedData = $workOrder->daily_civil_works_data;
+                }
+            }
+
+            if (!is_array($savedData)) {
+                $savedData = [];
+            }
+
+            $originalCount = count($savedData);
+
+            // فلترة البيانات لإزالة البيانات للتاريخ المحدد
+            $filteredData = array_filter($savedData, function($item) use ($date) {
+                $itemDate = $item['work_date'] ?? $item['date'] ?? null;
+                if (!$itemDate && isset($item['created_at'])) {
+                    $itemDate = substr($item['created_at'], 0, 10);
+                }
+                return $itemDate !== $date;
+            });
+
+            // إعادة ترقيم المفاتيح
+            $filteredData = array_values($filteredData);
+            $deletedCount = $originalCount - count($filteredData);
+
+            if ($deletedCount === 0) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'لم يتم العثور على بيانات للتاريخ المحدد'
+                ], 404);
+            }
+
+            // تحويل إلى JSON وحفظ
+            $jsonData = json_encode($filteredData, JSON_UNESCAPED_UNICODE);
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                throw new \Exception('فشل في تحويل البيانات إلى JSON: ' . json_last_error_msg());
+            }
+
+            $workOrder->update([
+                'daily_civil_works_data' => $jsonData,
+                'daily_civil_works_last_update' => now()
+            ]);
+
+            DB::commit();
+
+            \Log::info('Successfully deleted civil works data for date', [
+                'work_order_id' => $workOrder->id,
+                'date' => $date,
+                'deleted_count' => $deletedCount,
+                'remaining_count' => count($filteredData)
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => "تم حذف {$deletedCount} عنصر للتاريخ {$date}",
+                'deleted_count' => $deletedCount,
+                'remaining_count' => count($filteredData),
+                'date' => $date
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollback();
+            \Log::error('Error deleting civil works data by date', [
+                'work_order_id' => $workOrder->id,
+                'error' => $e->getMessage()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء حذف البيانات: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * جلب إحصائيات الأعمال المدنية مجمعة حسب التاريخ
+     */
+    public function getDailyCivilWorksStatistics(WorkOrder $workOrder)
+    {
+        try {
+            \Log::info('Fetching civil works statistics by date', [
+                'work_order_id' => $workOrder->id
+            ]);
+
+            $savedData = [];
+            
+            // جلب البيانات
+            if ($workOrder->daily_civil_works_data) {
+                if (is_string($workOrder->daily_civil_works_data)) {
+                    $decodedData = json_decode($workOrder->daily_civil_works_data, true);
+                    if (json_last_error() === JSON_ERROR_NONE) {
+                        $savedData = $decodedData;
+                    }
+                } elseif (is_array($workOrder->daily_civil_works_data)) {
+                    $savedData = $workOrder->daily_civil_works_data;
+                }
+            }
+
+            if (!is_array($savedData)) {
+                $savedData = [];
+            }
+
+            // تجميع البيانات حسب التاريخ
+            $statistics = [];
+            foreach ($savedData as $item) {
+                $itemDate = $item['work_date'] ?? $item['date'] ?? null;
+                if (!$itemDate && isset($item['created_at'])) {
+                    $itemDate = substr($item['created_at'], 0, 10);
+                }
+                
+                if (!$itemDate) {
+                    $itemDate = 'غير محدد';
+                }
+
+                if (!isset($statistics[$itemDate])) {
+                    $statistics[$itemDate] = [
+                        'date' => $itemDate,
+                        'count' => 0,
+                        'total_length' => 0,
+                        'total_amount' => 0,
+                        'items' => []
+                    ];
+                }
+
+                $statistics[$itemDate]['count']++;
+                $statistics[$itemDate]['total_length'] += floatval($item['length'] ?? 0);
+                $statistics[$itemDate]['total_amount'] += floatval($item['total'] ?? 0);
+                
+                // إضافة معلومات مختصرة عن كل عنصر
+                $statistics[$itemDate]['items'][] = [
+                    'excavation_type' => $item['excavation_type'] ?? 'غير محدد',
+                    'cable_name' => $item['cable_name'] ?? 'غير محدد',
+                    'length' => floatval($item['length'] ?? 0),
+                    'total' => floatval($item['total'] ?? 0)
+                ];
+            }
+
+            // ترتيب النتائج حسب التاريخ
+            ksort($statistics);
+            $statistics = array_values($statistics);
+
+            \Log::info('Successfully fetched civil works statistics', [
+                'work_order_id' => $workOrder->id,
+                'dates_count' => count($statistics),
+                'total_items' => count($savedData)
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'statistics' => $statistics,
+                'dates_count' => count($statistics),
+                'total_items' => count($savedData),
+                'work_order_id' => $workOrder->id
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error fetching civil works statistics', [
+                'work_order_id' => $workOrder->id,
+                'error' => $e->getMessage()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء جلب الإحصائيات: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * نسخ بيانات من تاريخ إلى تاريخ آخر
+     */
+    public function copyDailyCivilWorksDate(Request $request, WorkOrder $workOrder)
+    {
+        try {
+            $request->validate([
+                'from_date' => 'required|date',
+                'to_date' => 'required|date|different:from_date'
+            ]);
+
+            $fromDate = $request->input('from_date');
+            $toDate = $request->input('to_date');
+            
+            \Log::info('Copying civil works data between dates', [
+                'work_order_id' => $workOrder->id,
+                'from_date' => $fromDate,
+                'to_date' => $toDate
+            ]);
+
+            DB::beginTransaction();
+
+            // جلب البيانات الحالية
+            $savedData = [];
+            if ($workOrder->daily_civil_works_data) {
+                if (is_string($workOrder->daily_civil_works_data)) {
+                    $decodedData = json_decode($workOrder->daily_civil_works_data, true);
+                    if (json_last_error() === JSON_ERROR_NONE) {
+                        $savedData = $decodedData;
+                    }
+                } elseif (is_array($workOrder->daily_civil_works_data)) {
+                    $savedData = $workOrder->daily_civil_works_data;
+                }
+            }
+
+            if (!is_array($savedData)) {
+                $savedData = [];
+            }
+
+            // البحث عن البيانات للتاريخ المصدر
+            $sourceData = array_filter($savedData, function($item) use ($fromDate) {
+                $itemDate = $item['work_date'] ?? $item['date'] ?? null;
+                if (!$itemDate && isset($item['created_at'])) {
+                    $itemDate = substr($item['created_at'], 0, 10);
+                }
+                return $itemDate === $fromDate;
+            });
+
+            if (empty($sourceData)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "لا توجد بيانات للتاريخ {$fromDate} للنسخ"
+                ], 404);
+            }
+
+            // إنشاء نسخة جديدة من البيانات للتاريخ الجديد
+            $copiedData = [];
+            foreach ($sourceData as $item) {
+                $newItem = $item;
+                $newItem['work_date'] = $toDate;
+                $newItem['work_time'] = now()->format('H:i:s');
+                $newItem['id'] = 'copied_' . time() . '_' . uniqid();
+                $newItem['created_at'] = now()->toISOString();
+                $copiedData[] = $newItem;
+            }
+
+            // إزالة أي بيانات موجودة للتاريخ المستهدف أولاً
+            $filteredData = array_filter($savedData, function($item) use ($toDate) {
+                $itemDate = $item['work_date'] ?? $item['date'] ?? null;
+                if (!$itemDate && isset($item['created_at'])) {
+                    $itemDate = substr($item['created_at'], 0, 10);
+                }
+                return $itemDate !== $toDate;
+            });
+
+            // دمج البيانات الجديدة
+            $allData = array_merge(array_values($filteredData), $copiedData);
+
+            // تحويل إلى JSON وحفظ
+            $jsonData = json_encode($allData, JSON_UNESCAPED_UNICODE);
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                throw new \Exception('فشل في تحويل البيانات إلى JSON: ' . json_last_error_msg());
+            }
+
+            $workOrder->update([
+                'daily_civil_works_data' => $jsonData,
+                'daily_civil_works_last_update' => now()
+            ]);
+
+            DB::commit();
+
+            \Log::info('Successfully copied civil works data between dates', [
+                'work_order_id' => $workOrder->id,
+                'from_date' => $fromDate,
+                'to_date' => $toDate,
+                'copied_count' => count($copiedData)
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => "تم نسخ " . count($copiedData) . " عنصر من {$fromDate} إلى {$toDate}",
+                'from_date' => $fromDate,
+                'to_date' => $toDate,
+                'copied_count' => count($copiedData)
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollback();
+            \Log::error('Error copying civil works data between dates', [
+                'work_order_id' => $workOrder->id,
+                'error' => $e->getMessage()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء نسخ البيانات: ' . $e->getMessage()
             ], 500);
         }
     }
