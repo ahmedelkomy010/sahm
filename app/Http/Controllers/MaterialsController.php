@@ -455,11 +455,18 @@ $material = ReferenceMaterial::whereRaw('LOWER(TRIM(code)) = ?', [$normalizedCod
     public function exportExcel(WorkOrder $workOrder)
     {
         try {
-            return Excel::download(new MaterialsExport($workOrder->id), 'materials_work_order_' . $workOrder->order_number . '.xlsx');
+            // التحقق من وجود مواد لأمر العمل
+            $materialsCount = $workOrder->materials()->count();
+            if ($materialsCount === 0) {
+                return redirect()->back()->with('error', 'لا توجد مواد لتصديرها');
+            }
+
+            $fileName = 'مواد_أمر_العمل_' . $workOrder->order_number . '_' . date('Y-m-d') . '.xlsx';
+            return Excel::download(new MaterialsExport($workOrder->id), $fileName);
         } catch (\Exception $e) {
             \Log::error('Error exporting materials: ' . $e->getMessage());
             return redirect()->back()
-                ->with('error', 'حدث خطأ أثناء تصدير البيانات');
+                ->with('error', 'حدث خطأ أثناء تصدير البيانات: ' . $e->getMessage());
         }
     }
 

@@ -228,8 +228,7 @@
                                     <select class="form-select" id="unit" name="unit" required>
                                         <option value="L.M">L.M</option>
                                         <option value="Ech">Ech</option>
-                                        <option value="Kit">Kit</option>
-                                        <option value="قطعة">قطعة</option>
+                                        <option value="Kit">Kit</option>                     
                                     </select>
                                 </div>
                             </div>
@@ -373,14 +372,8 @@
                             <span class="badge bg-light text-info ms-2">{{ $workOrderMaterials->count() }} مادة</span>
                         </h5>
                         <div class="d-flex gap-2">
-                            <button type="button" class="btn btn-outline-light btn-sm" id="addAllMaterialsBtn">
-                                <i class="fas fa-plus-circle me-1"></i>
-                                إضافة الجميع الي قائمة المواد 
-                            </button>
-                            <button type="button" class="btn btn-outline-light btn-sm" onclick="toggleWorkOrderTable()">
-                                <i class="fas fa-eye me-1"></i>
-                                <span id="toggleText">إخفاء الجدول</span>
-                            </button>
+                           
+                            
                         </div>
                     </div>
                 </div>
@@ -408,10 +401,6 @@
                                     <th width="12%" class="text-center">
                                         <i class="fas fa-calculator me-1"></i>
                                         الكمية
-                                    </th>
-                                    <th width="10%" class="text-center">
-                                        <i class="fas fa-check-circle me-1"></i>
-                                        الحالة
                                     </th>
                                     <th width="8%" class="text-center">
                                         <i class="fas fa-cogs me-1"></i>
@@ -449,19 +438,6 @@
                                         <span class="badge bg-primary fs-6">
                                             {{ number_format($workOrderMaterial->quantity, 2) }}
                                         </span>
-                                    </td>
-                                    <td class="text-center">
-                                        @if($existsInSystem)
-                                            <span class="badge bg-success">
-                                                <i class="fas fa-check me-1"></i>
-                                                مضافة
-                                            </span>
-                                        @else
-                                            <span class="badge bg-warning text-dark">
-                                                <i class="fas fa-clock me-1"></i>
-                                                غير مضافة
-                                            </span>
-                                        @endif
                                     </td>
                                     <td class="text-center">
                                         @if(!$existsInSystem)
@@ -527,6 +503,9 @@
                         <button type="button" class="btn btn-outline-light btn-sm" data-bs-toggle="modal" data-bs-target="#addMaterialModal">
                             <i class="fas fa-plus"></i> إضافة مادة جديدة
                         </button>
+                        <a href="{{ route('admin.work-orders.materials.export', $workOrder) }}" class="btn btn-outline-light btn-sm">
+                            <i class="fas fa-file-excel me-1"></i> تصدير إكسل
+                        </a>
                         @if(request()->hasAny(['search_code', 'search_description', 'unit_filter']))
                             <span class="badge bg-warning text-dark">
                                 <i class="fas fa-filter"></i> 

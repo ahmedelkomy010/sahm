@@ -246,15 +246,6 @@ class LicenseController extends Controller
     }
 
     /**
-     * عرض نموذج تعديل الرخصة
-     */
-    public function edit(License $license)
-    {
-        $license->load('workOrder');
-        return view('admin.licenses.edit', compact('license'));
-    }
-
-    /**
      * معالجة بيانات الجداول
      */
     private function processTableData($tableData)

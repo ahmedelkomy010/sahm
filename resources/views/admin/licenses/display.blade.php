@@ -230,7 +230,7 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                 <div class="flex items-center space-x-2 gap-2">
                                     <a href="{{ route('admin.licenses.show', $license) }}" class="text-blue-600 hover:text-blue-900">عرض</a>
-                                    <a href="{{ route('admin.licenses.edit', $license) }}" class="text-indigo-600 hover:text-indigo-900">تعديل</a>
+
                                 </div>
                             </td>
                         </tr>
