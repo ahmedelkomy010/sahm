@@ -67,6 +67,15 @@ Route::get('/make-me-admin', function () {
 Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
     
+    // Work Orders Routes
+    Route::get('work-orders', [App\Http\Controllers\WorkOrderController::class, 'index'])->name('work-orders.index');
+    Route::get('work-orders/create', [App\Http\Controllers\WorkOrderController::class, 'create'])->name('work-orders.create');
+    Route::post('work-orders', [App\Http\Controllers\WorkOrderController::class, 'store'])->name('work-orders.store');
+    Route::get('work-orders/{workOrder}', [App\Http\Controllers\WorkOrderController::class, 'show'])->name('work-orders.show');
+    Route::get('work-orders/{workOrder}/edit', [App\Http\Controllers\WorkOrderController::class, 'edit'])->name('work-orders.edit');
+    Route::put('work-orders/{workOrder}', [App\Http\Controllers\WorkOrderController::class, 'update'])->name('work-orders.update');
+    Route::delete('work-orders/{workOrder}', [App\Http\Controllers\WorkOrderController::class, 'destroy'])->name('work-orders.destroy');
+    
     // إزالة وسيط التحقق للاختبار - جميع المسارات متاحة للمستخدمين المسجلين
     // Users Management - all actions
     Route::get('users/create', [App\Http\Controllers\Admin\UserController::class, 'create'])->name('users.create');
@@ -98,9 +107,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::delete('work-orders/{workOrder}/materials/{material}', [MaterialsController::class, 'destroy'])->name('work-orders.materials.destroy');
     Route::get('materials/description/{code}', [MaterialsController::class, 'getDescriptionByCode'])->name('materials.description');
         
-    // مسارات Excel للمواد
-    Route::post('work-orders/import-materials', [WorkOrderController::class, 'importWorkOrderMaterials'])->name('work-orders.import-materials');
-    Route::get('work-orders/download-materials-template', [WorkOrderController::class, 'downloadMaterialsTemplate'])->name('work-orders.download-materials-template');
+    // مسارات Excel للمواد - moved to admin group
         
     // روتات الملفات المرفقة للمواد
     Route::post('work-orders/{workOrder}/materials/upload-files', [MaterialsController::class, 'uploadFiles'])->name('work-orders.materials.upload-files');
@@ -125,7 +132,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     
     // صفحات الرخص والتنفيذ
     Route::get('work-orders/licenses', [WorkOrderController::class, 'licenses'])->name('work-orders.licenses');
-    Route::get('work-orders/{workOrder}/execution', [WorkOrderController::class, 'execution'])->name('work-orders.execution');
+    Route::get('work-orders/{workOrder}/execution', [App\Http\Controllers\Admin\WorkOrderController::class, 'execution'])->name('work-orders.execution');
     Route::get('work-orders/{workOrder}/productivity', [App\Http\Controllers\Admin\WorkOrderController::class, 'productivity'])->name('work-orders.productivity');
     Route::get('work-orders/{workOrder}/productivity-report', [App\Http\Controllers\Admin\WorkOrderController::class, 'getProductivityReport'])->name('work-orders.productivity-report');
     Route::get('work-orders/{workOrder}/daily-totals', [App\Http\Controllers\Admin\WorkOrderController::class, 'getDailyTotals'])->name('work-orders.daily-totals');
@@ -152,49 +159,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::get('work-orders/survey/{survey}/edit', [WorkOrderController::class, 'editSurvey'])->name('work-orders.survey.edit');
     Route::put('work-orders/survey/{survey}', [WorkOrderController::class, 'updateSurvey'])->name('work-orders.survey.update');
 
-    // Installations Routes
-    Route::get('work-orders/{workOrder}/installations', [App\Http\Controllers\Admin\WorkOrderController::class, 'installations'])->name('work-orders.installations');
-    Route::post('work-orders/{workOrder}/installations/save', [App\Http\Controllers\Admin\WorkOrderController::class, 'saveInstallations'])->name('work-orders.installations.save');
-    Route::get('work-orders/{workOrder}/installations/data', [App\Http\Controllers\Admin\WorkOrderController::class, 'getInstallations'])->name('work-orders.installations.data');
-    Route::get('work-orders/{workOrder}/installations/get-by-date', [App\Http\Controllers\Admin\WorkOrderController::class, 'getInstallationsByDate'])->name('work-orders.installations.get-by-date');
-    Route::post('work-orders/{workOrder}/upload-installation-images', [App\Http\Controllers\Admin\WorkOrderController::class, 'uploadInstallationsImages'])->name('work-orders.upload-installation-images');
-    Route::delete('work-orders/{workOrder}/delete-installation-image/{index}', [App\Http\Controllers\Admin\WorkOrderController::class, 'deleteInstallationImage'])->name('work-orders.delete-installation-image');
-    Route::get('work-orders/{workOrder}/installation-images', [App\Http\Controllers\Admin\WorkOrderController::class, 'getInstallationImages'])->name('work-orders.installation-images');
-    Route::get('work-orders/{workOrder}/installations/daily-summary', [App\Http\Controllers\Admin\WorkOrderController::class, 'getDailyInstallationsSummary'])->name('work-orders.installations.daily-summary');
-    
-    // Daily Installations Routes
-    Route::post('work-orders/{workOrder}/daily-installations/save', [App\Http\Controllers\Admin\WorkOrderController::class, 'saveDailyInstallations'])->name('work-orders.daily-installations.save');
-    Route::get('work-orders/{workOrder}/daily-installations/get', [App\Http\Controllers\Admin\WorkOrderController::class, 'getDailyInstallations'])->name('work-orders.daily-installations.get');
-    Route::get('work-orders/{workOrder}/daily-installations/all', [App\Http\Controllers\Admin\WorkOrderController::class, 'getAllDailyInstallations'])->name('work-orders.daily-installations.all');
-    Route::delete('daily-installations/{id}', [App\Http\Controllers\Admin\WorkOrderController::class, 'deleteDailyInstallation'])->name('daily-installations.delete');
 
-    // Civil Works Routes
-    Route::get('work-orders/{workOrder}/civil-works', [WorkOrderController::class, 'civilWorksNew'])->name('work-orders.civil-works');
-    Route::get('work-orders/{workOrder}/civil-works/excavation-details', [WorkOrderController::class, 'getExcavationDetails'])->name('work-orders.civil-works.excavation-details');
-    Route::post('work-orders/{workOrder}/civil-works/images', [WorkOrderController::class, 'saveCivilWorksImages'])->name('work-orders.civil-works.images');
-    Route::delete('work-orders/{workOrder}/civil-works/images/{image}', [WorkOrderController::class, 'deleteCivilWorksImage'])->name('work-orders.civil-works.images.delete');
-    Route::post('work-orders/{workOrder}/civil-works/attachments', [WorkOrderController::class, 'saveCivilWorksAttachments'])->name('work-orders.civil-works.attachments');
-    Route::delete('work-orders/{workOrder}/civil-works/attachments/{attachment}', [WorkOrderController::class, 'deleteAttachment'])->name('work-orders.civil-works.attachments.delete');
-    Route::post('work-orders/{workOrder}/civil-works/lock', [WorkOrderController::class, 'lockCivilWorksImages'])->name('work-orders.civil-works.lock');
-    Route::post('work-orders/{workOrder}/civil-works/save-daily-data', [WorkOrderController::class, 'saveDailyData'])->name('work-orders.civil-works.save-daily-data');
-    Route::post('work-orders/{workOrder}/civil-works/clear-daily-data', [WorkOrderController::class, 'clearDailyData'])->name('work-orders.civil-works.clear-daily-data');
-    Route::post('work-orders/{workOrder}/civil-works/save-excavation', [WorkOrderController::class, 'saveExcavationDetails'])->name('work-orders.civil-works.save-excavation');
-    Route::get('work-orders/{workOrder}/civil-works/today-excavations', [WorkOrderController::class, 'getTodayExcavations'])->name('work-orders.civil-works.today-excavations');
-    
-    // Daily Civil Works Data Routes
-    Route::post('work-orders/save-daily-civil-works', [WorkOrderController::class, 'saveDailyCivilWorks'])->name('work-orders.save-daily-civil-works');
-    Route::get('work-orders/{id}/get-daily-civil-works', [WorkOrderController::class, 'getDailyCivilWorks'])->name('work-orders.get-daily-civil-works');
-
-    // Electrical Works routes
-    Route::get('work-orders/{workOrder}/electrical-works', [App\Http\Controllers\ElectricalWorksController::class, 'index'])->name('work-orders.electrical-works');
-    Route::post('work-orders/{workOrder}/electrical-works', [App\Http\Controllers\ElectricalWorksController::class, 'store'])->name('work-orders.electrical-works.post');
-    Route::post('work-orders/{workOrder}/electrical-works/store', [App\Http\Controllers\ElectricalWorksController::class, 'store'])->name('work-orders.electrical-works.store');
-    Route::post('work-orders/{workOrder}/electrical-works/images', [App\Http\Controllers\ElectricalWorksController::class, 'storeImages'])->name('work-orders.electrical-works.images');
-    Route::delete('work-orders/{workOrder}/electrical-works/images/{image}', [App\Http\Controllers\ElectricalWorksController::class, 'deleteImage'])->name('work-orders.electrical-works.delete-image');
-    Route::get('work-orders/{workOrder}/electrical-works/daily-data', [App\Http\Controllers\ElectricalWorksController::class, 'getDailyData'])->name('work-orders.electrical-works.daily-data');
-    Route::post('work-orders/{workOrder}/electrical-works/clear-daily-data', [App\Http\Controllers\ElectricalWorksController::class, 'clearDailyData'])->name('work-orders.electrical-works.clear-daily-data');
-    Route::get('work-orders/{workOrder}/electrical-works/daily-summary', [App\Http\Controllers\ElectricalWorksController::class, 'getDailySummary'])->name('work-orders.electrical-works.daily-summary');
-    Route::post('work-orders/{workOrder}/electrical-works/save-daily', [App\Http\Controllers\ElectricalWorksController::class, 'saveDailyElectricalWorks'])->name('work-orders.electrical-works.save-daily');
 
     // حذف سجل العمليات المدخلة
     Route::delete('work-orders/logs/{log}', [\App\Http\Controllers\WorkOrderController::class, 'deleteLog'])->name('work-orders.delete-log');
@@ -205,17 +170,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
 
 
     
-    // مسارات Excel لبنود العمل
-    Route::post('work-orders/import-work-items', [WorkOrderController::class, 'importWorkItems'])
-        ->name('work-orders.import-work-items');
-    Route::get('work-orders/work-items', [WorkOrderController::class, 'getWorkItems'])
-        ->name('work-orders.work-items');
-        
-    // مسارات Excel للمواد - نقل إلى admin group
-    // Route::post('work-orders/import-materials', [WorkOrderController::class, 'importWorkOrderMaterials'])
-    //     ->name('work-orders.import-materials');
-    // Route::get('work-orders/download-materials-template', [WorkOrderController::class, 'downloadMaterialsTemplate'])
-    //     ->name('work-orders.download-materials-template');
+    // مسارات Excel لبنود العمل - moved to admin group
     
     // مسار البحث في المواد المرجعية
     Route::get('work-orders/search-materials', [WorkOrderController::class, 'searchReferenceMaterials'])
@@ -270,7 +225,7 @@ Route::post('licenses/save-evacuation-data-simple', [\App\Http\Controllers\Admin
     Route::delete('license-violations/bulk-destroy', [\App\Http\Controllers\Admin\LicenseViolationController::class, 'bulkDestroy'])->name('license-violations.bulk-destroy');
 
 
-    Route::post('work-orders/{workOrder}/electrical-works/images', [App\Http\Controllers\WorkOrderController::class, 'uploadElectricalWorksImages'])->name('work-orders.electrical-works.images');
+
 
 
 
@@ -284,6 +239,26 @@ Route::post('licenses/save-evacuation-data-simple', [\App\Http\Controllers\Admin
     Route::post('licenses/{license}/excavation-details', [ExcavationDetailController::class, 'store'])->name('excavation-details.store');
     Route::put('excavation-details/{excavationDetail}', [ExcavationDetailController::class, 'update'])->name('excavation-details.update');
     Route::delete('excavation-details/{excavationDetail}', [ExcavationDetailController::class, 'destroy'])->name('excavation-details.destroy');
+    
+    // General Productivity Routes
+    Route::get('work-orders/general-productivity', [App\Http\Controllers\Admin\WorkOrderController::class, 'generalProductivity'])->name('work-orders.general-productivity');
+    Route::get('work-orders/general-productivity-data', [App\Http\Controllers\Admin\WorkOrderController::class, 'getGeneralProductivityData'])->name('work-orders.general-productivity-data');
+    
+    // صور التنفيذ
+    Route::post('work-orders/{workOrder}/execution/images', [App\Http\Controllers\Admin\WorkOrderController::class, 'uploadExecutionImages'])->name('work-orders.execution.upload-images');
+    Route::delete('work-orders/{workOrder}/execution/images/{image}', [App\Http\Controllers\Admin\WorkOrderController::class, 'deleteExecutionImage'])->name('work-orders.execution.delete-image');
+    
+    // Excel Import Routes
+    Route::post('work-orders/import-work-items', [WorkOrderController::class, 'importWorkItems'])->name('work-orders.import-work-items');
+    Route::post('work-orders/import-materials', [WorkOrderController::class, 'importWorkOrderMaterials'])->name('work-orders.import-materials');
+    Route::get('work-orders/download-materials-template', [WorkOrderController::class, 'downloadMaterialsTemplate'])->name('work-orders.download-materials-template');
+    Route::get('work-orders/work-items', [WorkOrderController::class, 'getWorkItems'])->name('work-orders.work-items');
+});
+
+// General Productivity Routes (accessible without admin prefix)
+Route::middleware(['auth'])->group(function () {
+    Route::get('work-orders/general-productivity', [App\Http\Controllers\Admin\WorkOrderController::class, 'generalProductivity'])->name('general-productivity');
+    Route::get('work-orders/general-productivity-data', [App\Http\Controllers\Admin\WorkOrderController::class, 'getGeneralProductivityData'])->name('general-productivity-data');
 });
 
 // Project Selection Routes
@@ -308,7 +283,7 @@ Route::middleware(['auth'])->group(function () {
 
 // Project Selection Route
 Route::get('/project-selection', function () {
-    return view('project-selection', ['hideNavbar' => false]);
+    return view('projects.project-selection', ['hideNavbar' => false]);
 })->middleware('auth')->name('project.selection');
 
 // مسار مؤقت لتعيين المستخدم الحالي كمسؤول - يجب حذفه بعد الاستخدام
@@ -490,61 +465,9 @@ Route::middleware(['auth'])->group(function () {
         ->name('project.current-type');
 });
 
-Route::post('/admin/work-orders/{workOrder}/installations', [WorkOrderController::class, 'saveInstallations'])->name('work-orders.save-installations');
 
-Route::get('/admin/work-orders/{workOrder}/installations/daily-summary', [App\Http\Controllers\Admin\WorkOrderController::class, 'getDailyInstallationsSummary'])
-    ->name('admin.work-orders.installations.daily-summary');
 
-    // عرض صفحة الأعمال المدنية
-    Route::get('/admin/work-orders/{workOrder}/civil-works', [WorkOrderController::class, 'civilWorksNew'])
-        ->name('admin.work-orders.civil-works');
 
-    // حفظ بيانات العمل اليومي للحفريات
-    Route::post('/admin/work-orders/{workOrder}/civil-works/save-daily-data', [App\Http\Controllers\Admin\WorkOrderController::class, 'saveDailyCivilWorks'])
-        ->name('admin.work-orders.civil-works.save-daily-data');
-
-    // جلب بيانات العمل اليومي المحفوظة للحفريات
-    Route::get('/admin/work-orders/{workOrder}/civil-works/get-daily-data', [App\Http\Controllers\Admin\WorkOrderController::class, 'getDailyCivilWorks'])
-        ->name('admin.work-orders.civil-works.get-daily-data');
-
-    // جلب بيانات العمل اليومي المحفوظة للحفريات (للنظام الجديد)
-    Route::get('/admin/work-orders/{workOrder}/get-daily-civil-works', [App\Http\Controllers\Admin\WorkOrderController::class, 'getDailyCivilWorks'])
-        ->name('admin.work-orders.get-daily-civil-works');
-
-    // وظائف إدارة البيانات حسب التاريخ
-    Route::get('/admin/work-orders/{workOrder}/civil-works/by-date', [App\Http\Controllers\Admin\WorkOrderController::class, 'getDailyCivilWorksByDate'])
-        ->name('admin.work-orders.civil-works.by-date');
-    
-    Route::delete('/admin/work-orders/{workOrder}/civil-works/by-date', [App\Http\Controllers\Admin\WorkOrderController::class, 'deleteDailyCivilWorksByDate'])
-        ->name('admin.work-orders.civil-works.delete-by-date');
-    
-    Route::get('/admin/work-orders/{workOrder}/civil-works/statistics', [App\Http\Controllers\Admin\WorkOrderController::class, 'getDailyCivilWorksStatistics'])
-        ->name('admin.work-orders.civil-works.statistics');
-    
-    Route::post('/admin/work-orders/{workOrder}/civil-works/copy-date', [App\Http\Controllers\Admin\WorkOrderController::class, 'copyDailyCivilWorksDate'])
-        ->name('admin.work-orders.civil-works.copy-date');
-
-    // الأعمال المدنية (النظام الجديد المحسن)
-    Route::get('/admin/work-orders/{workOrder}/civil-works-new', [WorkOrderController::class, 'civilWorksNew'])
-        ->name('admin.work-orders.civil-works-new');
-    Route::post('/admin/work-orders/{workOrder}/civil-works/save', [WorkOrderController::class, 'saveDailyCivilWork'])
-        ->name('admin.work-orders.civil-works.save');
-    Route::get('/admin/work-orders/{workOrder}/civil-works/data', [WorkOrderController::class, 'getDailyCivilWorksData'])
-        ->name('admin.work-orders.civil-works.data');
-    Route::delete('/admin/work-orders/{workOrder}/civil-works/delete/{itemId}', [WorkOrderController::class, 'deleteDailyCivilWork'])
-        ->name('admin.work-orders.civil-works.delete');
-    Route::delete('/admin/work-orders/{workOrder}/civil-works/clear', [WorkOrderController::class, 'clearDailyCivilWorksByDate'])
-        ->name('admin.work-orders.civil-works.clear');
-
-// صور ومرفقات الأعمال المدنية
-Route::post('/admin/work-orders/{workOrder}/civil-works/images', [WorkOrderController::class, 'saveCivilWorksImages'])
-    ->name('admin.work-orders.civil-works.images');
-Route::delete('/admin/work-orders/{workOrder}/civil-works/images/{image}', [WorkOrderController::class, 'deleteCivilWorksImage'])
-    ->name('admin.work-orders.civil-works.images.delete');
-Route::post('/admin/work-orders/{workOrder}/civil-works/attachments', [WorkOrderController::class, 'saveCivilWorksAttachments'])
-    ->name('admin.work-orders.civil-works.attachments');
-Route::delete('/admin/work-orders/{workOrder}/civil-works/attachments/{attachment}', [WorkOrderController::class, 'deleteAttachment'])
-    ->name('admin.work-orders.civil-works.attachments.delete');
 
     // مسارات ملفات الرخص
     Route::get('licenses/evacuation-file/{license}/{index}', [\App\Http\Controllers\Admin\LicenseController::class, 'showEvacuationFile'])->name('licenses.evacuation-file');

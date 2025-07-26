@@ -15,13 +15,15 @@ class WorkOrderItem extends Model
         'quantity',
         'unit_price',
         'executed_quantity',
-        'notes'
+        'notes',
+        'work_date'
     ];
 
     protected $casts = [
         'quantity' => 'decimal:2',
         'unit_price' => 'decimal:2',
         'executed_quantity' => 'decimal:2',
+        'work_date' => 'date'
     ];
 
     /**
@@ -38,5 +40,13 @@ class WorkOrderItem extends Model
     public function workItem()
     {
         return $this->belongsTo(WorkItem::class);
+    }
+
+    /**
+     * Get work items by date
+     */
+    public function scopeByDate($query, $date)
+    {
+        return $query->where('work_date', $date);
     }
 }

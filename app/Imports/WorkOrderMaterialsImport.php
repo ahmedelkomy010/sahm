@@ -21,9 +21,11 @@ class WorkOrderMaterialsImport implements ToModel, WithHeadingRow, WithValidatio
     private $columnMappings = [];
     private $rowCount = 0;
     private $processedCount = 0;
+    private $city;
 
-    public function __construct()
+    public function __construct($city = 'الرياض')
     {
+        $this->city = $city;
         $this->setupColumnMappings();
     }
 
@@ -119,13 +121,19 @@ class WorkOrderMaterialsImport implements ToModel, WithHeadingRow, WithValidatio
             $this->importedMaterials[] = [
                 'code' => $code,
                 'description' => $description,
+                'city' => $this->city
             ];
 
             // Save the material to the reference_materials table
-            \Log::info('Saving material', ['code' => $code, 'description' => $description]);
+            \Log::info('Saving material', ['code' => $code, 'description' => $description, 'city' => $this->city]);
             \App\Models\ReferenceMaterial::updateOrCreate(
-                ['code' => $code],
-                ['description' => $description]
+                ['code' => $code, 'city' => $this->city],
+                [
+                    'description' => $description,
+                    'city' => $this->city,
+                    'unit' => 'قطعة',
+                    'is_active' => true
+                ]
             );
 
             $this->processedCount++;

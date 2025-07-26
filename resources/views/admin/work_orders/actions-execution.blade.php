@@ -524,5 +524,79 @@
         });
     </script>
     @endpush
+
+    <!-- قسم صور التنفيذ -->
+    <div class="card shadow-lg border-0 mt-4">
+        <div class="card-header bg-primary text-white py-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-images me-2"></i>
+                    صور التنفيذ
+                </h5>
+                <a href="{{ route('admin.work-orders.execution', $workOrder) }}" class="btn btn-light btn-sm">
+                    <i class="fas fa-plus me-1"></i>
+                    إضافة صور
+                </a>
+            </div>
+        </div>
+        <div class="card-body">
+            @if($executionImages->count() > 0)
+                <!-- عرض الصور -->
+                <div class="row g-3">
+                    @foreach($executionImages as $image)
+                        <div class="col-md-4 col-lg-3">
+                            <div class="card h-100">
+                                <img src="{{ Storage::url($image->file_path) }}" class="card-img-top" alt="صورة تنفيذ" style="height: 200px; object-fit: cover; cursor: pointer;" onclick="showImageModal('{{ Storage::url($image->file_path) }}', '{{ $image->original_filename }}')">
+                                <div class="card-body p-2">
+                                    <p class="card-text small mb-1">{{ $image->original_filename }}</p>
+                                    <p class="card-text small text-muted mb-0">
+                                        <i class="fas fa-clock me-1"></i>
+                                        {{ $image->created_at->format('Y-m-d H:i') }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @else
+                <div class="text-center py-4">
+                    <i class="fas fa-images text-muted" style="font-size: 3rem;"></i>
+                    <p class="text-muted mt-2">لا توجد صور تنفيذ متاحة</p>
+                    <p class="text-muted small">يمكنك إضافة صور التنفيذ من صفحة التنفيذ</p>
+                </div>
+            @endif
+        </div>
+    </div>
+
+    <!-- Modal لعرض الصور بحجم كامل -->
+    <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="imageModalLabel">صورة التنفيذ</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <img id="modalImage" src="" class="img-fluid" alt="صورة التنفيذ">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
+
+@push('scripts')
+<script>
+function showImageModal(imageSrc, imageName) {
+    document.getElementById('modalImage').src = imageSrc;
+    document.getElementById('imageModalLabel').textContent = imageName;
+    var imageModal = new bootstrap.Modal(document.getElementById('imageModal'));
+    imageModal.show();
+}
+</script>
+@endpush
+
 @endsection 

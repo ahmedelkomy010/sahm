@@ -420,25 +420,35 @@ class MaterialsController extends Controller
     /**
      * Get material description by code
      */
-    public function getDescriptionByCode($code)
+    public function getDescriptionByCode(Request $request, $code)
     {
         try {
+            $project = $request->get('project', 'riyadh');
+            $cityName = $this->getProjectCityName($project);
+            
             $normalizedCode = trim(mb_strtolower($code));
-\Log::info('Searching for material code', ['code' => $normalizedCode]);
-$material = ReferenceMaterial::whereRaw('LOWER(TRIM(code)) = ?', [$normalizedCode])->first();
-\Log::info('Material search result', ['found' => (bool)$material, 'material' => $material]);
+            \Log::info('Searching for material code', ['code' => $normalizedCode, 'city' => $cityName]);
+            
+            $material = ReferenceMaterial::whereRaw('LOWER(TRIM(code)) = ?', [$normalizedCode])
+                                       ->where('city', $cityName)
+                                       ->where('is_active', true)
+                                       ->first();
+                                       
+            \Log::info('Material search result', ['found' => (bool)$material, 'material' => $material]);
             
             if ($material) {
                 return response()->json([
                     'success' => true,
-                    'description' => $material->description
+                    'description' => $material->description,
+                    'city' => $material->city
                 ]);
             }
             
             return response()->json([
                 'success' => false,
                 'message' => 'لم يتم العثور على المادة',
-                'code' => $code
+                'code' => $code,
+                'city' => $cityName
             ]);
         } catch (\Exception $e) {
             \Log::error('Error getting material description: ' . $e->getMessage());
@@ -447,6 +457,18 @@ $material = ReferenceMaterial::whereRaw('LOWER(TRIM(code)) = ?', [$normalizedCod
                 'message' => 'حدث خطأ أثناء البحث عن المادة'
             ], 500);
         }
+    }
+
+    /**
+     * Get city name from project identifier
+     */
+    private function getProjectCityName($project)
+    {
+        return match($project) {
+            'riyadh' => 'الرياض',
+            'madinah' => 'المدينة المنورة',
+            default => 'الرياض'
+        };
     }
 
     /**
@@ -695,6 +717,8 @@ $material = ReferenceMaterial::whereRaw('LOWER(TRIM(code)) = ?', [$normalizedCod
     {
         try {
             $code = $request->query('code');
+            $project = $request->get('project', 'riyadh');
+            $cityName = $this->getProjectCityName($project);
             
             if (empty($code)) {
                 return response()->json([
@@ -703,11 +727,15 @@ $material = ReferenceMaterial::whereRaw('LOWER(TRIM(code)) = ?', [$normalizedCod
                 ], 400);
             }
 
-            $material = ReferenceMaterial::where('code', $code)->first();
+            $material = ReferenceMaterial::where('code', $code)
+                                       ->where('city', $cityName)
+                                       ->where('is_active', true)
+                                       ->first();
             
             return response()->json([
                 'success' => true,
-                'material' => $material
+                'material' => $material,
+                'city' => $cityName
             ]);
         } catch (\Exception $e) {
             \Log::error('Error searching material: ' . $e->getMessage());
@@ -730,19 +758,22 @@ $material = ReferenceMaterial::whereRaw('LOWER(TRIM(code)) = ?', [$normalizedCod
                 'unit' => 'nullable|string|max:50'
             ]);
 
+            $project = $request->get('project', 'riyadh');
+            $cityName = $this->getProjectCityName($project);
+
             $material = ReferenceMaterial::updateOrCreate(
-                ['code' => $validated['code']],
+                ['code' => $validated['code'], 'city' => $cityName],
                 [
                     'description' => $validated['description'],
-                    'name' => $validated['description'],
                     'unit' => $validated['unit'] ?? 'قطعة',
+                    'city' => $cityName,
                     'is_active' => true
                 ]
             );
 
             return response()->json([
                 'success' => true,
-                'message' => 'تم حفظ المادة بنجاح',
+                'message' => 'تم حفظ المادة بنجاح لمدينة ' . $cityName,
                 'material' => $material
             ]);
         } catch (\Exception $e) {

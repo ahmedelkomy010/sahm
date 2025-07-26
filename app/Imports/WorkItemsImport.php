@@ -16,12 +16,14 @@ class WorkItemsImport implements ToModel, WithHeadingRow, WithValidation, SkipsO
     use SkipsErrors;
 
     private $workOrderId;
+    private $city;
     private $columnMappings = [];
     private $importedItems = [];
 
-    public function __construct($workOrderId)
+    public function __construct($workOrderId, $city = 'الرياض')
     {
         $this->workOrderId = $workOrderId;
+        $this->city = $city;
         $this->setupColumnMappings();
     }
 
@@ -102,12 +104,14 @@ class WorkItemsImport implements ToModel, WithHeadingRow, WithValidation, SkipsO
 
         // البحث عن العنصر الموجود أو إنشاء جديد
         $workItem = WorkItem::firstOrCreate(
-            ['code' => $code],
+            ['code' => $code, 'city' => $this->city],
             [
                 'name' => $description, // اسم البند
                 'description' => $description,
                 'unit' => $unit,
-                'unit_price' => $unitPrice
+                'unit_price' => $unitPrice,
+                'city' => $this->city,
+                'is_active' => true
             ]
         );
 

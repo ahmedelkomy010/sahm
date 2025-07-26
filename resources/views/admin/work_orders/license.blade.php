@@ -2695,8 +2695,8 @@ function deleteExtension(extensionId) {
                         <i class="fas fa-search me-2"></i>
                         البحث عن الرخص
                     </a>
-                    <a href="{{ route('admin.work-orders.show', $workOrder) }}" class="btn btn-light btn-lg">
-                        <i class="fas fa-arrow-right me-2"></i>
+                    <a href="{{ route('admin.work-orders.show', $workOrder) }}" class="return-button">
+                        <i class="fas fa-arrow-right"></i>
                         العودة لتفاصيل أمر العمل
                     </a>
                 </div>

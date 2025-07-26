@@ -66,20 +66,10 @@ class WorkOrder extends Model
         'first_partial_payment_without_tax',
         'second_partial_payment_with_tax',
         'municipality',
-        'electrical_works',
-        'electrical_works_last_update',
-        'daily_electrical_works_data',
-        'daily_electrical_works_last_update',
-        'daily_electrical_works_dates',
-        'installations_data',
-        'installations_images',
-        'installations_locked',
-        'installations_locked_at',
-        'installations_locked_by',
+
         'pre_operation_tests',
-        'daily_civil_works_data',
-        'daily_civil_works_last_update',
         'license_id',
+        'city',
     ];
 
     protected $casts = [
@@ -108,15 +98,8 @@ class WorkOrder extends Model
         'excavation_surfaced_rock_price' => 'array',
         'excavation_details_table' => 'array',
         'invoice_images' => 'array',
-        'electrical_works' => 'array',
-        'electrical_works_last_update' => 'datetime',
-        'daily_electrical_works_data' => 'array',
-        'daily_electrical_works_last_update' => 'datetime',
-        'daily_electrical_works_dates' => 'array',
-        'installations_data' => 'array',
-        'installations_images' => 'array',
-        'daily_civil_works_data' => 'array',
-        'daily_civil_works_last_update' => 'datetime',
+
+
     ];
 
     // Relationships
@@ -125,25 +108,9 @@ class WorkOrder extends Model
         return $this->hasMany(WorkOrderFile::class);
     }
 
-    public function civilWorksFiles()
-    {
-        return $this->hasMany(WorkOrderFile::class)->where('file_category', 'civil_exec');
-    }
 
-    public function civilWorksAttachments()
-    {
-        return $this->hasMany(WorkOrderFile::class)->where('file_category', 'civil_attach');
-    }
 
-    public function installationsFiles()
-    {
-        return $this->hasMany(WorkOrderFile::class)->where('file_category', 'installations');
-    }
 
-    public function electricalWorksFiles()
-    {
-        return $this->hasMany(WorkOrderFile::class)->where('file_category', 'electrical_works');
-    }
 
     public function basicAttachments()
     {
@@ -185,10 +152,7 @@ class WorkOrder extends Model
         return $this->hasMany(InvoiceAttachment::class);
     }
 
-    public function installations()
-    {
-        return $this->hasMany(WorkOrderInstallation::class);
-    }
+
 
     /**
      * Get the work items for this work order.
@@ -237,21 +201,9 @@ class WorkOrder extends Model
         return $this->hasMany(ExcavationDetail::class);
     }
 
-    /**
-     * Get the daily installations for this work order.
-     */
-    public function dailyInstallations()
-    {
-        return $this->hasMany(DailyInstallation::class);
-    }
 
-    /**
-     * العلاقة مع الأعمال المدنية اليومية
-     */
-    public function dailyCivilWorks()
-    {
-        return $this->hasMany(DailyCivilWork::class);
-    }
+
+
 
     // Scopes
     public function scopeActive($query)

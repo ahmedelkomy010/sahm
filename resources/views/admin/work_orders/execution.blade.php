@@ -8,7 +8,6 @@
                 <div class="card-header bg-primary text-white py-3">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            
                             <h3 class="mb-0 fs-4">صفحة التنفيذ</h3>
                             <small class="text-white-50">أمر العمل رقم: {{ $workOrder->work_order_number ?? $workOrder->order_number }}</small>
                         </div>
@@ -41,8 +40,8 @@
                                 <i class="fas fa-chart-line"></i> الإنتاجية
                             </a>
                             <a href="{{ route('admin.work-orders.show', $workOrder) }}" class="btn btn-success">
-                            <i class="fas fa-arrow-left"></i> عودة الي تفاصيل أمر العمل  
-                        </a>
+                                <i class="fas fa-arrow-left"></i> عودة الي تفاصيل أمر العمل  
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -126,154 +125,36 @@
                         </div>
                     </div>
 
-                    <div class="row g-4">
-                        <!-- قسم الأعمال المدنية -->
-                        <div class="col-md-4">
-                            <div class="card h-100 border-0 shadow-sm hover-card">
-                                <div class="card-body text-center p-4">
-                                    <div class="icon-wrapper mb-3">
-                                        <i class="fas fa-hard-hat fa-3x text-primary"></i>
-                                    </div>
-                                    <h4 class="card-title mb-3">الأعمال المدنية</h4>
-                                    <p class="card-text text-muted mb-2">إدارة وتوثيق الأعمال المدنية للمشروع</p>
-                                    <small class="text-muted d-block mb-3">أمر العمل: {{ $workOrder->work_order_number ?? $workOrder->order_number }}</small>
-                                    <div class="d-grid gap-2">
-                                        <a href="{{ route('admin.work-orders.civil-works-new', $workOrder) }}" class="btn btn-primary">
-                                            <i class="fas fa-arrow-left ml-1"></i>
-                                            الانتقال إلى الأعمال المدنية
-                                        </a>
-                                       
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
 
-                        <!-- قسم التركيبات -->
-                        <div class="col-md-4">
-                            <div class="card h-100 border-0 shadow-sm hover-card">
-                                <div class="card-body text-center p-4">
-                                    <div class="icon-wrapper mb-3">
-                                        <i class="fas fa-tools fa-3x text-primary"></i>
-                                    </div>
-                                    <h4 class="card-title mb-3">التركيبات</h4>
-                                    <p class="card-text text-muted mb-2">إدارة وتوثيق أعمال التركيبات للمشروع</p>
-                                    <small class="text-muted d-block mb-3">أمر العمل: {{ $workOrder->work_order_number ?? $workOrder->order_number }}</small>
-                                    <a href="{{ route('admin.work-orders.installations', $workOrder) }}" class="btn btn-primary w-100">
-                                        <i class="fas fa-arrow-left ml-1"></i>
-                                        الانتقال إلى التركيبات
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- قسم أعمال التمديد والكهرباء -->
-                        <div class="col-md-4">
-                            <div class="card h-100 border-0 shadow-sm hover-card">
-                                <div class="card-body text-center p-4">
-                                    <div class="icon-wrapper mb-3">
-                                        <i class="fas fa-bolt fa-3x text-primary"></i>
-                                    </div>
-                                    <h4 class="card-title mb-3">أعمال الكهرباء</h4>
-                                    <p class="card-text text-muted mb-2">إدارة وتوثيق أعمال الكهرباء للمشروع</p>
-                                    <small class="text-muted d-block mb-3">أمر العمل: {{ $workOrder->work_order_number ?? $workOrder->order_number }}</small>
-                                    <a href="{{ route('admin.work-orders.electrical-works', $workOrder) }}" class="btn btn-primary w-100">
-                                        <i class="fas fa-arrow-left ml-1"></i>
-                                        الانتقال إلى أعمال الكهرباء
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- جدول بنود العمل -->
-    <div class="row justify-content-center mt-4">
-        <div class="col-md-12">
-            <!-- قسم الإجمالي اليومي -->
-            <div class="card shadow-lg border-0 mb-4">
-                <div class="card-body p-3">
-                    <h5 class="card-title text-primary mb-3">
-                        <i class="fas fa-chart-bar me-2"></i>
-                        الإجمالي اليومي
-                        <button type="button" class="btn btn-sm btn-outline-primary ms-2" onclick="updateDailyTotals()">
-                            <i class="fas fa-sync-alt"></i>
-                            تحديث
-                        </button>
-                    </h5>
-                    <div class="row g-3">
-                        <!-- الأعمال المدنية -->
-                        <div class="col-md-3">
-                            <div class="card border-0 bg-primary bg-opacity-10">
-                                <div class="card-body">
-                                    <div class="d-flex align-items-center">
-                                        <i class="fas fa-hard-hat text-primary fs-3 me-3"></i>
-                                        <div>
-                                            <h6 class="card-subtitle mb-1 text-muted">الأعمال المدنية</h6>
-                                            <h5 class="card-title mb-0 text-primary">0.00 ريال</h5>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- التركيبات -->
-                        <div class="col-md-3">
-                            <div class="card border-0 bg-success bg-opacity-10">
-                                <div class="card-body">
-                                    <div class="d-flex align-items-center">
-                                        <i class="fas fa-tools text-success fs-3 me-3"></i>
-                                        <div>
-                                            <h6 class="card-subtitle mb-1 text-muted">التركيبات</h6>
-                                            <h5 class="card-title mb-0 text-success">0.00 ريال</h5>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- الأعمال الكهربائية -->
-                        <div class="col-md-3">
-                            <div class="card border-0 bg-warning bg-opacity-10">
-                                <div class="card-body">
-                                    <div class="d-flex align-items-center">
-                                        <i class="fas fa-bolt text-warning fs-3 me-3"></i>
-                                        <div>
-                                            <h6 class="card-subtitle mb-1 text-muted">أعمال الكهرباء</h6>
-                                            <h5 class="card-title mb-0 text-warning">0.00 ريال</h5>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- الإجمالي -->
-                        <div class="col-md-3">
-                            <div class="card border-0 bg-info bg-opacity-10">
-                                <div class="card-body">
-                                    <div class="d-flex align-items-center">
-                                        <i class="fas fa-calculator text-info fs-3 me-3"></i>
-                                        <div>
-                                            <h6 class="card-subtitle mb-1 text-muted">الإجمالي</h6>
-                                            <h5 class="card-title mb-0 text-info">0.00 ريال</h5>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- جدول بنود العمل -->
+    <div class="row mt-4">
+        <div class="col-12">
             <div class="card shadow-lg border-0">
                 <div class="card-header bg-success text-white py-3">
-                    <h4 class="mb-0 fs-5">
-                        <i class="fas fa-list-alt me-2"></i>
-                        بنود العمل - أمر العمل رقم {{ $workOrder->order_number }}
-                    </h4>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0 fs-5">
+                            <i class="fas fa-list-alt me-2"></i>
+                            بنود العمل - أمر العمل رقم {{ $workOrder->order_number }}
+                        </h4>
+                        <div class="d-flex align-items-center gap-3">
+                            <!-- إضافة حقل التاريخ -->
+                            <div class="d-flex align-items-center">
+                                <label for="workDate" class="text-white me-2">التاريخ:</label>
+                                <input type="date" id="workDate" class="form-control form-control-sm" 
+                                       value="{{ request('date', now()->format('Y-m-d')) }}"
+                                       onchange="updateWorkDate(this.value)">
+                            </div>
+                            <button type="button" class="btn btn-light btn-sm" onclick="refreshWorkItems()">
+                                <i class="fas fa-sync-alt me-1"></i>
+                                تحديث
+                            </button>
+                        </div>
+                    </div>
                 </div>
                 <div class="card-body p-0">
                     <!-- معلومات حول بنود العمل -->
@@ -293,7 +174,7 @@
                                     </div>
                                     <div class="text-center">
                                         <div class="fw-bold text-success fs-4">
-                                            {{ $workOrder->workOrderItems->where('actual_quantity', '>', 0)->count() }}
+                                            {{ $workOrder->workOrderItems->where('executed_quantity', '>', 0)->count() }}
                                         </div>
                                         <small class="text-muted">البنود المنفذة</small>
                                     </div>
@@ -301,7 +182,7 @@
                             </div>
                         </div>
                     </div>
-
+                    
                     @if($workOrder->workOrderItems && $workOrder->workOrderItems->count() > 0)
                         <div class="table-responsive">
                             <table class="table table-hover mb-0" id="workItemsTable">
@@ -361,7 +242,8 @@
                                             <td class="text-center">
                                                 <input type="number" step="0.01" value="{{ $executedQuantity }}" 
                                                        class="form-control form-control-sm text-center actual-quantity" 
-                                                       data-id="{{ $workOrderItem->id }}" style="width: 80px;">
+                                                       data-id="{{ $workOrderItem->id }}" style="width: 80px;"
+                                                       onchange="updateExecutedQuantity(this)">
                                             </td>
                                             <td class="text-center quantity-diff">
                                                 @if($quantityDifference > 0)
@@ -409,12 +291,64 @@
                     @else
                         <div class="text-center py-5">
                             <i class="fas fa-clipboard-list fa-3x text-muted mb-3"></i>
-                            <h5 class="text-muted">لا توجد بنود عمل مضافة لهذا الأمر</h5>
-                            
+                            <h5 class="text-muted">لا توجد بنود عمل مضافة</h5>
+                            <p class="text-muted">قم بإضافة بنود العمل لبدء التنفيذ</p>
                         </div>
                     @endif
                 </div>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- قسم صور التنفيذ -->
+<div class="card shadow-lg border-0 mt-4">
+    <div class="card-header bg-primary text-white py-3">
+        <h5 class="mb-0">
+            <i class="fas fa-images me-2"></i>
+            صور التنفيذ
+        </h5>
+    </div>
+    <div class="card-body">
+        <!-- نموذج رفع الصور -->
+        <form id="uploadExecutionImagesForm" class="mb-4">
+            <div class="row align-items-end">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="images" class="form-label">اختر الصور</label>
+                        <input type="file" class="form-control" id="images" name="images[]" multiple accept="image/*" required>
+                        <small class="text-muted">يمكنك اختيار عدة صور في نفس الوقت. الحد الأقصى لحجم كل صورة 10 ميجابايت.</small>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-upload me-2"></i>
+                        رفع الصور
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        <!-- عرض الصور -->
+        <div id="executionImagesContainer" class="row g-3">
+            @foreach($executionImages as $image)
+                <div class="col-md-4 col-lg-3" id="image-{{ $image->id }}">
+                    <div class="card h-100">
+                        <img src="{{ Storage::url($image->file_path) }}" class="card-img-top" alt="صورة تنفيذ" style="height: 200px; object-fit: cover;">
+                        <div class="card-body p-2">
+                            <p class="card-text small mb-1">{{ $image->original_filename }}</p>
+                            <p class="card-text small text-muted mb-2">
+                                <i class="fas fa-clock me-1"></i>
+                                {{ $image->created_at->format('Y-m-d H:i') }}
+                            </p>
+                            <button class="btn btn-sm btn-danger w-100 delete-image" data-image-id="{{ $image->id }}">
+                                <i class="fas fa-trash-alt me-1"></i>
+                                حذف
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            @endforeach
         </div>
     </div>
 </div>
@@ -657,9 +591,14 @@
             <form id="addWorkItemForm">
                 @csrf
                 <input type="hidden" name="work_order_id" value="{{ $workOrder->id }}">
+                <input type="hidden" name="work_date" id="modalWorkDate">
                 
                 <div class="mb-3">
                     <label for="work_item_search" class="form-label">البحث عن بند العمل</label>
+                    <div class="alert alert-info small mb-2">
+                        <i class="fas fa-info-circle me-1"></i>
+                        عرض بنود العمل لمشروع: {{ $project === 'riyadh' ? 'الرياض' : 'المدينة المنورة' }}
+                    </div>
                     <input type="text" id="work_item_search" class="form-control" placeholder="اكتب رقم البند أو الوصف للبحث...">
                 </div>
                 
@@ -667,7 +606,7 @@
                     <label for="work_item_id" class="form-label">اختر بند العمل</label>
                     <select name="work_item_id" id="work_item_id" class="form-select" required>
                         <option value="">-- اختر بند العمل --</option>
-                        @foreach(\App\Models\WorkItem::where('is_active', true)->orderBy('code')->get() as $workItem)
+                        @foreach($workItems as $workItem)
                             <option value="{{ $workItem->id }}" 
                                     data-unit-price="{{ $workItem->unit_price }}" 
                                     data-unit="{{ $workItem->unit }}"
@@ -725,17 +664,19 @@
 // وظائف Modal
 function openModal() {
     document.getElementById('addWorkItemModal').style.display = 'block';
+    // Set the current work date in the modal
+    document.getElementById('modalWorkDate').value = currentWorkDate;
 }
 
 function closeModal() {
     document.getElementById('addWorkItemModal').style.display = 'none';
-    // مسح النموذج
+    // Reset the form
     document.getElementById('addWorkItemForm').reset();
     document.getElementById('unit').value = '';
     document.getElementById('unit_price').value = '';
     document.getElementById('quantity').value = '';
     
-    // إعادة تعيين البحث وإظهار جميع الخيارات
+    // Reset search and show all options
     const workItemSearch = document.getElementById('work_item_search');
     const workItemSelect = document.getElementById('work_item_id');
     
@@ -744,7 +685,7 @@ function closeModal() {
     }
     
     if (workItemSelect) {
-        // إظهار جميع الخيارات
+        // Show all options
         for (let i = 1; i < workItemSelect.options.length; i++) {
             workItemSelect.options[i].style.display = 'block';
         }
@@ -752,7 +693,7 @@ function closeModal() {
     }
 }
 
-// إغلاق Modal عند الضغط خارجها
+// Close modal when clicking outside
 window.onclick = function(event) {
     const modal = document.getElementById('addWorkItemModal');
     if (event.target === modal) {
@@ -761,7 +702,7 @@ window.onclick = function(event) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    // إضافة مستمع الحدث لزر فتح Modal
+    // Add event listener for opening modal
     const addWorkItemButton = document.querySelector('[data-bs-target="#addWorkItemModal"]');
     if (addWorkItemButton) {
         addWorkItemButton.removeAttribute('data-bs-toggle');
@@ -1057,6 +998,76 @@ function updateTotals() {
 </script>
 
 <script>
+let currentWorkDate = '{{ request('date', now()->format('Y-m-d')) }}';
+
+function updateWorkDate(date) {
+    currentWorkDate = date;
+    refreshWorkItems();
+}
+
+function refreshWorkItems() {
+    // Reload the page with the new date
+    window.location.href = `{{ route('admin.work-orders.execution', $workOrder->id) }}?date=${currentWorkDate}`;
+}
+
+function updateExecutedQuantity(input) {
+    const workOrderItemId = input.dataset.id;
+    const executedQuantity = input.value;
+    
+    // Send AJAX request to update the executed quantity
+    fetch(`{{ url('admin/work-orders/update-work-item') }}/${workOrderItemId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({
+            executed_quantity: executedQuantity,
+            work_date: currentWorkDate
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Update the UI
+            const row = input.closest('tr');
+            const plannedQuantity = parseFloat(row.querySelector('.planned-quantity').value);
+            const unitPrice = parseFloat(row.querySelector('.text-success.fw-bold').textContent.replace(/[^\d.-]/g, ''));
+            const executedAmount = executedQuantity * unitPrice;
+            const quantityDiff = plannedQuantity - executedQuantity;
+            
+            // Update executed amount
+            row.querySelector('.executed-amount').textContent = `${executedAmount.toFixed(2)} ريال`;
+            
+            // Update quantity difference
+            const diffElement = row.querySelector('.quantity-diff');
+            if (quantityDiff > 0) {
+                diffElement.innerHTML = `<span class="badge bg-danger">-${quantityDiff.toFixed(2)}</span>`;
+            } else if (quantityDiff < 0) {
+                diffElement.innerHTML = `<span class="badge bg-success">+${Math.abs(quantityDiff).toFixed(2)}</span>`;
+            } else {
+                diffElement.innerHTML = `<span class="badge bg-secondary">0.00</span>`;
+            }
+            
+            // Show success message
+            toastr.success('تم تحديث الكمية المنفذة بنجاح');
+        } else {
+            // Show error message
+            toastr.error(data.message || 'حدث خطأ أثناء تحديث الكمية المنفذة');
+            // Reset the input to its previous value
+            input.value = input.defaultValue;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        toastr.error('حدث خطأ أثناء تحديث الكمية المنفذة');
+        // Reset the input to its previous value
+        input.value = input.defaultValue;
+    });
+}
+</script>
+
+<script>
 // تحديث الإجمالي اليومي
 function updateDailyTotals() {
     console.log('Updating daily totals...');
@@ -1115,6 +1126,33 @@ function number_format(number, decimals) {
     return parseFloat(number).toFixed(decimals);
 }
 
+// بيانات بنود العمل المُفلترة حسب المشروع
+const workItems = @json($workItems);
+
+// البحث في بنود العمل
+document.getElementById('work_item_search').addEventListener('input', function() {
+    const searchTerm = this.value.toLowerCase();
+    const select = document.getElementById('work_item_id');
+    const options = select.getElementsByTagName('option');
+    
+    // إخفاء جميع الخيارات أولاً
+    for (let i = 1; i < options.length; i++) { // تجاهل الخيار الأول "-- اختر بند العمل --"
+        const option = options[i];
+        const text = option.textContent.toLowerCase();
+        
+        if (searchTerm === '' || text.includes(searchTerm)) {
+            option.style.display = '';
+        } else {
+            option.style.display = 'none';
+        }
+    }
+    
+    // إعادة تعيين الاختيار إذا لم يعد مرئياً
+    if (select.selectedIndex > 0 && options[select.selectedIndex].style.display === 'none') {
+        select.selectedIndex = 0;
+    }
+});
+
 // تشغيل التحديث عند تحميل الصفحة
 document.addEventListener('DOMContentLoaded', function() {
     // التحديث الأولي
@@ -1122,6 +1160,141 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // تحديث كل دقيقة
     setInterval(updateDailyTotals, 60000);
+});
+
+// JavaScript لرفع صور التنفيذ
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('uploadExecutionImagesForm');
+    const imagesContainer = document.getElementById('executionImagesContainer');
+
+    if (form) {
+        // رفع الصور
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData();
+            const fileInput = document.getElementById('images');
+            
+            if (!fileInput.files.length) {
+                toastr.error('يرجى اختيار صور للرفع');
+                return;
+            }
+            
+            for (let file of fileInput.files) {
+                formData.append('images[]', file);
+            }
+
+            try {
+                const response = await fetch("/admin/work-orders/{{ $workOrder->id }}/execution/images", {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    }
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    // إضافة الصور الجديدة للعرض
+                    result.images.forEach(image => {
+                        const imageHtml = `
+                            <div class="col-md-4 col-lg-3" id="image-${image.id}">
+                                <div class="card h-100">
+                                    <img src="${image.path}" class="card-img-top" alt="صورة تنفيذ" style="height: 200px; object-fit: cover;">
+                                    <div class="card-body p-2">
+                                        <p class="card-text small mb-1">${image.name}</p>
+                                        <p class="card-text small text-muted mb-2">
+                                            <i class="fas fa-clock me-1"></i>
+                                            ${image.created_at}
+                                        </p>
+                                        <button class="btn btn-sm btn-danger w-100 delete-image" data-image-id="${image.id}">
+                                            <i class="fas fa-trash-alt me-1"></i>
+                                            حذف
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        if (imagesContainer) {
+                            imagesContainer.insertAdjacentHTML('afterbegin', imageHtml);
+                        }
+                    });
+
+                    // إعادة تعيين النموذج
+                    form.reset();
+                    
+                    // إظهار رسالة نجاح
+                    if (typeof toastr !== 'undefined') {
+                        toastr.success(result.message);
+                    } else {
+                        alert(result.message);
+                    }
+                } else {
+                    if (typeof toastr !== 'undefined') {
+                        toastr.error(result.message);
+                    } else {
+                        alert(result.message);
+                    }
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                if (typeof toastr !== 'undefined') {
+                    toastr.error('حدث خطأ أثناء رفع الصور');
+                } else {
+                    alert('حدث خطأ أثناء رفع الصور');
+                }
+            }
+        });
+    }
+
+    // حذف الصور
+    document.addEventListener('click', async function(e) {
+        if (e.target.matches('.delete-image') || e.target.closest('.delete-image')) {
+            const button = e.target.matches('.delete-image') ? e.target : e.target.closest('.delete-image');
+            const imageId = button.dataset.imageId;
+            
+            if (confirm('هل أنت متأكد من حذف هذه الصورة؟')) {
+                try {
+                    const response = await fetch(`/admin/work-orders/{{ $workOrder->id }}/execution/images/${imageId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Accept': 'application/json'
+                        }
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        // حذف عنصر الصورة من العرض
+                        const imageElement = document.getElementById(`image-${imageId}`);
+                        if (imageElement) {
+                            imageElement.remove();
+                        }
+                        if (typeof toastr !== 'undefined') {
+                            toastr.success(result.message);
+                        } else {
+                            alert(result.message);
+                        }
+                    } else {
+                        if (typeof toastr !== 'undefined') {
+                            toastr.error(result.message);
+                        } else {
+                            alert(result.message);
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    if (typeof toastr !== 'undefined') {
+                        toastr.error('حدث خطأ أثناء حذف الصورة');
+                    } else {
+                        alert('حدث خطأ أثناء حذف الصورة');
+                    }
+                }
+            }
+        }
+    });
 });
 </script>
 @endpush 

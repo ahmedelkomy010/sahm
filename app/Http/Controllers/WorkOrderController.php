@@ -17,23 +17,69 @@ use Illuminate\Support\Facades\Log;
 class WorkOrderController extends Controller
 {
     // عرض قائمة أوامر العمل
-    public function index()
+    public function index(Request $request)
     {
-        $workOrders = WorkOrder::latest()->paginate(10);
-        return view('admin.work_orders.index', compact('workOrders'));
+        // التحقق من وجود المشروع
+        $project = $request->get('project');
+        
+        if (!$project || !in_array($project, ['riyadh', 'madinah'])) {
+            return redirect()->route('project.selection');
+        }
+        
+        $query = WorkOrder::latest();
+        $projectName = null;
+        
+        // فلترة حسب نوع المشروع
+        switch ($project) {
+            case 'riyadh':
+                $query->where('city', 'الرياض');
+                $projectName = 'مشروع الرياض';
+                break;
+            case 'madinah':
+                $query->where('city', 'المدينة المنورة');
+                $projectName = 'مشروع المدينة المنورة';
+                break;
+        }
+        
+        $workOrders = $query->paginate(10);
+        
+        return view('admin.work_orders.index', compact('workOrders', 'project', 'projectName'));
     }
 
     // عرض نموذج إنشاء أمر عمل جديد
-    public function create()
+    public function create(Request $request)
     {
-        $workItems = \App\Models\WorkItem::orderBy('code')->get();
-        $referenceMaterials = \App\Models\ReferenceMaterial::orderBy('code')->get();
-        return view('admin.work_orders.create', compact('workItems', 'referenceMaterials'));
+        // التحقق من وجود المشروع
+        $project = $request->get('project');
+        
+        if (!$project || !in_array($project, ['riyadh', 'madinah'])) {
+            return redirect()->route('project.selection');
+        }
+        
+        // تصفية بنود العمل والمواد حسب المشروع
+        $workItems = \App\Models\WorkItem::byProject($project)
+                                          ->where('is_active', true)
+                                          ->orderBy('code')
+                                          ->get();
+        
+        $referenceMaterials = \App\Models\ReferenceMaterial::byProject($project)
+                                                           ->where('is_active', true)
+                                                           ->orderBy('code')
+                                                           ->get();
+        
+        return view('admin.work_orders.create', compact('workItems', 'referenceMaterials', 'project'));
     }
 
     // حفظ أمر عمل جديد
     public function store(Request $request)
     {
+        // التحقق من وجود المشروع
+        $project = $request->get('project');
+        
+        if (!$project || !in_array($project, ['riyadh', 'madinah'])) {
+            return redirect()->route('project.selection');
+        }
+        
         $validated = $request->validate([
             'order_number' => 'required|string|max:255|unique:work_orders',
             'work_type' => 'required|string|max:999',
@@ -48,6 +94,7 @@ class WorkOrderController extends Controller
             'office' => 'nullable|string|max:255',
             'station_number' => 'nullable|string|max:255',
             'consultant_name' => 'nullable|string|max:255',
+            'city' => 'required|string|max:255',
             // بنود العمل
             'work_items' => 'nullable|array',
             'work_items.*.work_item_id' => 'required_with:work_items|exists:work_items,id',
@@ -67,6 +114,16 @@ class WorkOrderController extends Controller
             'files.daily_measurement' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png|max:20480',
             'files.backup_1' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png|max:20480',
         ]);
+        
+        // تعيين المدينة تلقائياً حسب المشروع
+        switch ($project) {
+            case 'riyadh':
+                $validated['city'] = 'الرياض';
+                break;
+            case 'madinah':
+                $validated['city'] = 'المدينة المنورة';
+                break;
+        }
         
         $validated['user_id'] = Auth::id();
         
@@ -155,13 +212,16 @@ class WorkOrderController extends Controller
             }
         }
         
-        return redirect()->route('admin.work-orders.index')->with('success', 'تم إنشاء أمر العمل بنجاح');
+        return redirect()->route('admin.work-orders.index', ['project' => $project])->with('success', 'تم إنشاء أمر العمل بنجاح');
     }
 
     // عرض أمر عمل محدد
     public function show(WorkOrder $workOrder)
     {
         $workOrder->load(['files', 'basicAttachments', 'invoiceAttachments', 'licenses.violations']);
+        
+        // تحديد المشروع بناءً على المدينة
+        $project = $workOrder->city === 'المدينة المنورة' ? 'madinah' : 'riyadh';
         
         // حساب إجماليات القيم
         $licensesTotals = [
@@ -196,7 +256,7 @@ class WorkOrderController extends Controller
             }
         }
         
-        return view('admin.work_orders.show', compact('workOrder', 'licensesTotals'));
+        return view('admin.work_orders.show', compact('workOrder', 'licensesTotals', 'project'));
     }
 
     /**
@@ -487,16 +547,48 @@ class WorkOrderController extends Controller
         // تحديث البيانات من قاعدة البيانات
         $workOrder = $workOrder->fresh();
         
+        // Get the requested date or default to today
+        $workDate = request('date', now()->format('Y-m-d'));
+        
+        // تحديد المشروع بناءً على مدينة أمر العمل
+        $project = 'riyadh'; // افتراضي
+        if ($workOrder->city === 'المدينة المنورة') {
+            $project = 'madinah';
+        } elseif (empty($workOrder->city)) {
+            // إذا لم تكن المدينة محددة، استخدم الرياض كافتراضي
+            $project = 'riyadh';
+        }
+        
+        // جلب بنود العمل المُفلترة حسب المشروع
+        $workItems = \App\Models\WorkItem::byProject($project)
+                                          ->where('is_active', true)
+                                          ->orderBy('code')
+                                          ->get();
+        
         $workOrder->load([
             'files', 
             'basicAttachments', 
-            'civilWorksFiles', 
-            'civilWorksAttachments',
-            'installationsFiles',
-            'electricalWorksFiles',
             'workOrderItems.workItem', 
             'workOrderMaterials.material'
         ]);
+
+        // جلب صور التنفيذ
+        $executionImages = $workOrder->files()
+            ->where('file_category', 'execution_images')
+            ->orderBy('created_at', 'desc')
+            ->get();
+        
+        // Filter work order items by date - only show items that match the selected date
+        if ($workDate) {
+            $workOrder->workOrderItems = $workOrder->workOrderItems->filter(function($item) use ($workDate) {
+                // إذا كان البند له تاريخ محفوظ، اعرضه فقط إذا كان يطابق التاريخ المحدد
+                if ($item->work_date) {
+                    return $item->work_date->format('Y-m-d') === $workDate;
+                }
+                // إذا لم يكن للبند تاريخ محفوظ، اعرضه فقط في تاريخ اليوم
+                return $workDate === now()->format('Y-m-d');
+            });
+        }
         
         $hasWorkItems = $workOrder->workOrderItems()->count() > 0;
         $hasMaterials = $workOrder->workOrderMaterials()->count() > 0;
@@ -512,7 +604,11 @@ class WorkOrderController extends Controller
             'hasMaterials', 
             'totalWorkItemsValue', 
             'totalMaterialsValue', 
-            'grandTotal'
+            'grandTotal',
+            'workDate',
+            'workItems',
+            'project',
+            'executionImages'
         ));
     }
 
@@ -524,44 +620,16 @@ class WorkOrderController extends Controller
         $workOrder->load([
             'files', 
             'basicAttachments', 
-            'civilWorksFiles', 
-            'civilWorksAttachments',
-            'installationsFiles',
-            'electricalWorksFiles',
             'workOrderItems.workItem', 
             'workOrderMaterials.material',
             'invoiceAttachments'
         ]);
         
-        // جلب صور التنفيذ من جميع أنواع الملفات
-        $executionImages = collect();
-        
-        // إضافة صور الأعمال المدنية
-        if ($workOrder->civilWorksFiles) {
-            $executionImages = $executionImages->merge($workOrder->civilWorksFiles);
-        }
-        
-        // إضافة صور التركيبات من work_order_files
-        if ($workOrder->installationsFiles) {
-            $executionImages = $executionImages->merge($workOrder->installationsFiles);
-        }
-        
-        // إضافة صور التركيبات من installations_images JSON field
-        if ($workOrder->installations_images && is_array($workOrder->installations_images)) {
-            foreach ($workOrder->installations_images as $index => $imagePath) {
-                $executionImages->push((object) [
-                    'file_path' => $imagePath,
-                    'original_filename' => 'صورة تركيب ' . ($index + 1),
-                    'created_at' => $workOrder->updated_at ?? now(),
-                    'file_category' => 'installations_json'
-                ]);
-            }
-        }
-        
-        // إضافة صور الأعمال الكهربائية
-        if ($workOrder->electricalWorksFiles) {
-            $executionImages = $executionImages->merge($workOrder->electricalWorksFiles);
-        }
+        // جلب صور التنفيذ
+        $executionImages = $workOrder->files()
+            ->where('file_category', 'execution_images')
+            ->orderBy('created_at', 'desc')
+            ->get();
         
         $hasWorkItems = $workOrder->workOrderItems()->count() > 0;
         $hasMaterials = $workOrder->workOrderMaterials()->count() > 0;
@@ -591,21 +659,23 @@ class WorkOrderController extends Controller
             $request->validate([
                 'work_order_id' => 'required|exists:work_orders,id',
                 'work_item_id' => 'required|exists:work_items,id',
-                'notes' => 'nullable|string'
+                'notes' => 'nullable|string',
+                'work_date' => 'required|date'
             ]);
 
             // الحصول على بيانات بند العمل
             $workItem = \App\Models\WorkItem::findOrFail($request->work_item_id);
 
-            // التحقق من عدم وجود البند مسبقاً في نفس أمر العمل
+            // التحقق من عدم وجود البند مسبقاً في نفس أمر العمل ونفس التاريخ
             $existingItem = \App\Models\WorkOrderItem::where('work_order_id', $request->work_order_id)
                 ->where('work_item_id', $request->work_item_id)
+                ->where('work_date', $request->work_date)
                 ->first();
 
             if ($existingItem) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'هذا البند موجود بالفعل في أمر العمل'
+                    'message' => 'هذا البند موجود بالفعل في أمر العمل لهذا التاريخ'
                 ]);
             }
 
@@ -616,7 +686,8 @@ class WorkOrderController extends Controller
                 'quantity' => 1.00, // كمية افتراضية
                 'unit_price' => $workItem->unit_price ?? 0, // سعر الوحدة من بند العمل
                 'executed_quantity' => 0,
-                'notes' => $request->notes
+                'notes' => $request->notes,
+                'work_date' => $request->work_date
             ]);
 
             return response()->json([
@@ -640,10 +711,12 @@ class WorkOrderController extends Controller
         try {
             $request->validate([
                 'executed_quantity' => 'required|numeric|min:0',
+                'work_date' => 'required|date'
             ]);
 
             $workOrderItem->update([
                 'executed_quantity' => $request->executed_quantity,
+                'work_date' => $request->work_date
             ]);
 
             return response()->json([
@@ -1303,10 +1376,15 @@ class WorkOrderController extends Controller
         
         try {
             $file = $request->file('file');
+            $project = $request->get('project', 'riyadh'); // افتراضياً الرياض
+            $city = $this->getProjectCityName($project);
+            
             Log::info('File details', [
                 'original_name' => $file->getClientOriginalName(),
                 'mime_type' => $file->getMimeType(),
-                'size' => $file->getSize()
+                'size' => $file->getSize(),
+                'project' => $project,
+                'city' => $city
             ]);
 
             // التحقق من أن مكتبة Excel متاحة
@@ -1325,7 +1403,7 @@ class WorkOrderController extends Controller
                 ], 500);
             }
 
-            $import = new \App\Imports\WorkItemsImport(0);
+            $import = new \App\Imports\WorkItemsImport(0, $city);
             Log::info('Import class created successfully');
 
             \Maatwebsite\Excel\Facades\Excel::import($import, $file);
@@ -1341,11 +1419,12 @@ class WorkOrderController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'تم استيراد ' . count($importedItems) . ' عنصر بنجاح',
+                'message' => 'تم استيراد ' . count($importedItems) . ' عنصر بنجاح لمدينة ' . $city,
                 'imported_count' => count($importedItems),
                 'errors_count' => count($errors),
                 'errors' => $errors,
-                'imported_items' => $importedItems
+                'imported_items' => $importedItems,
+                'city' => $city
             ]);
 
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -1376,7 +1455,10 @@ class WorkOrderController extends Controller
     public function importWorkOrderMaterials(Request $request)
     {
         try {
-            Log::info('Starting materials import');
+            $project = $request->get('project', 'riyadh');
+            $city = $this->getProjectCityName($project);
+            
+            Log::info('Starting materials import', ['project' => $project, 'city' => $city]);
             
             // التحقق من وجود الملف
             if (!$request->hasFile('file')) {
@@ -1396,6 +1478,23 @@ class WorkOrderController extends Controller
                 ], 400);
             }
 
+            // استخدام WorkOrderMaterialsImport للاستيراد
+            $import = new \App\Imports\WorkOrderMaterialsImport($city);
+            \Maatwebsite\Excel\Facades\Excel::import($import, $file);
+            
+            $importedMaterials = $import->getImportedMaterials();
+            $errors = $import->errors();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'تم استيراد ' . count($importedMaterials) . ' مادة بنجاح لمدينة ' . $city,
+                'imported_materials' => $importedMaterials,
+                'errors' => $errors,
+                'city' => $city
+            ]);
+
+                        // الطريقة القديمة - تم استبدالها بالطريقة الجديدة أعلاه
+            /*
             // قراءة الملف باستخدام PhpSpreadsheet
             $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($file->getPathname());
             $worksheet = $spreadsheet->getActiveSheet();
@@ -1427,11 +1526,15 @@ class WorkOrderController extends Controller
 
                     try {
                         // البحث عن المادة في جدول المواد المرجعية أو إنشاء واحدة جديدة
+                        $project = $request->get('project', 'riyadh');
+                        $city = $this->getProjectCityName($project);
+                        
                         $material = \App\Models\ReferenceMaterial::firstOrCreate(
-                            ['code' => $code],
+                            ['code' => $code, 'city' => $city],
                             [
                                 'description' => $description,
                                 'unit' => 'قطعة', // وحدة افتراضية
+                                'city' => $city,
                                 'is_active' => true
                             ]
                         );
@@ -1473,9 +1576,10 @@ class WorkOrderController extends Controller
 
                 return response()->json([
                     'success' => true,
-                    'message' => 'تم استيراد ' . count($importedMaterials) . ' مادة بنجاح',
+                    'message' => 'تم استيراد ' . count($importedMaterials) . ' مادة بنجاح لمدينة ' . $city,
                     'imported_materials' => $importedMaterials,
-                    'errors' => $errors
+                    'errors' => $errors,
+                    'city' => $city
                 ]);
 
             } catch (\Exception $e) {
@@ -1492,7 +1596,26 @@ class WorkOrderController extends Controller
                 'success' => false,
                 'message' => 'حدث خطأ أثناء استيراد الملف: ' . $e->getMessage()
             ], 500);
+            */
+        } catch (\Exception $e) {
+            Log::error("Import error: " . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء استيراد الملف: ' . $e->getMessage()
+            ], 500);
         }
+    }
+
+    /**
+     * Get city name from project identifier
+     */
+    private function getProjectCityName($project)
+    {
+        return match($project) {
+            'riyadh' => 'الرياض',
+            'madinah' => 'المدينة المنورة',
+            default => 'الرياض'
+        };
     }
 
     /**
@@ -1600,6 +1723,11 @@ class WorkOrderController extends Controller
     {
         $query = \App\Models\WorkItem::query();
 
+        // تصفية حسب المشروع إذا تم تمريره
+        if ($request->has('project') && !empty($request->project)) {
+            $query->byProject($request->project);
+        }
+
         // البحث في كل الأعمدة
         if ($request->has('search') && !empty($request->search)) {
             $searchTerm = $request->search;
@@ -1607,9 +1735,12 @@ class WorkOrderController extends Controller
                 $q->where('code', 'LIKE', "%{$searchTerm}%")
                   ->orWhere('description', 'LIKE', "%{$searchTerm}%")
                   ->orWhere('unit', 'LIKE', "%{$searchTerm}%")
-                  ->orWhere('notes', 'LIKE', "%{$searchTerm}%");
+                  ->orWhere('name', 'LIKE', "%{$searchTerm}%");
             });
         }
+
+        // إظهار العناصر النشطة فقط
+        $query->where('is_active', true);
 
         $workItems = $query->orderBy('code')->paginate(20);
 
@@ -1637,6 +1768,10 @@ class WorkOrderController extends Controller
         try {
             $query = \App\Models\ReferenceMaterial::query();
 
+            // تصفية حسب المشروع/المدينة
+            $project = $request->get('project', 'riyadh');
+            $query->byProject($project);
+
             // البحث بالكود
             if ($request->filled('code')) {
                 $query->where('code', 'LIKE', '%' . $request->code . '%');
@@ -1652,8 +1787,7 @@ class WorkOrderController extends Controller
                 $searchTerm = $request->search;
                 $query->where(function($q) use ($searchTerm) {
                     $q->where('code', 'LIKE', "%{$searchTerm}%")
-                      ->orWhere('description', 'LIKE', "%{$searchTerm}%")
-                      ->orWhere('name', 'LIKE', "%{$searchTerm}%");
+                      ->orWhere('description', 'LIKE', "%{$searchTerm}%");
                 });
             }
 
@@ -2920,6 +3054,114 @@ class WorkOrderController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'حدث خطأ أثناء حذف الصورة: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * رفع صور التنفيذ
+     */
+    public function uploadExecutionImages(Request $request, WorkOrder $workOrder)
+    {
+        try {
+            \Log::info('Starting image upload for work order: ' . $workOrder->id);
+            
+            $request->validate([
+                'images.*' => 'required|image|mimes:jpeg,png,jpg|max:10240', // 10MB max
+            ]);
+
+            if (!$request->hasFile('images')) {
+                \Log::warning('No images found in request');
+                return response()->json([
+                    'success' => false,
+                    'message' => 'لم يتم اختيار أي صور للرفع'
+                ], 400);
+            }
+
+            \Log::info('Found ' . count($request->file('images')) . ' images to upload');
+
+            $uploadedImages = [];
+            foreach ($request->file('images') as $index => $image) {
+                \Log::info("Processing image {$index}: " . $image->getClientOriginalName());
+                
+                $filename = uniqid() . '_' . time() . '.' . $image->getClientOriginalExtension();
+                $originalName = $image->getClientOriginalName();
+                
+                // حفظ الصورة
+                $path = $image->storeAs('work_orders/' . $workOrder->id . '/execution', $filename, 'public');
+                \Log::info("Image stored at path: {$path}");
+                
+                // التحقق من وجود الملف
+                if (!Storage::disk('public')->exists($path)) {
+                    \Log::error("File was not saved properly: {$path}");
+                    continue;
+                }
+                
+                // إنشاء سجل للصورة
+                $file = $workOrder->files()->create([
+                    'filename' => $filename,
+                    'original_filename' => $originalName,
+                    'file_path' => $path,
+                    'file_type' => $image->getClientMimeType(),
+                    'file_size' => $image->getSize(),
+                    'file_category' => 'execution_images',
+                ]);
+
+                \Log::info("Database record created with ID: {$file->id}");
+
+                $uploadedImages[] = [
+                    'id' => $file->id,
+                    'name' => $originalName,
+                    'path' => Storage::url($path),
+                    'size' => $this->formatFileSize($file->file_size),
+                    'created_at' => $file->created_at->format('Y-m-d H:i:s')
+                ];
+            }
+
+            \Log::info('Successfully uploaded ' . count($uploadedImages) . ' images');
+
+            return response()->json([
+                'success' => true,
+                'message' => 'تم رفع الصور بنجاح',
+                'images' => $uploadedImages
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error uploading execution images: ' . $e->getMessage());
+            \Log::error('Stack trace: ' . $e->getTraceAsString());
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء رفع الصور: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * حذف صورة تنفيذ
+     */
+    public function deleteExecutionImage(WorkOrder $workOrder, $imageId)
+    {
+        try {
+            $file = $workOrder->files()->where('id', $imageId)->where('file_category', 'execution_images')->firstOrFail();
+            
+            // حذف الملف من التخزين
+            if (Storage::disk('public')->exists($file->file_path)) {
+                Storage::disk('public')->delete($file->file_path);
+            }
+            
+            // حذف السجل
+            $file->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'تم حذف الصورة بنجاح'
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error deleting execution image: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء حذف الصورة'
             ], 500);
         }
     }

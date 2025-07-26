@@ -117,25 +117,30 @@
                     <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
                         <h3 class="mb-0 fs-4">تفاصيل أمر العمل</h3>
                         <div class="d-flex flex-wrap justify-content-center gap-2">
-                        <a href="{{ route('admin.work-orders.survey', $workOrder) }}" class="custom-btn btn-survey">
-                                <i class="fas fa-map-marked-alt me-1"></i> المسح
-                            </a>
-                            <a href="{{ route('admin.work-orders.materials.index', $workOrder) }}" class="custom-btn btn-materials">
-                                <i class="fas fa-boxes me-1"></i> المواد
-                            </a>
-                           
-                            <a href="{{ route('admin.work-orders.license', $workOrder) }}" class="custom-btn btn-license">
-                                <i class="fas fa-file-alt me-1"></i> الجودة
-                            </a>
-                            <a href="{{ route('admin.work-orders.execution', $workOrder) }}" class="custom-btn btn-execution">
-                                <i class="fas fa-tools me-1"></i> تنفيذ
-                            </a>
-                            <a href="{{ route('admin.work-orders.actions-execution', $workOrder) }}" class="custom-btn btn-actions">
-                                <i class="fas fa-cogs me-1"></i> إجراءات ما بعد التنفيذ
-                            </a>
+                            <div class="btn-group">
+                                <a href="{{ route('admin.work-orders.survey', $workOrder) }}" class="custom-btn btn-survey">
+                                    <i class="fas fa-map-marked-alt me-1"></i> المسح
+                                </a>
+                                <a href="{{ route('admin.work-orders.materials.index', $workOrder) }}" class="custom-btn btn-materials">
+                                    <i class="fas fa-boxes me-1"></i> المواد
+                                </a>
+                                <a href="{{ route('admin.work-orders.license', $workOrder) }}" class="custom-btn btn-license">
+                                    <i class="fas fa-file-alt me-1"></i> الجودة
+                                </a>
+                                <a href="{{ route('admin.work-orders.execution', $workOrder) }}" class="custom-btn btn-execution">
+                                    <i class="fas fa-tools me-1"></i> تنفيذ
+                                </a>
+                                <a href="{{ route('admin.work-orders.actions-execution', $workOrder) }}" class="custom-btn btn-actions">
+                                    <i class="fas fa-cogs me-1"></i> إجراءات ما بعد التنفيذ
+                                </a>
+                            </div>
                             
-                            <a href="{{ route('admin.work-orders.index') }}" class="custom-btn btn-back">
-                                <i class="fas fa-arrow-right me-1"></i> عودة لأوامر العمل   
+                            <a href="{{ route('admin.work-orders.index', ['project' => $project]) }}" class="custom-btn btn-back">
+                                <i class="fas fa-arrow-right me-1"></i> 
+                                عودة لأوامر العمل 
+                                @if($project == 'riyadh')
+                                @else
+                                @endif
                             </a>
                         </div>
                     </div>
@@ -580,7 +585,7 @@
                                                     $grandTotal = ($licensesTotals['total_license_value'] ?? 0) + ($licensesTotals['total_extension_value'] ?? 0) + ($licensesTotals['total_evacuation_value'] ?? 0) + ($licensesTotals['total_violations_value'] ?? 0);
                                                 @endphp
                                                 <tr class="border-top border-1">
-                                                    <th>الإجمالي العام للرخص والمخالفات</th>
+                                                    <th>إجمالي  الرخص والمخالفات</th>
                                                     <td><span class="text-success fw-bold fs-5">{{ number_format($grandTotal, 2) }} ﷼</span></td>
                                                 </tr>
                                                 @php $latestLicense = $workOrder->licenses()->latest()->first(); @endphp
@@ -613,8 +618,6 @@
                                 </div>
                             </div>
                         </div>
-
-
                     </div>
                 </div>
             </div>

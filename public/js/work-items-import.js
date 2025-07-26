@@ -55,8 +55,13 @@ function initializeExcelImport() {
         const submitButton = form.querySelector('button[type="submit"]');
         submitButton.disabled = true;
 
+        // إضافة معامل المشروع
+        const projectParam = document.querySelector('meta[name="project"]')?.getAttribute('content') || 'riyadh';
+        formData.append('project', projectParam);
+
         // إرسال الملف
-        fetch('/admin/work-orders/import-work-items', {
+        const importUrl = document.querySelector('meta[name="import-work-items-url"]')?.getAttribute('content') || '/admin/work-orders/import-work-items';
+        fetch(importUrl, {
                 method: 'POST',
                 body: formData,
                 headers: {

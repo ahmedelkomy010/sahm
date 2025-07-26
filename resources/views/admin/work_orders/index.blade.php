@@ -3,29 +3,53 @@
 @section('content')
 <div class="container">
     <!-- Project Selection Banner -->
-    @if(isset($project) && $project == 'riyadh')
-    <div class="alert alert-info mb-4 d-flex align-items-center" role="alert">
-        <i class="fas fa-city me-2"></i>
-        <div>
-            <strong>مشروع الرياض:</strong> أنت تعمل حاليًا على أوامر العمل لمشروع الرياض
+    @if(isset($project))
+        @if($project == 'riyadh')
+        <div class="alert alert-info mb-4 d-flex align-items-center" role="alert">
+            <i class="fas fa-city me-2 text-blue-500"></i>
+           
         </div>
-    </div>
+        @elseif($project == 'madinah')
+        <div class="alert alert-success mb-4 d-flex align-items-center" role="alert">
+            <i class="fas fa-mosque me-2 text-green-500"></i>
+        
+        </div>
+        @endif
+    @else
+        <!-- إذا لم يتم اختيار مشروع، وجه المستخدم لاختيار مشروع -->
+        <div class="alert alert-warning mb-4 d-flex align-items-center" role="alert">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            <div>
+                <strong>يرجى اختيار المشروع:</strong> يجب اختيار مشروع محدد للمتابعة
+                <br>
+                <a href="{{ route('project.selection') }}" class="btn btn-primary btn-sm mt-2">
+                    <i class="fas fa-city me-1"></i> اختيار المشروع
+                </a>
+            </div>
+        </div>
     @endif
 
+    @if(isset($project))
     <div class="row justify-content-center">
         <div class="col-md-12">
             <div class="card shadow">
                 <div class="card-header d-flex justify-content-between align-items-center bg-primary text-white">
                     <div class="d-flex align-items-center">
                         <span class="fs-5">أوامر العمل</span>
-                        @if(isset($project) && $project == 'riyadh')
-                        <a href="{{ route('project.selection') }}" class="btn btn-outline-light btn-sm ms-3">
-                            <i class="fas fa-exchange-alt me-1"></i> تغيير المشروع
-                        </a>
+                        @if($project == 'riyadh')
+                        <span class="badge bg-light text-dark ms-2">
+                            <i class="fas fa-city me-1"></i>
+                            الرياض
+                        </span>
+                        @elseif($project == 'madinah')
+                        <span class="badge bg-light text-dark ms-2">
+                            <i class="fas fa-mosque me-1"></i>
+                            المدينة المنورة
+                        </span>
                         @endif
                     </div>
-                    <a href="{{ route('project.selection') }}" class="btn btn-outline-light btn-sm">
-                        <i class="fas fa-arrow-left me-1"></i> عودة لاختيار المشروع
+                    <a href="{{ route('project.selection') }}" class="btn btn-outline-light btn-sm ms-3">
+                        <i class="fas fa-exchange-alt me-1"></i> تغيير المشروع
                     </a>
                 </div>
 
@@ -36,8 +60,12 @@
                         </div>
                     @endif
 
+                    <!-- أزرار الإجراءات -->
                     <div class="d-flex justify-content-end align-items-center mb-4">
-                        <a href="{{ route('admin.work-orders.create') }}" class="btn btn-primary px-4" style="min-width: 150px;">
+                        <a href="{{ route('general-productivity', ['project' => $project]) }}" class="btn btn-success me-2 px-4">
+                            <i class="fas fa-chart-bar me-1"></i> تقرير الإنتاجية العام
+                        </a>
+                        <a href="{{ route('admin.work-orders.create', ['project' => $project]) }}" class="btn btn-primary px-4" style="min-width: 150px;">
                             <i class="fas fa-plus me-1"></i> إنشاء أمر عمل جديد
                         </a>
                     </div>
@@ -189,7 +217,7 @@
                                                     <span class="badge bg-secondary">{{ $workOrder->execution_status }}</span>
                                             @endswitch
                                         </td>
-                                        <td>{{ number_format($workOrder->order_value_without_consultant ?? 0, 2) }} ₪</td>
+                                        <td>{{ number_format($workOrder->order_value_without_consultant ?? 0, 2) }} ريال</td>
                                         <td>
                                             <div class="btn-group" role="group">
                                                 <a href="{{ route('admin.work-orders.show', $workOrder) }}" class="btn btn-sm btn-info">عرض</a>
@@ -205,7 +233,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="13" class="text-center">لا توجد أوامر عمل</td>
+                                        <td colspan="13" class="text-center">لا توجد أوامر عمل لهذا المشروع</td>
                                     </tr>
                                 @endforelse
                             </tbody>
@@ -213,12 +241,13 @@
                     </div>
 
                     <div class="d-flex justify-content-center mt-4">
-                        {{ $workOrders->links() }}
+                        {{ $workOrders->appends(['project' => $project])->links() }}
                     </div>
                 </div>
             </div>
         </div>
     </div>
+    @endif
 </div>
 
 <style>

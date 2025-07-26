@@ -1,17 +1,51 @@
 @extends('layouts.app')
 
+@push('head')
+<meta name="import-work-items-url" content="{{ route('admin.work-orders.import-work-items') }}">
+<meta name="import-materials-url" content="{{ route('admin.work-orders.import-materials') }}">
+<meta name="project" content="{{ $project ?? 'riyadh' }}">
+@endpush
+
 @section('content')
 <div class="container py-4">
     <div class="row justify-content-center">
         <div class="col-md-10">
             <div class="card shadow-lg border-0">
                 <div class="card-header bg-primary text-white py-3">
-                    <h3 class="mb-0 fs-4">إنشاء أمر عمل جديد</h3>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h3 class="mb-0 fs-4">إنشاء أمر عمل جديد</h3>
+                        <div class="d-flex align-items-center gap-3">
+                            @if(isset($project))
+                                @if($project == 'riyadh')
+                                <span class="badge bg-light text-dark">
+                                    <i class="fas fa-city me-1"></i>
+                                    مشروع الرياض
+                                </span>
+                                @elseif($project == 'madinah')
+                                <span class="badge bg-light text-dark">
+                                    <i class="fas fa-mosque me-1"></i>
+                                    مشروع المدينة المنورة
+                                </span>
+                                @endif
+                            @endif
+                            <a href="{{ route('admin.work-orders.index', ['project' => $project ?? '']) }}" class="btn btn-outline-light btn-sm">
+                                <i class="fas fa-arrow-left me-1"></i>
+                                العودة إلى أوامر العمل
+                            </a>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="card-body p-4">
-                    <form method="POST" action="{{ route('admin.work-orders.store') }}" class="custom-form" enctype="multipart/form-data">
+                    <form method="POST" action="{{ route('admin.work-orders.store', ['project' => $project]) }}" class="custom-form" enctype="multipart/form-data">
                         @csrf
+                        @if(isset($project))
+                            @if($project == 'riyadh')
+                            <input type="hidden" name="city" value="الرياض">
+                            @elseif($project == 'madinah')
+                            <input type="hidden" name="city" value="المدينة المنورة">
+                            @endif
+                        @endif
 
                         <div class="row mb-4">
                             <div class="col-md-6">
@@ -103,6 +137,16 @@
                                         </span>
                                     @enderror
                                 </div>
+
+                                <!-- حقل المدينة مخفي ويتم تعيينه تلقائياً حسب المشروع -->
+                                @if(isset($project))
+                                    @if($project == 'riyadh')
+                                    <input type="hidden" name="city" value="الرياض">
+                                    @elseif($project == 'madinah')
+                                    <input type="hidden" name="city" value="المدينة المنورة">
+                                    @endif
+                                @endif
+
                                 <div class="form-group mb-3">
                                     <label for="municipality" class="form-label fw-bold">البلدية</label>
                                     <input id="municipality" type="text" class="form-control @error('municipality') is-invalid @enderror" name="municipality" value="{{ old('municipality') }}"required>
@@ -224,7 +268,7 @@
                             </div>
                         </div>
                         
-                        <!-- قسم مقايسة الأعمال - بعرض كامل -->
+                        <!-- قسم مقايسة الأعمال -->
                         <div class="row mt-4">
                             <div class="col-12">
                                 <div class="form-section mb-4">
@@ -233,15 +277,21 @@
                                             <i class="fas fa-tasks me-2 text-primary"></i>
                                             مقايسة الأعمال
                                         </h4>
-                                        <div class="d-flex justify-content-between mb-3">
-                                            <div>
-                                                <button type="button" class="btn btn-primary me-2" onclick="addWorkItem()">
-                                                    <i class="fas fa-plus"></i> إضافة بند عمل
-                                                </button>
-                                            </div>
-                                            <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#excelImportModal">
-                                                <i class="fas fa-file-excel"></i> استيراد من Excel
+                                        <div class="d-flex gap-2">
+                                            <button type="button" class="btn btn-primary" onclick="addWorkItem()">
+                                                <i class="fas fa-plus"></i> إضافة بند عمل
                                             </button>
+                                            @if(isset($project))
+                                                @if($project == 'riyadh')
+                                                <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#riyadhExcelImportModal">
+                                                    <i class="fas fa-file-excel"></i> استيراد من Excel 
+                                                </button>
+                                                @elseif($project == 'madinah')
+                                                <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#madinahExcelImportModal">
+                                                    <i class="fas fa-file-excel"></i> استيراد من Excel 
+                                                </button>
+                                                @endif
+                                            @endif
                                         </div>
                                     </div>
                                     
@@ -295,9 +345,17 @@
                                             مقايسة المواد
                                         </h4>
                                         <div class="d-flex gap-2">
-                                            <button type="button" class="btn btn-outline-info btn-sm" data-bs-toggle="modal" data-bs-target="#materialsImportModal">
-                                                <i class="fas fa-file-excel"></i> استيراد من Excel
-                                            </button>
+                                            @if(isset($project))
+                                                @if($project == 'riyadh')
+                                                <button type="button" class="btn btn-outline-info btn-sm" data-bs-toggle="modal" data-bs-target="#riyadhMaterialsImportModal">
+                                                    <i class="fas fa-file-excel"></i> استيراد من Excel (الرياض)
+                                                </button>
+                                                @elseif($project == 'madinah')
+                                                <button type="button" class="btn btn-outline-info btn-sm" data-bs-toggle="modal" data-bs-target="#madinahMaterialsImportModal">
+                                                    <i class="fas fa-file-excel"></i> استيراد من Excel (المدينة)
+                                                </button>
+                                                @endif
+                                            @endif
                                             <button type="button" class="btn btn-outline-success btn-sm" onclick="addMaterial()">
                                                 <i class="fas fa-plus"></i> إضافة مادة
                                             </button>
@@ -544,6 +602,146 @@
                 </div>
                 
                 <div id="materialsPagination" class="d-flex justify-content-center mt-3"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for Riyadh Excel Import -->
+<div class="modal fade" id="riyadhExcelImportModal" tabindex="-1" aria-labelledby="riyadhExcelImportModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="riyadhExcelImportModalLabel">
+                    <i class="fas fa-file-excel me-2"></i>
+                    استيراد بنود العمل من Excel
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="riyadhExcelImportForm" enctype="multipart/form-data">
+                    @csrf
+                    <input type="hidden" name="city" value="riyadh">
+                    <div class="mb-3">
+                        <label for="riyadhFile" class="form-label">اختر ملف Excel</label>
+                        <input type="file" class="form-control" id="riyadhFile" name="file" accept=".xlsx,.xls,.csv">
+                        <div class="form-text">
+                            <strong>مخصص لمشروع الرياض فقط:</strong><br>
+                            يجب أن يحتوي الملف على الأعمدة التالية: الكود، الوصف، الوحدة، السعر<br>
+                            <small class="text-info">ملاحظة: البيانات المستوردة ستكون منفصلة عن بيانات المدينة المنورة</small>
+                        </div>
+                    </div>
+                    <div id="riyadhUploadProgress" class="progress mb-3 d-none">
+                        <div class="progress-bar" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                    <div id="riyadhImportResults"></div>
+                    <button type="submit" class="btn btn-primary">رفع الملف</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for Madinah Excel Import -->
+<div class="modal fade" id="madinahExcelImportModal" tabindex="-1" aria-labelledby="madinahExcelImportModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="madinahExcelImportModalLabel">
+                    <i class="fas fa-file-excel me-2"></i>
+                    استيراد بنود العمل من Excel
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="madinahExcelImportForm" enctype="multipart/form-data">
+                    @csrf
+                    <input type="hidden" name="city" value="madinah">
+                    <div class="mb-3">
+                        <label for="madinahFile" class="form-label">اختر ملف Excel</label>
+                        <input type="file" class="form-control" id="madinahFile" name="file" accept=".xlsx,.xls,.csv">
+                        <div class="form-text">
+                            <strong>مخصص لمشروع المدينة المنورة فقط:</strong><br>
+                            يجب أن يحتوي الملف على الأعمدة التالية: الكود، الوصف، الوحدة، السعر<br>
+                            <small class="text-info">ملاحظة: البيانات المستوردة ستكون منفصلة عن بيانات الرياض</small>
+                        </div>
+                    </div>
+                    <div id="madinahUploadProgress" class="progress mb-3 d-none">
+                        <div class="progress-bar" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                    <div id="madinahImportResults"></div>
+                    <button type="submit" class="btn btn-success">رفع الملف</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for Riyadh Materials Import -->
+<div class="modal fade" id="riyadhMaterialsImportModal" tabindex="-1" aria-labelledby="riyadhMaterialsImportModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="riyadhMaterialsImportModalLabel">
+                    <i class="fas fa-file-excel me-2"></i>
+                    استيراد مقايسة المواد من Excel 
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="riyadhMaterialsImportForm" enctype="multipart/form-data">
+                    @csrf
+                    <input type="hidden" name="city" value="riyadh">
+                    <div class="mb-3">
+                        <label for="riyadhMaterialsFile" class="form-label">اختر ملف Excel</label>
+                        <input type="file" class="form-control" id="riyadhMaterialsFile" name="file" accept=".xlsx,.xls,.csv">
+                        <div class="form-text">
+                            <strong>مخصص لمشروع الرياض فقط:</strong><br>
+                            يجب أن يحتوي الملف على عمودين: كود المادة والوصف<br>
+                            <small class="text-info">ملاحظة: المواد المستوردة ستكون منفصلة عن مواد المدينة المنورة</small>
+                        </div>
+                    </div>
+                    <div id="riyadhMaterialsUploadProgress" class="progress mb-3 d-none">
+                        <div class="progress-bar" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                    <div id="riyadhMaterialsImportResults"></div>
+                    <button type="submit" class="btn btn-primary">رفع الملف</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for Madinah Materials Import -->
+<div class="modal fade" id="madinahMaterialsImportModal" tabindex="-1" aria-labelledby="madinahMaterialsImportModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="madinahMaterialsImportModalLabel">
+                    <i class="fas fa-file-excel me-2"></i>
+                    استيراد مقايسة المواد من Excel
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="madinahMaterialsImportForm" enctype="multipart/form-data">
+                    @csrf
+                    <input type="hidden" name="city" value="madinah">
+                    <div class="mb-3">
+                        <label for="madinahMaterialsFile" class="form-label">اختر ملف Excel</label>
+                        <input type="file" class="form-control" id="madinahMaterialsFile" name="file" accept=".xlsx,.xls,.csv">
+                        <div class="form-text">
+                            <strong>مخصص لمشروع المدينة المنورة فقط:</strong><br>
+                            يجب أن يحتوي الملف على عمودين: كود المادة والوصف<br>
+                            <small class="text-info">ملاحظة: المواد المستوردة ستكون منفصلة عن مواد الرياض</small>
+                        </div>
+                    </div>
+                    <div id="madinahMaterialsUploadProgress" class="progress mb-3 d-none">
+                        <div class="progress-bar" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                    <div id="madinahMaterialsImportResults"></div>
+                    <button type="submit" class="btn btn-success">رفع الملف</button>
+                </form>
             </div>
         </div>
     </div>
@@ -1085,6 +1283,11 @@ document.addEventListener('DOMContentLoaded', function() {
         window.materialRowIndex = 0;
     }
     
+    // تهيئة مؤشر صفوف بنود العمل إذا لم يكن موجوداً  
+    if (typeof window.workItemRowIndex === 'undefined') {
+        window.workItemRowIndex = 0;
+    }
+    
     // إضافة صف افتراضي إذا كان الجدول فارغاً
     const tbody = document.getElementById('materialsBody');
     if (tbody && tbody.children.length === 0) {
@@ -1126,6 +1329,10 @@ document.getElementById('excelImportForm').addEventListener('submit', function(e
     e.preventDefault();
     
     const formData = new FormData(this);
+    
+    // إضافة معامل المشروع
+    const project = '{{ $project ?? "riyadh" }}';
+    formData.append('project', project);
     
     fetch('{{ route("admin.work-orders.import-work-items") }}', {
         method: 'POST',
@@ -1553,6 +1760,10 @@ document.getElementById('materialsImportForm').addEventListener('submit', functi
     formData.append('file', file);
     formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
     
+    // إضافة معامل المشروع
+    const project = '{{ $project ?? "riyadh" }}';
+    formData.append('project', project);
+    
     // إظهار شريط التقدم
     showMaterialsImportProgress();
     
@@ -1840,11 +2051,15 @@ if (materialsImportModal) {
         try {
             const formData = new FormData(form);
             
+            // إضافة معامل المشروع
+            const project = '{{ $project ?? "riyadh" }}';
+            formData.append('project', project);
+            
             // إظهار حالة التحميل
             progressBar.style.width = '50%';
             progressBar.setAttribute('aria-valuenow', '50');
             
-            const response = await fetch('/admin/work-orders/import-materials', {
+            const response = await fetch('{{ route("admin.work-orders.import-materials") }}', {
                 method: 'POST',
                 body: formData,
                 headers: {
@@ -2062,7 +2277,11 @@ function searchMaterials() {
     if (descriptionSearch) searchParams.append('description', descriptionSearch);
     
     // البحث عبر API
-    fetch(`{{ route('admin.materials.description', ['code' => ':code']) }}`.replace(':code', encodeURIComponent(codeSearch)))
+    // إرسال طلب البحث مع معامل المشروع
+    const project = '{{ $project ?? "riyadh" }}';
+    const searchUrl = `{{ route('admin.materials.description', ['code' => ':code']) }}`.replace(':code', encodeURIComponent(codeSearch)) + `?project=${project}`;
+    
+    fetch(searchUrl)
         .then(response => response.json())
         .then(data => {
             if (data.success && data.data.length > 0) {
@@ -2201,6 +2420,299 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
+// تهيئة بيانات بنود العمل
+window.workItems = @json($workItems);
+// تهيئة متغير المؤشر العام
+window.workItemRowIndex = 0;
+// تهيئة مؤشر صفوف المواد
+window.materialRowIndex = 0;
+
+// تهيئة نماذج استيراد Excel للرياض
+document.getElementById('riyadhExcelImportForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    handleExcelImport(this, 'riyadh');
+});
+
+document.getElementById('riyadhMaterialsImportForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    handleMaterialsImport(this, 'riyadh');
+});
+
+// تهيئة نماذج استيراد Excel للمدينة
+document.getElementById('madinahExcelImportForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    handleExcelImport(this, 'madinah');
+});
+
+document.getElementById('madinahMaterialsImportForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    handleMaterialsImport(this, 'madinah');
+});
+
+// معالجة استيراد ملف Excel لبنود العمل
+function handleExcelImport(form, city) {
+    const formData = new FormData(form);
+    
+    // إضافة معامل المشروع إلى FormData
+    const project = '{{ $project ?? "riyadh" }}';
+    formData.append('project', project);
+    
+    const progressDiv = document.getElementById(`${city}UploadProgress`);
+    const resultsDiv = document.getElementById(`${city}ImportResults`);
+    
+    // إظهار شريط التقدم
+    progressDiv.classList.remove('d-none');
+    progressDiv.querySelector('.progress-bar').style.width = '50%';
+    
+    fetch('{{ route("admin.work-orders.import-work-items") }}', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            progressDiv.querySelector('.progress-bar').style.width = '100%';
+            resultsDiv.innerHTML = `
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle me-2"></i>
+                    تم استيراد ${data.imported_count} بند بنجاح
+                </div>
+            `;
+            
+            // إضافة البنود المستوردة للجدول
+            if (data.imported_items) {
+                data.imported_items.forEach(item => {
+                    if (typeof addWorkItemToTable === 'function') {
+                        addWorkItemToTable(item);
+                    } else {
+                        console.error('addWorkItemToTable function not found');
+                    }
+                });
+            }
+            
+            // إغلاق النافذة بعد ثانيتين
+            setTimeout(() => {
+                const modal = bootstrap.Modal.getInstance(document.getElementById(`${city}ExcelImportModal`));
+                modal.hide();
+                resetImportForm(city);
+            }, 2000);
+        } else {
+            throw new Error(data.message || 'حدث خطأ أثناء الاستيراد');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        progressDiv.classList.add('d-none');
+        resultsDiv.innerHTML = `
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-circle me-2"></i>
+                ${error.message || 'حدث خطأ أثناء استيراد الملف'}
+            </div>
+        `;
+    });
+}
+
+// معالجة استيراد ملف Excel للمواد
+function handleMaterialsImport(form, city) {
+    const formData = new FormData(form);
+    
+    // إضافة معامل المشروع إلى FormData
+    const project = '{{ $project ?? "riyadh" }}';
+    formData.append('project', project);
+    
+    const progressDiv = document.getElementById(`${city}MaterialsUploadProgress`);
+    const resultsDiv = document.getElementById(`${city}MaterialsImportResults`);
+    
+    // إظهار شريط التقدم
+    progressDiv.classList.remove('d-none');
+    progressDiv.querySelector('.progress-bar').style.width = '50%';
+    
+    fetch('{{ route("admin.work-orders.import-materials") }}', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            progressDiv.querySelector('.progress-bar').style.width = '100%';
+            resultsDiv.innerHTML = `
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle me-2"></i>
+                    تم استيراد ${data.imported_count} مادة بنجاح
+                </div>
+            `;
+            
+            // إضافة المواد المستوردة للجدول
+            if (data.imported_materials) {
+                data.imported_materials.forEach(material => addMaterialToTable(material));
+            }
+            
+            // إغلاق النافذة بعد ثانيتين
+            setTimeout(() => {
+                const modal = bootstrap.Modal.getInstance(document.getElementById(`${city}MaterialsImportModal`));
+                modal.hide();
+                resetMaterialsImportForm(city);
+            }, 2000);
+        } else {
+            throw new Error(data.message || 'حدث خطأ أثناء الاستيراد');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        progressDiv.classList.add('d-none');
+        resultsDiv.innerHTML = `
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-circle me-2"></i>
+                ${error.message || 'حدث خطأ أثناء استيراد الملف'}
+            </div>
+        `;
+    });
+}
+
+// إعادة تعيين نموذج استيراد بنود العمل
+function resetImportForm(city) {
+    const form = document.getElementById(`${city}ExcelImportForm`);
+    const progressDiv = document.getElementById(`${city}UploadProgress`);
+    const resultsDiv = document.getElementById(`${city}ImportResults`);
+    
+    form.reset();
+    progressDiv.classList.add('d-none');
+    progressDiv.querySelector('.progress-bar').style.width = '0%';
+    resultsDiv.innerHTML = '';
+}
+
+// إعادة تعيين نموذج استيراد المواد
+function resetMaterialsImportForm(city) {
+    const form = document.getElementById(`${city}MaterialsImportForm`);
+    const progressDiv = document.getElementById(`${city}MaterialsUploadProgress`);
+    const resultsDiv = document.getElementById(`${city}MaterialsImportResults`);
+    
+    form.reset();
+    progressDiv.classList.add('d-none');
+    progressDiv.querySelector('.progress-bar').style.width = '0%';
+    resultsDiv.innerHTML = '';
+}
+
+// دالة إضافة بند عمل إلى الجدول (مطلوبة لاستيراد Excel)
+function addWorkItemToTable(item) {
+    const tbody = document.getElementById('workItemsBody');
+    if (!tbody) {
+        console.error('Work items table body not found');
+        return;
+    }
+
+    // التأكد من أن المؤشر معرف
+    if (typeof window.workItemRowIndex === 'undefined') {
+        window.workItemRowIndex = tbody.children.length;
+    }
+
+    const row = document.createElement('tr');
+    
+    row.innerHTML = `
+        <td>
+            <div class="position-relative">
+                <input type="text" class="form-control form-control-sm work-item-search" 
+                       value="${item.code || ''}" readonly>
+                <input type="hidden" name="work_items[${window.workItemRowIndex}][work_item_id]" 
+                       class="work-item-id" value="${item.id || ''}">
+            </div>
+        </td>
+        <td>
+            <input type="text" class="form-control form-control-sm work-item-description" 
+                   name="work_items[${window.workItemRowIndex}][description]" 
+                   value="${item.description || ''}" placeholder="وصف العمل">
+        </td>
+        <td>
+            <input type="number" name="work_items[${window.workItemRowIndex}][planned_quantity]" 
+                   class="form-control form-control-sm" step="0.01" min="0" value="1" 
+                   placeholder="الكمية" required>
+        </td>
+        <td>
+            <input type="text" class="form-control form-control-sm work-item-unit" 
+                   name="work_items[${window.workItemRowIndex}][unit]" 
+                   value="${item.unit || ''}" placeholder="الوحدة" readonly>
+        </td>
+        <td>
+            <input type="number" class="form-control form-control-sm work-item-price" 
+                   name="work_items[${window.workItemRowIndex}][unit_price]" 
+                   value="${item.unit_price || ''}" step="0.01" min="0" placeholder="سعر الوحدة">
+        </td>
+        <td>
+            <button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">
+                <i class="fas fa-trash"></i>
+            </button>
+        </td>
+    `;
+    
+    tbody.appendChild(row);
+    window.workItemRowIndex++;
+}
+
+// دالة مضافة لإضافة مادة إلى الجدول (مطلوبة لاستيراد Excel)
+function addMaterialToTable(material) {
+    const tbody = document.getElementById('materialsBody');
+    if (!tbody) {
+        console.error('Materials table body not found');
+        return;
+    }
+
+    // التأكد من أن المؤشر معرف
+    if (typeof window.materialRowIndex === 'undefined') {
+        window.materialRowIndex = tbody.children.length;
+    }
+
+    const row = document.createElement('tr');
+    
+    // استخدام البيانات مع قيم افتراضية آمنة
+    const code = material.code || material.material_code || '';
+    const description = material.description || material.material_description || '';
+    const unit = material.unit || 'L.M';
+    const quantity = material.planned_quantity || 1;
+    
+    row.innerHTML = `
+        <td>
+            <input type="text" name="materials[${window.materialRowIndex}][material_code]" 
+                   class="form-control form-control-sm material-code" 
+                   value="${code}" 
+                   onchange="handleMaterialCodeChange(this)"
+                   placeholder="أدخل كود المادة">
+        </td>
+        <td>
+            <input type="text" name="materials[${window.materialRowIndex}][material_description]" 
+                   class="form-control form-control-sm material-description"
+                   value="${description}"
+                   onchange="handleMaterialDescriptionChange(this)"
+                   placeholder="أدخل وصف المادة">
+        </td>
+        <td>
+            <input type="number" name="materials[${window.materialRowIndex}][planned_quantity]" 
+                   class="form-control form-control-sm" 
+                   value="${quantity}" min="1" step="1">
+        </td>
+        <td>
+            <select name="materials[${window.materialRowIndex}][unit]" class="form-select form-select-sm material-unit">
+                <option value="L.M" ${unit === 'L.M' ? 'selected' : ''}>L.M</option>
+                <option value="Kit" ${unit === 'Kit' ? 'selected' : ''}>Kit</option>
+                <option value="Ech" ${unit === 'Ech' ? 'selected' : ''}>Ech</option>
+            </select>
+        </td>
+        <td>
+            <button type="button" class="btn btn-danger btn-sm" onclick="removeMaterialRow(this)">
+                <i class="fas fa-trash"></i>
+            </button>
+        </td>
+    `;
+    
+    tbody.appendChild(row);
+    window.materialRowIndex++;
+}
 </script>
 
 @section('scripts')
