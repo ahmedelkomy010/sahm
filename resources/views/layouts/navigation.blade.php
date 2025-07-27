@@ -15,11 +15,7 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('الرئيسية') }}
                     </x-nav-link>
-                    @if(request()->routeIs('admin.work-orders.*'))
-                    <x-nav-link :href="route('admin.work-orders.index')" :active="request()->routeIs('admin.work-orders.*')">
-                        {{ __('أوامر العمل') }}
-                    </x-nav-link>
-                    @endif
+
                     
                     @can('admin')
                     <x-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')">
@@ -84,11 +80,7 @@
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('الرئيسية') }}
             </x-responsive-nav-link>
-            @if(request()->routeIs('admin.work-orders.*'))
-            <x-responsive-nav-link :href="route('admin.work-orders.index')" :active="request()->routeIs('admin.work-orders.*')">
-                {{ __('أوامر العمل') }}
-            </x-responsive-nav-link>
-            @endif
+          
             
             @can('admin')
             <x-responsive-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')">

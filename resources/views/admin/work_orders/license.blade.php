@@ -3321,17 +3321,12 @@ function deleteExtension(extensionId) {
                                 <div class="card-body bg-light">
                                     <div class="row align-items-center">
                                         <div class="col-md-8">
-                                            <label class="form-label fw-bold text-danger">
-                                                <i class="fas fa-search me-2"></i>اختر الرخصة المطلوب العمل عليها:
-                                            </label>
+                                           
                                             <select class="form-select form-select-lg border-danger" id="evacuation-license-selector" onchange="selectEvacuationLicense()">
-                                                <option value="">-- يجب اختيار رخصة أولاً قبل إدخال بيانات الإخلاءات --</option>
+                                                <option value="">--  يجب اختيار رخصة أولاً قبل إدخال بيانات الاخلاء و الفسح --</option>
                                             </select>
                                             <div class="mt-2">
-                                                <small class="text-danger fw-bold">
-                                                    <i class="fas fa-info-circle me-1"></i>
-                                                    لا يمكن إضافة أو تعديل بيانات الإخلاءات بدون اختيار رخصة صالحة
-                                                </small>
+                                                
                                             </div>
                                         </div>
                                         <div class="col-md-4 text-center">
@@ -3377,9 +3372,7 @@ function deleteExtension(extensionId) {
                             <!-- رسالة تنبيه عند عدم اختيار رخصة -->
                             <div id="no-license-warning" class="alert alert-warning mb-4">
                                 <div class="text-center py-3">
-                                    <i class="fas fa-exclamation-triangle fa-2x text-warning mb-3"></i>
                                     <h5 class="text-warning mb-2">يجب اختيار رخصة أولاً</h5>
-                                    <p class="mb-0">لا يمكن إضافة بيانات الإخلاءات بدون اختيار رخصة صالحة من القائمة أعلاه</p>
                                 </div>
                             </div>
 
@@ -4107,19 +4100,16 @@ function deleteLabDetailsRow(button) {
     if (confirm('هل أنت متأكد من حذف هذا السجل؟')) {
         const row = button.closest('tr');
         if (!row) {
-            toastr.error('خطأ في العثور على الصف');
             return;
         }
         
         const labTable = document.getElementById('labDetailsTable');
         if (!labTable) {
-            toastr.error('لم يتم العثور على جدول التفاصيل الفنية');
             return;
         }
         
         const tbody = labTable.querySelector('tbody');
         if (!tbody) {
-            toastr.error('لم يتم العثور على body الجدول');
             return;
         }
         
@@ -4144,8 +4134,6 @@ function deleteLabDetailsRow(button) {
                 `;
                 tbody.appendChild(noDataRow);
             }
-            
-            toastr.success('تم حذف السجل بنجاح');
         }, 300);
     }
 }
@@ -4155,19 +4143,16 @@ function saveAllLabDetails() {
     const licenseId = @if($workOrder->license) {{ $workOrder->license->id }} @else null @endif;
     
     if (!licenseId) {
-        toastr.warning('لا توجد رخصة مرتبطة بأمر العمل هذا');
         return;
     }
 
     const labTable = document.getElementById('labDetailsTable');
     if (!labTable) {
-        toastr.error('لم يتم العثور على جدول التفاصيل الفنية');
         return;
     }
 
     const rows = labTable.querySelectorAll('tbody tr:not(#no-lab-details-row)');
     if (rows.length === 0) {
-        toastr.warning('لا توجد بيانات للحفظ');
         return;
     }
     
@@ -4194,7 +4179,6 @@ function saveAllLabDetails() {
     });
     
     if (!hasValidData) {
-        toastr.warning('لا توجد بيانات صالحة للحفظ. تأكد من ملء البيانات الأساسية.');
         return;
     }
     
@@ -4226,21 +4210,20 @@ function saveAllLabDetails() {
         },
         success: function(response) {
             if (response.success) {
-                toastr.success(`تم حفظ التفاصيل الفنية للمختبر بنجاح في ${selectedLicenseName}`);
                 console.log('Lab Details saved successfully:', response);
             } else {
-                toastr.error(response.message || 'حدث خطأ أثناء حفظ البيانات');
+                console.error('Error saving Lab Details:', response.message || 'Unknown error');
             }
         },
         error: function(xhr) {
-            console.error('خطأ في حفظ التفاصيل الفنية:', xhr);
+            console.error('Error saving Lab Details:', xhr);
             const errors = xhr.responseJSON?.errors || {};
             if (Object.keys(errors).length > 0) {
                 Object.values(errors).forEach(error => {
-                    toastr.error(Array.isArray(error) ? error[0] : error);
+                    console.error(Array.isArray(error) ? error[0] : error);
                 });
             } else {
-                toastr.error('حدث خطأ أثناء حفظ التفاصيل الفنية للمختبر');
+                console.error('Unknown error saving Lab Details');
             }
         }
     }).always(function() {
@@ -4304,7 +4287,6 @@ function saveAllEvacStreets() {
     const licenseId = @if($workOrder->license) {{ $workOrder->license->id }} @else null @endif;
     
     if (!licenseId) {
-        toastr.warning('لا توجد رخصة مرتبطة بأمر العمل هذا');
         return;
     }
 
@@ -4338,7 +4320,6 @@ function saveAllEvacStreets() {
     }
 
     if (data.length === 0) {
-        toastr.warning('لا توجد بيانات فسح للحفظ');
         return;
     }
 
@@ -4363,18 +4344,17 @@ function saveAllEvacStreets() {
             data: data
         },
         success: function(response) {
-            toastr.success(`تم حفظ جميع الفسح بنجاح في ${selectedLicenseName}`);
             console.log('Evac streets saved successfully:', response);
         },
         error: function(xhr) {
-            console.error('خطأ في حفظ بيانات الفسح:', xhr);
+            console.error('Error saving Evac streets:', xhr);
             const errors = xhr.responseJSON?.errors || {};
             if (Object.keys(errors).length > 0) {
                 Object.values(errors).forEach(error => {
-                    toastr.error(error[0]);
+                    console.error(error[0]);
                 });
             } else {
-                toastr.error('حدث خطأ أثناء حفظ بيانات الفسح');
+                console.error('Unknown error saving Evac streets');
             }
         }
     });
@@ -4405,22 +4385,18 @@ function addTestToTable() {
     
     // التحقق من البيانات المطلوبة
     if (!testName) {
-        toastr.error('يجب إدخال اسم الاختبار');
         return;
     }
     
     if (testPoints <= 0) {
-        toastr.error('يجب إدخال عدد النقاط');
         return;
     }
     
     if (testPrice <= 0) {
-        toastr.error('يجب إدخال السعر');
         return;
     }
     
     if (!testResult) {
-        toastr.error('يجب اختيار نتيجة الاختبار');
         return;
     }
     
@@ -4433,7 +4409,6 @@ function addTestToTable() {
         const licenseId = document.getElementById('lab-license-id').value;
         
         if (!licenseId) {
-            toastr.error('يجب اختيار رخصة أولاً');
             return;
         }
         
@@ -4462,22 +4437,11 @@ function addTestToTable() {
                     fileUrl = response.file_url;
                     fileName = response.file_name;
                     addTestWithFileData(testName, testPoints, testPrice, testTotal, testResult, fileUrl, fileName);
-                    toastr.success('تم رفع الملف بنجاح');
                 } else {
-                    toastr.error('فشل في رفع الملف: ' + response.message);
                     addTestWithFileData(testName, testPoints, testPrice, testTotal, testResult, null, null);
                 }
             },
             error: function(xhr) {
-                let errorMessage = 'خطأ في رفع الملف';
-                if (xhr.responseJSON && xhr.responseJSON.message) {
-                    errorMessage = xhr.responseJSON.message;
-                } else if (xhr.status === 422) {
-                    errorMessage = 'الملف غير صالح أو حجمه كبير جداً';
-                } else if (xhr.status === 500) {
-                    errorMessage = 'خطأ في الخادم، يرجى المحاولة لاحقاً';
-                }
-                toastr.error(errorMessage);
                 // إضافة الاختبار بدون ملف في حالة فشل الرفع
                 addTestWithFileData(testName, testPoints, testPrice, testTotal, testResult, null, null);
             }
@@ -4522,8 +4486,6 @@ function addTestWithFileData(testName, testPoints, testPrice, testTotal, testRes
     
     // مسح النموذج
     clearTestForm();
-    
-    toastr.success('تم إضافة الاختبار وحفظه تلقائياً');
 }
 
 // دالة مسح النموذج
@@ -4638,8 +4600,6 @@ function removeTest(testId) {
         if (licenseId) {
             autoSaveTestsToServer(licenseId);
         }
-        
-        toastr.success('تم حذف الاختبار وحفظ التغيير تلقائياً');
     }
 }
 
@@ -4722,7 +4682,6 @@ function downloadAttachment(fileUrl, fileName) {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    toastr.success('تم بدء تحميل الملف');
 }
 
 // دالة تحديث ملخص الاختبارات
@@ -4760,25 +4719,14 @@ function updateTestsSummary() {
 // دالة تحميل بيانات الاختبارات المحفوظة من الخادم
 function loadLabTestsFromServer(licenseId) {
     if (!licenseId || licenseId === '' || licenseId === 'undefined') {
-        console.log('No valid license ID provided for loading tests:', licenseId);
         testsArray = [];
         updateTestsTable();
         updateTestsSummary();
         return;
     }
     
-    console.log(`Loading lab tests for license ID: ${licenseId}`);
-    
-    // عرض مؤشر التحميل
-    const tableBody = document.getElementById('testsTableBody');
-    if (tableBody) {
-        tableBody.innerHTML = '<tr><td colspan="8" class="text-center"><i class="fas fa-spinner fa-spin me-2"></i>جاري تحميل البيانات...</td></tr>';
-    }
-    
     const csrfToken = document.querySelector('meta[name="csrf-token"]');
     if (!csrfToken) {
-        console.error('CSRF token not found');
-        toastr.error('خطأ في التحقق من الأمان');
         return;
     }
     
@@ -4790,38 +4738,28 @@ function loadLabTestsFromServer(licenseId) {
             }
         })
         .then(response => {
-            console.log('Response status:', response.status);
-            console.log('Response headers:', response.headers.get('content-type'));
-            
             if (!response.ok) {
-                throw new Error(`خطأ HTTP: ${response.status} - ${response.statusText}`);
+                throw new Error(`HTTP error: ${response.status} - ${response.statusText}`);
             }
             
             const contentType = response.headers.get('content-type');
             if (contentType && contentType.indexOf('application/json') !== -1) {
                 return response.json();
             } else {
-                throw new Error('الاستجابة ليست JSON صالح');
+                throw new Error('Response is not valid JSON');
             }
         })
         .then(data => {
-            console.log('License data received:', data);
-            
             if (data.success && data.license) {
                 try {
                     // التحقق من وجود بيانات الاختبارات
                     if (data.license.lab_tests_data && data.license.lab_tests_data !== '[]' && data.license.lab_tests_data !== '') {
-                        console.log('Raw lab_tests_data:', data.license.lab_tests_data);
-                        
-                        // معالجة البيانات بأمان
                         let savedTests;
                         if (typeof data.license.lab_tests_data === 'string') {
                             savedTests = JSON.parse(data.license.lab_tests_data);
                         } else {
                             savedTests = data.license.lab_tests_data;
                         }
-                        
-                        console.log('Parsed tests:', savedTests);
                         
                         if (Array.isArray(savedTests) && savedTests.length > 0) {
                             // تحويل البيانات المحفوظة إلى تنسيق النظام
@@ -4842,50 +4780,26 @@ function loadLabTestsFromServer(licenseId) {
                             // تحديث الجدول والملخص
                             updateTestsTable();
                             updateTestsSummary();
-                            
-                            console.log(`Successfully loaded ${testsArray.length} tests`);
-                          
                         } else {
                             // لا توجد اختبارات صالحة
-                            console.log('No valid tests found in saved data');
                             testsArray = [];
                             updateTestsTable();
                             updateTestsSummary();
                         }
                     } else {
                         // لا توجد بيانات محفوظة، جرب تحميل النسخة الاحتياطية
-                        console.log('No lab_tests_data found in response, trying local backup');
                         tryLoadLocalBackup(licenseId);
                     }
                 } catch (parseError) {
-                    console.error('Error parsing saved tests:', parseError);
                     testsArray = [];
                     updateTestsTable();
                     updateTestsSummary();
-                    toastr.error('خطأ في معالجة البيانات المحفوظة');
                 }
             } else {
-                console.log('Response indicates failure or no license data');
                 tryLoadLocalBackup(licenseId);
             }
         })
         .catch(error => {
-            console.error('Error loading tests from server:', error);
-            
-            // عرض رسالة أكثر تفصيلاً للخطأ
-            if (error.message.includes('404')) {
-                console.log('License not found, trying local backup');
-                // لا تظهر رسالة خطأ للمستخدم، فقط جرب النسخة الاحتياطية
-            } else if (error.message.includes('500')) {
-                console.warn('Server error, trying local backup');
-                // لا تظهر رسالة خطأ للمستخدم، فقط جرب النسخة الاحتياطية
-            } else if (error.message.includes('JSON')) {
-                console.warn('JSON parsing error, trying local backup');
-                // لا تظهر رسالة خطأ للمستخدم، فقط جرب النسخة الاحتياطية
-            } else {
-                console.warn('Unknown error loading tests, trying local backup:', error.message);
-            }
-            
             // جرب تحميل النسخة الاحتياطية المحلية
             tryLoadLocalBackup(licenseId);
         });
@@ -4893,56 +4807,16 @@ function loadLabTestsFromServer(licenseId) {
 
 // دالة تحميل النسخة الاحتياطية المحلية
 function tryLoadLocalBackup(licenseId) {
-    try {
-        const backupData = localStorage.getItem(`lab_tests_backup_${licenseId}`);
-        if (backupData) {
-            const savedTests = JSON.parse(backupData);
-            if (Array.isArray(savedTests) && savedTests.length > 0) {
-                testsArray = savedTests;
-                testIdCounter = testsArray.length + 1;
-                updateTestsTable();
-                updateTestsSummary();
-                console.log(`Loaded ${testsArray.length} tests from local backup`);
-                
-                // عرض رسالة تنبيه بسيطة
-                const tableBody = document.getElementById('testsTableBody');
-                if (tableBody && testsArray.length > 0) {
-                    const backupRow = document.createElement('tr');
-                    backupRow.className = 'table-warning';
-                    backupRow.innerHTML = `
-                        <td colspan="8" class="text-center py-2">
-                            <small class="text-muted">
-                                <i class="fas fa-info-circle me-1"></i>
-                                تم تحميل ${testsArray.length} اختبار من النسخة المحلية
-                                <button type="button" class="btn btn-sm btn-link p-0 ms-2" onclick="this.parentElement.parentElement.parentElement.remove()">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            </small>
-                        </td>
-                    `;
-                    tableBody.insertBefore(backupRow, tableBody.firstChild);
-                }
-                return;
-            }
-        }
-    } catch (error) {
-        console.error('Error loading local backup:', error);
-    }
-    
-    // إذا لم تنجح النسخة الاحتياطية، اعرض جدول فارغ
+    // تم تعطيل تحميل النسخة المحلية
     testsArray = [];
     updateTestsTable();
     updateTestsSummary();
-    
-    // لا تعرض رسالة خطأ للمستخدم، فقط اتركه فارغ
-    console.log('No backup data found, showing empty table');
 }
 
 // دالة الحفظ التلقائي على الخادم
 function autoSaveTestsToServer(licenseId) {
     if (!licenseId || licenseId === '' || licenseId === 'undefined') {
         console.error('No valid license ID provided for auto-save:', licenseId);
-        toastr.warning('يجب اختيار رخصة قبل الحفظ');
         return;
     }
     
@@ -4994,24 +4868,15 @@ function autoSaveTestsToServer(licenseId) {
         if (data.success) {
             console.log('Auto-save successful:', data);
             
-            // حفظ احتياطي محلي
-            try {
-                localStorage.setItem(`lab_tests_backup_${licenseId}`, JSON.stringify(testsArray));
-                console.log('Local backup updated after auto-save');
-            } catch (e) {
-                console.error('Failed to update local backup:', e);
-            }
             
             // عرض رسالة نجاح صغيرة في الزاوية
             showAutoSaveSuccess();
         } else {
             console.error('Auto-save failed:', data);
-            toastr.error('خطأ في الحفظ التلقائي: ' + (data.message || 'خطأ غير معروف'));
         }
     })
     .catch(error => {
         console.error('Auto-save error:', error);
-        toastr.error('خطأ في الحفظ التلقائي: ' + error.message);
     });
 }
 
@@ -5268,7 +5133,6 @@ function updateEvacuationRowNumbers() {
 function saveAllEvacuationDataSimple() {
     const licenseId = @if($workOrder->license) {{ $workOrder->license->id }} @else null @endif;
     if (!licenseId) {
-        toastr.error('لا توجد رخصة مرتبطة بأمر العمل هذا');
         return;
     }
 
@@ -5299,7 +5163,6 @@ function saveAllEvacuationDataSimple() {
     }
 
     if (evacuationDataArray.length === 0) {
-        toastr.warning('لا توجد بيانات صالحة للحفظ');
         return;
     }
 
@@ -5323,7 +5186,6 @@ function saveAllEvacuationDataSimple() {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            toastr.success(data.message + ' - تم حفظ البيانات والمرفقات بنجاح');
             // مسح حقل المرفق بعد الحفظ الناجح
             if (evacuationAttachment) {
                 evacuationAttachment.value = '';
@@ -5335,13 +5197,10 @@ function saveAllEvacuationDataSimple() {
             setTimeout(() => {
                 loadEvacuationDataForLicense(licenseId);
             }, 1000);
-        } else {
-            toastr.error(data.message || 'حدث خطأ أثناء حفظ البيانات');
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        toastr.error('حدث خطأ أثناء حفظ البيانات: ' + error.message);
     });
 }
 
@@ -5406,7 +5265,6 @@ function saveAllEvacuationData() {
     // استخدام الرخصة المرتبطة بأمر العمل
     const licenseId = @if($workOrder->license) {{ $workOrder->license->id }} @else null @endif;
     if (!licenseId) {
-        toastr.error('لا توجد رخصة مرتبطة بأمر العمل هذا');
         return;
     }
 
@@ -5444,7 +5302,6 @@ function saveAllEvacuationData() {
     }
 
     if (!hasValidData) {
-        toastr.warning('لا توجد بيانات صالحة للحفظ. تأكد من ملء الحقول المطلوبة.');
         return;
     }
     
@@ -5505,22 +5362,19 @@ function saveAllEvacuationData() {
     .then(data => {
         console.log('Response data:', data);
         if (data.success) {
-            toastr.success(`تم حفظ بيانات الإخلاءات بنجاح للرخصة: ${data.license_name || licenseId}`);
             // إعادة تحميل البيانات لإظهار المرفقات المحفوظة
             loadEvacuationDataForLicense(licenseId);
         } else {
-            toastr.error(data.message || 'حدث خطأ أثناء حفظ البيانات');
             if (data.errors) {
                 console.error('Validation errors:', data.errors);
                 Object.keys(data.errors).forEach(field => {
-                    toastr.error(`${field}: ${data.errors[field].join(', ')}`);
+                    console.error(`${field}: ${data.errors[field].join(', ')}`);
                 });
             }
         }
     })
     .catch(error => {
         console.error('Full error:', error);
-        toastr.error('حدث خطأ أثناء حفظ بيانات الإخلاءات: ' + error.message);
     })
     .finally(() => {
         // إعادة تعيين زر الحفظ

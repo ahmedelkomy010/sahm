@@ -23,29 +23,23 @@
                     </a>
 
                     @auth
-                        <a href="{{ route('admin.users.index') }}" 
-                           class="nav-item nav-link px-3 py-2 rounded {{ $isUsersPage ? 'active' : '' }}">
-                            <i class="fas fa-users-cog me-1"></i>
-                            إدارة المستخدمين
-                        </a>
-
-                        <a href="{{ route('admin.work-orders.index') }}" 
-                           class="nav-item nav-link px-3 py-2 rounded {{ $isWorkOrdersPage ? 'active' : '' }}">
-                            <i class="fas fa-clipboard-list me-1"></i>
-                            أوامر العمل
-                        </a>
-
                         @if(auth()->user()->is_admin)
                         <div class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle px-3 py-2 rounded" href="#" role="button" data-bs-toggle="dropdown">
+                            <a class="nav-link dropdown-toggle px-3 py-2 rounded {{ $isUsersPage ? 'active' : '' }}" href="#" role="button" data-bs-toggle="dropdown">
                                 <i class="fas fa-cog me-1"></i>
                                 الإعدادات
                             </a>
                             <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="#">إعدادات النظام</a></li>
-                                <li><a class="dropdown-item" href="#">النسخ الاحتياطي</a></li>
+                                <li>
+                                    <a class="dropdown-item" href="{{ route('admin.users.index') }}">
+                                        <i class="fas fa-users-cog me-2"></i>
+                                        إدارة المستخدمين
+                                    </a>
+                                </li>
+                                <li><a class="dropdown-item" href="#"><i class="fas fa-sliders-h me-2"></i>إعدادات النظام</a></li>
+                                <li><a class="dropdown-item" href="#"><i class="fas fa-database me-2"></i>النسخ الاحتياطي</a></li>
                                 <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="#">التقارير</a></li>
+                                <li><a class="dropdown-item" href="#"><i class="fas fa-chart-bar me-2"></i>التقارير</a></li>
                             </ul>
                         </div>
                         @endif
@@ -159,30 +153,47 @@
             </a>
 
             @auth
-                <a href="{{ route('admin.users.index') }}" 
-                   class="nav-link {{ $isUsersPage ? 'active fw-bold text-primary' : 'text-dark' }}">
-                    <i class="fas fa-users-cog me-2"></i>
-                    إدارة المستخدمين
-                </a>
-
-                <a href="{{ route('admin.work-orders.index') }}" 
-                   class="nav-link {{ $isWorkOrdersPage ? 'active fw-bold text-primary' : 'text-dark' }}">
-                    <i class="fas fa-clipboard-list me-2"></i>
-                    أوامر العمل
-                </a>
-
-                <hr class="my-3">
-
                 <a href="{{ route('profile.edit') }}" class="nav-link text-dark">
                     <i class="fas fa-user-edit me-2"></i>
                     حسابي الشخصي
                 </a>
 
                 @if(auth()->user()->is_admin)
-                <a href="#" class="nav-link text-dark">
-                    <i class="fas fa-cog me-2"></i>
-                    الإعدادات
-                </a>
+                <!-- Settings Dropdown for Mobile -->
+                <div class="accordion" id="settingsAccordion">
+                    <div class="accordion-item border-0">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed nav-link text-dark {{ $isUsersPage ? 'active fw-bold text-primary' : '' }}" 
+                                    type="button" 
+                                    data-bs-toggle="collapse" 
+                                    data-bs-target="#settingsCollapse">
+                                <i class="fas fa-cog me-2"></i>
+                                الإعدادات
+                            </button>
+                        </h2>
+                        <div id="settingsCollapse" class="accordion-collapse collapse" data-bs-parent="#settingsAccordion">
+                            <div class="accordion-body p-0">
+                                <a class="nav-link py-2 ps-4 text-dark" href="{{ route('admin.users.index') }}">
+                                    <i class="fas fa-users-cog me-2"></i>
+                                    إدارة المستخدمين
+                                </a>
+                                <a class="nav-link py-2 ps-4 text-dark" href="#">
+                                    <i class="fas fa-sliders-h me-2"></i>
+                                    إعدادات النظام
+                                </a>
+                                <a class="nav-link py-2 ps-4 text-dark" href="#">
+                                    <i class="fas fa-database me-2"></i>
+                                    النسخ الاحتياطي
+                                </a>
+                                <hr class="my-2">
+                                <a class="nav-link py-2 ps-4 text-dark" href="#">
+                                    <i class="fas fa-chart-bar me-2"></i>
+                                    التقارير
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 @endif
 
                 <form method="POST" action="{{ route('logout') }}" class="mt-3">
@@ -256,6 +267,31 @@
     .main-header .container-fluid {
         padding-left: 1rem;
         padding-right: 1rem;
+    }
+
+    .accordion-button {
+        background: none !important;
+        box-shadow: none !important;
+        padding: 0.5rem 0;
+    }
+
+    .accordion-button::after {
+        margin-right: auto;
+        margin-left: 0;
+    }
+
+    .accordion-body {
+        background-color: rgba(0, 0, 0, 0.02);
+        border-radius: 0.5rem;
+    }
+
+    .accordion-body .nav-link {
+        transition: all 0.3s ease;
+    }
+
+    .accordion-body .nav-link:hover {
+        background-color: rgba(0, 0, 0, 0.03);
+        transform: translateX(-5px);
     }
 }
 

@@ -140,18 +140,18 @@ use Illuminate\Support\Facades\Route;
                 "closeButton": true,
                 "debug": false,
                 "newestOnTop": true,
-                "progressBar": true,
+                "progressBar": false,
                 "positionClass": "toast-top-right",
                 "preventDuplicates": false,
                 "onclick": null,
-                "showDuration": "300",
-                "hideDuration": "1000",
-                "timeOut": "5000",
-                "extendedTimeOut": "1000",
-                "showEasing": "swing",
-                "hideEasing": "linear",
-                "showMethod": "fadeIn",
-                "hideMethod": "fadeOut"
+                "showDuration": "0",
+                "hideDuration": "0",
+                "timeOut": "0",
+                "extendedTimeOut": "0",
+                "showEasing": "none",
+                "hideEasing": "none",
+                "showMethod": "none",
+                "hideMethod": "none"
             };
         </script>
     </body>
