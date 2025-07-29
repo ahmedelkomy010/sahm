@@ -7,7 +7,7 @@
             <div class="d-flex align-items-center">
                 <a href="{{ route('dashboard') }}" class="d-flex align-items-center text-decoration-none">
                     <div class="logo-container bg-white rounded-circle p-1 me-2">
-                        <img class="logo-img" src="{{ asset('images/logo-sahm.svg') }}" alt="Sahm Logo">
+                        <img class="logo-img" src="{{ asset('images/sahm.png') }}" alt="Sahm Logo">
                     </div>
                     <span class="fs-5 fw-bold text-white d-none d-md-inline">شركة سهم بلدي للمقاولات</span>
                 </a>

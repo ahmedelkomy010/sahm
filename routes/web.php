@@ -26,8 +26,14 @@ use App\Http\Controllers\ExcavationDetailController;
 
 // المسار الرئيسي
 Route::get('/', function () {
+    if (auth()->check()) {
+        return redirect()->route('admin.dashboard');
+    }
     return view('welcome');
-});
+})->name('login');
+
+// روت تسجيل الدخول
+Route::post('/', [App\Http\Controllers\Auth\AuthenticatedSessionController::class, 'store']);
 
 // Use Laravel Breeze Routes
 require __DIR__.'/auth.php';

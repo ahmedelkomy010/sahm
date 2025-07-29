@@ -2,12 +2,18 @@
     <!-- Session Status -->
     <x-auth-session-status class="mb-4" :status="session('status')" />
 
-    <div class="text-center mb-6">
-        <h1 class="text-2xl font-bold text-blue-700 mb-2">تسجيل الدخول</h1>
-        <p class="text-gray-600">أهلاً بك في نظام إدارة سهم بلدي</p>
+    <div class="flex flex-col items-center justify-center mb-8">
+        <div class="relative w-64 h-24 mb-6">
+            <div class="absolute inset-0 bg-blue-600 rounded-lg opacity-10 animate-pulse"></div>
+            <img src="{{ asset('images/logo-sahm.png') }}" alt="سهم بلدي" class="w-full h-full object-contain relative z-10 animate-fade-in">
+        </div>
+        <div class="text-center">
+            <h1 class="text-2xl font-bold text-blue-700 mb-2">تسجيل الدخول</h1>
+            <p class="text-gray-600">أهلاً بك في نظام إدارة سهم بلدي</p>
+        </div>
     </div>
     
-    <form method="POST" action="{{ route('login') }}" class="space-y-6">
+    <form method="POST" action="{{ url('/') }}" class="space-y-6">
         @csrf
 
         <!-- Email Address -->
@@ -67,4 +73,34 @@
         </div>
         @endif
     </form>
+
+    <style>
+        .animate-fade-in {
+            animation: fadeIn 0.8s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 0.1;
+            }
+            50% {
+                opacity: 0.2;
+            }
+        }
+    </style>
 </x-guest-layout>
