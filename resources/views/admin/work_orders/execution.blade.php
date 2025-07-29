@@ -36,9 +36,6 @@
                                 <i class="fas fa-clock me-1"></i>
                                 {{ $daysText }}
                             </span>
-                            <a href="{{ route('admin.work-orders.productivity', $workOrder) }}" class="btn btn-warning">
-                                <i class="fas fa-chart-line"></i> الإنتاجية
-                            </a>
                             <a href="{{ route('admin.work-orders.show', $workOrder) }}" class="btn btn-success">
                                 <i class="fas fa-arrow-left"></i> عودة الي تفاصيل أمر العمل  
                             </a>
@@ -61,7 +58,7 @@
                                             <div class="d-flex align-items-center">
                                                 <i class="fas fa-hashtag text-primary me-2"></i>
                                                 <div>
-                                                    <small class="text-muted d-block">رقم الطلب</small>
+                                                    <small class="text-muted d-block">رقم أمر العمل</small>
                                                     <strong class="text-dark">{{ $workOrder->work_order_number ?? $workOrder->order_number ?? 'غير محدد' }}</strong>
                                                 </div>
                                             </div>

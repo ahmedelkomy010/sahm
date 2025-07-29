@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+<!-- @extends('layouts.admin')
 
 @section('title', 'المواد')
 @section('header', 'جدول المواد')
@@ -207,4 +207,4 @@
         </div>
         @endif
     </div>
-@endsection 
+@endsection  -->

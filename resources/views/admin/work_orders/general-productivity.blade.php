@@ -28,9 +28,7 @@
                             <small class="text-white-50">تقرير شامل لجميع أوامر العمل</small>
                         </div>
                         <div class="d-flex align-items-center gap-3">
-                            <a href="{{ route('admin.work-orders.index', ['project' => $project ?? '']) }}" class="btn btn-light">
-                                <i class="fas fa-arrow-left"></i> العودة إلى أوامر العمل
-                            </a>
+                            
                         </div>
                     </div>
                 </div>
@@ -271,36 +269,52 @@ function setDateRange(startDate, endDate) {
 
 function setTodayFilter() {
     const today = new Date();
-    setDateRange(today, today);
+    today.setHours(0, 0, 0, 0); // بداية اليوم
+    const endOfDay = new Date(today);
+    endOfDay.setHours(23, 59, 59, 999); // نهاية اليوم
+    setDateRange(today, endOfDay);
 }
 
 function setWeekFilter() {
     const today = new Date();
+    today.setHours(23, 59, 59, 999); // نهاية اليوم الحالي
+    
     const startOfWeek = new Date(today);
-    // نحسب بداية الأسبوع (الأحد)
-    startOfWeek.setDate(today.getDate() - today.getDay());
+    startOfWeek.setDate(today.getDate() - 6); // آخر 7 أيام
+    startOfWeek.setHours(0, 0, 0, 0); // بداية اليوم
+    
     setDateRange(startOfWeek, today);
 }
 
 function setMonthFilter() {
     const today = new Date();
+    today.setHours(23, 59, 59, 999); // نهاية اليوم الحالي
+    
     const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    startOfMonth.setHours(0, 0, 0, 0); // بداية اليوم
+    
     setDateRange(startOfMonth, today);
 }
 
 function setHalfYearFilter() {
     const today = new Date();
+    today.setHours(23, 59, 59, 999); // نهاية اليوم الحالي
+    
     const startDate = new Date(today);
-    // نرجع 6 شهور للخلف
     startDate.setMonth(today.getMonth() - 6);
+    startDate.setHours(0, 0, 0, 0); // بداية اليوم
+    
     setDateRange(startDate, today);
 }
 
 function setYearFilter() {
     const today = new Date();
+    today.setHours(23, 59, 59, 999); // نهاية اليوم الحالي
+    
     const startDate = new Date(today);
-    // نرجع سنة للخلف
     startDate.setFullYear(today.getFullYear() - 1);
+    startDate.setHours(0, 0, 0, 0); // بداية اليوم
+    
     setDateRange(startDate, today);
 }
 

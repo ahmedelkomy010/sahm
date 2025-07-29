@@ -15,6 +15,41 @@ use Illuminate\Support\Facades\Auth;
 class WorkOrderController extends Controller
 {
     /**
+     * عرض قائمة أوامر العمل
+     */
+    public function index(Request $request)
+    {
+        $project = $request->get('project', 'riyadh');
+        
+        // تحديد المدينة بناءً على المشروع
+        $city = $project === 'madinah' ? 'المدينة المنورة' : 'الرياض';
+        
+        $query = WorkOrder::where('city', $city);
+        
+        // فلتر رقم الطلب
+        if ($request->filled('order_number')) {
+            $query->where('order_number', 'like', '%' . $request->order_number . '%');
+        }
+        
+        // فلتر نوع العمل
+        if ($request->filled('work_type')) {
+            $query->where('work_type', $request->work_type);
+        }
+        
+        // فلتر حالة التنفيذ
+        if ($request->filled('execution_status')) {
+            $query->where('execution_status', $request->execution_status);
+        }
+        
+        // ترتيب النتائج
+        $query->orderBy('created_at', 'desc');
+        
+        $workOrders = $query->paginate(15);
+        
+        return view('admin.work_orders.index', compact('workOrders', 'project'));
+    }
+
+    /**
      * عرض صفحة الإنتاجية العامة
      */
     public function generalProductivity(Request $request)
@@ -54,27 +89,32 @@ class WorkOrderController extends Controller
             $workOrdersData = [];
             
             foreach ($workOrders as $workOrder) {
-                $itemsCount = $workOrder->workOrderItems->count();
-                $executedItemsCount = $workOrder->workOrderItems->where('executed_quantity', '>', 0)->count();
-                $executedQuantity = $workOrder->workOrderItems->sum('executed_quantity');
-                $totalValue = $workOrder->workOrderItems->sum(function($item) {
-                    return $item->quantity * $item->unit_price;
+                // جلب كل البنود المرتبطة بأمر العمل
+                $allWorkItems = $workOrder->workOrderItems()
+                    ->with('workItem')
+                    ->get();
+                
+                $itemsCount = $allWorkItems->count();
+                $executedItemsCount = $allWorkItems->where('executed_quantity', '>', 0)->count();
+                $executedQuantity = $allWorkItems->sum('executed_quantity');
+                $totalValue = $allWorkItems->sum(function($item) {
+                    return $item->quantity * ($item->unit_price ?? 0);
                 });
                 
                 // جمع تفاصيل بنود العمل
                 $workItemsDetails = [];
-                foreach ($workOrder->workOrderItems as $workOrderItem) {
+                foreach ($allWorkItems as $workOrderItem) {
                     $workItemsDetails[] = [
                         'id' => $workOrderItem->id,
                         'work_item_code' => $workOrderItem->workItem->code ?? 'غير محدد',
                         'work_item_description' => $workOrderItem->workItem->description ?? 'غير محدد',
-                        'planned_quantity' => $workOrderItem->quantity,
+                        'planned_quantity' => $workOrderItem->quantity ?? 0,
                         'executed_quantity' => $workOrderItem->executed_quantity ?? 0,
                         'unit' => $workOrderItem->workItem->unit ?? 'غير محدد',
-                        'unit_price' => $workOrderItem->unit_price,
-                        'planned_amount' => $workOrderItem->quantity * $workOrderItem->unit_price,
-                        'executed_amount' => ($workOrderItem->executed_quantity ?? 0) * $workOrderItem->unit_price,
-                        'completion_percentage' => $workOrderItem->quantity > 0 ? 
+                        'unit_price' => $workOrderItem->unit_price ?? 0,
+                        'planned_amount' => ($workOrderItem->quantity ?? 0) * ($workOrderItem->unit_price ?? 0),
+                        'executed_amount' => ($workOrderItem->executed_quantity ?? 0) * ($workOrderItem->unit_price ?? 0),
+                        'completion_percentage' => ($workOrderItem->quantity ?? 0) > 0 ? 
                             round((($workOrderItem->executed_quantity ?? 0) / $workOrderItem->quantity) * 100, 2) : 0,
                         'work_date' => $workOrderItem->work_date ? $workOrderItem->work_date->format('Y-m-d') : null,
                         'notes' => $workOrderItem->notes,
@@ -308,6 +348,22 @@ class WorkOrderController extends Controller
             'project',
             'executionImages'
         ));
+    }
+
+    /**
+     * عرض تقرير إنتاجية الرياض
+     */
+    public function riyadhProductivity()
+    {
+        return view('admin.work_orders.general-productivity', ['project' => 'riyadh']);
+    }
+
+    /**
+     * عرض تقرير إنتاجية المدينة
+     */
+    public function madinahProductivity()
+    {
+        return view('admin.work_orders.general-productivity', ['project' => 'madinah']);
     }
 
     /**

@@ -84,51 +84,87 @@
             </div>
         </div>
 
-        <!-- صلاحيات المستخدم -->
-        <div class="bg-gray-50 p-4 rounded-lg mb-6">
-            <h3 class="text-md font-bold text-gray-700 mb-4">صلاحيات المستخدم في النظام</h3>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <div class="flex items-center">
-                        <input type="checkbox" id="is_admin" name="is_admin" value="1" {{ old('is_admin') ? 'checked' : '' }}
-                            class="h-5 w-5 ml-2 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
-                        <label for="is_admin" class="text-sm font-medium text-gray-700">مشرف النظام</label>
-                        <span class="mr-2 px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">صلاحيات كاملة</span>
+      
+        
+        
+        <!-- صلاحيات المشاريع -->
+        <div class="bg-indigo-50 p-4 rounded-lg mb-6">
+            <h3 class="text-md font-bold text-indigo-800 mb-2 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-5 0H9m0 0H5m0 0h4M7 7h10M7 11h10M7 15h10" />
+                </svg>
+                صلاحيات الوصول إلى أنواع المشاريع
+            </h3>
+                
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-white p-3 rounded-lg border border-blue-200">
+                    <div class="flex items-start">
+                        <input type="checkbox" id="access_unified_contracts" name="permissions[]" value="access_unified_contracts" 
+                            {{ (is_array(old('permissions')) && in_array('access_unified_contracts', old('permissions'))) ? 'checked' : '' }}
+                            class="h-5 w-5 ml-2 mt-1 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                        <div class="mr-2">
+                            <label for="access_unified_contracts" class="text-sm font-medium text-blue-800 flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                العقد الموحد
+                            </label>
+                            <p class="text-xs text-blue-600 mt-1">إدارة العقود الموحدة والوثائق الرسمية</p>
+                        </div>
                     </div>
-                    <p class="text-xs text-gray-500 mt-1 mr-7">المستخدم المشرف يمكنه إدارة المستخدمين وتنفيذ جميع العمليات في النظام</p>
                 </div>
                 
-                <div>
-                    <div class="flex items-center">
-                        <input type="checkbox" id="can_manage_users" name="permissions[]" value="manage_users" {{ (is_array(old('permissions')) && in_array('manage_users', old('permissions'))) ? 'checked' : '' }}
-                            class="h-5 w-5 ml-2 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-                        <label for="can_manage_users" class="text-sm font-medium text-gray-700">إدارة المستخدمين</label>
+                <div class="bg-white p-3 rounded-lg border border-green-200">
+                    <div class="flex items-start">
+                        <input type="checkbox" id="access_turnkey_projects" name="permissions[]" value="access_turnkey_projects" 
+                            {{ (is_array(old('permissions')) && in_array('access_turnkey_projects', old('permissions'))) ? 'checked' : '' }}
+                            class="h-5 w-5 ml-2 mt-1 text-green-600 focus:ring-green-500 border-gray-300 rounded">
+                        <div class="mr-2">
+                            <label for="access_turnkey_projects" class="text-sm font-medium text-green-800 flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                                </svg>
+                                تسليم مفتاح
+                            </label>
+                            <p class="text-xs text-green-600 mt-1">إدارة مشاريع تسليم المفتاح الجاهزة</p>
+                        </div>
                     </div>
-                    <p class="text-xs text-gray-500 mt-1 mr-7">يمكنه عرض وتعديل بيانات المستخدمين</p>
                 </div>
                 
-                <div>
-                    <div class="flex items-center">
-                        <input type="checkbox" id="can_view_reports" name="permissions[]" value="view_reports" {{ (is_array(old('permissions')) && in_array('view_reports', old('permissions'))) ? 'checked' : '' }}
-                            class="h-5 w-5 ml-2 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-                        <label for="can_view_reports" class="text-sm font-medium text-gray-700">عرض التقارير</label>
+                <div class="bg-white p-3 rounded-lg border border-purple-200">
+                    <div class="flex items-start">
+                        <input type="checkbox" id="access_special_projects" name="permissions[]" value="access_special_projects" 
+                            {{ (is_array(old('permissions')) && in_array('access_special_projects', old('permissions'))) ? 'checked' : '' }}
+                            class="h-5 w-5 ml-2 mt-1 text-purple-600 focus:ring-purple-500 border-gray-300 rounded">
+                        <div class="mr-2">
+                            <label for="access_special_projects" class="text-sm font-medium text-purple-800 flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                </svg>
+                                مشاريع خاصة
+                            </label>
+                            <p class="text-xs text-purple-600 mt-1">تنفيذ المشاريع الخاصة والمخصصة</p>
+                        </div>
                     </div>
-                    <p class="text-xs text-gray-500 mt-1 mr-7">يمكنه عرض تقارير النظام والإحصائيات</p>
-                </div>
-                
-                <div>
-                    <div class="flex items-center">
-                        <input type="checkbox" id="can_manage_work_orders" name="permissions[]" value="manage_work_orders" {{ (is_array(old('permissions')) && in_array('manage_work_orders', old('permissions'))) ? 'checked' : '' }}
-                            class="h-5 w-5 ml-2 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-                        <label for="can_manage_work_orders" class="text-sm font-medium text-gray-700">إدارة أوامر العمل</label>
-                    </div>
-                    <p class="text-xs text-gray-500 mt-1 mr-7">يمكنه إنشاء وتعديل وحذف أوامر العمل</p>
                 </div>
             </div>
             
-            <div class="mt-3 pt-3 border-t border-gray-200">
-                <p class="text-xs text-gray-500">ملاحظة: المستخدم المشرف سيكون لديه جميع الصلاحيات تلقائياً بغض النظر عن الخيارات المحددة</p>
+            <div class="mt-3 pt-3 border-t border-indigo-200">
+                <div class="bg-amber-50 border border-amber-200 rounded-lg p-3">
+                    <div class="flex">
+                        <svg class="flex-shrink-0 h-5 w-5 text-amber-400 ml-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                        </svg>
+                        <div class="mr-3">
+                            <h3 class="text-sm font-medium text-amber-800">تنبيه مهم</h3>
+                            <div class="mt-2 text-sm text-amber-700">
+                                <p>• إذا لم يتم تحديد أي نوع من المشاريع، لن يتمكن المستخدم من الوصول إلى أي مشروع</p>
+                                <p>• المستخدم المشرف يمكنه الوصول إلى جميع أنواع المشاريع تلقائياً</p>
+                                <p>• يمكن تعديل هذه الصلاحيات لاحقاً من صفحة تعديل المستخدم</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
         

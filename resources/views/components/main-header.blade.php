@@ -36,6 +36,12 @@
                                         إدارة المستخدمين
                                     </a>
                                 </li>
+                                <li>
+                                    <a class="dropdown-item" href="{{ route('admin.reports.unified') }}">
+                                        <i class="fas fa-file-alt me-2"></i>
+                                        التقارير العامة للعقد الموحد
+                                    </a>
+                                </li>
                                 <li><a class="dropdown-item" href="#"><i class="fas fa-sliders-h me-2"></i>إعدادات النظام</a></li>
                                 <li><a class="dropdown-item" href="#"><i class="fas fa-database me-2"></i>النسخ الاحتياطي</a></li>
                                 <li><hr class="dropdown-divider"></li>
@@ -176,6 +182,10 @@
                                 <a class="nav-link py-2 ps-4 text-dark" href="{{ route('admin.users.index') }}">
                                     <i class="fas fa-users-cog me-2"></i>
                                     إدارة المستخدمين
+                                </a>
+                                <a class="nav-link py-2 ps-4 text-dark" href="{{ route('admin.reports.unified') }}">
+                                    <i class="fas fa-file-alt me-2"></i>
+                                    التقارير العامة للعقد الموحد
                                 </a>
                                 <a class="nav-link py-2 ps-4 text-dark" href="#">
                                     <i class="fas fa-sliders-h me-2"></i>

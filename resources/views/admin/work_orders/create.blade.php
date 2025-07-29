@@ -50,7 +50,7 @@
                         <div class="row mb-4">
                             <div class="col-md-6">
                                 <div class="form-group mb-3">
-                                    <label for="order_number" class="form-label fw-bold">رقم الطلب</label>
+                                    <label for="order_number" class="form-label fw-bold">رقم أمر العمل</label>
                                     <input id="order_number" type="text" class="form-control @error('order_number') is-invalid @enderror" name="order_number" value="{{ old('order_number') }}" autofocus>
                                     @error('order_number')
                                         <span class="invalid-feedback" role="alert">
@@ -181,11 +181,23 @@
                                     <label for="office" class="form-label fw-bold">المكتب</label>
                                     <select id="office" class="form-select @error('office') is-invalid @enderror" name="office"required>
                                         <option value="">اختر المكتب</option>
-                                        <option value="خريص" {{ old('office') == 'خريص' ? 'selected' : '' }}>خريص</option>
-                                        <option value="الشرق" {{ old('office') == 'الشرق' ? 'selected' : '' }}>الشرق</option>
-                                        <option value="الشمال" {{ old('office') == 'الشمال' ? 'selected' : '' }}>الشمال</option>
-                                        <option value="الجنوب" {{ old('office') == 'الجنوب' ? 'selected' : '' }}>الجنوب</option>
-                                        <option value="الدرعية" {{ old('office') == 'الدرعية' ? 'selected' : '' }}>الدرعية</option>
+                                        @if(isset($project))
+                                            @if($project == 'riyadh')
+                                                <option value="خريص" {{ old('office') == 'خريص' ? 'selected' : '' }}>خريص</option>
+                                                <option value="الشرق" {{ old('office') == 'الشرق' ? 'selected' : '' }}>الشرق</option>
+                                                <option value="الشمال" {{ old('office') == 'الشمال' ? 'selected' : '' }}>الشمال</option>
+                                                <option value="الجنوب" {{ old('office') == 'الجنوب' ? 'selected' : '' }}>الجنوب</option>
+                                                <option value="الدرعية" {{ old('office') == 'الدرعية' ? 'selected' : '' }}>الدرعية</option>
+                                            @elseif($project == 'madinah')
+                                                <option value="المدينة   " {{ old('office') == 'المدينة' ? 'selected' : '' }}>المدينة</option>
+                                                <option value="ينبع" {{ old('office') == 'ينبع' ? 'selected' : '' }}>ينبع</option>
+                                                <option value="خيبر" {{ old('office') == 'خيبر' ? 'selected' : '' }}>خيبر</option>
+                                                <option value="مهد الذهب" {{ old('office') == 'مهد-الذهب' ? 'selected' : '' }}>مهد الذهب</option>
+                                                <option value="بدر" {{ old('office') == 'بدر' ? 'selected' : '' }}>بدر</option>
+                                                <option value="الحناكية" {{ old('office') == 'الحناكية' ? 'selected' : '' }}>الحناكية</option>
+                                                <option value="العلا" {{ old('office') == 'العلا' ? 'selected' : '' }}>    العلا</option>
+                                            @endif
+                                        @endif
                                     </select>
                                     @error('office')
                                         <span class="invalid-feedback" role="alert">
@@ -944,7 +956,7 @@ document.addEventListener('DOMContentLoaded', function() {
             '802': 'شبكة ارضية VL ايصال سريع',
             '803': 'شبكة هوائية VL ايصال سريع',
             '402': 'توصيل عداد بحفرية شبكة ارضيه',
-            '401': '(عداد بدون حفرية) أرضي/هوائي',
+            '401': '(عداد بدون حفرية ) أرضي/هوائي',
             '404': 'عداد بمحطة شبكة ارضية VM',
             '405': 'توصيل عداد بمحطة شبكة هوائية VM',
             '430': 'مخططات منح وزارة البلدية',

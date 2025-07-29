@@ -167,7 +167,7 @@
                                                 <td>{{ $workOrder->id }}</td>
                                             </tr>
                                             <tr>
-                                                <th>رقم الطلب</th>
+                                                <th>رقم أمر العمل</th>
                                                 <td>{{ $workOrder->order_number }}</td>
                                             </tr>
                                             <tr>
@@ -502,19 +502,19 @@
                                             
                                             <!-- قيم الاختبارات -->
                                             <tr>
-                                                <th style="width: 40%">قيمة أمر العمل المبدئية شامل الاستشاري</th>
+                                                <th style="width: 40%">قيمة أمر العمل المبدئية شامل الاستشاري بدون الضريبة</th>
                                                 <td>{{ number_format($workOrder->order_value_with_consultant, 2) }} ﷼</td>
                                             </tr>
                                             <tr>
-                                                <th>قيمة أمر العمل المبدئية غير شامل الاستشاري</th>
+                                                <th>قيمة أمر العمل المبدئية غير شامل الاستشاري بدون الضريبة</th>
                                                 <td>{{ number_format($workOrder->order_value_without_consultant, 2) }} ﷼</td>
                                             </tr>
                                             <tr>
-                                                <th>قيمة التنفيذ الفعلي شامل الاستشاري</th>
+                                                <th>قيمة التنفيذ الفعلي شامل الاستشاري بدون الضريبة</th>
                                                 <td>{{ $workOrder->actual_execution_value_consultant ? number_format($workOrder->actual_execution_value_consultant, 2) . ' ﷼' : 'غير متوفر' }}</td>
                                             </tr>
                                             <tr>
-                                                <th>قيمة التنفيذ الفعلي غير شامل الاستشاري</th>
+                                                <th>قيمة التنفيذ الفعلي غير شامل الاستشاري بدون الضريبة</th>
                                                 <td>{{ $workOrder->actual_execution_value_without_consultant ? number_format($workOrder->actual_execution_value_without_consultant, 2) . ' ﷼' : 'غير متوفر' }}</td>
                                             </tr>
                                             <tr>
@@ -529,13 +529,14 @@
                                                 <th>القيمة الكلية النهائية غير شامل الضريبة</th>
                                                 <td>{{ $workOrder->final_total_value ? number_format($workOrder->final_total_value, 2, '.', '') . ' ﷼' : 'غير متوفر' }}</td>
                                             </tr>
-                                            <tr>
-                                                <th>قيمة اختبارات ما قبل التشغيل</th>
-                                                <td>{{ $workOrder->pre_operation_tests ?? 'غير متوفر' }}</td>
-                                            </tr>
+                                            
                                             <tr>
                                                 <th>قيمة الضريبة</th>
                                                 <td>{{ $workOrder->tax_value ? number_format($workOrder->tax_value, 2) . ' ﷼' : 'غير متوفر' }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>قيمة اختبارات ما قبل التشغيل</th>
+                                                <td>{{ $workOrder->pre_operation_tests ?? 'غير متوفر' }}</td>
                                             </tr>
                                             <tr>
                                                 <th>رقم أمر الشراء</th>
@@ -551,19 +552,19 @@
                                                     <td><span class="badge bg-info">{{ $workOrder->licenses->count() }} رخصة</span></td>
                                                 </tr>
                                                 <tr>
-                                                    <th>إجمالي قيمة الرخص</th>
+                                                    <th>إجمالي قيمة رخص الحفر</th>
                                                     <td><span class="text-primary fw-bold">{{ number_format($licensesTotals['total_license_value'] ?? 0, 2) }} ﷼</span></td>
                                                 </tr>
                                                 <tr>
-                                                    <th>إجمالي قيمة التمديدات</th>
+                                                    <th>إجمالي قيمة تمديدات الرخص</th>
                                                     <td><span class="text-info fw-bold">{{ number_format($licensesTotals['total_extension_value'] ?? 0, 2) }} ﷼</span></td>
                                                 </tr>
                                                 <tr>
-                                                    <th>إجمالي قيمة الإخلاءات</th>
+                                                    <th>إجمالي قيمة اخلاءات الرخص</th>
                                                     <td><span class="text-warning fw-bold">{{ number_format($licensesTotals['total_evacuation_value'] ?? 0, 2) }} ﷼</span></td>
                                                 </tr>
                                                 <tr>
-                                                    <th>إجمالي قيمة المخالفات</th>
+                                                    <th>إجمالي قيمة مخالفات الرخص</th>
                                                     <td>
                                                         <span class="text-danger fw-bold">{{ number_format($licensesTotals['total_violations_value'] ?? 0, 2) }} ﷼</span>
                                                         @if(($licensesTotals['total_violations_count'] ?? 0) > 0)
@@ -584,10 +585,7 @@
                                                 @php
                                                     $grandTotal = ($licensesTotals['total_license_value'] ?? 0) + ($licensesTotals['total_extension_value'] ?? 0) + ($licensesTotals['total_evacuation_value'] ?? 0) + ($licensesTotals['total_violations_value'] ?? 0);
                                                 @endphp
-                                                <tr class="border-top border-1">
-                                                    <th>إجمالي  الرخص والمخالفات</th>
-                                                    <td><span class="text-success fw-bold fs-5">{{ number_format($grandTotal, 2) }} ﷼</span></td>
-                                                </tr>
+                                               
                                                 @php $latestLicense = $workOrder->licenses()->latest()->first(); @endphp
                                                 @if($latestLicense)
                                                 <tr>
@@ -609,7 +607,7 @@
                                                 @endif
                                             @else
                                                 <tr>
-                                                    <th>الرخص والمخالفات</th>
+                                                    <th>معلومات الرخص</th>
                                                     <td><span class="text-muted">لا توجد رخص مرتبطة بهذا أمر العمل</span></td>
                                                 </tr>
                                             @endif

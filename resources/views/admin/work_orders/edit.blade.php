@@ -20,7 +20,7 @@
                         <div class="row mb-4">
                             <div class="col-md-6">
                                 <div class="form-group mb-3">
-                                    <label for="order_number" class="form-label fw-bold">رقم الطلب</label>
+                                    <label for="order_number" class="form-label fw-bold">رقم أمر العمل</label>
                                     <input id="order_number" type="text" class="form-control @error('order_number') is-invalid @enderror" name="order_number" value="{{ old('order_number', $workOrder->order_number) }}" autofocus>
                                     @error('order_number')
                                         <span class="invalid-feedback" role="alert">

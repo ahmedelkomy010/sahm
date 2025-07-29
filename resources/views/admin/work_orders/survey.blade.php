@@ -23,7 +23,7 @@
                                             <div class="d-flex align-items-center">
                                                 <i class="fas fa-hashtag text-primary me-2"></i>
                                                 <div>
-                                                    <small class="text-muted d-block">رقم الطلب</small>
+                                                    <small class="text-muted d-block">رقم أمر العمل</small>
                                                     <strong class="text-primary">{{ $workOrder->order_number }}</strong>
                                                 </div>
                                             </div>

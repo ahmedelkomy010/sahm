@@ -62,20 +62,84 @@
 
                     <!-- أزرار الإجراءات -->
                     <div class="d-flex justify-content-end align-items-center mb-4">
-                        <a href="{{ route('general-productivity', ['project' => $project]) }}" class="btn btn-success me-2 px-4">
+                        <!-- <a href="{{ route('general-productivity', ['project' => $project]) }}" class="btn btn-success me-2 px-4">
                             <i class="fas fa-chart-bar me-1"></i> تقرير الإنتاجية العام
-                        </a>
+                        </a> -->
                         <a href="{{ route('admin.work-orders.create', ['project' => $project]) }}" class="btn btn-primary px-4" style="min-width: 150px;">
                             <i class="fas fa-plus me-1"></i> إنشاء أمر عمل جديد
                         </a>
                     </div>
 
+                    <!-- فلاتر البحث -->
+                    <!-- <div class="mb-4 bg-light p-4 rounded shadow-sm border">
+                        <h5 class="mb-3 text-primary">
+                            <i class="fas fa-filter me-2"></i>
+                            فلترة أوامر العمل
+                        </h5>
+                        <form action="" method="GET" class="row g-3">
+                            <input type="hidden" name="project" value="{{ $project }}">
+                            
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="order_number" class="form-label fw-bold">
+                                        <i class="fas fa-hashtag text-primary me-1"></i>
+                                        رقم الطلب
+                                    </label>
+                                    <input type="text" class="form-control" id="order_number" name="order_number" 
+                                        value="{{ request('order_number') }}" placeholder="ابحث برقم الطلب...">
+                                </div>
+                            </div>
+                            
+                            
+                            
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="execution_status" class="form-label fw-bold">
+                                        <i class="fas fa-tasks text-primary me-1"></i>
+                                        حالة التنفيذ
+                                    </label>
+                                    <select class="form-select" id="execution_status" name="execution_status">
+                                        <option value="">كل الحالات</option>
+                                        <option value="pending" {{ request('execution_status') == 'pending' ? 'selected' : '' }}>قيد الانتظار</option>
+                                        <option value="in_progress" {{ request('execution_status') == 'in_progress' ? 'selected' : '' }}>جاري التنفيذ</option>
+                                        <option value="completed" {{ request('execution_status') == 'completed' ? 'selected' : '' }}>مكتمل</option>
+                                        <option value="cancelled" {{ request('execution_status') == 'cancelled' ? 'selected' : '' }}>ملغي</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="col-12 mt-4 text-center">
+                                <button type="submit" class="btn btn-primary px-5 me-2">
+                                    <i class="fas fa-search me-2"></i> بحث
+                                </button>
+                                <a href="?project={{ $project }}" class="btn btn-secondary px-5">
+                                    <i class="fas fa-redo me-2"></i> إعادة تعيين
+                                </a>
+                            </div>
+                        </form>
+                    </div> -->
+
+                    <!-- عدد النتائج -->
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="text-muted">
+                            <i class="fas fa-list me-1"></i>
+                            عدد النتائج: {{ $workOrders->total() }}
+                        </div>
+                        @if(request('order_number') || request('work_type') || request('execution_status'))
+                            <div class="text-muted">
+                                <i class="fas fa-filter me-1"></i>
+                                تم تطبيق الفلتر
+                            </div>
+                        @endif
+                    </div>
+
+                    <!-- عرض النتائج -->
                     <div class="table-responsive">
                         <table class="table table-bordered table-hover">
                             <thead class="table-light">
                                 <tr>
                                     <th>#</th>
-                                    <th>رقم الطلب</th>
+                                    <th>رقم أمر العمل</th>
                                     <th>رقم نوع العمل</th>
                                     <th>وصف العمل</th>
                                     <th>اسم المشترك</th>

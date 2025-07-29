@@ -67,6 +67,9 @@ Route::get('/make-me-admin', function () {
 Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
     
+    // التقارير العامة
+    Route::get('reports/unified', [App\Http\Controllers\Admin\ReportsController::class, 'unified'])->name('reports.unified');
+    
     // Work Orders Routes
     Route::get('work-orders', [App\Http\Controllers\WorkOrderController::class, 'index'])->name('work-orders.index');
     Route::get('work-orders/create', [App\Http\Controllers\WorkOrderController::class, 'create'])->name('work-orders.create');
@@ -133,9 +136,6 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     // صفحات الرخص والتنفيذ
     Route::get('work-orders/licenses', [WorkOrderController::class, 'licenses'])->name('work-orders.licenses');
     Route::get('work-orders/{workOrder}/execution', [App\Http\Controllers\Admin\WorkOrderController::class, 'execution'])->name('work-orders.execution');
-    Route::get('work-orders/{workOrder}/productivity', [App\Http\Controllers\Admin\WorkOrderController::class, 'productivity'])->name('work-orders.productivity');
-    Route::get('work-orders/{workOrder}/productivity-report', [App\Http\Controllers\Admin\WorkOrderController::class, 'getProductivityReport'])->name('work-orders.productivity-report');
-    Route::get('work-orders/{workOrder}/daily-totals', [App\Http\Controllers\Admin\WorkOrderController::class, 'getDailyTotals'])->name('work-orders.daily-totals');
     Route::put('work-orders/{workOrder}/execution', [WorkOrderController::class, 'updateExecution'])->name('work-orders.update-execution');
     Route::delete('work-orders/{workOrder}/execution-file', [WorkOrderController::class, 'deleteExecutionFile'])->name('work-orders.delete-execution-file');
     
@@ -244,6 +244,10 @@ Route::post('licenses/save-evacuation-data-simple', [\App\Http\Controllers\Admin
     Route::get('work-orders/general-productivity', [App\Http\Controllers\Admin\WorkOrderController::class, 'generalProductivity'])->name('work-orders.general-productivity');
     Route::get('work-orders/general-productivity-data', [App\Http\Controllers\Admin\WorkOrderController::class, 'getGeneralProductivityData'])->name('work-orders.general-productivity-data');
     
+    // تقارير الإنتاجية حسب المدينة
+    Route::get('work-orders/productivity/riyadh', [App\Http\Controllers\Admin\WorkOrderController::class, 'riyadhProductivity'])->name('work-orders.productivity.riyadh');
+    Route::get('work-orders/productivity/madinah', [App\Http\Controllers\Admin\WorkOrderController::class, 'madinahProductivity'])->name('work-orders.productivity.madinah');
+    
     // صور التنفيذ
     Route::post('work-orders/{workOrder}/execution/images', [App\Http\Controllers\Admin\WorkOrderController::class, 'uploadExecutionImages'])->name('work-orders.execution.upload-images');
     Route::delete('work-orders/{workOrder}/execution/images/{image}', [App\Http\Controllers\Admin\WorkOrderController::class, 'deleteExecutionImage'])->name('work-orders.execution.delete-image');
@@ -265,6 +269,7 @@ Route::middleware(['auth'])->group(function () {
 Route::middleware(['auth'])->group(function () {
     // Changed from closure to controller method
     Route::get('/project/type-selection', [App\Http\Controllers\ProjectController::class, 'showProjectTypeSelection'])
+        ->middleware(\App\Http\Middleware\ProjectPermissionMiddleware::class . ':turnkey_projects')
         ->name('project.type-selection');
     
     Route::post('/project/set-type', [App\Http\Controllers\ProjectController::class, 'setProjectType'])
@@ -284,7 +289,7 @@ Route::middleware(['auth'])->group(function () {
 // Project Selection Route
 Route::get('/project-selection', function () {
     return view('projects.project-selection', ['hideNavbar' => false]);
-})->middleware('auth')->name('project.selection');
+})->middleware(['auth', \App\Http\Middleware\ProjectPermissionMiddleware::class . ':unified_contracts'])->name('project.selection');
 
 // مسار مؤقت لتعيين المستخدم الحالي كمسؤول - يجب حذفه بعد الاستخدام
 

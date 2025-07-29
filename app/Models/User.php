@@ -23,6 +23,37 @@ class User extends Authenticatable
         'manage_violations' => 'إدارة المخالفات',
         'view_reports' => 'عرض التقارير',
         'manage_settings' => 'إدارة إعدادات النظام',
+        // صلاحيات أنواع المشاريع
+        'access_unified_contracts' => 'الوصول إلى العقود الموحدة',
+        'access_turnkey_projects' => 'الوصول إلى مشاريع تسليم المفتاح',
+        'access_special_projects' => 'الوصول إلى المشاريع الخاصة',
+    ];
+
+    /**
+     * أنواع المشاريع المتاحة
+     */
+    const PROJECT_TYPES = [
+        'unified_contracts' => [
+            'name' => 'العقد الموحد',
+            'permission' => 'access_unified_contracts',
+            'route' => 'project.selection',
+            'icon' => 'document',
+            'color' => 'blue'
+        ],
+        'turnkey_projects' => [
+            'name' => 'تسليم مفتاح',
+            'permission' => 'access_turnkey_projects',
+            'route' => 'project.type-selection',
+            'icon' => 'key',
+            'color' => 'green'
+        ],
+        'special_projects' => [
+            'name' => 'مشاريع خاصة',
+            'permission' => 'access_special_projects',
+            'route' => '#',
+            'icon' => 'briefcase',
+            'color' => 'purple'
+        ]
     ];
 
     /**
@@ -93,7 +124,18 @@ class User extends Authenticatable
             return true;
         }
         
-        return in_array($permission, $this->permissions ?? []);
+        $permissions = $this->permissions;
+        
+        // التأكد من أن الـ permissions عبارة عن array
+        if (is_string($permissions)) {
+            $permissions = json_decode($permissions, true) ?? [];
+        }
+        
+        if (!is_array($permissions)) {
+            $permissions = [];
+        }
+        
+        return in_array($permission, $permissions);
     }
 
     /**
@@ -108,12 +150,84 @@ class User extends Authenticatable
             return true;
         }
         
+        $userPermissions = $this->permissions;
+        
+        // التأكد من أن الـ permissions عبارة عن array
+        if (is_string($userPermissions)) {
+            $userPermissions = json_decode($userPermissions, true) ?? [];
+        }
+        
+        if (!is_array($userPermissions)) {
+            $userPermissions = [];
+        }
+        
         foreach ($permissions as $permission) {
-            if (in_array($permission, $this->permissions ?? [])) {
+            if (in_array($permission, $userPermissions)) {
                 return true;
             }
         }
         
+        return false;
+    }
+
+    /**
+     * تحقق من إمكانية الوصول لنوع مشروع معين
+     *
+     * @param string $projectType
+     * @return bool
+     */
+    public function canAccessProjectType(string $projectType): bool
+    {
+        if ($this->isAdmin()) {
+            return true;
+        }
+
+        $projectConfig = self::PROJECT_TYPES[$projectType] ?? null;
+        if (!$projectConfig) {
+            return false;
+        }
+
+        return $this->hasPermission($projectConfig['permission']);
+    }
+
+    /**
+     * الحصول على أنواع المشاريع المسموح بها للمستخدم
+     *
+     * @return array
+     */
+    public function getAllowedProjectTypes(): array
+    {
+        if ($this->isAdmin()) {
+            return self::PROJECT_TYPES;
+        }
+
+        $allowedTypes = [];
+        foreach (self::PROJECT_TYPES as $key => $projectType) {
+            if ($this->hasPermission($projectType['permission'])) {
+                $allowedTypes[$key] = $projectType;
+            }
+        }
+
+        return $allowedTypes;
+    }
+
+    /**
+     * تحقق من إمكانية الوصول لأي نوع من المشاريع
+     *
+     * @return bool
+     */
+    public function hasAnyProjectAccess(): bool
+    {
+        if ($this->isAdmin()) {
+            return true;
+        }
+
+        foreach (self::PROJECT_TYPES as $projectType) {
+            if ($this->hasPermission($projectType['permission'])) {
+                return true;
+            }
+        }
+
         return false;
     }
 }

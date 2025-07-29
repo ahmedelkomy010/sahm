@@ -81,7 +81,7 @@ class WorkOrderController extends Controller
         }
         
         $validated = $request->validate([
-            'order_number' => 'required|string|max:255|unique:work_orders',
+            'order_number' => 'required|string|max:255',
             'work_type' => 'required|string|max:999',
             'work_description' => 'required|string',
             'approval_date' => 'required|date',

@@ -80,9 +80,7 @@ class UserController extends Controller
 
         // حفظ الصلاحيات إذا تم تمريرها وليس مشرفًا
         if (!$request->has('is_admin') && $request->has('permissions')) {
-            $permissions = json_encode($request->permissions);
-            // يمكن إضافة نموذج خاص بالصلاحيات أو استخدام عمود في جدول المستخدمين
-            $user->permissions = $permissions;
+            $user->permissions = $request->permissions;
             $user->save();
         }
 
@@ -137,6 +135,7 @@ class UserController extends Controller
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
             'is_admin' => ['sometimes', 'boolean'],
+            'permissions' => ['sometimes', 'array'],
         ]);
 
         $user->name = $validated['name'];
@@ -147,7 +146,26 @@ class UserController extends Controller
             $user->password = Hash::make($validated['password']);
         }
         
+        // حفظ الصلاحيات إذا تم تمريرها وليس مشرفًا
+        if (!$request->has('is_admin') && $request->has('permissions')) {
+            $user->permissions = $request->permissions;
+        } else {
+            // إذا كان مشرفًا، امسح الصلاحيات المخصصة
+            $user->permissions = null;
+        }
+        
         $user->save();
+
+        // تسجيل الحدث في سجل النظام
+        \Illuminate\Support\Facades\Log::info('تم تحديث بيانات مستخدم', [
+            'user_id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'is_admin' => $user->is_admin,
+            'permissions' => $request->has('permissions') ? $request->permissions : [],
+            'updated_by' => auth()->id(),
+            'updated_by_name' => auth()->user()->name,
+        ]);
 
         return redirect()->route('admin.users.index')
             ->with('success', 'تم تحديث بيانات المستخدم بنجاح!');
