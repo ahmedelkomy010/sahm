@@ -13,7 +13,7 @@
 <!-- Custom Styles -->
 <style>
     .license-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg,rgb(38, 42, 61) 0%,rgb(116, 78, 165) 100%);
         border-radius: 15px;
         color: white;
         padding: 2rem;
@@ -232,6 +232,30 @@
         color: white;
         font-weight: 600;
         border: 1px solid #495057;
+    }
+    
+    /* تحسين مظهر رقم شهادة التنسيق */
+    .text-info[title="رقم شهادة التنسيق"] {
+        background: linear-gradient(135deg, #17a2b8 0%, #0056b3 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        padding: 2px 4px;
+        border-radius: 4px;
+        border: 1px solid rgba(23, 162, 184, 0.2);
+        display: inline-block;
+    }
+    
+    .text-info[title="رقم شهادة التنسيق"] i {
+        color: #17a2b8;
+        -webkit-text-fill-color: initial;
+    }
+    
+    .text-info[title="رقم شهادة التنسيق"]:hover {
+        background: linear-gradient(135deg, #0056b3 0%, #17a2b8 100%);
+        -webkit-background-clip: text;
+        border-color: rgba(23, 162, 184, 0.4);
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(23, 162, 184, 0.1);
     }
         box-shadow: 0 6px 16px rgba(0,123,255,0.4);
     }
@@ -696,7 +720,7 @@
                 if (!response.licenses || response.licenses.length === 0) {
                     tbody.innerHTML = `
                         <tr>
-                            <td colspan="10" class="text-center">لا توجد رخص حفر</td>
+                            <td colspan="11" class="text-center">لا توجد رخص حفر</td>
                         </tr>
                     `;
                     
@@ -731,6 +755,15 @@
                     tbody.innerHTML += `
                         <tr>
                             <td>${index + 1}</td>
+                            <td>
+                                ${license.coordination_certificate_number ? 
+                                    `<strong class="text-info" title="رقم شهادة التنسيق">
+                                        <i class="fas fa-certificate me-1"></i>
+                                        ${license.coordination_certificate_number}
+                                    </strong>` : 
+                                    `<span class="text-muted">-</span>`
+                                }
+                            </td>
                             <td><strong class="text-primary">${license.license_number || ''}</strong></td>
                             <td><small>${licenseDate}</small></td>
                             <td>${licenseTypeBadge}</td>
@@ -2684,21 +2717,20 @@ function deleteExtension(extensionId) {
             <div class="row align-items-center">
                 <div class="col-lg-8">
                     <h1 class="mb-1 display-6 fw-bold">
-                        <i class="fas fa-certificate me-2"></i>
+                        
                         إدارة الجودة والرخص
                     </h1>
                     
                 </div>
                 
                 <div class="col-lg-4 text-end">
-                    <a href="{{ route('admin.licenses.index') }}" class="btn btn-light btn-lg ms-2">
-                        <i class="fas fa-search me-2"></i>
-                        البحث عن الرخص
+                    <a href="{{ route('admin.licenses.index') }}" class="btn btn-light btn-lg ms-1">
+                        
+                        انتاجية الرخص
                     </a>
-                    <a href="{{ route('admin.work-orders.show', $workOrder) }}" class="return-button">
-                        <i class="fas fa-arrow-right"></i>
-                        العودة لتفاصيل أمر العمل
-                    </a>
+                    <a href="{{ route('admin.work-orders.show', $workOrder) }}" class="btn btn-success">
+                            <i class="fas fa-arrow-right"></i> عودة الي تفاصيل أمر العمل  
+                        </a> 
                 </div>
             </div>
         </div>
@@ -2879,6 +2911,7 @@ function deleteExtension(extensionId) {
                                     <thead class="table-info">
                                         <tr>
                                             <th>#</th>
+                                            <th>رقم شهادة التنسيق</th>
                                             <th>رقم الرخصة</th>
                                             <th>تاريخ الإصدار</th>
                                             <th>نوع الرخصة</th>
@@ -2892,7 +2925,7 @@ function deleteExtension(extensionId) {
                                     </thead>
                                     <tbody id="dig-licenses-table-body">
                                         <tr>
-                                            <td colspan="10" class="text-center">لا توجد رخص حفر</td>
+                                            <td colspan="11" class="text-center">لا توجد رخص حفر</td>
                                         </tr>
                                     </tbody>
                                     <tfoot>

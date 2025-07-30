@@ -25,6 +25,7 @@
 
         <!-- Projects Section -->
         <div class="flex flex-col md:flex-row justify-center gap-8 mb-12">
+            @if(auth()->user()->is_admin || auth()->user()->hasPermission('access_riyadh_contracts'))
             <!-- Riyadh Project Card -->
             <div class="w-full md:w-1/2 bg-white rounded-xl shadow-md overflow-hidden transform transition-all duration-300 hover:shadow-lg hover:-translate-y-1 border border-gray-200">
                 <div class="p-6 bg-gradient-to-b from-blue-50 to-white">
@@ -42,7 +43,9 @@
                     </a>
                 </div>
             </div>
+            @endif
 
+            @if(auth()->user()->is_admin || auth()->user()->hasPermission('access_madinah_contracts'))
             <!-- Madinah Project Card -->
             <div class="w-full md:w-1/2 bg-white rounded-xl shadow-md overflow-hidden transform transition-all duration-300 hover:shadow-lg hover:-translate-y-1 border border-gray-200">
                 <div class="p-6 bg-gradient-to-b from-green-50 to-white">
@@ -60,6 +63,20 @@
                     </a>
                 </div>
             </div>
+            @endif
+
+            @if(!auth()->user()->is_admin && !auth()->user()->hasPermission('access_riyadh_contracts') && !auth()->user()->hasPermission('access_madinah_contracts'))
+            <!-- No Access Message -->
+            <div class="w-full bg-yellow-50 border border-yellow-200 rounded-xl p-6 text-center">
+                <div class="flex items-center justify-center mb-4">
+                    <div class="w-12 h-12 rounded-full bg-yellow-100 flex items-center justify-center mr-4 border border-yellow-200">
+                        <i class="fas fa-exclamation-triangle text-yellow-500 text-xl"></i>
+                    </div>
+                </div>
+                <h3 class="text-xl font-bold text-yellow-700 mb-2">لا توجد لديك صلاحيات</h3>
+                <p class="text-yellow-600">عذراً، لا تملك صلاحية الوصول إلى أي من المشاريع. يرجى التواصل مع مدير النظام.</p>
+            </div>
+            @endif
         </div>
     </div>
 </div>

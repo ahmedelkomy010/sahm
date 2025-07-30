@@ -59,51 +59,7 @@
         </div>
         
         <!-- صلاحيات المستخدم -->
-        <div class="bg-gray-50 p-4 rounded-lg mb-6">
-            <h3 class="text-md font-bold text-gray-700 mb-4">صلاحيات المستخدم في النظام</h3>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <div class="flex items-center">
-                        <input type="checkbox" id="can_manage_users" name="permissions[]" value="manage_users" 
-                            {{ (is_array($user->permissions) && in_array('manage_users', $user->permissions)) ? 'checked' : '' }}
-                            class="h-5 w-5 ml-2 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-                        <label for="can_manage_users" class="text-sm font-medium text-gray-700">إدارة المستخدمين</label>
-                    </div>
-                    <p class="text-xs text-gray-500 mt-1 mr-7">يمكنه عرض وتعديل بيانات المستخدمين</p>
-                </div>
-                
-                <div>
-                    <div class="flex items-center">
-                        <input type="checkbox" id="can_view_reports" name="permissions[]" value="view_reports" 
-                            {{ (is_array($user->permissions) && in_array('view_reports', $user->permissions)) ? 'checked' : '' }}
-                            class="h-5 w-5 ml-2 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-                        <label for="can_view_reports" class="text-sm font-medium text-gray-700">عرض التقارير</label>
-                    </div>
-                    <p class="text-xs text-gray-500 mt-1 mr-7">يمكنه عرض تقارير النظام والإحصائيات</p>
-                </div>
-                
-                <div>
-                    <div class="flex items-center">
-                        <input type="checkbox" id="can_manage_work_orders" name="permissions[]" value="manage_work_orders" 
-                            {{ (is_array($user->permissions) && in_array('manage_work_orders', $user->permissions)) ? 'checked' : '' }}
-                            class="h-5 w-5 ml-2 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-                        <label for="can_manage_work_orders" class="text-sm font-medium text-gray-700">إدارة أوامر العمل</label>
-                    </div>
-                    <p class="text-xs text-gray-500 mt-1 mr-7">يمكنه إنشاء وتعديل وحذف أوامر العمل</p>
-                </div>
-                
-                <div>
-                    <div class="flex items-center">
-                        <input type="checkbox" id="can_manage_materials" name="permissions[]" value="manage_materials" 
-                            {{ (is_array($user->permissions) && in_array('manage_materials', $user->permissions)) ? 'checked' : '' }}
-                            class="h-5 w-5 ml-2 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-                        <label for="can_manage_materials" class="text-sm font-medium text-gray-700">إدارة المواد</label>
-                    </div>
-                    <p class="text-xs text-gray-500 mt-1 mr-7">يمكنه إدارة المواد والمخزون</p>
-                </div>
-            </div>
-            
+        
             <div class="mt-3 pt-3 border-t border-gray-200">
                 <p class="text-xs text-gray-500">ملاحظة: المستخدم المشرف سيكون لديه جميع الصلاحيات تلقائياً بغض النظر عن الخيارات المحددة</p>
             </div>
@@ -133,6 +89,50 @@
                                 العقد الموحد
                             </label>
                             <p class="text-xs text-blue-600 mt-1">إدارة العقود الموحدة والوثائق الرسمية</p>
+                        </div>
+                    </div>
+                    
+                    <!-- الصلاحيات الفرعية للعقد الموحد -->
+                    <div id="unified_contracts_cities" class="mt-3 pr-7 border-r-2 border-blue-200 {{ (is_array($user->permissions) && in_array('access_unified_contracts', $user->permissions)) ? '' : 'hidden' }}">
+                        <div class="text-xs text-blue-700 font-medium mb-2 flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            اختيار المدن المسموحة:
+                        </div>
+                        
+                        <div class="grid grid-cols-1 gap-2">
+                            <div class="flex items-center">
+                                <input type="checkbox" id="access_riyadh_contracts" name="permissions[]" value="access_riyadh_contracts" 
+                                    {{ (is_array($user->permissions) && in_array('access_riyadh_contracts', $user->permissions)) ? 'checked' : '' }}
+                                    class="h-4 w-4 ml-1 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                <label for="access_riyadh_contracts" class="text-xs text-blue-700 mr-2 flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-5 0H9m0 0H5m0 0h4M7 7h10M7 11h10M7 15h10" />
+                                    </svg>
+                                    عقود الرياض
+                                </label>
+                            </div>
+                            
+                            <div class="flex items-center">
+                                <input type="checkbox" id="access_madinah_contracts" name="permissions[]" value="access_madinah_contracts" 
+                                    {{ (is_array($user->permissions) && in_array('access_madinah_contracts', $user->permissions)) ? 'checked' : '' }}
+                                    class="h-4 w-4 ml-1 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                <label for="access_madinah_contracts" class="text-xs text-blue-700 mr-2 flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-5 0H9m0 0H5m0 0h4M7 7h10M7 11h10M7 15h10" />
+                                    </svg>
+                                    عقود المدينة المنورة
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-2 p-2 bg-blue-50 rounded text-xs text-blue-600">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 inline ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            يجب اختيار مدينة واحدة على الأقل للوصول إلى عقود المدينة المحددة
                         </div>
                     </div>
                 </div>
@@ -204,31 +204,64 @@
 </div>
 
 <script>
+    // تعيين سلوك حقل العقد الموحد لإظهار/إخفاء صلاحيات المدن
+    document.getElementById('access_unified_contracts').addEventListener('change', function() {
+        const citiesDiv = document.getElementById('unified_contracts_cities');
+        const riyadhCheckbox = document.getElementById('access_riyadh_contracts');
+        const madinahCheckbox = document.getElementById('access_madinah_contracts');
+        
+        if (this.checked) {
+            citiesDiv.classList.remove('hidden');
+        } else {
+            citiesDiv.classList.add('hidden');
+            // إلغاء تحديد صلاحيات المدن عند إلغاء تحديد العقد الموحد
+            riyadhCheckbox.checked = false;
+            madinahCheckbox.checked = false;
+        }
+    });
+
     // تعيين سلوك حقل مشرف النظام
     document.getElementById('is_admin').addEventListener('change', function() {
         const permissionCheckboxes = document.querySelectorAll('input[name="permissions[]"]');
+        const citiesDiv = document.getElementById('unified_contracts_cities');
+        
         if (this.checked) {
             // إذا تم تحديد مشرف النظام، فحدد جميع الصلاحيات وعطلها
             permissionCheckboxes.forEach(checkbox => {
                 checkbox.checked = true;
                 checkbox.disabled = true;
             });
+            // إظهار صلاحيات المدن وتعطيلها
+            citiesDiv.classList.remove('hidden');
         } else {
             // إذا تم إلغاء تحديد مشرف النظام، فعّل جميع الصلاحيات
             permissionCheckboxes.forEach(checkbox => {
                 checkbox.disabled = false;
             });
+            // إخفاء صلاحيات المدن إذا لم يتم تحديد العقد الموحد
+            if (!document.getElementById('access_unified_contracts').checked) {
+                citiesDiv.classList.add('hidden');
+            }
         }
     });
     
-    // تحقق من حالة حقل مشرف النظام عند تحميل الصفحة
+    // تحقق من حالة الحقول عند تحميل الصفحة
     document.addEventListener('DOMContentLoaded', function() {
+        // التحقق من حالة مشرف النظام
         if (document.getElementById('is_admin').checked) {
             const permissionCheckboxes = document.querySelectorAll('input[name="permissions[]"]');
+            const citiesDiv = document.getElementById('unified_contracts_cities');
+            
             permissionCheckboxes.forEach(checkbox => {
                 checkbox.checked = true;
                 checkbox.disabled = true;
             });
+            citiesDiv.classList.remove('hidden');
+        }
+        
+        // التحقق من حالة العقد الموحد
+        if (document.getElementById('access_unified_contracts').checked) {
+            document.getElementById('unified_contracts_cities').classList.remove('hidden');
         }
     });
 </script>

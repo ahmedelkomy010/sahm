@@ -27,6 +27,9 @@ class User extends Authenticatable
         'access_unified_contracts' => 'الوصول إلى العقود الموحدة',
         'access_turnkey_projects' => 'الوصول إلى مشاريع تسليم المفتاح',
         'access_special_projects' => 'الوصول إلى المشاريع الخاصة',
+        // صلاحيات المدن
+        'access_riyadh_contracts' => 'الوصول إلى عقود الرياض',
+        'access_madinah_contracts' => 'الوصول إلى عقود المدينة المنورة',
     ];
 
     /**

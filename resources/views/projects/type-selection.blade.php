@@ -2,109 +2,140 @@
 
 @section('content')
 <div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50 py-12">
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <!-- Page Header -->
-        <div class="text-center mb-16">
-            <h1 class="text-4xl font-bold text-gray-900 mb-4">نظام إدارة المشاريع</h1>
-            <p class="text-xl text-gray-600">قم بإنشاء وإدارة مشاريعك بكفاءة عالية</p>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- رأس الصفحة مع الأزرار -->
+        <div class="flex justify-between items-center mb-8">
+            <div class="flex items-center gap-4">
+                <a href="{{ route('admin.dashboard') }}" 
+                   class="inline-flex items-center px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition duration-200">
+                    <i class="fas fa-arrow-right ml-2"></i>
+                    رجوع للوحة التحكم
+                </a>
+                <a href="{{ route('projects.create') }}" 
+                   class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition duration-200">
+                    <i class="fas fa-plus ml-2"></i>
+                    إنشاء مشروع جديد
+                </a>
+            </div>
+            <div class="text-right">
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">المشاريع</h1>
+                <p class="text-gray-600">إدارة وعرض المشاريع</p>
+            </div>
         </div>
 
-        <!-- Create New Project Card -->
-        <div class="bg-white rounded-2xl shadow-xl overflow-hidden transform hover:scale-105 transition duration-300">
-            <div class="p-8">
-                <div class="flex flex-col items-center">
-                    <!-- Project Icon -->
-                    <div class="bg-blue-100 p-4 rounded-full mb-6">
-                        <svg class="w-12 h-12 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                        </svg>
+        <!-- إحصائيات المشاريع -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            <div class="bg-white rounded-lg shadow-md p-4 text-center">
+                <div class="text-2xl font-bold text-gray-900">{{ \App\Models\Project::count() }}</div>
+                <div class="text-sm text-gray-600">إجمالي المشاريع</div>
+            </div>
+            <div class="bg-white rounded-lg shadow-md p-4 text-center">
+                <div class="text-2xl font-bold text-blue-600">{{ \App\Models\Project::where('project_type', 'civil')->count() }}</div>
+                <div class="text-sm text-gray-600">المشاريع المدنية</div>
+            </div>
+            <div class="bg-white rounded-lg shadow-md p-4 text-center">
+                <div class="text-2xl font-bold text-yellow-500">{{ \App\Models\Project::where('project_type', 'electrical')->count() }}</div>
+                <div class="text-sm text-gray-600">المشاريع الكهربائية</div>
+            </div>
+            <div class="bg-white rounded-lg shadow-md p-4 text-center">
+                <div class="text-2xl font-bold text-purple-600">{{ \App\Models\Project::where('project_type', 'mixed')->count() }}</div>
+                <div class="text-sm text-gray-600">المشاريع المختلطة</div>
+            </div>
+        </div>
+
+        <!-- قائمة المشاريع -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            @forelse(\App\Models\Project::latest()->get() as $project)
+            <div class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition duration-300">
+                <div class="p-6">
+                    <!-- رأس البطاقة -->
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-900 mb-1">{{ $project->name }}</h3>
+                            <p class="text-sm text-gray-600">{{ $project->contract_number }}</p>
+                        </div>
+                        <div>
+                            @switch($project->project_type)
+                                @case('civil')
+                                    <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                                        <i class="fas fa-building ml-1"></i>
+                                        أعمال مدنية
+                                    </span>
+                                    @break
+                                @case('electrical')
+                                    <span class="bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                                        <i class="fas fa-bolt ml-1"></i>
+                                        أعمال كهربائية
+                                    </span>
+                                    @break
+                                @case('mixed')
+                                    <span class="bg-purple-100 text-purple-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                                        <i class="fas fa-tools ml-1"></i>
+                                        أعمال مختلطة
+                                    </span>
+                                    @break
+                            @endswitch
+                        </div>
                     </div>
 
-                    <!-- Create Project Button -->
-                    <h2 class="text-2xl font-bold text-gray-900 mb-4">إنشاء مشروع جديد</h2>
-                    <p class="text-gray-600 text-center mb-8">
-                        قم بإنشاء مشروع جديد وابدأ في إدارة أعمالك بشكل فعال
-                    </p>
-                    
-                    <button onclick="window.location.href='{{ route('projects.create') }}'" 
-                            class="bg-blue-600 hover:bg-blue-700 text-white text-lg font-semibold py-3 px-8 rounded-lg shadow-lg transform transition hover:scale-105 duration-200 flex items-center">
-                        <svg class="w-6 h-6 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                                  d="M12 4v16m8-8H4"></path>
-                        </svg>
-                        إنشاء مشروع جديد
-                    </button>
-                </div>
-
-                <!-- Features List -->
-                <div class="mt-12 border-t pt-8">
-                    <h3 class="text-xl font-semibold text-gray-900 text-center mb-6">مميزات النظام</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="flex items-center space-x-4 space-x-reverse">
-                            <div class="flex-shrink-0">
-                                <div class="bg-green-100 rounded-full p-2">
-                                    <svg class="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" 
-                                              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" 
-                                              clip-rule="evenodd"></path>
-                                    </svg>
-                                </div>
-                            </div>
-                            <span class="text-gray-700">إدارة المشاريع بكفاءة</span>
+                    <!-- تفاصيل المشروع -->
+                    <div class="space-y-3">
+                        <div class="flex items-center text-gray-600">
+                            <i class="fas fa-map-marker-alt w-5"></i>
+                            <span class="text-sm">{{ $project->location }}</span>
                         </div>
-
-                        <div class="flex items-center space-x-4 space-x-reverse">
-                            <div class="flex-shrink-0">
-                                <div class="bg-green-100 rounded-full p-2">
-                                    <svg class="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" 
-                                              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" 
-                                              clip-rule="evenodd"></path>
-                                    </svg>
-                                </div>
-                            </div>
-                            <span class="text-gray-700">متابعة تقدم العمل</span>
+                        @if($project->description)
+                        <div class="flex items-start text-gray-600">
+                            <i class="fas fa-align-right w-5 mt-1"></i>
+                            <p class="text-sm line-clamp-2">{{ $project->description }}</p>
                         </div>
-
-                        <div class="flex items-center space-x-4 space-x-reverse">
-                            <div class="flex-shrink-0">
-                                <div class="bg-green-100 rounded-full p-2">
-                                    <svg class="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" 
-                                              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" 
-                                              clip-rule="evenodd"></path>
-                                    </svg>
-                                </div>
-                            </div>
-                            <span class="text-gray-700">إدارة الموارد والمواد</span>
+                        @endif
+                        <div class="flex items-center text-gray-600">
+                            <i class="fas fa-calendar-alt w-5"></i>
+                            <span class="text-sm">{{ $project->created_at->format('Y/m/d') }}</span>
                         </div>
+                    </div>
 
-                        <div class="flex items-center space-x-4 space-x-reverse">
-                            <div class="flex-shrink-0">
-                                <div class="bg-green-100 rounded-full p-2">
-                                    <svg class="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" 
-                                              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" 
-                                              clip-rule="evenodd"></path>
-                                    </svg>
-                                </div>
-                            </div>
-                            <span class="text-gray-700">تقارير تفصيلية</span>
-                        </div>
+                    <!-- أزرار الإجراءات -->
+                    <div class="mt-6 flex justify-end space-x-2 space-x-reverse">
+                        <a href="{{ route('projects.show', $project) }}" 
+                           class="text-blue-600 hover:text-blue-800 transition-colors">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                        <a href="{{ route('projects.edit', $project) }}" 
+                           class="text-yellow-600 hover:text-yellow-800 transition-colors">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <form action="{{ route('projects.destroy', $project) }}" 
+                              method="POST" 
+                              class="inline-block"
+                              onsubmit="return confirm('هل أنت متأكد من حذف هذا المشروع؟');">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="text-red-600 hover:text-red-800 transition-colors">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </form>
                     </div>
                 </div>
             </div>
+            @empty
+            <div class="col-span-full">
+                <div class="bg-white rounded-xl shadow-md p-6 text-center">
+                    <div class="mb-4">
+                        <i class="fas fa-folder-open text-gray-400 text-5xl"></i>
+                    </div>
+                    <h3 class="text-xl font-medium text-gray-900 mb-1">لا توجد مشاريع</h3>
+                    <p class="text-gray-600 mb-4">لم يتم إنشاء أي مشاريع حتى الآن</p>
+                    <a href="{{ route('projects.create') }}" 
+                       class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition duration-200">
+                        <i class="fas fa-plus ml-2"></i>
+                        إنشاء مشروع جديد
+                    </a>
+                </div>
+            </div>
+            @endforelse
         </div>
     </div>
 </div>
-
-@if (session('success'))
-    <div class="fixed bottom-4 left-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg" 
-         x-data="{ show: true }" 
-         x-show="show" 
-         x-init="setTimeout(() => show = false, 3000)">
-        {{ session('success') }}
-    </div>
-@endif
 @endsection 
