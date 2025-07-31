@@ -123,7 +123,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::delete('work-orders/{workOrder}/materials/{material}/delete-file', [MaterialsController::class, 'deleteFile'])->name('work-orders.materials.delete-file');
     
     // وظائف أوامر العمل الأخرى
-    Route::delete('work-orders/files/{id}', [WorkOrderController::class, 'deleteFile'])->name('work-orders.files.delete');
+    Route::delete('work-orders/files/{file}', [WorkOrderController::class, 'deleteFile'])->name('work-orders.files.delete');
     Route::get('work-orders/descriptions/{workType}', [WorkOrderController::class, 'getWorkDescription'])->name('work-orders.descriptions');
     
     // تسجيل Resource بعد تسجيل المسارات المخصصة

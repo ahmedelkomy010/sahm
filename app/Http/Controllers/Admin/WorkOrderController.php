@@ -382,7 +382,7 @@ class WorkOrderController extends Controller
         $hasMaterials = $workOrder->workOrderMaterials()->count() > 0;
         
         $totalWorkItemsValue = $workOrder->workOrderItems()->sum(DB::raw('quantity * unit_price'));
-        $totalMaterialsValue = $workOrder->workOrderMaterials()->sum(DB::raw('quantity * unit_price'));
+        $totalMaterialsValue = 0; // تم إزالة حساب unit_price من المواد
         
         $grandTotal = $totalWorkItemsValue + $totalMaterialsValue;
         

@@ -409,80 +409,87 @@
                                                 </td>
                                             </tr>
                                             <tr>
-                                                <th>المرفق الاحتياطي</th>
+                                                <th>المرفقات</th>
                                                 <td>
                                                     @php
-                                                        $backupFile = $workOrder->files()
+                                                        $attachments = $workOrder->files()
                                                             ->where('file_category', 'basic_attachments')
-                                                            ->where('attachment_type', 'backup_1')
-                                                            ->first();
+                                                            ->get();
                                                     @endphp
-                                                    @if($backupFile)
-                                                        <div class="d-flex align-items-center justify-content-between">
-                                                            <div class="d-flex align-items-center">
-                                                                @php
-                                                                    $fileExtension = strtolower(pathinfo($backupFile->original_filename, PATHINFO_EXTENSION));
-                                                                    $fileIcon = 'fas fa-file';
-                                                                    $iconColor = 'text-secondary';
-                                                                    
-                                                                    switch($fileExtension) {
-                                                                        case 'pdf':
-                                                                            $fileIcon = 'fas fa-file-pdf';
-                                                                            $iconColor = 'text-danger';
-                                                                            break;
-                                                                        case 'doc':
-                                                                        case 'docx':
-                                                                            $fileIcon = 'fas fa-file-word';
-                                                                            $iconColor = 'text-primary';
-                                                                            break;
-                                                                        case 'xls':
-                                                                        case 'xlsx':
-                                                                            $fileIcon = 'fas fa-file-excel';
-                                                                            $iconColor = 'text-success';
-                                                                            break;
-                                                                        case 'jpg':
-                                                                        case 'jpeg':
-                                                                        case 'png':
-                                                                        case 'gif':
-                                                                            $fileIcon = 'fas fa-file-image';
-                                                                            $iconColor = 'text-info';
-                                                                            break;
-                                                                    }
-                                                                @endphp
-                                                                <i class="{{ $fileIcon }} {{ $iconColor }} me-2"></i>
-                                                                <div>
-                                                                    <a href="{{ Storage::url($backupFile->file_path) }}" 
-                                                                       target="_blank" 
-                                                                       class="text-decoration-none fw-bold">
-                                                                        {{ Str::limit($backupFile->original_filename, 30) }}
-                                                                    </a>
-                                                                    <br>
-                                                                    <small class="text-muted">
-                                                                        <i class="fas fa-calendar me-1"></i>
-                                                                        {{ $backupFile->created_at->format('Y-m-d H:i') }}
-                                                                        <span class="mx-2">|</span>
-                                                                        <i class="fas fa-weight-hanging me-1"></i>
-                                                                        {{ number_format($backupFile->file_size / 1024 / 1024, 2) }} MB
-                                                                    </small>
+                                                    @if($attachments->count() > 0)
+                                                        <div class="row g-2">
+                                                            @foreach($attachments as $file)
+                                                                <div class="col-12">
+                                                                    <div class="d-flex align-items-center justify-content-between p-2 bg-light rounded">
+                                                                        <div class="d-flex align-items-center">
+                                                                            @php
+                                                                                $fileExtension = strtolower(pathinfo($file->original_filename, PATHINFO_EXTENSION));
+                                                                                $fileIcon = 'fas fa-file';
+                                                                                $iconColor = 'text-secondary';
+                                                                                
+                                                                                switch($fileExtension) {
+                                                                                    case 'pdf':
+                                                                                        $fileIcon = 'fas fa-file-pdf';
+                                                                                        $iconColor = 'text-danger';
+                                                                                        break;
+                                                                                    case 'doc':
+                                                                                    case 'docx':
+                                                                                        $fileIcon = 'fas fa-file-word';
+                                                                                        $iconColor = 'text-primary';
+                                                                                        break;
+                                                                                    case 'xls':
+                                                                                    case 'xlsx':
+                                                                                        $fileIcon = 'fas fa-file-excel';
+                                                                                        $iconColor = 'text-success';
+                                                                                        break;
+                                                                                    case 'jpg':
+                                                                                    case 'jpeg':
+                                                                                    case 'png':
+                                                                                    case 'gif':
+                                                                                        $fileIcon = 'fas fa-file-image';
+                                                                                        $iconColor = 'text-info';
+                                                                                        break;
+                                                                                }
+                                                                            @endphp
+                                                                            <i class="{{ $fileIcon }} {{ $iconColor }} me-2"></i>
+                                                                            <div>
+                                                                                <a href="{{ Storage::url($file->file_path) }}" 
+                                                                                   target="_blank" 
+                                                                                   class="text-decoration-none fw-bold">
+                                                                                    {{ $file->original_filename }}
+                                                                                </a>
+                                                                                <br>
+                                                                                <small class="text-muted">
+                                                                                    <i class="fas fa-calendar me-1"></i>
+                                                                                    {{ $file->created_at->format('Y-m-d H:i') }}
+                                                                                    <span class="mx-2">|</span>
+                                                                                    <i class="fas fa-weight-hanging me-1"></i>
+                                                                                    {{ number_format($file->file_size / 1024 / 1024, 2) }} MB
+                                                                                </small>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="d-flex gap-1">
+                                                                            <a href="{{ Storage::url($file->file_path) }}" 
+                                                                               target="_blank" 
+                                                                               class="btn btn-sm btn-outline-primary"
+                                                                               title="عرض الملف">
+                                                                                <i class="fas fa-eye"></i>
+                                                                            </a>
+                                                                            <a href="{{ Storage::url($file->file_path) }}" 
+                                                                               download="{{ $file->original_filename }}" 
+                                                                               class="btn btn-sm btn-outline-success"
+                                                                               title="تحميل الملف">
+                                                                                <i class="fas fa-download"></i>
+                                                                            </a>
+                                                                        </div>
+                                                                    </div>
                                                                 </div>
-                                                            </div>
-                                                            <div class="d-flex gap-1">
-                                                                <a href="{{ Storage::url($backupFile->file_path) }}" 
-                                                                   target="_blank" 
-                                                                   class="btn btn-sm btn-outline-primary">
-                                                                    <i class="fas fa-eye me-1"></i>عرض
-                                                                </a>
-                                                                <a href="{{ Storage::url($backupFile->file_path) }}" 
-                                                                   download 
-                                                                   class="btn btn-sm btn-outline-success">
-                                                                    <i class="fas fa-download me-1"></i>تحميل
-                                                                </a>
-                                                            </div>
+                                                            @endforeach
                                                         </div>
                                                     @else
                                                         <div class="text-center py-2">
                                                             <i class="fas fa-file-times text-muted me-2"></i>
-                                                            <span class="text-muted">لا يوجد مرفق</span>
+                                                            <span class="text-muted">لا توجد مرفقات</span>
                                                         </div>
                                                     @endif
                                                 </td>

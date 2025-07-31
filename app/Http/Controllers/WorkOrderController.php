@@ -116,7 +116,7 @@ class WorkOrderController extends Controller
             // المرفقات
             'files.license_estimate' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png|max:20480',
             'files.daily_measurement' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png|max:20480',
-            'files.backup_1' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png|max:20480',
+            'files.attachments.*' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png|max:20480',
         ]);
 
         $validated = $request->validate($rules, $messages);
@@ -497,7 +497,36 @@ class WorkOrderController extends Controller
             'station_number' => 'nullable|string|max:255',
             'consultant_name' => 'nullable|string|max:255',
         ]);
+        // تحديث بيانات أمر العمل
         $workOrder->update($validated);
+
+        // معالجة المرفقات الجديدة
+        if ($request->hasFile('files.attachments')) {
+            foreach ($request->file('files.attachments') as $file) {
+                $originalName = $file->getClientOriginalName();
+                $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                $path = 'work_orders/' . $workOrder->id . '/attachments';
+                
+                if (!Storage::disk('public')->exists($path)) {
+                    Storage::disk('public')->makeDirectory($path);
+                }
+                
+                $filePath = $file->storeAs($path, $filename, 'public');
+                
+                WorkOrderFile::create([
+                    'work_order_id' => $workOrder->id,
+                    'filename' => $filename,
+                    'original_filename' => $originalName,
+                    'file_name' => $originalName,
+                    'file_path' => $filePath,
+                    'file_type' => $file->getClientMimeType(),
+                    'mime_type' => $file->getClientMimeType(),
+                    'file_size' => $file->getSize(),
+                    'file_category' => 'basic_attachments'
+                ]);
+            }
+        }
+
         return redirect()->route('admin.work-orders.index')->with('success', 'تم تحديث أمر العمل بنجاح');
     }
 
@@ -617,7 +646,7 @@ class WorkOrderController extends Controller
         $hasMaterials = $workOrder->workOrderMaterials()->count() > 0;
         
         $totalWorkItemsValue = $workOrder->workOrderItems()->sum(DB::raw('quantity * unit_price'));
-        $totalMaterialsValue = $workOrder->workOrderMaterials()->sum(DB::raw('quantity * unit_price'));
+        $totalMaterialsValue = 0; // تم إزالة حساب unit_price من المواد
         
         $grandTotal = $totalWorkItemsValue + $totalMaterialsValue;
         
@@ -658,7 +687,7 @@ class WorkOrderController extends Controller
         $hasMaterials = $workOrder->workOrderMaterials()->count() > 0;
         
         $totalWorkItemsValue = $workOrder->workOrderItems()->sum(DB::raw('quantity * unit_price'));
-        $totalMaterialsValue = $workOrder->workOrderMaterials()->sum(DB::raw('quantity * unit_price'));
+        $totalMaterialsValue = 0; // تم إزالة حساب unit_price من المواد
         
         $grandTotal = $totalWorkItemsValue + $totalMaterialsValue;
         
@@ -2312,6 +2341,32 @@ class WorkOrderController extends Controller
     /**
      * تنسيق حجم الملف
      */
+    /**
+     * حذف ملف مرفق
+     */
+    public function deleteFile(WorkOrderFile $file)
+    {
+        try {
+            // حذف الملف من التخزين
+            if (Storage::disk('public')->exists($file->file_path)) {
+                Storage::disk('public')->delete($file->file_path);
+            }
+            
+            // حذف السجل من قاعدة البيانات
+            $file->delete();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'تم حذف الملف بنجاح'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء حذف الملف'
+            ], 500);
+        }
+    }
+
     private function formatFileSize($bytes)
     {
         if ($bytes === 0) return '0 Bytes';

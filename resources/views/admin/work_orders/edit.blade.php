@@ -222,41 +222,73 @@
                                     <div class="row">
                                         
                                         
-                                        <div class="col-md-6 mb-3">
+                                        <div class="col-12 mb-3">
                                             <label class="form-label fw-bold">
                                                 <i class="fas fa-paperclip text-secondary me-2"></i>
-                                                مرفق
+                                                المرفقات
                                             </label>
-                                            <input type="file" class="form-control @error('files.backup_1') is-invalid @enderror" name="files[backup_1]" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png">
+                                            <input type="file" class="form-control @error('files.attachments.*') is-invalid @enderror" 
+                                                   name="files[attachments][]" 
+                                                   accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png"
+                                                   multiple>
                                             <div class="form-text">
-                                                PDF, Word, Excel, أو صورة - الحد الأقصى 20 ميجابايت
+                                                PDF, Word, Excel, أو صورة - الحد الأقصى 20 ميجابايت لكل ملف
                                             </div>
+                                            
                                             @php
-                                                $currentBackupFile = $workOrder->files()
+                                                $currentFiles = $workOrder->files()
                                                     ->where('file_category', 'basic_attachments')
-                                                    ->where('attachment_type', 'backup_1')
-                                                    ->first();
+                                                    ->get();
                                             @endphp
-                                            @if($currentBackupFile)
-                                                <div class="mt-2 p-2 bg-light rounded">
-                                                    <div class="d-flex align-items-center justify-content-between">
-                                                        <div class="d-flex align-items-center">
-                                                            <i class="fas fa-file text-primary me-2"></i>
-                                                            <div>
-                                                                <small class="fw-bold">الملف الحالي:</small>
-                                                                <br>
-                                                                <small class="text-muted">{{ Str::limit($currentBackupFile->original_filename, 40) }}</small>
+                                            
+                                            @if($currentFiles->count() > 0)
+                                                <div class="mt-3">
+                                                    <h6 class="fw-bold mb-2">المرفقات الحالية:</h6>
+                                                    <div class="row g-2">
+                                                        @foreach($currentFiles as $file)
+                                                            <div class="col-md-6">
+                                                                <div class="p-2 bg-light rounded">
+                                                                    <div class="d-flex align-items-center justify-content-between">
+                                                                        <div class="d-flex align-items-center">
+                                                                            @php
+                                                                                $extension = pathinfo($file->original_filename, PATHINFO_EXTENSION);
+                                                                                $iconClass = match(strtolower($extension)) {
+                                                                                    'pdf' => 'fa-file-pdf',
+                                                                                    'doc', 'docx' => 'fa-file-word',
+                                                                                    'xls', 'xlsx' => 'fa-file-excel',
+                                                                                    'jpg', 'jpeg', 'png' => 'fa-file-image',
+                                                                                    default => 'fa-file'
+                                                                                };
+                                                                            @endphp
+                                                                            <i class="fas {{ $iconClass }} text-primary me-2"></i>
+                                                                            <div style="max-width: 200px;">
+                                                                                <small class="d-block text-truncate">{{ $file->original_filename }}</small>
+                                                                                <small class="text-muted">{{ number_format($file->file_size / 1024, 1) }} KB</small>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="d-flex gap-1">
+                                                                            <a href="{{ Storage::url($file->file_path) }}" 
+                                                                               target="_blank" 
+                                                                               class="btn btn-sm btn-outline-primary"
+                                                                               title="عرض الملف">
+                                                                                <i class="fas fa-eye"></i>
+                                                                            </a>
+                                                                            <button type="button" 
+                                                                                    class="btn btn-sm btn-outline-danger delete-file"
+                                                                                    data-file-id="{{ $file->id }}"
+                                                                                    title="حذف الملف">
+                                                                                <i class="fas fa-trash"></i>
+                                                                            </button>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
                                                             </div>
-                                                        </div>
-                                                        <a href="{{ Storage::url($currentBackupFile->file_path) }}" 
-                                                           target="_blank" 
-                                                           class="btn btn-sm btn-outline-primary">
-                                                            <i class="fas fa-eye me-1"></i>عرض
-                                                        </a>
+                                                        @endforeach
                                                     </div>
                                                 </div>
                                             @endif
-                                            @error('files.backup_1')
+                                            
+                                            @error('files.attachments.*')
                                                 <span class="invalid-feedback" role="alert">
                                                     <strong>{{ $message }}</strong>
                                                 </span>
@@ -394,6 +426,41 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // إضافة معالج حذف الملفات
+    document.querySelectorAll('.delete-file').forEach(button => {
+        button.addEventListener('click', function() {
+            if (confirm('هل أنت متأكد من حذف هذا الملف؟')) {
+                const fileId = this.dataset.fileId;
+                const fileCard = this.closest('.col-md-6');
+                
+                fetch(`/admin/work-orders/files/${fileId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        fileCard.remove();
+                        // إذا لم يتبق أي ملفات، إخفاء قسم "المرفقات الحالية"
+                        const filesContainer = document.querySelector('.row.g-2');
+                        if (filesContainer && filesContainer.children.length === 0) {
+                            filesContainer.closest('.mt-3').remove();
+                        }
+                    } else {
+                        alert('حدث خطأ أثناء حذف الملف');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('حدث خطأ أثناء حذف الملف');
+                });
+            }
+        });
+    });
+    
     const workTypeSelect = document.getElementById('work_type');
     const workTypeNumber = document.getElementById('work_type_number');
     const workDescriptionInput = document.getElementById('work_description');

@@ -290,9 +290,9 @@
                                             مقايسة الأعمال
                                         </h4>
                                         <div class="d-flex gap-2">
-                                            <button type="button" class="btn btn-primary" onclick="addWorkItem()">
+                                            <!-- <button type="button" class="btn btn-primary" onclick="addWorkItem()">
                                                 <i class="fas fa-plus"></i> إضافة بند عمل
-                                            </button>
+                                            </button> -->
                                             @if(isset($project))
                                                 @if($project == 'riyadh')
                                                 <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#riyadhExcelImportModal">
