@@ -328,8 +328,8 @@
                 <div class="col-md-6">
                     <div class="form-group">
                         <label for="images" class="form-label">اختر الصور</label>
-                        <input type="file" class="form-control" id="images" name="images[]" multiple accept="image/*" required>
-                        <small class="text-muted">يمكنك اختيار عدة صور في نفس الوقت. الحد الأقصى لحجم كل صورة 10 ميجابايت.</small>
+                        <input type="file" class="form-control" id="images" name="images[]" multiple accept="image/*,application/pdf" required>
+                        <small class="text-muted">يمكنك اختيار عدة صور أو ملفات PDF في نفس الوقت. الحد الأقصى لحجم كل ملف 10 ميجابايت.</small>
                     </div>
                 </div>
                 <div class="col-md-6">
@@ -345,20 +345,36 @@
         <div id="executionImagesContainer" class="row g-3">
             @foreach($executionImages as $image)
                 <div class="col-md-4 col-lg-3" id="image-{{ $image->id }}">
-                    <div class="card h-100">
-                        <img src="{{ Storage::url($image->file_path) }}" class="card-img-top" alt="صورة تنفيذ" style="height: 200px; object-fit: cover;">
-                        <div class="card-body p-2">
-                            <p class="card-text small mb-1">{{ $image->original_filename }}</p>
-                            <p class="card-text small text-muted mb-2">
-                                <i class="fas fa-clock me-1"></i>
-                                {{ $image->created_at->format('Y-m-d H:i') }}
-                            </p>
-                            <button class="btn btn-sm btn-danger w-100 delete-image" data-image-id="{{ $image->id }}">
-                                <i class="fas fa-trash-alt me-1"></i>
-                                حذف
-                            </button>
+                                            <div class="card h-100">
+                            @php
+                                $isPdf = strtolower(pathinfo($image->file_path, PATHINFO_EXTENSION)) === 'pdf';
+                            @endphp
+                            
+                            @if($isPdf)
+                                <div class="card-img-top d-flex align-items-center justify-content-center bg-light" style="height: 200px;">
+                                    <i class="fas fa-file-pdf fa-4x text-danger"></i>
+                                </div>
+                            @else
+                                <img src="{{ Storage::url($image->file_path) }}" class="card-img-top" alt="صورة تنفيذ" style="height: 200px; object-fit: cover;">
+                            @endif
+                            
+                            <div class="card-body p-2">
+                                <p class="card-text small mb-1">{{ $image->original_filename }}</p>
+                                <p class="card-text small text-muted mb-2">
+                                    <i class="fas fa-clock me-1"></i>
+                                    {{ $image->created_at->format('Y-m-d H:i') }}
+                                </p>
+                                <div class="d-flex gap-1">
+                                    <a href="{{ Storage::url($image->file_path) }}" target="_blank" class="btn btn-sm btn-primary flex-grow-1">
+                                        <i class="fas {{ $isPdf ? 'fa-eye' : 'fa-search' }} me-1"></i>
+                                        عرض
+                                    </a>
+                                    <button class="btn btn-sm btn-danger delete-image" data-image-id="{{ $image->id }}">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
-                    </div>
                 </div>
             @endforeach
         </div>
@@ -1082,55 +1098,49 @@ function updateExecutedQuantity(input) {
 <script>
 // تحديث الإجمالي اليومي
 function updateDailyTotals() {
-    console.log('Updating daily totals...');
     const workOrderId = {{ $workOrder->id }};
-    fetch(`/admin/work-orders/${workOrderId}/daily-totals`)
-        .then(response => response.json())
-        .then(data => {
-            console.log('Received data:', data);
-            if (data.success) {
-                // تحديث الأعمال المدنية
-                const civilWorksElement = document.querySelector('.card-title.mb-0.text-primary');
-                if (civilWorksElement) {
-                    civilWorksElement.textContent = number_format(data.civil_works_total, 2) + ' ريال';
-                    console.log('Updated civil works:', civilWorksElement.textContent);
-                } else {
-                    console.warn('Civil works element not found');
-                }
-                
-                // تحديث التركيبات
-                const installationsElement = document.querySelector('.card-title.mb-0.text-success');
-                if (installationsElement) {
-                    installationsElement.textContent = number_format(data.installations_total, 2) + ' ريال';
-                    console.log('Updated installations:', installationsElement.textContent);
-                } else {
-                    console.warn('Installations element not found');
-                }
-                
-                // تحديث الأعمال الكهربائية
-                const electricalWorksElement = document.querySelector('.card-title.mb-0.text-warning');
-                if (electricalWorksElement) {
-                    electricalWorksElement.textContent = number_format(data.electrical_works_total, 2) + ' ريال';
-                    console.log('Updated electrical works:', electricalWorksElement.textContent);
-                } else {
-                    console.warn('Electrical works element not found');
-                }
-                
-                // تحديث الإجمالي الكلي
-                const grandTotalElement = document.querySelector('.card-title.mb-0.text-info');
-                if (grandTotalElement) {
-                    grandTotalElement.textContent = number_format(data.grand_total, 2) + ' ريال';
-                    console.log('Updated grand total:', grandTotalElement.textContent);
-                } else {
-                    console.warn('Grand total element not found');
-                }
-            } else {
-                console.error('Failed to update daily totals:', data.message);
+    fetch(`/admin/work-orders/${workOrderId}/daily-totals`, {
+        headers: {
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            // تحديث الأعمال المدنية
+            const civilWorksElement = document.querySelector('.card-title.mb-0.text-primary');
+            if (civilWorksElement) {
+                civilWorksElement.textContent = number_format(data.civil_works_total, 2) + ' ريال';
             }
-        })
-        .catch(error => {
-            console.error('Error fetching daily totals:', error);
-        });
+            
+            // تحديث التركيبات
+            const installationsElement = document.querySelector('.card-title.mb-0.text-success');
+            if (installationsElement) {
+                installationsElement.textContent = number_format(data.installations_total, 2) + ' ريال';
+            }
+            
+            // تحديث الأعمال الكهربائية
+            const electricalWorksElement = document.querySelector('.card-title.mb-0.text-warning');
+            if (electricalWorksElement) {
+                electricalWorksElement.textContent = number_format(data.electrical_works_total, 2) + ' ريال';
+            }
+            
+            // تحديث الإجمالي الكلي
+            const grandTotalElement = document.querySelector('.card-title.mb-0.text-info');
+            if (grandTotalElement) {
+                grandTotalElement.textContent = number_format(data.grand_total, 2) + ' ريال';
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
 }
 
 // تنسيق الأرقام
@@ -1201,7 +1211,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     method: 'POST',
                     body: formData,
                     headers: {
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json'
                     }
                 });
 
@@ -1213,17 +1224,28 @@ document.addEventListener('DOMContentLoaded', function() {
                         const imageHtml = `
                             <div class="col-md-4 col-lg-3" id="image-${image.id}">
                                 <div class="card h-100">
-                                    <img src="${image.path}" class="card-img-top" alt="صورة تنفيذ" style="height: 200px; object-fit: cover;">
+                                    ${image.is_pdf ? `
+                                        <div class="card-img-top d-flex align-items-center justify-content-center bg-light" style="height: 200px;">
+                                            <i class="fas fa-file-pdf fa-4x text-danger"></i>
+                                        </div>
+                                    ` : `
+                                        <img src="${image.path}" class="card-img-top" alt="صورة تنفيذ" style="height: 200px; object-fit: cover;">
+                                    `}
                                     <div class="card-body p-2">
                                         <p class="card-text small mb-1">${image.name}</p>
                                         <p class="card-text small text-muted mb-2">
                                             <i class="fas fa-clock me-1"></i>
                                             ${image.created_at}
                                         </p>
-                                        <button class="btn btn-sm btn-danger w-100 delete-image" data-image-id="${image.id}">
-                                            <i class="fas fa-trash-alt me-1"></i>
-                                            حذف
-                                        </button>
+                                        <div class="d-flex gap-1">
+                                            <a href="${image.path}" target="_blank" class="btn btn-sm btn-primary flex-grow-1">
+                                                <i class="fas ${image.is_pdf ? 'fa-eye' : 'fa-search'} me-1"></i>
+                                                عرض
+                                            </a>
+                                            <button class="btn btn-sm btn-danger delete-image" data-image-id="${image.id}">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -1237,25 +1259,27 @@ document.addEventListener('DOMContentLoaded', function() {
                     form.reset();
                     
                     // إظهار رسالة نجاح
-                    if (typeof toastr !== 'undefined') {
-                        toastr.success(result.message);
-                    } else {
-                        alert(result.message);
-                    }
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'تم بنجاح!',
+                        text: result.message,
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
                 } else {
-                    if (typeof toastr !== 'undefined') {
-                        toastr.error(result.message);
-                    } else {
-                        alert(result.message);
-                    }
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'خطأ!',
+                        text: result.message || 'حدث خطأ أثناء رفع الملفات'
+                    });
                 }
             } catch (error) {
                 console.error('Error:', error);
-                if (typeof toastr !== 'undefined') {
-                    toastr.error('حدث خطأ أثناء رفع الصور');
-                } else {
-                    alert('حدث خطأ أثناء رفع الصور');
-                }
+                Swal.fire({
+                    icon: 'error',
+                    title: 'خطأ!',
+                    text: 'حدث خطأ أثناء رفع الملفات'
+                });
             }
         });
     }
@@ -1284,25 +1308,27 @@ document.addEventListener('DOMContentLoaded', function() {
                         if (imageElement) {
                             imageElement.remove();
                         }
-                        if (typeof toastr !== 'undefined') {
-                            toastr.success(result.message);
-                        } else {
-                            alert(result.message);
-                        }
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'تم بنجاح!',
+                            text: result.message,
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
                     } else {
-                        if (typeof toastr !== 'undefined') {
-                            toastr.error(result.message);
-                        } else {
-                            alert(result.message);
-                        }
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'خطأ!',
+                            text: result.message || 'حدث خطأ أثناء حذف الملف'
+                        });
                     }
                 } catch (error) {
                     console.error('Error:', error);
-                    if (typeof toastr !== 'undefined') {
-                        toastr.error('حدث خطأ أثناء حذف الصورة');
-                    } else {
-                        alert('حدث خطأ أثناء حذف الصورة');
-                    }
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'خطأ!',
+                        text: 'حدث خطأ أثناء حذف الملف'
+                    });
                 }
             }
         }

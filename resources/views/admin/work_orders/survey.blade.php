@@ -313,8 +313,8 @@
                                     <thead class="table-light">
                                         <tr>
                                             <th>#</th>
-                                            <th>إحداثيات البداية</th>
                                             <th>إحداثيات النهاية</th>
+                                            <th>إحداثيات البداية</th>
                                             <th>المعوقات</th>
                                             <th>الملاحظات</th>
                                             <th>عدد الملفات</th>
@@ -327,20 +327,6 @@
                                             <tr>
                                                 <td>{{ $index + 1 }}</td>
                                                 <td>
-                                                    @if($survey->start_coordinates)
-                                                        <div class="d-flex align-items-center">
-                                                            <a href="https://www.google.com/maps/search/?api=1&query={{ $survey->start_coordinates }}" 
-                                                               target="_blank" 
-                                                               class="text-primary text-decoration-none">
-                                                                <i class="fas fa-map-marker-alt me-1"></i>
-                                                                {{ $survey->start_coordinates }}
-                                                            </a>
-                                                        </div>
-                                                    @else
-                                                        <span class="text-muted">غير متوفر</span>
-                                                    @endif
-                                                </td>
-                                                <td>
                                                     @if($survey->end_coordinates)
                                                         <div class="d-flex align-items-center">
                                                             <a href="https://www.google.com/maps/search/?api=1&query={{ $survey->end_coordinates }}" 
@@ -348,6 +334,20 @@
                                                                class="text-primary text-decoration-none">
                                                                 <i class="fas fa-map-marker-alt me-1"></i>
                                                                 {{ $survey->end_coordinates }}
+                                                            </a>
+                                                        </div>
+                                                    @else
+                                                        <span class="text-muted">غير متوفر</span>
+                                                    @endif
+                                                </td>
+                                                <td>
+                                                    @if($survey->start_coordinates)
+                                                        <div class="d-flex align-items-center">
+                                                            <a href="https://www.google.com/maps/search/?api=1&query={{ $survey->start_coordinates }}" 
+                                                               target="_blank" 
+                                                               class="text-primary text-decoration-none">
+                                                                <i class="fas fa-map-marker-alt me-1"></i>
+                                                                {{ $survey->start_coordinates }}
                                                             </a>
                                                         </div>
                                                     @else

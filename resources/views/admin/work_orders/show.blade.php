@@ -39,17 +39,39 @@
 
     .custom-card {
         border: none;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
         margin-bottom: 20px;
         background-color: #fff;
+        transition: all 0.3s ease;
+    }
+    
+    .custom-card:hover {
+        box-shadow: 0 4px 12px rgba(0,0,0,0.12);
     }
 
     .custom-card .card-header {
         background: linear-gradient(45deg, #f8f9fa, #ffffff);
         border-bottom: 1px solid #eee;
-        padding: 15px 20px;
-        border-radius: 8px 8px 0 0;
+        padding: 12px 16px;
+        border-radius: 12px 12px 0 0;
+        display: flex;
+        align-items: center;
+    }
+    
+    .custom-card .card-header h4 {
+        margin: 0;
+        font-size: 16px;
+        color: #333;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+    }
+    
+    .custom-card .card-header h4 i {
+        font-size: 18px;
+        margin-left: 8px;
+        opacity: 0.8;
     }
 
     .custom-card .card-header h4 {
@@ -63,6 +85,16 @@
     .custom-table {
         width: 100%;
         margin-bottom: 0;
+        border-collapse: collapse;
+        background-color: #fff;
+    }
+    
+    .custom-table tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .custom-table tbody tr:not(:last-child) {
+        border-bottom: 1px solid #e9ecef;
     }
 
     .custom-table th {
@@ -73,9 +105,47 @@
     }
 
     .custom-table td {
-        padding: 12px 15px;
+        padding: 8px 12px;
         border: 1px solid #e9ecef;
         vertical-align: middle;
+        font-size: 14px;
+        line-height: 1.4;
+    }
+    
+    .custom-table td .badge {
+        font-size: 12px;
+        padding: 4px 8px;
+        border-radius: 4px;
+    }
+    
+    .custom-table td .text-success {
+        color: #28a745 !important;
+    }
+    
+    .custom-table td .text-danger {
+        color: #dc3545 !important;
+    }
+    
+    .custom-table td .text-warning {
+        color: #ffc107 !important;
+    }
+    
+    .custom-table td .text-info {
+        color: #17a2b8 !important;
+    }
+    
+    .custom-table td .fw-bold {
+        font-weight: 600 !important;
+    }
+    
+    .custom-table th {
+        padding: 8px 12px;
+        font-size: 14px;
+        line-height: 1.4;
+        background-color: #f8f9fa;
+        font-weight: 600;
+        border: 1px solid #e9ecef;
+        width: 35%;
     }
 
     .header-gradient {
@@ -186,10 +256,7 @@
                                 <div class="card-body p-0">
                                     <table class="custom-table">
                                         <tbody>
-                                            <tr>
-                                                <th style="width: 40%">رقم التسلسلي</th>
-                                                <td>{{ $workOrder->id }}</td>
-                                            </tr>
+
                                             <tr>
                                                 <th>رقم أمر العمل</th>
                                                 <td>{{ $workOrder->order_number }}</td>

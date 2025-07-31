@@ -262,9 +262,9 @@
     @if(isset($executionImages) && $executionImages->count())
     <div class="card mb-4 shadow-sm">
         <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
-            <span>صور التنفيذ (الأعمال المدنية، التركيبات، الكهرباء)</span>
+            <span>ملفات التنفيذ (الأعمال المدنية، التركيبات، الكهرباء)</span>
             <button type="button" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#viewAllImagesModal">
-                <i class="fas fa-images"></i> عرض جميع الصور
+                <i class="fas fa-folder-open"></i> عرض جميع الملفات
             </button>
         </div>
         <div class="card-body">
@@ -277,20 +277,34 @@
                                 $imagePath = isset($img->file_category) && $img->file_category === 'installations_json' 
                                     ? asset('storage/' . $img->file_path) 
                                     : Storage::url($img->file_path);
+                                $isPdf = strtolower(pathinfo($img->file_path, PATHINFO_EXTENSION)) === 'pdf';
                             @endphp
-                            <img src="{{ $imagePath }}" 
-                                 class="card-img-top" 
-                                 style="height: 120px; object-fit: cover;"
-                                 alt="صورة التنفيذ"
-                                 data-bs-toggle="modal" 
-                                 data-bs-target="#viewImageModal"
-                                 data-image-url="{{ $imagePath }}"
-                                 data-image-name="{{ $img->original_filename }}"
-                                 data-image-date="{{ $img->created_at->format('Y-m-d H:i') }}"
-                                 style="cursor: pointer;">
+                            
+                            @if($isPdf)
+                                <div class="card-img-top d-flex align-items-center justify-content-center bg-light" style="height: 120px;">
+                                    <i class="fas fa-file-pdf fa-3x text-danger"></i>
+                                </div>
+                            @else
+                                <img src="{{ $imagePath }}" 
+                                     class="card-img-top" 
+                                     style="height: 120px; object-fit: cover;"
+                                     alt="صورة التنفيذ"
+                                     data-bs-toggle="modal" 
+                                     data-bs-target="#viewImageModal"
+                                     data-image-url="{{ $imagePath }}"
+                                     data-image-name="{{ $img->original_filename }}"
+                                     data-image-date="{{ $img->created_at->format('Y-m-d H:i') }}"
+                                     style="cursor: pointer;">
+                            @endif
+                            
                             <div class="card-body p-2">
                                 <small class="text-muted d-block text-truncate">{{ $img->original_filename }}</small>
                                 <small class="text-muted d-block">{{ $img->created_at->format('Y-m-d H:i') }}</small>
+                                @if($isPdf)
+                                    <a href="{{ $imagePath }}" target="_blank" class="btn btn-sm btn-primary w-100 mt-1">
+                                        <i class="fas fa-eye me-1"></i> عرض
+                                    </a>
+                                @endif
                             </div>
                         </div>
                     </div>
@@ -324,7 +338,7 @@
         <div class="modal-dialog modal-xl modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">جميع صور التنفيذ</h5>
+                    <h5 class="modal-title">جميع ملفات التنفيذ</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
@@ -337,18 +351,32 @@
                                         $imagePath = isset($img->file_category) && $img->file_category === 'installations_json' 
                                             ? asset('storage/' . $img->file_path) 
                                             : Storage::url($img->file_path);
+                                        $isPdf = strtolower(pathinfo($img->file_path, PATHINFO_EXTENSION)) === 'pdf';
                                     @endphp
-                                    <img src="{{ $imagePath }}" 
-                                         class="card-img-top" 
-                                         style="height: 150px; object-fit: cover; cursor: pointer;"
-                                         onclick="openImageModal(this)"
-                                         data-image-url="{{ $imagePath }}"
-                                         data-image-name="{{ $img->original_filename }}"
-                                         data-image-date="{{ $img->created_at->format('Y-m-d H:i') }}"
-                                         alt="صورة التنفيذ">
+                                    
+                                    @if($isPdf)
+                                        <div class="card-img-top d-flex align-items-center justify-content-center bg-light" style="height: 150px;">
+                                            <i class="fas fa-file-pdf fa-4x text-danger"></i>
+                                        </div>
+                                    @else
+                                        <img src="{{ $imagePath }}" 
+                                             class="card-img-top" 
+                                             style="height: 150px; object-fit: cover; cursor: pointer;"
+                                             onclick="openImageModal(this)"
+                                             data-image-url="{{ $imagePath }}"
+                                             data-image-name="{{ $img->original_filename }}"
+                                             data-image-date="{{ $img->created_at->format('Y-m-d H:i') }}"
+                                             alt="صورة التنفيذ">
+                                    @endif
+                                    
                                     <div class="card-body p-2">
                                         <small class="text-muted d-block text-truncate">{{ $img->original_filename }}</small>
                                         <small class="text-muted d-block">{{ $img->created_at->format('Y-m-d H:i') }}</small>
+                                        @if($isPdf)
+                                            <a href="{{ $imagePath }}" target="_blank" class="btn btn-sm btn-primary w-100 mt-1">
+                                                <i class="fas fa-eye me-1"></i> عرض PDF
+                                            </a>
+                                        @endif
                                     </div>
                                 </div>
                             </div>
@@ -525,66 +553,7 @@
     </script>
     @endpush
 
-    <!-- قسم صور التنفيذ -->
-    <div class="card shadow-lg border-0 mt-4">
-        <div class="card-header bg-primary text-white py-3">
-            <div class="d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">
-                    <i class="fas fa-images me-2"></i>
-                    صور التنفيذ
-                </h5>
-                <a href="{{ route('admin.work-orders.execution', $workOrder) }}" class="btn btn-light btn-sm">
-                    <i class="fas fa-plus me-1"></i>
-                    إضافة صور
-                </a>
-            </div>
-        </div>
-        <div class="card-body">
-            @if($executionImages->count() > 0)
-                <!-- عرض الصور -->
-                <div class="row g-3">
-                    @foreach($executionImages as $image)
-                        <div class="col-md-4 col-lg-3">
-                            <div class="card h-100">
-                                <img src="{{ Storage::url($image->file_path) }}" class="card-img-top" alt="صورة تنفيذ" style="height: 200px; object-fit: cover; cursor: pointer;" onclick="showImageModal('{{ Storage::url($image->file_path) }}', '{{ $image->original_filename }}')">
-                                <div class="card-body p-2">
-                                    <p class="card-text small mb-1">{{ $image->original_filename }}</p>
-                                    <p class="card-text small text-muted mb-0">
-                                        <i class="fas fa-clock me-1"></i>
-                                        {{ $image->created_at->format('Y-m-d H:i') }}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    @endforeach
-                </div>
-            @else
-                <div class="text-center py-4">
-                    <i class="fas fa-images text-muted" style="font-size: 3rem;"></i>
-                    <p class="text-muted mt-2">لا توجد صور تنفيذ متاحة</p>
-                    <p class="text-muted small">يمكنك إضافة صور التنفيذ من صفحة التنفيذ</p>
-                </div>
-            @endif
-        </div>
-    </div>
-
-    <!-- Modal لعرض الصور بحجم كامل -->
-    <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="imageModalLabel">صورة التنفيذ</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body text-center">
-                    <img id="modalImage" src="" class="img-fluid" alt="صورة التنفيذ">
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
-                </div>
-            </div>
-        </div>
-    </div>
+    
 
 </div>
 

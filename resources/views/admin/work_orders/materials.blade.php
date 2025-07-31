@@ -2093,47 +2093,7 @@ document.addEventListener('DOMContentLoaded', function() {
     createMaterialForms.forEach(form => {
         form.addEventListener('submit', function(e) {
             e.preventDefault();
-            
-            const materialName = this.dataset.materialName;
-            const materialCode = this.dataset.materialCode;
-            const quantity = this.dataset.quantity;
-            
-            Swal.fire({
-                title: 'تأكيد الإضافة',
-                html: `
-                    <div class="text-start">
-                        <p><strong>اسم المادة:</strong> ${materialName}</p>
-                        <p><strong>الكود:</strong> ${materialCode}</p>
-                        <p><strong>الكمية المخططة:</strong> ${quantity}</p>
-                    </div>
-                    <hr>
-                    <p class="text-muted">هل تريد إضافة هذه المادة إلى قائمة المواد؟</p>
-                `,
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: '#28a745',
-                cancelButtonColor: '#6c757d',
-                confirmButtonText: '<i class="fas fa-plus me-1"></i> نعم، أضف المادة',
-                cancelButtonText: '<i class="fas fa-times me-1"></i> إلغاء',
-                buttonsStyling: true
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    // إظهار loader
-                    Swal.fire({
-                        title: 'جاري الإضافة...',
-                        html: 'يتم إضافة المادة إلى قائمة المواد',
-                        allowOutsideClick: false,
-                        allowEscapeKey: false,
-                        showConfirmButton: false,
-                        didOpen: () => {
-                            Swal.showLoading();
-                        }
-                    });
-                    
-                    // إرسال النموذج
-                    this.submit();
-                }
-            });
+            this.submit();
         });
     });
     
@@ -2587,121 +2547,13 @@ document.querySelectorAll('.quantity-input').forEach(input => {
 </style>
 @endpush
 
+
+
 @push('scripts')
 <script>
-// تهيئة النافذة المنبثقة
-const addMaterialModal = document.getElementById('addMaterialModal');
-if (addMaterialModal) {
-    addMaterialModal.addEventListener('shown.bs.modal', function () {
-        document.getElementById('code').focus();
-    });
-
-    // تنظيف النموذج عند إغلاق النافذة
-    addMaterialModal.addEventListener('hidden.bs.modal', function () {
-        const form = this.querySelector('form');
-        form.reset();
-        clearValidation(form);
-    });
-
-    // التحقق من النموذج قبل الإرسال
-    const form = addMaterialModal.querySelector('form');
-    form.addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        if (validateForm(this)) {
-            // إظهار مؤشر التحميل
-            const submitBtn = this.querySelector('button[type="submit"]');
-            const originalText = submitBtn.innerHTML;
-            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> جاري الحفظ...';
-            submitBtn.disabled = true;
-            
-            // إرسال النموذج
-            this.submit();
-        }
-    });
-
-    // التحقق من الكميات عند الإدخال
-    const quantityInputs = form.querySelectorAll('input[type="number"]');
-    quantityInputs.forEach(input => {
-        input.addEventListener('input', function() {
-            validateQuantity(this);
-        });
-    });
-}
-
-// دالة التحقق من النموذج
-function validateForm(form) {
-    let isValid = true;
-    clearValidation(form);
-
-    // التحقق من الكود
-    const codeInput = form.querySelector('#code');
-    if (!codeInput.value.trim()) {
-        showError(codeInput, 'كود المادة مطلوب');
-        isValid = false;
-    }
-
-    // التحقق من الكميات
-    const spentQuantityInput = form.querySelector('#spent_quantity');
-    const executedQuantityInput = form.querySelector('#executed_quantity');
-    
-    if (!validateQuantity(spentQuantityInput) || !validateQuantity(executedQuantityInput)) {
-        isValid = false;
-    }
-
-    return isValid;
-}
-
-// دالة التحقق من الكمية
-function validateQuantity(input) {
-    const value = parseFloat(input.value);
-    
-    if (isNaN(value) || value < 0) {
-        showError(input, 'يجب إدخال رقم موجب');
-        return false;
-    }
-    
-    return true;
-}
-
-// دالة إظهار الخطأ
-function showError(input, message) {
-    const formGroup = input.closest('.mb-3');
-    formGroup.classList.add('has-error');
-    
-    const errorDiv = document.createElement('div');
-    errorDiv.className = 'invalid-feedback d-block';
-    errorDiv.textContent = message;
-    
-    input.classList.add('is-invalid');
-    formGroup.appendChild(errorDiv);
-}
-
-// دالة إظهار التحذير
-function showWarning(input, message) {
-    const formGroup = input.closest('.mb-3');
-    
-    const warningDiv = document.createElement('div');
-    warningDiv.className = 'text-warning small mt-1';
-    warningDiv.innerHTML = `<i class="fas fa-exclamation-triangle me-1"></i>${message}`;
-    
-    formGroup.appendChild(warningDiv);
-}
-
-// دالة مسح رسائل التحقق
-function clearValidation(form) {
-    form.querySelectorAll('.is-invalid').forEach(input => {
-        input.classList.remove('is-invalid');
-    });
-    
-    form.querySelectorAll('.invalid-feedback, .text-warning').forEach(element => {
-        element.remove();
-    });
-}
-
 // إضافة تنسيق للحقول التي بها أخطاء
-const style = document.createElement('style');
-style.textContent = `
+const validationStyle = document.createElement('style');
+validationStyle.textContent = `
     .has-error .form-control {
         border-color: #e74a3b;
     }
@@ -2714,7 +2566,7 @@ style.textContent = `
         margin-top: 0.25rem;
     }
 `;
-document.head.appendChild(style);
+document.head.appendChild(validationStyle);
 
 // دالة إضافة جميع المواد تلقائياً
 function addAllMaterialsAutomatically() {
@@ -2804,7 +2656,10 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // تحديث زر إضافة الجميع ليعمل يدوياً أيضاً
-document.getElementById('addAllMaterialsBtn').addEventListener('click', addAllMaterialsAutomatically);
+const addAllBtn = document.getElementById('addAllMaterialsBtn');
+if (addAllBtn) {
+    addAllBtn.addEventListener('click', addAllMaterialsAutomatically);
+}
 </script>
 @endpush
 @endsection 

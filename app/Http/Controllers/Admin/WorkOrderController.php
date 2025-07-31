@@ -227,29 +227,29 @@ class WorkOrderController extends Controller
             Log::info('Starting image upload for work order: ' . $workOrder->id);
             
             $request->validate([
-                'images.*' => 'required|image|mimes:jpeg,png,jpg|max:10240', // 10MB max
+                'images.*' => 'required|file|mimes:jpeg,png,jpg,pdf|max:10240', // 10MB max
             ]);
 
             if (!$request->hasFile('images')) {
-                Log::warning('No images found in request');
+                Log::warning('No files found in request');
                 return response()->json([
                     'success' => false,
-                    'message' => 'لم يتم اختيار أي صور للرفع'
+                    'message' => 'لم يتم اختيار أي ملفات للرفع'
                 ], 400);
             }
 
-            Log::info('Found ' . count($request->file('images')) . ' images to upload');
+            Log::info('Found ' . count($request->file('images')) . ' files to upload');
 
             $uploadedImages = [];
             foreach ($request->file('images') as $index => $image) {
-                Log::info("Processing image {$index}: " . $image->getClientOriginalName());
+                Log::info("Processing file {$index}: " . $image->getClientOriginalName());
                 
                 $filename = uniqid() . '_' . time() . '.' . $image->getClientOriginalExtension();
                 $originalName = $image->getClientOriginalName();
                 
-                // حفظ الصورة
+                // حفظ الملف
                 $path = $image->storeAs('work_orders/' . $workOrder->id . '/execution', $filename, 'public');
-                Log::info("Image stored at path: {$path}");
+                Log::info("File stored at path: {$path}");
                 
                 // التحقق من وجود الملف
                 if (!Storage::disk('public')->exists($path)) {
@@ -257,7 +257,7 @@ class WorkOrderController extends Controller
                     continue;
                 }
                 
-                // إنشاء سجل للصورة
+                // إنشاء سجل للملف
                 $file = $workOrder->files()->create([
                     'filename' => $filename,
                     'original_filename' => $originalName,
@@ -269,29 +269,32 @@ class WorkOrderController extends Controller
 
                 Log::info("Database record created with ID: {$file->id}");
 
+                $isPdf = strtolower($image->getClientOriginalExtension()) === 'pdf';
+                
                 $uploadedImages[] = [
                     'id' => $file->id,
                     'name' => $originalName,
                     'path' => Storage::url($path),
                     'size' => $this->formatFileSize($file->file_size),
-                    'created_at' => $file->created_at->format('Y-m-d H:i:s')
+                    'created_at' => $file->created_at->format('Y-m-d H:i:s'),
+                    'is_pdf' => $isPdf
                 ];
             }
 
-            Log::info('Successfully uploaded ' . count($uploadedImages) . ' images');
+            Log::info('Successfully uploaded ' . count($uploadedImages) . ' files');
 
             return response()->json([
                 'success' => true,
-                'message' => 'تم رفع الصور بنجاح',
+                'message' => 'تم رفع الملفات بنجاح',
                 'images' => $uploadedImages
             ]);
 
         } catch (\Exception $e) {
-            Log::error('Error uploading execution images: ' . $e->getMessage());
+            Log::error('Error uploading execution files: ' . $e->getMessage());
             Log::error('Stack trace: ' . $e->getTraceAsString());
             return response()->json([
                 'success' => false,
-                'message' => 'حدث خطأ أثناء رفع الصور: ' . $e->getMessage()
+                'message' => 'حدث خطأ أثناء رفع الملفات: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -436,5 +439,33 @@ class WorkOrderController extends Controller
         }
 
         return $bytes;
+    }
+
+    /**
+     * الحصول على الإجماليات اليومية
+     */
+    public function dailyTotals(WorkOrder $workOrder)
+    {
+        try {
+            // حساب إجماليات بنود العمل المنفذة
+            $totalExecutedAmount = $workOrder->workOrderItems()
+                ->join('work_items', 'work_order_items.work_item_id', '=', 'work_items.id')
+                ->sum(\DB::raw('work_order_items.executed_quantity * work_items.unit_price'));
+
+            return response()->json([
+                'success' => true,
+                'civil_works_total' => 0,
+                'installations_total' => 0,
+                'electrical_works_total' => 0,
+                'grand_total' => $totalExecutedAmount ?: 0
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error in dailyTotals: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء حساب الإجماليات: ' . $e->getMessage()
+            ], 500);
+        }
     }
 } 
