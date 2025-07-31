@@ -191,8 +191,8 @@
                                     </label>
                                     <select class="form-select" id="execution_status" name="execution_status">
                                         <option value="">كل الحالات</option>
-                                        <option value="1" {{ request('execution_status') == '1' ? 'selected' : '' }}>جاري العمل ....</option>
-                                        <option value="2" {{ request('execution_status') == '2' ? 'selected' : '' }}>تم تسليم 155 ولم تصدر شهادة الانجاز</option>
+                                        <option value="2" {{ request('execution_status') == '2' ? 'selected' : '' }}>جاري العمل ....</option>
+                                        <option value="1" {{ request('execution_status') == '1' ? 'selected' : '' }}>تم تسليم 155 ولم تصدر شهادة الانجاز</option>
                                         <option value="3" {{ request('execution_status') == '3' ? 'selected' : '' }}>صدرت شهادة ولم تعتمد</option>
                                         <option value="4" {{ request('execution_status') == '4' ? 'selected' : '' }}>تم اعتماد شهادة الانجاز</option>
                                         <option value="5" {{ request('execution_status') == '5' ? 'selected' : '' }}>مؤكد ولم تدخل مستخلص</option>
@@ -311,7 +311,16 @@
                                         @endif
                                         @if(request('execution_status'))
                                             <span class="filter-badge">
-                                                حالة التنفيذ: {{ request('execution_status') }}
+                                                حالة التنفيذ: @switch(request('execution_status'))
+                                                    @case('2') جاري العمل @break
+                                                    @case('1') تم تسليم 155 ولم تصدر شهادة الانجاز @break
+                                                    @case('3') صدرت شهادة ولم تعتمد @break
+                                                    @case('4') تم اعتماد شهادة الانجاز @break
+                                                    @case('5') مؤكد ولم تدخل مستخلص @break
+                                                    @case('6') دخلت مستخلص ولم تصرف @break
+                                                    @case('7') منتهي تم الصرف @break
+                                                    @default {{ request('execution_status') }}
+                                                @endswitch
                                                 <i class="fas fa-times clear-filter" onclick="clearFilter('execution_status')"></i>
                                             </span>
                                         @endif
@@ -408,7 +417,7 @@
                             </thead>
                             <tbody id="workOrdersTableBody">
                                 @forelse ($workOrders as $workOrder)
-                                    <tr class="work-order-row" data-id="{{ $workOrder->id }}">
+                                    <tr class="work-order-row" data-id="{{ $workOrder->id }}" data-execution-status="{{ $workOrder->execution_status }}">
                                         <td>{{ $workOrder->id }}</td>
                                         <td>{{ $workOrder->order_number }}</td>
                                         <td>{{ $workOrder->work_type }}</td>
@@ -509,10 +518,10 @@
                                         <td>{{ date('Y-m-d', strtotime($workOrder->approval_date)) }}</td>
                                         <td>
                                             @switch($workOrder->execution_status)
-                                                @case('1')
+                                                @case('2')
                                                     <span class="badge bg-info">جاري العمل ....</span>
                                                     @break
-                                                @case('2')
+                                                @case('1')
                                                     <span class="badge bg-info">تم تسليم 155 ولم تصدر شهادة الانجاز</span>
                                                     @break
                                                 @case('3')
@@ -863,7 +872,7 @@ function storeWorkOrders() {
         consultantName: row.cells[7].textContent.trim(),
         stationNumber: row.cells[8].textContent.trim(),
         approvalDate: row.cells[9].textContent.trim(),
-        executionStatus: row.cells[10].textContent.trim(),
+        executionStatus: row.dataset.executionStatus,
         orderValue: row.cells[11].textContent.trim()
     }));
 }
@@ -940,7 +949,7 @@ function performSearch(filters) {
         }
         
         // فلتر حالة التنفيذ
-        if (filters.executionStatus && !workOrder.executionStatus.includes(filters.executionStatus)) {
+        if (filters.executionStatus && workOrder.executionStatus !== filters.executionStatus) {
             isVisible = false;
         }
         
