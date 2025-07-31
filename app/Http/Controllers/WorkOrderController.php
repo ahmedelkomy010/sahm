@@ -309,7 +309,7 @@ class WorkOrderController extends Controller
                 'end_coordinates' => 'required|string|max:500',
                 'has_obstacles' => 'required|boolean',
                 'obstacles_notes' => 'required_if:has_obstacles,1|nullable|string|max:1000',
-                'site_images.*' => 'nullable|image|mimes:jpeg,png,jpg|max:30720', // 30MB max
+                'site_images.*' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:30720', // 30MB max
             ]);
 
             \Log::info('البيانات المتحقق منها:', $validated);
@@ -354,7 +354,7 @@ class WorkOrderController extends Controller
                             }
 
                             // التحقق من نوع الملف
-                            $allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+                            $allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'];
                             if (!in_array($image->getMimeType(), $allowedTypes)) {
                                 throw new \Exception('نوع الملف غير مدعوم: ' . $image->getMimeType());
                             }
@@ -2663,7 +2663,7 @@ class WorkOrderController extends Controller
                 'end_coordinates' => 'required|string|max:500',
                 'has_obstacles' => 'required|boolean',
                 'obstacles_notes' => 'required_if:has_obstacles,1|nullable|string|max:1000',
-                'site_images.*' => 'nullable|image|mimes:jpeg,png,jpg|max:30720', // 30MB max
+                'site_images.*' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:30720', // 30MB max
                 'deleted_files' => 'nullable|array',
                 'deleted_files.*' => 'exists:work_order_files,id'
             ]);
@@ -2728,7 +2728,7 @@ class WorkOrderController extends Controller
                             }
 
                             // التحقق من نوع الملف
-                            $allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+                            $allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'];
                             if (!in_array($image->getMimeType(), $allowedTypes)) {
                                 throw new \Exception('نوع الملف غير مدعوم: ' . $image->getMimeType());
                             }

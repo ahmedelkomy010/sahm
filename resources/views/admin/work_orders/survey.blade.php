@@ -189,12 +189,12 @@
                                                 <div class="form-group">
                                                     <label for="site_images" class="form-label">صور الموقع</label>
                                                     <div class="input-group">
-                                                        <input type="file" 
-                                                               class="form-control @error('site_images.*') is-invalid @enderror" 
-                                                               id="site_images" 
-                                                               name="site_images[]" 
-                                                               accept="image/*" 
-                                                               multiple>
+                                                                                                            <input type="file" 
+                                                           class="form-control @error('site_images.*') is-invalid @enderror" 
+                                                           id="site_images" 
+                                                           name="site_images[]" 
+                                                           accept="image/*,application/pdf" 
+                                                           multiple>
                                                         <button type="button" 
                                                                 class="btn btn-outline-primary" 
                                                                 onclick="openCamera()">
@@ -202,7 +202,7 @@
                                                         </button>
                                                     </div>
                                                     <small class="form-text text-muted">
-                                                        يمكنك اختيار عدة صور في نفس الوقت
+                                                        يمكنك اختيار عدة صور أو ملفات PDF في نفس الوقت
                                                     </small>
                                                     @error('site_images.*')
                                                         <span class="invalid-feedback" role="alert">
@@ -240,21 +240,44 @@
                             <div class="modal-dialog modal-lg">
                                 <div class="modal-content">
                                     <div class="modal-header">
-                                        <h5 class="modal-title" id="viewImagesModalLabel{{ $survey->id }}">صور المسح</h5>
+                                        <h5 class="modal-title" id="viewImagesModalLabel{{ $survey->id }}">ملفات المسح</h5>
                                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                     </div>
                                     <div class="modal-body">
                                         <div class="row g-3">
                                             @forelse($survey->files as $file)
-                                                @php
-                                                    $imageUrl = \App\Helpers\FileHelper::getImageUrl($file->file_path);
-                                                @endphp
-                                                @if($imageUrl)
-                                                    <div class="col-md-4">
-                                                        <div class="card h-100">
-                                                            <img src="{{ $imageUrl }}" class="card-img-top" alt="{{ $file->original_filename }}" style="height: 200px; object-fit: cover;">
-                                                            <div class="card-body">
-                                                                <p class="card-text small">{{ $file->original_filename }}</p>
+                                                <div class="col-md-4">
+                                                    <div class="card h-100">
+                                                        @if(in_array(strtolower(pathinfo($file->original_filename, PATHINFO_EXTENSION)), ['jpg', 'jpeg', 'png']))
+                                                            @php
+                                                                $imageUrl = \App\Helpers\FileHelper::getImageUrl($file->file_path);
+                                                            @endphp
+                                                            @if($imageUrl)
+                                                                <img src="{{ $imageUrl }}" class="card-img-top" alt="{{ $file->original_filename }}" style="height: 200px; object-fit: cover;">
+                                                            @else
+                                                                <div class="card-img-top d-flex align-items-center justify-content-center bg-light" style="height: 200px;">
+                                                                    <i class="fas fa-image fa-3x text-muted"></i>
+                                                                </div>
+                                                            @endif
+                                                        @elseif(strtolower(pathinfo($file->original_filename, PATHINFO_EXTENSION)) == 'pdf')
+                                                            <div class="card-img-top d-flex align-items-center justify-content-center bg-light" style="height: 200px;">
+                                                                <i class="fas fa-file-pdf fa-5x text-danger"></i>
+                                                            </div>
+                                                        @else
+                                                            <div class="card-img-top d-flex align-items-center justify-content-center bg-light" style="height: 200px;">
+                                                                <i class="fas fa-file fa-3x text-muted"></i>
+                                                            </div>
+                                                        @endif
+                                                        <div class="card-body">
+                                                            <p class="card-text small">{{ $file->original_filename }}</p>
+                                                            <div class="btn-group w-100">
+                                                                @if(strtolower(pathinfo($file->original_filename, PATHINFO_EXTENSION)) == 'pdf')
+                                                                    <a href="{{ asset('storage/' . $file->file_path) }}" 
+                                                                       target="_blank" 
+                                                                       class="btn btn-sm btn-primary">
+                                                                        <i class="fas fa-eye"></i> عرض
+                                                                    </a>
+                                                                @endif
                                                                 <button type="button" 
                                                                         class="btn btn-sm btn-danger delete-survey-image"
                                                                         data-file-id="{{ $file->id }}"
@@ -264,12 +287,12 @@
                                                             </div>
                                                         </div>
                                                     </div>
-                                                @endif
+                                                </div>
                                             @empty
                                                 <div class="col-12">
                                                     <div class="alert alert-info mb-0">
                                                         <i class="fas fa-info-circle me-2"></i>
-                                                        لا توجد صور لهذا المسح
+                                                        لا توجد ملفات لهذا المسح
                                                     </div>
                                                 </div>
                                             @endforelse
@@ -294,7 +317,7 @@
                                             <th>إحداثيات النهاية</th>
                                             <th>المعوقات</th>
                                             <th>الملاحظات</th>
-                                            <th>عدد الصور</th>
+                                            <th>عدد الملفات</th>
                                             <th>تاريخ المسح</th>
                                             <th>الإجراءات</th>
                                         </tr>
@@ -356,7 +379,7 @@
                                                 <td>
                                                     <div class="btn-group">
                                                         <button type="button" class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#viewImagesModal{{ $survey->id }}">
-                                                            <i class="fas fa-images"></i> عرض الصور
+                                                            <i class="fas fa-folder-open"></i> عرض الملفات
                                                         </button>
                                                         <form action="{{ route('admin.work-orders.survey.destroy', [$workOrder, $survey]) }}" method="POST" class="d-inline" onsubmit="return confirm('هل أنت متأكد من حذف هذا المسح؟');">
                                                             @csrf
@@ -374,7 +397,7 @@
                                                 <div class="modal-dialog modal-lg">
                                                     <div class="modal-content">
                                                         <div class="modal-header">
-                                                            <h5 class="modal-title" id="viewImagesModalLabel{{ $survey->id }}">صور المسح</h5>
+                                                            <h5 class="modal-title" id="viewImagesModalLabel{{ $survey->id }}">ملفات المسح</h5>
                                                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                                         </div>
                                                         <div class="modal-body">
@@ -397,7 +420,7 @@
                                                                     <div class="col-12">
                                                                         <div class="alert alert-info mb-0">
                                                                             <i class="fas fa-info-circle me-2"></i>
-                                                                            لا توجد صور لهذا المسح
+                                                                            لا توجد ملفات لهذا المسح
                                                                         </div>
                                                                     </div>
                                                                 @endforelse
@@ -540,8 +563,8 @@ document.getElementById('surveyForm').addEventListener('submit', function(e) {
         const file = siteImages[i];
         
         // التحقق من نوع الملف
-        if (!['image/jpeg', 'image/png', 'image/jpg'].includes(file.type)) {
-            showError(`الملف ${file.name} ليس صورة صالحة. الصيغ المدعومة هي: JPG, JPEG, PNG`, modalBody);
+        if (!['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'].includes(file.type)) {
+            showError(`الملف ${file.name} ليس من النوع المدعوم. الصيغ المدعومة هي: JPG, JPEG, PNG, PDF`, modalBody);
             return;
         }
         
@@ -691,8 +714,8 @@ document.getElementById('site_images').addEventListener('change', function(e) {
     
     Array.from(this.files).forEach((file, index) => {
         // التحقق من نوع الملف
-        if (!file.type.match('image/jpeg') && !file.type.match('image/png') && !file.type.match('image/jpg')) {
-            toastr.error(`الملف ${file.name} ليس صورة صالحة. الصيغ المدعومة هي: JPG, JPEG, PNG`);
+        if (!file.type.match('image/jpeg') && !file.type.match('image/png') && !file.type.match('image/jpg') && !file.type.match('application/pdf')) {
+            alert(`الملف ${file.name} ليس من النوع المدعوم. الصيغ المدعومة هي: JPG, JPEG, PNG, PDF`);
             return;
         }
         
@@ -708,16 +731,27 @@ document.getElementById('site_images').addEventListener('change', function(e) {
         const card = document.createElement('div');
         card.className = 'card h-100';
         
-        const img = document.createElement('img');
-        img.className = 'card-img-top';
-        img.style.height = '200px';
-        img.style.objectFit = 'cover';
+        let previewElement;
         
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            img.src = e.target.result;
-        };
-        reader.readAsDataURL(file);
+        if (file.type === 'application/pdf') {
+            // إنشاء معاينة للـ PDF
+            previewElement = document.createElement('div');
+            previewElement.className = 'card-img-top d-flex align-items-center justify-content-center bg-light';
+            previewElement.style.height = '200px';
+            previewElement.innerHTML = '<i class="fas fa-file-pdf fa-5x text-danger"></i>';
+        } else {
+            // إنشاء معاينة للصورة
+            previewElement = document.createElement('img');
+            previewElement.className = 'card-img-top';
+            previewElement.style.height = '200px';
+            previewElement.style.objectFit = 'cover';
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                previewElement.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
         
         const cardBody = document.createElement('div');
         cardBody.className = 'card-body';
@@ -750,7 +784,7 @@ document.getElementById('site_images').addEventListener('change', function(e) {
         
         cardBody.appendChild(fileName);
         cardBody.appendChild(removeBtn);
-        card.appendChild(img);
+        card.appendChild(previewElement);
         card.appendChild(cardBody);
         col.appendChild(card);
         previewContainer.appendChild(col);
