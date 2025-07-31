@@ -13,10 +13,10 @@
                         </div>
                         <div class="d-flex align-items-center gap-3">
                             @php
-                                $createdDate = $workOrder->created_at;
-                                $daysPassed = (int) $createdDate->diffInDays(now());
-                                $isToday = $createdDate->isToday();
-                                $isYesterday = $createdDate->isYesterday();
+                                $approvalDate = \Carbon\Carbon::parse($workOrder->approval_date);
+                                $daysPassed = (int) $approvalDate->diffInDays(now());
+                                $isToday = $approvalDate->isToday();
+                                $isYesterday = $approvalDate->isYesterday();
                                 
                                 if ($isToday) {
                                     $daysText = 'اليوم';
@@ -26,10 +26,25 @@
                                     $badgeColor = 'info';
                                 } elseif ($daysPassed <= 7) {
                                     $daysText = $daysPassed . ' ' . ($daysPassed == 1 ? 'يوم' : 'أيام');
-                                    $badgeColor = 'warning';
+                                    $badgeColor = 'success';
                                 } elseif ($daysPassed <= 30) {
                                     $daysText = $daysPassed . ' يوم';
+                                    $badgeColor = 'info';
+                                } elseif ($daysPassed <= 90) {
+                                    $daysText = $daysPassed . ' يوم';
+                                    $badgeColor = 'primary';
+                                } elseif ($daysPassed <= 180) {
+                                    $daysText = $daysPassed . ' يوم';
+                                    $badgeColor = 'warning';
+                                } elseif ($daysPassed <= 365) {
+                                    $daysText = $daysPassed . ' يوم';
+                                    $badgeColor = 'orange';
+                                } elseif ($daysPassed <= 500) {
+                                    $daysText = $daysPassed . ' يوم';
                                     $badgeColor = 'danger';
+                                } else {
+                                    $daysText = 'أكثر من 500 يوم';
+                                    $badgeColor = 'dark';
                                 }
                             @endphp
                             <span class="badge bg-{{ $badgeColor }} fs-6">

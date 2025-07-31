@@ -118,21 +118,45 @@
                         <h3 class="mb-0 fs-4">تفاصيل أمر العمل</h3>
                         <div class="d-flex flex-wrap justify-content-center gap-2">
                             <div class="btn-group">
+                                @if(auth()->user()->is_admin || 
+                                    (auth()->user()->hasPermission('riyadh_manage_survey') && $project == 'riyadh') || 
+                                    (auth()->user()->hasPermission('madinah_manage_survey') && $project == 'madinah'))
                                 <a href="{{ route('admin.work-orders.survey', $workOrder) }}" class="custom-btn btn-survey">
                                     <i class="fas fa-map-marked-alt me-1"></i> المسح
                                 </a>
+                                @endif
+
+                                @if(auth()->user()->is_admin || 
+                                    (auth()->user()->hasPermission('riyadh_manage_materials') && $project == 'riyadh') || 
+                                    (auth()->user()->hasPermission('madinah_manage_materials') && $project == 'madinah'))
                                 <a href="{{ route('admin.work-orders.materials.index', $workOrder) }}" class="custom-btn btn-materials">
                                     <i class="fas fa-boxes me-1"></i> المواد
                                 </a>
+                                @endif
+
+                                @if(auth()->user()->is_admin || 
+                                    (auth()->user()->hasPermission('riyadh_manage_quality') && $project == 'riyadh') || 
+                                    (auth()->user()->hasPermission('madinah_manage_quality') && $project == 'madinah'))
                                 <a href="{{ route('admin.work-orders.license', $workOrder) }}" class="custom-btn btn-license">
                                     <i class="fas fa-file-alt me-1"></i> الجودة
                                 </a>
+                                @endif
+
+                                @if(auth()->user()->is_admin || 
+                                    (auth()->user()->hasPermission('riyadh_manage_execution') && $project == 'riyadh') || 
+                                    (auth()->user()->hasPermission('madinah_manage_execution') && $project == 'madinah'))
                                 <a href="{{ route('admin.work-orders.execution', $workOrder) }}" class="custom-btn btn-execution">
                                     <i class="fas fa-tools me-1"></i> تنفيذ
                                 </a>
+                                @endif
+
+                                @if(auth()->user()->is_admin || 
+                                    (auth()->user()->hasPermission('riyadh_manage_post_execution') && $project == 'riyadh') || 
+                                    (auth()->user()->hasPermission('madinah_manage_post_execution') && $project == 'madinah'))
                                 <a href="{{ route('admin.work-orders.actions-execution', $workOrder) }}" class="custom-btn btn-actions">
                                     <i class="fas fa-cogs me-1"></i> إجراءات ما بعد التنفيذ
                                 </a>
+                                @endif
                             </div>
                             
                             <a href="{{ route('admin.work-orders.index', ['project' => $project]) }}" class="custom-btn btn-back">
