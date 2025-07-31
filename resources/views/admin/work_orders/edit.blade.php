@@ -143,11 +143,21 @@
                                     <label for="office" class="form-label fw-bold">المكتب</label>
                                     <select id="office" class="form-select @error('office') is-invalid @enderror" name="office">
                                         <option value="">اختر المكتب</option>
-                                        <option value="خريص" {{ old('office', $workOrder->office) == 'خريص' ? 'selected' : '' }}>خريص</option>
-                                        <option value="الشرق" {{ old('office', $workOrder->office) == 'الشرق' ? 'selected' : '' }}>الشرق</option>
-                                        <option value="الشمال" {{ old('office', $workOrder->office) == 'الشمال' ? 'selected' : '' }}>الشمال</option>
-                                        <option value="الجنوب" {{ old('office', $workOrder->office) == 'الجنوب' ? 'selected' : '' }}>الجنوب</option>
-                                        <option value="الدرعية" {{ old('office', $workOrder->office) == 'الدرعية' ? 'selected' : '' }}>الدرعية</option>
+                                        @if($workOrder->project == 'riyadh')
+                                            <option value="خريص" {{ old('office', $workOrder->office) == 'خريص' ? 'selected' : '' }}>خريص</option>
+                                            <option value="الشرق" {{ old('office', $workOrder->office) == 'الشرق' ? 'selected' : '' }}>الشرق</option>
+                                            <option value="الشمال" {{ old('office', $workOrder->office) == 'الشمال' ? 'selected' : '' }}>الشمال</option>
+                                            <option value="الجنوب" {{ old('office', $workOrder->office) == 'الجنوب' ? 'selected' : '' }}>الجنوب</option>
+                                            <option value="الدرعية" {{ old('office', $workOrder->office) == 'الدرعية' ? 'selected' : '' }}>الدرعية</option>
+                                        @elseif($workOrder->project == 'madinah')
+                                            <option value="المدينة المنورة" {{ old('office', $workOrder->office) == 'المدينة المنورة' ? 'selected' : '' }}>المدينة المنورة</option>
+                                            <option value="ينبع" {{ old('office', $workOrder->office) == 'ينبع' ? 'selected' : '' }}>ينبع</option>
+                                            <option value="خيبر" {{ old('office', $workOrder->office) == 'خيبر' ? 'selected' : '' }}>خيبر</option>
+                                            <option value="مهد الذهب" {{ old('office', $workOrder->office) == 'مهد الذهب' ? 'selected' : '' }}>مهد الذهب</option>
+                                            <option value="بدر" {{ old('office', $workOrder->office) == 'بدر' ? 'selected' : '' }}>بدر</option>
+                                            <option value="الحناكية" {{ old('office', $workOrder->office) == 'الحناكية' ? 'selected' : '' }}>الحناكية</option>
+                                            <option value="العلا" {{ old('office', $workOrder->office) == 'العلا' ? 'selected' : '' }}>العلا</option>
+                                        @endif
                                     </select>
                                     @error('office')
                                         <span class="invalid-feedback" role="alert">
@@ -210,38 +220,12 @@
                                 <div class="form-section mb-4">
                                     <h4 class="section-title mb-3">المرفقات</h4>
                                     <div class="row">
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label">مقايسة الأعمال</label>
-                                            <input type="file" class="form-control @error('files.license_estimate') is-invalid @enderror" name="files[license_estimate]">
-                                            @if($workOrder->files->where('file_type', 'license_estimate')->first())
-                                                <div class="mt-2">
-                                                    <small class="text-muted">الملف الحالي: {{ $workOrder->files->where('file_type', 'license_estimate')->first()->original_filename }}</small>
-                                                </div>
-                                            @endif
-                                            @error('files.license_estimate')
-                                                <span class="invalid-feedback" role="alert">
-                                                    <strong>{{ $message }}</strong>
-                                                </span>
-                                            @enderror
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label">مقايسة المواد</label>
-                                            <input type="file" class="form-control @error('files.daily_measurement') is-invalid @enderror" name="files[daily_measurement]">
-                                            @if($workOrder->files->where('file_type', 'daily_measurement')->first())
-                                                <div class="mt-2">
-                                                    <small class="text-muted">الملف الحالي: {{ $workOrder->files->where('file_type', 'daily_measurement')->first()->original_filename }}</small>
-                                                </div>
-                                            @endif
-                                            @error('files.daily_measurement')
-                                                <span class="invalid-feedback" role="alert">
-                                                    <strong>{{ $message }}</strong>
-                                                </span>
-                                            @enderror
-                                        </div>
+                                        
+                                        
                                         <div class="col-md-6 mb-3">
                                             <label class="form-label fw-bold">
                                                 <i class="fas fa-paperclip text-secondary me-2"></i>
-                                                مرفق احتياطي (اختياري)
+                                                مرفق
                                             </label>
                                             <input type="file" class="form-control @error('files.backup_1') is-invalid @enderror" name="files[backup_1]" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png">
                                             <div class="form-text">

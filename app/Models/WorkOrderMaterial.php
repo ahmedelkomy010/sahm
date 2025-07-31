@@ -14,14 +14,12 @@ class WorkOrderMaterial extends Model
         'material_id',
         'quantity',
         'used_quantity',
-        'unit_price',
         'notes'
     ];
 
     protected $casts = [
         'quantity' => 'decimal:2',
         'used_quantity' => 'decimal:2',
-        'unit_price' => 'decimal:2',
     ];
 
     /**

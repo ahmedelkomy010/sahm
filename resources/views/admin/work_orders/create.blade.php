@@ -189,13 +189,13 @@
                                                 <option value="الجنوب" {{ old('office') == 'الجنوب' ? 'selected' : '' }}>الجنوب</option>
                                                 <option value="الدرعية" {{ old('office') == 'الدرعية' ? 'selected' : '' }}>الدرعية</option>
                                             @elseif($project == 'madinah')
-                                                <option value="المدينة   " {{ old('office') == 'المدينة' ? 'selected' : '' }}>المدينة</option>
+                                                <option value="المدينة المنورة" {{ old('office') == 'المدينة المنورة' ? 'selected' : '' }}>المدينة المنورة</option>
                                                 <option value="ينبع" {{ old('office') == 'ينبع' ? 'selected' : '' }}>ينبع</option>
                                                 <option value="خيبر" {{ old('office') == 'خيبر' ? 'selected' : '' }}>خيبر</option>
                                                 <option value="مهد الذهب" {{ old('office') == 'مهد-الذهب' ? 'selected' : '' }}>مهد الذهب</option>
                                                 <option value="بدر" {{ old('office') == 'بدر' ? 'selected' : '' }}>بدر</option>
                                                 <option value="الحناكية" {{ old('office') == 'الحناكية' ? 'selected' : '' }}>الحناكية</option>
-                                                <option value="العلا" {{ old('office') == 'العلا' ? 'selected' : '' }}>    العلا</option>
+                                                <option value="العلا" {{ old('office') == 'العلا' ? 'selected' : '' }}>العلا</option>
                                             @endif
                                         @endif
                                     </select>
@@ -351,6 +351,16 @@
 
                                 <!-- قسم مقايسة المواد -->
                                 <div class="form-section mb-4">
+                                    @if($errors->any())
+                                        <div class="alert alert-danger mb-3">
+                                            <i class="fas fa-exclamation-triangle me-2"></i>
+                                            <ul class="mb-0">
+                                                @foreach($errors->all() as $error)
+                                                    <li>{{ $error }}</li>
+                                                @endforeach
+                                            </ul>
+                                        </div>
+                                    @endif
                                     <div class="d-flex justify-content-between align-items-center mb-3">
                                         <h4 class="section-title mb-0">
                                             <i class="fas fa-boxes me-2 text-success"></i>
@@ -406,10 +416,64 @@
                                     <a href="{{ route('admin.work-orders.index') }}" class="btn btn-secondary px-4">
                                         <i class="fas fa-times me-2"></i> إلغاء
                                     </a>
-                                    <button type="submit" class="btn btn-primary px-4">
+                                    <button type="submit" class="btn btn-primary px-4" onclick="return validateForm()">
                                         <i class="fas fa-save me-2"></i> إنشاء
                                     </button>
                                 </div>
+
+                                <script>
+                                    function validateForm() {
+                                        // التحقق من وجود المواد
+                                        const materialsBody = document.getElementById('materialsBody');
+                                        if (!materialsBody || materialsBody.children.length === 0) {
+                                            alert('يجب إضافة مادة واحدة على الأقل');
+                                            return false;
+                                        }
+
+                                        // التحقق من كل حقول المواد
+                                        let isValid = true;
+                                        const rows = materialsBody.getElementsByTagName('tr');
+                                        for (let i = 0; i < rows.length; i++) {
+                                            const row = rows[i];
+                                            
+                                            // التحقق من كود المادة
+                                            const materialCode = row.querySelector('input[name*="[material_code]"]');
+                                            if (!materialCode.value.trim()) {
+                                                alert('يجب إدخال كود المادة في السطر ' + (i + 1));
+                                                materialCode.focus();
+                                                return false;
+                                            }
+
+                                            // التحقق من وصف المادة
+                                            const materialDesc = row.querySelector('input[name*="[material_description]"]');
+                                            if (!materialDesc.value.trim()) {
+                                                alert('يجب إدخال وصف المادة في السطر ' + (i + 1));
+                                                materialDesc.focus();
+                                                return false;
+                                            }
+
+                                            // التحقق من الكمية المخططة
+                                            const quantity = row.querySelector('input[name*="[planned_quantity]"]');
+                                            if (!quantity.value || quantity.value <= 0) {
+                                                alert('يجب إدخال كمية صحيحة أكبر من صفر في السطر ' + (i + 1));
+                                                quantity.focus();
+                                                return false;
+                                            }
+
+                                            // التحقق من الوحدة
+                                            const unit = row.querySelector('select[name*="[unit]"]');
+                                            if (!unit.value) {
+                                                alert('يجب اختيار الوحدة في السطر ' + (i + 1));
+                                                unit.focus();
+                                                return false;
+                                            }
+
+
+                                        }
+
+                                        return true;
+                                    }
+                                </script>
                             </div>
                         </div>
                     </form>
@@ -1020,7 +1084,7 @@ const workItems = @json($workItems ?? []);
 const referenceMaterials = @json($referenceMaterials ?? []);
 
 // استخدام المتغير العام المعرف أعلاه
-let materialRowIndex = 0;
+window.materialRowIndex = 0;
 
 // إضافة بند عمل جديد
 function addWorkItem() {
@@ -1144,31 +1208,53 @@ function selectWorkItem(index, id, code, description, unit, price) {
 // إضافة مادة جديدة
 function addMaterial() {
     const tbody = document.getElementById('materialsBody');
+
     const row = document.createElement('tr');
     row.innerHTML = `
         <td>
-            <input type="text" name="materials[${window.materialRowIndex}][material_code]" 
-                   class="form-control form-control-sm material-code" 
-                   onchange="handleMaterialCodeChange(this)"
-                   placeholder="أدخل كود المادة">
+                                                            <input type="text" name="materials[${window.materialRowIndex}][material_code]" 
+                                                       class="form-control form-control-sm material-code @error('materials.*.material_code') is-invalid @enderror" 
+                                                       onchange="handleMaterialCodeChange(this)"
+                                                       placeholder="أدخل كود المادة" required>
+                                                @error('materials.*.material_code')
+                                                    <span class="invalid-feedback" role="alert">
+                                                        <strong>{{ $message }}</strong>
+                                                    </span>
+                                                @enderror
         </td>
         <td>
-            <input type="text" name="materials[${window.materialRowIndex}][material_description]" 
-                   class="form-control form-control-sm material-description"
-                   onchange="handleMaterialDescriptionChange(this)"
-                   placeholder="أدخل وصف المادة">
+                                                            <input type="text" name="materials[${window.materialRowIndex}][material_description]" 
+                                                       class="form-control form-control-sm material-description @error('materials.*.material_description') is-invalid @enderror"
+                                                       onchange="handleMaterialDescriptionChange(this)"
+                                                       placeholder="أدخل وصف المادة" required>
+                                                @error('materials.*.material_description')
+                                                    <span class="invalid-feedback" role="alert">
+                                                        <strong>{{ $message }}</strong>
+                                                    </span>
+                                                @enderror
         </td>
         <td>
-            <input type="number" name="materials[${window.materialRowIndex}][planned_quantity]" 
-                   class="form-control form-control-sm" 
-                   value="1" min="1" step="1">
+                                                            <input type="number" name="materials[${window.materialRowIndex}][planned_quantity]" 
+                                                       class="form-control form-control-sm @error('materials.*.planned_quantity') is-invalid @enderror" 
+                                                       value="1" min="1" step="1" required
+                                                       onchange="handleQuantityChange(this)">
+                                                @error('materials.*.planned_quantity')
+                                                    <span class="invalid-feedback" role="alert">
+                                                        <strong>{{ $message }}</strong>
+                                                    </span>
+                                                @enderror
         </td>
         <td>
-            <select name="materials[${window.materialRowIndex}][unit]" class="form-select form-select-sm material-unit">
+            <select name="materials[${window.materialRowIndex}][unit]" class="form-select form-select-sm material-unit @error('materials.*.unit') is-invalid @enderror" required>
                 <option value="L.M">L.M</option>
                 <option value="Kit">Kit</option>
                 <option value="Ech">Ech</option>
             </select>
+            @error('materials.*.unit')
+                <span class="invalid-feedback" role="alert">
+                    <strong>{{ $message }}</strong>
+                </span>
+            @enderror
         </td>
         <td>
             <button type="button" class="btn btn-danger btn-sm" onclick="removeMaterialRow(this)">
@@ -1187,26 +1273,38 @@ async function handleMaterialCodeChange(input) {
     const descriptionInput = row.querySelector('.material-description');
     const unitInput = row.querySelector('.material-unit');
 
-    if (code) {
-        try {
-            // البحث عن المادة في قاعدة البيانات
-            const response = await fetch(`/admin/materials/search?code=${encodeURIComponent(code)}`, {
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json'
-                }
-            });
-            
-            const data = await response.json();
-            
-            if (data.success && data.material) {
-                // تعبئة البيانات الموجودة
-                descriptionInput.value = data.material.description;
-                unitInput.value = data.material.unit || 'قطعة';
+
+    // التحقق من صحة الكود
+    if (!code) {
+        alert('يجب إدخال كود المادة');
+        input.focus();
+        return;
+    }
+
+    try {
+        // البحث عن المادة في قاعدة البيانات
+        const response = await fetch(`/admin/materials/search?code=${encodeURIComponent(code)}`, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
             }
-        } catch (error) {
-            console.error('Error searching material:', error);
+        });
+        
+        const data = await response.json();
+        
+        if (data.success && data.material) {
+            // تعبئة البيانات الموجودة
+            descriptionInput.value = data.material.description;
+            unitInput.value = data.material.unit || 'قطعة';
+
+        } else {
+            // إذا لم يتم العثور على المادة
+            alert('لم يتم العثور على المادة. يرجى التأكد من الكود.');
+            input.focus();
         }
+    } catch (error) {
+        console.error('Error searching material:', error);
+        alert('حدث خطأ أثناء البحث عن المادة');
     }
 }
 
@@ -1215,35 +1313,70 @@ async function handleMaterialDescriptionChange(input) {
     const row = input.closest('tr');
     const code = row.querySelector('.material-code').value.trim();
     const description = input.value.trim();
+    const unit = row.querySelector('.material-unit').value.trim();
 
-    if (code && description) {
-        try {
-            // حفظ المادة في قاعدة البيانات
-            const response = await fetch('/admin/materials/save', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify({
-                    code: code,
-                    description: description,
-                    unit: row.querySelector('.material-unit').value.trim()
-                })
-            });
-            
-            const data = await response.json();
-            
-            if (data.success) {
-                // إظهار رسالة نجاح صغيرة
-                showToast('success', 'تم حفظ المادة بنجاح');
-            }
-        } catch (error) {
-            console.error('Error saving material:', error);
-            showToast('error', 'حدث خطأ أثناء حفظ المادة');
+
+    // التحقق من صحة البيانات
+    if (!description) {
+        alert('يجب إدخال وصف المادة');
+        input.focus();
+        return;
+    }
+
+    if (!code) {
+        alert('يجب إدخال كود المادة أولاً');
+        row.querySelector('.material-code').focus();
+        return;
+    }
+
+    if (!unit) {
+        alert('يجب اختيار الوحدة');
+        row.querySelector('.material-unit').focus();
+        return;
+    }
+
+
+
+    try {
+        // حفظ المادة في قاعدة البيانات
+        const response = await fetch('/admin/materials/save', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                code: code,
+                description: description,
+                unit: unit
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // إظهار رسالة نجاح صغيرة
+            showToast('success', 'تم حفظ المادة بنجاح');
+        } else {
+            // إظهار رسالة خطأ
+            showToast('error', data.message || 'حدث خطأ أثناء حفظ المادة');
         }
+    } catch (error) {
+        console.error('Error saving material:', error);
+        showToast('error', 'حدث خطأ أثناء حفظ المادة');
+    }
+}
+
+// معالجة تغيير الكمية
+function handleQuantityChange(input) {
+    const quantity = parseFloat(input.value);
+    if (!quantity || quantity <= 0) {
+        alert('يجب إدخال كمية صحيحة أكبر من صفر');
+        input.value = 1;
+        input.focus();
+        return;
     }
 }
 
@@ -1276,14 +1409,21 @@ function showToast(type, message) {
 
 // حذف صف مادة
 function removeMaterialRow(button) {
-    const row = button.closest('tr');
-    if (row) {
-        row.remove();
-        
-        // إضافة صف جديد إذا كان الجدول فارغاً
-        const tbody = document.getElementById('materialsBody');
-        if (tbody && tbody.children.length === 0) {
-            addMaterial();
+    const tbody = document.getElementById('materialsBody');
+    if (tbody.children.length <= 1) {
+        alert('يجب أن يكون هناك مادة واحدة على الأقل');
+        return;
+    }
+
+    if (confirm('هل أنت متأكد من حذف هذه المادة؟')) {
+        const row = button.closest('tr');
+        if (row) {
+            row.remove();
+            
+            // إضافة صف جديد إذا كان الجدول فارغاً
+            if (tbody && tbody.children.length === 0) {
+                addMaterial();
+            }
         }
     }
 }
@@ -1934,22 +2074,22 @@ function addImportedMaterialsToTable(materials) {
         const row = document.createElement('tr');
         row.innerHTML = `
             <td>
-                <input type="text" name="materials[${materialRowIndex}][material_code]" 
+                <input type="text" name="materials[${window.materialRowIndex}][material_code]" 
                        class="form-control form-control-sm" 
                        value="${material.material_code}" readonly>
             </td>
             <td>
-                <input type="text" name="materials[${materialRowIndex}][material_description]" 
+                <input type="text" name="materials[${window.materialRowIndex}][material_description]" 
                        class="form-control form-control-sm" 
                        value="${material.material_description}" readonly>
             </td>
             <td>
-                <input type="number" name="materials[${materialRowIndex}][planned_quantity]" 
+                <input type="number" name="materials[${window.materialRowIndex}][planned_quantity]" 
                        class="form-control form-control-sm" 
                        step="0.01" min="0" value="${material.planned_quantity || 1}">
             </td>
             <td>
-                <select name="materials[${materialRowIndex}][unit]" class="form-select form-select-sm">
+                <select name="materials[${window.materialRowIndex}][unit]" class="form-select form-select-sm">
                     <option value="L.M" ${material.unit === 'L.M' ? 'selected' : ''}>L.M</option>
                     <option value="Kit" ${material.unit === 'Kit' ? 'selected' : ''}>Kit</option>
                     <option value="Ech" ${material.unit === 'Ech' ? 'selected' : ''}>Ech</option>
@@ -1962,7 +2102,7 @@ function addImportedMaterialsToTable(materials) {
             </td>
         `;
         tbody.appendChild(row);
-        materialRowIndex++;
+        window.materialRowIndex++;
     });
     
     // إظهار رسالة توضيحية
@@ -2307,10 +2447,10 @@ function searchMaterials() {
                             <td><small class="fw-bold">${material.code}</small></td>
                             <td><small>${material.description}</small></td>
                             <td><small class="text-muted">${material.unit || 'L.M'}</small></td>
-                            <td><small class="text-success">${material.unit_price || 0}</small></td>
+        
                             <td>
                                 <button type="button" class="btn btn-success btn-sm" 
-                                        onclick="addMaterialFromSearch('${material.code}', '${material.description}', '${material.unit || 'L.M'}', '${material.unit_price || 0}')">
+                                        onclick="addMaterialFromSearch('${material.code}', '${material.description}', '${material.unit || 'L.M'}')">
                                     <i class="fas fa-plus"></i>
                                 </button>
                             </td>
@@ -2355,7 +2495,7 @@ function searchMaterials() {
 }
 
 // إضافة مادة من البحث المتقدم
-function addMaterialFromSearch(code, description, unit, unitPrice) {
+function addMaterialFromSearch(code, description, unit) {
     addMaterialRow(code, description, '', unit, '');
     
     // إغلاق النافذة
@@ -2373,22 +2513,22 @@ function addMaterialRow(code, description, quantity, unit, notes) {
     
     row.innerHTML = `
         <td>
-            <input type="text" name="materials[${materialRowIndex}][material_code]" 
+            <input type="text" name="materials[${window.materialRowIndex}][material_code]" 
                    class="form-control form-control-sm" 
                    value="${code}" readonly>
         </td>
         <td>
-            <input type="text" name="materials[${materialRowIndex}][material_description]" 
+            <input type="text" name="materials[${window.materialRowIndex}][material_description]" 
                    class="form-control form-control-sm" 
                    value="${description}" readonly>
         </td>
         <td>
-            <input type="number" name="materials[${materialRowIndex}][planned_quantity]" 
+            <input type="number" name="materials[${window.materialRowIndex}][planned_quantity]" 
                    class="form-control form-control-sm" 
                    step="0.01" min="0" value="${quantity || 1}" placeholder="الكمية">
         </td>
         <td>
-            <select name="materials[${materialRowIndex}][unit]" class="form-select form-select-sm">
+            <select name="materials[${window.materialRowIndex}][unit]" class="form-select form-select-sm">
                 <option value="L.M" ${unit === 'L.M' ? 'selected' : ''}>L.M</option>
                 <option value="Kit" ${unit === 'Kit' ? 'selected' : ''}>Kit</option>
                 <option value="Ech" ${unit === 'Ech' ? 'selected' : ''}>Ech</option>
@@ -2402,7 +2542,7 @@ function addMaterialRow(code, description, quantity, unit, notes) {
     `;
     
     tbody.appendChild(row);
-    materialRowIndex++;
+    window.materialRowIndex++;
 }
 
 // إضافة أحداث البحث السريع
@@ -2733,6 +2873,11 @@ function addMaterialToTable(material) {
     window.workItems = @json($workItems);
     // تهيئة متغير المؤشر العام
     window.workItemRowIndex = 0;
+    
+    // إضافة صف واحد افتراضي عند تحميل الصفحة
+    document.addEventListener('DOMContentLoaded', function() {
+        addMaterial(); // إضافة مادة افتراضية
+    });
 </script>
 <script src="{{ asset('js/work-items-import.js') }}"></script>
 @endsection

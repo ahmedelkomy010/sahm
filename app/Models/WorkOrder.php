@@ -9,6 +9,29 @@ class WorkOrder extends Model
 {
     use HasFactory;
 
+    public static $rules = [
+        'order_number' => 'required|string|max:255',
+        'work_type' => 'required|string|max:999',
+        'work_description' => 'required|string',
+        'approval_date' => 'required|date',
+        'subscriber_name' => 'required|string|max:255',
+        'district' => 'required|string|max:255',
+        'order_value_with_consultant' => 'required|numeric|min:0',
+        'order_value_without_consultant' => 'required|numeric|min:0',
+        'execution_status' => 'required|in:1,2,3,4,5,6,7',
+        'municipality' => 'nullable|string|max:255',
+        'office' => 'nullable|string|max:255',
+        'station_number' => 'nullable|string|max:255',
+        'consultant_name' => 'nullable|string|max:255',
+        'city' => 'required|string|max:255',
+        'materials' => 'required|array',
+        'materials.*.material_code' => 'required|string|max:255',
+        'materials.*.material_description' => 'required|string|max:255',
+        'materials.*.planned_quantity' => 'required|numeric|min:0',
+        'materials.*.unit' => 'required|string|max:50',
+        'materials.*.notes' => 'nullable|string',
+    ];
+
     protected $fillable = [
         'order_number',
         'work_type',

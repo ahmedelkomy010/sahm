@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\WorkOrder;
 use App\Models\WorkOrderFile;
+use App\Models\WorkOrderMaterial;
 use App\Models\Survey;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -80,40 +81,45 @@ class WorkOrderController extends Controller
             return redirect()->route('project.selection');
         }
         
-        $validated = $request->validate([
-            'order_number' => 'required|string|max:255',
-            'work_type' => 'required|string|max:999',
-            'work_description' => 'required|string',
-            'approval_date' => 'required|date',
-            'subscriber_name' => 'required|string|max:255',
-            'district' => 'required|string|max:255',
-            'order_value_with_consultant' => 'required|numeric|min:0',
-            'order_value_without_consultant' => 'required|numeric|min:0',
-            'execution_status' => 'required|in:1,2,3,4,5,6,7',
-            'municipality' => 'nullable|string|max:255',
-            'office' => 'nullable|string|max:255',
-            'station_number' => 'nullable|string|max:255',
-            'consultant_name' => 'nullable|string|max:255',
-            'city' => 'required|string|max:255',
+        $messages = [
+            'materials.required' => 'يجب إدخال المواد',
+            'materials.*.material_code.required' => 'يجب إدخال كود المادة',
+            'materials.*.material_description.required' => 'يجب إدخال وصف المادة',
+            'materials.*.planned_quantity.required' => 'يجب إدخال الكمية المخططة',
+            'materials.*.planned_quantity.numeric' => 'يجب أن تكون الكمية المخططة رقم',
+            'materials.*.planned_quantity.min' => 'يجب أن تكون الكمية المخططة أكبر من صفر',
+            'materials.*.unit.required' => 'يجب إدخال الوحدة',
+            'order_number.required' => 'يجب إدخال رقم أمر العمل',
+            'work_type.required' => 'يجب إدخال نوع العمل',
+            'work_description.required' => 'يجب إدخال وصف العمل',
+            'approval_date.required' => 'يجب إدخال تاريخ الاعتماد',
+            'subscriber_name.required' => 'يجب إدخال اسم المشترك',
+            'district.required' => 'يجب إدخال الحي',
+            'order_value_with_consultant.required' => 'يجب إدخال قيمة أمر العمل شامل الاستشاري',
+            'order_value_with_consultant.numeric' => 'يجب أن تكون قيمة أمر العمل شامل الاستشاري رقم',
+            'order_value_with_consultant.min' => 'يجب أن تكون قيمة أمر العمل شامل الاستشاري أكبر من صفر',
+            'order_value_without_consultant.required' => 'يجب إدخال قيمة أمر العمل بدون استشاري',
+            'order_value_without_consultant.numeric' => 'يجب أن تكون قيمة أمر العمل بدون استشاري رقم',
+            'order_value_without_consultant.min' => 'يجب أن تكون قيمة أمر العمل بدون استشاري أكبر من صفر',
+            'execution_status.required' => 'يجب إدخال حالة تنفيذ أمر العمل',
+            'execution_status.in' => 'حالة تنفيذ أمر العمل غير صحيحة',
+            'city.required' => 'يجب إدخال المدينة',
+        ];
+
+        $rules = array_merge(WorkOrder::$rules, [
             // بنود العمل
             'work_items' => 'nullable|array',
             'work_items.*.work_item_id' => 'required_with:work_items|exists:work_items,id',
             'work_items.*.planned_quantity' => 'required_with:work_items|numeric|min:0',
             'work_items.*.unit_price' => 'nullable|numeric|min:0',
             'work_items.*.notes' => 'nullable|string',
-            // المواد
-            'materials' => 'nullable|array',
-            'materials.*.material_code' => 'required_with:materials|string|max:255',
-            'materials.*.material_description' => 'required_with:materials|string|max:255',
-            'materials.*.planned_quantity' => 'required_with:materials|numeric|min:0',
-            'materials.*.unit' => 'required_with:materials|string|max:50',
-            'materials.*.unit_price' => 'nullable|numeric|min:0',
-            'materials.*.notes' => 'nullable|string',
             // المرفقات
             'files.license_estimate' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png|max:20480',
             'files.daily_measurement' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png|max:20480',
             'files.backup_1' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png|max:20480',
         ]);
+
+        $validated = $request->validate($rules, $messages);
         
         // تعيين المدينة تلقائياً حسب المشروع
         switch ($project) {
@@ -151,27 +157,40 @@ class WorkOrderController extends Controller
         // حفظ المواد
         if ($request->has('materials') && is_array($request->materials)) {
             foreach ($request->materials as $material) {
-                if (!empty($material['material_code']) && !empty($material['material_description'])) {
-                    // إنشاء أو العثور على المادة في جدول materials
-                    $materialRecord = Material::firstOrCreate(
-                        ['code' => $material['material_code']],
-                        [
-                            'name' => $material['material_description'],
-                            'description' => $material['material_description'],
-                            'unit' => $material['unit'] ?? 'عدد',
-                            'unit_price' => $material['unit_price'] ?? 0,
-                            'is_active' => true,
-                        ]
-                    );
-                    
-                    // ربط المادة بأمر العمل في جدول work_order_materials
-                    $workOrder->workOrderMaterials()->create([
-                        'material_id' => $materialRecord->id,
-                        'quantity' => $material['planned_quantity'] ?? 0,
-                        'unit_price' => $material['unit_price'] ?? 0,
-                        'notes' => $material['notes'] ?? null,
-                    ]);
+                // التحقق من وجود البيانات المطلوبة
+                if (empty($material['material_code']) || empty($material['material_description']) || 
+                    empty($material['planned_quantity']) || empty($material['unit'])) {
+                    return redirect()->back()
+                        ->withInput()
+                        ->withErrors(['materials' => 'يجب إدخال جميع بيانات المواد المطلوبة']);
                 }
+
+                // التحقق من صحة البيانات الرقمية
+                if (!is_numeric($material['planned_quantity']) || $material['planned_quantity'] <= 0) {
+                    return redirect()->back()
+                        ->withInput()
+                        ->withErrors(['materials' => 'يجب أن تكون الكمية المخططة رقم أكبر من صفر']);
+                }
+
+
+
+                // إنشاء أو العثور على المادة في جدول materials
+                $materialRecord = Material::firstOrCreate(
+                    ['code' => $material['material_code']],
+                    [
+                        'name' => $material['material_description'],
+                        'description' => $material['material_description'],
+                        'unit' => $material['unit'],
+                        'is_active' => true,
+                    ]
+                );
+                
+                // ربط المادة بأمر العمل في جدول work_order_materials
+                $workOrder->workOrderMaterials()->create([
+                    'material_id' => $materialRecord->id,
+                    'quantity' => $material['planned_quantity'],
+                    'notes' => $material['notes'] ?? null,
+                ]);
             }
         }
         
@@ -434,7 +453,11 @@ class WorkOrderController extends Controller
     public function edit(WorkOrder $workOrder)
     {
         $workOrder->load('files');
-        return view('admin.work_orders.edit', compact('workOrder'));
+        
+        // تحديد المشروع بناءً على المدينة
+        $project = $workOrder->city === 'المدينة المنورة' ? 'madinah' : 'riyadh';
+        
+        return view('admin.work_orders.edit', compact('workOrder', 'project'));
     }
 
     // تحديث أمر عمل

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\WorkOrderRequest;
 use App\Models\WorkOrder;
 use App\Models\WorkOrderFile;
 use App\Models\WorkItem;

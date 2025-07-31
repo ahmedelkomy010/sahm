@@ -54,7 +54,6 @@
                         </div>
                     @endif
 
-                     أزرار الإجراءات 
                     <div class="d-flex justify-content-end align-items-center mb-4">
                         <!-- <a href="{{ route('general-productivity', ['project' => $project]) }}" class="btn btn-success me-2 px-4">
                             <i class="fas fa-chart-bar me-1"></i> تقرير الإنتاجية العام
@@ -69,7 +68,7 @@
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <h5 class="mb-0 text-primary">
                                 <i class="fas fa-filter me-2"></i>
-                                فلترة أوامر العمل
+                                بحث في أوامر العمل
                             </h5>
                            
                         </div>
@@ -191,8 +190,8 @@
                                     </label>
                                     <select class="form-select" id="execution_status" name="execution_status">
                                         <option value="">كل الحالات</option>
-                                        <option value="2" {{ request('execution_status') == '2' ? 'selected' : '' }}>جاري العمل ....</option>
-                                        <option value="1" {{ request('execution_status') == '1' ? 'selected' : '' }}>تم تسليم 155 ولم تصدر شهادة الانجاز</option>
+                                        <option value="1" {{ request('execution_status') == '1' ? 'selected' : '' }}>جاري العمل ....</option>
+                                        <option value="2" {{ request('execution_status') == '2' ? 'selected' : '' }}>تم تسليم 155 ولم تصدر شهادة الانجاز</option>
                                         <option value="3" {{ request('execution_status') == '3' ? 'selected' : '' }}>صدرت شهادة ولم تعتمد</option>
                                         <option value="4" {{ request('execution_status') == '4' ? 'selected' : '' }}>تم اعتماد شهادة الانجاز</option>
                                         <option value="5" {{ request('execution_status') == '5' ? 'selected' : '' }}>مؤكد ولم تدخل مستخلص</option>
@@ -312,8 +311,8 @@
                                         @if(request('execution_status'))
                                             <span class="filter-badge">
                                                 حالة التنفيذ: @switch(request('execution_status'))
-                                                    @case('2') جاري العمل @break
-                                                    @case('1') تم تسليم 155 ولم تصدر شهادة الانجاز @break
+                                                    @case('1') جاري العمل @break
+                                                    @case('2') تم تسليم 155 ولم تصدر شهادة الانجاز @break
                                                     @case('3') صدرت شهادة ولم تعتمد @break
                                                     @case('4') تم اعتماد شهادة الانجاز @break
                                                     @case('5') مؤكد ولم تدخل مستخلص @break
@@ -418,7 +417,7 @@
                             <tbody id="workOrdersTableBody">
                                 @forelse ($workOrders as $workOrder)
                                     <tr class="work-order-row" data-id="{{ $workOrder->id }}" data-execution-status="{{ $workOrder->execution_status }}">
-                                        <td>{{ $workOrder->id }}</td>
+                                        <td>{{ $loop->iteration + ($workOrders->currentPage() - 1) * $workOrders->perPage() }}</td>
                                         <td>{{ $workOrder->order_number }}</td>
                                         <td>{{ $workOrder->work_type }}</td>
                                         <td>
@@ -518,10 +517,10 @@
                                         <td>{{ date('Y-m-d', strtotime($workOrder->approval_date)) }}</td>
                                         <td>
                                             @switch($workOrder->execution_status)
-                                                @case('2')
+                                                @case('1')
                                                     <span class="badge bg-info">جاري العمل ....</span>
                                                     @break
-                                                @case('1')
+                                                @case('2')
                                                     <span class="badge bg-info">تم تسليم 155 ولم تصدر شهادة الانجاز</span>
                                                     @break
                                                 @case('3')
