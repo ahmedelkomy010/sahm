@@ -143,13 +143,13 @@
                                     <label for="office" class="form-label fw-bold">المكتب</label>
                                     <select id="office" class="form-select @error('office') is-invalid @enderror" name="office">
                                         <option value="">اختر المكتب</option>
-                                        @if($workOrder->project == 'riyadh')
+                                        @if($project == 'riyadh')
                                             <option value="خريص" {{ old('office', $workOrder->office) == 'خريص' ? 'selected' : '' }}>خريص</option>
                                             <option value="الشرق" {{ old('office', $workOrder->office) == 'الشرق' ? 'selected' : '' }}>الشرق</option>
                                             <option value="الشمال" {{ old('office', $workOrder->office) == 'الشمال' ? 'selected' : '' }}>الشمال</option>
                                             <option value="الجنوب" {{ old('office', $workOrder->office) == 'الجنوب' ? 'selected' : '' }}>الجنوب</option>
                                             <option value="الدرعية" {{ old('office', $workOrder->office) == 'الدرعية' ? 'selected' : '' }}>الدرعية</option>
-                                        @elseif($workOrder->project == 'madinah')
+                                        @elseif($project == 'madinah')
                                             <option value="المدينة المنورة" {{ old('office', $workOrder->office) == 'المدينة المنورة' ? 'selected' : '' }}>المدينة المنورة</option>
                                             <option value="ينبع" {{ old('office', $workOrder->office) == 'ينبع' ? 'selected' : '' }}>ينبع</option>
                                             <option value="خيبر" {{ old('office', $workOrder->office) == 'خيبر' ? 'selected' : '' }}>خيبر</option>
