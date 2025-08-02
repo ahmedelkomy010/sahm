@@ -1,4 +1,4 @@
-                                <td>
+                                <!-- <td>
                                     <a href="{{ Storage::url($file->file_path) }}" 
                                        class="btn btn-sm btn-info" 
                                        target="_blank">
@@ -6,4 +6,4 @@
                                     </a>
                                 </td>
                             </tr>
-                        @endforeach 
+                        @endforeach  -->

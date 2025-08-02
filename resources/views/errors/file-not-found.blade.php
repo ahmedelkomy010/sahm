@@ -1,4 +1,4 @@
-@extends('layouts.app')
+<!-- @extends('layouts.app')
 
 @section('title', 'الملف غير موجود')
 
@@ -46,4 +46,4 @@
         </div>
     </div>
 </div>
-@endsection 
+@endsection  -->
