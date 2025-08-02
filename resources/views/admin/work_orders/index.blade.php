@@ -548,11 +548,13 @@
                                                 <a href="{{ route('admin.work-orders.show', $workOrder) }}" class="btn btn-sm btn-info">عرض</a>
                                                 <a href="{{ route('admin.work-orders.edit', $workOrder) }}" class="btn btn-sm btn-primary">تعديل</a>
                                                 
-                                                <form action="{{ route('admin.work-orders.destroy', $workOrder) }}" method="POST" class="d-inline" onsubmit="return confirm('هل أنت متأكد من حذف هذا العنصر؟');">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="btn btn-sm btn-danger">حذف</button>
-                                                </form>
+                                                @if(auth()->user()->is_admin)
+                                                    <form action="{{ route('admin.work-orders.destroy', $workOrder) }}" method="POST" class="d-inline" onsubmit="return confirm('هل أنت متأكد من حذف هذا العنصر؟');">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="btn btn-sm btn-danger">حذف</button>
+                                                    </form>
+                                                @endif
                                             </div>
                                         </td>
                                     </tr>

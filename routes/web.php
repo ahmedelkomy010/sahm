@@ -83,7 +83,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::get('work-orders/{workOrder}', [App\Http\Controllers\WorkOrderController::class, 'show'])->name('work-orders.show');
     Route::get('work-orders/{workOrder}/edit', [App\Http\Controllers\WorkOrderController::class, 'edit'])->name('work-orders.edit');
     Route::put('work-orders/{workOrder}', [App\Http\Controllers\WorkOrderController::class, 'update'])->name('work-orders.update');
-    Route::delete('work-orders/{workOrder}', [App\Http\Controllers\WorkOrderController::class, 'destroy'])->name('work-orders.destroy');
+    Route::delete('work-orders/{workOrder}', [App\Http\Controllers\Admin\WorkOrderDeleteController::class, '__invoke'])->name('work-orders.destroy');
     
     // إزالة وسيط التحقق للاختبار - جميع المسارات متاحة للمستخدمين المسجلين
     // Users Management - all actions

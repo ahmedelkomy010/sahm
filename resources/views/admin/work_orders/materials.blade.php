@@ -204,12 +204,25 @@
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <div class="mb-3">
-                            <label for="code" class="form-label required">
-                                <i class="fas fa-barcode me-1"></i>
-                                كود المادة
-                            </label>
-                            <input type="text" class="form-control" id="code" name="code" required>
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <label for="code" class="form-label required">
+                                        <i class="fas fa-barcode me-1"></i>
+                                        كود المادة
+                                    </label>
+                                    <input type="text" class="form-control" id="code" name="code" required>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="line" class="form-label">
+                                        <i class="fas fa-hashtag me-1"></i>
+                                        السطر
+                                    </label>
+                                    <input type="text" class="form-control" id="line" name="line">
+                                </div>
+                            </div>
                         </div>
                         <div class="mb-3">
                             <label for="description" class="form-label">
@@ -671,22 +684,7 @@
                                                             <i class="fas fa-edit"></i>
                                                             <span class="btn-text">تعديل</span>
                                                         </a>
-                                                        <form id="delete-form-{{ $material->id }}" 
-                                                              action="{{ route('admin.work-orders.materials.destroy', [$workOrder, $material]) }}" 
-                                                              method="POST" 
-                                                              class="d-inline">
-                                                            @csrf
-                                                            @method('DELETE')
-                                                            <button type="button" 
-                                                                    class="btn btn-action btn-delete"
-                                                                    onclick="deleteMaterial({{ $material->id }}, '{{ $material->code }}')"
-                                                                    data-bs-toggle="tooltip"
-                                                                    data-bs-placement="top"
-                                                                    title="حذف">
-                                                                <i class="fas fa-trash"></i>
-                                                                <span class="btn-text">حذف</span>
-                                                            </button>
-                                                        </form>
+
                                                     </div>
                                                 </div>
                                             </td>
@@ -1136,16 +1134,7 @@
 
 
 
-/* تنسيق زر الحذف */
-.btn-delete {
-    color: #dc3545;
-    background: rgba(220, 53, 69, 0.1);
-}
 
-.btn-delete:hover {
-    color: #fff;
-    background: linear-gradient(135deg, #dc3545, #b02a37);
-}
 
 /* تأثيرات إضافية */
 .btn-action::before {
@@ -1813,34 +1802,7 @@ $(document).ready(function() {
     });
 });
 
-// دالة حذف المادة مع تأكيد محسن
-function deleteMaterial(materialId, materialCode) {
-    Swal.fire({
-        title: 'تأكيد الحذف',
-        text: `هل أنت متأكد من حذف المادة "${materialCode}"؟`,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6',
-        confirmButtonText: 'نعم، احذف',
-        cancelButtonText: 'إلغاء',
-        reverseButtons: true
-    }).then((result) => {
-        if (result.isConfirmed) {
-            // إظهار loading
-            Swal.fire({
-                title: 'جاري الحذف...',
-                allowOutsideClick: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                }
-            });
-            
-            // إرسال النموذج
-            document.getElementById('delete-form-' + materialId).submit();
-        }
-    });
-}
+
 
 // دالة تمييز الصفوف في البحث مع تحسينات
 function highlightTableRows(searchTerm, column) {
@@ -1913,16 +1875,7 @@ function clearHighlights() {
 }
 
 // تحسين عرض الرسائل
-@if(session('success'))
-    toastr.success('{{ session('success') }}', '', {
-        progressBar: true,
-        closeButton: true,
-        timeOut: 7000,
-        extendedTimeOut: 3000,
-        positionClass: 'toast-top-center',
-        rtl: true
-    });
-@endif
+
 
 @if(session('error'))
         toastr.error('{{ session('error') }}', '', {
@@ -2065,16 +2018,7 @@ function deleteIndependentFile(materialId, fileType, button) {
 
 // معالجة إضافة المواد من مقايسة المواد
 document.addEventListener('DOMContentLoaded', function() {
-    // إظهار رسالة نجاح إذا تم إضافة مادة
-    @if(session('success'))
-        Swal.fire({
-            title: 'تم بنجاح!',
-            text: '{{ session('success') }}',
-            icon: 'success',
-            confirmButtonColor: '#28a745',
-            confirmButtonText: 'حسناً'
-        });
-    @endif
+
 
     // إظهار رسالة خطأ إذا حدث خطأ
     @if(session('error'))

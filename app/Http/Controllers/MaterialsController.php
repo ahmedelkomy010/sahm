@@ -183,8 +183,7 @@ class MaterialsController extends Controller
             $successMessage .= '. ' . $codeChangeMessage;
         }
 
-        return redirect()->route('admin.work-orders.materials.index', $workOrder)
-            ->with('success', $successMessage);
+        return redirect()->route('admin.work-orders.materials.index', $workOrder);
     }
 
     /**
@@ -387,8 +386,7 @@ class MaterialsController extends Controller
         // تحديث الملفات
         $this->handleFileUploads($request, $material, true);
 
-        return redirect()->route('admin.work-orders.materials.index', $workOrder)
-            ->with('success', 'تم تحديث المادة بنجاح');
+        return redirect()->route('admin.work-orders.materials.index', $workOrder);
     }
 
     /**
@@ -408,8 +406,7 @@ class MaterialsController extends Controller
             // حذف المادة
             $material->delete();
             
-            return redirect()->route('admin.work-orders.materials.index', $workOrder)
-                ->with('success', 'تم حذف المادة بنجاح');
+            return redirect()->route('admin.work-orders.materials.index', $workOrder);
         } catch (\Exception $e) {
             \Log::error('Error deleting material: ' . $e->getMessage());
             return redirect()->back()
@@ -605,7 +602,6 @@ class MaterialsController extends Controller
 
             // إرجاع البيانات مع معلومات الملفات المرفوعة
             return redirect()->route('admin.work-orders.materials.index', $workOrder)
-                ->with('success', 'تم رفع الملفات بنجاح')
                 ->with('uploaded_files', $uploadedFiles);
         } catch (\Exception $e) {
             \Log::error('Error uploading material files: ' . $e->getMessage());
@@ -678,8 +674,7 @@ class MaterialsController extends Controller
                 $material->save();
             }
 
-            return redirect()->route('admin.work-orders.materials.index', $workOrder)
-                ->with('success', 'تم حذف الملف بنجاح');
+            return redirect()->route('admin.work-orders.materials.index', $workOrder);
         } catch (\Exception $e) {
             \Log::error('Error deleting material file: ' . $e->getMessage());
             return redirect()->back()

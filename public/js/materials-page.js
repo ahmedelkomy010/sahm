@@ -71,7 +71,7 @@ function performFileDelete(materialId, fileType, buttonElement) {
         // حذف الصف من الجدول فوراً
         if (row) {
             row.remove();
-            showSuccessMessage('تم حذف الملف بنجاح');
+
         }
         
         // إضافة الفورم للصفحة وإرساله
