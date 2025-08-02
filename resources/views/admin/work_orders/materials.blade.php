@@ -2112,26 +2112,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     .then(data => {
                         Swal.close();
                         
-                        if (data.success) {
-                            let successMessage = data.message || `تم إضافة جميع المواد بنجاح`;
-                            
-                            // إضافة الملاحظات إذا كانت متوفرة
-                            if (data.notes && data.notes.length > 0) {
-                                successMessage += '\n\nملاحظات:\n' + data.notes.join('\n');
-                            }
-                            
-                            Swal.fire({
-                                title: 'تم بنجاح!',
-                                text: successMessage,
-                                icon: 'success',
-                                confirmButtonColor: '#28a745',
-                                confirmButtonText: 'ممتاز',
-                                customClass: {
-                                    popup: data.notes && data.notes.length > 0 ? 'swal2-large' : ''
-                                }
-                            }).then(() => {
-                                location.reload(); // إعادة تحميل الصفحة لإظهار التحديثات
-                            });
+                                                                        if (data.success) {
+                                                    location.reload(); // إعادة تحميل الصفحة لإظهار التحديثات
                         } else {
                             let errorMessage = data.message || 'حدث خطأ أثناء إضافة المواد';
                             

@@ -257,19 +257,11 @@ class MaterialsController extends Controller
                 }
             }
             
-            // إعداد رسالة النجاح
-            $message = "تم إضافة {$addedCount} مادة بنجاح";
-            if ($skippedCount > 0) {
-                $message .= " (تم تخطي {$skippedCount} مادة موجودة بالفعل)";
-            }
-            
             // إرجاع JSON response للتعامل مع AJAX
             if (!empty($errors)) {
-                $message .= ". ملاحظات إضافية متوفرة.";
                 return response()->json([
-                    'success' => true, // تغيير إلى true لأن العملية نجحت مع ملاحظات
-                    'message' => $message,
-                    'notes' => $errors, // تغيير من errors إلى notes
+                    'success' => true,
+                    'notes' => $errors,
                     'added_count' => $addedCount,
                     'skipped_count' => $skippedCount
                 ]);
@@ -277,7 +269,6 @@ class MaterialsController extends Controller
             
             return response()->json([
                 'success' => true,
-                'message' => $message,
                 'added_count' => $addedCount,
                 'skipped_count' => $skippedCount
             ]);
