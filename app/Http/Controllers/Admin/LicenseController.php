@@ -1496,14 +1496,26 @@ class LicenseController extends Controller
     public function exportPdf(License $license)
     {
         try {
-            $license->load('workOrder');
+            $license->load(['workOrder', 'extensions', 'violations']);
             
             // استخدام DomPDF
             $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.licenses.pdf', compact('license'))
                 ->setPaper('A4', 'portrait')
                 ->setOption('defaultFont', 'DejaVu Sans')
                 ->setOption('isRemoteEnabled', true)
-                ->setOption('isHtml5ParserEnabled', true);
+                ->setOption('isHtml5ParserEnabled', true)
+                ->setOption('isFontSubsettingEnabled', true)
+                ->setOption('defaultMediaType', 'screen')
+                ->setOption('defaultPaperSize', 'a4')
+                ->setOption('dpi', 150)
+                ->setOption('debugPng', false)
+                ->setOption('debugKeepTemp', false)
+                ->setOption('debugCss', false)
+                ->setOption('debugLayout', false)
+                ->setOption('debugLayoutLines', false)
+                ->setOption('debugLayoutBlocks', false)
+                ->setOption('debugLayoutInline', false)
+                ->setOption('debugLayoutPaddingBox', false);
             
             $filename = 'license_' . ($license->license_number ?? $license->id) . '_' . date('Y-m-d') . '.pdf';
             

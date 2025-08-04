@@ -14,6 +14,10 @@ use App\Models\License;
 use App\Models\Material;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
 
 class WorkOrderController extends Controller
 {
@@ -3221,6 +3225,162 @@ class WorkOrderController extends Controller
     /**
      * حذف صورة تنفيذ
      */
+    public function exportExcel(Request $request)
+    {
+        // التحقق من وجود المشروع
+        $project = $request->get('project');
+        
+        if (!$project || !in_array($project, ['riyadh', 'madinah'])) {
+            return redirect()->route('project.selection');
+        }
+
+        // إنشاء ملف إكسل جديد
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        // تعيين اتجاه الصفحة من اليمين لليسار
+        $sheet->setRightToLeft(true);
+
+        // تعيين عناوين الأعمدة
+        $headers = [
+            'رقم أمر العمل',
+            'نوع العمل',
+            'وصف العمل',
+            'تاريخ الاعتماد',
+            'اسم المشترك',
+            'الحي',
+            'البلدية',
+            'المكتب',
+            'رقم المحطة',
+            'اسم الاستشاري',
+            'قيمة أمر العمل (شامل)',
+            'قيمة أمر العمل (بدون)',
+            'حالة التنفيذ',
+            'المدينة'
+        ];
+
+        // كتابة العناوين
+        foreach ($headers as $index => $header) {
+            $column = chr(65 + $index); // تحويل الرقم إلى حرف (A, B, C, ...)
+            $sheet->setCellValue($column . '1', $header);
+            
+            // تنسيق خلايا العناوين
+            $sheet->getStyle($column . '1')->applyFromArray([
+                'font' => ['bold' => true],
+                'alignment' => [
+                    'horizontal' => Alignment::HORIZONTAL_CENTER,
+                ],
+                'borders' => [
+                    'allBorders' => [
+                        'borderStyle' => Border::BORDER_THIN,
+                    ],
+                ],
+                'fill' => [
+                    'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                    'startColor' => ['rgb' => 'E2E8F0'],
+                ],
+            ]);
+            
+            // تعيين عرض العمود تلقائياً
+            $sheet->getColumnDimension($column)->setAutoSize(true);
+        }
+
+        // جلب البيانات
+        $query = WorkOrder::query();
+        
+        // فلترة حسب المشروع
+        if ($project === 'riyadh') {
+            $query->where('city', 'الرياض');
+        } elseif ($project === 'madinah') {
+            $query->where('city', 'المدينة المنورة');
+        }
+
+        // تطبيق نفس الفلاتر الموجودة في الصفحة
+        if ($request->filled('search')) {
+            $searchTerm = $request->search;
+            $query->where(function($q) use ($searchTerm) {
+                $q->where('order_number', 'LIKE', "%{$searchTerm}%")
+                  ->orWhere('work_type', 'LIKE', "%{$searchTerm}%")
+                  ->orWhere('subscriber_name', 'LIKE', "%{$searchTerm}%")
+                  ->orWhere('district', 'LIKE', "%{$searchTerm}%");
+            });
+        }
+
+        if ($request->filled('execution_status')) {
+            $query->where('execution_status', $request->execution_status);
+        }
+
+        if ($request->filled('date_from')) {
+            $query->whereDate('approval_date', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $query->whereDate('approval_date', '<=', $request->date_to);
+        }
+
+        $workOrders = $query->get();
+
+        // كتابة البيانات
+        $row = 2;
+        foreach ($workOrders as $workOrder) {
+            $sheet->setCellValue('A' . $row, $workOrder->order_number);
+            $sheet->setCellValue('B' . $row, $workOrder->work_type);
+            $sheet->setCellValue('C' . $row, $workOrder->work_description);
+            $sheet->setCellValue('D' . $row, $workOrder->approval_date ? $workOrder->approval_date->format('Y-m-d') : '');
+            $sheet->setCellValue('E' . $row, $workOrder->subscriber_name);
+            $sheet->setCellValue('F' . $row, $workOrder->district);
+            $sheet->setCellValue('G' . $row, $workOrder->municipality);
+            $sheet->setCellValue('H' . $row, $workOrder->office);
+            $sheet->setCellValue('I' . $row, $workOrder->station_number);
+            $sheet->setCellValue('J' . $row, $workOrder->consultant_name);
+            $sheet->setCellValue('K' . $row, $workOrder->order_value_with_consultant);
+            $sheet->setCellValue('L' . $row, $workOrder->order_value_without_consultant);
+            $sheet->setCellValue('M' . $row, $this->getExecutionStatusText($workOrder->execution_status));
+            $sheet->setCellValue('N' . $row, $workOrder->city);
+
+            // تنسيق خلايا البيانات
+            $sheet->getStyle('A' . $row . ':N' . $row)->applyFromArray([
+                'alignment' => [
+                    'horizontal' => Alignment::HORIZONTAL_CENTER,
+                ],
+                'borders' => [
+                    'allBorders' => [
+                        'borderStyle' => Border::BORDER_THIN,
+                    ],
+                ],
+            ]);
+
+            $row++;
+        }
+
+        // إنشاء ملف الإكسل
+        $writer = new Xlsx($spreadsheet);
+        $fileName = 'work-orders-' . $project . '-' . date('Y-m-d') . '.xlsx';
+        
+        // حفظ الملف وتحميله
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment;filename="' . $fileName . '"');
+        header('Cache-Control: max-age=0');
+        
+        $writer->save('php://output');
+        exit;
+    }
+
+    private function getExecutionStatusText($status)
+    {
+        $statuses = [
+            '1' => 'جاري العمل ...',
+            '2' => 'تم تسليم 155 ولم تصدر شهادة انجاز',
+            '3' => 'صدرت شهادة ولم تعتمد',
+            '4' => 'تم اعتماد شهادة الانجاز',
+            '5' => 'مؤكد ولم تدخل مستخلص',
+            '6' => 'دخلت مستخلص ولم تصرف',
+            '7' => 'منتهي تم الصرف'
+        ];
+
+        return $statuses[$status] ?? 'غير محدد';
+    }
+
     public function deleteExecutionImage(WorkOrder $workOrder, $imageId)
     {
         try {

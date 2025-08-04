@@ -113,17 +113,17 @@
                                     <label for="approval_date" class="form-label fw-bold">تاريخ الاعتماد</label>
                                     <div class="row">
                                         <div class="col-md-6">
-                                            <div class="input-group">
-                                                <input id="approval_date" type="date" class="form-control @error('approval_date') is-invalid @enderror" name="approval_date" value="{{ old('approval_date') }}" onchange="updateCountdown()">
-                                                <span class="input-group-text bg-light">
-                                                    <i class="fas fa-clock me-1"></i>
-                                                    <span id="countdown" class="text-muted">-</span>
-                                                </span>
-                                            </div>
+                                                                                          <div class="input-group">
+                                                  <input id="approval_date" type="date" class="form-control @error('approval_date') is-invalid @enderror" name="approval_date" value="{{ old('approval_date') }}">
+                                                  <span class="input-group-text bg-light">
+                                                      <i class="fas fa-clock me-1"></i>
+                                                      <span id="countdown" class="text-muted">-</span>
+                                                  </span>
+                                              </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="input-group">
-                                                <span class="input-group-text bg-light">المتبقي</span>
+                                                <span class="input-group-text bg-light">مدة التنفيذ</span>
                                                 <input type="number" id="manual_days" class="form-control" min="0" placeholder="أدخل عدد الأيام المتبقية" onchange="updateManualDays(this.value)">
                                                 <span class="input-group-text bg-light">يوم</span>
                                             </div>
@@ -2954,69 +2954,37 @@ function addMaterialToTable(material) {
     });
 
     // تحديث العداد التنازلي
-    function updateCountdown() {
-        const approvalDateInput = document.getElementById('approval_date');
+    function updateManualDays(days) {
         const countdownElement = document.getElementById('countdown');
-        const manualDaysInput = document.getElementById('manual_days');
+        const executionStatusSelect = document.getElementById('execution_status');
         
-        // إذا كان هناك قيمة في حقل الأيام اليدوية، نستخدمها
-        if (manualDaysInput.value) {
-            const days = parseInt(manualDaysInput.value);
+        // التحقق من حالة التنفيذ
+        if (executionStatusSelect && executionStatusSelect.value === '2') {
+            countdownElement.textContent = 'تم تسليم 155';
+            countdownElement.className = 'text-info';
+            return;
+        }
+
+        // التحقق من عدد الأيام
+        if (days && days > 0) {
+            // أيام متبقية - لون أخضر
             countdownElement.textContent = days + ' يوم متبقي';
             countdownElement.className = 'text-success';
-            return;
-        }
-        
-        if (!approvalDateInput.value) {
+        } else if (days && days < 0) {
+            // أيام متأخرة - لون أحمر
+            countdownElement.textContent = Math.abs(days) + ' يوم متأخر';
+            countdownElement.className = 'text-danger';
+        } else {
             countdownElement.textContent = '-';
             countdownElement.className = 'text-muted';
-            return;
-        }
-        
-        const approvalDate = new Date(approvalDateInput.value);
-        const now = new Date();
-        
-        // حساب الفرق بالأيام
-        const diffTime = approvalDate - now;
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        
-        // تحديث العرض
-        if (diffDays > 0) {
-            countdownElement.textContent = diffDays + ' يوم متبقي';
-            countdownElement.className = 'text-success';
-            // تحديث حقل الأيام اليدوية
-            manualDaysInput.value = diffDays;
-        } else if (diffDays < 0) {
-            countdownElement.textContent = Math.abs(diffDays) + ' يوم متأخر';
-            countdownElement.className = 'text-danger';
-            // تحديث حقل الأيام اليدوية
-            manualDaysInput.value = 0;
-            // إظهار تنبيه
-            Swal.fire({
-                title: 'تنبيه!',
-                text: 'تاريخ الاعتماد متأخر بـ ' + Math.abs(diffDays) + ' يوم',
-                icon: 'warning',
-                confirmButtonText: 'حسناً'
-            });
-        } else {
-            countdownElement.textContent = 'اليوم';
-            countdownElement.className = 'text-primary';
-            // تحديث حقل الأيام اليدوية
-            manualDaysInput.value = 0;
         }
     }
 
-    // تحديث الأيام المتبقية يدوياً
-    function updateManualDays(days) {
-        const countdownElement = document.getElementById('countdown');
-        if (days && days > 0) {
-            countdownElement.textContent = days + ' يوم متبقي';
-            countdownElement.className = 'text-success';
-        } else {
-            countdownElement.textContent = '-';
-            countdownElement.className = 'text-muted';
-        }
-    }
+    // تحديث العداد عند تغيير حالة التنفيذ
+    document.getElementById('execution_status').addEventListener('change', function() {
+        const manualDaysInput = document.getElementById('manual_days');
+        updateManualDays(manualDaysInput.value);
+    });
 
     // تحديث العداد كل دقيقة
     setInterval(updateCountdown, 60000);

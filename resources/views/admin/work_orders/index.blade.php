@@ -105,9 +105,9 @@ document.addEventListener('DOMContentLoaded', updateCountdowns);
                     @endif
 
                     <div class="d-flex justify-content-end align-items-center mb-4">
-                        <!-- <a href="{{ route('general-productivity', ['project' => $project]) }}" class="btn btn-success me-2 px-4">
-                            <i class="fas fa-chart-bar me-1"></i> تقرير الإنتاجية العام
-                        </a>  -->
+                        <a href="{{ route('admin.work-orders.export.excel', ['project' => $project]) }}" class="btn btn-success me-2 px-4">
+                            <i class="fas fa-file-excel me-1"></i> تصدير إكسل
+                        </a>
                         <a href="{{ route('admin.work-orders.create', ['project' => $project]) }}" class="btn btn-primary px-4" style="min-width: 150px;">
                             <i class="fas fa-plus me-1"></i> إنشاء أمر عمل جديد
                         </a>
@@ -593,25 +593,25 @@ document.addEventListener('DOMContentLoaded', updateCountdowns);
                                         <td>
                                             @switch($workOrder->execution_status)
                                                 @case('1')
-                                                    <span class="badge bg-info">جاري العمل ....</span>
+                                                    <span class="badge" style="background-color:rgb(228, 196, 14)">جاري العمل ....</span>
                                                     @break
                                                 @case('2')
-                                                    <span class="badge bg-info">تم تسليم 155 ولم تصدر شهادة الانجاز</span>
+                                                    <span class="badge" style="background-color:rgb(4, 163, 226); color: white">تم تسليم 155 ولم تصدر شهادة الانجاز</span>
                                                     @break
                                                 @case('3')
-                                                    <span class="badge bg-primary">صدرت شهادة ولم تعتمد</span>
+                                                    <span class="badge" style="background-color:rgb(86, 168, 110)">صدرت شهادة ولم تعتمد</span>
                                                     @break
                                                 @case('4')
-                                                    <span class="badge bg-secondary">تم اعتماد شهادة الانجاز</span>
+                                                    <span class="badge" style="background-color:rgb(28, 133, 75)">تم اعتماد شهادة الانجاز</span>
                                                     @break
                                                 @case('5')
-                                                    <span class="badge bg-success">مؤكد ولم تدخل مستخلص</span>
+                                                    <span class="badge" style="background-color:rgb(15, 146, 81)">مؤكد ولم تدخل مستخلص</span>
                                                     @break
                                                 @case('6')
-                                                    <span class="badge bg-dark">دخلت مستخلص ولم تصرف</span>
+                                                    <span class="badge" style="background-color:rgb(6, 133, 37)">دخلت مستخلص ولم تصرف</span>
                                                     @break
                                                 @case('7')
-                                                    <span class="badge bg-success">منتهي تم الصرف</span>
+                                                    <span class="badge" style="background-color:rgb(0, 66, 0)">منتهي تم الصرف</span>
                                                     @break
                                                 @default
                                                     <span class="badge bg-secondary">{{ $workOrder->execution_status }}</span>

@@ -22,11 +22,18 @@ use Illuminate\Support\Facades\Storage;
                             <p class="mb-0 opacity-75">أمر العمل: {{ $license->workOrder->order_number ?? 'غير محدد' }}</p>
                         </div>
                         <div>
-                            <a href="{{ route('admin.work-orders.license', $license->workOrder) }}" 
-                               class="btn btn-light btn-lg">
-                                <i class="fas fa-arrow-right me-2"></i>
-                                العودة لإدارة الرخص
-                            </a>
+                            <div class="d-flex gap-2">
+                                <a href="{{ route('admin.licenses.export-pdf', $license->id) }}" 
+                                   class="btn btn-light btn-lg">
+                                    <i class="fas fa-file-pdf me-2"></i>
+                                    تصدير PDF
+                                </a>
+                                <a href="{{ route('admin.work-orders.license', $license->workOrder) }}" 
+                                   class="btn btn-light btn-lg">
+                                    <i class="fas fa-arrow-right me-2"></i>
+                                    العودة لإدارة الرخص
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>

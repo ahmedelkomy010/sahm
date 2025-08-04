@@ -84,6 +84,10 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::get('work-orders/{workOrder}/edit', [App\Http\Controllers\WorkOrderController::class, 'edit'])->name('work-orders.edit');
     Route::put('work-orders/{workOrder}', [App\Http\Controllers\WorkOrderController::class, 'update'])->name('work-orders.update');
     Route::delete('work-orders/{workOrder}', [App\Http\Controllers\Admin\WorkOrderDeleteController::class, '__invoke'])->name('work-orders.destroy');
+    Route::get('work-orders/export/excel', [App\Http\Controllers\WorkOrderController::class, 'exportExcel'])->name('work-orders.export.excel');
+    
+    // تصدير أوامر العمل لإكسل
+    Route::get('work-orders/export/excel', [WorkOrderController::class, 'exportExcel'])->name('work-orders.export.excel');
     
     // إزالة وسيط التحقق للاختبار - جميع المسارات متاحة للمستخدمين المسجلين
     // Users Management - all actions
@@ -181,6 +185,8 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     // مسار البحث في المواد المرجعية
     Route::get('work-orders/search-materials', [WorkOrderController::class, 'searchReferenceMaterials'])
         ->name('work-orders.search-materials');
+        
+
 
     // مسارات إدارة الرخص
     Route::get('licenses', [\App\Http\Controllers\Admin\LicenseController::class, 'display'])->name('licenses.index');
@@ -197,7 +203,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     
     // مسارات عرض الرخص
     Route::get('licenses/{license}', [\App\Http\Controllers\Admin\LicenseController::class, 'show'])->name('licenses.show');
-            Route::get('licenses/{license}/pdf', [\App\Http\Controllers\Admin\LicenseController::class, 'exportPdf'])->name('licenses.pdf');
+            Route::get('licenses/{license}/pdf', [\App\Http\Controllers\Admin\LicenseController::class, 'exportPdf'])->name('licenses.export-pdf');
         Route::post('licenses/{license}/remove-evacuation-file', [\App\Http\Controllers\Admin\LicenseController::class, 'removeEvacuationFile'])->name('licenses.remove-evacuation-file');
 
     // تحديث بيانات الفسح للإخلاء

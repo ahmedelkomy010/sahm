@@ -208,8 +208,8 @@
                                         <th class="text-center" style="width: 10%">الكمية المخططة</th>
                                         <th class="text-center" style="width: 10%">السعر الإجمالي المخطط</th>
                                         <th class="text-center" style="width: 10%">الكمية المنفذة</th>
-                                        <th class="text-center" style="width: 8%">فرق الكمية</th>
                                         <th class="text-center" style="width: 10%">السعر الإجمالي المنفذ</th>
+                                        <th class="text-center" style="width: 8%">فرق المنفذة - المخططة</th>
                                         <th class="text-center" style="width: 6%">الإجراءات</th>
                                     </tr>
                                 </thead>
@@ -257,6 +257,9 @@
                                                        data-id="{{ $workOrderItem->id }}" style="width: 80px;"
                                                        onchange="updateExecutedQuantity(this)">
                                             </td>
+                                            <td class="text-center">
+                                                <span class="text-success fw-bold executed-amount">{{ number_format($executedAmount, 2) }} ريال</span>
+                                            </td>
                                             <td class="text-center quantity-diff">
                                                 @if($quantityDifference > 0)
                                                     <span class="badge bg-danger">-{{ number_format($quantityDifference, 2) }}</span>
@@ -265,9 +268,6 @@
                                                 @else
                                                     <span class="badge bg-secondary">0.00</span>
                                                 @endif
-                                            </td>
-                                            <td class="text-center">
-                                                <span class="text-success fw-bold executed-amount">{{ number_format($executedAmount, 2) }} ريال</span>
                                             </td>
                                             <td class="text-center">
                                                 <button type="button" class="btn btn-danger btn-sm delete-item" data-id="{{ $workOrderItem->id }}">
@@ -287,6 +287,7 @@
                                             @endphp
                                             {{ number_format($totalExecutedQuantity, 2) }}
                                         </td>
+                                        <td class="text-center text-success" id="totalExecuted">{{ number_format($totalExecutedAmount, 2) }} ريال</td>
                                         <td class="text-center" id="totalDifference">
                                             @php
                                                 $totalDifference = $totalPlannedAmount - $totalExecutedAmount;
@@ -299,7 +300,6 @@
                                                 <span class="text-secondary">0.00 ريال</span>
                                             @endif
                                         </td>
-                                        <td class="text-center text-success" id="totalExecuted">{{ number_format($totalExecutedAmount, 2) }} ريال</td>
                                         <td class="text-center">-</td>
                                     </tr>
                                 </tfoot>

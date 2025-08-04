@@ -81,7 +81,24 @@
 
                                 <div class="form-group mb-3">
                                     <label for="approval_date" class="form-label fw-bold">تاريخ الاعتماد</label>
-                                    <input id="approval_date" type="date" class="form-control @error('approval_date') is-invalid @enderror" name="approval_date" value="{{ old('approval_date', $workOrder->approval_date->format('Y-m-d')) }}">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="input-group">
+                                                <input id="approval_date" type="date" class="form-control @error('approval_date') is-invalid @enderror" name="approval_date" value="{{ old('approval_date', $workOrder->approval_date->format('Y-m-d')) }}" onchange="updateCountdown()">
+                                                <span class="input-group-text bg-light">
+                                                    <i class="fas fa-clock me-1"></i>
+                                                    <span id="countdown" class="text-muted">-</span>
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="input-group">
+                                                <span class="input-group-text bg-light">المتبقي</span>
+                                                <input type="number" id="manual_days" class="form-control" min="0" placeholder="أدخل عدد الأيام المتبقية" onchange="updateManualDays(this.value)">
+                                                <span class="input-group-text bg-light">يوم</span>
+                                            </div>
+                                        </div>
+                                    </div>
                                     @error('approval_date')
                                         <span class="invalid-feedback" role="alert">
                                             <strong>{{ $message }}</strong>
@@ -426,6 +443,9 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // تحديث العداد التنازلي عند تحميل الصفحة
+    updateCountdown();
+
     // إضافة معالج حذف الملفات
     document.querySelectorAll('.delete-file').forEach(button => {
         button.addEventListener('click', function() {
@@ -539,6 +559,94 @@ document.addEventListener('DOMContentLoaded', function() {
         updateWorkDescription(workTypeSelect.value);
     }
 });
+
+// تحديث العداد التنازلي
+function updateCountdown() {
+    const approvalDateInput = document.getElementById('approval_date');
+    const countdownElement = document.getElementById('countdown');
+    const manualDaysInput = document.getElementById('manual_days');
+    
+    // إذا كان هناك قيمة في حقل الأيام اليدوية، نستخدمها
+    if (manualDaysInput.value) {
+        const days = parseInt(manualDaysInput.value);
+        if (days > 0) {
+            countdownElement.textContent = days + ' يوم متبقي';
+            countdownElement.className = 'text-success';
+        } else {
+            countdownElement.textContent = 'منتهي';
+            countdownElement.className = 'text-danger';
+        }
+        return;
+    }
+    
+    if (!approvalDateInput.value) {
+        countdownElement.textContent = '-';
+        countdownElement.className = 'text-muted';
+        return;
+    }
+    
+    const approvalDate = new Date(approvalDateInput.value);
+    const now = new Date();
+    
+    // تعيين وقت منتصف الليل للتواريخ للمقارنة الدقيقة
+    approvalDate.setHours(0, 0, 0, 0);
+    now.setHours(0, 0, 0, 0);
+    
+    // حساب الفرق بالأيام
+    const diffTime = approvalDate - now;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    // تحديث العرض
+    if (diffDays > 0) {
+        countdownElement.textContent = diffDays + ' يوم متبقي';
+        countdownElement.className = 'text-success';
+        // تحديث حقل الأيام اليدوية
+        manualDaysInput.value = diffDays;
+    } else if (diffDays < 0) {
+        countdownElement.textContent = Math.abs(diffDays) + ' يوم متأخر';
+        countdownElement.className = 'text-danger';
+        // تحديث حقل الأيام اليدوية
+        manualDaysInput.value = 0;
+        // إظهار تنبيه
+        Swal.fire({
+            title: 'تنبيه!',
+            text: 'تاريخ الاعتماد متأخر بـ ' + Math.abs(diffDays) + ' يوم',
+            icon: 'warning',
+            confirmButtonText: 'حسناً',
+            customClass: {
+                confirmButton: 'btn btn-primary'
+            }
+        });
+    } else {
+        countdownElement.textContent = 'اليوم';
+        countdownElement.className = 'text-primary';
+        // تحديث حقل الأيام اليدوية
+        manualDaysInput.value = 0;
+    }
+}
+
+// تحديث الأيام المتبقية يدوياً
+function updateManualDays(days) {
+    const countdownElement = document.getElementById('countdown');
+    days = parseInt(days);
+    
+    if (days && days > 0) {
+        countdownElement.textContent = days + ' يوم متبقي';
+        countdownElement.className = 'text-success';
+    } else if (days === 0) {
+        countdownElement.textContent = 'منتهي';
+        countdownElement.className = 'text-danger';
+    } else {
+        countdownElement.textContent = '-';
+        countdownElement.className = 'text-muted';
+        // إعادة تعيين القيمة إلى 0 إذا كانت سالبة
+        document.getElementById('manual_days').value = 0;
+    }
+}
+
+// تحديث العداد عند تحميل الصفحة وكل دقيقة
+document.addEventListener('DOMContentLoaded', updateCountdown);
+setInterval(updateCountdown, 60000);
 </script>
 
 @endsection 
