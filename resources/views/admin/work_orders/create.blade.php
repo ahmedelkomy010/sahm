@@ -1469,15 +1469,13 @@ function removeMaterialRow(button) {
         return;
     }
 
-    if (confirm('هل أنت متأكد من حذف هذه المادة؟')) {
-        const row = button.closest('tr');
-        if (row) {
-            row.remove();
-            
-            // إضافة صف جديد إذا كان الجدول فارغاً
-            if (tbody && tbody.children.length === 0) {
-                addMaterial();
-            }
+    const row = button.closest('tr');
+    if (row) {
+        row.remove();
+        
+        // إضافة صف جديد إذا كان الجدول فارغاً
+        if (tbody && tbody.children.length === 0) {
+            addMaterial();
         }
     }
 }
@@ -1699,8 +1697,11 @@ function addWorkItemFromSearch(id, code, description, unit, price) {
         <td>
             <div class="position-relative">
                 <input type="text" class="form-control form-control-sm work-item-search" 
-                       value="${code}" readonly>
+                       value="${code}"
+                       onkeyup="searchWorkItem(this, ${window.workItemRowIndex})"
+                       onclick="showWorkItemDropdown(this, ${window.workItemRowIndex})">
                 <input type="hidden" name="work_items[${window.workItemRowIndex}][work_item_id]" class="work-item-id" value="${id}">
+                <div class="dropdown-menu work-item-dropdown" id="dropdown_${window.workItemRowIndex}" style="display: none; position: absolute; top: 100%; left: 0; right: 0; z-index: 1000; max-height: 200px; overflow-y: auto;"></div>
             </div>
         </td>
         <td>

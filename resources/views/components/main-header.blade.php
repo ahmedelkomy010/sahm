@@ -95,12 +95,7 @@
                                 حسابي الشخصي
                             </a>
                         </li>
-                        <li>
-                            <a class="dropdown-item" href="#">
-                                <i class="fas fa-cog me-2"></i>
-                                الإعدادات
-                            </a>
-                        </li>
+                        
                         <li><hr class="dropdown-divider"></li>
                         <li>
                             <form method="POST" action="{{ route('logout') }}">
@@ -183,10 +178,7 @@
                                     <i class="fas fa-users-cog me-2"></i>
                                     إدارة المستخدمين
                                 </a>
-                                <a class="nav-link py-2 ps-4 text-dark" href="{{ route('admin.reports.unified') }}">
-                                    <i class="fas fa-file-alt me-2"></i>
-                                    التقارير العامة للعقد الموحد
-                                </a>
+                                
                                 <a class="nav-link py-2 ps-4 text-dark" href="#">
                                     <i class="fas fa-sliders-h me-2"></i>
                                     إعدادات النظام
@@ -196,9 +188,9 @@
                                     النسخ الاحتياطي
                                 </a>
                                 <hr class="my-2">
-                                <a class="nav-link py-2 ps-4 text-dark" href="#">
-                                    <i class="fas fa-chart-bar me-2"></i>
-                                    التقارير
+                                <a class="nav-link py-2 ps-4 text-dark" href="{{ route('admin.reports.unified') }}">
+                                    <i class="fas fa-file-alt me-2"></i>
+                                    التقارير العامة للعقد الموحد
                                 </a>
                             </div>
                         </div>
