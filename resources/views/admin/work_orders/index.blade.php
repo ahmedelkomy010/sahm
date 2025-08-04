@@ -1,5 +1,55 @@
 @extends('layouts.app')
 
+@push('scripts')
+<script>
+// تحديث العداد التنازلي لكل أوامر العمل
+function updateCountdowns() {
+    document.querySelectorAll('.countdown-badge').forEach(badge => {
+        let startDays = parseInt(badge.dataset.start);
+        let workOrderId = badge.dataset.workOrder;
+        let approvalDate = new Date(badge.dataset.approvalDate);
+        let now = new Date();
+        
+        // حساب الفرق بالأيام
+        let diffTime = approvalDate - now;
+        let currentDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        
+        // تحديث العرض
+        const daysCount = badge.querySelector('.days-count');
+        if (currentDays > 0) {
+            daysCount.textContent = currentDays;
+            daysCount.className = 'days-count text-success';
+            badge.innerHTML = `${daysCount.outerHTML}  متبقي`;
+        } else if (currentDays < 0) {
+            daysCount.textContent = Math.abs(currentDays);
+            daysCount.className = 'days-count text-danger';
+            badge.innerHTML = `${daysCount.outerHTML}  متأخر`;
+            
+            // إظهار تنبيه عند الوصول للصفر
+            if (startDays > 0 && currentDays <= 0) {
+                Swal.fire({
+                    title: 'تنبيه!',
+                    text: 'انتهت المدة المحددة لأمر العمل',
+                    icon: 'warning',
+                    confirmButtonText: 'حسناً'
+                });
+            }
+        } else {
+            daysCount.textContent = '0';
+            daysCount.className = 'days-count';
+            badge.innerHTML = `${daysCount.outerHTML} يوم`;
+        }
+    });
+}
+
+// تحديث العداد كل دقيقة
+setInterval(updateCountdowns, 60000);
+
+// تحديث العداد عند تحميل الصفحة
+document.addEventListener('DOMContentLoaded', updateCountdowns);
+</script>
+@endpush
+
 @section('content')
 <div class="container">
     <!-- Project Selection Banner -->
@@ -514,7 +564,32 @@
                                         </td>
                                         <td>{{ $workOrder->consultant_name }}</td>
                                         <td>{{ $workOrder->station_number }}</td>
-                                        <td>{{ date('Y-m-d', strtotime($workOrder->approval_date)) }}</td>
+                                        <td>
+                                            <div class="approval-date-container">
+                                                <div class="date-section">
+                                                   
+                                                    <span class="date-value">{{ date('Y-m-d', strtotime($workOrder->approval_date)) }}</span>
+                                                </div>
+                                                @php
+                                                    $remainingDays = $workOrder->manual_days ?? 0;
+                                                @endphp
+                                                <div class="countdown-section">
+                                                    <span class="badge countdown-badge {{ $remainingDays > 0 ? 'bg-success' : ($remainingDays < 0 ? 'bg-danger' : 'bg-primary') }}" 
+                                                          data-start="{{ $remainingDays }}" 
+                                                          data-work-order="{{ $workOrder->id }}"
+                                                          data-approval-date="{{ $workOrder->approval_date }}">
+                                                        <i class="fas fa-clock me-1"></i>
+                                                        @if($remainingDays > 0)
+                                                            <span class="days-count">{{ $remainingDays }}</span>  متبقي
+                                                        @elseif($remainingDays < 0)
+                                                            <span class="days-count">{{ abs($remainingDays) }}</span>  متأخر
+                                                        @else
+                                                            <span class="days-count">0</span> يوم
+                                                        @endif
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </td>
                                         <td>
                                             @switch($workOrder->execution_status)
                                                 @case('1')
@@ -578,6 +653,54 @@
 </div>
 
 <style>
+    /* تنسيق عمود تاريخ الاعتماد */
+    .approval-date-container {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .date-section {
+        display: flex;
+        align-items: center;
+    }
+
+    .date-value {
+        color: #666;
+        font-size: 0.9rem;
+    }
+
+    .countdown-section {
+        display: flex;
+    }
+
+    .countdown-badge {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.8rem;
+        border-radius: 4px;
+    }
+
+    .countdown-badge .days-count {
+        font-weight: 600;
+        background-color: rgba(130, 192, 211, 0.84);
+        padding: 0.1rem 0.3rem;
+        border-radius: 3px;
+        margin: 0 0.2rem;
+    }
+
+    .countdown-badge.bg-success {
+        background-color:rgb(8, 223, 58);
+    }
+
+    .countdown-badge.bg-danger {
+        background-color:rgb(201, 0, 20);
+    }
+
+    .countdown-badge.bg-primary {
+        background-color: #6c757d;
+    }
+
+    /* تنسيق عام للجدول */
     .table th, .table td {
         text-align: right;
     }

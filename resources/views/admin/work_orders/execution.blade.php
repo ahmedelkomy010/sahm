@@ -281,7 +281,12 @@
                                     <tr class="fw-bold">
                                         <td colspan="6" class="text-end">الإجمالي:</td>
                                         <td class="text-center text-primary" id="totalPlanned">{{ number_format($totalPlannedAmount, 2) }} ريال</td>
-                                        <td class="text-center">-</td>
+                                        <td class="text-center text-success" id="totalExecutedQuantity">
+                                            @php
+                                                $totalExecutedQuantity = $workOrder->workOrderItems->sum('executed_quantity');
+                                            @endphp
+                                            {{ number_format($totalExecutedQuantity, 2) }}
+                                        </td>
                                         <td class="text-center" id="totalDifference">
                                             @php
                                                 $totalDifference = $totalPlannedAmount - $totalExecutedAmount;
@@ -327,7 +332,7 @@
             <div class="row align-items-end">
                 <div class="col-md-6">
                     <div class="form-group">
-                        <label for="images" class="form-label">اختر الصور</label>
+                        <label for="images" class="form-label">اختر الملفات</label>
                         <input type="file" class="form-control" id="images" name="images[]" multiple accept="image/*,application/pdf" required>
                         <small class="text-muted">يمكنك اختيار عدة صور أو ملفات PDF في نفس الوقت. الحد الأقصى لحجم كل ملف 10 ميجابايت.</small>
                     </div>
@@ -335,7 +340,7 @@
                 <div class="col-md-6">
                     <button type="submit" class="btn btn-primary">
                         <i class="fas fa-upload me-2"></i>
-                        رفع الصور
+                        حفظ الملفات
                     </button>
                 </div>
             </div>
