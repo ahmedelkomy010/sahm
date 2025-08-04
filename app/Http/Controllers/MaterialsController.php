@@ -88,102 +88,116 @@ class MaterialsController extends Controller
      */
     public function store(Request $request, WorkOrder $workOrder)
     {
-        $validated = $request->validate([
-            'code' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'planned_quantity' => 'nullable|numeric|min:0',
-            'spent_quantity' => 'nullable|numeric|min:0',
-            'executed_quantity' => 'nullable|numeric|min:0',
-            'unit' => 'nullable|string|max:255',
-            'line' => 'nullable|string|max:255',
-            'check_in_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
-            'check_out_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
-            'date_gatepass' => 'nullable|date',
-            'stock_in' => 'nullable|string|max:255',
-            'stock_in_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
-            'stock_out' => 'nullable|string|max:255',
-            'stock_out_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
-            'gate_pass_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
-            'store_in_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
-            'store_out_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
-            'ddo_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
-        ]);
-
-        $data = $request->except([
-            'check_in_file', 'check_out_file', 'stock_in_file', 'stock_out_file',
-            'gate_pass_file', 'store_in_file', 'store_out_file', 'ddo_file'
-        ]);
-
-        // التأكد من أن القيم الرقمية لا تكون null
-        $data['planned_quantity'] = $data['planned_quantity'] ?? 0;
-        $data['spent_quantity'] = $data['spent_quantity'] ?? 0;
-        $data['executed_quantity'] = $data['executed_quantity'] ?? 0;
-        
-        // التأكد من أن الحقول النصية لا تكون null
-        $data['unit'] = $data['unit'] ?? 'قطعة'; // قيمة افتراضية
-        $data['line'] = $data['line'] ?? '';
-        
-        // ربط المادة بأمر العمل
-        $data['work_order_id'] = $workOrder->id;
-        $data['work_order_number'] = $workOrder->order_number;
-        $data['subscriber_name'] = $workOrder->subscriber_name;
-        
-        // محاولة العثور على المادة المرجعية
-        $referenceMaterial = ReferenceMaterial::where('code', $data['code'])->first();
-        
-        if ($referenceMaterial) {
-            $data['description'] = $referenceMaterial->description;
-            $data['name'] = $referenceMaterial->name ?? $referenceMaterial->description;
-        } else {
-            // إذا لم يكن هناك وصف، نستخدم الكود كوصف
-            if (empty($data['description'])) {
-                $data['description'] = $data['code'];
-            }
-            // استخدام الوصف كاسم
-            $data['name'] = $data['description'];
-        }
-
-        // فحص وجود المادة بنفس الكود في نفس أمر العمل
-        if ($this->materialCodeExists($data['code'], $workOrder->id)) {
-            // بدلاً من منع الإضافة، نقوم بإنشاء كود فريد
-            $originalCode = $data['code'];
-            $counter = 1;
-            
-            do {
-                $data['code'] = $originalCode . '-' . $counter;
-                $counter++;
-            } while ($this->materialCodeExists($data['code'], $workOrder->id));
-            
-            // إضافة ملاحظة للمستخدم عن تغيير الكود
-            $codeChangeMessage = "تم تغيير كود المادة من '{$originalCode}' إلى '{$data['code']}' لتجنب التكرار";
-        }
-
         try {
+            $validated = $request->validate([
+                'code' => 'required|string|max:255',
+                'description' => 'nullable|string',
+                'planned_quantity' => 'nullable|numeric|min:0',
+                'spent_quantity' => 'nullable|numeric|min:0',
+                'executed_quantity' => 'nullable|numeric|min:0',
+                'unit' => 'nullable|string|max:255',
+                'line' => 'nullable|string|max:255',
+                'check_in_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
+                'check_out_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
+                'date_gatepass' => 'nullable|date',
+                'stock_in' => 'nullable|string|max:255',
+                'stock_in_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
+                'stock_out' => 'nullable|string|max:255',
+                'stock_out_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
+                'gate_pass_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
+                'store_in_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
+                'store_out_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
+                'ddo_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
+            ]);
+
+            $data = $request->except([
+                'check_in_file', 'check_out_file', 'stock_in_file', 'stock_out_file',
+                'gate_pass_file', 'store_in_file', 'store_out_file', 'ddo_file'
+            ]);
+
+            // التأكد من أن القيم الرقمية لا تكون null
+            $data['planned_quantity'] = $data['planned_quantity'] ?? 0;
+            $data['spent_quantity'] = $data['spent_quantity'] ?? 0;
+            $data['executed_quantity'] = $data['executed_quantity'] ?? 0;
+            
+            // التأكد من أن الحقول النصية لا تكون null
+            $data['unit'] = $data['unit'] ?? 'قطعة'; // قيمة افتراضية
+            $data['line'] = $data['line'] ?? '';
+            
+            // ربط المادة بأمر العمل
+            $data['work_order_id'] = $workOrder->id;
+            $data['work_order_number'] = $workOrder->order_number;
+            $data['subscriber_name'] = $workOrder->subscriber_name;
+            
+            // محاولة العثور على المادة المرجعية
+            $referenceMaterial = ReferenceMaterial::where('code', $data['code'])->first();
+            
+            if ($referenceMaterial) {
+                $data['description'] = $referenceMaterial->description;
+                $data['name'] = $referenceMaterial->name ?? $referenceMaterial->description;
+            } else {
+                // إذا لم يكن هناك وصف، نستخدم الكود كوصف
+                if (empty($data['description'])) {
+                    $data['description'] = $data['code'];
+                }
+                // استخدام الوصف كاسم
+                $data['name'] = $data['description'];
+            }
+
+            // فحص وجود المادة بنفس الكود في نفس أمر العمل
+            if ($this->materialCodeExists($data['code'], $workOrder->id)) {
+                // بدلاً من منع الإضافة، نقوم بإنشاء كود فريد
+                $originalCode = $data['code'];
+                $counter = 1;
+                
+                do {
+                    $data['code'] = $originalCode . '-' . $counter;
+                    $counter++;
+                } while ($this->materialCodeExists($data['code'], $workOrder->id));
+                
+                // إضافة ملاحظة للمستخدم عن تغيير الكود
+                $codeChangeMessage = "تم تغيير كود المادة من '{$originalCode}' إلى '{$data['code']}' لتجنب التكرار";
+            }
+
             // إنشاء المادة
             $material = Material::create($data);
-        } catch (\Illuminate\Database\QueryException $e) {
-            // التعامل مع خطأ الكود المكرر كإجراء احتياطي
-            if ($e->getCode() == 23000) {
-                // محاولة أخيرة بكود عشوائي
-                $data['code'] = $data['code'] . '-' . time();
-                $material = Material::create($data);
-                $codeChangeMessage = "تم تغيير كود المادة إلى '{$data['code']}' لتجنب التكرار";
-            } else {
-                throw $e; // إعادة رمي الخطأ إذا لم يكن خطأ كود مكرر
+
+            // التعامل مع الملفات المرفقة
+            $this->handleFileUploads($request, $material);
+
+            $successMessage = 'تم إضافة المادة بنجاح - ' . ($data['name'] ?? $data['code']);
+            
+            // إضافة رسالة تغيير الكود إذا حدث
+            if (isset($codeChangeMessage)) {
+                $successMessage .= '. ' . $codeChangeMessage;
             }
+
+            // التحقق من نوع الطلب - إذا كان AJAX ترجع JSON
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => $successMessage,
+                    'material' => $material,
+                    'code_changed' => isset($codeChangeMessage)
+                ]);
+            }
+
+            return redirect()->route('admin.work-orders.materials.index', $workOrder)
+                ->with('success', $successMessage);
+            
+        } catch (\Exception $e) {
+            // معالجة عامة نهائية للأخطاء
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'حدث خطأ أثناء إضافة المادة: ' . $e->getMessage()
+                ], 500);
+            }
+            
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'حدث خطأ أثناء إضافة المادة: ' . $e->getMessage());
         }
-
-        // التعامل مع الملفات المرفقة
-        $this->handleFileUploads($request, $material);
-
-        $successMessage = 'تم إضافة المادة بنجاح - ' . ($data['name'] ?? $data['code']);
-        
-        // إضافة رسالة تغيير الكود إذا حدث
-        if (isset($codeChangeMessage)) {
-            $successMessage .= '. ' . $codeChangeMessage;
-        }
-
-        return redirect()->route('admin.work-orders.materials.index', $workOrder);
     }
 
     /**

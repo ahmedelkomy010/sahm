@@ -454,25 +454,18 @@
                                     </td>
                                     <td class="text-center">
                                         @if(!$existsInSystem)
-                                            <form class="create-material-form d-inline" 
-                                                  action="{{ route('admin.work-orders.materials.store', $workOrder) }}" 
-                                                  method="POST"
-                                                  data-material-name="{{ $workOrderMaterial->material->description ?? $workOrderMaterial->material->name ?? 'غير محدد' }}"
-                                                  data-material-code="{{ $workOrderMaterial->material->code ?? 'غير محدد' }}"
-                                                  data-quantity="{{ $workOrderMaterial->quantity }}">
-                                                @csrf
-                                                <input type="hidden" name="code" value="{{ $workOrderMaterial->material->code ?? '' }}">
-                                                <input type="hidden" name="description" value="{{ $workOrderMaterial->material->description ?? '' }}">
-                                                <input type="hidden" name="name" value="{{ $workOrderMaterial->material->name ?? $workOrderMaterial->material->description ?? '' }}">
-                                                <input type="hidden" name="planned_quantity" value="{{ $workOrderMaterial->quantity ?? 0 }}">
-                                                <input type="hidden" name="unit" value="{{ $workOrderMaterial->material->unit ?? '' }}">
-                                                <input type="hidden" name="spent_quantity" value="0">
-                                                <input type="hidden" name="executed_quantity" value="0">
-                                                
-                                                <button type="submit" class="btn btn-sm btn-outline-success" title="إضافة للنظام">
-                                                    <i class="fas fa-plus"></i>
-                                                </button>
-                                            </form>
+                                            <button type="button" 
+                                                    class="btn btn-sm btn-outline-success add-material-btn" 
+                                                    title="إضافة للنظام"
+                                                    data-material-code="{{ $workOrderMaterial->material->code ?? '' }}"
+                                                    data-material-description="{{ $workOrderMaterial->material->description ?? '' }}"
+                                                    data-material-name="{{ $workOrderMaterial->material->name ?? $workOrderMaterial->material->description ?? '' }}"
+                                                    data-material-unit="{{ $workOrderMaterial->material->unit ?? '' }}"
+                                                    data-planned-quantity="{{ $workOrderMaterial->quantity ?? 0 }}"
+                                                    data-work-order-id="{{ $workOrder->id }}"
+                                                    data-row-index="{{ $index }}">
+                                                <i class="fas fa-plus"></i>
+                                            </button>
                                         @else
                                             <span class="text-success">
                                                 <i class="fas fa-check-circle"></i>
@@ -2567,24 +2560,108 @@ function addAllMaterialsAutomatically() {
     });
 }
 
-// تشغيل الدالة عند تحميل الصفحة
-document.addEventListener('DOMContentLoaded', function() {
-    // التحقق من وجود مواد في المقايسة وعدم وجودها في قائمة المواد
-    const workOrderMaterialsCount = {{ $workOrderMaterials->count() ?? 0 }};
-    const materialsInWorkOrder = {{ $materials->filter(function($material) use ($workOrderMaterials) { 
-        return $workOrderMaterials->where('material.code', $material->code)->count() > 0; 
-    })->count() }};
-    
-    if (workOrderMaterialsCount > materialsInWorkOrder) {
-        // هناك مواد في المقايسة لم تتم إضافتها بعد
-        addAllMaterialsAutomatically();
-    }
-});
+// تم إلغاء الإضافة التلقائية للمواد - المواد ستتم إضافتها يدوياً فقط
 
 // تحديث زر إضافة الجميع ليعمل يدوياً أيضاً
 const addAllBtn = document.getElementById('addAllMaterialsBtn');
 if (addAllBtn) {
     addAllBtn.addEventListener('click', addAllMaterialsAutomatically);
+}
+
+// معالجة أزرار إضافة المواد الفردية بـ AJAX
+document.addEventListener('DOMContentLoaded', function() {
+    // إضافة event listener لجميع أزرار الإضافة
+    document.querySelectorAll('.add-material-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const btn = this;
+            const materialCode = btn.dataset.materialCode;
+            const materialDescription = btn.dataset.materialDescription;
+            const materialName = btn.dataset.materialName;
+            const materialUnit = btn.dataset.materialUnit;
+            const plannedQuantity = btn.dataset.plannedQuantity;
+            const workOrderId = btn.dataset.workOrderId;
+            const rowIndex = btn.dataset.rowIndex;
+            
+            // تعطيل الزر وإظهار loading
+            btn.disabled = true;
+            const originalContent = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            
+            // إرسال AJAX request
+            fetch(`{{ route('admin.work-orders.materials.store', $workOrder) }}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    code: materialCode,
+                    description: materialDescription,
+                    name: materialName,
+                    unit: materialUnit,
+                    planned_quantity: plannedQuantity,
+                    spent_quantity: 0,
+                    executed_quantity: 0
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // تغيير الزر إلى أيقونة النجاح
+                    btn.outerHTML = '<span class="text-success"><i class="fas fa-check-circle"></i></span>';
+                    
+                    // تحديث لون الصف إلى الأخضر
+                    const row = btn.closest('tr');
+                    row.className = 'table-success';
+                    
+                    // إظهار toast بسيط
+                    toastr.success(`تم إضافة ${materialName} بنجاح`, '', {
+                        timeOut: 2000,
+                        positionClass: 'toast-top-left',
+                        progressBar: true
+                    });
+                    
+                    // تحديث عداد المواد في الصفحة
+                    updateMaterialsCount();
+                    
+                } else {
+                    // إرجاع الزر لحالته الأصلية
+                    btn.disabled = false;
+                    btn.innerHTML = originalContent;
+                    
+                    toastr.error(data.message || 'حدث خطأ أثناء إضافة المادة', '', {
+                        timeOut: 3000,
+                        positionClass: 'toast-top-left'
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                
+                // إرجاع الزر لحالته الأصلية
+                btn.disabled = false;
+                btn.innerHTML = originalContent;
+                
+                toastr.error('حدث خطأ في الاتصال', '', {
+                    timeOut: 3000,
+                    positionClass: 'toast-top-left'
+                });
+            });
+        });
+    });
+});
+
+// دالة تحديث عداد المواد
+function updateMaterialsCount() {
+    // تحديث عداد المواد في header الصفحة
+    const materialsCountBadges = document.querySelectorAll('.badge');
+    materialsCountBadges.forEach(badge => {
+        if (badge.textContent.includes('مادة')) {
+            const currentCount = parseInt(badge.textContent.match(/\d+/)?.[0] || 0);
+            badge.textContent = badge.textContent.replace(/\d+/, currentCount + 1);
+        }
+    });
 }
 </script>
 @endpush
