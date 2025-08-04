@@ -284,7 +284,11 @@ class WorkOrderController extends Controller
     public function license(WorkOrder $workOrder)
     {
         $workOrder->load(['licenses.violations', 'licenses.attachments']);
-        return view('admin.work_orders.license', compact('workOrder'));
+        
+        // تحديد المشروع بناءً على المدينة
+        $project = $workOrder->city === 'المدينة المنورة' ? 'madinah' : 'riyadh';
+        
+        return view('admin.work_orders.license', compact('workOrder', 'project'));
     }
 
     /**

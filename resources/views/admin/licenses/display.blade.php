@@ -7,17 +7,23 @@
     <!-- رأس الصفحة -->
     <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
         <div class="flex justify-between items-center">
-            <a href="{{ route('admin.work-orders.index') }}" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 flex items-center">
+            <a href="{{ route('admin.work-orders.index', ['project' => $project ?? 'riyadh']) }}" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 flex items-center">
                 <i class="fas fa-arrow-right ml-2"></i>
                 العودة لأوامر العمل
             </a>
-            <h1 class="text-2xl font-bold text-gray-800">لوحة تحكم الرخص</h1>
+            <div class="text-right">
+                <h1 class="text-2xl font-bold text-gray-800">لوحة تحكم الرخص</h1>
+                <p class="text-sm text-gray-600 mt-1">{{ $projectName ?? 'مشروع الرياض' }}</p>
+            </div>
         </div>
     </div>
 
     <!-- فلتر التواريخ وحالة الرخصة -->
     <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
         <form action="{{ route('admin.licenses.display') }}" method="GET" class="flex flex-wrap gap-4 items-end">
+            <!-- حفظ project parameter -->
+            <input type="hidden" name="project" value="{{ $project ?? 'riyadh' }}">
+            
             <div class="flex-1 min-w-[200px]">
                 <label for="start_date" class="block text-sm font-medium text-gray-700 mb-1">تاريخ البداية</label>
                 <input type="date" id="start_date" name="start_date" 
@@ -120,7 +126,7 @@
             <div class="bg-white rounded-lg shadow p-4">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm text-gray-500 mb-1">إجمالي التمديدات</p>
+                        <p class="text-sm text-gray-500 mb-1">إجمالي تمديدات الرخص</p>
                         <h3 class="text-2xl font-bold text-yellow-600">{{ $extensionsCount ?? 0 }}</h3>
                     </div>
                     <div class="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center">
@@ -171,6 +177,9 @@
             <!-- البحث السريع -->
             <div class="bg-white rounded-lg shadow p-4">
                 <form action="{{ route('admin.licenses.display') }}" method="GET" class="flex items-center">
+                    <!-- حفظ project parameter -->
+                    <input type="hidden" name="project" value="{{ $project ?? 'riyadh' }}">
+                    
                     <input type="text" name="quick_search" placeholder="رقم الرخصة..." 
                            class="flex-1 border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-lg text-sm"
                            value="{{ request('quick_search') }}">

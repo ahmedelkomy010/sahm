@@ -2724,9 +2724,9 @@ function deleteExtension(extensionId) {
                 </div>
                 
                 <div class="col-lg-4 text-end">
-                    <a href="{{ route('admin.licenses.index') }}" class="btn btn-light btn-lg ms-1">
+                    <a href="{{ route('admin.licenses.display', ['project' => $project ?? 'riyadh']) }}" class="btn btn-light btn-lg ms-1">
                         
-                        انتاجية الرخص
+                         تفاصيل الرخص 
                     </a>
                     <a href="{{ route('admin.work-orders.show', $workOrder) }}" class="btn btn-success">
                             <i class="fas fa-arrow-right"></i> عودة الي تفاصيل أمر العمل  

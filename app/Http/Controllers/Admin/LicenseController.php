@@ -23,8 +23,24 @@ class LicenseController extends Controller
     public function display(Request $request)
     {
         try {
+            // التحقق من وجود المشروع والتوجيه إلى صفحة اختيار المشروع إذا لم يكن موجوداً
+            $project = $request->get('project');
+            
+            if (!$project || !in_array($project, ['riyadh', 'madinah'])) {
+                return redirect()->route('project.selection');
+            }
+
             $query = License::query();
             $now = now();
+
+            // فلترة حسب المدينة
+            $query->whereHas('workOrder', function($q) use ($project) {
+                if ($project === 'riyadh') {
+                    $q->where('city', 'الرياض');
+                } elseif ($project === 'madinah') {
+                    $q->where('city', 'المدينة المنورة');
+                }
+            });
 
             // تطبيق فلتر الحالة
             if ($request->filled('status')) {
@@ -44,31 +60,55 @@ class LicenseController extends Controller
                 }
             }
 
-            // حساب الإحصائيات
-            $activeCount = License::where(function($q) use ($now) {
+            // البحث السريع في رقم الرخصة
+            if ($request->filled('quick_search')) {
+                $query->where('license_number', 'like', '%' . $request->quick_search . '%');
+            }
+
+            // تطبيق فلتر التاريخ
+            if ($request->filled('start_date')) {
+                $query->where('license_date', '>=', $request->start_date);
+            }
+            if ($request->filled('end_date')) {
+                $query->where('license_date', '<=', $request->end_date);
+            }
+
+            // حساب الإحصائيات للمدينة المحددة فقط
+            $statsQuery = License::whereHas('workOrder', function($q) use ($project) {
+                if ($project === 'riyadh') {
+                    $q->where('city', 'الرياض');
+                } elseif ($project === 'madinah') {
+                    $q->where('city', 'المدينة المنورة');
+                }
+            });
+
+            $activeCount = (clone $statsQuery)->where(function($q) use ($now) {
                 $q->where('license_end_date', '>', $now)
                   ->orWhereHas('extensions', function($q) use ($now) {
                       $q->where('end_date', '>', $now);
                   });
             })->count();
 
-            $expiredCount = License::whereNotNull('license_end_date')
+            $expiredCount = (clone $statsQuery)->whereNotNull('license_end_date')
                 ->where('license_end_date', '<=', $now)
                 ->whereDoesntHave('extensions', function($q) use ($now) {
                     $q->where('end_date', '>', $now);
                 })->count();
 
-            $violationsCount = License::has('violations')->count();
-            $extensionsCount = License::has('extensions')->count();
-            $passedTestsCount = License::where('successful_tests_count', '>', 0)->count();
-            $failedTestsCount = License::where('failed_tests_count', '>', 0)->count();
-            $evacuationsCount = License::where('is_evacuated', true)->count();
+            $violationsCount = (clone $statsQuery)->has('violations')->count();
+            $extensionsCount = (clone $statsQuery)->has('extensions')->count();
+            $passedTestsCount = (clone $statsQuery)->where('successful_tests_count', '>', 0)->count();
+            $failedTestsCount = (clone $statsQuery)->where('failed_tests_count', '>', 0)->count();
+            $evacuationsCount = (clone $statsQuery)->where('is_evacuated', true)->count();
 
             $licenses = $query->with(['workOrder', 'extensions'])->latest()->paginate(10);
 
             // Calculate total license values for filtered data
             $totalLicenseValue = $licenses->sum('license_value');
             $totalExtensionValue = $licenses->sum('extension_value');
+
+            // تحديد اسم المشروع
+            $projectName = $project === 'riyadh' ? 'مشروع الرياض' : 'مشروع المدينة المنورة';
 
             return view('admin.licenses.display', compact(
                 'licenses',
@@ -80,7 +120,9 @@ class LicenseController extends Controller
                 'failedTestsCount',
                 'evacuationsCount',
                 'totalLicenseValue',
-                'totalExtensionValue'
+                'totalExtensionValue',
+                'project',
+                'projectName'
             ));
 
         } catch (\Exception $e) {
@@ -95,7 +137,9 @@ class LicenseController extends Controller
                 'failedTestsCount' => 0,
                 'evacuationsCount' => 0,
                 'totalLicenseValue' => 0,
-                'totalExtensionValue' => 0
+                'totalExtensionValue' => 0,
+                'project' => $request->get('project', 'riyadh'),
+                'projectName' => 'مشروع الرياض'
             ])->withErrors('حدث خطأ أثناء تحميل البيانات');
         }
     }
