@@ -423,15 +423,51 @@
 
                                 <script>
                                     function validateForm() {
+                                        // التحقق من الحقول المطلوبة
+                                        const requiredFields = [
+                                            { id: 'order_number', name: 'رقم أمر العمل' },
+                                            { id: 'work_type', name: 'نوع العمل' },
+                                            { id: 'work_description', name: 'وصف العمل' },
+                                            { id: 'approval_date', name: 'تاريخ الاعتماد' },
+                                            { id: 'subscriber_name', name: 'اسم المشترك' },
+                                            { id: 'district', name: 'الحي' },
+                                            { id: 'municipality', name: 'البلدية' },
+                                            { id: 'station_number', name: 'رقم المحطة' },
+                                            { id: 'consultant_name', name: 'اسم الاستشاري' },
+                                            { id: 'office', name: 'المكتب' },
+                                            { id: 'order_value_with_consultant', name: 'قيمة أمر العمل المبدئية شامل الاستشاري' },
+                                            { id: 'order_value_without_consultant', name: 'قيمة أمر العمل المبدئية بدون استشاري' }
+                                        ];
+
+                                        for (const field of requiredFields) {
+                                            const element = document.getElementById(field.id);
+                                            if (!element.value.trim()) {
+                                                element.focus();
+                                                element.classList.add('is-invalid');
+                                                if (!element.nextElementSibling || !element.nextElementSibling.classList.contains('invalid-feedback')) {
+                                                    const feedback = document.createElement('div');
+                                                    feedback.className = 'invalid-feedback';
+                                                    feedback.textContent = `يجب ملء حقل ${field.name}`;
+                                                    element.parentNode.appendChild(feedback);
+                                                }
+                                                return false;
+                                            } else {
+                                                element.classList.remove('is-invalid');
+                                                const feedback = element.nextElementSibling;
+                                                if (feedback && feedback.classList.contains('invalid-feedback')) {
+                                                    feedback.remove();
+                                                }
+                                            }
+                                        }
+
                                         // التحقق من وجود المواد
                                         const materialsBody = document.getElementById('materialsBody');
                                         if (!materialsBody || materialsBody.children.length === 0) {
-                                            alert('يجب إضافة مادة واحدة على الأقل');
+                                            toastr.error('يجب إضافة مادة واحدة على الأقل');
                                             return false;
                                         }
 
                                         // التحقق من كل حقول المواد
-                                        let isValid = true;
                                         const rows = materialsBody.getElementsByTagName('tr');
                                         for (let i = 0; i < rows.length; i++) {
                                             const row = rows[i];
@@ -439,40 +475,58 @@
                                             // التحقق من كود المادة
                                             const materialCode = row.querySelector('input[name*="[material_code]"]');
                                             if (!materialCode.value.trim()) {
-                                                alert('يجب إدخال كود المادة في السطر ' + (i + 1));
                                                 materialCode.focus();
+                                                materialCode.classList.add('is-invalid');
+                                                toastr.error(`يجب إدخال كود المادة في السطر ${i + 1}`);
                                                 return false;
                                             }
 
                                             // التحقق من وصف المادة
                                             const materialDesc = row.querySelector('input[name*="[material_description]"]');
                                             if (!materialDesc.value.trim()) {
-                                                alert('يجب إدخال وصف المادة في السطر ' + (i + 1));
                                                 materialDesc.focus();
+                                                materialDesc.classList.add('is-invalid');
+                                                toastr.error(`يجب إدخال وصف المادة في السطر ${i + 1}`);
                                                 return false;
                                             }
 
                                             // التحقق من الكمية المخططة
                                             const quantity = row.querySelector('input[name*="[planned_quantity]"]');
                                             if (!quantity.value || quantity.value <= 0) {
-                                                alert('يجب إدخال كمية صحيحة أكبر من صفر في السطر ' + (i + 1));
                                                 quantity.focus();
+                                                quantity.classList.add('is-invalid');
+                                                toastr.error(`يجب إدخال كمية صحيحة أكبر من صفر في السطر ${i + 1}`);
                                                 return false;
                                             }
 
                                             // التحقق من الوحدة
                                             const unit = row.querySelector('select[name*="[unit]"]');
                                             if (!unit.value) {
-                                                alert('يجب اختيار الوحدة في السطر ' + (i + 1));
                                                 unit.focus();
+                                                unit.classList.add('is-invalid');
+                                                toastr.error(`يجب اختيار الوحدة في السطر ${i + 1}`);
                                                 return false;
                                             }
-
-
                                         }
 
                                         return true;
                                     }
+
+                                    // إضافة مستمعي الأحداث لإزالة الفئة is-invalid عند الكتابة
+                                    document.addEventListener('DOMContentLoaded', function() {
+                                        const inputs = document.querySelectorAll('input, select, textarea');
+                                        inputs.forEach(input => {
+                                            input.addEventListener('input', function() {
+                                                if (this.value.trim()) {
+                                                    this.classList.remove('is-invalid');
+                                                    const feedback = this.nextElementSibling;
+                                                    if (feedback && feedback.classList.contains('invalid-feedback')) {
+                                                        feedback.remove();
+                                                    }
+                                                }
+                                            });
+                                        });
+                                    });
                                 </script>
                             </div>
                         </div>

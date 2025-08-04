@@ -527,7 +527,7 @@ class WorkOrderController extends Controller
             }
         }
 
-        return redirect()->route('admin.work-orders.index')->with('success', 'تم تحديث أمر العمل بنجاح');
+        return redirect()->route('admin.work-orders.show', $workOrder)->with('success', 'تم تحديث أمر العمل بنجاح');
     }
 
     // حذف أمر عمل
