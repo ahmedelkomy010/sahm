@@ -108,6 +108,9 @@ class WorkOrderController extends Controller
             'execution_status.required' => 'يجب إدخال حالة تنفيذ أمر العمل',
             'execution_status.in' => 'حالة تنفيذ أمر العمل غير صحيحة',
             'city.required' => 'يجب إدخال المدينة',
+            'manual_days.required' => 'يجب إدخال مدة التنفيذ',
+            'manual_days.numeric' => 'يجب أن تكون مدة التنفيذ رقم',
+            'manual_days.min' => 'يجب أن تكون مدة التنفيذ أكبر من أو تساوي صفر',
         ];
 
         $rules = array_merge(WorkOrder::$rules, [
@@ -491,7 +494,7 @@ class WorkOrderController extends Controller
         }
         
         $validated = $request->validate([
-            'order_number' => 'required|string|max:255|unique:work_orders,order_number,' . $workOrder->id,
+            'order_number' => 'required|string|max:255',
             'work_type' => 'required|string|max:999',
             'work_description' => 'required|string',
             'approval_date' => 'required|date',

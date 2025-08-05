@@ -2,42 +2,72 @@
 
 @push('scripts')
 <script>
-// تحديث العداد التنازلي لكل أوامر العمل
+// تحديث العداد التنازلي لمدة التنفيذ (منفصل عن تاريخ الاعتماد)
 function updateCountdowns() {
     document.querySelectorAll('.countdown-badge').forEach(badge => {
-        let startDays = parseInt(badge.dataset.start);
         let workOrderId = badge.dataset.workOrder;
-        let approvalDate = new Date(badge.dataset.approvalDate);
-        let now = new Date();
+        let initialDays = parseInt(badge.dataset.start) || 0;
         
-        // حساب الفرق بالأيام
-        let diffTime = approvalDate - now;
-        let currentDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        // التحقق من حالة التنفيذ - إذا كانت "تم تسليم 155" أو أعلى يتوقف العداد
+        const executionStatus = badge.dataset.executionStatus;
+        if (executionStatus && parseInt(executionStatus) >= 2) {
+            badge.className = 'badge countdown-badge bg-info';
+            badge.innerHTML = '<i class="fas fa-check me-1"></i>تم التسليم';
+            
+            // إزالة البيانات المخزنة لأن العمل انتهى
+            localStorage.removeItem(`execution_countdown_${workOrderId}_last_update`);
+            localStorage.removeItem(`execution_countdown_${workOrderId}_days`);
+            localStorage.removeItem(`execution_countdown_${workOrderId}_start_date`);
+            return;
+        }
+        
+        // العداد التنازلي ثم التصاعدي التلقائي
+        const lastUpdateKey = `execution_countdown_${workOrderId}_last_update`;
+        const daysKey = `execution_countdown_${workOrderId}_days`;
+        const startDateKey = `execution_countdown_${workOrderId}_start_date`;
+        const today = new Date().toDateString();
+        const lastUpdate = localStorage.getItem(lastUpdateKey);
+        const storedDays = localStorage.getItem(daysKey);
+        const startDate = localStorage.getItem(startDateKey);
+
+        let currentDays = initialDays;
+
+        // إذا لم يكن هناك تاريخ بداية محفوظ، احفظ اليوم كبداية
+        if (!startDate && initialDays > 0) {
+            localStorage.setItem(startDateKey, today);
+            localStorage.setItem(daysKey, initialDays.toString());
+            localStorage.setItem(lastUpdateKey, today);
+            currentDays = initialDays;
+        } else if (startDate) {
+            // حساب عدد الأيام التي مرت منذ بداية العداد
+            const daysPassed = Math.floor((new Date(today) - new Date(startDate)) / (1000 * 60 * 60 * 24));
+            currentDays = initialDays - daysPassed;
+            
+            // تحديث القيم المخزنة
+            localStorage.setItem(daysKey, currentDays.toString());
+            localStorage.setItem(lastUpdateKey, today);
+            badge.dataset.executionDays = currentDays;
+        }
         
         // تحديث العرض
-        const daysCount = badge.querySelector('.days-count');
+        const clockIcon = '<i class="fas fa-clock me-1"></i>';
+        
         if (currentDays > 0) {
-            daysCount.textContent = currentDays;
-            daysCount.className = 'days-count text-success';
-            badge.innerHTML = `${daysCount.outerHTML}  متبقي`;
-        } else if (currentDays < 0) {
-            daysCount.textContent = Math.abs(currentDays);
-            daysCount.className = 'days-count text-danger';
-            badge.innerHTML = `${daysCount.outerHTML}  متأخر`;
-            
-            // إظهار تنبيه عند الوصول للصفر
-            if (startDays > 0 && currentDays <= 0) {
-                Swal.fire({
-                    title: 'تنبيه!',
-                    text: 'انتهت المدة المحددة لأمر العمل',
-                    icon: 'warning',
-                    confirmButtonText: 'حسناً'
-                });
-            }
+            // أيام متبقية - لون أخضر
+            badge.className = 'badge countdown-badge bg-success';
+            badge.innerHTML = `${clockIcon}<span class="days-count">${currentDays}</span> متبقي`;
+        } else if (currentDays === 0) {
+            // اليوم الأخير - لون تحذيري
+            badge.className = 'badge countdown-badge bg-warning text-dark';
+            badge.innerHTML = `${clockIcon}<span class="days-count">0</span> انتهت `;
         } else {
-            daysCount.textContent = '0';
-            daysCount.className = 'days-count';
-            badge.innerHTML = `${daysCount.outerHTML} يوم`;
+            // أيام متأخرة - لون أحمر، يبدأ العد التصاعدي
+            const lateDays = Math.abs(currentDays);
+            badge.className = 'badge countdown-badge bg-danger';
+            badge.innerHTML = `${clockIcon}<span class="days-count">${lateDays}</span> متأخر`;
+            
+            // إظهار تنبيه للتأخير
+            showExpirationAlert(workOrderId, lateDays);
         }
     });
 }
@@ -45,8 +75,78 @@ function updateCountdowns() {
 // تحديث العداد كل دقيقة
 setInterval(updateCountdowns, 60000);
 
+// تحديث العداد كل ساعة للتحقق من تغيير اليوم
+setInterval(updateCountdowns, 3600000); // كل ساعة
+
+// تحديث أكثر تكراراً للحالات الحرجة (كل 10 ثوان)
+setInterval(() => {
+    // تحديث العدادات التي قريبة من الصفر أو متأخرة
+    document.querySelectorAll('.countdown-badge.bg-warning, .countdown-badge.bg-danger').forEach(badge => {
+        // إجراء تحديث سريع للحالات الحرجة
+        updateCountdowns();
+    });
+}, 10000); // كل 10 ثوان
+
 // تحديث العداد عند تحميل الصفحة
 document.addEventListener('DOMContentLoaded', updateCountdowns);
+
+// تحديث العداد عند تركيز النافذة (عندما يعود المستخدم للصفحة)
+window.addEventListener('focus', updateCountdowns);
+
+// إظهار تنبيه عندما تنتهي المدة
+function showExpirationAlert(workOrderId, lateDays) {
+    const alertKey = `alert_shown_${workOrderId}_${lateDays}`;
+    
+    // تجنب إظهار التنبيه أكثر من مرة لنفس اليوم
+    if (localStorage.getItem(alertKey)) {
+        return;
+    }
+    
+    if (lateDays === 1) { // أول يوم تأخير
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                title: 'تنبيه: انتهت مدة التنفيذ!',
+                text: `أمر العمل رقم ${workOrderId} تأخر يوم واحد`,
+                icon: 'warning',
+                confirmButtonText: 'حسناً',
+                timer: 5000,
+                timerProgressBar: true
+            });
+            
+            // حفظ أن التنبيه تم عرضه
+            localStorage.setItem(alertKey, 'true');
+        }
+    } else if (lateDays % 7 === 0 && lateDays > 0) { // كل أسبوع
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                title: 'تنبيه: تأخير طويل!',
+                text: `أمر العمل رقم ${workOrderId} متأخر ${lateDays} يوم`,
+                icon: 'error',
+                confirmButtonText: 'حسناً',
+                timer: 7000,
+                timerProgressBar: true
+            });
+            
+            // حفظ أن التنبيه تم عرضه
+            localStorage.setItem(alertKey, 'true');
+        }
+    }
+}
+
+// وظيفة لإعادة تعيين العداد (للاستخدام المستقبلي)
+function resetCountdown(workOrderId) {
+    localStorage.removeItem(`execution_countdown_${workOrderId}_last_update`);
+    localStorage.removeItem(`execution_countdown_${workOrderId}_days`);
+    localStorage.removeItem(`execution_countdown_${workOrderId}_start_date`);
+    
+    // إزالة تنبيهات التأخير
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith(`alert_shown_${workOrderId}_`)) {
+            localStorage.removeItem(key);
+        }
+    }
+}
 </script>
 @endpush
 
@@ -458,7 +558,7 @@ document.addEventListener('DOMContentLoaded', updateCountdowns);
                                     <th>المكتب</th>
                                     <th>اسم الاستشاري</th>
                                     <th>رقم المحطة</th>
-                                    <th>تاريخ الاعتماد</th>
+                                                                                <th>تاريخ الاعتماد <br> مدة التنفيذ</th>
                                     <th>حالة التنفيذ</th>
                                     <th>قيمة أمر العمل المبدئية غير شامل الاستشاري</th>
                                     <th>الإجراءات</th>
@@ -566,25 +666,27 @@ document.addEventListener('DOMContentLoaded', updateCountdowns);
                                         <td>{{ $workOrder->station_number }}</td>
                                         <td>
                                             <div class="approval-date-container">
-                                                <div class="date-section">
-                                                   
+                                                <div class="date-section mb-1">
+                                                    <small class="text-muted"></small><br>
                                                     <span class="date-value">{{ date('Y-m-d', strtotime($workOrder->approval_date)) }}</span>
                                                 </div>
                                                 @php
                                                     $remainingDays = $workOrder->manual_days ?? 0;
                                                 @endphp
                                                 <div class="countdown-section">
-                                                    <span class="badge countdown-badge {{ $remainingDays > 0 ? 'bg-success' : ($remainingDays < 0 ? 'bg-danger' : 'bg-primary') }}" 
+                                                    <small class="text-muted d-block"></small>
+                                                    <span class="badge countdown-badge {{ $remainingDays > 0 ? 'bg-success' : ($remainingDays == 0 ? 'bg-warning text-dark' : 'bg-secondary') }}" 
                                                           data-start="{{ $remainingDays }}" 
+                                                          data-execution-days="{{ $remainingDays }}"
                                                           data-work-order="{{ $workOrder->id }}"
-                                                          data-approval-date="{{ $workOrder->approval_date }}">
+                                                          data-execution-status="{{ $workOrder->execution_status }}">
                                                         <i class="fas fa-clock me-1"></i>
                                                         @if($remainingDays > 0)
-                                                            <span class="days-count">{{ $remainingDays }}</span>  متبقي
-                                                        @elseif($remainingDays < 0)
-                                                            <span class="days-count">{{ abs($remainingDays) }}</span>  متأخر
+                                                            <span class="days-count">{{ $remainingDays }}</span> متبقي
+                                                        @elseif($remainingDays == 0)
+                                                            <span class="days-count">0</span> انتهت اليوم
                                                         @else
-                                                            <span class="days-count">0</span> يوم
+                                                            <span class="days-count">-</span> غير محدد
                                                         @endif
                                                     </span>
                                                 </div>
@@ -938,6 +1040,57 @@ document.addEventListener('DOMContentLoaded', updateCountdowns);
     
     #clearAllBtn:hover::before {
         left: 100%;
+    }
+    
+    /* تنسيق عرض تاريخ الاعتماد ومدة التنفيذ */
+    .approval-date-container {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        min-width: 140px;
+    }
+    
+    .date-section {
+        text-align: center;
+        padding: 4px 6px;
+        background-color: #f8f9fa;
+        border-radius: 4px;
+        border: 1px solid #e9ecef;
+        font-size: 0.9rem;
+    }
+    
+    .countdown-section {
+        text-align: center;
+    }
+    
+    .countdown-badge {
+        font-size: 0.85rem;
+        padding: 4px 8px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    
+    .countdown-badge.bg-warning {
+        animation: pulse-warning 2s infinite;
+    }
+    
+    .countdown-badge.bg-danger {
+        animation: pulse-danger 2s infinite;
+    }
+    
+    @keyframes pulse-warning {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+    
+    @keyframes pulse-danger {
+        0%, 100% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.1); opacity: 0.8; }
+    }
+    
+    .date-value {
+        font-weight: 600;
+        color: #495057;
     }
 </style>
 

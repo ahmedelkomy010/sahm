@@ -24,6 +24,7 @@ class WorkOrder extends Model
         'station_number' => 'nullable|string|max:255',
         'consultant_name' => 'nullable|string|max:255',
         'city' => 'required|string|max:255',
+        'manual_days' => 'required|numeric|min:0',
         'materials' => 'required|array',
         'materials.*.material_code' => 'required|string|max:255',
         'materials.*.material_description' => 'required|string|max:255',
@@ -93,6 +94,7 @@ class WorkOrder extends Model
         'pre_operation_tests',
         'license_id',
         'city',
+        'manual_days',
     ];
 
     protected $casts = [

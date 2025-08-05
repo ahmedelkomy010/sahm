@@ -18,7 +18,7 @@ class WorkOrderDeleteController extends Controller
 
         try {
             $workOrder->delete();
-            return redirect()->route('admin.work-orders.index')->with('success', 'تم حذف أمر العمل بنجاح');
+            return redirect()->back()->with('success', 'تم حذف أمر العمل بنجاح');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'حدث خطأ أثناء حذف أمر العمل');
         }

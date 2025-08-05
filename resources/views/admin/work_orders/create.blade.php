@@ -111,25 +111,31 @@
 
                                 <div class="form-group mb-3">
                                     <label for="approval_date" class="form-label fw-bold">تاريخ الاعتماد</label>
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                                                                          <div class="input-group">
-                                                  <input id="approval_date" type="date" class="form-control @error('approval_date') is-invalid @enderror" name="approval_date" value="{{ old('approval_date') }}">
-                                                  <span class="input-group-text bg-light">
-                                                      <i class="fas fa-clock me-1"></i>
-                                                      <span id="countdown" class="text-muted">-</span>
-                                                  </span>
-                                              </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="input-group">
-                                                <span class="input-group-text bg-light">مدة التنفيذ</span>
-                                                <input type="number" id="manual_days" class="form-control" min="0" placeholder="أدخل عدد الأيام المتبقية" onchange="updateManualDays(this.value)">
-                                                <span class="input-group-text bg-light">يوم</span>
-                                            </div>
-                                        </div>
+                                    <div class="input-group">
+                                        <input id="approval_date" type="date" class="form-control @error('approval_date') is-invalid @enderror" name="approval_date" value="{{ old('approval_date') }}">
+                                        <span class="input-group-text bg-light">
+                                            <i class="fas fa-calendar me-1"></i>
+                                            <span id="approval_info" class="text-muted">-</span>
+                                        </span>
                                     </div>
                                     @error('approval_date')
+                                        <span class="invalid-feedback" role="alert">
+                                            <strong>{{ $message }}</strong>
+                                        </span>
+                                    @enderror
+                                </div>
+
+                                <div class="form-group mb-3">
+                                    <label for="manual_days" class="form-label fw-bold">مدة التنفيذ (بالأيام)</label>
+                                    <div class="input-group">
+                                        <input type="number" id="manual_days" name="manual_days" class="form-control @error('manual_days') is-invalid @enderror" min="0" placeholder="أدخل عدد أيام التنفيذ" value="{{ old('manual_days') }}">
+                                        <span class="input-group-text bg-light">
+                                            <i class="fas fa-clock me-1"></i>
+                                            <span id="execution_countdown" class="text-muted">-</span>
+                                        </span>
+                                        <span class="input-group-text bg-light">يوم</span>
+                                    </div>
+                                    @error('manual_days')
                                         <span class="invalid-feedback" role="alert">
                                             <strong>{{ $message }}</strong>
                                         </span>
@@ -447,6 +453,7 @@
                                             { id: 'work_type', name: 'نوع العمل' },
                                             { id: 'work_description', name: 'وصف العمل' },
                                             { id: 'approval_date', name: 'تاريخ الاعتماد' },
+                                            { id: 'manual_days', name: 'مدة التنفيذ' },
                                             { id: 'subscriber_name', name: 'اسم المشترك' },
                                             { id: 'district', name: 'الحي' },
                                             { id: 'municipality', name: 'البلدية' },
@@ -2950,44 +2957,123 @@ function addMaterialToTable(material) {
     // إضافة صف واحد افتراضي عند تحميل الصفحة
     document.addEventListener('DOMContentLoaded', function() {
         addMaterial(); // إضافة مادة افتراضية
-        updateCountdown(); // تحديث العداد التنازلي
+        updateApprovalInfo(); // تحديث معلومات تاريخ الاعتماد
+        updateExecutionCountdown(); // تحديث عداد مدة التنفيذ
     });
 
-    // تحديث العداد التنازلي
-    function updateManualDays(days) {
-        const countdownElement = document.getElementById('countdown');
+    // تحديث معلومات تاريخ الاعتماد (منفصل تماماً عن مدة التنفيذ)
+    function updateApprovalInfo() {
+        const approvalDateInput = document.getElementById('approval_date');
+        const approvalInfoElement = document.getElementById('approval_info');
+        
+        if (!approvalDateInput.value) {
+            approvalInfoElement.textContent = '-';
+            approvalInfoElement.className = 'text-muted';
+            return;
+        }
+        
+        const approvalDate = new Date(approvalDateInput.value);
+        const now = new Date();
+        
+        // تعيين وقت منتصف الليل للتواريخ للمقارنة الدقيقة
+        approvalDate.setHours(0, 0, 0, 0);
+        now.setHours(0, 0, 0, 0);
+        
+        // حساب الفرق بالأيام من تاريخ الاعتماد
+        const diffTime = now - approvalDate;
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        
+        // عرض معلومات تاريخ الاعتماد
+        if (diffDays === 0) {
+            approvalInfoElement.textContent = 'اليوم';
+            approvalInfoElement.className = 'text-primary';
+        } else if (diffDays > 0) {
+            approvalInfoElement.textContent = 'منذ ' + diffDays + ' يوم';
+            approvalInfoElement.className = 'text-info';
+        } else {
+            approvalInfoElement.textContent = 'خلال ' + Math.abs(diffDays) + ' يوم';
+            approvalInfoElement.className = 'text-warning';
+        }
+    }
+
+    // تحديث عداد مدة التنفيذ (منفصل تماماً عن تاريخ الاعتماد)
+    function updateExecutionCountdown() {
+        const manualDaysInput = document.getElementById('manual_days');
+        const executionCountdownElement = document.getElementById('execution_countdown');
         const executionStatusSelect = document.getElementById('execution_status');
         
         // التحقق من حالة التنفيذ
         if (executionStatusSelect && executionStatusSelect.value === '2') {
-            countdownElement.textContent = 'تم تسليم 155';
-            countdownElement.className = 'text-info';
+            executionCountdownElement.textContent = 'تم التسليم';
+            executionCountdownElement.className = 'text-info';
             return;
         }
 
-        // التحقق من عدد الأيام
-        if (days && days > 0) {
+        let days = parseInt(manualDaysInput.value) || 0;
+
+        // العداد التنازلي التلقائي - كل يوم ينقص واحد
+        const lastUpdateKey = 'execution_countdown_last_update';
+        const daysKey = 'execution_countdown_days';
+        const today = new Date().toDateString();
+        const lastUpdate = localStorage.getItem(lastUpdateKey);
+        const storedDays = localStorage.getItem(daysKey);
+
+        // إذا كان هناك قيمة مخزنة وتغير اليوم، نقلل يوم واحد
+        if (storedDays && lastUpdate && lastUpdate !== today && days > 0) {
+            const daysPassed = Math.floor((new Date() - new Date(lastUpdate)) / (1000 * 60 * 60 * 24));
+            days = Math.max(0, days - daysPassed);
+            manualDaysInput.value = days;
+        }
+
+        // حفظ القيم الحالية
+        if (days > 0) {
+            localStorage.setItem(lastUpdateKey, today);
+            localStorage.setItem(daysKey, days.toString());
+        }
+
+        // التحقق من عدد الأيام وعرض العداد
+        if (days > 0) {
             // أيام متبقية - لون أخضر
-            countdownElement.textContent = days + ' يوم متبقي';
-            countdownElement.className = 'text-success';
-        } else if (days && days < 0) {
-            // أيام متأخرة - لون أحمر
-            countdownElement.textContent = Math.abs(days) + ' يوم متأخر';
-            countdownElement.className = 'text-danger';
+            executionCountdownElement.textContent = days + ' متبقي';
+            executionCountdownElement.className = 'text-success';
+        } else if (days === 0) {
+            // انتهت المدة - لون أحمر
+            executionCountdownElement.textContent = 'انتهت المدة';
+            executionCountdownElement.className = 'text-danger';
+            // إزالة البيانات المخزنة لأن المدة انتهت
+            localStorage.removeItem(lastUpdateKey);
+            localStorage.removeItem(daysKey);
         } else {
-            countdownElement.textContent = '-';
-            countdownElement.className = 'text-muted';
+            // قيمة سالبة - إعادة تعيين إلى 0
+            manualDaysInput.value = 0;
+            executionCountdownElement.textContent = 'انتهت المدة';
+            executionCountdownElement.className = 'text-danger';
+            // إزالة البيانات المخزنة
+            localStorage.removeItem(lastUpdateKey);
+            localStorage.removeItem(daysKey);
         }
     }
 
-    // تحديث العداد عند تغيير حالة التنفيذ
-    document.getElementById('execution_status').addEventListener('change', function() {
-        const manualDaysInput = document.getElementById('manual_days');
-        updateManualDays(manualDaysInput.value);
-    });
+    // إضافة مستمعي الأحداث
+    document.addEventListener('DOMContentLoaded', function() {
+        // تحديث معلومات تاريخ الاعتماد عند تغييره
+        document.getElementById('approval_date').addEventListener('change', updateApprovalInfo);
+        
+        // تحديث عداد مدة التنفيذ عند تغييرها
+        document.getElementById('manual_days').addEventListener('input', updateExecutionCountdown);
+        
+        // تحديث عداد مدة التنفيذ عند تغيير حالة التنفيذ
+        document.getElementById('execution_status').addEventListener('change', updateExecutionCountdown);
 
-    // تحديث العداد كل دقيقة
-    setInterval(updateCountdown, 60000);
+        // تحديث معلومات تاريخ الاعتماد كل دقيقة (فقط لتحديث "منذ X يوم")
+        setInterval(updateApprovalInfo, 60000);
+        
+        // تحديث عداد مدة التنفيذ كل ساعة للتحقق من تغيير اليوم
+        setInterval(updateExecutionCountdown, 3600000); // كل ساعة
+        
+        // تحديث عداد مدة التنفيذ عند تركيز النافذة (عندما يعود المستخدم للصفحة)
+        window.addEventListener('focus', updateExecutionCountdown);
+    });
 </script>
 <script src="{{ asset('js/work-items-import.js') }}"></script>
 @endsection
