@@ -94,11 +94,16 @@
                                         <div class="col-md-6">
                                             <div class="input-group">
                                                 <span class="input-group-text bg-light">المتبقي</span>
-                                                <input type="number" id="manual_days" class="form-control" min="0" placeholder="أدخل عدد الأيام المتبقية" onchange="updateManualDays(this.value)">
+                                                <input type="number" id="manual_days" name="manual_days" class="form-control @error('manual_days') is-invalid @enderror" min="0" value="{{ old('manual_days', $workOrder->manual_days) }}" placeholder="أدخل عدد الأيام المتبقية" onchange="updateManualDays(this.value)">
                                                 <span class="input-group-text bg-light">يوم</span>
                                             </div>
                                         </div>
                                     </div>
+                                    @error('manual_days')
+                                        <span class="invalid-feedback" role="alert">
+                                            <strong>{{ $message }}</strong>
+                                        </span>
+                                    @enderror
                                     @error('approval_date')
                                         <span class="invalid-feedback" role="alert">
                                             <strong>{{ $message }}</strong>

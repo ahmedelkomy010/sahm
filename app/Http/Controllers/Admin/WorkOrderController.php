@@ -404,6 +404,40 @@ class WorkOrderController extends Controller
     }
 
     /**
+     * تحديث أمر العمل
+     */
+    public function update(Request $request, WorkOrder $workOrder)
+    {
+        try {
+            $validated = $request->validate([
+                'order_number' => 'required|string|max:255',
+                'work_type' => 'required|string|max:999',
+                'work_description' => 'required|string',
+                'approval_date' => 'required|date',
+                'subscriber_name' => 'required|string|max:255',
+                'district' => 'required|string|max:255',
+                'municipality' => 'nullable|string|max:255',
+                'office' => 'nullable|string|max:255',
+                'station_number' => 'nullable|string|max:255',
+                'consultant_name' => 'nullable|string|max:255',
+                'execution_status' => 'required|in:1,2,3,4,5,6,7',
+                'manual_days' => 'required|integer|min:0',
+            ]);
+
+            $workOrder->update($validated);
+
+            return redirect()->route('admin.work-orders.show', $workOrder)
+                ->with('success', 'تم تحديث أمر العمل بنجاح');
+
+        } catch (\Exception $e) {
+            Log::error('Error updating work order: ' . $e->getMessage());
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'حدث خطأ أثناء تحديث أمر العمل');
+        }
+    }
+
+    /**
      * عرض تقرير إنتاجية الرياض
      */
     public function riyadhProductivity()
