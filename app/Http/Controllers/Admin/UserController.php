@@ -192,8 +192,16 @@ class UserController extends Controller
             'email' => $user->email,
         ];
 
-        // قم بحذف المستخدم
-        $user->delete();
+        try {
+            // حذف الرخص المرتبطة بالمستخدم أولاً
+            \App\Models\License::where('user_id', $user->id)->update(['user_id' => null]);
+            
+            // قم بحذف المستخدم
+            $user->delete();
+        } catch (\Exception $e) {
+            return redirect()->route('admin.users.index')
+                ->with('error', 'لا يمكن حذف المستخدم لوجود بيانات مرتبطة به!');
+        }
 
         // تسجيل الحدث في سجل النظام
         \Illuminate\Support\Facades\Log::info('تم حذف مستخدم', [
