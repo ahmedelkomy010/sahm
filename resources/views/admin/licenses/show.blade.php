@@ -402,13 +402,17 @@ use Illuminate\Support\Facades\Storage;
                                 </div>
                             </div>
                             <div class="btn-group">
-                                <a href="{{ Storage::url($license->letters_commitments_file_path) }}" 
+                                @php
+                                    $filePaths = json_decode($license->letters_commitments_file_path, true);
+                                    $filePath = is_array($filePaths) ? $filePaths[0] : $license->letters_commitments_file_path;
+                                @endphp
+                                <a href="{{ Storage::disk('public')->url($filePath) }}" 
                                    target="_blank" 
                                    class="btn btn-outline-primary">
                                     <i class="fas fa-eye me-1"></i>
                                     عرض المرفق
                                 </a>
-                                <a href="{{ Storage::url($license->letters_commitments_file_path) }}" 
+                                <a href="{{ Storage::disk('public')->url($filePath) }}" 
                                    download 
                                    class="btn btn-outline-success">
                                     <i class="fas fa-download me-1"></i>
@@ -551,7 +555,11 @@ use Illuminate\Support\Facades\Storage;
                                                             @endif
                                         </td>
                                         <td>
-                                            @if(isset($test['fileUrl']))
+                                            @if(isset($test['file_url']) && $test['file_url'])
+                                                <a href="{{ $test['file_url'] }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-file me-1"></i>عرض المرفق
+                                                </a>
+                                            @elseif(isset($test['fileUrl']) && $test['fileUrl'])
                                                 <a href="{{ $test['fileUrl'] }}" target="_blank" class="btn btn-sm btn-outline-primary">
                                                     <i class="fas fa-file me-1"></i>عرض المرفق
                                                 </a>

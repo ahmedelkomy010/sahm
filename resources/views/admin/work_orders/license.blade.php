@@ -3976,6 +3976,12 @@ function saveDigLicenseSection() {
                 saveBtn.disabled = false;
                 saveBtn.innerHTML = originalText;
             }
+
+            // إغلاق النافذة
+            const modal = bootstrap.Modal.getInstance(document.getElementById('addLicenseModal'));
+            if (modal) {
+                modal.hide();
+            }
         },
         error: function(xhr) {
             console.error('Error saving dig license:', xhr);
