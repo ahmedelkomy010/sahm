@@ -309,7 +309,34 @@
                                             </tr>
                                             <tr>
                                                 <th>تاريخ الاعتماد</th>
-                                                <td>{{ date('Y-m-d', strtotime($workOrder->approval_date)) }}</td>
+                                                <td>
+                                                    {{ date('Y-m-d', strtotime($workOrder->approval_date)) }}
+                                                    @php
+                                                        $approvalDate = \Carbon\Carbon::parse($workOrder->approval_date);
+                                                        $now = \Carbon\Carbon::now();
+                                                        $daysSinceApproval = (int)$now->diffInDays($approvalDate);
+                                                        $manualDays = (int)($workOrder->manual_days ?? 0);
+                                                        $remainingDays = (int)max(0, $manualDays - $daysSinceApproval);
+                                                        $overdueDays = (int)max(0, $daysSinceApproval - $manualDays);
+                                                    @endphp
+                                                    <div class="mt-2">
+                                                        <small class="text-muted">
+                                                            <i class="fas fa-clock me-1"></i>
+                                                            مدة التنفيذ: {{ $manualDays }} يوم
+                                                            @if($daysSinceApproval > 0)
+                                                                <span class="mx-1">•</span>
+                                                                منذ {{ $daysSinceApproval }} يوم من الاعتماد
+                                                            @endif
+                                                            @if($remainingDays > 0)
+                                                                <span class="mx-1">•</span>
+                                                                <span class="text-success">متبقي {{ $remainingDays }} يوم</span>
+                                                            @else
+                                                                <span class="mx-1">•</span>
+                                                                <span class="text-danger">متأخر {{ $overdueDays }} يوم</span>
+                                                            @endif
+                                                        </small>
+                                                    </div>
+                                                </td>
                                             </tr>
                                             <tr>
                                                 <th>اسم المشترك</th>

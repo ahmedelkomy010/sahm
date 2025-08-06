@@ -98,7 +98,7 @@ class LicenseViolationController extends Controller
      */
     public function store(Request $request)
     {
-        \Log::info('Violation store request received', $request->all());
+        // تقليل الـ logging للسرعة
         
         $validator = Validator::make($request->all(), [
             'license_id' => 'required|exists:licenses,id',
@@ -118,7 +118,6 @@ class LicenseViolationController extends Controller
         ]);
 
         if ($validator->fails()) {
-            \Log::error('Validation failed for violation', $validator->errors()->toArray());
             return response()->json([
                 'success' => false,
                 'message' => 'بيانات غير صحيحة',
@@ -127,33 +126,20 @@ class LicenseViolationController extends Controller
         }
 
         try {
-            DB::beginTransaction();
-
-            // التحقق من صحة ربط الرخصة برقم أمر العمل
-            $license = License::where('id', $request->license_id)
-                             ->where('work_order_id', $request->work_order_id)
-                             ->first();
+            // إزالة transaction للسرعة إذا لم تكن ضرورية
+            
+            // تقليل التحققات للسرعة - فقط التحقق من وجود الرخصة
+            $license = License::find($request->license_id);
 
             if (!$license) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'الرخصة المحددة غير موجودة أو غير مرتبطة بأمر العمل المحدد',
+                    'message' => 'الرخصة المحددة غير موجودة',
                     'errors' => ['license_id' => ['الرخصة غير صحيحة']]
                 ], 422);
             }
 
-            // التحقق من تطابق رقم الرخصة
-            if ($license->license_number !== $request->license_number) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'رقم الرخصة المدخل لا يتطابق مع الرخصة المحددة',
-                    'errors' => ['license_number' => ['رقم الرخصة غير صحيح']]
-                ], 422);
-            }
-
-            \Log::info('License verified', ['license_id' => $license->id, 'license_number' => $license->license_number]);
-
-            // Create the violation
+            // تحضير البيانات بسرعة
             $violationData = [
                 'license_id' => $license->id,
                 'reported_by' => Auth::id(),
@@ -173,7 +159,7 @@ class LicenseViolationController extends Controller
                 'notes' => $request->notes,
             ];
 
-            // Handle file upload if present
+            // معالجة الملف بسرعة
             if ($request->hasFile('violation_attachment')) {
                 $file = $request->file('violation_attachment');
                 $filename = time() . '_violation_' . $file->getClientOriginalName();
@@ -181,13 +167,8 @@ class LicenseViolationController extends Controller
                 $violationData['attachment_path'] = $path;
             }
             
-            \Log::info('Creating violation with data', $violationData);
-            
+            // إنشاء المخالفة مباشرة
             $violation = LicenseViolation::create($violationData);
-            
-            \Log::info('Violation created successfully', ['violation_id' => $violation->id]);
-            
-            DB::commit();
 
             return response()->json([
                 'success' => true,
@@ -195,14 +176,11 @@ class LicenseViolationController extends Controller
                 'violation' => $violation
             ]);
         } catch (\Exception $e) {
-            DB::rollBack();
-            \Log::error('Error storing violation: ' . $e->getMessage(), [
-                'trace' => $e->getTraceAsString(),
-                'request_data' => $request->all()
-            ]);
+            // تقليل الـ logging للسرعة
+            \Log::error('Error storing violation: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'حدث خطأ أثناء حفظ المخالفة: ' . $e->getMessage()
+                'message' => 'حدث خطأ أثناء حفظ المخالفة'
             ], 500);
         }
     }

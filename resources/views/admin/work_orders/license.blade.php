@@ -1589,6 +1589,7 @@
                             <td>${dueDate}</td>
                             <td>${violation.payment_invoice_number || '-'}</td>
                             <td>${paymentStatusBadge}</td>
+                            <td>${violation.notes || '-'}</td>
                             <td>${attachmentCell}</td>
                             <td>
                                 <div class="btn-group btn-group-sm">
@@ -1668,23 +1669,91 @@
             data: formData,
             processData: false,
             contentType: false,
+            timeout: 5000, // 5 ثوان timeout
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             },
-            success: function(response) {
-                toastr.success(response.message || `تم حفظ المخالفة بنجاح للرخصة: ${licenseNumber}`);
-                resetViolationForm();
-                loadViolations(); // سيقوم بتحديث الجدول والإجمالي
-            },
-            error: function(xhr) {
-                console.error('Error saving violation:', xhr);
-                if (xhr.responseJSON && xhr.responseJSON.errors) {
+                         success: function(response) {
+                 toastr.success(response.message || `تم حفظ المخالفة بنجاح للرخصة: ${licenseNumber}`);
+                 
+                 // إضافة المخالفة للجدول مباشرة بدلاً من إعادة التحميل
+                 const tbody = document.getElementById('violations-table-body');
+                 const violation = response.violation;
+                 
+                 // إزالة رسالة "لا توجد مخالفات" إذا كانت موجودة
+                 if (tbody.innerHTML.includes('لا توجد مخالفات')) {
+                     tbody.innerHTML = '';
+                 }
+                 
+                 const violationDate = violation.violation_date ? 
+                     new Date(violation.violation_date).toLocaleDateString('ar-SA') : '';
+                 const dueDate = violation.payment_due_date ? 
+                     new Date(violation.payment_due_date).toLocaleDateString('ar-SA') : '';
+                 
+                 const paymentStatusBadge = violation.payment_status == 1 ? 
+                     '<span class="badge bg-success"><i class="fas fa-check-circle me-1"></i>مسددة</span>' : 
+                     '<span class="badge bg-danger"><i class="fas fa-times-circle me-1"></i>غير مسددة</span>';
+
+                 const attachmentCell = violation.attachment_path ? 
+                     `<a href="/storage/${violation.attachment_path}" target="_blank" class="btn btn-sm btn-outline-primary">
+                         <i class="fas fa-file me-1"></i>عرض المرفق
+                     </a>` : 
+                     '<span class="text-muted">لا يوجد</span>';
+
+                 const newRow = document.createElement('tr');
+                 newRow.setAttribute('data-violation-id', violation.id);
+                 newRow.innerHTML = `
+                     <td>${tbody.children.length + 1}</td>
+                     <td><strong class="text-primary">${violation.violation_number || ''}</strong></td>
+                     <td>${violationDate}</td>
+                     <td><span class="badge bg-info">${violation.violation_type || ''}</span></td>
+                     <td>${violation.responsible_party || ''}</td>
+                     <td>${violation.violation_description || '-'}</td>
+                     <td><strong class="text-success">${formatCurrency(violation.violation_amount)}</strong></td>
+                     <td>${dueDate}</td>
+                     <td>${violation.payment_invoice_number || '-'}</td>
+                     <td>${paymentStatusBadge}</td>
+                     <td>${violation.notes || '-'}</td>
+                     <td>${attachmentCell}</td>
+                     <td>
+                         <div class="btn-group btn-group-sm">
+                             <button class="btn btn-outline-danger" onclick="deleteViolation(${violation.id})" title="حذف">
+                                 <i class="fas fa-trash"></i>
+                             </button>
+                         </div>
+                     </td>
+                 `;
+                 
+                 tbody.appendChild(newRow);
+                 
+                 // تحديث الإجمالي
+                 const currentTotal = parseFloat(document.getElementById('total-violations-amount').textContent.replace(/[^\d.-]/g, '') || 0);
+                 const newTotal = currentTotal + parseFloat(violation.violation_amount || 0);
+                 updateTotalAmount(newTotal);
+
+                 // إعادة تفعيل زر الحفظ
+                 const saveBtn = document.querySelector('button[onclick="saveViolationSection()"]');
+                 if (saveBtn) {
+                     saveBtn.disabled = false;
+                     saveBtn.innerHTML = '<i class="fas fa-save me-2"></i>حفظ المخالفة';
+                 }
+                 
+                 // مسح النموذج
+                 resetViolationForm();
+             },
+            error: function(xhr, status, error) {
+                console.error('Error saving violation:', xhr, status, error);
+                
+                // معالجة أخطاء مختلفة
+                if (status === 'timeout') {
+                    toastr.error('انتهت مهلة الاتصال. يرجى المحاولة مرة أخرى.');
+                } else if (xhr.responseJSON && xhr.responseJSON.errors) {
                     const errors = xhr.responseJSON.errors;
                     Object.values(errors).forEach(error => {
                         toastr.error(Array.isArray(error) ? error[0] : error);
                     });
                 } else {
-                    toastr.error(xhr.responseJSON?.message || 'حدث خطأ أثناء حفظ المخالفة');
+                    toastr.error(xhr.responseJSON?.message || 'حدث خطأ أثناء حفظ المخالفة. يرجى المحاولة مرة أخرى.');
                 }
             },
             complete: function() {
@@ -3805,13 +3874,14 @@ function deleteExtension(extensionId) {
                                                 <th>تاريخ الاستحقاق</th>
                                                 <th>رقم فاتورة السداد</th>
                                                 <th>حالة الدفع</th>
+                                                <th>الملاحظات</th>
                                                 <th>المرفقات</th>
                                                 <th>الإجراءات</th>
                                             </tr>
                                         </thead>
                                         <tbody id="violations-table-body">
                                             <tr>
-                                                <td colspan="12" class="text-center">لا توجد مخالفات</td>
+                                                <td colspan="13" class="text-center">لا توجد مخالفات</td>
                                             </tr>
                                         </tbody>
                                         <tfoot class="table-info">
@@ -3822,7 +3892,7 @@ function deleteExtension(extensionId) {
                                                 <td class="text-start" id="total-violations-amount">
                                                     <strong>0.00 ريال</strong>
                                                 </td>
-                                                <td colspan="5"></td>
+                                                <td colspan="6"></td>
                                             </tr>
                                         </tfoot>
                                     </table>

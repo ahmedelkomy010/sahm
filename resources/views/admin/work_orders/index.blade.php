@@ -2,115 +2,142 @@
 
 @push('scripts')
 <script>
-// تحديث العداد التنازلي لمدة التنفيذ (منفصل عن تاريخ الاعتماد)
+// تحديث العداد التصاعدي لمدة التنفيذ
 function updateCountdowns() {
     document.querySelectorAll('.countdown-badge').forEach(badge => {
         let workOrderId = badge.dataset.workOrder;
-        let initialDays = parseInt(badge.dataset.start) || 0;
+        let totalDays = parseInt(badge.dataset.start) || 0;
+        let approvalDate = badge.dataset.approvalDate;
         
-        // التحقق من حالة التنفيذ - إذا كانت "تم تسليم 155" أو أعلى يتوقف العداد
+        // التحقق من حالة التنفيذ
         const executionStatus = badge.dataset.executionStatus;
         if (executionStatus && parseInt(executionStatus) >= 2) {
             badge.className = 'badge countdown-badge bg-info';
             badge.innerHTML = '<i class="fas fa-check me-1"></i>تم التسليم';
-            
-            // إزالة البيانات المخزنة لأن العمل انتهى
-            localStorage.removeItem(`execution_countdown_${workOrderId}_last_update`);
-            localStorage.removeItem(`execution_countdown_${workOrderId}_days`);
-            localStorage.removeItem(`execution_countdown_${workOrderId}_start_date`);
             return;
         }
         
-        // العداد التنازلي ثم التصاعدي التلقائي
-        const lastUpdateKey = `execution_countdown_${workOrderId}_last_update`;
-        const daysKey = `execution_countdown_${workOrderId}_days`;
-        const startDateKey = `execution_countdown_${workOrderId}_start_date`;
-        const today = new Date().toDateString();
-        const lastUpdate = localStorage.getItem(lastUpdateKey);
-        const storedDays = localStorage.getItem(daysKey);
-        const startDate = localStorage.getItem(startDateKey);
+        // حساب الأيام المنقضية من تاريخ الاعتماد
+        const startDate = new Date(approvalDate);
+        const today = new Date();
+        startDate.setHours(0, 0, 0, 0);
+        today.setHours(0, 0, 0, 0);
+        
+        // حساب الفرق بالأيام
+        const daysSinceApproval = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
 
-        let currentDays = initialDays;
+        // حساب الأيام المنقضية والمتبقية
+        if (totalDays > 0) {
+            // تحديث شكل وحالة البادج
+            if (daysSinceApproval <= totalDays) {
+                // لسه في الوقت المحدد
+                const remainingDays = totalDays - daysSinceApproval;
+                badge.className = 'badge countdown-badge bg-success';
+                badge.innerHTML = `<i class="fas fa-clock me-1"></i>${remainingDays} يوم متبقي`;
+            } else {
+                // تجاوز الوقت المحدد
+                const overdueDays = daysSinceApproval - totalDays;
+                badge.className = 'badge countdown-badge bg-danger';
+                badge.innerHTML = `<i class="fas fa-exclamation-circle me-1"></i>متأخر ${overdueDays} يوم`;
+            }
+        } else {
+            badge.className = 'badge countdown-badge bg-secondary';
+            badge.innerHTML = '<i class="fas fa-minus-circle me-1"></i>غير محدد';
+        }
+    });
+    
+    // تحديث كل دقيقة
+    setInterval(updateCountdowns, 60000);
+});
 
-        // إذا لم يكن هناك تاريخ بداية محفوظ، احفظ اليوم كبداية
-        if (!startDate && initialDays > 0) {
-            localStorage.setItem(startDateKey, today);
-            localStorage.setItem(daysKey, initialDays.toString());
-            localStorage.setItem(lastUpdateKey, today);
-            currentDays = initialDays;
-        } else if (startDate) {
-            // حساب عدد الأيام التي مرت منذ بداية العداد
-            const daysPassed = Math.floor((new Date(today) - new Date(startDate)) / (1000 * 60 * 60 * 24));
-            currentDays = initialDays - daysPassed;
-            
-            // تحديث القيم المخزنة
-            localStorage.setItem(daysKey, currentDays.toString());
-            localStorage.setItem(lastUpdateKey, today);
-            badge.dataset.executionDays = currentDays;
+// تحديث العداد عند تحميل الصفحة
+document.addEventListener('DOMContentLoaded', function() {
+    updateCountdowns();
+});
+
+@push('styles')
+<style>
+.countdown-badge {
+    font-size: 0.85rem;
+    padding: 0.4rem 0.6rem;
+}
+
+.countdown-badge i {
+    font-size: 0.9rem;
+}
+</style>
+@endpush
+        
+
+
+
+@section('scripts')
+<script>
+// تحديث العداد التصاعدي لمدة التنفيذ
+function updateCountdowns() {
+    document.querySelectorAll('.countdown-badge').forEach(badge => {
+        let workOrderId = badge.dataset.workOrder;
+        let totalDays = parseInt(badge.dataset.start) || 0;
+        let approvalDate = badge.dataset.approvalDate;
+        
+        // التحقق من حالة التنفيذ
+        const executionStatus = badge.dataset.executionStatus;
+        if (executionStatus && parseInt(executionStatus) >= 2) {
+            badge.className = 'badge countdown-badge bg-info';
+            badge.innerHTML = '<i class="fas fa-check me-1"></i>تم التسليم';
+            return;
         }
         
-        // تحديث العرض
-        const clockIcon = '<i class="fas fa-clock me-1"></i>';
+        // حساب الأيام المنقضية من تاريخ الاعتماد
+        const startDate = new Date(approvalDate);
+        const today = new Date();
+        startDate.setHours(0, 0, 0, 0);
+        today.setHours(0, 0, 0, 0);
         
-        if (currentDays > 0) {
-            // أيام متبقية - لون أخضر
-            badge.className = 'badge countdown-badge bg-success';
-            badge.innerHTML = `${clockIcon}<span class="days-count">${currentDays}</span> متبقي`;
-        } else if (currentDays === 0) {
-            // اليوم الأخير - لون تحذيري
-            badge.className = 'badge countdown-badge bg-warning text-dark';
-            badge.innerHTML = `${clockIcon}<span class="days-count">0</span> انتهت `;
+        // حساب الفرق بالأيام
+        const daysSinceApproval = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
+
+        // حساب الأيام المنقضية والمتبقية
+        if (totalDays > 0) {
+            // تحديث شكل وحالة البادج
+            if (daysSinceApproval <= totalDays) {
+                // لسه في الوقت المحدد
+                const remainingDays = totalDays - daysSinceApproval;
+                badge.className = 'badge countdown-badge bg-success';
+                badge.innerHTML = `<i class="fas fa-clock me-1"></i>${remainingDays} يوم متبقي`;
+            } else {
+                // تجاوز الوقت المحدد
+                const overdueDays = daysSinceApproval - totalDays;
+                badge.className = 'badge countdown-badge bg-danger';
+                badge.innerHTML = `<i class="fas fa-exclamation-circle me-1"></i>متأخر ${overdueDays} يوم`;
+            }
         } else {
-            // أيام متأخرة - لون أحمر، يبدأ العد التصاعدي
-            const lateDays = Math.abs(currentDays);
-            badge.className = 'badge countdown-badge bg-danger';
-            badge.innerHTML = `${clockIcon}<span class="days-count">${lateDays}</span> متأخر`;
-            
-            // إظهار تنبيه للتأخير
-            showExpirationAlert(workOrderId, lateDays);
+            badge.className = 'badge countdown-badge bg-secondary';
+            badge.innerHTML = '<i class="fas fa-minus-circle me-1"></i>غير محدد';
         }
     });
 }
 
-// تحديث العداد كل دقيقة
-setInterval(updateCountdowns, 60000);
-
-// تحديث العداد كل ساعة للتحقق من تغيير اليوم
-setInterval(updateCountdowns, 3600000); // كل ساعة
-
-// تحديث أكثر تكراراً للحالات الحرجة (كل 10 ثوان)
-setInterval(() => {
-    // تحديث العدادات التي قريبة من الصفر أو متأخرة
-    document.querySelectorAll('.countdown-badge.bg-warning, .countdown-badge.bg-danger').forEach(badge => {
-        // إجراء تحديث سريع للحالات الحرجة
-        updateCountdowns();
-    });
-}, 10000); // كل 10 ثوان
-
 // تحديث العداد عند تحميل الصفحة
-document.addEventListener('DOMContentLoaded', updateCountdowns);
+document.addEventListener('DOMContentLoaded', function() {
+    updateCountdowns();
+});
 
-// تحديث العداد عند تركيز النافذة (عندما يعود المستخدم للصفحة)
-window.addEventListener('focus', updateCountdowns);
+// تحديث كل دقيقة
+setInterval(updateCountdowns, 60000);
+</script>
+@endsection
 
-// إظهار تنبيه عندما تنتهي المدة
-function showExpirationAlert(workOrderId, lateDays) {
-    const alertKey = `alert_shown_${workOrderId}_${lateDays}`;
+
+
+
+
+
+
     
-    // تجنب إظهار التنبيه أكثر من مرة لنفس اليوم
-    if (localStorage.getItem(alertKey)) {
-        return;
-    }
+
     
-    if (lateDays === 1) { // أول يوم تأخير
-        if (typeof Swal !== 'undefined') {
-            Swal.fire({
-                title: 'تنبيه: انتهت مدة التنفيذ!',
-                text: `أمر العمل رقم ${workOrderId} تأخر يوم واحد`,
-                icon: 'warning',
-                confirmButtonText: 'حسناً',
-                timer: 5000,
-                timerProgressBar: true
+
             });
             
             // حفظ أن التنبيه تم عرضه
@@ -675,19 +702,13 @@ function resetCountdown(workOrderId) {
                                                 @endphp
                                                 <div class="countdown-section">
                                                     <small class="text-muted d-block"></small>
-                                                    <span class="badge countdown-badge {{ $remainingDays > 0 ? 'bg-success' : ($remainingDays == 0 ? 'bg-warning text-dark' : 'bg-secondary') }}" 
-                                                          data-start="{{ $remainingDays }}" 
-                                                          data-execution-days="{{ $remainingDays }}"
+                                                    <span class="badge countdown-badge" 
+                                                          data-start="{{ $workOrder->manual_days }}" 
+                                                          data-approval-date="{{ $workOrder->approval_date }}"
                                                           data-work-order="{{ $workOrder->id }}"
                                                           data-execution-status="{{ $workOrder->execution_status }}">
                                                         <i class="fas fa-clock me-1"></i>
-                                                        @if($remainingDays > 0)
-                                                            <span class="days-count">{{ $remainingDays }}</span> متبقي
-                                                        @elseif($remainingDays == 0)
-                                                            <span class="days-count">0</span> انتهت اليوم
-                                                        @else
-                                                            <span class="days-count">-</span> غير محدد
-                                                        @endif
+                                                        <span class="days-count">-</span>
                                                     </span>
                                                 </div>
                                             </div>

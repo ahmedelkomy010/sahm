@@ -126,7 +126,7 @@
                                 </div>
 
                                 <div class="form-group mb-3">
-                                    <label for="manual_days" class="form-label fw-bold">مدة التنفيذ (بالأيام)</label>
+                                    <label for="manual_days" class="form-label fw-bold">مدة التنفيذ</label>
                                     <div class="input-group">
                                         <input type="number" id="manual_days" name="manual_days" class="form-control @error('manual_days') is-invalid @enderror" min="0" placeholder="أدخل عدد أيام التنفيذ" value="{{ old('manual_days') }}">
                                         <span class="input-group-text bg-light">
@@ -2996,11 +2996,12 @@ function addMaterialToTable(material) {
         }
     }
 
-    // تحديث عداد مدة التنفيذ (منفصل تماماً عن تاريخ الاعتماد)
+    // تحديث عداد مدة التنفيذ (يبدأ من تاريخ الاعتماد)
     function updateExecutionCountdown() {
         const manualDaysInput = document.getElementById('manual_days');
         const executionCountdownElement = document.getElementById('execution_countdown');
         const executionStatusSelect = document.getElementById('execution_status');
+        const approvalDateInput = document.getElementById('approval_date');
         
         // التحقق من حالة التنفيذ
         if (executionStatusSelect && executionStatusSelect.value === '2') {
@@ -3010,47 +3011,40 @@ function addMaterialToTable(material) {
         }
 
         let days = parseInt(manualDaysInput.value) || 0;
-
-        // العداد التنازلي التلقائي - كل يوم ينقص واحد
-        const lastUpdateKey = 'execution_countdown_last_update';
-        const daysKey = 'execution_countdown_days';
-        const today = new Date().toDateString();
-        const lastUpdate = localStorage.getItem(lastUpdateKey);
-        const storedDays = localStorage.getItem(daysKey);
-
-        // إذا كان هناك قيمة مخزنة وتغير اليوم، نقلل يوم واحد
-        if (storedDays && lastUpdate && lastUpdate !== today && days > 0) {
-            const daysPassed = Math.floor((new Date() - new Date(lastUpdate)) / (1000 * 60 * 60 * 24));
-            days = Math.max(0, days - daysPassed);
-            manualDaysInput.value = days;
+        
+        // التحقق من وجود تاريخ اعتماد
+        if (!approvalDateInput.value) {
+            executionCountdownElement.textContent = '';
+            executionCountdownElement.className = 'text-warning';
+            return;
         }
 
-        // حفظ القيم الحالية
-        if (days > 0) {
-            localStorage.setItem(lastUpdateKey, today);
-            localStorage.setItem(daysKey, days.toString());
-        }
+        // حساب الأيام المتبقية من تاريخ الاعتماد
+        const approvalDate = new Date(approvalDateInput.value);
+        const today = new Date();
+        approvalDate.setHours(0, 0, 0, 0);
+        today.setHours(0, 0, 0, 0);
 
-        // التحقق من عدد الأيام وعرض العداد
-        if (days > 0) {
+        // حساب الأيام المنقضية منذ تاريخ الاعتماد
+        const daysSinceApproval = Math.floor((today - approvalDate) / (1000 * 60 * 60 * 24));
+        
+        // حساب الأيام المتبقية
+        const remainingDays = Math.max(0, days - daysSinceApproval);
+
+        // عرض الأيام المتبقية
+        if (remainingDays > 0) {
             // أيام متبقية - لون أخضر
-            executionCountdownElement.textContent = days + ' متبقي';
+            executionCountdownElement.textContent = remainingDays + ' يوم متبقي';
             executionCountdownElement.className = 'text-success';
-        } else if (days === 0) {
+        } else {
             // انتهت المدة - لون أحمر
             executionCountdownElement.textContent = 'انتهت المدة';
             executionCountdownElement.className = 'text-danger';
-            // إزالة البيانات المخزنة لأن المدة انتهت
-            localStorage.removeItem(lastUpdateKey);
-            localStorage.removeItem(daysKey);
-        } else {
-            // قيمة سالبة - إعادة تعيين إلى 0
-            manualDaysInput.value = 0;
-            executionCountdownElement.textContent = 'انتهت المدة';
-            executionCountdownElement.className = 'text-danger';
-            // إزالة البيانات المخزنة
-            localStorage.removeItem(lastUpdateKey);
-            localStorage.removeItem(daysKey);
+        }
+
+        // عرض معلومات إضافية
+        if (daysSinceApproval > 0) {
+            executionCountdownElement.textContent += ` (منذ ${daysSinceApproval} يوم من الاعتماد)`;
         }
     }
 

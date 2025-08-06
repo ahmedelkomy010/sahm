@@ -66,21 +66,6 @@ use Illuminate\Support\Facades\Route;
             @endif
             
             <div class="min-h-screen bg-gray-100">
-                <!-- Project Context Info (optional) -->
-                @if(session('project'))
-                <div class="bg-blue-50 p-2 border-b border-blue-100">
-                    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                        <div class="flex items-center text-sm text-blue-700">
-                            <i class="fas fa-info-circle ml-2"></i>
-                            <span>أنت تعمل حاليًا على: <strong>مشروع {{ session('project') == 'riyadh' ? 'الرياض' : 'المدينة المنورة' }}</strong></span>
-                            <a href="{{ route('project.selection') }}" class="mr-auto text-blue-600 hover:text-blue-800 font-medium">
-                                <i class="fas fa-exchange-alt ml-1"></i>
-                                تغيير المشروع
-                            </a>
-                        </div>
-                    </div>
-                </div>
-                @endif
 
                 <!-- Page Heading -->
                 @isset($header)

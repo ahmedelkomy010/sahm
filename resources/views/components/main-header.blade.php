@@ -6,10 +6,10 @@
             <!-- Logo and App Name -->
             <div class="d-flex align-items-center">
                 <a href="{{ route('dashboard') }}" class="d-flex align-items-center text-decoration-none">
-                    <div class="logo-container bg-white rounded-circle p-1 me-2">
+                    <div class="logo-container bg-white rounded-circle p-1 me-2 shadow-sm">
                         <img class="logo-img" src="{{ asset('images/sahm.png') }}" alt="Sahm Logo">
                     </div>
-                    <span class="fs-5 fw-bold text-white d-none d-md-inline">شركة سهم بلدي للمقاولات</span>
+                    <span class="fs-5 fw-bold text-white d-none d-md-inline text-shadow">شركة سهم بلدي للمقاولات</span>
                 </a>
             </div>
             
@@ -25,7 +25,7 @@
                     @auth
                         @if(auth()->user()->is_admin)
                         <div class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle px-3 py-2 rounded {{ $isUsersPage ? 'active' : '' }}" href="#" role="button" data-bs-toggle="dropdown">
+                            <a class="nav-link dropdown-toggle px-3 py-2 rounded {{ request()->is('admin/users*') || request()->is('admin/settings*') || request()->is('admin/reports*') ? 'active' : '' }}" href="#" role="button" data-bs-toggle="dropdown">
                                 <i class="fas fa-cog me-1"></i>
                                 الإعدادات
                             </a>
@@ -164,7 +164,7 @@
                 <div class="accordion" id="settingsAccordion">
                     <div class="accordion-item border-0">
                         <h2 class="accordion-header">
-                            <button class="accordion-button collapsed nav-link text-dark {{ $isUsersPage ? 'active fw-bold text-primary' : '' }}" 
+                            <button class="accordion-button collapsed nav-link text-dark {{ request()->is('admin/users*') || request()->is('admin/settings*') || request()->is('admin/reports*') ? 'active fw-bold text-primary' : '' }}" 
                                     type="button" 
                                     data-bs-toggle="collapse" 
                                     data-bs-target="#settingsCollapse">
@@ -212,15 +212,56 @@
 
 <style>
 .main-header {
-    background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    background: linear-gradient(135deg, #1a56db 0%, #1e429f 100%);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     position: sticky;
     top: 0;
     z-index: 1030;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.text-shadow {
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.logo-container {
+    transition: transform 0.2s ease;
+}
+
+.logo-container:hover {
+    transform: scale(1.05);
 }
 
 .logo-img {
     height: 40px;
+    width: auto;
+}
+
+.nav-link {
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.nav-link:after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: 0;
+    left: 50%;
+    background-color: white;
+    transition: all 0.2s ease;
+    transform: translateX(-50%);
+}
+
+.nav-link:hover:after {
+    width: 100%;
+}
+
+.nav-link.active {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    border-radius: 6px;
+}
     width: auto;
 }
 
