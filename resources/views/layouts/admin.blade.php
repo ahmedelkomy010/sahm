@@ -24,6 +24,9 @@
     <!-- Toastr CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
     
+    <!-- تعطيل اشعارات الرخص CSS -->
+    <link rel="stylesheet" href="{{ asset('css/disable-license-notifications.css') }}">
+    
     <!-- Custom Toastr RTL CSS -->
     <link rel="stylesheet" href="{{ asset('css/toastr-rtl.css') }}">
     
@@ -41,6 +44,9 @@
     
     <!-- Toastr JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    
+    <!-- تعطيل اشعارات الرخص -->
+    <script src="{{ asset('js/disable-license-notifications.js') }}"></script>
     
     <style>
         body {
@@ -252,12 +258,12 @@
                 });
             }
             
-            // Configure Toastr options
+            // Configure Toastr options - تعطيل الاشعارات التلقائية
             if (typeof toastr !== 'undefined') {
                 toastr.options = {
                     "closeButton": true,
                     "debug": false,
-                    "newestOnTop": true,
+                    "newestOnTop": false,
                     "progressBar": false,
                     "positionClass": "toast-top-right",
                     "preventDuplicates": true,
@@ -272,6 +278,14 @@
                     "hideMethod": "none",
                     "rtl": true
                 };
+                
+                // تعطيل toastr بالكامل للرخص
+                if (window.location.pathname.includes('licenses')) {
+                    toastr.success = function() { return false; };
+                    toastr.error = function() { return false; };
+                    toastr.warning = function() { return false; };
+                    toastr.info = function() { return false; };
+                }
             }
         } catch (error) {
             console.error('خطأ في تهيئة الإعدادات:', error);

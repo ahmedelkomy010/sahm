@@ -1,0 +1,64 @@
+/**
+ * ملف CSS لإخفاء اشعارات toastr في صفحات الرخص
+ */
+
+/* إخفاء جميع اشعارات toastr في صفحات الرخص */
+body[data-page*="license"] #toast-container,
+body[data-page*="licenses"] #toast-container,
+.license-page #toast-container,
+.license-header ~ * #toast-container {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    height: 0 !important;
+    width: 0 !important;
+    overflow: hidden !important;
+}
+
+/* إخفاء اشعارات toastr بشكل عام في صفحات الرخص */
+body[class*="license"] .toast,
+body[class*="license"] .toastr,
+.license-container .toast,
+.license-container .toastr {
+    display: none !important;
+    visibility: hidden !important;
+}
+
+/* إخفاء أي عناصر تحتوي على نص الاشعارات المزعجة */
+.toast:contains("01024545454"),
+.toastr:contains("01024545454"),
+.toast:contains("emergency"),
+.toastr:contains("emergency"),
+.toast:contains("رحمة"),
+.toastr:contains("رحمة") {
+    display: none !important;
+    visibility: hidden !important;
+}
+
+/* منع ظهور أي اشعارات في المواقع المحددة */
+.toast-top-right,
+.toast-top-left,
+.toast-bottom-right,
+.toast-bottom-left,
+.toast-top-center,
+.toast-bottom-center {
+    display: none !important;
+    visibility: hidden !important;
+}
+
+/* إخفاء اشعارات bootstrap أيضاً */
+.alert.alert-success,
+.alert.alert-info,
+.alert.alert-warning,
+.alert.alert-danger {
+    display: none !important;
+    visibility: hidden !important;
+}
+
+/* استثناء للاشعارات المهمة فقط */
+.alert.important,
+.toast.important,
+.toastr.important {
+    display: block !important;
+    visibility: visible !important;
+}

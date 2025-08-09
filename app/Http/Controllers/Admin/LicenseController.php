@@ -2168,9 +2168,11 @@ class LicenseController extends Controller
             
             if (is_array($tableData) && count($tableData) > 0) {
                 $license->lab_table1_data = json_encode($tableData, JSON_UNESCAPED_UNICODE);
+                $license->save(); // حفظ البيانات في قاعدة البيانات
                 \Log::info('Lab table1 data saved', ['license_id' => $license->id, 'data_count' => count($tableData)]);
             } else {
                 $license->lab_table1_data = null;
+                $license->save(); // حفظ التغيير في قاعدة البيانات
                 \Log::info('Lab table1 data cleared', ['license_id' => $license->id]);
             }
             
@@ -2190,9 +2192,11 @@ class LicenseController extends Controller
             
             if (is_array($tableData) && count($tableData) > 0) {
                 $license->lab_table2_data = json_encode($tableData, JSON_UNESCAPED_UNICODE);
+                $license->save(); // حفظ البيانات في قاعدة البيانات
                 \Log::info('Lab table2 data saved', ['license_id' => $license->id, 'data_count' => count($tableData)]);
             } else {
                 $license->lab_table2_data = null;
+                $license->save(); // حفظ التغيير في قاعدة البيانات
                 \Log::info('Lab table2 data cleared', ['license_id' => $license->id]);
             }
             
@@ -2212,9 +2216,11 @@ class LicenseController extends Controller
             
             if (is_array($tableData) && count($tableData) > 0) {
                 $license->evac_table1_data = json_encode($tableData, JSON_UNESCAPED_UNICODE);
+                $license->save(); // حفظ البيانات في قاعدة البيانات
                 \Log::info('Evac table1 data saved', ['license_id' => $license->id, 'data_count' => count($tableData)]);
             } else {
                 $license->evac_table1_data = null;
+                $license->save(); // حفظ التغيير في قاعدة البيانات
                 \Log::info('Evac table1 data cleared', ['license_id' => $license->id]);
             }
             
@@ -2234,9 +2240,11 @@ class LicenseController extends Controller
             
             if (is_array($tableData) && count($tableData) > 0) {
                 $license->evac_table2_data = json_encode($tableData, JSON_UNESCAPED_UNICODE);
+                $license->save(); // حفظ البيانات في قاعدة البيانات
                 \Log::info('Evac table2 data saved', ['license_id' => $license->id, 'data_count' => count($tableData)]);
             } else {
                 $license->evac_table2_data = null;
+                $license->save(); // حفظ التغيير في قاعدة البيانات
                 \Log::info('Evac table2 data cleared', ['license_id' => $license->id]);
             }
             

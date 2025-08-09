@@ -10,6 +10,120 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
 
+<!-- إعدادات toastr الآمنة -->
+<script>
+$(document).ready(function() {
+    // إعدادات toastr الافتراضية الآمنة
+    if (typeof toastr !== 'undefined') {
+        toastr.options = {
+            "closeButton": false,
+            "debug": false,
+            "newestOnTop": false,
+            "progressBar": false,
+            "positionClass": "toast-top-right",
+            "preventDuplicates": false,
+            "onclick": null,
+            "showDuration": "300",
+            "hideDuration": "1000",
+            "timeOut": "5000",
+            "extendedTimeOut": "1000",
+            "showEasing": "swing",
+            "hideEasing": "linear",
+            "showMethod": "fadeIn",
+            "hideMethod": "fadeOut"
+        };
+    }
+});
+
+// حفظ مرجع للـ toastr الأصلي
+let originalToastr = null;
+
+// دالة آمنة لعرض رسائل toastr
+function safeToastr(type, message, title = '', options = {}) {
+    try {
+        // استخدام الـ toastr الأصلي وليس الـ wrapper
+        if (originalToastr && originalToastr[type]) {
+            // دمج الإعدادات الافتراضية مع الإعدادات المخصصة
+            const defaultOptions = {
+                "closeButton": false,
+                "debug": false,
+                "newestOnTop": false,
+                "progressBar": false,
+                "positionClass": "toast-top-right",
+                "preventDuplicates": false,
+                "onclick": null,
+                "showDuration": "300",
+                "hideDuration": "1000",
+                "timeOut": "5000",
+                "extendedTimeOut": "1000",
+                "showEasing": "swing",
+                "hideEasing": "linear",
+                "showMethod": "fadeIn",
+                "hideMethod": "fadeOut"
+            };
+            
+            const finalOptions = Object.assign({}, defaultOptions, options);
+            return originalToastr[type](message, title, finalOptions);
+        } else {
+            // fallback إلى console إذا toastr غير متاح
+            console.log(`${type.toUpperCase()}: ${title ? title + ' - ' : ''}${message}`);
+        }
+    } catch (error) {
+        console.error('خطأ في toastr:', error);
+        console.log(`${type.toUpperCase()}: ${title ? title + ' - ' : ''}${message}`);
+    }
+}
+
+// إنشاء wrapper آمن لجميع دوال toastr
+function createSafeToastrWrapper() {
+    if (typeof toastr !== 'undefined') {
+        // حفظ مرجع للـ toastr الأصلي
+        originalToastr = {
+            success: toastr.success.bind(toastr),
+            error: toastr.error.bind(toastr),
+            warning: toastr.warning.bind(toastr),
+            info: toastr.info.bind(toastr),
+            options: toastr.options,
+            clear: toastr.clear,
+            remove: toastr.remove
+        };
+        
+        // إعادة تعريف toastr بنسخة آمنة
+        window.toastr = {
+            success: function(message, title, options) {
+                return safeToastr('success', message, title, options);
+            },
+            error: function(message, title, options) {
+                return safeToastr('error', message, title, options);
+            },
+            warning: function(message, title, options) {
+                return safeToastr('warning', message, title, options);
+            },
+            info: function(message, title, options) {
+                return safeToastr('info', message, title, options);
+            },
+            options: originalToastr.options,
+            clear: originalToastr.clear,
+            remove: originalToastr.remove
+        };
+    }
+}
+
+// تشغيل الـ wrapper بعد تحميل الصفحة - معطل مؤقتاً
+$(document).ready(function() {
+    // تعطيل جميع اشعارات toastr في صفحة الرخص
+    if (typeof toastr !== 'undefined') {
+        toastr.success = function() { console.log('toastr.success disabled'); return false; };
+        toastr.error = function() { console.log('toastr.error disabled'); return false; };
+        toastr.warning = function() { console.log('toastr.warning disabled'); return false; };
+        toastr.info = function() { console.log('toastr.info disabled'); return false; };
+    }
+    
+    // تعطيل wrapper مؤقتاً
+    // setTimeout(createSafeToastrWrapper, 100);
+});
+</script>
+
 <!-- Custom Styles -->
 <style>
     .license-header {
@@ -627,10 +741,7 @@
             return;
         }
         
-        // تأكيد من المستخدم قبل إنشاء رخصة جديدة
-        if (!confirm('         بيانات شهادة التنسيق فيها. هل تريد المتابعة؟')) {
-            return;
-        }
+
         
         const formData = new FormData(document.getElementById('coordinationForm'));
         
@@ -658,28 +769,66 @@
             success: function(response) {
                 console.log('License created successfully:', response);
                 
-                // إعادة تفعيل الزر
+                // إعادة تفعيل الزر مع تأثير بصري للنجاح
                 if (saveBtn) {
                     saveBtn.disabled = false;
-                    saveBtn.innerHTML = '<i class="fas fa-plus-circle me-2"></i>   بشهادة التنسيق';
+                    saveBtn.innerHTML = '<i class="fas fa-check-circle me-2"></i>تم الحفظ بنجاح';
+                    saveBtn.classList.remove('btn-success');
+                    saveBtn.classList.add('btn-success');
+                    saveBtn.style.background = 'linear-gradient(45deg, #28a745, #20c997)';
+                    
+                    // إرجاع الزر لحالته الطبيعية بعد 3 ثواني
+                    setTimeout(() => {
+                        saveBtn.innerHTML = '<i class="fas fa-plus-circle me-2"></i>حفظ شهادة التنسيق';
+                        saveBtn.style.background = '';
+                    }, 3000);
                 }
                 
                 // رسالة نجاح مفصلة
-                toastr.success(`تم إنشاء رخصة جديدة برقم ${response.license_id} وحفظ شهادة التنسيق بنجاح!`);
+                toastr.success(`تم حفظ شهادة التنسيق بنجاح! رقم الرخصة: ${response.license_id}`, 'نجح الحفظ', {
+                    "closeButton": true,
+                    "debug": false,
+                    "newestOnTop": false,
+                    "progressBar": true,
+                    "positionClass": "toast-top-right",
+                    "preventDuplicates": false,
+                    "onclick": null,
+                    "showDuration": "300",
+                    "hideDuration": "1000",
+                    "timeOut": "5000",
+                    "extendedTimeOut": "1000",
+                    "showEasing": "swing",
+                    "hideEasing": "linear",
+                    "showMethod": "fadeIn",
+                    "hideMethod": "fadeOut"
+                });
                 
                 // تحديث جدول رخص الحفر
                 loadDigLicenses();
                 
-                // إعادة تعيين النموذج
-                document.getElementById('coordinationForm').reset();
+                // إعادة تعيين النموذج (اختياري - يمكن تعطيله إذا كان المستخدم يريد الاحتفاظ بالبيانات)
+                // document.getElementById('coordinationForm').reset();
                 
-                // التوجه لصفحة تفاصيل الرخصة الجديدة
+                // تحديث حالة النموذج لإظهار أنه تم الحفظ
+                const form = document.getElementById('coordinationForm');
+                const formFields = form.querySelectorAll('input, select, textarea');
+                formFields.forEach(field => {
+                    field.style.borderColor = '#28a745';
+                    field.style.boxShadow = '0 0 0 0.2rem rgba(40, 167, 69, 0.25)';
+                });
+                
+                // إزالة التأثير بعد 3 ثواني
                 setTimeout(() => {
-                    toastr.info('سيتم توجيهك لعرض تفاصيل الرخصة الجديدة...');
-                    setTimeout(() => {
-                        window.location.href = `/admin/licenses/${response.license_id}`;
-                    }, 1000);
-                }, 1500);
+                    formFields.forEach(field => {
+                        field.style.borderColor = '';
+                        field.style.boxShadow = '';
+                    });
+                }, 3000);
+                
+                // إظهار رسالة نجاح إضافية
+                setTimeout(() => {
+                    toastr.success('تم حفظ شهادة التنسيق بنجاح! يمكنك الآن المتابعة للأقسام الأخرى.', 'تم الحفظ بنجاح');
+                }, 1000);
             },
             error: function(xhr) {
                 console.error('Error saving coordination:', xhr);
@@ -1126,11 +1275,11 @@
       // دالة للحصول على badge نوع الرخصة
     function getLicenseTypeBadge(type) {
         switch(type) {
-            case 'emergency':
+            case 'طوارئ':
                 return '<span class="badge bg-danger">طوارئ</span>';
-            case 'project':
+            case 'مشروع':
                 return '<span class="badge bg-info">مشروع</span>';
-            case 'normal':
+            case 'عادي':
                 return '<span class="badge bg-success">عادي</span>';
             default:
                 return '<span class="badge bg-secondary">غير محدد</span>';
@@ -1247,7 +1396,7 @@
                 const failedTests = testsArray.filter(test => test.result === 'fail').length;
                 const totalAmount = testsArray.reduce((sum, test) => sum + test.total, 0);
                 
-                toastr.success(`تم حفظ ${totalTests} اختبار بنجاح في ${selectedLicenseName}`);
+                // toastr.success(`تم حفظ ${totalTests} اختبار بنجاح في ${selectedLicenseName}`); // معطل
                 
                 // إعادة تفعيل الزر
                 if (saveBtn) {
@@ -1268,11 +1417,11 @@
                         statusMessage = 'تم حفظ الاختبارات بدون تحديد النتائج';
                     }
                     
-                    toastr.info(`${statusMessage}<br>إجمالي المبلغ: ${totalAmount.toFixed(2)} ريال<br>البيانات متاحة في تفاصيل الرخصة`, 'ملخص الاختبارات', {
-                        timeOut: 8000,
-                        extendedTimeOut: 3000,
-                        allowHtml: true
-                    });
+                    // toastr.info(`${statusMessage}<br>إجمالي المبلغ: ${totalAmount.toFixed(2)} ريال<br>البيانات متاحة في تفاصيل الرخصة`, 'ملخص الاختبارات', {
+                    //     timeOut: 8000,
+                    //     extendedTimeOut: 3000,
+                    //     allowHtml: true
+                    // }); // معطل
                 }, 1000);
                 
                 // إضافة ملخص مرئي
@@ -1674,7 +1823,24 @@
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             },
                          success: function(response) {
-                 toastr.success(response.message || `تم حفظ المخالفة بنجاح للرخصة: ${licenseNumber}`);
+                 // رسالة نجاح محسنة
+                 toastr.success(response.message || `تم حفظ المخالفة بنجاح للرخصة: ${licenseNumber}`, 'نجح الحفظ', {
+                     "closeButton": true,
+                     "debug": false,
+                     "newestOnTop": false,
+                     "progressBar": true,
+                     "positionClass": "toast-top-right",
+                     "preventDuplicates": false,
+                     "onclick": null,
+                     "showDuration": "300",
+                     "hideDuration": "1000",
+                     "timeOut": "5000",
+                     "extendedTimeOut": "1000",
+                     "showEasing": "swing",
+                     "hideEasing": "linear",
+                     "showMethod": "fadeIn",
+                     "hideMethod": "fadeOut"
+                 });
                  
                  // إضافة المخالفة للجدول مباشرة بدلاً من إعادة التحميل
                  const tbody = document.getElementById('violations-table-body');
@@ -1731,15 +1897,49 @@
                  const newTotal = currentTotal + parseFloat(violation.violation_amount || 0);
                  updateTotalAmount(newTotal);
 
-                 // إعادة تفعيل زر الحفظ
+                 // إعادة تفعيل زر الحفظ مع تأثير بصري للنجاح
                  const saveBtn = document.querySelector('button[onclick="saveViolationSection()"]');
                  if (saveBtn) {
                      saveBtn.disabled = false;
-                     saveBtn.innerHTML = '<i class="fas fa-save me-2"></i>حفظ المخالفة';
+                     saveBtn.innerHTML = '<i class="fas fa-check-circle me-2"></i>تم الحفظ بنجاح';
+                     saveBtn.classList.remove('btn-danger');
+                     saveBtn.classList.add('btn-success');
+                     saveBtn.style.background = 'linear-gradient(45deg, #28a745, #20c997)';
+                     
+                     // إرجاع الزر لحالته الطبيعية بعد 3 ثواني
+                     setTimeout(() => {
+                         saveBtn.innerHTML = '<i class="fas fa-save me-2"></i>حفظ المخالفة';
+                         saveBtn.classList.remove('btn-success');
+                         saveBtn.classList.add('btn-danger');
+                         saveBtn.style.background = '';
+                     }, 3000);
                  }
                  
-                 // مسح النموذج
-                 resetViolationForm();
+                 // تحديث حالة النموذج لإظهار أنه تم الحفظ (بدون إعادة تعيين)
+                 const form = document.getElementById('violationForm');
+                 const formFields = form.querySelectorAll('input, select, textarea');
+                 formFields.forEach(field => {
+                     if (field.type !== 'file') { // لا نغير حقول الملفات
+                         field.style.borderColor = '#28a745';
+                         field.style.boxShadow = '0 0 0 0.2rem rgba(40, 167, 69, 0.25)';
+                     }
+                 });
+                 
+                 // إزالة التأثير بعد 3 ثواني
+                 setTimeout(() => {
+                     formFields.forEach(field => {
+                         field.style.borderColor = '';
+                         field.style.boxShadow = '';
+                     });
+                 }, 3000);
+                 
+                 // إظهار رسالة إضافية
+                 setTimeout(() => {
+                     toastr.success('تم حفظ المخالفة بنجاح! يمكنك الآن إضافة مخالفة أخرى أو المتابعة للأقسام الأخرى.', 'تم الحفظ بنجاح');
+                 }, 1000);
+                 
+                 // عدم مسح النموذج - الاحتفاظ بالبيانات للمستخدم
+                 // resetViolationForm();
              },
             error: function(xhr, status, error) {
                 console.error('Error saving violation:', xhr, status, error);
@@ -1952,12 +2152,34 @@ function loadLicensesForSelectors() {
                         if (selector) {
                             selector.value = licenseId;
                             // تشغيل دالة التحديد
-                            if (selector.id === 'lab-license-selector') selectLabLicense();
+                            if (selector.id === 'lab-license-selector') {
+                                selectLabLicense();
+                                // تأكد من تعيين القيمة في الحقل المخفي
+                                const labLicenseIdField = document.getElementById('lab-license-id');
+                                if (labLicenseIdField) {
+                                    labLicenseIdField.value = licenseId;
+                                }
+                                toastr.success(`تم اختيار الرخصة الوحيدة تلقائياً: ${licenseText}`);
+                            }
                             else if (selector.id === 'evacuation-license-selector') selectEvacuationLicense();
                             else if (selector.id === 'violation-license-selector') selectViolationLicense();
                             else if (selector.id === 'extension-license-selector') selectExtensionLicense();
                         }
                     });
+                }
+                // إذا كان هناك أكثر من رخصة، اختار الأحدث في قسم المختبر فقط
+                else if (response.licenses.length > 1 && labSelector) {
+                    const latestLicense = response.licenses[0]; // الرخص مرتبة بالتاريخ desc
+                    const licenseId = latestLicense.id;
+                    const licenseText = `رخصة #${latestLicense.license_number}`;
+                    
+                    labSelector.value = licenseId;
+                    selectLabLicense();
+                    const labLicenseIdField = document.getElementById('lab-license-id');
+                    if (labLicenseIdField) {
+                        labLicenseIdField.value = licenseId;
+                    }
+                    toastr.info(`تم اختيار أحدث رخصة تلقائياً: ${licenseText}`, 'اختيار تلقائي');
                 }
             }
         },
@@ -1974,11 +2196,26 @@ function selectLabLicense() {
     const infoDiv = document.getElementById('selected-lab-license-info');
     const displayElement = document.getElementById('lab-license-display');
     
-    if (selector.value) {
-        licenseIdField.value = selector.value;
+    console.log('selectLabLicense called. Selector value:', selector ? selector.value : 'selector not found');
+    
+    if (selector && selector.value) {
+        if (licenseIdField) {
+            licenseIdField.value = selector.value;
+            console.log('License ID set to:', licenseIdField.value);
+        } else {
+            console.error('lab-license-id field not found!');
+        }
+        
         const selectedText = selector.options[selector.selectedIndex].text;
-        displayElement.textContent = selectedText;
-        infoDiv.style.display = 'block';
+        if (displayElement) {
+            displayElement.textContent = selectedText;
+        }
+        if (infoDiv) {
+            infoDiv.style.display = 'block';
+        }
+        
+        // تفعيل أزرار الحفظ للمختبر
+        enableLabButtons();
         
         // إعادة تعيين الاختبارات والتحميل من الخادم
         testsArray = [];
@@ -1988,9 +2225,19 @@ function selectLabLicense() {
         
         // تحميل البيانات المحفوظة من الخادم للرخصة المختارة
         loadLabTestsFromServer(selector.value);
+        
+        // إظهار رسالة نجاح
+        toastr.success(`تم اختيار الرخصة: ${selectedText}`);
     } else {
-        licenseIdField.value = '';
-        infoDiv.style.display = 'none';
+        if (licenseIdField) {
+            licenseIdField.value = '';
+        }
+        if (infoDiv) {
+            infoDiv.style.display = 'none';
+        }
+        
+        // تعطيل أزرار الحفظ للمختبر
+        disableLabButtons();
         
         // مسح البيانات عند عدم اختيار رخصة
         testsArray = [];
@@ -1998,6 +2245,54 @@ function selectLabLicense() {
         updateTestsTable();
         updateTestsSummary();
     }
+}
+
+// دالة تفعيل أزرار المختبر
+function enableLabButtons() {
+    const buttons = [
+        'save-lab-btn',
+        'add-test-btn'
+    ];
+    
+    // تفعيل الأزرار باستخدام onclick attribute
+    const saveLabDetailsBtn = document.querySelector('button[onclick="saveAllLabDetails()"]');
+    if (saveLabDetailsBtn) {
+        saveLabDetailsBtn.disabled = false;
+        saveLabDetailsBtn.classList.remove('btn-secondary');
+        saveLabDetailsBtn.classList.add('btn-primary');
+    }
+    
+    buttons.forEach(buttonId => {
+        const button = document.getElementById(buttonId);
+        if (button) {
+            button.disabled = false;
+            button.classList.remove('btn-secondary');
+        }
+    });
+}
+
+// دالة تعطيل أزرار المختبر
+function disableLabButtons() {
+    const buttons = [
+        'save-lab-btn',
+        'add-test-btn'
+    ];
+    
+    // تعطيل الأزرار باستخدام onclick attribute
+    const saveLabDetailsBtn = document.querySelector('button[onclick="saveAllLabDetails()"]');
+    if (saveLabDetailsBtn) {
+        saveLabDetailsBtn.disabled = true;
+        saveLabDetailsBtn.classList.remove('btn-primary');
+        saveLabDetailsBtn.classList.add('btn-secondary');
+    }
+    
+    buttons.forEach(buttonId => {
+        const button = document.getElementById(buttonId);
+        if (button) {
+            button.disabled = true;
+            button.classList.add('btn-secondary');
+        }
+    });
 }
 
 // دالة اختيار الرخصة للإخلاءات - محسنة مع معالجة الأخطاء
@@ -2045,9 +2340,7 @@ function selectEvacuationLicense() {
             loadEvacuationDataForLicense(selector.value);
             
             // إظهار رسالة نجاح
-            if (typeof toastr !== 'undefined') {
-                toastr.success(`تم اختيار الرخصة: ${selectedText}`);
-            }
+            toastr.success(`تم اختيار الرخصة: ${selectedText}`);
         } else {
             // تعطيل النموذج
             elements.licenseIdField.value = '';
@@ -2072,12 +2365,10 @@ function selectEvacuationLicense() {
                 </tr>
             `;
         }
-    } catch (error) {
-        console.error('حدث خطأ أثناء تحديد الرخصة:', error);
-        if (typeof toastr !== 'undefined') {
+            } catch (error) {
+            console.error('حدث خطأ أثناء تحديد الرخصة:', error);
             toastr.error('حدث خطأ أثناء تحديد الرخصة');
         }
-    }
 }
 
 // دالة تفعيل أزرار الإخلاءات
@@ -3620,6 +3911,12 @@ function deleteExtension(extensionId) {
                                         <button type="button" class="btn btn-outline-light" onclick="saveAllLabDetails()">
                                             <i class="fas fa-save me-1"></i>حفظ البيانات
                                         </button>
+                                        <button type="button" class="btn btn-outline-info btn-sm" onclick="checkLicenseSelection()">
+                                            <i class="fas fa-info-circle me-1"></i>فحص الرخصة
+                                        </button>
+                                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="reloadLicenses()">
+                                            <i class="fas fa-sync-alt me-1"></i>تحديث الرخص
+                                        </button>
                                         
                                     </div>
                                     <h5 class="mb-0 fw-bold">
@@ -4030,28 +4327,72 @@ function saveDigLicenseSection() {
                 successMessage += ` مع ${uploadedFiles} مرفق`;
             }
             
-            toastr.success(successMessage);
+            // رسالة نجاح محسنة
+            toastr.success(successMessage, 'نجح الحفظ', {
+                "closeButton": true,
+                "debug": false,
+                "newestOnTop": false,
+                "progressBar": true,
+                "positionClass": "toast-top-right",
+                "preventDuplicates": false,
+                "onclick": null,
+                "showDuration": "300",
+                "hideDuration": "1000",
+                "timeOut": "5000",
+                "extendedTimeOut": "1000",
+                "showEasing": "swing",
+                "hideEasing": "linear",
+                "showMethod": "fadeIn",
+                "hideMethod": "fadeOut"
+            });
             
-            // إعادة تعيين النموذج
-            form.reset();
+            // إعادة تفعيل الزر مع تأثير بصري للنجاح
+            if (saveBtn) {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = '<i class="fas fa-check-circle me-2"></i>تم الحفظ بنجاح';
+                saveBtn.classList.remove('btn-primary');
+                saveBtn.classList.add('btn-success');
+                saveBtn.style.background = 'linear-gradient(45deg, #28a745, #20c997)';
+                
+                // إرجاع الزر لحالته الطبيعية بعد 3 ثواني
+                setTimeout(() => {
+                    saveBtn.innerHTML = originalText;
+                    saveBtn.classList.remove('btn-success');
+                    saveBtn.classList.add('btn-primary');
+                    saveBtn.style.background = '';
+                }, 3000);
+            }
             
-            // إعادة تعيين حقل عدد الأيام
-            document.getElementById('license_days').value = '';
+            // تحديث حالة النموذج لإظهار أنه تم الحفظ (بدون إعادة تعيين)
+            const formFields = form.querySelectorAll('input, select, textarea');
+            formFields.forEach(field => {
+                if (field.type !== 'file') { // لا نغير حقول الملفات
+                    field.style.borderColor = '#28a745';
+                    field.style.boxShadow = '0 0 0 0.2rem rgba(40, 167, 69, 0.25)';
+                }
+            });
+            
+            // إزالة التأثير بعد 3 ثواني
+            setTimeout(() => {
+                formFields.forEach(field => {
+                    field.style.borderColor = '';
+                    field.style.boxShadow = '';
+                });
+            }, 3000);
             
             // تحديث جدول رخص الحفر
             loadDigLicenses();
             
-            // إعادة تفعيل الزر
-            if (saveBtn) {
-                saveBtn.disabled = false;
-                saveBtn.innerHTML = originalText;
-            }
+            // إظهار رسالة إضافية
+            setTimeout(() => {
+                toastr.success('تم حفظ رخصة الحفر بنجاح! يمكنك الآن المتابعة أو إضافة رخصة أخرى.', 'تم الحفظ بنجاح');
+            }, 1000);
 
-            // إغلاق النافذة
-            const modal = bootstrap.Modal.getInstance(document.getElementById('addLicenseModal'));
-            if (modal) {
-                modal.hide();
-            }
+            // عدم إغلاق النافذة - الاحتفاظ بها مفتوحة للمستخدم
+            // const modal = bootstrap.Modal.getInstance(document.getElementById('addLicenseModal'));
+            // if (modal) {
+            //     modal.hide();
+            // }
         },
         error: function(xhr) {
             console.error('Error saving dig license:', xhr);
@@ -4247,12 +4588,109 @@ function deleteLabDetailsRow(button) {
     }
 }
 
+// دالة فحص حالة اختيار الرخصة
+function checkLicenseSelection() {
+    const licenseIdField = document.getElementById('lab-license-id');
+    const licenseSelector = document.getElementById('lab-license-selector');
+    
+    let message = 'حالة اختيار الرخصة:\n\n';
+    
+    if (licenseIdField) {
+        message += `• الحقل المخفي (lab-license-id): "${licenseIdField.value || 'فارغ'}"\n`;
+    } else {
+        message += '• الحقل المخفي (lab-license-id): غير موجود!\n';
+    }
+    
+    if (licenseSelector) {
+        message += `• القائمة المنسدلة (lab-license-selector): "${licenseSelector.value || 'فارغ'}"\n`;
+        message += `• عدد الرخص في القائمة: ${licenseSelector.options.length - 1}\n`;
+        if (licenseSelector.selectedIndex > 0) {
+            message += `• النص المختار: "${licenseSelector.options[licenseSelector.selectedIndex].text}"\n`;
+        }
+    } else {
+        message += '• القائمة المنسدلة (lab-license-selector): غير موجودة!\n';
+    }
+    
+    // عرض المعلومات
+    alert(message);
+    console.log(message);
+    
+    // إصلاح تلقائي للمشكلة
+    if (licenseSelector && licenseSelector.value && licenseIdField && !licenseIdField.value) {
+        licenseIdField.value = licenseSelector.value;
+        toastr.success('تم إصلاح مشكلة اختيار الرخصة تلقائياً');
+    }
+    // إذا كان كلاهما فارغ بس في رخص متاحة، اختار الأولى
+    else if (licenseSelector && !licenseSelector.value && licenseSelector.options.length > 1) {
+        // اختيار أول رخصة متاحة (تخطي الخيار الافتراضي)
+        licenseSelector.selectedIndex = 1;
+        selectLabLicense();
+        toastr.info('تم اختيار أول رخصة متاحة تلقائياً');
+    }
+    // إذا مكانش في رخص متاحة خالص
+    else if (licenseSelector && licenseSelector.options.length <= 1) {
+        toastr.warning('لا توجد رخص متاحة لهذا أمر العمل. يجب إنشاء رخصة أولاً من تبويب الرخص.');
+    }
+}
+
+// دالة إعادة تحميل الرخص
+function reloadLicenses() {
+    toastr.info('جاري تحديث قائمة الرخص...');
+    loadLicensesForSelectors();
+    
+    // إعادة تحميل بعد ثانية للتأكد
+    setTimeout(() => {
+        const licenseSelector = document.getElementById('lab-license-selector');
+        if (licenseSelector && licenseSelector.options.length > 1) {
+            toastr.success(`تم تحديث قائمة الرخص - متاح ${licenseSelector.options.length - 1} رخصة`);
+        } else {
+            toastr.warning('لا توجد رخص متاحة لهذا أمر العمل');
+        }
+    }, 1000);
+}
+
 function saveAllLabDetails() {
-    // استخدام الرخصة المرتبطة بأمر العمل
-    const licenseId = @if($workOrder->license) {{ $workOrder->license->id }} @else null @endif;
+    // استخدام الرخصة المختارة من المستخدم في قسم المختبر
+    const licenseIdField = document.getElementById('lab-license-id');
+    const licenseSelector = document.getElementById('lab-license-selector');
+    
+    // تحقق محسن من وجود الرخصة
+    let licenseId = null;
+    
+    if (licenseIdField && licenseIdField.value) {
+        licenseId = licenseIdField.value;
+    } else if (licenseSelector && licenseSelector.value) {
+        // إذا كانت القيمة موجودة في القائمة المنسدلة بس مش في الحقل المخفي
+        licenseId = licenseSelector.value;
+        if (licenseIdField) {
+            licenseIdField.value = licenseId; // تعيين القيمة
+        }
+    }
     
     if (!licenseId) {
-        return;
+        // محاولة إصلاح المشكلة تلقائياً قبل الرفض
+        if (licenseSelector && licenseSelector.value) {
+            licenseId = licenseSelector.value;
+            if (licenseIdField) {
+                licenseIdField.value = licenseId;
+            }
+            toastr.success('تم إصلاح مشكلة اختيار الرخصة وسيتم المتابعة');
+        } else if (licenseSelector && licenseSelector.options.length > 1) {
+            // اختيار أول رخصة متاحة
+            licenseSelector.selectedIndex = 1;
+            licenseId = licenseSelector.value;
+            if (licenseIdField) {
+                licenseIdField.value = licenseId;
+            }
+            selectLabLicense(); // تشغيل دالة الاختيار
+            toastr.success('تم اختيار أول رخصة متاحة تلقائياً وسيتم المتابعة');
+        } else {
+            toastr.error('لا توجد رخص متاحة لهذا أمر العمل. يجب إنشاء رخصة أولاً من تبويب الرخص.');
+            console.log('Debug: licenseIdField value:', licenseIdField ? licenseIdField.value : 'field not found');
+            console.log('Debug: licenseSelector value:', licenseSelector ? licenseSelector.value : 'selector not found');
+            console.log('Debug: available options:', licenseSelector ? licenseSelector.options.length : 'selector not found');
+            return;
+        }
     }
 
     const labTable = document.getElementById('labDetailsTable');
@@ -4280,19 +4718,21 @@ function saveAllLabDetails() {
             }
         });
         
-        // التحقق من وجود بيانات أساسية مطلوبة
-        if (rowData.year || rowData.work_type || rowData.depth || rowData.soil_compaction || rowData.mc1rc2 || rowData.asphalt_compaction) {
+        // التحقق من وجود بيانات أساسية مطلوبة (على الأقل حقل واحد مملوء)
+        const hasData = Object.keys(rowData).length > 0;
+        if (hasData) {
             labDetailsData.push(rowData);
             hasValidData = true;
         }
     });
     
     if (!hasValidData) {
+        toastr.warning('لا توجد بيانات صحيحة في جدول التفاصيل الفنية لحفظها');
         return;
     }
     
     // الحصول على اسم الرخصة المختارة
-    const selectedLicenseName = '@if($workOrder->license) {{ $workOrder->license->license_number }} @else "غير محدد" @endif';
+    const selectedLicenseName = licenseSelector.options[licenseSelector.selectedIndex].text;
     
     // إظهار رسالة تأكيد
     if (!confirm(`هل أنت متأكد من حفظ التفاصيل الفنية في الرخصة ${selectedLicenseName}؟`)) {
@@ -4314,14 +4754,41 @@ function saveAllLabDetails() {
         },
         data: {
             license_id: licenseId,
-            section: 'lab_table2',
+            section_type: 'lab_table2',
             data: labDetailsData
         },
         success: function(response) {
             if (response.success) {
                 console.log('Lab Details saved successfully:', response);
+                
+                // رسالة نجاح مفصلة
+                toastr.success(`تم حفظ ${labDetailsData.length} سجل من التفاصيل الفنية بنجاح في ${selectedLicenseName}`, 'نجح الحفظ', {
+                    "closeButton": true,
+                    "progressBar": true,
+                    "timeOut": "5000"
+                });
+                
+                // إعادة تفعيل الزر مع تأثير بصري للنجاح
+                saveButton.disabled = false;
+                saveButton.innerHTML = '<i class="fas fa-check-circle me-2"></i>تم الحفظ بنجاح';
+                saveButton.classList.remove('btn-primary');
+                saveButton.classList.add('btn-success');
+                
+                // إرجاع الزر لحالته الطبيعية بعد 3 ثواني
+                setTimeout(() => {
+                    saveButton.innerHTML = '<i class="fas fa-save me-2"></i>حفظ البيانات';
+                    saveButton.classList.remove('btn-success');
+                    saveButton.classList.add('btn-outline-light');
+                }, 3000);
+                
+                // إظهار رسالة إضافية
+                setTimeout(() => {
+                    toastr.success('تم حفظ التفاصيل الفنية بنجاح! البيانات متاحة الآن في تفاصيل الرخصة.', 'تم الحفظ بنجاح');
+                }, 1000);
+                
             } else {
                 console.error('Error saving Lab Details:', response.message || 'Unknown error');
+                toastr.error(response.message || 'حدث خطأ غير معروف أثناء حفظ التفاصيل الفنية');
             }
         },
         error: function(xhr) {
@@ -4329,16 +4796,20 @@ function saveAllLabDetails() {
             const errors = xhr.responseJSON?.errors || {};
             if (Object.keys(errors).length > 0) {
                 Object.values(errors).forEach(error => {
-                    console.error(Array.isArray(error) ? error[0] : error);
+                    toastr.error(Array.isArray(error) ? error[0] : error);
                 });
             } else {
-                console.error('Unknown error saving Lab Details');
+                toastr.error('حدث خطأ أثناء حفظ التفاصيل الفنية. يرجى المحاولة مرة أخرى.');
             }
         }
     }).always(function() {
-        // إعادة تعيين زر الحفظ
-        saveButton.innerHTML = originalText;
-        saveButton.disabled = false;
+        // إعادة تعيين زر الحفظ فقط في حالة الخطأ
+        // في حالة النجاح، الزر يتم تحديثه في success callback
+        if (!saveButton.classList.contains('btn-success')) {
+            // الزر ليس في حالة نجاح، إذن هناك خطأ
+            saveButton.innerHTML = originalText;
+            saveButton.disabled = false;
+        }
     });
 }
 
@@ -4392,12 +4863,16 @@ function deleteEvacStreetRow(button) {
 }
 
 function saveAllEvacStreets() {
-    // استخدام الرخصة المرتبطة بأمر العمل
-    const licenseId = @if($workOrder->license) {{ $workOrder->license->id }} @else null @endif;
+    // استخدام الرخصة المختارة من المستخدم في قسم الإخلاءات
+    const licenseIdField = document.getElementById('evacuation-license-id');
+    const licenseSelector = document.getElementById('evacuation-license-selector');
     
-    if (!licenseId) {
+    if (!licenseIdField || !licenseIdField.value) {
+        toastr.warning('يجب اختيار رخصة أولاً قبل حفظ جدول الفسح');
         return;
     }
+    
+    const licenseId = licenseIdField.value;
 
     // تجميع بيانات الجدول
     const rows = document.getElementById('evacStreetTable').getElementsByTagName('tbody')[0].rows;
@@ -4429,11 +4904,12 @@ function saveAllEvacStreets() {
     }
 
     if (data.length === 0) {
+        toastr.warning('لا توجد بيانات في جدول الفسح لحفظها');
         return;
     }
 
     // الحصول على اسم الرخصة المختارة
-    const selectedLicenseName = '@if($workOrder->license) {{ $workOrder->license->license_number }} @else "غير محدد" @endif';
+    const selectedLicenseName = licenseSelector.options[licenseSelector.selectedIndex].text;
     
     // إظهار رسالة تأكيد
     if (!confirm(`هل أنت متأكد من حفظ جميع الفسح في ${selectedLicenseName}؟`)) {
@@ -4454,16 +4930,28 @@ function saveAllEvacStreets() {
         },
         success: function(response) {
             console.log('Evac streets saved successfully:', response);
+            
+            // رسالة نجاح مفصلة
+            toastr.success(`تم حفظ ${data.length} سجل من فسح الإخلاءات بنجاح في ${selectedLicenseName}`, 'نجح الحفظ', {
+                "closeButton": true,
+                "progressBar": true,
+                "timeOut": "5000"
+            });
+            
+            // إظهار رسالة إضافية
+            setTimeout(() => {
+                toastr.success('تم حفظ بيانات فسح الإخلاءات بنجاح! البيانات متاحة الآن في تفاصيل الرخصة.', 'تم الحفظ بنجاح');
+            }, 1000);
         },
         error: function(xhr) {
             console.error('Error saving Evac streets:', xhr);
             const errors = xhr.responseJSON?.errors || {};
             if (Object.keys(errors).length > 0) {
                 Object.values(errors).forEach(error => {
-                    console.error(error[0]);
+                    toastr.error(Array.isArray(error) ? error[0] : error);
                 });
             } else {
-                console.error('Unknown error saving Evac streets');
+                toastr.error('حدث خطأ أثناء حفظ فسح الإخلاءات. يرجى المحاولة مرة أخرى.');
             }
         }
     });
@@ -5659,9 +6147,9 @@ document.addEventListener('DOMContentLoaded', function() {
                             <label class="form-label fw-bold">نوع الرخصة</label>
                             <select class="form-select" name="license_type" required>
                                 <option value="">اختر نوع الرخصة</option>
-                                <option value="emergency">طوارئ</option>
-                                <option value="project">مشروع</option>
-                                <option value="normal">عادي</option>
+                                <option value="طوارئ">طوارئ</option>
+                                <option value="مشروع">مشروع</option>
+                                <option value="عادي">عادي</option>
                             </select>
                         </div>
                         <div class="col-md-3">

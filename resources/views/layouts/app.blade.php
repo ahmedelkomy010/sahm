@@ -30,6 +30,9 @@ use Illuminate\Support\Facades\Route;
         
         <!-- Toastr CSS -->
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+        
+        <!-- تعطيل اشعارات الرخص CSS -->
+        <link rel="stylesheet" href="{{ asset('css/disable-license-notifications.css') }}">
 
         <!-- SweetAlert2 CSS -->
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
@@ -110,6 +113,9 @@ use Illuminate\Support\Facades\Route;
         
         <!-- Toastr JS -->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+        
+        <!-- تعطيل اشعارات الرخص -->
+        <script src="{{ asset('js/disable-license-notifications.js') }}"></script>
         <script>
             lightbox.option({
                 'resizeDuration': 200,
@@ -126,14 +132,14 @@ use Illuminate\Support\Facades\Route;
                 }
             });
             
-            // Configure Toastr
+            // Configure Toastr - معطل للرخص
             toastr.options = {
                 "closeButton": true,
                 "debug": false,
-                "newestOnTop": true,
+                "newestOnTop": false,
                 "progressBar": false,
                 "positionClass": "toast-top-right",
-                "preventDuplicates": false,
+                "preventDuplicates": true,
                 "onclick": null,
                 "showDuration": "0",
                 "hideDuration": "0",
@@ -144,6 +150,14 @@ use Illuminate\Support\Facades\Route;
                 "showMethod": "none",
                 "hideMethod": "none"
             };
+            
+            // تعطيل toastr في صفحات الرخص
+            if (window.location.pathname.includes('licenses') || window.location.pathname.includes('license')) {
+                toastr.success = function() { return false; };
+                toastr.error = function() { return false; };
+                toastr.warning = function() { return false; };
+                toastr.info = function() { return false; };
+            }
         </script>
     </body>
 </html>
