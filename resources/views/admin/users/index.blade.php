@@ -14,7 +14,7 @@
             <p>قيمة is_admin: <code class="bg-gray-200 px-1 rounded">{{ var_export(auth()->user()->is_admin, true) }}</code></p>
             
             @if(!auth()->user()->is_admin)
-                <!-- <div class="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded">
+                <div class="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded">
                     <p class="mb-2 text-yellow-700">أنت لست مشرف، قد لا تتمكن من استخدام بعض الوظائف.</p>
                     <a href="{{ url('/make-me-admin') }}" class="inline-flex items-center px-3 py-1 bg-yellow-500 hover:bg-yellow-600 text-white rounded text-sm">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -22,7 +22,7 @@
                         </svg>
                         جعلني مشرف
                     </a>
-                </div> -->
+                </div>
             @endif
         </div>
     </div>
