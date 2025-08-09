@@ -25,15 +25,7 @@ body[class*="license"] .toastr,
 }
 
 /* إخفاء أي عناصر تحتوي على نص الاشعارات المزعجة */
-.toast:contains("01024545454"),
-.toastr:contains("01024545454"),
-.toast:contains("emergency"),
-.toastr:contains("emergency"),
-.toast:contains("رحمة"),
-.toastr:contains("رحمة") {
-    display: none !important;
-    visibility: hidden !important;
-}
+/* ملاحظة: :contains() غير مدعوم في CSS، سيتم التعامل معه في JavaScript */
 
 /* منع ظهور أي اشعارات في المواقع المحددة */
 .toast-top-right,

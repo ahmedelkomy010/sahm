@@ -65,11 +65,11 @@ function safeToastr(type, message, title = '', options = {}) {
             const finalOptions = Object.assign({}, defaultOptions, options);
             return originalToastr[type](message, title, finalOptions);
         } else {
-            // fallback إلى console إذا toastr غير متاح
+            // fallback to console if toastr unavailable
             console.log(`${type.toUpperCase()}: ${title ? title + ' - ' : ''}${message}`);
         }
     } catch (error) {
-        console.error('خطأ في toastr:', error);
+        console.error('Toastr error:', error);
         console.log(`${type.toUpperCase()}: ${title ? title + ' - ' : ''}${message}`);
     }
 }
@@ -109,9 +109,9 @@ function createSafeToastrWrapper() {
     }
 }
 
-// تشغيل الـ wrapper بعد تحميل الصفحة - معطل مؤقتاً
+// Run wrapper after page load - temporarily disabled
 $(document).ready(function() {
-    // تعطيل جميع اشعارات toastr في صفحة الرخص
+    // Disable all toastr notifications in license page
     if (typeof toastr !== 'undefined') {
         toastr.success = function() { console.log('toastr.success disabled'); return false; };
         toastr.error = function() { console.log('toastr.error disabled'); return false; };
@@ -119,7 +119,7 @@ $(document).ready(function() {
         toastr.info = function() { console.log('toastr.info disabled'); return false; };
     }
     
-    // تعطيل wrapper مؤقتاً
+    // Disable wrapper temporarily
     // setTimeout(createSafeToastrWrapper, 100);
 });
 </script>

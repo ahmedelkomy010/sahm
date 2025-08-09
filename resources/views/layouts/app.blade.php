@@ -115,7 +115,7 @@ use Illuminate\Support\Facades\Route;
         <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
         
         <!-- تعطيل اشعارات الرخص -->
-        <script src="{{ asset('js/disable-license-notifications.js') }}"></script>
+        <script src="{{ asset('js/simple-disable-toastr.js') }}"></script>
         <script>
             lightbox.option({
                 'resizeDuration': 200,
