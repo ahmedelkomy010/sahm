@@ -88,7 +88,17 @@ class WorkOrderController extends Controller
         }
         
         // ترتيب النتائج
-        $query->orderBy('created_at', 'desc');
+        if ($request->filled('sort_by_date')) {
+            if ($request->sort_by_date === 'asc') {
+                // ترتيب تصاعدي: الأقدم للأجدد (null في النهاية)
+                $query->orderByRaw('approval_date IS NULL, approval_date ASC');
+            } else {
+                // ترتيب تنازلي: الأجدد للأقدم (null في النهاية)
+                $query->orderByRaw('approval_date IS NULL, approval_date DESC');
+            }
+        } else {
+            $query->orderBy('created_at', 'desc');
+        }
         
         // عدد العناصر في الصفحة (يمكن تخصيصه من خلال الفلتر)
         $perPage = $request->get('per_page', 15);

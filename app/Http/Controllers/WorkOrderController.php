@@ -31,22 +31,90 @@ class WorkOrderController extends Controller
             return redirect()->route('project.selection');
         }
         
-        $query = WorkOrder::latest();
-        $projectName = null;
+        // تحديد المدينة بناءً على المشروع
+        $city = $project === 'madinah' ? 'المدينة المنورة' : 'الرياض';
+        $projectName = $project === 'madinah' ? 'مشروع المدينة المنورة' : 'مشروع الرياض';
         
-        // فلترة حسب نوع المشروع
-        switch ($project) {
-            case 'riyadh':
-                $query->where('city', 'الرياض');
-                $projectName = 'مشروع الرياض';
-                break;
-            case 'madinah':
-                $query->where('city', 'المدينة المنورة');
-                $projectName = 'مشروع المدينة المنورة';
-                break;
+        $query = WorkOrder::where('city', $city);
+        
+        // فلتر رقم أمر العمل
+        if ($request->filled('order_number')) {
+            $query->where('order_number', 'like', '%' . $request->order_number . '%');
         }
         
-        $workOrders = $query->paginate(10);
+        // فلتر نوع العمل
+        if ($request->filled('work_type')) {
+            $query->where('work_type', $request->work_type);
+        }
+        
+        // فلتر اسم المشترك
+        if ($request->filled('subscriber_name')) {
+            $query->where('subscriber_name', 'like', '%' . $request->subscriber_name . '%');
+        }
+        
+        // فلتر الحي
+        if ($request->filled('district')) {
+            $query->where('district', 'like', '%' . $request->district . '%');
+        }
+        
+        // فلتر المكتب
+        if ($request->filled('office')) {
+            $query->where('office', $request->office);
+        }
+        
+        // فلتر اسم الاستشاري
+        if ($request->filled('consultant_name')) {
+            $query->where('consultant_name', 'like', '%' . $request->consultant_name . '%');
+        }
+        
+        // فلتر رقم المحطة
+        if ($request->filled('station_number')) {
+            $query->where('station_number', 'like', '%' . $request->station_number . '%');
+        }
+        
+        // فلتر حالة التنفيذ
+        if ($request->filled('execution_status')) {
+            $query->where('execution_status', $request->execution_status);
+        }
+        
+        // فلتر تاريخ الاعتماد من
+        if ($request->filled('approval_date_from')) {
+            $query->whereDate('approval_date', '>=', $request->approval_date_from);
+        }
+        
+        // فلتر تاريخ الاعتماد إلى
+        if ($request->filled('approval_date_to')) {
+            $query->whereDate('approval_date', '<=', $request->approval_date_to);
+        }
+        
+        // فلتر قيمة أمر العمل الأدنى
+        if ($request->filled('min_value')) {
+            $query->where('order_value_without_consultant', '>=', $request->min_value);
+        }
+        
+        // فلتر قيمة أمر العمل الأعلى
+        if ($request->filled('max_value')) {
+            $query->where('order_value_without_consultant', '<=', $request->max_value);
+        }
+        
+        // ترتيب النتائج
+        if ($request->filled('sort_by_date')) {
+            if ($request->sort_by_date === 'asc') {
+                // ترتيب تصاعدي: الأقدم للأجدد (null في النهاية)
+                $query->orderByRaw('approval_date IS NULL, approval_date ASC');
+            } else {
+                // ترتيب تنازلي: الأجدد للأقدم (null في النهاية)
+                $query->orderByRaw('approval_date IS NULL, approval_date DESC');
+            }
+        } else {
+            $query->orderBy('created_at', 'desc');
+        }
+        
+        // عدد العناصر في الصفحة (يمكن تخصيصه من خلال الفلتر)
+        $perPage = $request->get('per_page', 15);
+        $perPage = in_array($perPage, [10, 15, 25, 50, 100]) ? $perPage : 15;
+        
+        $workOrders = $query->paginate($perPage);
         
         return view('admin.work_orders.index', compact('workOrders', 'project', 'projectName'));
     }
