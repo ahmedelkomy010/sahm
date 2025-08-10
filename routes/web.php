@@ -119,6 +119,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::get('work-orders/{workOrder}/materials/{material}/edit', [MaterialsController::class, 'edit'])->name('work-orders.materials.edit');
     Route::put('work-orders/{workOrder}/materials/{material}', [MaterialsController::class, 'update'])->name('work-orders.materials.update');
     Route::delete('work-orders/{workOrder}/materials/{material}', [MaterialsController::class, 'destroy'])->name('work-orders.materials.destroy');
+    Route::delete('work-orders/materials/work-order-material/{workOrderMaterial}', [MaterialsController::class, 'destroyWorkOrderMaterial'])->name('work-orders.materials.destroy-work-order-material');
     Route::get('materials/description/{code}', [MaterialsController::class, 'getDescriptionByCode'])->name('materials.description');
         
     // مسارات Excel للمواد - moved to admin group

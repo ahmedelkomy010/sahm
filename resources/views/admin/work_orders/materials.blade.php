@@ -453,24 +453,33 @@
                                         </span>
                                     </td>
                                     <td class="text-center">
-                                        @if(!$existsInSystem)
+                                        <div class="btn-group" role="group">
+                                            @if(!$existsInSystem)
+                                                <button type="button" 
+                                                        class="btn btn-sm btn-outline-success add-material-btn" 
+                                                        title="إضافة للنظام"
+                                                        data-material-code="{{ $workOrderMaterial->material->code ?? '' }}"
+                                                        data-material-description="{{ $workOrderMaterial->material->description ?? '' }}"
+                                                        data-material-name="{{ $workOrderMaterial->material->name ?? $workOrderMaterial->material->description ?? '' }}"
+                                                        data-material-unit="{{ $workOrderMaterial->material->unit ?? '' }}"
+                                                        data-planned-quantity="{{ $workOrderMaterial->quantity ?? 0 }}"
+                                                        data-work-order-id="{{ $workOrder->id }}"
+                                                        data-row-index="{{ $index }}">
+                                                    <i class="fas fa-plus"></i>
+                                                </button>
+                                            @else
+                                                <span class="text-success me-2">
+                                                    <i class="fas fa-check-circle"></i>
+                                                </span>
+                                            @endif
+                                            
                                             <button type="button" 
-                                                    class="btn btn-sm btn-outline-success add-material-btn" 
-                                                    title="إضافة للنظام"
-                                                    data-material-code="{{ $workOrderMaterial->material->code ?? '' }}"
-                                                    data-material-description="{{ $workOrderMaterial->material->description ?? '' }}"
-                                                    data-material-name="{{ $workOrderMaterial->material->name ?? $workOrderMaterial->material->description ?? '' }}"
-                                                    data-material-unit="{{ $workOrderMaterial->material->unit ?? '' }}"
-                                                    data-planned-quantity="{{ $workOrderMaterial->quantity ?? 0 }}"
-                                                    data-work-order-id="{{ $workOrder->id }}"
-                                                    data-row-index="{{ $index }}">
-                                                <i class="fas fa-plus"></i>
+                                                    class="btn btn-sm btn-outline-danger" 
+                                                    title="حذف من المقايسة"
+                                                    onclick="deleteWorkOrderMaterial({{ $workOrderMaterial->id }})">
+                                                <i class="fas fa-trash"></i>
                                             </button>
-                                        @else
-                                            <span class="text-success">
-                                                <i class="fas fa-check-circle"></i>
-                                            </span>
-                                        @endif
+                                        </div>
                                     </td>
                                 </tr>
                                 @endforeach
@@ -677,6 +686,16 @@
                                                             <i class="fas fa-edit"></i>
                                                             <span class="btn-text">تعديل</span>
                                                         </a>
+                                                        
+                                                        <button type="button" 
+                                                                class="btn btn-action btn-delete"
+                                                                onclick="deleteMaterial({{ $material->id }})"
+                                                                data-bs-toggle="tooltip"
+                                                                data-bs-placement="top"
+                                                                title="حذف">
+                                                            <i class="fas fa-trash"></i>
+                                                            <span class="btn-text">حذف</span>
+                                                        </button>
 
                                                     </div>
                                                 </div>
@@ -1123,6 +1142,17 @@
 .btn-edit:hover {
     color: #fff;
     background: linear-gradient(135deg, #ffc107, #fd7e14);
+}
+
+/* تنسيق زر الحذف */
+.btn-delete {
+    color: #dc3545;
+    background: rgba(220, 53, 69, 0.1);
+}
+
+.btn-delete:hover {
+    color: #fff;
+    background: linear-gradient(135deg, #dc3545, #c82333);
 }
 
 
@@ -2001,6 +2031,84 @@ function deleteIndependentFile(materialId, fileType, button) {
             fileTypeInput.name = 'file_type';
             fileTypeInput.value = fileType;
             form.appendChild(fileTypeInput);
+            
+            // إضافة الفورم للصفحة وإرساله
+            document.body.appendChild(form);
+            form.submit();
+        }
+    });
+}
+
+// حذف مادة
+function deleteMaterial(materialId) {
+    Swal.fire({
+        title: 'هل أنت متأكد؟',
+        text: 'سيتم حذف هذه المادة نهائياً مع جميع ملفاتها المرفقة',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'نعم، احذف',
+        cancelButtonText: 'إلغاء'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // إنشاء form مخفي للحذف
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `{{ route('admin.work-orders.materials.destroy', [$workOrder, ':material_id']) }}`.replace(':material_id', materialId);
+            
+            // إضافة CSRF token
+            const csrfToken = document.createElement('input');
+            csrfToken.type = 'hidden';
+            csrfToken.name = '_token';
+            csrfToken.value = '{{ csrf_token() }}';
+            form.appendChild(csrfToken);
+            
+            // إضافة method DELETE
+            const methodInput = document.createElement('input');
+            methodInput.type = 'hidden';
+            methodInput.name = '_method';
+            methodInput.value = 'DELETE';
+            form.appendChild(methodInput);
+            
+            // إضافة الفورم للصفحة وإرساله
+            document.body.appendChild(form);
+            form.submit();
+        }
+    });
+}
+
+// حذف مادة من مقايسة المواد
+function deleteWorkOrderMaterial(workOrderMaterialId) {
+    Swal.fire({
+        title: 'هل أنت متأكد؟',
+        text: 'سيتم حذف هذه المادة من المقايسة نهائياً',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'نعم، احذف',
+        cancelButtonText: 'إلغاء'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // إنشاء form مخفي للحذف
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `/admin/work-orders/materials/work-order-material/${workOrderMaterialId}`;
+            
+            // إضافة CSRF token
+            const csrfToken = document.createElement('input');
+            csrfToken.type = 'hidden';
+            csrfToken.name = '_token';
+            csrfToken.value = '{{ csrf_token() }}';
+            form.appendChild(csrfToken);
+            
+            // إضافة method DELETE
+            const methodInput = document.createElement('input');
+            methodInput.type = 'hidden';
+            methodInput.name = '_method';
+            methodInput.value = 'DELETE';
+            form.appendChild(methodInput);
             
             // إضافة الفورم للصفحة وإرساله
             document.body.appendChild(form);

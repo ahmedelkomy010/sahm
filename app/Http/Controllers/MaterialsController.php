@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Material;
 use App\Models\WorkOrder;
+use App\Models\WorkOrderMaterial;
 use App\Models\ReferenceMaterial;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -416,6 +417,22 @@ class MaterialsController extends Controller
             \Log::error('Error deleting material: ' . $e->getMessage());
             return redirect()->back()
                 ->with('error', 'حدث خطأ أثناء حذف المادة');
+        }
+    }
+
+    /**
+     * Remove WorkOrderMaterial from work order
+     */
+    public function destroyWorkOrderMaterial(WorkOrderMaterial $workOrderMaterial)
+    {
+        try {
+            $workOrderMaterial->delete();
+            
+            return redirect()->back()->with('success', 'تم حذف المادة من المقايسة بنجاح');
+        } catch (\Exception $e) {
+            \Log::error('Error deleting work order material: ' . $e->getMessage());
+            return redirect()->back()
+                ->with('error', 'حدث خطأ أثناء حذف المادة من المقايسة');
         }
     }
 
