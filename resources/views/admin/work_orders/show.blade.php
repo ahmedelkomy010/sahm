@@ -313,26 +313,45 @@
                                                     {{ date('Y-m-d', strtotime($workOrder->approval_date)) }}
                                                     @php
                                                         $approvalDate = \Carbon\Carbon::parse($workOrder->approval_date);
-                                                        $now = \Carbon\Carbon::now();
-                                                        $daysSinceApproval = (int)$now->diffInDays($approvalDate);
-                                                        $manualDays = (int)($workOrder->manual_days ?? 0);
-                                                        $remainingDays = (int)max(0, $manualDays - $daysSinceApproval);
-                                                        $overdueDays = (int)max(0, $daysSinceApproval - $manualDays);
+                                                        $procedure155Date = $workOrder->procedure_155_delivery_date ? \Carbon\Carbon::parse($workOrder->procedure_155_delivery_date) : null;
+                                                        
+                                                        if ($procedure155Date) {
+                                                            // حساب عدد الأيام اللي انتهى فيها أمر العمل (من تاريخ الاعتماد لتاريخ إجراء 155)
+                                                            $completionDays = (int)$approvalDate->diffInDays($procedure155Date);
+                                                            $remainingDays = 0; //   تم التنفيذ
+                                                            $overdueDays = 0;
+                                                        } else {
+                                                            // إذا لم يكن هناك تاريخ تسليم إجراء 155، استخدم الحساب القديم
+                                                            $now = \Carbon\Carbon::now();
+                                                            $daysSinceApproval = (int)$now->diffInDays($approvalDate);
+                                                            $manualDays = (int)($workOrder->manual_days ?? 0);
+                                                            $remainingDays = (int)max(0, $manualDays - $daysSinceApproval);
+                                                            $overdueDays = (int)max(0, $daysSinceApproval - $manualDays);
+                                                        }
                                                     @endphp
                                                     <div class="mt-2">
                                                         <small class="text-muted">
                                                             <i class="fas fa-clock me-1"></i>
-                                                            مدة التنفيذ: {{ $manualDays }} يوم
-                                                            @if($daysSinceApproval > 0)
+                                                            @if($procedure155Date)
+                                                                تاريخ تسليم إجراء 155: {{ $procedure155Date->format('Y-m-d') }}
                                                                 <span class="mx-1">•</span>
-                                                                منذ {{ $daysSinceApproval }} يوم من الاعتماد
-                                                            @endif
-                                                            @if($remainingDays > 0)
-                                                                <span class="mx-1">•</span>
-                                                                <span class="text-success">متبقي {{ $remainingDays }} يوم</span>
+                                                                <span class="text-success">
+                                                                    <i class="fas fa-check-circle me-1"></i>
+                                                                      تم التنفيذ    {{ $completionDays }} يوم
+                                                                </span>
                                                             @else
-                                                                <span class="mx-1">•</span>
-                                                                <span class="text-danger">متأخر {{ $overdueDays }} يوم</span>
+                                                                مدة التنفيذ: {{ $manualDays ?? 0 }} يوم
+                                                                @if(isset($daysSinceApproval) && $daysSinceApproval > 0)
+                                                                    <span class="mx-1">•</span>
+                                                                    منذ {{ $daysSinceApproval }} يوم من الاعتماد
+                                                                @endif
+                                                                @if($remainingDays > 0)
+                                                                    <span class="mx-1">•</span>
+                                                                    <span class="text-success">متبقي {{ $remainingDays }} يوم</span>
+                                                                @else
+                                                                    <span class="mx-1">•</span>
+                                                                    <span class="text-danger">متأخر {{ $overdueDays }} يوم</span>
+                                                                @endif
                                                             @endif
                                                         </small>
                                                     </div>

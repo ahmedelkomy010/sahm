@@ -8,6 +8,7 @@ function updateCountdowns() {
         let workOrderId = badge.dataset.workOrder;
         let totalDays = parseInt(badge.dataset.start) || 0;
         let approvalDate = badge.dataset.approvalDate;
+        let procedure155Date = badge.dataset.procedure155Date;
         
         // التحقق من حالة التنفيذ
         const executionStatus = badge.dataset.executionStatus;
@@ -17,32 +18,46 @@ function updateCountdowns() {
             return;
         }
         
-        // حساب الأيام المنقضية من تاريخ الاعتماد
-        const startDate = new Date(approvalDate);
-        const today = new Date();
-        startDate.setHours(0, 0, 0, 0);
-        today.setHours(0, 0, 0, 0);
-        
-        // حساب الفرق بالأيام
-        const daysSinceApproval = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
-
-        // حساب الأيام المنقضية والمتبقية
-        if (totalDays > 0) {
-            // تحديث شكل وحالة البادج
-            if (daysSinceApproval <= totalDays) {
-                // لسه في الوقت المحدد
-                const remainingDays = totalDays - daysSinceApproval;
-                badge.className = 'badge countdown-badge bg-success';
-                badge.innerHTML = `<i class="fas fa-clock me-1"></i>${remainingDays} يوم متبقي`;
-            } else {
-                // تجاوز الوقت المحدد
-                const overdueDays = daysSinceApproval - totalDays;
-                badge.className = 'badge countdown-badge bg-danger';
-                badge.innerHTML = `<i class="fas fa-exclamation-circle me-1"></i>متأخر ${overdueDays} يوم`;
-            }
+        // إذا كان هناك تاريخ تسليم إجراء 155، توقف العداد - أمر العمل انتهى
+        if (procedure155Date && procedure155Date !== 'null' && procedure155Date !== '') {
+            const startDate = new Date(approvalDate);
+            const targetDate = new Date(procedure155Date);
+            const today = new Date();
+            
+            startDate.setHours(0, 0, 0, 0);
+            targetDate.setHours(0, 0, 0, 0);
+            today.setHours(0, 0, 0, 0);
+            
+            // حساب عدد الأيام اللي انتهى فيها أمر العمل (من تاريخ الاعتماد لتاريخ إجراء 155)
+            const completionDays = Math.floor((targetDate - startDate) / (1000 * 60 * 60 * 24));
+            
+            // تم إصدار إجراء 155 - أمر العمل انتهى - توقف العداد
+            badge.className = 'badge countdown-badge bg-success';
+            badge.innerHTML = `<i class="fas fa-check-circle me-1"></i>انتهى في ${completionDays} يوم`;
+            return;
         } else {
-            badge.className = 'badge countdown-badge bg-secondary';
-            badge.innerHTML = '<i class="fas fa-minus-circle me-1"></i>غير محدد';
+            // الحساب القديم بناءً على الأيام اليدوية - حساب الأيام المنقضية من تاريخ الاعتماد
+            const startDate = new Date(approvalDate);
+            const today = new Date();
+            startDate.setHours(0, 0, 0, 0);
+            today.setHours(0, 0, 0, 0);
+            
+            const daysSinceApproval = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
+
+            if (totalDays > 0) {
+                if (daysSinceApproval <= totalDays) {
+                    const remainingDays = totalDays - daysSinceApproval;
+                    badge.className = 'badge countdown-badge bg-success';
+                    badge.innerHTML = `<i class="fas fa-clock me-1"></i>${remainingDays} يوم متبقي`;
+                } else {
+                    const overdueDays = daysSinceApproval - totalDays;
+                    badge.className = 'badge countdown-badge bg-danger';
+                    badge.innerHTML = `<i class="fas fa-exclamation-circle me-1"></i>متأخر ${overdueDays} يوم`;
+                }
+            } else {
+                badge.className = 'badge countdown-badge bg-secondary';
+                badge.innerHTML = '<i class="fas fa-minus-circle me-1"></i>غير محدد';
+            }
         }
     });
     
@@ -79,6 +94,7 @@ function updateCountdowns() {
         let workOrderId = badge.dataset.workOrder;
         let totalDays = parseInt(badge.dataset.start) || 0;
         let approvalDate = badge.dataset.approvalDate;
+        let procedure155Date = badge.dataset.procedure155Date;
         
         // التحقق من حالة التنفيذ
         const executionStatus = badge.dataset.executionStatus;
@@ -88,32 +104,46 @@ function updateCountdowns() {
             return;
         }
         
-        // حساب الأيام المنقضية من تاريخ الاعتماد
-        const startDate = new Date(approvalDate);
-        const today = new Date();
-        startDate.setHours(0, 0, 0, 0);
-        today.setHours(0, 0, 0, 0);
-        
-        // حساب الفرق بالأيام
-        const daysSinceApproval = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
-
-        // حساب الأيام المنقضية والمتبقية
-        if (totalDays > 0) {
-            // تحديث شكل وحالة البادج
-            if (daysSinceApproval <= totalDays) {
-                // لسه في الوقت المحدد
-                const remainingDays = totalDays - daysSinceApproval;
-                badge.className = 'badge countdown-badge bg-success';
-                badge.innerHTML = `<i class="fas fa-clock me-1"></i>${remainingDays} يوم متبقي`;
-            } else {
-                // تجاوز الوقت المحدد
-                const overdueDays = daysSinceApproval - totalDays;
-                badge.className = 'badge countdown-badge bg-danger';
-                badge.innerHTML = `<i class="fas fa-exclamation-circle me-1"></i>متأخر ${overdueDays} يوم`;
-            }
+        // إذا كان هناك تاريخ تسليم إجراء 155، توقف العداد - أمر العمل انتهى
+        if (procedure155Date && procedure155Date !== 'null' && procedure155Date !== '') {
+            const startDate = new Date(approvalDate);
+            const targetDate = new Date(procedure155Date);
+            const today = new Date();
+            
+            startDate.setHours(0, 0, 0, 0);
+            targetDate.setHours(0, 0, 0, 0);
+            today.setHours(0, 0, 0, 0);
+            
+            // حساب عدد الأيام اللي انتهى فيها أمر العمل (من تاريخ الاعتماد لتاريخ إجراء 155)
+            const completionDays = Math.floor((targetDate - startDate) / (1000 * 60 * 60 * 24));
+            
+            // تم إصدار إجراء 155 - أمر العمل انتهى - توقف العداد
+            badge.className = 'badge countdown-badge bg-success';
+            badge.innerHTML = `<i class="fas fa-check-circle me-1"></i> تم تنفيذ ${completionDays} يوم`;
+            return;
         } else {
-            badge.className = 'badge countdown-badge bg-secondary';
-            badge.innerHTML = '<i class="fas fa-minus-circle me-1"></i>غير محدد';
+            // الحساب القديم بناءً على الأيام اليدوية - حساب الأيام المنقضية من تاريخ الاعتماد
+            const startDate = new Date(approvalDate);
+            const today = new Date();
+            startDate.setHours(0, 0, 0, 0);
+            today.setHours(0, 0, 0, 0);
+            
+            const daysSinceApproval = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
+
+            if (totalDays > 0) {
+                if (daysSinceApproval <= totalDays) {
+                    const remainingDays = totalDays - daysSinceApproval;
+                    badge.className = 'badge countdown-badge bg-success';
+                    badge.innerHTML = `<i class="fas fa-clock me-1"></i>${remainingDays} يوم متبقي`;
+                } else {
+                    const overdueDays = daysSinceApproval - totalDays;
+                    badge.className = 'badge countdown-badge bg-danger';
+                    badge.innerHTML = `<i class="fas fa-exclamation-circle me-1"></i>متأخر ${overdueDays} يوم`;
+                }
+            } else {
+                badge.className = 'badge countdown-badge bg-secondary';
+                badge.innerHTML = '<i class="fas fa-minus-circle me-1"></i>غير محدد';
+            }
         }
     });
 }
@@ -735,6 +765,7 @@ function resetCountdown(workOrderId) {
                                                     <span class="badge countdown-badge" 
                                                           data-start="{{ $workOrder->manual_days }}" 
                                                           data-approval-date="{{ $workOrder->approval_date }}"
+                                                          data-procedure-155-date="{{ $workOrder->procedure_155_delivery_date }}"
                                                           data-work-order="{{ $workOrder->id }}"
                                                           data-execution-status="{{ $workOrder->execution_status }}">
                                                         <i class="fas fa-clock me-1"></i>
