@@ -328,11 +328,21 @@ function resetCountdown(workOrderId) {
                                     </label>
                                     <select class="form-select" id="office" name="office">
                                         <option value="">جميع المكاتب</option>
-                                        <option value="خريص" {{ request('office') == 'خريص' ? 'selected' : '' }}>خريص</option>
-                                        <option value="الشرق" {{ request('office') == 'الشرق' ? 'selected' : '' }}>الشرق</option>
-                                        <option value="الشمال" {{ request('office') == 'الشمال' ? 'selected' : '' }}>الشمال</option>
-                                        <option value="الجنوب" {{ request('office') == 'الجنوب' ? 'selected' : '' }}>الجنوب</option>
-                                        <option value="الدرعية" {{ request('office') == 'الدرعية' ? 'selected' : '' }}>الدرعية</option>
+                                        @if($project == 'riyadh')
+                                            <option value="خريص" {{ request('office') == 'خريص' ? 'selected' : '' }}>خريص</option>
+                                            <option value="الشرق" {{ request('office') == 'الشرق' ? 'selected' : '' }}>الشرق</option>
+                                            <option value="الشمال" {{ request('office') == 'الشمال' ? 'selected' : '' }}>الشمال</option>
+                                            <option value="الجنوب" {{ request('office') == 'الجنوب' ? 'selected' : '' }}>الجنوب</option>
+                                            <option value="الدرعية" {{ request('office') == 'الدرعية' ? 'selected' : '' }}>الدرعية</option>
+                                        @elseif($project == 'madinah')
+                                            <option value="المدينة المنورة" {{ request('office') == 'المدينة المنورة' ? 'selected' : '' }}>المدينة المنورة</option>
+                                            <option value="ينبع" {{ request('office') == 'ينبع' ? 'selected' : '' }}>ينبع</option>
+                                            <option value="خيبر" {{ request('office') == 'خيبر' ? 'selected' : '' }}>خيبر</option>
+                                            <option value="مهد الذهب" {{ request('office') == 'مهد الذهب' ? 'selected' : '' }}>مهد الذهب</option>
+                                            <option value="بدر" {{ request('office') == 'بدر' ? 'selected' : '' }}>بدر</option>
+                                            <option value="الحناكية" {{ request('office') == 'الحناكية' ? 'selected' : '' }}>الحناكية</option>
+                                            <option value="العلا" {{ request('office') == 'العلا' ? 'selected' : '' }}>العلا</option>
+                                        @endif
                                     </select>
                                 </div>
                             </div>
@@ -1169,7 +1179,7 @@ function storeWorkOrders() {
         office: row.cells[6].textContent.trim(),
         consultantName: row.cells[7].textContent.trim(),
         stationNumber: row.cells[8].textContent.trim(),
-        approvalDate: row.cells[9].textContent.trim(),
+        approvalDate: row.cells[9].querySelector('[data-approval-date]')?.getAttribute('data-approval-date') || row.cells[9].querySelector('.date-value')?.textContent.trim(),
         executionStatus: row.dataset.executionStatus,
         orderValue: row.cells[11].textContent.trim()
     }));
