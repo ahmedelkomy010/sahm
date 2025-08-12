@@ -238,7 +238,7 @@
                                             </td>
                                             <td class="text-start">{{ $workItem ? ($workItem->description ?? '-') : '-' }}</td>
                                             <td class="text-center">
-                                                <span class="badge bg-info">{{ $workItem ? ($workItem->unit ?? 'عدد') : 'عدد' }}</span>
+                                                <span class="badge bg-info">{{ $workOrderItem->unit ?? ($workItem ? ($workItem->unit ?? 'عدد') : 'عدد') }}</span>
                                             </td>
                                             <td class="text-center">
                                                 <span class="text-success fw-bold">{{ number_format($unitPrice, 2) }} ريال</span>

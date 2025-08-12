@@ -1193,6 +1193,8 @@ function addWorkItem() {
             <select name="work_items[${window.workItemRowIndex}][unit]" class="form-select form-select-sm work-item-unit">
                 <option value="EA">EA</option>
                 <option value="M">M</option>
+                <option value="M3">M3</option>
+                <option value="ASM">ASM</option>
                 <option value="KIT">KIT</option>
                 <option value="ST">ST</option>
                 <option value="M2">M2</option>
@@ -1272,7 +1274,7 @@ function selectWorkItem(index, id, code, description, unit, price) {
     
     // تحديث قائمة الوحدات
     const unitSelect = row.querySelector('.work-item-unit');
-    const validUnits = ['EA', 'M', 'KIT', 'ST', 'M2', '%'];
+    const validUnits = ['EA', 'M', 'M3', 'ASM', 'KIT', 'ST', 'M2', '%'];
     const defaultUnit = 'EA';
     
     // تحديد الوحدة المناسبة
@@ -1714,7 +1716,7 @@ function addWorkItemFromSearch(id, code, description, unit, price) {
     const row = document.createElement('tr');
     
     // تحديد الوحدة المناسبة
-    const validUnits = ['EA', 'M', 'KIT', 'ST', 'M2', '%'];
+    const validUnits = ['EA', 'M', 'M3', 'ASM', 'KIT', 'ST', 'M2', '%'];
     const defaultUnit = 'EA';
     const selectedUnit = validUnits.includes(unit) ? unit : defaultUnit;
     
@@ -1741,6 +1743,8 @@ function addWorkItemFromSearch(id, code, description, unit, price) {
             <select name="work_items[${window.workItemRowIndex}][unit]" class="form-select form-select-sm work-item-unit">
                 <option value="EA" ${selectedUnit === 'EA' ? 'selected' : ''}>EA</option>
                 <option value="M" ${selectedUnit === 'M' ? 'selected' : ''}>M</option>
+                <option value="M3" ${selectedUnit === 'M3' ? 'selected' : ''}>M3</option>
+                <option value="ASM" ${selectedUnit === 'ASM' ? 'selected' : ''}>ASM</option>
                 <option value="KIT" ${selectedUnit === 'KIT' ? 'selected' : ''}>KIT</option>
                 <option value="ST" ${selectedUnit === 'ST' ? 'selected' : ''}>ST</option>
                 <option value="M2" ${selectedUnit === 'M2' ? 'selected' : ''}>M2</option>
@@ -1921,6 +1925,8 @@ function addItemFromSearch(id, code, description, unit, price) {
             <select name="work_items[${window.workItemRowIndex}][unit]" class="form-select form-select-sm work-item-unit">
                 <option value="EA" ${selectedUnit === 'EA' ? 'selected' : ''}>EA</option>
                 <option value="M" ${selectedUnit === 'M' ? 'selected' : ''}>M</option>
+                <option value="M3" ${selectedUnit === 'M3' ? 'selected' : ''}>M3</option>
+                <option value="ASM" ${selectedUnit === 'ASM' ? 'selected' : ''}>ASM</option>
                 <option value="KIT" ${selectedUnit === 'KIT' ? 'selected' : ''}>KIT</option>
                 <option value="ST" ${selectedUnit === 'ST' ? 'selected' : ''}>ST</option>
                 <option value="M2" ${selectedUnit === 'M2' ? 'selected' : ''}>M2</option>

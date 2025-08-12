@@ -223,6 +223,7 @@ class WorkOrderController extends Controller
                         'work_item_id' => $workItem['work_item_id'],
                         'quantity' => $workItem['planned_quantity'],
                         'unit_price' => $workItem['unit_price'] ?? $unitPrice,
+                        'unit' => $workItem['unit'] ?? null,
                         'notes' => $workItem['notes'] ?? null,
                     ]);
                 }
@@ -816,6 +817,7 @@ class WorkOrderController extends Controller
                 'work_item_id' => $workItem->id,
                 'quantity' => 1.00, // كمية افتراضية
                 'unit_price' => $workItem->unit_price ?? 0, // سعر الوحدة من بند العمل
+                'unit' => $workItem->unit ?? 'EA', // الوحدة من بند العمل
                 'executed_quantity' => 0,
                 'notes' => $request->notes,
                 'work_date' => $request->work_date

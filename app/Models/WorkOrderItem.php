@@ -14,6 +14,7 @@ class WorkOrderItem extends Model
         'work_item_id', 
         'quantity',
         'unit_price',
+        'unit',
         'executed_quantity',
         'notes',
         'work_date'
