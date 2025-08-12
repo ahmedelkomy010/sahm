@@ -417,6 +417,23 @@ function resetCountdown(workOrderId) {
                                     </select>
                                 </div>
                             </div>
+                            <div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label for="sort_by_date" class="form-label fw-bold">
+                                        <i class="fas fa-sort text-primary me-1"></i>
+                                        ترتيب التاريخ
+                                    </label>
+                                    <select class="form-select" id="sort_by_date" name="sort_by_date">
+                                        <option value="">الترتيب الافتراضي</option>
+                                        <option value="asc" {{ request('sort_by_date') == 'asc' ? 'selected' : '' }}>من الأقدم للأجدد</option>
+                                        <option value="desc" {{ request('sort_by_date') == 'desc' ? 'selected' : '' }}>من الأجدد للأقدم</option>
+                                    </select>
+                                </div>
+                            </div>
+                            </div>
+                            
+                            
                             
                             <!-- الصف الثالث - فلاتر التاريخ والقيمة -->
                             <div class="col-md-3">
@@ -460,20 +477,6 @@ function resetCountdown(workOrderId) {
                                     </label>
                                     <input type="number" class="form-control" id="max_value" name="max_value" 
                                         value="{{ request('max_value') }}" placeholder="أعلى قيمة..." step="0.01">
-                                </div>
-                            </div>
-                            
-                            <div class="col-md-3">
-                                <div class="form-group">
-                                    <label for="sort_by_date" class="form-label fw-bold">
-                                        <i class="fas fa-sort text-primary me-1"></i>
-                                        ترتيب التاريخ
-                                    </label>
-                                    <select class="form-select" id="sort_by_date" name="sort_by_date">
-                                        <option value="">الترتيب الافتراضي</option>
-                                        <option value="asc" {{ request('sort_by_date') == 'asc' ? 'selected' : '' }}>من الأقدم للأجدد</option>
-                                        <option value="desc" {{ request('sort_by_date') == 'desc' ? 'selected' : '' }}>من الأجدد للأقدم</option>
-                                    </select>
                                 </div>
                             </div>
                             
@@ -645,7 +648,7 @@ function resetCountdown(workOrderId) {
                                     <th>المكتب</th>
                                     <th>اسم الاستشاري</th>
                                     <th>رقم المحطة</th>
-                                                                                <th>تاريخ الاعتماد <br> مدة التنفيذ</th>
+                                    <th>تاريخ الاعتماد <br> مدة التنفيذ</th>
                                     <th>حالة التنفيذ</th>
                                     <th>قيمة أمر العمل المبدئية غير شامل الاستشاري</th>
                                     <th>الإجراءات</th>
@@ -660,67 +663,67 @@ function resetCountdown(workOrderId) {
                                         <td>
                                             @switch($workOrder->work_type)
                                                 @case('409')
-                                                    1 -ازالة-نقل شبكة على المشترك
+                                                 -ازالة-نقل شبكة على المشترك
                                                     @break
                                                 @case('408')
-                                                    2 - ازاله عداد على المشترك
+                                                 - ازاله عداد على المشترك
                                                     @break
                                                 @case('460')
-                                                    3 - استبدال شبكات
+                                                 - استبدال شبكات
                                                     @break
                                                 @case('901')
-                                                    4 - اضافة عداد طاقة شمسية
+                                                 - اضافة عداد طاقة شمسية
                                                     @break
                                                 @case('440')
-                                                    5 - الرفع المساحي
+                                                 - الرفع المساحي
                                                     @break
                                                 @case('410')
-                                                    6 - انشاء محطة/محول لمشترك/مشتركين
+                                                 - انشاء محطة/محول لمشترك/مشتركين
                                                     @break
                                                 @case('801')
-                                                    7 - تركيب عداد ايصال سريع
+                                                 - تركيب عداد ايصال سريع
                                                     @break
                                                 @case('804')
-                                                    8 - تركيب محطة ش ارضية VM ايصال سريع
+                                                 - تركيب محطة ش ارضية VM ايصال سريع
                                                     @break
                                                 @case('805')
-                                                    9 - تركيب محطة ش هوائية VM ايصال سريع
+                                                 - تركيب محطة ش هوائية VM ايصال سريع
                                                     @break
                                                 @case('480')
-                                                    10 - (تسليم مفتاح) تمويل خارجي
+                                                     - (تسليم مفتاح) تمويل خارجي
                                                     @break
                                                 @case('441')
-                                                    11 - تعزيز شبكة ارضية ومحطات
+                                                     - تعزيز شبكة ارضية ومحطات
                                                     @break
                                                 @case('442')
-                                                    12 - تعزيز شبكة هوائية ومحطات
+                                                     - تعزيز شبكة هوائية ومحطات
                                                     @break
                                                 @case('802')
-                                                    13 - شبكة ارضية VL ايصال سريع
+                                                     - شبكة ارضية VL ايصال سريع
                                                     @break
                                                 @case('803')
-                                                    14 - شبكة هوائية VL ايصال سريع
+                                                     - شبكة هوائية VL ايصال سريع
                                                     @break
                                                 @case('402')
-                                                    15 - توصيل عداد بحفرية شبكة ارضيه
+                                                     - توصيل عداد بحفرية شبكة ارضيه
                                                     @break
                                                 @case('401')
-                                                    16 - (عداد بدون حفرية) أرضي/هوائي
+                                                     - (عداد بدون حفرية) أرضي/هوائي
                                                     @break
                                                 @case('404')
-                                                    17 - عداد بمحطة شبكة ارضية VM
+                                                     - عداد بمحطة شبكة ارضية VM
                                                     @break
                                                 @case('405')
-                                                    18 - توصيل عداد بمحطة شبكة هوائية VM
+                                                     - توصيل عداد بمحطة شبكة هوائية VM
                                                     @break
                                                 @case('430')
-                                                    19 - مخططات منح وزارة البلدية
+                                                     - مخططات منح وزارة البلدية
                                                     @break
                                                 @case('450')
-                                                    20 - مشاريع ربط محطات التحويل
+                                                     - مشاريع ربط محطات التحويل
                                                     @break
                                                 @case('403')
-                                                    21 - توصيل عداد شبكة هوائية VL
+                                                     - توصيل عداد شبكة هوائية VL
                                                     @break
                                                 @default
                                                     {{ $workOrder->work_type }}
@@ -786,13 +789,13 @@ function resetCountdown(workOrderId) {
                                                     <span class="badge" style="background-color:rgb(86, 168, 110)">صدرت شهادة ولم تعتمد</span>
                                                     @break
                                                 @case('4')
-                                                    <span class="badge" style="background-color:rgb(28, 133, 75)">تم اعتماد شهادة الانجاز</span>
+                                                    <span class="badge" style="background-color:rgb(39, 138, 83)">تم اعتماد شهادة الانجاز</span>
                                                     @break
                                                 @case('5')
-                                                    <span class="badge" style="background-color:rgb(15, 146, 81)">مؤكد ولم تدخل مستخلص</span>
+                                                    <span class="badge" style="background-color:rgb(1, 128, 64)">مؤكد ولم تدخل مستخلص</span>
                                                     @break
                                                 @case('6')
-                                                    <span class="badge" style="background-color:rgb(6, 133, 37)">دخلت مستخلص ولم تصرف</span>
+                                                    <span class="badge" style="background-color:rgb(1, 119, 31)">دخلت مستخلص ولم تصرف</span>
                                                     @break
                                                 @case('7')
                                                     <span class="badge" style="background-color:rgb(0, 66, 0)">منتهي تم الصرف</span>
@@ -1451,7 +1454,7 @@ document.addEventListener('DOMContentLoaded', function() {
     storeWorkOrders();
     
     // إضافة حدث لإظهار/إخفاء الفلاتر المتقدمة عند التحميل
-    const dateFilters = document.querySelectorAll('[name="approval_date_from"], [name="approval_date_to"], [name="min_value"], [name="max_value"], [name="sort_by_date"]');
+    const dateFilters = document.querySelectorAll('[name="approval_date_from"], [name="approval_date_to"], [name="min_value"], [name="max_value"]');
     dateFilters.forEach(filter => {
         filter.closest('.col-md-3').classList.add('advanced-filters');
     });
