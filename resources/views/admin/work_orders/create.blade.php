@@ -279,16 +279,21 @@
                                     <h4 class="section-title mb-3">المرفقات</h4>
                                     <div class="row">
                                         
-                                        <div class="col-md-6 mb-3">
+                                        <div class="col-12 mb-3">
                                             <label class="form-label fw-bold">
                                                 <i class="fas fa-paperclip text-secondary me-2"></i>
-                                                رفع مرفق
+                                                رفع المرفقات
                                             </label>
-                                            <input type="file" class="form-control @error('files.backup_1') is-invalid @enderror" name="files[backup_1]" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png">
+                                            <input type="file" class="form-control @error('files.attachments.*') is-invalid @enderror" 
+                                                   name="files[attachments][]" 
+                                                   accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png"
+                                                   multiple
+                                                   onchange="displaySelectedFiles(this)">
                                             <div class="form-text">
-                                                PDF, Word, Excel, أو صورة - الحد الأقصى 20 ميجابايت
+                                                PDF, Word, Excel, أو صورة - الحد الأقصى 20 ميجابايت لكل ملف - يمكن اختيار عدة ملفات
                                             </div>
-                                            @error('files.backup_1')
+                                            <div id="selected-files-preview" class="mt-2"></div>
+                                            @error('files.attachments.*')
                                                 <span class="invalid-feedback" role="alert">
                                                     <strong>{{ $message }}</strong>
                                                 </span>
@@ -446,6 +451,200 @@
                                 </div>
 
                                 <script>
+                                    // البحث الديناميكي عند كتابة رقم أمر العمل
+                                    document.getElementById('order_number').addEventListener('input', function() {
+                                        const orderNumber = this.value.trim();
+                                        
+                                        if (orderNumber.length >= 3) { // البحث عندما يكون الرقم 3 أرقام على الأقل
+                                            searchWorkOrder(orderNumber);
+                                        } else {
+                                            clearFormFields();
+                                        }
+                                    });
+
+                                    function searchWorkOrder(orderNumber) {
+                                        // إظهار loading indicator
+                                        const orderInput = document.getElementById('order_number');
+                                        orderInput.style.background = '#f8f9fa url("data:image/gif;base64,R0lGODlhEAAQAPIAAP///wAAAMLCwkJCQgAAAGJiYoKCgpKSkiH/C05FVFNDQVBFMi4wAwEAAAAh/hpDcmVhdGVkIHdpdGggYWpheGxvYWQuaW5mbwAh+QQJCgAAACwAAAAAEAAQAAADMwi63P4wyklrE2MIOggZnAdOmGYJRbExwroUmcG2LmDEwnHQLVsYOd2mBzkYDAdKa+dIAAAh+QQJCgAAACwAAAAAEAAQAAADNAi63P5OjCEgG4QMu7DmikRxQlFUYDEZIGBMRVsaqHwctXXf7WEYB4Ag1xjihkMZsiUkKhIAIfkECQoAAAAsAAAAABAAEAAAAzYIujIjK8pByJDMlFYvBoVjHA70GU7xSUJhmKtwHPAKzLO9HMaoKwJZ7Rf8AYPDDzKpZBqfvwQAIfkECQoAAAAsAAAAABAAEAAAAzMIumIlK8oyhpHsnFZfhYumCYUhDAQxRIdhHBGqRoKw0R8DYlJd8z0fMDgsGo/IpHI5TAAAIfkECQoAAAAsAAAAABAAEAAAAzIIunInK0rnZBTwGPNMgQwmdsNgXGJUlIWEuR5oWUIpz8pAEAMe6TwfwyYsGo/IpFKSAAAh+QQJCgAAACwAAAAAEAAQAAADMwi6IMKQORfjdOe82p4wGccc4CEuQradylesojEMBgsUc2G7sDX3lQGBMLAJibufbSlKAAAh+QQJCgAAACwAAAAAEAAQAAADMgi63P7wjRLRhPqvOXSzXgTGFg1H9DzotHrxgVqvtgMfaXft7WEYB4Ag1xjihkMZsiUkKhIAIfkECQoAAAAsAAAAABAAEAAQAAADNAi63P5OjCEgG4QMu7DmikRxQlFUYDEZIGBMRVsaqHwctXXf7WEYB4Ag1xjihkMZsiUkKhIAIfkECQoAAAAsAAAAABAAEAAAAzYIujIjK8pByJDMlFYvBoVjHA70GU7xSUJhmKtwHPAKzLO9HMaoKwJZ7Rf8AYPDDzKpZBqfvwQAIfkECQoAAAAsAAAAABAAEAAAAzMIumIlK8oyhpHsnFZfhYumCYUhDAQxRIdhHBGqRoKw0R8DYlJd8z0fMDgsGo/IpHI5TAAAIfkECQoAAAAsAAAAABAAEAAAAzIIunInK0rnZBTwGPNMgQwmdsNgXGJUlIWEuR5oWUIpz8pAEAMe6TwfwyYsGo/IpFKSAAAh+QQJCgAAACwAAAAAEAAQAAADMwi6IMKQORfjdOe82p4wGccc4CEuQradylesojEMBgsUc2G7sDX3lQGBMLAJibufbSlKAAAh+QQJCgAAACwAAAAAEAAQAAADMgi63P7wjRLRhPqvOXSzXgTGFg1H9DzotHrxgVqvtgMfaXft7WEYB4Ag1xjihkMZsiUkKhIAOw==") no-repeat right 10px center';
+                                        
+                                        fetch(`/admin/work-orders/search/${orderNumber}`)
+                                            .then(response => response.json())
+                                            .then(data => {
+                                                // إخفاء loading indicator
+                                                orderInput.style.background = '';
+                                                
+                                                if (data.success) {
+                                                    fillFormFields(data.data);
+                                                    showMessage('تم العثور على البيانات وتم تحديث الحقول', 'success');
+                                                } else {
+                                                    clearFormFields();
+                                                    showMessage(data.message, 'warning');
+                                                }
+                                            })
+                                            .catch(error => {
+                                                console.error('Error:', error);
+                                                orderInput.style.background = '';
+                                                showMessage('حدث خطأ أثناء البحث', 'error');
+                                            });
+                                    }
+
+                                    function fillFormFields(data) {
+                                        // ملء الحقول بالبيانات المسترجعة
+                                        if (data.work_type) {
+                                            document.getElementById('work_type').value = data.work_type;
+                                            // تحديث رقم نوع العمل إذا وجد
+                                            document.getElementById('work_type_number').value = data.work_type;
+                                        }
+                                        
+                                        if (data.work_description) {
+                                            document.getElementById('work_description').value = data.work_description;
+                                        }
+                                        
+                                        if (data.approval_date) {
+                                            document.getElementById('approval_date').value = data.approval_date;
+                                        }
+                                        
+                                        if (data.manual_days) {
+                                            document.getElementById('manual_days').value = data.manual_days;
+                                        }
+                                        
+                                        if (data.subscriber_name) {
+                                            document.getElementById('subscriber_name').value = data.subscriber_name;
+                                        }
+                                        
+                                        if (data.district) {
+                                            document.getElementById('district').value = data.district;
+                                        }
+                                        
+                                        if (data.municipality) {
+                                            document.getElementById('municipality').value = data.municipality;
+                                        }
+                                        
+                                        if (data.station_number) {
+                                            document.getElementById('station_number').value = data.station_number;
+                                        }
+                                        
+                                        if (data.consultant_name) {
+                                            document.getElementById('consultant_name').value = data.consultant_name;
+                                        }
+                                        
+                                        if (data.office) {
+                                            document.getElementById('office').value = data.office;
+                                        }
+                                        
+                                        if (data.order_value_with_consultant) {
+                                            document.getElementById('order_value_with_consultant').value = data.order_value_with_consultant;
+                                        }
+                                        
+                                        if (data.order_value_without_consultant) {
+                                            document.getElementById('order_value_without_consultant').value = data.order_value_without_consultant;
+                                        }
+                                        
+                                        if (data.execution_status) {
+                                            document.getElementById('execution_status').value = data.execution_status;
+                                        }
+                                    }
+
+                                    function clearFormFields() {
+                                        // مسح الحقول عند عدم وجود نتائج أو عند حذف رقم أمر العمل
+                                        const fieldsToSkip = ['order_number', 'city']; // الحقول التي لا نريد مسحها
+                                        
+                                        const formFields = [
+                                            'work_type', 'work_type_number', 'work_description', 'approval_date',
+                                            'manual_days', 'subscriber_name', 'district', 'municipality',
+                                            'station_number', 'consultant_name', 'office',
+                                            'order_value_with_consultant', 'order_value_without_consultant',
+                                            'execution_status'
+                                        ];
+                                        
+                                        formFields.forEach(fieldId => {
+                                            if (!fieldsToSkip.includes(fieldId)) {
+                                                const field = document.getElementById(fieldId);
+                                                if (field) {
+                                                    field.value = '';
+                                                }
+                                            }
+                                        });
+                                    }
+
+                                    function showMessage(message, type) {
+                                        // إنشاء وإظهار رسالة للمستخدم
+                                        const alertClass = type === 'success' ? 'alert-success' : 
+                                                         type === 'warning' ? 'alert-warning' : 'alert-danger';
+                                        
+                                        const alertDiv = document.createElement('div');
+                                        alertDiv.className = `alert ${alertClass} alert-dismissible fade show`;
+                                        alertDiv.innerHTML = `
+                                            ${message}
+                                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                        `;
+                                        
+                                        // إضافة الرسالة في أعلى الفورم
+                                        const form = document.querySelector('.custom-form');
+                                        form.insertBefore(alertDiv, form.firstChild);
+                                        
+                                        // إخفاء الرسالة تلقائياً بعد 3 ثواني
+                                        setTimeout(() => {
+                                            alertDiv.remove();
+                                        }, 3000);
+                                    }
+
+                                    // عرض الملفات المختارة
+                                    function displaySelectedFiles(input) {
+                                        const previewDiv = document.getElementById('selected-files-preview');
+                                        const files = input.files;
+                                        
+                                        if (files.length === 0) {
+                                            previewDiv.innerHTML = '';
+                                            return;
+                                        }
+                                        
+                                        let html = '<div class="alert alert-light border">';
+                                        html += '<h6 class="mb-2"><i class="fas fa-files me-2"></i>الملفات المختارة (' + files.length + '):</h6>';
+                                        html += '<div class="row g-2">';
+                                        
+                                        for (let i = 0; i < files.length; i++) {
+                                            const file = files[i];
+                                            const fileSize = (file.size / (1024 * 1024)).toFixed(2); // بالميجابايت
+                                            const fileIcon = getFileIcon(file.name);
+                                            
+                                            html += '<div class="col-md-6">';
+                                            html += '<div class="d-flex align-items-center p-2 border rounded">';
+                                            html += '<i class="' + fileIcon + ' me-2 text-primary"></i>';
+                                            html += '<div class="flex-grow-1">';
+                                            html += '<div class="fw-bold text-truncate" style="max-width: 200px;" title="' + file.name + '">' + file.name + '</div>';
+                                            html += '<small class="text-muted">' + fileSize + ' MB</small>';
+                                            html += '</div>';
+                                            html += '</div>';
+                                            html += '</div>';
+                                        }
+                                        
+                                        html += '</div></div>';
+                                        previewDiv.innerHTML = html;
+                                    }
+
+                                    // الحصول على أيقونة الملف حسب نوعه
+                                    function getFileIcon(filename) {
+                                        const extension = filename.split('.').pop().toLowerCase();
+                                        
+                                        switch (extension) {
+                                            case 'pdf':
+                                                return 'fas fa-file-pdf text-danger';
+                                            case 'doc':
+                                            case 'docx':
+                                                return 'fas fa-file-word text-primary';
+                                            case 'xls':
+                                            case 'xlsx':
+                                                return 'fas fa-file-excel text-success';
+                                            case 'jpg':
+                                            case 'jpeg':
+                                            case 'png':
+                                                return 'fas fa-file-image text-info';
+                                            default:
+                                                return 'fas fa-file text-secondary';
+                                        }
+                                    }
+
                                     function validateForm() {
                                         // التحقق من الحقول المطلوبة
                                         const requiredFields = [

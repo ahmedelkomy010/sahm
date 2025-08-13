@@ -512,4 +512,49 @@ class WorkOrderController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * البحث عن أمر العمل بالرقم وإرجاع البيانات
+     */
+    public function searchByOrderNumber($orderNumber)
+    {
+        try {
+            $workOrder = WorkOrder::where('order_number', $orderNumber)->first();
+            
+            if (!$workOrder) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'لم يتم العثور على أمر عمل بهذا الرقم'
+                ]);
+            }
+
+            // إرجاع البيانات المطلوبة
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'work_type' => $workOrder->work_type,
+                    'work_description' => $workOrder->work_description,
+                    'approval_date' => $workOrder->approval_date ? $workOrder->approval_date->format('Y-m-d') : '',
+                    'manual_days' => $workOrder->manual_days,
+                    'subscriber_name' => $workOrder->subscriber_name,
+                    'district' => $workOrder->district,
+                    'municipality' => $workOrder->municipality,
+                    'station_number' => $workOrder->station_number,
+                    'consultant_name' => $workOrder->consultant_name,
+                    'office' => $workOrder->office,
+                    'order_value_with_consultant' => $workOrder->order_value_with_consultant,
+                    'order_value_without_consultant' => $workOrder->order_value_without_consultant,
+                    'execution_status' => $workOrder->execution_status,
+                    'city' => $workOrder->city
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error in searchByOrderNumber: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء البحث: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 } 

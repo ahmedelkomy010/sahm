@@ -131,6 +131,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     // وظائف أوامر العمل الأخرى
     Route::delete('work-orders/files/{file}', [WorkOrderController::class, 'deleteFile'])->name('work-orders.files.delete');
     Route::get('work-orders/descriptions/{workType}', [WorkOrderController::class, 'getWorkDescription'])->name('work-orders.descriptions');
+    Route::get('work-orders/search/{orderNumber}', [App\Http\Controllers\Admin\WorkOrderController::class, 'searchByOrderNumber'])->name('work-orders.search');
     
     // تسجيل Resource بعد تسجيل المسارات المخصصة
     Route::resource('work-orders', WorkOrderController::class)->parameters([

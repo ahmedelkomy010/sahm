@@ -272,6 +272,34 @@ class WorkOrderController extends Controller
         
         // حفظ المرفقات الأساسية
         if ($request->hasFile('files')) {
+            // التعامل مع المرفقات المتعددة الجديدة
+            if ($request->hasFile('files.attachments')) {
+                foreach ($request->file('files.attachments') as $file) {
+                    $originalName = $file->getClientOriginalName();
+                    $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                    $path = 'work_orders/' . $workOrder->id . '/basic_attachments';
+                    
+                    if (!Storage::disk('public')->exists($path)) {
+                        Storage::disk('public')->makeDirectory($path);
+                    }
+                    
+                    $filePath = $file->storeAs($path, $filename, 'public');
+                    
+                    WorkOrderFile::create([
+                        'work_order_id' => $workOrder->id,
+                        'filename' => $filename,
+                        'original_filename' => $originalName,
+                        'file_name' => $originalName,
+                        'file_path' => $filePath,
+                        'file_type' => $file->getClientMimeType(),
+                        'mime_type' => $file->getClientMimeType(),
+                        'file_size' => $file->getSize(),
+                        'file_category' => 'basic_attachments'
+                    ]);
+                }
+            }
+            
+            // التعامل مع المرفقات المفردة القديمة (للتوافق مع النظام القديم)
             $fileFields = [
                 'license_estimate' => 'مقايسة الأعمال',
                 'daily_measurement' => 'مقايسة المواد', 
