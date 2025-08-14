@@ -262,17 +262,10 @@
                                     </div>
                                 </div>
 
+                                <input type="hidden" name="execution_status" value="1">
                                 <div class="form-group mb-3">
-                                    <label for="execution_status" class="form-label fw-bold">حالة تنفيذ أمر العمل</label>
-                                    <select id="execution_status" class="form-select @error('execution_status') is-invalid @enderror" name="execution_status">
-                                        <option value="1" {{ old('execution_status', '1') == '1' ? 'selected' : '' }}>جاري العمل ...</option>
-                                        
-                                    </select>
-                                    @error('execution_status')
-                                        <span class="invalid-feedback" role="alert">
-                                            <strong>{{ $message }}</strong>
-                                        </span>
-                                    @enderror
+                                    <label class="form-label fw-bold">حالة تنفيذ أمر العمل</label>
+                                    <input type="text" class="form-control" value="جاري العمل ..." readonly disabled>
                                 </div>
 
                                 <div class="form-section mb-4">
