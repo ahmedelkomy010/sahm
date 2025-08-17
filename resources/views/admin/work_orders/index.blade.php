@@ -417,7 +417,18 @@ function resetCountdown(workOrderId) {
                                     </select>
                                 </div>
                             </div>
-                            <div>
+                            
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label for="extract_number" class="form-label fw-bold">
+                                        <i class="fas fa-file-invoice text-primary me-1"></i>
+                                        رقم المستخلص
+                                    </label>
+                                    <input type="text" class="form-control" id="extract_number" name="extract_number" 
+                                           value="{{ request('extract_number') }}" placeholder="ابحث برقم المستخلص...">
+                                </div>
+                            </div>
+                            
                             <div class="col-md-3">
                                 <div class="form-group">
                                     <label for="sort_by_date" class="form-label fw-bold">
@@ -430,7 +441,6 @@ function resetCountdown(workOrderId) {
                                         <option value="desc" {{ request('sort_by_date') == 'desc' ? 'selected' : '' }}>من الأجدد للأقدم</option>
                                     </select>
                                 </div>
-                            </div>
                             </div>
                             
                             
@@ -557,6 +567,12 @@ function resetCountdown(workOrderId) {
                                                 <i class="fas fa-times clear-filter" onclick="clearFilter('execution_status')"></i>
                                             </span>
                                         @endif
+                                        @if(request('extract_number'))
+                                            <span class="filter-badge">
+                                                رقم المستخلص: {{ request('extract_number') }}
+                                                <i class="fas fa-times clear-filter" onclick="clearFilter('extract_number')"></i>
+                                            </span>
+                                        @endif
                                         @if(request('approval_date_from'))
                                             <span class="filter-badge">
                                                 من تاريخ: {{ request('approval_date_from') }}
@@ -620,6 +636,9 @@ function resetCountdown(workOrderId) {
                                     <option value="25" {{ request('per_page') == 25 ? 'selected' : '' }}>25</option>
                                     <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50</option>
                                     <option value="100" {{ request('per_page') == 100 ? 'selected' : '' }}>100</option>
+                                    <option value="300" {{ request('per_page') == 300 ? 'selected' : '' }}>300</option>
+                                    <option value="500" {{ request('per_page') == 500 ? 'selected' : '' }}>500</option>
+                                    <option value="1000" {{ request('per_page') == 1000 ? 'selected' : '' }}>1000</option>
                                 </select>
                                 <span class="text-muted ms-2">نتيجة</span>
                             </div>
@@ -650,6 +669,7 @@ function resetCountdown(workOrderId) {
                                     <th>رقم المحطة</th>
                                     <th>تاريخ الاعتماد <br> مدة التنفيذ</th>
                                     <th>حالة التنفيذ</th>
+                                    <th>رقم المستخلص</th>
                                     <th>قيمة أمر العمل المبدئية غير شامل الاستشاري</th>
                                     <th>الإجراءات</th>
                                 </tr>
@@ -803,6 +823,13 @@ function resetCountdown(workOrderId) {
                                                 @default
                                                     <span class="badge bg-secondary">{{ $workOrder->execution_status }}</span>
                                             @endswitch
+                                        </td>
+                                        <td>
+                                            @if($workOrder->extract_number)
+                                                <span class="badge bg-info">{{ $workOrder->extract_number }}</span>
+                                            @else
+                                                <span class="text-muted">-</span>
+                                            @endif
                                         </td>
                                         <td>{{ number_format($workOrder->order_value_without_consultant ?? 0, 2) }} ريال</td>
                                         <td>

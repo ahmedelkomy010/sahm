@@ -85,6 +85,8 @@ class WorkOrder extends Model
         'excavation_surfaced_rock_open_price',
         'excavation_details_table',
         'entry_sheet',
+        'entry_sheet_1',
+        'entry_sheet_2',
         'actual_execution_value_consultant',
         'actual_execution_value_without_consultant',
         'first_partial_payment_without_tax',

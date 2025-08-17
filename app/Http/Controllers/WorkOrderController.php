@@ -77,6 +77,11 @@ class WorkOrderController extends Controller
             $query->where('execution_status', $request->execution_status);
         }
         
+        // فلتر رقم المستخلص
+        if ($request->filled('extract_number')) {
+            $query->where('extract_number', 'like', '%' . $request->extract_number . '%');
+        }
+        
         // فلتر تاريخ الاعتماد من
         if ($request->filled('approval_date_from')) {
             $query->whereDate('approval_date', '>=', $request->approval_date_from);
@@ -112,7 +117,7 @@ class WorkOrderController extends Controller
         
         // عدد العناصر في الصفحة (يمكن تخصيصه من خلال الفلتر)
         $perPage = $request->get('per_page', 15);
-        $perPage = in_array($perPage, [10, 15, 25, 50, 100]) ? $perPage : 15;
+        $perPage = in_array($perPage, [10, 15, 25, 50, 100, 300, 500, 1000]) ? $perPage : 15;
         
         $workOrders = $query->paginate($perPage);
         
@@ -576,6 +581,8 @@ class WorkOrderController extends Controller
             $workOrder->update($request->only([
                 'purchase_order_number',
                 'entry_sheet',
+                'entry_sheet_1',
+                'entry_sheet_2',
                 'extract_number',
                 'actual_execution_value_consultant',
                 'actual_execution_value_without_consultant',
@@ -839,11 +846,11 @@ class WorkOrderController extends Controller
                 ]);
             }
 
-            // إنشاء ربط بين أمر العمل وبند العمل مع كمية افتراضية 1.00
+            // إنشاء ربط بين أمر العمل وبند العمل مع كمية افتراضية 0.00
             $workOrderItem = \App\Models\WorkOrderItem::create([
                 'work_order_id' => $request->work_order_id,
                 'work_item_id' => $workItem->id,
-                'quantity' => 1.00, // كمية افتراضية
+                'quantity' => 0.00, // كمية افتراضية
                 'unit_price' => $workItem->unit_price ?? 0, // سعر الوحدة من بند العمل
                 'unit' => $workItem->unit ?? 'EA', // الوحدة من بند العمل
                 'executed_quantity' => 0,
@@ -872,13 +879,21 @@ class WorkOrderController extends Controller
         try {
             $request->validate([
                 'executed_quantity' => 'required|numeric|min:0',
-                'work_date' => 'required|date'
+                'work_date' => 'nullable|date'
             ]);
 
-            $workOrderItem->update([
+            $updateData = [
                 'executed_quantity' => $request->executed_quantity,
-                'work_date' => $request->work_date
-            ]);
+            ];
+
+            // إضافة تاريخ العمل إذا تم تمريره، وإلا استخدم التاريخ الحالي للبند أو تاريخ اليوم
+            if ($request->has('work_date')) {
+                $updateData['work_date'] = $request->work_date;
+            } else if (!$workOrderItem->work_date) {
+                $updateData['work_date'] = now()->format('Y-m-d');
+            }
+
+            $workOrderItem->update($updateData);
 
             return response()->json([
                 'success' => true,
@@ -2662,37 +2677,44 @@ class WorkOrderController extends Controller
             
             foreach ($fileTypes as $fieldName => $description) {
                 if ($request->hasFile($fieldName)) {
-                    $file = $request->file($fieldName);
+                    $files = $request->file($fieldName);
                     
-                    // التحقق من صحة الملف
-                    $request->validate([
-                        $fieldName => 'file|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png|max:20480'
-                    ]);
-                    
-                    $originalName = $file->getClientOriginalName();
-                    $filename = time() . '_' . uniqid() . '_' . $fieldName . '.' . $file->getClientOriginalExtension();
-                    $path = 'work_orders/' . $workOrder->id . '/post_execution_files';
-                    
-                    if (!Storage::disk('public')->exists($path)) {
-                        Storage::disk('public')->makeDirectory($path);
+                    // التأكد من أن الملفات في array
+                    if (!is_array($files)) {
+                        $files = [$files];
                     }
                     
-                    $filePath = $file->storeAs($path, $filename, 'public');
-                    
-                    WorkOrderFile::create([
-                        'work_order_id' => $workOrder->id,
-                        'filename' => $filename,
-                        'original_filename' => $originalName,
-                        'file_name' => $originalName,
-                        'file_path' => $filePath,
-                        'file_type' => $file->getClientMimeType(),
-                        'mime_type' => $file->getClientMimeType(),
-                        'file_size' => $file->getSize(),
-                        'file_category' => 'post_execution_files',
-                        'attachment_type' => $fieldName,
+                    // التحقق من صحة الملفات
+                    $request->validate([
+                        $fieldName . '.*' => 'file|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png|max:20480'
                     ]);
                     
-                    $uploadedFiles[] = $description;
+                    foreach ($files as $file) {
+                        $originalName = $file->getClientOriginalName();
+                        $filename = time() . '_' . uniqid() . '_' . $fieldName . '.' . $file->getClientOriginalExtension();
+                        $path = 'work_orders/' . $workOrder->id . '/post_execution_files';
+                        
+                        if (!Storage::disk('public')->exists($path)) {
+                            Storage::disk('public')->makeDirectory($path);
+                        }
+                        
+                        $filePath = $file->storeAs($path, $filename, 'public');
+                        
+                        WorkOrderFile::create([
+                            'work_order_id' => $workOrder->id,
+                            'filename' => $filename,
+                            'original_filename' => $originalName,
+                            'file_name' => $originalName,
+                            'file_path' => $filePath,
+                            'file_type' => $file->getClientMimeType(),
+                            'mime_type' => $file->getClientMimeType(),
+                            'file_size' => $file->getSize(),
+                            'file_category' => 'post_execution_files',
+                            'attachment_type' => $fieldName,
+                        ]);
+                    }
+                    
+                    $uploadedFiles[] = $description . ' (' . count($files) . ' ملف)';
                 }
             }
             
@@ -2724,6 +2746,47 @@ class WorkOrderController extends Controller
                 ], 500);
             }
             return redirect()->back()->with('error', 'حدث خطأ أثناء رفع الملفات');
+        }
+    }
+
+    public function getFiles(Request $request, WorkOrder $workOrder)
+    {
+        try {
+            $field = $request->get('field');
+            
+            if (!$field) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Field parameter is required'
+                ]);
+            }
+            
+            $files = $workOrder->files()
+                ->where('file_category', 'post_execution_files')
+                ->where('attachment_type', $field)
+                ->orderBy('created_at', 'desc')
+                ->get();
+            
+            $filesData = $files->map(function ($file) {
+                return [
+                    'id' => $file->id,
+                    'original_filename' => $file->original_filename,
+                    'file_size_formatted' => $this->formatFileSize($file->file_size),
+                    'created_at' => $file->created_at->format('Y-m-d H:i'),
+                    'url' => Storage::url($file->file_path)
+                ];
+            });
+            
+            return response()->json([
+                'success' => true,
+                'files' => $filesData
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ في جلب الملفات'
+            ]);
         }
     }
 

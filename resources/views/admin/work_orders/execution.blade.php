@@ -793,9 +793,9 @@ function initializeEventListeners() {
             document.getElementById('unit_price').value = selectedOption.dataset.unitPrice || '';
             document.getElementById('unit').value = selectedOption.dataset.unit || '';
             
-            // تعيين كمية افتراضية (1) عند اختيار بند
+            // تعيين كمية افتراضية (0) عند اختيار بند
             if (selectedOption.value) {
-                document.getElementById('quantity').value = '1.00';
+                document.getElementById('quantity').value = '0.00';
             } else {
                 document.getElementById('quantity').value = '';
             }

@@ -253,6 +253,10 @@
                                                 <span class="input-group-text">﷼</span>
                                                 <input id="order_value_without_consultant" type="number" step="0.01" class="form-control @error('order_value_without_consultant') is-invalid @enderror" name="order_value_without_consultant" value="{{ old('order_value_without_consultant') }}">
                                             </div>
+                                            <small class="text-muted">
+                                                <i class="fas fa-calculator me-1"></i>
+                                                يتم حسابها تلقائياً عند إدخال القيمة شامل الاستشاري (خصم 12%)
+                                            </small>
                                             @error('order_value_without_consultant')
                                                 <span class="invalid-feedback" role="alert">
                                                     <strong>{{ $message }}</strong>
@@ -264,7 +268,7 @@
 
                                 <input type="hidden" name="execution_status" value="1">
                                 <div class="form-group mb-3">
-                                    <label class="form-label fw-bold">حالة تنفيذ أمر العمل</label>
+                                    <label class="form-label fw-bold">حالة التنفيذ</label>
                                     <input type="text" class="form-control" value="جاري العمل ..." readonly disabled>
                                 </div>
 
@@ -1379,7 +1383,7 @@ function addWorkItem() {
         </td>
         <td>
             <input type="number" name="work_items[${window.workItemRowIndex}][planned_quantity]" 
-                   class="form-control form-control-sm" step="0.01" min="0" placeholder="الكمية" required>
+                   class="form-control form-control-sm" step="0.01" min="0" value="0" placeholder="الكمية" required>
         </td>
         <td>
             <select name="work_items[${window.workItemRowIndex}][unit]" class="form-select form-select-sm work-item-unit">
@@ -1519,7 +1523,7 @@ function addMaterial() {
         </td>
         <td>
             <select name="materials[${window.materialRowIndex}][unit]" class="form-select form-select-sm material-unit @error('materials.*.unit') is-invalid @enderror" required>
-                <option value="L.M">L.M</option>
+                <option value="M">M</option>
                 <option value="Kit">Kit</option>
                 <option value="Ech">Ech</option>
             </select>
@@ -1683,11 +1687,7 @@ function showToast(type, message) {
 // حذف صف مادة
 function removeMaterialRow(button) {
     const tbody = document.getElementById('materialsBody');
-    if (tbody.children.length <= 1) {
-        alert('يجب أن يكون هناك مادة واحدة على الأقل');
-        return;
-    }
-
+    
     const row = button.closest('tr');
     if (row) {
         row.remove();
@@ -1805,7 +1805,7 @@ function addWorkItemToTable(item) {
         </td>
         <td>
             <input type="number" name="work_items[${tbody.children.length}][planned_quantity]" 
-                   class="form-control form-control-sm" step="0.01" min="0" placeholder="الكمية" required>
+                   class="form-control form-control-sm" step="0.01" min="0" value="0" placeholder="الكمية" required>
         </td>
         <td>
             <input type="text" class="form-control form-control-sm work-item-unit" 
@@ -1929,7 +1929,7 @@ function addWorkItemFromSearch(id, code, description, unit, price) {
         </td>
         <td>
             <input type="number" name="work_items[${window.workItemRowIndex}][planned_quantity]" 
-                   class="form-control form-control-sm" step="0.01" min="0" placeholder="الكمية" required>
+                   class="form-control form-control-sm" step="0.01" min="0" value="0" placeholder="الكمية" required>
         </td>
         <td>
             <select name="work_items[${window.workItemRowIndex}][unit]" class="form-select form-select-sm work-item-unit">
@@ -2111,7 +2111,7 @@ function addItemFromSearch(id, code, description, unit, price) {
         </td>
         <td>
             <input type="number" name="work_items[${window.workItemRowIndex}][planned_quantity]" 
-                   class="form-control form-control-sm" step="0.01" min="0" placeholder="الكمية" required>
+                   class="form-control form-control-sm" step="0.01" min="0" value="0" placeholder="الكمية" required>
         </td>
         <td>
             <select name="work_items[${window.workItemRowIndex}][unit]" class="form-select form-select-sm work-item-unit">
@@ -2368,7 +2368,7 @@ function addImportedMaterialsToTable(materials) {
             </td>
             <td>
                 <select name="materials[${window.materialRowIndex}][unit]" class="form-select form-select-sm">
-                    <option value="L.M" ${material.unit === 'L.M' ? 'selected' : ''}>L.M</option>
+                    <option value="M" ${material.unit === 'M' ? 'selected' : ''}>M</option>
                     <option value="Kit" ${material.unit === 'Kit' ? 'selected' : ''}>Kit</option>
                     <option value="Ech" ${material.unit === 'Ech' ? 'selected' : ''}>Ech</option>
                 </select>
@@ -2516,7 +2516,7 @@ if (materialsImportModal) {
 
                         const code = material.code || '';
                         const description = material.description || '';
-                        const unit = material.unit || 'L.M';
+                        const unit = material.unit || 'M';
                         const quantity = material.planned_quantity || 1;
                         
                         // إنشاء صف جديد
@@ -2724,11 +2724,11 @@ function searchMaterials() {
                         <tr>
                             <td><small class="fw-bold">${material.code}</small></td>
                             <td><small>${material.description}</small></td>
-                            <td><small class="text-muted">${material.unit || 'L.M'}</small></td>
+                            <td><small class="text-muted">${material.unit || 'M'}</small></td>
         
                             <td>
                                 <button type="button" class="btn btn-success btn-sm" 
-                                        onclick="addMaterialFromSearch('${material.code}', '${material.description}', '${material.unit || 'L.M'}')">
+                                        onclick="addMaterialFromSearch('${material.code}', '${material.description}', '${material.unit || 'M'}')">
                                     <i class="fas fa-plus"></i>
                                 </button>
                             </td>
@@ -2807,7 +2807,7 @@ function addMaterialRow(code, description, quantity, unit, notes) {
         </td>
         <td>
             <select name="materials[${window.materialRowIndex}][unit]" class="form-select form-select-sm">
-                <option value="L.M" ${unit === 'L.M' ? 'selected' : ''}>L.M</option>
+                <option value="M" ${unit === 'M' ? 'selected' : ''}>M</option>
                 <option value="Kit" ${unit === 'Kit' ? 'selected' : ''}>Kit</option>
                 <option value="Ech" ${unit === 'Ech' ? 'selected' : ''}>Ech</option>
             </select>
@@ -3061,7 +3061,7 @@ function addWorkItemToTable(item) {
         </td>
         <td>
             <input type="number" name="work_items[${window.workItemRowIndex}][planned_quantity]" 
-                   class="form-control form-control-sm" step="0.01" min="0" value="1" 
+                   class="form-control form-control-sm" step="0.01" min="0" value="0" 
                    placeholder="الكمية" required>
         </td>
         <td>
@@ -3103,7 +3103,7 @@ function addMaterialToTable(material) {
     // استخدام البيانات مع قيم افتراضية آمنة
     const code = material.code || material.material_code || '';
     const description = material.description || material.material_description || '';
-    const unit = material.unit || 'L.M';
+    const unit = material.unit || 'M';
     const quantity = material.planned_quantity || 1;
     
     row.innerHTML = `
@@ -3128,7 +3128,7 @@ function addMaterialToTable(material) {
         </td>
         <td>
             <select name="materials[${window.materialRowIndex}][unit]" class="form-select form-select-sm material-unit">
-                <option value="L.M" ${unit === 'L.M' ? 'selected' : ''}>L.M</option>
+                <option value="M" ${unit === 'M' ? 'selected' : ''}>M</option>
                 <option value="Kit" ${unit === 'Kit' ? 'selected' : ''}>Kit</option>
                 <option value="Ech" ${unit === 'Ech' ? 'selected' : ''}>Ech</option>
             </select>
@@ -3265,6 +3265,43 @@ function addMaterialToTable(material) {
         
         // تحديث عداد مدة التنفيذ عند تركيز النافذة (عندما يعود المستخدم للصفحة)
         window.addEventListener('focus', updateExecutionCountdown);
+    });
+
+    // حساب قيمة أمر العمل بدون استشاري ديناميكياً
+    document.addEventListener('DOMContentLoaded', function() {
+        const orderValueWithConsultantInput = document.getElementById('order_value_with_consultant');
+        const orderValueWithoutConsultantInput = document.getElementById('order_value_without_consultant');
+
+        function calculateWithoutConsultant() {
+            const valueWithConsultant = parseFloat(orderValueWithConsultantInput.value);
+            
+            if (!isNaN(valueWithConsultant) && valueWithConsultant > 0) {
+                // حساب القيمة بدون استشاري (خصم 12%)
+                const valueWithoutConsultant = valueWithConsultant * 0.88; // 100% - 12% = 88%
+                
+                // تعيين القيمة في الحقل مع تقريب لرقمين عشريين
+                orderValueWithoutConsultantInput.value = valueWithoutConsultant.toFixed(2);
+                
+                // إزالة أي تنسيق خطأ إذا كان موجوداً
+                orderValueWithoutConsultantInput.classList.remove('is-invalid');
+                
+                // إضافة تأثير بصري للإشارة للتحديث
+                orderValueWithoutConsultantInput.style.backgroundColor = '#e8f5e8';
+                setTimeout(() => {
+                    orderValueWithoutConsultantInput.style.backgroundColor = '';
+                }, 1000);
+            } else {
+                // إذا كانت القيمة فارغة أو غير صحيحة، امسح الحقل الآخر
+                orderValueWithoutConsultantInput.value = '';
+            }
+        }
+
+        // إضافة مستمع للأحداث
+        if (orderValueWithConsultantInput && orderValueWithoutConsultantInput) {
+            orderValueWithConsultantInput.addEventListener('input', calculateWithoutConsultant);
+            orderValueWithConsultantInput.addEventListener('change', calculateWithoutConsultant);
+            orderValueWithConsultantInput.addEventListener('keyup', calculateWithoutConsultant);
+        }
     });
 </script>
 <script src="{{ asset('js/work-items-import.js') }}"></script>
