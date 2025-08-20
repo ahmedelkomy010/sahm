@@ -59,6 +59,7 @@
                                                 <option value="430" {{ old('work_type', $workOrder->work_type) == '430' ? 'selected' : '' }}> -  مخططات منح  وزارة  البلدية </option>
                                                 <option value="450" {{ old('work_type', $workOrder->work_type) == '450' ? 'selected' : '' }}>- مشاريع ربط محطات التحويل</option>
                                                 <option value="403" {{ old('work_type', $workOrder->work_type) == '403' ? 'selected' : '' }}> -  توصيل عداد شبكة هوائية VL</option>
+                                                <option value="806" {{ old('work_type', $workOrder->work_type) == '806' ? 'selected' : '' }}> -  ايصال وزارة الاسكان جهد منخفض</option>
                                             </select>
                                         </div>
                                     </div>

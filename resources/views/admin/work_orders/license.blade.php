@@ -4407,6 +4407,9 @@ function saveDigLicenseSection() {
         },
         error: function(xhr) {
             console.error('Error saving dig license:', xhr);
+            console.log('XHR Status:', xhr.status);
+            console.log('XHR Response Text:', xhr.responseText);
+            console.log('XHR Response JSON:', xhr.responseJSON);
             
             // إعادة تفعيل الزر
             if (saveBtn) {
@@ -4414,14 +4417,26 @@ function saveDigLicenseSection() {
                 saveBtn.innerHTML = originalText;
             }
             
+            // عرض تفاصيل الخطأ بشكل أوضح
+            let errorMessage = 'حدث خطأ في حفظ رخصة الحفر';
+            
             if (xhr.responseJSON && xhr.responseJSON.errors) {
                 const errors = xhr.responseJSON.errors;
                 Object.values(errors).forEach(error => {
                     toastr.error(error[0]);
                 });
+            } else if (xhr.responseJSON && xhr.responseJSON.message) {
+                errorMessage = xhr.responseJSON.message;
+                toastr.error(errorMessage);
+            } else if (xhr.status === 500) {
+                errorMessage = 'خطأ داخلي في الخادم (500) - يرجى مراجعة سجل الأخطاء';
+                toastr.error(errorMessage);
+            } else if (xhr.status === 422) {
+                errorMessage = 'بيانات غير صحيحة (422) - يرجى التحقق من البيانات المدخلة';
+                toastr.error(errorMessage);
             } else {
-                const message = xhr.responseJSON?.message || 'حدث خطأ في حفظ رخصة الحفر';
-                toastr.error(message);
+                errorMessage = `خطأ HTTP ${xhr.status}: ${xhr.statusText || 'خطأ غير محدد'}`;
+                toastr.error(errorMessage);
             }
         }
     });

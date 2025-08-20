@@ -958,9 +958,16 @@ class LicenseController extends Controller
                 'request' => $request->all()
             ]);
             
+            // معالجة خاصة لخطأ رقم الرخصة المكرر
+            $errorMessage = 'حدث خطأ أثناء حفظ القسم: ' . $e->getMessage();
+            
+            if (strpos($e->getMessage(), 'Duplicate entry') !== false && strpos($e->getMessage(), 'licenses_license_number_unique') !== false) {
+                $errorMessage = 'رقم الرخصة مستخدم مسبقاً. يرجى استخدام رقم رخصة مختلف.';
+            }
+            
             return response()->json([
                 'success' => false,
-                'message' => 'حدث خطأ أثناء حفظ القسم: ' . $e->getMessage()
+                'message' => $errorMessage
             ], 500);
         }
     }
@@ -1088,6 +1095,10 @@ class LicenseController extends Controller
                 'license_value' => $license->license_value
             ]);
             
+            // حفظ الرخصة أولاً قبل معالجة الملفات
+            $license->save();
+            \Log::info('License saved with ID: ' . $license->id);
+            
             // معالجة الملفات
             $this->handleDigLicenseFiles($request, $license);
             
@@ -1097,6 +1108,12 @@ class LicenseController extends Controller
             \Log::error('Error in saveDigLicenseSection: ' . $e->getMessage(), [
                 'trace' => $e->getTraceAsString()
             ]);
+            
+            // معالجة خاصة لخطأ رقم الرخصة المكرر
+            if (strpos($e->getMessage(), 'Duplicate entry') !== false && strpos($e->getMessage(), 'licenses_license_number_unique') !== false) {
+                throw new \Exception('رقم الرخصة مستخدم مسبقاً. يرجى استخدام رقم رخصة مختلف.');
+            }
+            
             throw $e;
         }
     }
@@ -1353,6 +1370,9 @@ class LicenseController extends Controller
     {
         $license->notes = $request->input('notes');
         
+        // حفظ الرخصة أولاً قبل معالجة الملفات
+        $license->save();
+        
         // معالجة مرفقات الملاحظات
         if ($request->hasFile('notes_attachments')) {
             $files = $request->file('notes_attachments');
@@ -1365,6 +1385,7 @@ class LicenseController extends Controller
             }
             
             $license->notes_attachments_path = json_encode($filePaths);
+            $license->save(); // حفظ مرة أخرى بعد إضافة مسارات الملفات
         }
     }
     

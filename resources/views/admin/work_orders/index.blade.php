@@ -233,6 +233,7 @@ function resetCountdown(workOrderId) {
                                         <option value="430" {{ request('work_type') == '430' ? 'selected' : '' }}>430 - مخططات منح وزارة البلدية</option>
                                         <option value="450" {{ request('work_type') == '450' ? 'selected' : '' }}>450 - مشاريع ربط محطات التحويل</option>
                                         <option value="403" {{ request('work_type') == '403' ? 'selected' : '' }}>403 - توصيل عداد شبكة هوائية VL</option>
+                                        <option value="806" {{ request('work_type') == '806' ? 'selected' : '' }}>806 - ايصال وزارة الاسكان جهد منخفض</option>
                                     </select>
                                 </div>
                             </div>
@@ -654,6 +655,9 @@ function resetCountdown(workOrderId) {
                                                     @break
                                                 @case('403')
                                                      - توصيل عداد شبكة هوائية VL
+                                                    @break
+                                                @case('806')
+                                                     - ايصال وزارة الاسكان جهد منخفض
                                                     @break
                                                 @default
                                                     {{ $workOrder->work_type }}
