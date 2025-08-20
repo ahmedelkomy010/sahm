@@ -825,9 +825,14 @@ $(document).ready(function() {
                     });
                 }, 3000);
                 
-                // إظهار رسالة نجاح إضافية
+                // إظهار رسالة نجاح إضافية وإعادة تحميل الصفحة
                 setTimeout(() => {
-                    toastr.success('تم حفظ شهادة التنسيق بنجاح! يمكنك الآن المتابعة للأقسام الأخرى.', 'تم الحفظ بنجاح');
+                    toastr.success('تم حفظ شهادة التنسيق بنجاح! سيتم تحديث الصفحة...', 'تم الحفظ بنجاح');
+                    
+                    // إعادة تحميل الصفحة بعد ثانيتين
+                    setTimeout(() => {
+                        location.reload();
+                    }, 2000);
                 }, 1000);
             },
             error: function(xhr) {
@@ -893,8 +898,8 @@ $(document).ready(function() {
                     const dimensions = `${license.excavation_length || 0} × ${license.excavation_width || 0} × ${license.excavation_depth || 0} م`;
                     const period = startDate && endDate ? `${startDate} - ${endDate}` : '-';
                     
-                    // حساب العد التنازلي
-                    const countdown = calculateCountdown(license.license_end_date);
+                    // حساب العد التنازلي مع التحقق من حالة التنفيذ
+                    const countdown = calculateCountdown(license.license_end_date, license.work_order_execution_status);
                     
                     // إضافة قيمة الرخصة للإجمالي
                     if (license.license_value) {
@@ -919,7 +924,7 @@ $(document).ready(function() {
                             <td><strong class="text-success">${formatCurrency(license.license_value)}</strong></td>
                             <td><small>${dimensions}</small></td>
                             <td><small>${period}</small></td>
-                            <td data-end-date="${license.license_end_date || ''}">${countdown}</td>
+                            <td data-end-date="${license.license_end_date || ''}" data-execution-status="${license.work_order_execution_status || ''}">${countdown}</td>
                             <td>
                                 <div class="btn-group btn-group-sm" role="group">
                                     ${license.license_file_url ? 
@@ -1010,7 +1015,12 @@ $(document).ready(function() {
     }
 
     // دالة حساب العد التنازلي
-    function calculateCountdown(endDate) {
+    function calculateCountdown(endDate, executionStatus) {
+        // التحقق من حالة التنفيذ - إذا كانت "تم تسليم 155" (حالة 2)، توقف العد التنازلي
+        if (executionStatus && parseInt(executionStatus) >= 2) {
+            return '<span class="badge bg-info"><i class="fas fa-check me-1"></i>تم التسليم</span>';
+        }
+        
         if (!endDate) return '<span class="badge bg-secondary">غير محدد</span>';
         
         const now = new Date();
@@ -1068,7 +1078,7 @@ $(document).ready(function() {
             
             const countdownCell = row.cells[7]; // عمود العد التنازلي
             if (countdownCell && countdownCell.dataset.endDate) {
-                const countdown = calculateCountdown(countdownCell.dataset.endDate);
+                const countdown = calculateCountdown(countdownCell.dataset.endDate, countdownCell.dataset.executionStatus);
                 countdownCell.innerHTML = countdown;
             }
         });
@@ -3909,14 +3919,10 @@ function deleteExtension(extensionId) {
                                             <i class="fas fa-plus me-1"></i>إضافة صف
                                         </button>
                                         <button type="button" class="btn btn-outline-light" onclick="saveAllLabDetails()">
-                                            <i class="fas fa-save me-1"></i>حفظ البيانات
+                                            <i class="fas fa-save me-1"></i>حفظ جميع البيانات
                                         </button>
-                                        <button type="button" class="btn btn-outline-info btn-sm" onclick="checkLicenseSelection()">
-                                            <i class="fas fa-info-circle me-1"></i>فحص الرخصة
-                                        </button>
-                                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="reloadLicenses()">
-                                            <i class="fas fa-sync-alt me-1"></i>تحديث الرخص
-                                        </button>
+                                        
+                                        
                                         
                                     </div>
                                     <h5 class="mb-0 fw-bold">
@@ -4383,9 +4389,14 @@ function saveDigLicenseSection() {
             // تحديث جدول رخص الحفر
             loadDigLicenses();
             
-            // إظهار رسالة إضافية
+            // إظهار رسالة إضافية وإعادة تحميل الصفحة
             setTimeout(() => {
-                toastr.success('تم حفظ رخصة الحفر بنجاح! يمكنك الآن المتابعة أو إضافة رخصة أخرى.', 'تم الحفظ بنجاح');
+                toastr.success('تم حفظ رخصة الحفر بنجاح! سيتم تحديث الصفحة...', 'تم الحفظ بنجاح');
+                
+                // إعادة تحميل الصفحة بعد ثانية واحدة للتحديث السريع
+                setTimeout(() => {
+                    location.reload();
+                }, 1000);
             }, 1000);
 
             // عدم إغلاق النافذة - الاحتفاظ بها مفتوحة للمستخدم

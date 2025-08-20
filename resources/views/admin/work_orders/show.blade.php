@@ -529,6 +529,7 @@
                                                             ->where('file_category', 'basic_attachments')
                                                             ->get();
                                                     @endphp
+                                                    
                                                     @if($attachments->count() > 0)
                                                         <div class="row g-2">
                                                             @foreach($attachments as $file)

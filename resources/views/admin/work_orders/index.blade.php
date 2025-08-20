@@ -1,74 +1,6 @@
 @extends('layouts.app')
 
-@push('scripts')
-<script>
-// تحديث العداد التصاعدي لمدة التنفيذ
-function updateCountdowns() {
-    document.querySelectorAll('.countdown-badge').forEach(badge => {
-        let workOrderId = badge.dataset.workOrder;
-        let totalDays = parseInt(badge.dataset.start) || 0;
-        let approvalDate = badge.dataset.approvalDate;
-        let procedure155Date = badge.dataset.procedure155Date;
-        
-        // التحقق من حالة التنفيذ
-        const executionStatus = badge.dataset.executionStatus;
-        if (executionStatus && parseInt(executionStatus) >= 2) {
-            badge.className = 'badge countdown-badge bg-info';
-            badge.innerHTML = '<i class="fas fa-check me-1"></i>تم التسليم';
-            return;
-        }
-        
-        // إذا كان هناك تاريخ تسليم إجراء 155، توقف العداد - أمر العمل انتهى
-        if (procedure155Date && procedure155Date !== 'null' && procedure155Date !== '') {
-            const startDate = new Date(approvalDate);
-            const targetDate = new Date(procedure155Date);
-            const today = new Date();
-            
-            startDate.setHours(0, 0, 0, 0);
-            targetDate.setHours(0, 0, 0, 0);
-            today.setHours(0, 0, 0, 0);
-            
-            // حساب عدد الأيام اللي انتهى فيها أمر العمل (من تاريخ الاعتماد لتاريخ إجراء 155)
-            const completionDays = Math.floor((targetDate - startDate) / (1000 * 60 * 60 * 24));
-            
-            // تم إصدار إجراء 155 - أمر العمل انتهى - توقف العداد
-            badge.className = 'badge countdown-badge bg-success';
-            badge.innerHTML = `<i class="fas fa-check-circle me-1"></i>انتهى في ${completionDays} يوم`;
-            return;
-        } else {
-            // الحساب القديم بناءً على الأيام اليدوية - حساب الأيام المنقضية من تاريخ الاعتماد
-            const startDate = new Date(approvalDate);
-            const today = new Date();
-            startDate.setHours(0, 0, 0, 0);
-            today.setHours(0, 0, 0, 0);
-            
-            const daysSinceApproval = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
 
-            if (totalDays > 0) {
-                if (daysSinceApproval <= totalDays) {
-                    const remainingDays = totalDays - daysSinceApproval;
-                    badge.className = 'badge countdown-badge bg-success';
-                    badge.innerHTML = `<i class="fas fa-clock me-1"></i>${remainingDays} يوم متبقي`;
-                } else {
-                    const overdueDays = daysSinceApproval - totalDays;
-                    badge.className = 'badge countdown-badge bg-danger';
-                    badge.innerHTML = `<i class="fas fa-exclamation-circle me-1"></i>متأخر ${overdueDays} يوم`;
-                }
-            } else {
-                badge.className = 'badge countdown-badge bg-secondary';
-                badge.innerHTML = '<i class="fas fa-minus-circle me-1"></i>غير محدد';
-            }
-        }
-    });
-    
-    // تحديث كل دقيقة
-    setInterval(updateCountdowns, 60000);
-});
-
-// تحديث العداد عند تحميل الصفحة
-document.addEventListener('DOMContentLoaded', function() {
-    updateCountdowns();
-});
 
 @push('styles')
 <style>
@@ -164,32 +96,10 @@ setInterval(updateCountdowns, 60000);
 
 
 
-    
 
-    
 
-            });
-            
-            // حفظ أن التنبيه تم عرضه
-            localStorage.setItem(alertKey, 'true');
-        }
-    } else if (lateDays % 7 === 0 && lateDays > 0) { // كل أسبوع
-        if (typeof Swal !== 'undefined') {
-            Swal.fire({
-                title: 'تنبيه: تأخير طويل!',
-                text: `أمر العمل رقم ${workOrderId} متأخر ${lateDays} يوم`,
-                icon: 'error',
-                confirmButtonText: 'حسناً',
-                timer: 7000,
-                timerProgressBar: true
-            });
-            
-            // حفظ أن التنبيه تم عرضه
-            localStorage.setItem(alertKey, 'true');
-        }
-    }
-}
-
+@push('scripts')
+<script>
 // وظيفة لإعادة تعيين العداد (للاستخدام المستقبلي)
 function resetCountdown(workOrderId) {
     localStorage.removeItem(`execution_countdown_${workOrderId}_last_update`);

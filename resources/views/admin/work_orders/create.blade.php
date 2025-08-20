@@ -449,13 +449,18 @@
 
                                 <script>
                                     // البحث الديناميكي عند كتابة رقم أمر العمل
-                                    document.getElementById('order_number').addEventListener('input', function() {
-                                        const orderNumber = this.value.trim();
-                                        
-                                        if (orderNumber.length >= 3) { // البحث عندما يكون الرقم 3 أرقام على الأقل
-                                            searchWorkOrder(orderNumber);
-                                        } else {
-                                            clearFormFields();
+                                    document.addEventListener('DOMContentLoaded', function() {
+                                        const orderNumberInput = document.getElementById('order_number');
+                                        if (orderNumberInput) {
+                                            orderNumberInput.addEventListener('input', function() {
+                                                const orderNumber = this.value.trim();
+                                                
+                                                if (orderNumber.length >= 3) { // البحث عندما يكون الرقم 3 أرقام على الأقل
+                                                    searchWorkOrder(orderNumber);
+                                                } else {
+                                                    clearFormFields();
+                                                }
+                                            });
                                         }
                                     });
 
@@ -1748,7 +1753,10 @@ function formatFileSize(bytes) {
 }
 
 // تحميل ملف Excel
-document.getElementById('excelImportForm').addEventListener('submit', function(e) {
+document.addEventListener('DOMContentLoaded', function() {
+    const excelImportForm = document.getElementById('excelImportForm');
+    if (excelImportForm) {
+        excelImportForm.addEventListener('submit', function(e) {
     e.preventDefault();
     
     const formData = new FormData(this);
@@ -1785,6 +1793,8 @@ document.getElementById('excelImportForm').addEventListener('submit', function(e
         console.error('Error:', error);
         toastr.error('حدث خطأ أثناء رفع الملف');
     });
+        });
+    }
 });
 
 function addWorkItemToTable(item) {
@@ -2157,7 +2167,10 @@ function clearContractSearch() {
 // ================================
 
 // معالجة نموذج استيراد المواد
-document.getElementById('materialsImportForm').addEventListener('submit', function(e) {
+document.addEventListener('DOMContentLoaded', function() {
+    const materialsImportForm = document.getElementById('materialsImportForm');
+    if (materialsImportForm) {
+        materialsImportForm.addEventListener('submit', function(e) {
     e.preventDefault();
     
     const formData = new FormData();
@@ -2252,6 +2265,8 @@ document.getElementById('materialsImportForm').addEventListener('submit', functi
         hideMaterialsImportProgress();
         showMaterialsImportError('حدث خطأ في الاتصال بالخادم: ' + error.message);
     });
+        });
+    }
 });
 
 // إظهار شريط التقدم
@@ -2416,51 +2431,53 @@ function downloadMaterialsTemplate() {
 }
 
 // إعادة تعيين نموذج الاستيراد عند إغلاق النافذة
-const materialsImportModal = document.getElementById('materialsImportModal');
-if (materialsImportModal) {
-    // تهيئة النموذج
-    const form = document.getElementById('materialsImportForm');
-    let lastFocusedElement = null;
+document.addEventListener('DOMContentLoaded', function() {
+    const materialsImportModal = document.getElementById('materialsImportModal');
+    if (materialsImportModal) {
+        // تهيئة النموذج
+        const form = document.getElementById('materialsImportForm');
+        let lastFocusedElement = null;
 
-    materialsImportModal.addEventListener('show.bs.modal', function() {
-        lastFocusedElement = document.activeElement;
-    });
+        materialsImportModal.addEventListener('show.bs.modal', function() {
+            lastFocusedElement = document.activeElement;
+        });
 
-    materialsImportModal.addEventListener('shown.bs.modal', function() {
-        const fileInput = document.getElementById('materialsFile');
-        if (fileInput) {
-            fileInput.focus();
-        }
-    });
-
-    materialsImportModal.addEventListener('hidden.bs.modal', function() {
-        if (lastFocusedElement) {
-            lastFocusedElement.focus();
-        }
-        resetMaterialsImportForm();
-    });
-
-    // إدارة التنقل بين العناصر باستخدام Tab
-    materialsImportModal.addEventListener('keydown', function(e) {
-        if (e.key === 'Tab') {
-            const focusableElements = materialsImportModal.querySelectorAll(
-                'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
-            );
-            
-            const firstElement = focusableElements[0];
-            const lastElement = focusableElements[focusableElements.length - 1];
-            
-            if (e.shiftKey && document.activeElement === firstElement) {
-                e.preventDefault();
-                lastElement.focus();
-            } else if (!e.shiftKey && document.activeElement === lastElement) {
-                e.preventDefault();
-                firstElement.focus();
+        materialsImportModal.addEventListener('shown.bs.modal', function() {
+            const fileInput = document.getElementById('materialsFile');
+            if (fileInput) {
+                fileInput.focus();
             }
-        }
-    });
+        });
 
-    form.addEventListener('submit', async function(e) {
+        materialsImportModal.addEventListener('hidden.bs.modal', function() {
+            if (lastFocusedElement) {
+                lastFocusedElement.focus();
+            }
+            resetMaterialsImportForm();
+        });
+
+        // إدارة التنقل بين العناصر باستخدام Tab
+        materialsImportModal.addEventListener('keydown', function(e) {
+            if (e.key === 'Tab') {
+                const focusableElements = materialsImportModal.querySelectorAll(
+                    'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+                );
+                
+                const firstElement = focusableElements[0];
+                const lastElement = focusableElements[focusableElements.length - 1];
+                
+                if (e.shiftKey && document.activeElement === firstElement) {
+                    e.preventDefault();
+                    lastElement.focus();
+                } else if (!e.shiftKey && document.activeElement === lastElement) {
+                    e.preventDefault();
+                    firstElement.focus();
+                }
+            }
+        });
+
+        if (form) {
+            form.addEventListener('submit', async function(e) {
         e.preventDefault();
         
         const fileInput = document.getElementById('materialsFile');
@@ -2591,8 +2608,10 @@ if (materialsImportModal) {
                 progressBar.setAttribute('aria-valuenow', '0');
             }, 500);
         }
-    });
-}
+        });
+    }
+    }
+});
 
 // ================================
 // وظائف البحث في المواد
@@ -2858,26 +2877,41 @@ window.workItemRowIndex = 0;
 // تهيئة مؤشر صفوف المواد
 window.materialRowIndex = 0;
 
-// تهيئة نماذج استيراد Excel للرياض
-document.getElementById('riyadhExcelImportForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    handleExcelImport(this, 'riyadh');
-});
+// تهيئة نماذج استيراد Excel للرياض والمدينة
+document.addEventListener('DOMContentLoaded', function() {
+    // الرياض
+    const riyadhExcelForm = document.getElementById('riyadhExcelImportForm');
+    if (riyadhExcelForm) {
+        riyadhExcelForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            handleExcelImport(this, 'riyadh');
+        });
+    }
 
-document.getElementById('riyadhMaterialsImportForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    handleMaterialsImport(this, 'riyadh');
-});
+    const riyadhMaterialsForm = document.getElementById('riyadhMaterialsImportForm');
+    if (riyadhMaterialsForm) {
+        riyadhMaterialsForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            handleMaterialsImport(this, 'riyadh');
+        });
+    }
 
-// تهيئة نماذج استيراد Excel للمدينة
-document.getElementById('madinahExcelImportForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    handleExcelImport(this, 'madinah');
-});
+    // المدينة
+    const madinahExcelForm = document.getElementById('madinahExcelImportForm');
+    if (madinahExcelForm) {
+        madinahExcelForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            handleExcelImport(this, 'madinah');
+        });
+    }
 
-document.getElementById('madinahMaterialsImportForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    handleMaterialsImport(this, 'madinah');
+    const madinahMaterialsForm = document.getElementById('madinahMaterialsImportForm');
+    if (madinahMaterialsForm) {
+        madinahMaterialsForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            handleMaterialsImport(this, 'madinah');
+        });
+    }
 });
 
 // معالجة استيراد ملف Excel لبنود العمل
@@ -3249,13 +3283,22 @@ function addMaterialToTable(material) {
     // إضافة مستمعي الأحداث
     document.addEventListener('DOMContentLoaded', function() {
         // تحديث معلومات تاريخ الاعتماد عند تغييره
-        document.getElementById('approval_date').addEventListener('change', updateApprovalInfo);
+        const approvalDateInput = document.getElementById('approval_date');
+        if (approvalDateInput) {
+            approvalDateInput.addEventListener('change', updateApprovalInfo);
+        }
         
         // تحديث عداد مدة التنفيذ عند تغييرها
-        document.getElementById('manual_days').addEventListener('input', updateExecutionCountdown);
+        const manualDaysInput = document.getElementById('manual_days');
+        if (manualDaysInput) {
+            manualDaysInput.addEventListener('input', updateExecutionCountdown);
+        }
         
         // تحديث عداد مدة التنفيذ عند تغيير حالة التنفيذ
-        document.getElementById('execution_status').addEventListener('change', updateExecutionCountdown);
+        const executionStatusInput = document.getElementById('execution_status');
+        if (executionStatusInput) {
+            executionStatusInput.addEventListener('change', updateExecutionCountdown);
+        }
 
         // تحديث معلومات تاريخ الاعتماد كل دقيقة (فقط لتحديث "منذ X يوم")
         setInterval(updateApprovalInfo, 60000);

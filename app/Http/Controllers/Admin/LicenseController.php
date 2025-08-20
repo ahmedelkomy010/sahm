@@ -503,6 +503,7 @@ class LicenseController extends Controller
     {
         try {
             $licenses = License::where('work_order_id', $workOrderId)
+                ->with('workOrder') // إضافة العلاقة مع أمر العمل
                 ->orderBy('created_at', 'desc')
                 ->get();
 
@@ -516,6 +517,9 @@ class LicenseController extends Controller
                 $licenseArray['payment_proof_urls'] = $license->getMultipleFileUrls('payment_proof_path');
                 $licenseArray['payment_invoices_urls'] = $license->getMultipleFileUrls('payment_invoices_path');
                 $licenseArray['license_activation_urls'] = $license->getMultipleFileUrls('license_activation_path');
+                
+                // إضافة حالة التنفيذ من أمر العمل
+                $licenseArray['work_order_execution_status'] = $license->workOrder ? $license->workOrder->execution_status : null;
                 
                 return $licenseArray;
             });

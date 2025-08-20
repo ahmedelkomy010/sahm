@@ -275,32 +275,94 @@ class WorkOrderController extends Controller
             }
         }
         
+        // Debug: فحص المرفقات الواردة
+        \Log::info('=== File Upload Debug ===');
+        \Log::info('Request has files array: ' . ($request->hasFile('files') ? 'YES' : 'NO'));
+        \Log::info('Request has files.attachments: ' . ($request->hasFile('files.attachments') ? 'YES' : 'NO'));
+        \Log::info('All files in request: ' . json_encode(array_keys($request->allFiles())));
+        \Log::info('Files input content: ' . json_encode($request->input('files')));
+        
         // حفظ المرفقات الأساسية
-        if ($request->hasFile('files')) {
+        if ($request->hasFile('files.attachments')) {
             // التعامل مع المرفقات المتعددة الجديدة
-            if ($request->hasFile('files.attachments')) {
-                foreach ($request->file('files.attachments') as $file) {
+            $attachments = $request->file('files.attachments');
+            if (!is_array($attachments)) {
+                $attachments = [$attachments];
+            }
+            
+            \Log::info('Found attachments: ' . count($attachments));
+            
+            foreach ($attachments as $file) {
+                try {
                     $originalName = $file->getClientOriginalName();
                     $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
                     $path = 'work_orders/' . $workOrder->id . '/basic_attachments';
                     
                     if (!Storage::disk('public')->exists($path)) {
-                        Storage::disk('public')->makeDirectory($path);
+                        Storage::disk('public')->makeDirectory($path, 0755, true);
                     }
                     
                     $filePath = $file->storeAs($path, $filename, 'public');
                     
-                    WorkOrderFile::create([
-                        'work_order_id' => $workOrder->id,
-                        'filename' => $filename,
-                        'original_filename' => $originalName,
-                        'file_name' => $originalName,
-                        'file_path' => $filePath,
-                        'file_type' => $file->getClientMimeType(),
-                        'mime_type' => $file->getClientMimeType(),
-                        'file_size' => $file->getSize(),
-                        'file_category' => 'basic_attachments'
-                    ]);
+                    if ($filePath) {
+                        WorkOrderFile::create([
+                            'work_order_id' => $workOrder->id,
+                            'filename' => $filename,
+                            'original_filename' => $originalName,
+                            'file_name' => $originalName,
+                            'file_path' => $filePath,
+                            'file_type' => $file->getClientMimeType(),
+                            'mime_type' => $file->getClientMimeType(),
+                            'file_size' => $file->getSize(),
+                            'file_category' => 'basic_attachments'
+                        ]);
+                        \Log::info("File uploaded successfully: {$originalName}");
+                    } else {
+                        \Log::error("Failed to store file: {$originalName}");
+                    }
+                } catch (\Exception $e) {
+                    \Log::error("Error uploading file {$originalName}: " . $e->getMessage());
+                }
+            }
+        } elseif ($request->hasFile('files')) {
+            // التعامل مع المرفقات المتعددة الجديدة (الطريقة القديمة)
+            if ($request->hasFile('files.attachments')) {
+                $attachments = $request->file('files.attachments');
+                if (!is_array($attachments)) {
+                    $attachments = [$attachments];
+                }
+                
+                foreach ($attachments as $file) {
+                    try {
+                        $originalName = $file->getClientOriginalName();
+                        $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                        $path = 'work_orders/' . $workOrder->id . '/basic_attachments';
+                        
+                        if (!Storage::disk('public')->exists($path)) {
+                            Storage::disk('public')->makeDirectory($path, 0755, true);
+                        }
+                        
+                        $filePath = $file->storeAs($path, $filename, 'public');
+                        
+                        if ($filePath) {
+                            WorkOrderFile::create([
+                                'work_order_id' => $workOrder->id,
+                                'filename' => $filename,
+                                'original_filename' => $originalName,
+                                'file_name' => $originalName,
+                                'file_path' => $filePath,
+                                'file_type' => $file->getClientMimeType(),
+                                'mime_type' => $file->getClientMimeType(),
+                                'file_size' => $file->getSize(),
+                                'file_category' => 'basic_attachments'
+                            ]);
+                            \Log::info("File uploaded successfully: {$originalName}");
+                        } else {
+                            \Log::error("Failed to store file: {$originalName}");
+                        }
+                    } catch (\Exception $e) {
+                        \Log::error("Error uploading file {$originalName}: " . $e->getMessage());
+                    }
                 }
             }
             
@@ -338,9 +400,18 @@ class WorkOrderController extends Controller
                     ]);
                 }
             }
+        } else {
+            \Log::info('No files found in request for work order: ' . $workOrder->id);
         }
         
-        return redirect()->route('admin.work-orders.index', ['project' => $project])->with('success', 'تم إنشاء أمر العمل بنجاح');
+        // رسالة نجاح مع تفاصيل المرفقات
+        $attachmentsCount = $workOrder->files()->where('file_category', 'basic_attachments')->count();
+        $message = 'تم إنشاء أمر العمل بنجاح';
+        if ($attachmentsCount > 0) {
+            $message .= ' مع ' . $attachmentsCount . ' مرفق(ات)';
+        }
+        
+        return redirect()->route('admin.work-orders.index', ['project' => $project])->with('success', $message);
     }
 
     // عرض أمر عمل محدد
