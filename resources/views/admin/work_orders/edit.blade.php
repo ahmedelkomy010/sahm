@@ -60,6 +60,7 @@
                                                 <option value="450" {{ old('work_type', $workOrder->work_type) == '450' ? 'selected' : '' }}>- مشاريع ربط محطات التحويل</option>
                                                 <option value="403" {{ old('work_type', $workOrder->work_type) == '403' ? 'selected' : '' }}> -  توصيل عداد شبكة هوائية VL</option>
                                                 <option value="806" {{ old('work_type', $workOrder->work_type) == '806' ? 'selected' : '' }}> -  ايصال وزارة الاسكان جهد منخفض</option>
+                                                <option value="444" {{ old('work_type', $workOrder->work_type) == '444' ? 'selected' : '' }}> -   تحويل الشبكه من هوائي الي ارضي</option>
                                             </select>
                                         </div>
                                     </div>

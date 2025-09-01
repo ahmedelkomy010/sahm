@@ -383,7 +383,7 @@ use Illuminate\Support\Facades\Storage;
                 <div class="card-header bg-info text-white">
                     <h5 class="mb-0 fw-bold">
                         <i class="fas fa-file-contract me-2"></i>
-                        مرفق الخطابات والتعهدات
+                        مرفقات الخطابات والتعهدات
                     </h5>
                 </div>
                 <div class="card-body">
@@ -439,7 +439,7 @@ use Illuminate\Support\Facades\Storage;
                 <div class="card-header bg-success text-white">
                     <h5 class="mb-0 fw-bold">
                         <i class="fas fa-calendar-plus me-2"></i>
-                        سجل التمديدات
+                         سجل تمديد الرخص
                     </h5>
                 </div>
                 <div class="card-body">
@@ -500,7 +500,7 @@ use Illuminate\Support\Facades\Storage;
                 <div class="card-header bg-primary text-white">
                     <h5 class="mb-0 fw-bold">
                         <i class="fas fa-flask me-2"></i>
-                        جدول الاختبارات المضافة
+                        جدول الاختبارات 
                     </h5>
                 </div>
                 <div class="card-body">
@@ -744,9 +744,9 @@ use Illuminate\Support\Facades\Storage;
                                         <th>طول الفسح</th>
                                         <th>طول المختبر</th>
                                         <th>نوع الشارع</th>
-                                        <th>كمية التربة</th>
-                                        <th>كمية الأسفلت</th>
-                                        <th>كمية البلاط</th>
+                                        <th> التربة</th>
+                                        <th> الأسفلت</th>
+                                        <th> البلاط</th>
                                         <th>الملاحظات</th>
                         </tr>
                     </thead>
@@ -960,46 +960,87 @@ use Illuminate\Support\Facades\Storage;
                                         <th>نوع المخالفة</th>
                                         <th>تاريخ المخالفة</th>
                                         <th>الوصف</th>
-                                        <th>الغرامة</th>
+                                        <th>قيمة المخالفة</th>
+                                        <th>تاريخ الاستحقاق</th>
+                                        <th>رقم فاتورة السداد</th>
                                         <th>الحالة</th>
+                                        <th>الملاحظات</th>
                                         <th>المرفق</th>
-                        </tr>
-                    </thead>
+                                    </tr>
+                                </thead>
                                 <tbody>
                                     @foreach($license->violations as $violation)
                                     <tr>
                                         <td>
                                             <span class="badge bg-danger">{{ $violation->violation_number ?? 'غير محدد' }}</span>
-                            </td>
+                                        </td>
                                         <td class="fw-bold">{{ $violation->violation_type ?? 'غير محدد' }}</td>
                                         <td>
                                             <i class="fas fa-calendar-alt text-muted me-1"></i>
                                             {{ $violation->violation_date ? $violation->violation_date->format('Y-m-d') : 'غير محدد' }}
-                            </td>
+                                        </td>
                                         <td>
                                             <small class="text-muted">{{ $violation->description ?? 'لا يوجد وصف' }}</small>
-                            </td>
+                                        </td>
                                         <td>
-                                            @if($violation->fine_amount)
-                                                <span class="badge bg-warning text-dark">{{ number_format($violation->fine_amount) }} ريال</span>
-                                @else
+                                            @if($violation->violation_amount)
+                                                <span class="badge bg-warning text-dark">{{ number_format($violation->violation_amount, 2) }} ريال</span>
+                                            @else
                                                 <span class="text-muted">غير محدد</span>
-                                @endif
-                            </td>
+                                            @endif
+                                        </td>
                                         <td>
-                                            <span class="badge bg-{{ $violation->status == 'resolved' ? 'success' : ($violation->status == 'pending' ? 'warning' : 'danger') }}">
-                                                {{ $violation->status == 'resolved' ? 'محلول' : ($violation->status == 'pending' ? 'قيد المعالجة' : 'نشط') }}
-                                    </span>
-                            </td>
+                                            @if($violation->payment_due_date)
+                                                <i class="fas fa-calendar-due text-muted me-1"></i>
+                                                {{ $violation->payment_due_date->format('Y-m-d') }}
+                                            @else
+                                                <span class="text-muted">غير محدد</span>
+                                            @endif
+                                        </td>
                                         <td>
-                                @if($violation->attachment_path)
+                                            @if($violation->payment_invoice_number)
+                                                <span class="badge bg-info text-white">{{ $violation->payment_invoice_number }}</span>
+                                            @else
+                                                <span class="text-muted">غير محدد</span>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            @if($violation->payment_status == 1)
+                                                <span class="badge bg-success">
+                                                    <i class="fas fa-check-circle me-1"></i>مسددة
+                                                </span>
+                                            @elseif($violation->payment_status == 2)
+                                                <span class="badge bg-warning">
+                                                    <i class="fas fa-clock me-1"></i>قيد المعالجة
+                                                </span>
+                                            @elseif($violation->payment_status == 3)
+                                                <span class="badge bg-danger">
+                                                    <i class="fas fa-exclamation-triangle me-1"></i>متأخرة
+                                                </span>
+                                            @else
+                                                <span class="badge bg-secondary">
+                                                    <i class="fas fa-question-circle me-1"></i>غير محدد
+                                                </span>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            @if($violation->notes)
+                                                <div class="text-truncate" style="max-width: 200px;" title="{{ $violation->notes }}">
+                                                    {{ $violation->notes }}
+                                                </div>
+                                            @else
+                                                <span class="text-muted">لا توجد ملاحظات</span>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            @if($violation->attachment_path)
                                                 <a href="{{ asset('storage/' . $violation->attachment_path) }}" target="_blank" class="btn btn-sm btn-outline-primary">
                                                     <i class="fas fa-file me-1"></i>عرض المرفق
-                                    </a>
-                                @else
+                                                </a>
+                                            @else
                                                 <span class="text-muted">لا يوجد</span>
-                                @endif
-                            </td>
+                                            @endif
+                                        </td>
                         </tr>
                         @endforeach
                     </tbody>

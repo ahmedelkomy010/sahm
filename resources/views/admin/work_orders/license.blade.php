@@ -5337,7 +5337,7 @@ function updateTestsSummary() {
     }
 }
 
-// تم حذف دالة الحفظ اليدوي - الحفظ يتم تلقائياً الآن
+
 
 // دالة تحميل بيانات الاختبارات المحفوظة من الخادم
 function loadLabTestsFromServer(licenseId) {
