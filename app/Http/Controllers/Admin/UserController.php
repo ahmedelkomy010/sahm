@@ -66,7 +66,8 @@ class UserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
-            'is_admin' => ['sometimes', 'boolean'],
+            'user_type' => ['required', 'integer', 'in:0,1,2'],
+            'city' => ['required_if:user_type,2', 'string', 'in:riyadh,madinah'],
             'permissions' => ['sometimes', 'array'],
         ]);
 
@@ -75,11 +76,13 @@ class UserController extends Controller
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
-            'is_admin' => $request->has('is_admin') ? 1 : 0,
+            'user_type' => $validated['user_type'],
+            'city' => $validated['user_type'] == 2 ? $validated['city'] : null,
+            'is_admin' => $validated['user_type'] == 1 ? 1 : 0,
         ]);
 
         // حفظ الصلاحيات إذا تم تمريرها وليس مشرفًا
-        if (!$request->has('is_admin') && $request->has('permissions')) {
+        if ($validated['user_type'] != 1 && $request->has('permissions')) {
             $user->permissions = $request->permissions;
             $user->save();
         }
@@ -134,20 +137,23 @@ class UserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
-            'is_admin' => ['sometimes', 'boolean'],
+            'user_type' => ['required', 'integer', 'in:0,1,2'],
+            'city' => ['required_if:user_type,2', 'string', 'in:riyadh,madinah'],
             'permissions' => ['sometimes', 'array'],
         ]);
 
         $user->name = $validated['name'];
         $user->email = $validated['email'];
-        $user->is_admin = $request->has('is_admin') ? 1 : 0;
+        $user->user_type = $validated['user_type'];
+        $user->city = $validated['user_type'] == 2 ? $validated['city'] : null;
+        $user->is_admin = $validated['user_type'] == 1 ? 1 : 0;
         
         if (!empty($validated['password'])) {
             $user->password = Hash::make($validated['password']);
         }
         
         // حفظ الصلاحيات إذا تم تمريرها وليس مشرفًا
-        if (!$request->has('is_admin') && $request->has('permissions')) {
+        if ($validated['user_type'] != 1 && $request->has('permissions')) {
             $user->permissions = $request->permissions;
         } else {
             // إذا كان مشرفًا، امسح الصلاحيات المخصصة

@@ -64,12 +64,40 @@ class User extends Authenticatable
      *
      * @var array<int, string>
      */
+    /**
+     * أنواع المستخدمين في النظام
+     */
+    const USER_TYPES = [
+        'admin' => 1,      // مشرف النظام
+        'branch' => 2,     // مدير فرع
+        'normal' => 0      // مستخدم عادي
+    ];
+
+    /**
+     * المدن المتاحة في النظام
+     */
+    const CITIES = [
+        'riyadh' => [
+            'name' => 'الرياض',
+            'permission' => 'access_riyadh_contracts'
+        ],
+        'madinah' => [
+            'name' => 'المدينة المنورة',
+            'permission' => 'access_madinah_contracts'
+        ]
+    ];
+
     protected $fillable = [
         'name',
         'email',
         'password',
         'is_admin',
+        'user_type',
+        'city',
         'permissions',
+        'phone',
+        'job_title',
+        'avatar',
     ];
 
     /**
@@ -112,7 +140,54 @@ class User extends Authenticatable
      */
     public function isAdmin(): bool
     {
-        return $this->is_admin == 1;
+        return $this->user_type == self::USER_TYPES['admin'];
+    }
+
+    /**
+     * التحقق مما إذا كان المستخدم مدير فرع
+     *
+     * @return bool
+     */
+    public function isBranchManager(): bool
+    {
+        return $this->user_type == self::USER_TYPES['branch'];
+    }
+
+    /**
+     * الحصول على اسم المدينة التابع لها المستخدم
+     *
+     * @return string|null
+     */
+    public function getCityName(): ?string
+    {
+        if (!$this->city) {
+            return null;
+        }
+        return self::CITIES[$this->city]['name'] ?? null;
+    }
+
+    /**
+     * التحقق من صلاحيات المستخدم للمدينة
+     *
+     * @param string $city
+     * @return bool
+     */
+    public function hasAccessToCity(string $city): bool
+    {
+        if ($this->isAdmin()) {
+            return true;
+        }
+
+        if ($this->isBranchManager()) {
+            return $this->city === $city;
+        }
+
+        $cityConfig = self::CITIES[$city] ?? null;
+        if (!$cityConfig) {
+            return false;
+        }
+
+        return $this->hasPermission($cityConfig['permission']);
     }
     
     /**

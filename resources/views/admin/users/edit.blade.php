@@ -52,17 +52,96 @@
             </div>
         </div>
         
-        <!-- Is Admin -->
-        <div class="mb-4 flex items-center">
-            <input type="checkbox" id="is_admin" name="is_admin" value="1" class="mr-2 rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" {{ $user->is_admin ? 'checked' : '' }}>
-            <x-input-label for="is_admin" :value="__('مشرف النظام')" class="mb-0" />
-        </div>
-        
-        <!-- صلاحيات المستخدم -->
-        
-            <div class="mt-3 pt-3 border-t border-gray-200">
-                <p class="text-xs text-gray-500">ملاحظة: المستخدم المشرف سيكون لديه جميع الصلاحيات تلقائياً بغض النظر عن الخيارات المحددة</p>
+        <!-- نوع المستخدم -->
+        <div class="bg-gray-50 p-4 rounded-lg mb-6">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">نوع المستخدم</h3>
+            
+            <div class="space-y-4">
+                <!-- مشرف النظام -->
+                <div class="flex items-start">
+                    <input type="radio" id="user_type_admin" name="user_type" value="1" 
+                        {{ $user->user_type == 1 ? 'checked' : '' }}
+                        class="h-5 w-5 ml-2 mt-1 text-red-600 focus:ring-red-500 border-gray-300">
+                    <div class="mr-2">
+                        <label for="user_type_admin" class="text-sm font-medium text-red-800 flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                            </svg>
+                            مشرف النظام
+                        </label>
+                        <p class="text-xs text-red-600 mt-1">المشرف له صلاحية الوصول لجميع أجزاء النظام بدون قيود</p>
+                    </div>
+                </div>
+
+                <!-- مدير فرع -->
+                <div class="flex items-start">
+                    <input type="radio" id="user_type_branch" name="user_type" value="2" 
+                        {{ $user->user_type == 2 ? 'checked' : '' }}
+                        class="h-5 w-5 ml-2 mt-1 text-blue-600 focus:ring-blue-500 border-gray-300">
+                    <div class="mr-2">
+                        <label for="user_type_branch" class="text-sm font-medium text-blue-800 flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M7 7h10M7 11h10M7 15h10" />
+                            </svg>
+                            مدير فرع
+                        </label>
+                        <p class="text-xs text-blue-600 mt-1">مدير الفرع له صلاحية إدارة جميع العمليات في المدينة المحددة</p>
+                    </div>
+                </div>
+
+                <!-- مستخدم عادي -->
+                <div class="flex items-start">
+                    <input type="radio" id="user_type_normal" name="user_type" value="0" 
+                        {{ $user->user_type == 0 ? 'checked' : '' }}
+                        class="h-5 w-5 ml-2 mt-1 text-gray-600 focus:ring-gray-500 border-gray-300">
+                    <div class="mr-2">
+                        <label for="user_type_normal" class="text-sm font-medium text-gray-800 flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            </svg>
+                            مستخدم عادي
+                        </label>
+                        <p class="text-xs text-gray-600 mt-1">المستخدم العادي له صلاحيات محددة حسب الإعدادات</p>
+                    </div>
+                </div>
             </div>
+
+            <!-- اختيار المدينة لمدير الفرع -->
+            <div id="branch_city_section" class="mt-4 pt-4 border-t border-gray-200 {{ $user->user_type == 2 ? '' : 'hidden' }}">
+                <h4 class="text-md font-medium text-gray-700 mb-2">اختيار المدينة:</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- الرياض -->
+                    <div class="flex items-center">
+                        <input type="radio" id="city_riyadh" name="city" value="riyadh" 
+                            {{ $user->city == 'riyadh' ? 'checked' : '' }}
+                            class="h-4 w-4 ml-2 text-green-600 focus:ring-green-500 border-gray-300">
+                        <label for="city_riyadh" class="text-sm text-gray-700 mr-2 flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M7 7h10M7 11h10M7 15h10" />
+                            </svg>
+                            الرياض
+                        </label>
+                    </div>
+
+                    <!-- المدينة المنورة -->
+                    <div class="flex items-center">
+                        <input type="radio" id="city_madinah" name="city" value="madinah" 
+                            {{ $user->city == 'madinah' ? 'checked' : '' }}
+                            class="h-4 w-4 ml-2 text-blue-600 focus:ring-blue-500 border-gray-300">
+                        <label for="city_madinah" class="text-sm text-gray-700 mr-2 flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M7 7h10M7 11h10M7 15h10" />
+                            </svg>
+                            المدينة المنورة
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- صلاحيات المستخدم -->
+        <div class="mt-3 pt-3 border-t border-gray-200">
+            <p class="text-xs text-gray-500">ملاحظة: المستخدم المشرف سيكون لديه جميع الصلاحيات تلقائياً بغض النظر عن الخيارات المحددة</p>
         </div>
         
         <!-- صلاحيات المشاريع -->
@@ -337,43 +416,152 @@
         }
     });
 
-    // تعيين حقل مشرف النظام
-    document.getElementById('is_admin').addEventListener('change', function() {
-        const permissionCheckboxes = document.querySelectorAll('input[name="permissions[]"]');
-        const citiesDiv = document.getElementById('unified_contracts_cities');
-        
-        if (this.checked) {
-            // إذا تم تحديد مشرف النظام، فحدد جميع الصلاحيات وعطلها
-            permissionCheckboxes.forEach(checkbox => {
-                checkbox.checked = true;
-                checkbox.disabled = true;
-            });
-            // إظهار صلاحيات المدن وتعطيلها
-            citiesDiv.classList.remove('hidden');
-        } else {
-            // إذا تم إلغاء تحديد مشرف النظام، فعّل جميع الصلاحيات
-            permissionCheckboxes.forEach(checkbox => {
-                checkbox.disabled = false;
-            });
-            // إخفاء صلاحيات المدن إذا لم يتم تحديد العقد الموحد
-            if (!document.getElementById('access_unified_contracts').checked) {
-                citiesDiv.classList.add('hidden');
+    // تعيين سلوك نوع المستخدم
+    document.querySelectorAll('input[name="user_type"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            const permissionCheckboxes = document.querySelectorAll('input[name="permissions[]"]');
+            const citiesDiv = document.getElementById('unified_contracts_cities');
+            const riyadhDetailedDiv = document.getElementById('riyadh_detailed_permissions');
+            const madinahDetailedDiv = document.getElementById('madinah_detailed_permissions');
+            const branchCitySection = document.getElementById('branch_city_section');
+            
+            if (this.value === '1') { // مشرف النظام
+                // تحديد وتعطيل جميع الصلاحيات
+                permissionCheckboxes.forEach(checkbox => {
+                    checkbox.checked = true;
+                    checkbox.disabled = true;
+                });
+                // إظهار صلاحيات المدن وتعطيلها
+                citiesDiv.classList.remove('hidden');
+                riyadhDetailedDiv.classList.remove('hidden');
+                madinahDetailedDiv.classList.remove('hidden');
+                // إخفاء قسم اختيار المدينة
+                branchCitySection.classList.add('hidden');
+            } 
+            else if (this.value === '2') { // مدير فرع
+                // تفعيل الصلاحيات
+                permissionCheckboxes.forEach(checkbox => {
+                    checkbox.disabled = false;
+                });
+                // إظهار قسم اختيار المدينة
+                branchCitySection.classList.remove('hidden');
+                // تحديد المدينة الأولى افتراضياً إذا لم يتم تحديد مدينة
+                if (!document.querySelector('input[name="city"]:checked')) {
+                    document.getElementById('city_riyadh').checked = true;
+                }
+                
+                // تحديد العقد الموحد تلقائياً لمدير الفرع
+                const unifiedContractsCheckbox = document.getElementById('access_unified_contracts');
+                unifiedContractsCheckbox.checked = true;
+                citiesDiv.classList.remove('hidden');
+                
+                // تحديد المدينة المناسبة بناءً على الاختيار
+                const selectedCity = document.querySelector('input[name="city"]:checked');
+                if (selectedCity) {
+                    if (selectedCity.value === 'riyadh') {
+                        const riyadhCheckbox = document.getElementById('access_riyadh_contracts');
+                        riyadhCheckbox.checked = true;
+                        riyadhDetailedDiv.classList.remove('hidden');
+                        // تحديد كل صلاحيات الرياض
+                        document.querySelectorAll('[id^="riyadh_manage_"]').forEach(checkbox => {
+                            checkbox.checked = true;
+                        });
+                    } else if (selectedCity.value === 'madinah') {
+                        const madinahCheckbox = document.getElementById('access_madinah_contracts');
+                        madinahCheckbox.checked = true;
+                        madinahDetailedDiv.classList.remove('hidden');
+                        // تحديد كل صلاحيات المدينة المنورة
+                        document.querySelectorAll('[id^="madinah_manage_"]').forEach(checkbox => {
+                            checkbox.checked = true;
+                        });
+                    }
+                }
             }
-        }
+            else { // مستخدم عادي
+                // تفعيل الصلاحيات
+                permissionCheckboxes.forEach(checkbox => {
+                    checkbox.disabled = false;
+                });
+                // إخفاء قسم اختيار المدينة
+                branchCitySection.classList.add('hidden');
+                // إخفاء صلاحيات المدن إذا لم يتم تحديد العقد الموحد
+                if (!document.getElementById('access_unified_contracts').checked) {
+                    citiesDiv.classList.add('hidden');
+                    riyadhDetailedDiv.classList.add('hidden');
+                    madinahDetailedDiv.classList.add('hidden');
+                }
+            }
+        });
+    });
+
+    // تعيين سلوك تغيير المدينة لمدير الفرع
+    document.querySelectorAll('input[name="city"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            const userType = document.querySelector('input[name="user_type"]:checked');
+            if (userType && userType.value === '2') { // مدير فرع فقط
+                const citiesDiv = document.getElementById('unified_contracts_cities');
+                const riyadhCheckbox = document.getElementById('access_riyadh_contracts');
+                const madinahCheckbox = document.getElementById('access_madinah_contracts');
+                const riyadhDetailedDiv = document.getElementById('riyadh_detailed_permissions');
+                const madinahDetailedDiv = document.getElementById('madinah_detailed_permissions');
+
+                // إلغاء تحديد كل المدن أولاً
+                riyadhCheckbox.checked = false;
+                madinahCheckbox.checked = false;
+                riyadhDetailedDiv.classList.add('hidden');
+                madinahDetailedDiv.classList.add('hidden');
+                
+                // إلغاء تحديد كل الصلاحيات التفصيلية
+                document.querySelectorAll('[id^="riyadh_manage_"], [id^="madinah_manage_"]').forEach(checkbox => {
+                    checkbox.checked = false;
+                });
+
+                // تحديد المدينة المختارة وصلاحياتها
+                if (this.value === 'riyadh') {
+                    riyadhCheckbox.checked = true;
+                    riyadhDetailedDiv.classList.remove('hidden');
+                    // تحديد كل صلاحيات الرياض
+                    document.querySelectorAll('[id^="riyadh_manage_"]').forEach(checkbox => {
+                        checkbox.checked = true;
+                    });
+                } else if (this.value === 'madinah') {
+                    madinahCheckbox.checked = true;
+                    madinahDetailedDiv.classList.remove('hidden');
+                    // تحديد كل صلاحيات المدينة المنورة
+                    document.querySelectorAll('[id^="madinah_manage_"]').forEach(checkbox => {
+                        checkbox.checked = true;
+                    });
+                }
+            }
+        });
     });
     
     // تحقق من حالة الحقول عند تحميل الصفحة
     document.addEventListener('DOMContentLoaded', function() {
-        // التحقق من حالة مشرف النظام
-        if (document.getElementById('is_admin').checked) {
-            const permissionCheckboxes = document.querySelectorAll('input[name="permissions[]"]');
-            const citiesDiv = document.getElementById('unified_contracts_cities');
-            
-            permissionCheckboxes.forEach(checkbox => {
-                checkbox.checked = true;
-                checkbox.disabled = true;
-            });
-            citiesDiv.classList.remove('hidden');
+        const userType = document.querySelector('input[name="user_type"]:checked');
+        const permissionCheckboxes = document.querySelectorAll('input[name="permissions[]"]');
+        const citiesDiv = document.getElementById('unified_contracts_cities');
+        const riyadhDetailedDiv = document.getElementById('riyadh_detailed_permissions');
+        const madinahDetailedDiv = document.getElementById('madinah_detailed_permissions');
+        const branchCitySection = document.getElementById('branch_city_section');
+
+        if (userType) {
+            if (userType.value === '1') { // مشرف النظام
+                permissionCheckboxes.forEach(checkbox => {
+                    checkbox.checked = true;
+                    checkbox.disabled = true;
+                });
+                citiesDiv.classList.remove('hidden');
+                riyadhDetailedDiv.classList.remove('hidden');
+                madinahDetailedDiv.classList.remove('hidden');
+                branchCitySection.classList.add('hidden');
+            } 
+            else if (userType.value === '2') { // مدير فرع
+                branchCitySection.classList.remove('hidden');
+                if (!document.querySelector('input[name="city"]:checked')) {
+                    document.getElementById('city_riyadh').checked = true;
+                }
+            }
         }
         
         // التحقق من حالة العقد الموحد

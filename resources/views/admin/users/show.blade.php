@@ -32,6 +32,17 @@
         </div>
     </div>
     
+    <!-- User Avatar -->
+    <div class="flex justify-center mb-6">
+        @if($user->avatar)
+            <img src="{{ asset('storage/' . $user->avatar) }}" alt="{{ $user->name }}" class="w-32 h-32 rounded-full object-cover border-4 border-blue-200">
+        @else
+            <div class="w-32 h-32 rounded-full bg-blue-100 flex items-center justify-center text-blue-500 text-4xl border-4 border-blue-200">
+                {{ strtoupper(substr($user->name, 0, 1)) }}
+            </div>
+        @endif
+    </div>
+
     <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 mb-6">
         <div class="flex flex-col">
             <span class="text-sm text-gray-500">الاسم</span>
@@ -41,6 +52,16 @@
         <div class="flex flex-col">
             <span class="text-sm text-gray-500">البريد الإلكتروني</span>
             <p class="mt-1 text-gray-600">{{ $user->email }}</p>
+        </div>
+
+        <div class="flex flex-col">
+            <span class="text-sm text-gray-500">رقم الهاتف</span>
+            <p class="mt-1 text-gray-600">{{ $user->phone ?: 'غير محدد' }}</p>
+        </div>
+
+        <div class="flex flex-col">
+            <span class="text-sm text-gray-500">المسمى الوظيفي</span>
+            <p class="mt-1 text-gray-600">{{ $user->job_title ?: 'غير محدد' }}</p>
         </div>
         
         <div class="flex flex-col">
@@ -53,10 +74,27 @@
             <span class="mt-1 text-base font-medium text-gray-900">{{ $user->updated_at->format('Y-m-d H:i') }}</span>
         </div>
 
-        <!-- User Role -->
-        <div class="mb-4">
-            <h3 class="text-lg font-semibold text-gray-800">الصلاحيات:</h3>
-            <p class="mt-1 text-gray-600">{{ $user->is_admin ? 'مشرف النظام' : 'مستخدم عادي' }}</p>
+        <!-- User Role and Permissions -->
+        <div class="col-span-2">
+            <h3 class="text-lg font-semibold text-gray-800 mb-2">الصلاحيات:</h3>
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <p class="text-gray-600 mb-2">
+                    <span class="font-medium">نوع المستخدم:</span> 
+                    {{ $user->is_admin ? 'مشرف النظام' : 'مستخدم عادي' }}
+                </p>
+                @if(!$user->is_admin && is_array($user->permissions) && count($user->permissions) > 0)
+                    <div class="mt-2">
+                        <span class="font-medium text-gray-700">الصلاحيات المحددة:</span>
+                        <div class="mt-2 flex flex-wrap gap-2">
+                            @foreach($user->permissions as $permission)
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                                    {{ \App\Models\User::PERMISSIONS[$permission] ?? $permission }}
+                                </span>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+            </div>
         </div>
     </div>
     

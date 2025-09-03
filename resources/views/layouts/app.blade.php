@@ -93,6 +93,7 @@ use Illuminate\Support\Facades\Route;
 
                 <!-- Page Content -->
                 <main>
+                    {{ $slot ?? '' }}
                     @yield('content')
                 </main>
             </div>
