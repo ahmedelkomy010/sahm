@@ -77,7 +77,7 @@ class UserController extends Controller
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
             'user_type' => $validated['user_type'],
-            'city' => $validated['user_type'] == 2 ? $validated['city'] : null,
+            'city' => $validated['user_type'] == 2 ? ($validated['city'] ?? null) : null,
             'is_admin' => $validated['user_type'] == 1 ? 1 : 0,
         ]);
 
@@ -142,11 +142,14 @@ class UserController extends Controller
             'permissions' => ['sometimes', 'array'],
         ]);
 
-        $user->name = $validated['name'];
-        $user->email = $validated['email'];
-        $user->user_type = $validated['user_type'];
-        $user->city = $validated['user_type'] == 2 ? $validated['city'] : null;
-        $user->is_admin = $validated['user_type'] == 1 ? 1 : 0;
+        // تحديث البيانات باستخدام fill للتأكد من عمل الـ fillable
+        $user->fill([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'user_type' => $validated['user_type'],
+            'city' => $validated['user_type'] == 2 ? ($validated['city'] ?? null) : null,
+            'is_admin' => $validated['user_type'] == 1 ? 1 : 0,
+        ]);
         
         if (!empty($validated['password'])) {
             $user->password = Hash::make($validated['password']);
