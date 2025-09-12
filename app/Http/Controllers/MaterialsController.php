@@ -18,7 +18,21 @@ class MaterialsController extends Controller
      */
     public function index(WorkOrder $workOrder, Request $request)
     {
-        $query = $workOrder->materials()->where('code', 'NOT LIKE', 'GENERAL_FILES_%');
+        $query = $workOrder->materials()
+            ->where('code', 'NOT LIKE', 'GENERAL_FILES_%')
+            ->where(function($q) {
+                $q->where('line', '!=', 'ملفات مستقلة')
+                  ->orWhereNull('line');
+            })
+            ->where(function($q) {
+                // استبعاد الملفات المستقلة بناءً على الكود
+                $q->where('code', 'NOT LIKE', 'check_in_file_%')
+                  ->where('code', 'NOT LIKE', 'check_out_file_%')
+                  ->where('code', 'NOT LIKE', 'stock_in_file_%')
+                  ->where('code', 'NOT LIKE', 'stock_out_file_%')
+                  ->where('code', 'NOT LIKE', 'gate_pass_file_%')
+                  ->where('code', 'NOT LIKE', 'ddo_file_%');
+            });
 
         // البحث بالكود
         if ($request->filled('search_code')) {
@@ -40,10 +54,26 @@ class MaterialsController extends Controller
         // جلب بيانات مقايسة المواد من work_order_materials
         $workOrderMaterials = $workOrder->workOrderMaterials()->with('material')->get();
         
-        // جلب الملفات المستقلة (الملفات العامة)
+        // جلب الملفات المستقلة (الملفات العامة والجديدة)
         $generalFiles = $workOrder->materials()
-            ->where('code', 'LIKE', 'GENERAL_FILES_%')
+            ->where(function($q) {
+                $q->where('code', 'LIKE', 'GENERAL_FILES_%')
+                  ->orWhere('line', '=', 'ملفات مستقلة')
+                  ->orWhere('code', 'LIKE', 'check_in_file_%')
+                  ->orWhere('code', 'LIKE', 'check_out_file_%')
+                  ->orWhere('code', 'LIKE', 'stock_in_file_%')
+                  ->orWhere('code', 'LIKE', 'stock_out_file_%')
+                  ->orWhere('code', 'LIKE', 'gate_pass_file_%')
+                  ->orWhere('code', 'LIKE', 'ddo_file_%');
+            })
             ->get();
+            
+        // إضافة debugging
+        \Log::info('Independent files found', [
+            'work_order_id' => $workOrder->id,
+            'files_count' => $generalFiles->count(),
+            'files' => $generalFiles->toArray()
+        ]);
             
         $fileTypes = [
             'check_in_file' => ['label' => 'CHECK LIST', 'icon' => 'fas fa-list-check', 'color' => 'text-primary'],
@@ -412,9 +442,27 @@ class MaterialsController extends Controller
             // حذف المادة
             $material->delete();
             
-            return redirect()->route('admin.work-orders.materials.index', $workOrder);
+            // التحقق من نوع الطلب
+            if (request()->wantsJson() || request()->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'تم حذف الملف بنجاح'
+                ]);
+            }
+            
+            return redirect()->route('admin.work-orders.materials.index', $workOrder)
+                ->with('success', 'تم حذف المادة بنجاح');
         } catch (\Exception $e) {
             \Log::error('Error deleting material: ' . $e->getMessage());
+            
+            // التحقق من نوع الطلب
+            if (request()->wantsJson() || request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'حدث خطأ أثناء حذف الملف: ' . $e->getMessage()
+                ], 500);
+            }
+            
             return redirect()->back()
                 ->with('error', 'حدث خطأ أثناء حذف المادة');
         }
@@ -563,26 +611,38 @@ class MaterialsController extends Controller
 
         foreach ($fileFields as $field => $info) {
             if ($request->hasFile($field)) {
-                $file = $request->file($field);
-                $fileName = time() . '_' . $field . '.' . $file->getClientOriginalExtension();
-                $filePath = $file->storeAs('materials', $fileName, 'public');
+                $files = $request->file($field);
                 
-                // حذف الملف القديم إذا كان التحديث
-                if ($isUpdate && $material->$field) {
-                    Storage::disk('public')->delete($material->$field);
+                // التأكد من أن $files هو array
+                if (!is_array($files)) {
+                    $files = [$files];
                 }
                 
-                $material->$field = $filePath;
-                
-                // إضافة معلومات الملف المرفوع
-                $uploadedFiles[] = [
-                    'material_id' => $material->id,
-                    'file_type' => $field,
-                    'file_path' => $filePath,
-                    'file_name' => $file->getClientOriginalName(),
-                    'file_info' => $info,
-                    'created_at' => now()
-                ];
+                foreach ($files as $index => $file) {
+                    $fileName = time() . '_' . uniqid() . '_' . $field . '.' . $file->getClientOriginalExtension();
+                    $filePath = $file->storeAs('materials', $fileName, 'public');
+                    
+                    // حذف الملف القديم إذا كان التحديث (فقط للملف الأول)
+                    if ($isUpdate && $index === 0 && $material->$field) {
+                        Storage::disk('public')->delete($material->$field);
+                    }
+                    
+                    // حفظ مسار الملف الأول في حقل المادة (للتوافق مع النظام القديم)
+                    if ($index === 0) {
+                        $material->$field = $filePath;
+                    }
+                    
+                    // إضافة معلومات الملف المرفوع
+                    $uploadedFiles[] = [
+                        'material_id' => $material->id,
+                        'file_type' => $field,
+                        'file_path' => $filePath,
+                        'file_name' => $file->getClientOriginalName(),
+                        'file_info' => $info,
+                        'file_index' => $index,
+                        'created_at' => now()
+                    ];
+                }
             }
         }
         
@@ -595,40 +655,102 @@ class MaterialsController extends Controller
      */
     public function uploadFiles(Request $request, WorkOrder $workOrder)
     {
-        $request->validate([
-            'check_in_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx,xlsx,xls|max:10240',
-            'check_out_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx,xlsx,xls|max:10240',
-            'stock_in_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx,xlsx,xls|max:10240',
-            'stock_out_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx,xlsx,xls|max:10240',
-            'gate_pass_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx,xlsx,xls|max:10240',
-            'ddo_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx,xlsx,xls|max:10240',
-        ]);
+        // تحديد قواعد التحقق الديناميكية
+        $rules = [];
+        $fileFields = ['check_in_file', 'check_out_file', 'stock_in_file', 'stock_out_file', 'gate_pass_file', 'ddo_file'];
+        
+        foreach ($fileFields as $field) {
+            if ($request->hasFile($field)) {
+                if (is_array($request->file($field))) {
+                    $rules[$field . '.*'] = 'file|mimes:pdf,jpg,jpeg,png,doc,docx,xlsx,xls|max:10240';
+                } else {
+                    $rules[$field] = 'file|mimes:pdf,jpg,jpeg,png,doc,docx,xlsx,xls|max:10240';
+                }
+            }
+        }
+        
+        if (!empty($rules)) {
+            $request->validate($rules);
+        }
 
         try {
-            // إنشاء مادة وهمية لحفظ الملفات العامة
-            $generalMaterial = Material::create([
-                'work_order_id' => $workOrder->id,
-                'work_order_number' => $workOrder->order_number,
-                'subscriber_name' => $workOrder->subscriber_name,
-                'code' => 'GENERAL_FILES_' . time(),
-                'description' => 'ملفات عامة للمواد',
-                'planned_quantity' => 0,
-                'spent_quantity' => 0,
-                'executed_quantity' => 0,
-                'unit' => 'قطعة',
-                'line' => 'ملفات عامة'
+            // إضافة logging للتشخيص
+            \Log::info('Upload files request received', [
+                'has_files' => !empty($request->allFiles()),
+                'all_files' => $request->allFiles(),
+                'input_keys' => array_keys($request->all())
             ]);
+            
+            $uploadedFilesCount = 0;
+            $allUploadedFiles = [];
+            
+            // معالجة كل نوع ملف على حدة
+            $fileFields = [
+                'check_in_file' => 'CHECK LIST',
+                'check_out_file' => 'CHECK OUT FILE',
+                'stock_in_file' => 'STORE IN',
+                'stock_out_file' => 'STORE OUT',
+                'gate_pass_file' => 'GATE PASS',
+                'ddo_file' => 'DDO FILE'
+            ];
+            
+            foreach ($fileFields as $fieldName => $fieldLabel) {
+                if ($request->hasFile($fieldName)) {
+                    $files = $request->file($fieldName);
+                    
+                    // التأكد من أن $files هو array
+                    if (!is_array($files)) {
+                        $files = [$files];
+                    }
+                    
+                    foreach ($files as $index => $file) {
+                        // إنشاء مادة منفصلة لكل ملف
+                        $material = Material::create([
+                            'work_order_id' => $workOrder->id,
+                            'work_order_number' => $workOrder->order_number,
+                            'subscriber_name' => $workOrder->subscriber_name,
+                            'code' => $fieldName . '_' . time() . '_' . $index,
+                            'description' => $fieldLabel . ' - ملف ' . ($index + 1),
+                            'planned_quantity' => 0,
+                            'spent_quantity' => 0,
+                            'executed_quantity' => 0,
+                            'unit' => 'قطعة',
+                            'line' => 'ملفات مستقلة'
+                        ]);
+                        
+                        // حفظ الملف
+                        $fileName = time() . '_' . uniqid() . '_' . $fieldName . '.' . $file->getClientOriginalExtension();
+                        $filePath = $file->storeAs('materials', $fileName, 'public');
+                        
+                        // حفظ مسار الملف في المادة
+                        $material->$fieldName = $filePath;
+                        $material->save();
+                        
+                        $allUploadedFiles[] = [
+                            'material_id' => $material->id,
+                            'file_type' => $fieldName,
+                            'file_path' => $filePath,
+                            'file_name' => $file->getClientOriginalName(),
+                            'field_label' => $fieldLabel
+                        ];
+                        
+                        $uploadedFilesCount++;
+                    }
+                }
+            }
 
-            // رفع الملفات
-            $uploadedFiles = $this->handleFileUploadsWithReturn($request, $generalMaterial);
-
-            // إرجاع البيانات مع معلومات الملفات المرفوعة
-            return redirect()->route('admin.work-orders.materials.index', $workOrder)
-                ->with('uploaded_files', $uploadedFiles);
+            if ($uploadedFilesCount > 0) {
+                return redirect()->route('admin.work-orders.materials.index', $workOrder)
+                    ->with('success', "تم رفع {$uploadedFilesCount} ملف بنجاح")
+                    ->with('uploaded_files', $allUploadedFiles);
+            } else {
+                return redirect()->back()
+                    ->with('warning', 'لم يتم اختيار أي ملفات للرفع');
+            }
         } catch (\Exception $e) {
             \Log::error('Error uploading material files: ' . $e->getMessage());
             return redirect()->back()
-                ->with('error', 'حدث خطأ أثناء رفع الملفات');
+                ->with('error', 'حدث خطأ أثناء رفع الملفات: ' . $e->getMessage());
         }
     }
 
@@ -838,6 +960,46 @@ class MaterialsController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'حدث خطأ أثناء تحديث الكمية: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Update material notes via AJAX
+     */
+    public function updateNotes(Request $request, WorkOrder $workOrder)
+    {
+        try {
+            $validated = $request->validate([
+                'material_id' => 'required|exists:materials,id',
+                'notes_type' => 'required|in:spent_notes,executed_notes',
+                'value' => 'nullable|string|max:1000'
+            ]);
+            
+            $material = Material::findOrFail($validated['material_id']);
+            
+            // التأكد من أن المادة تنتمي لأمر العمل
+            if ($material->work_order_id !== $workOrder->id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'المادة غير موجودة في أمر العمل هذا'
+                ], 403);
+            }
+            
+            // تحديث الملاحظات المناسبة
+            $field = $validated['notes_type'];
+            $material->$field = $validated['value'];
+            $material->save();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'تم حفظ الملاحظات بنجاح'
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء حفظ الملاحظات: ' . $e->getMessage()
             ], 500);
         }
     }

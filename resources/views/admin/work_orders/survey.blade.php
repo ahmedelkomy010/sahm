@@ -361,10 +361,13 @@
                                                         <span class="badge bg-success">لا</span>
                                                     @endif
                                                 </td>
-                                                <td>
+                                                <td class="notes-cell">
                                                     @if($survey->obstacles_notes)
-                                                        <span class="text-truncate d-inline-block" style="max-width: 200px;" title="{{ $survey->obstacles_notes }}">
+                                                        <div class="notes-content" id="notes-{{ $survey->id }}">
                                                             {{ $survey->obstacles_notes }}
+                                                        </div>
+                                                        <span class="expand-btn" onclick="toggleNotes('notes-{{ $survey->id }}')">
+                                                            عرض المزيد
                                                         </span>
                                                     @else
                                                         <span class="text-muted">لا توجد ملاحظات</span>
@@ -699,6 +702,26 @@ function showSuccess(message) {
         }
     }, 5000);
 }
+
+// دالة للتحقق من طول النص وإخفاء زر العرض إذا كان النص قصير
+function checkNotesLength() {
+    document.querySelectorAll('.notes-content').forEach(notes => {
+        const expandBtn = notes.nextElementSibling;
+        if (notes.scrollHeight <= notes.clientHeight) {
+            expandBtn.style.display = 'none';
+        } else {
+            expandBtn.style.display = 'inline-block';
+        }
+    });
+}
+
+// تشغيل فحص طول النص عند تحميل الصفحة
+document.addEventListener('DOMContentLoaded', function() {
+    checkNotesLength();
+    
+    // إعادة فحص طول النص عند تغيير حجم النافذة
+    window.addEventListener('resize', checkNotesLength);
+});
 
 // إضافة معاينة الصور قبل الرفع
 document.getElementById('site_images').addEventListener('change', function(e) {
@@ -1139,6 +1162,22 @@ function openCamera() {
     }, 1000);
 }
 
+// دالة للتحكم في عرض/إخفاء النص
+function toggleNotes(elementId) {
+    const notesElement = document.getElementById(elementId);
+    const expandBtn = notesElement.nextElementSibling;
+    
+    if (notesElement.classList.contains('expanded')) {
+        notesElement.classList.remove('expanded');
+        expandBtn.textContent = 'عرض المزيد';
+        // تمرير إلى أعلى النص
+        notesElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    } else {
+        notesElement.classList.add('expanded');
+        expandBtn.textContent = 'عرض أقل';
+    }
+}
+
 function showImagePreview(file) {
     // إنشاء معاينة للصورة
     const reader = new FileReader();
@@ -1176,11 +1215,43 @@ function showImagePreview(file) {
     vertical-align: middle;
 }
 
-.text-truncate {
-    max-width: 200px;
-    white-space: nowrap;
+.notes-cell {
+    min-width: 250px;
+    max-width: 400px;
+    position: relative;
+}
+
+.notes-content {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    max-height: 4.5em;
     overflow: hidden;
-    text-overflow: ellipsis;
+    position: relative;
+}
+
+.notes-content.expanded {
+    max-height: none;
+}
+
+.notes-content:not(.expanded)::after {
+    content: "...";
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    background: linear-gradient(to left, white 50%, transparent);
+    padding-left: 20px;
+}
+
+.expand-btn {
+    color: #4e73df;
+    cursor: pointer;
+    font-size: 0.8rem;
+    margin-top: 0.25rem;
+    display: inline-block;
+}
+
+.expand-btn:hover {
+    text-decoration: underline;
 }
 
 .card-img-top {

@@ -30,6 +30,16 @@
                                 </div>
 
                                 <div class="form-group mb-3">
+                                    <label for="task_number" class="form-label fw-bold">رقم المهمة</label>
+                                    <input id="task_number" type="text" class="form-control @error('task_number') is-invalid @enderror" name="task_number" value="{{ old('task_number', $workOrder->task_number) }}">
+                                    @error('task_number')
+                                        <span class="invalid-feedback" role="alert">
+                                            <strong>{{ $message }}</strong>
+                                        </span>
+                                    @enderror
+                                </div>
+
+                                <div class="form-group mb-3">
                                     <label for="work_type" class="form-label fw-bold">نوع العمل</label>
                                     <div class="row">
                                         <div class="col-md-4">
@@ -61,6 +71,9 @@
                                                 <option value="403" {{ old('work_type', $workOrder->work_type) == '403' ? 'selected' : '' }}> -  توصيل عداد شبكة هوائية VL</option>
                                                 <option value="806" {{ old('work_type', $workOrder->work_type) == '806' ? 'selected' : '' }}> -  ايصال وزارة الاسكان جهد منخفض</option>
                                                 <option value="444" {{ old('work_type', $workOrder->work_type) == '444' ? 'selected' : '' }}> -   تحويل الشبكه من هوائي الي ارضي</option>
+                                                <option value="111" {{ old('work_type') == '111' ? 'selected' : '' }}> -  Mv- طوارئ ضغط متوسط  </option>
+                                                <option value="222" {{ old('work_type') == '222' ? 'selected' : '' }}> -  Lv - طوارئ ض منخفض </option>
+                                                <option value="333" {{ old('work_type') == '333' ? 'selected' : '' }}> -  Oh  - طوارئ هوائي </option>
                                             </select>
                                         </div>
                                     </div>

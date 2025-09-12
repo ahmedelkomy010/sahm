@@ -120,6 +120,56 @@ class WorkOrderController extends Controller
     }
 
     /**
+     * عرض صفحة لوحة تحكم الاستلامات
+     */
+    public function receiptsDashboard(Request $request)
+    {
+        $project = $request->get('project', 'riyadh');
+        
+        return view('admin.work_orders.receipts-dashboard', compact('project'));
+    }
+
+    /**
+     * عرض صفحة لوحة تحكم التنفيذ والإنجاز
+     */
+    public function executionDashboard(Request $request)
+    {
+        $project = $request->get('project', 'riyadh');
+        
+        return view('admin.work_orders.execution-dashboard', compact('project'));
+    }
+
+    /**
+     * عرض صفحة لوحة تحكم المستخلص
+     */
+    public function extractsDashboard(Request $request)
+    {
+        $project = $request->get('project', 'riyadh');
+        
+        return view('admin.work_orders.extracts-dashboard', compact('project'));
+    }
+
+    /**
+     * عرض صفحة لوحة تحكم الأوامر المنتهية والمصروفة
+     */
+    public function completedDashboard(Request $request)
+    {
+        $project = $request->get('project', 'riyadh');
+        
+        return view('admin.work_orders.completed-dashboard', compact('project'));
+    }
+
+    /**
+     * عرض صفحة لوحة تحكم أوامر العمل جاري التنفيذ
+     */
+    public function inProgressDashboard(Request $request)
+    {
+        $project = $request->get('project', 'riyadh');
+        
+        return view('admin.work_orders.inprogress-dashboard', compact('project'));
+    }
+
+    /**
      * جلب بيانات الإنتاجية العامة
      */
     public function getGeneralProductivityData(Request $request)
@@ -461,6 +511,58 @@ class WorkOrderController extends Controller
     public function madinahProductivity()
     {
         return view('admin.work_orders.general-productivity', ['project' => 'madinah']);
+    }
+
+    // Riyadh-specific dashboard methods
+    public function riyadhReceiptsDashboard()
+    {
+        return view('admin.work_orders.receipts-dashboard', ['project' => 'riyadh']);
+    }
+
+    public function riyadhExecutionDashboard()
+    {
+        return view('admin.work_orders.execution-dashboard', ['project' => 'riyadh']);
+    }
+
+    public function riyadhInProgressDashboard()
+    {
+        return view('admin.work_orders.inprogress-dashboard', ['project' => 'riyadh']);
+    }
+
+    public function riyadhExtractsDashboard()
+    {
+        return view('admin.work_orders.extracts-dashboard', ['project' => 'riyadh']);
+    }
+
+    public function riyadhCompletedDashboard()
+    {
+        return view('admin.work_orders.completed-dashboard', ['project' => 'riyadh']);
+    }
+
+    // Madinah-specific dashboard methods
+    public function madinahReceiptsDashboard()
+    {
+        return view('admin.work_orders.receipts-dashboard', ['project' => 'madinah']);
+    }
+
+    public function madinahExecutionDashboard()
+    {
+        return view('admin.work_orders.execution-dashboard', ['project' => 'madinah']);
+    }
+
+    public function madinahInProgressDashboard()
+    {
+        return view('admin.work_orders.inprogress-dashboard', ['project' => 'madinah']);
+    }
+
+    public function madinahExtractsDashboard()
+    {
+        return view('admin.work_orders.extracts-dashboard', ['project' => 'madinah']);
+    }
+
+    public function madinahCompletedDashboard()
+    {
+        return view('admin.work_orders.completed-dashboard', ['project' => 'madinah']);
     }
 
     /**

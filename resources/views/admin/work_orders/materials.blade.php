@@ -38,13 +38,58 @@
     }
     
     /* تنسيق الجدول */
-    .materials-table-wrapper {
-        border-radius: 10px;
-        overflow: hidden;
-    }
-    .table {
-        margin-bottom: 0;
-    }
+      .materials-table-wrapper {
+          border-radius: 10px;
+          overflow-x: auto;
+          overflow-y: visible;
+          max-width: 100%;
+      }
+      .table {
+          margin-bottom: 0;
+          min-width: 1600px; /* عرض أدنى للجدول */
+      }
+      
+      /* تحسين حقول الملاحظات */
+      .notes-field {
+          min-width: 200px;
+          max-width: 400px;
+      }
+      .notes-field input {
+          min-width: 200px;
+          max-width: 400px;
+          resize: horizontal;
+          overflow: visible;
+          white-space: nowrap;
+          text-overflow: ellipsis;
+          transition: all 0.3s ease;
+          border: 1px solid #ddd;
+          border-radius: 4px;
+          padding: 4px 8px;
+      }
+      
+      /* عرض النص بالكامل عند التركيز */
+      .notes-field input:focus {
+          white-space: normal;
+          text-overflow: clip;
+          z-index: 10;
+          position: relative;
+          background: white;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+          border-color: #4e73df;
+          outline: none;
+      }
+      
+      /* تحسين عرض النص الطويل */
+      .notes-field input:not(:focus) {
+          overflow: hidden;
+          text-overflow: ellipsis;
+      }
+      
+      /* إضافة مؤشر للنص المقطوع */
+      .notes-field input:not(:focus)[title]:after {
+          content: "...";
+          color: #666;
+      }
     .table thead th {
         background: linear-gradient(45deg, #4e73df, #36b9cc);
         color: white;
@@ -547,19 +592,19 @@
                                             <i class="fas fa-barcode text-secondary me-1"></i>
                                             الكود
                                         </th>
-                                        <th width="25%">
+                                        <th width="20%">
                                             <i class="fas fa-align-left text-primary me-1"></i>
                                             الوصف
                                         </th>
-                                        <th class="text-center" width="8%">
+                                        <th class="text-center" width="6%">
                                             <i class="fas fa-ruler text-secondary me-1"></i>
                                             الوحدة
                                         </th>
-                                        <th class="text-center" width="9%">
+                                        <th class="text-center" width="8%">
                                             <i class="fas fa-chart-line text-info me-1"></i>
                                             الكمية<br>المخططة
                                         </th>
-                                        <th class="text-center" width="9%">
+                                        <th class="text-center" width="8%">
                                             <i class="fas fa-box text-danger me-1"></i>
                                             الكمية<br>المصروفة
                                         </th>
@@ -567,15 +612,23 @@
                                             <i class="fas fa-calculator text-warning me-1"></i>
                                             الفرق<br>(مخططة - مصروفة)
                                         </th>
-                                        <th class="text-center" width="9%">
+                                        <th class="text-center" width="20%">
+                                            <i class="fas fa-sticky-note text-info me-1"></i>
+                                            ملاحظات<br>المصروفة
+                                        </th>
+                                        <th class="text-center" width="6%">
                                             <i class="fas fa-tasks text-success me-1"></i>
                                             الكمية<br>المنفذة
                                         </th>
-                                        <th class="text-center" width="7%">
+                                        <th class="text-center" width="5%">
                                             <i class="fas fa-calculator text-primary me-1"></i>
                                             الفرق<br>(منفذة - مصروفة)
                                         </th>
-                                        <th class="text-center" width="4%">
+                                        <th class="text-center" width="20%">
+                                            <i class="fas fa-clipboard-check text-success me-1"></i>
+                                            ملاحظات<br>المنفذة
+                                        </th>
+                                        <th class="text-center" width="5%">
                                             <i class="fas fa-cogs text-secondary me-1"></i>
                                             إجراءات
                                         </th>
@@ -646,6 +699,16 @@
                                                 </div>
                                             </td>
                                             <td class="text-center">
+                                                <div class="notes-field">
+                                                    <input type="text" 
+                                                           class="form-control form-control-sm spent-notes-input" 
+                                                           value="{{ $material->spent_notes ?? '' }}"
+                                                           data-material-id="{{ $material->id }}"
+                                                           placeholder="ملاحظات المصروفة..."
+                                                           style="font-size: 0.85rem; text-align: right; padding: 4px 8px;">
+                                                </div>
+                                            </td>
+                                            <td class="text-center">
                                                 <div class="quantity-badge">
                                                     <input type="number" 
                                                            class="quantity-input executed-quantity" 
@@ -676,6 +739,16 @@
                                                 </div>
                                             </td>
                                             <td class="text-center">
+                                                <div class="notes-field">
+                                                    <input type="text" 
+                                                           class="form-control form-control-sm executed-notes-input" 
+                                                           value="{{ $material->executed_notes ?? '' }}"
+                                                           data-material-id="{{ $material->id }}"
+                                                           placeholder="ملاحظات المنفذة..."
+                                                           style="font-size: 0.85rem; text-align: right; padding: 4px 8px;">
+                                                </div>
+                                            </td>
+                                            <td class="text-center">
                                                 <div class="action-buttons">
                                                     <div class="btn-group">
                                                         <a href="{{ route('admin.work-orders.materials.edit', [$workOrder, $material]) }}" 
@@ -687,7 +760,7 @@
                                                             <span class="btn-text">تعديل</span>
                                                         </a>
                                                         
-                                                        <button type="button" 
+                                                        <!-- <button type="button" 
                                                                 class="btn btn-action btn-delete"
                                                                 onclick="deleteMaterial({{ $material->id }})"
                                                                 data-bs-toggle="tooltip"
@@ -695,7 +768,7 @@
                                                                 title="حذف">
                                                             <i class="fas fa-trash"></i>
                                                             <span class="btn-text">حذف</span>
-                                                        </button>
+                                                        </button> -->
 
                                                     </div>
                                                 </div>
@@ -767,12 +840,15 @@
                                     CHECK LIST
                                 </label>
                                 <input type="file" class="form-control @error('check_in_file') is-invalid @enderror" 
-                                       id="check_in_file" name="check_in_file" 
-                                       accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                                       id="check_in_file" name="check_in_file[]" 
+                                       accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                                       multiple
+                                       onchange="previewSelectedFiles(this, 'check_in_preview')">
                                 @error('check_in_file')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
-                                <small class="text-muted">PDF, JPG, PNG, DOC (حد أقصى 10MB)</small>
+                                <small class="text-muted">PDF, JPG, PNG, DOC (حد أقصى 10MB لكل ملف) - يمكن اختيار عدة ملفات</small>
+                                <div id="check_in_preview" class="mt-2"></div>
                             </div>
                             
                             <div class="col-md-6 mb-3">
@@ -781,12 +857,15 @@
                                     GATE PASS
                                 </label>
                                 <input type="file" class="form-control @error('gate_pass_file') is-invalid @enderror" 
-                                       id="gate_pass_file" name="gate_pass_file" 
-                                       accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                                       id="gate_pass_file" name="gate_pass_file[]" 
+                                       accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                                       multiple
+                                       onchange="previewSelectedFiles(this, 'gate_pass_preview')">
                                 @error('gate_pass_file')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
-                                <small class="text-muted">PDF, JPG, PNG, DOC (حد أقصى 10MB)</small>
+                                <small class="text-muted">PDF, JPG, PNG, DOC (حد أقصى 10MB لكل ملف) - يمكن اختيار عدة ملفات</small>
+                                <div id="gate_pass_preview" class="mt-2"></div>
                             </div>
                         </div>
 
@@ -797,12 +876,15 @@
                                     STORE IN
                                 </label>
                                 <input type="file" class="form-control @error('stock_in_file') is-invalid @enderror" 
-                                       id="stock_in_file" name="stock_in_file" 
-                                       accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                                       id="stock_in_file" name="stock_in_file[]" 
+                                       accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                                       multiple
+                                       onchange="previewSelectedFiles(this, 'stock_in_preview')">
                                 @error('stock_in_file')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
-                                <small class="text-muted">PDF, JPG, PNG, DOC (حد أقصى 10MB)</small>
+                                <small class="text-muted">PDF, JPG, PNG, DOC (حد أقصى 10MB لكل ملف) - يمكن اختيار عدة ملفات</small>
+                                <div id="stock_in_preview" class="mt-2"></div>
                             </div>
                             
                             <div class="col-md-6 mb-3">
@@ -811,12 +893,15 @@
                                     STORE OUT
                                 </label>
                                 <input type="file" class="form-control @error('stock_out_file') is-invalid @enderror" 
-                                       id="stock_out_file" name="stock_out_file" 
-                                       accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                                       id="stock_out_file" name="stock_out_file[]" 
+                                       accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                                       multiple
+                                       onchange="previewSelectedFiles(this, 'stock_out_preview')">
                                 @error('stock_out_file')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
-                                <small class="text-muted">PDF, JPG, PNG, DOC (حد أقصى 10MB)</small>
+                                <small class="text-muted">PDF, JPG, PNG, DOC (حد أقصى 10MB لكل ملف) - يمكن اختيار عدة ملفات</small>
+                                <div id="stock_out_preview" class="mt-2"></div>
                             </div>
                         </div>
 
@@ -827,12 +912,15 @@
                                     DDO
                                 </label>
                                 <input type="file" class="form-control @error('ddo_file') is-invalid @enderror" 
-                                       id="ddo_file" name="ddo_file" 
-                                       accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                                       id="ddo_file" name="ddo_file[]" 
+                                       accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                                       multiple
+                                       onchange="previewSelectedFiles(this, 'ddo_preview')">
                                 @error('ddo_file')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
-                                <small class="text-muted">PDF, JPG, PNG, DOC (حد أقصى 10MB)</small>
+                                <small class="text-muted">PDF, JPG, PNG, DOC (حد أقصى 10MB لكل ملف) - يمكن اختيار عدة ملفات</small>
+                                <div id="ddo_preview" class="mt-2"></div>
                             </div>
                             
                             <div class="col-md-6 mb-3">
@@ -841,12 +929,15 @@
                                      Upload
                                 </label>
                                 <input type="file" class="form-control @error('check_out_file') is-invalid @enderror" 
-                                       id="check_out_file" name="check_out_file" 
-                                       accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                                       id="check_out_file" name="check_out_file[]" 
+                                       accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                                       multiple
+                                       onchange="previewSelectedFiles(this, 'check_out_preview')">
                                 @error('check_out_file')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
-                                <small class="text-muted">PDF, JPG, PNG, DOC (حد أقصى 10MB)</small>
+                                <small class="text-muted">PDF, JPG, PNG, DOC (حد أقصى 10MB لكل ملف) - يمكن اختيار عدة ملفات</small>
+                                <div id="check_out_preview" class="mt-2"></div>
                             </div>
                         </div>
 
@@ -865,6 +956,46 @@
                         </div>
                     </form>
 
+                    <!-- عرض رسائل النجاح والخطأ -->
+                    @if(session('success'))
+                    <div class="alert alert-success alert-dismissible fade show mt-4" role="alert">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-check-circle fa-2x text-success me-3"></i>
+                            <div>
+                                <h5 class="alert-heading mb-1">تم بنجاح!</h5>
+                                <p class="mb-0">{{ session('success') }}</p>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    @endif
+
+                    @if(session('error'))
+                    <div class="alert alert-danger alert-dismissible fade show mt-4" role="alert">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-exclamation-circle fa-2x text-danger me-3"></i>
+                            <div>
+                                <h5 class="alert-heading mb-1">خطأ!</h5>
+                                <p class="mb-0">{{ session('error') }}</p>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    @endif
+
+                    @if(session('warning'))
+                    <div class="alert alert-warning alert-dismissible fade show mt-4" role="alert">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-exclamation-triangle fa-2x text-warning me-3"></i>
+                            <div>
+                                <h5 class="alert-heading mb-1">تنبيه!</h5>
+                                <p class="mb-0">{{ session('warning') }}</p>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    @endif
+
                     <!-- فاصل بصري -->
                     <hr class="my-5">
                     
@@ -877,7 +1008,7 @@
                                         <i class="fas fa-folder-open fa-2x text-success"></i>
                                     </div>
                                     <div>
-                                                                                    <h5 class="alert-heading text-success mb-2">
+                                      <h5 class="alert-heading text-success mb-2">
                                                 الملفات المستقلة المرفوعة
                                             </h5>
                                     </div>
@@ -903,29 +1034,49 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            @if(isset($independentFiles) && count($independentFiles) > 0)
-                                                @foreach($independentFiles as $file)
+                                            @php
+                                                // استخدام الملفات المستقلة من الـ controller
+                                                $independentMaterials = $independentFiles ?? [];
+                                            @endphp
+                                            
+                                            @if(count($independentMaterials) > 0)
+                                                @foreach($independentMaterials as $fileData)
+                                                    @php
+                                                        // استخدام البيانات الجاهزة من الـ controller
+                                                        $fileType = $fileData['file_info']['label'];
+                                                        $icon = $fileData['file_info']['icon'];
+                                                        $color = $fileData['file_info']['color'];
+                                                        $filePath = $fileData['file_path'];
+                                                        $fileName = $fileData['file_name'];
+                                                        $materialId = $fileData['material_id'];
+                                                        $createdAt = $fileData['created_at'];
+                                                    @endphp
+                                                    
+                                                    @if($filePath)
                                                     <tr>
                                                         <td>
                                                             <div class="d-flex flex-column">
                                                                 <div class="d-flex align-items-center mb-1">
-                                                                    <i class="{{ $file['file_info']['icon'] }} {{ $file['file_info']['color'] }} me-2"></i>
-                                                                    <span class="fw-bold">{{ $file['file_info']['label'] }}</span>
+                                                                    <i class="{{ $icon }} {{ $color }} me-2"></i>
+                                                                    <span class="fw-bold">{{ $fileType }}</span>
                                                                 </div>
                                                                 <div class="ms-3">
-                                                                    <a href="{{ Storage::url($file['file_path']) }}" target="_blank" class="text-decoration-none text-muted small">
+                                                                    <span class="text-muted small">
                                                                         <i class="fas fa-file me-1"></i>
-                                                                        {{ $file['file_name'] }}
-                                                                    </a>
+                                                                        {{ $fileName }}
+                                                                    </span>
+                                                                </div>
+                                                                <div class="ms-3">
+                                                                    <small class="text-info">ملف {{ $fileType }}</small>
                                                                 </div>
                                                             </div>
                                                         </td>
                                                         <td class="text-center">
-                                                            <small class="text-muted">{{ $file['created_at']->format('Y-m-d H:i') }}</small>
+                                                            <small class="text-muted">{{ $createdAt->format('Y-m-d H:i') }}</small>
                                                         </td>
                                                         <td class="text-center">
                                                             <div class="btn-group" role="group">
-                                                                <a href="{{ Storage::url($file['file_path']) }}" 
+                                                                <a href="{{ Storage::url($filePath) }}" 
                                                                    target="_blank" 
                                                                    class="btn btn-sm btn-outline-primary"
                                                                    data-bs-toggle="tooltip" 
@@ -934,7 +1085,7 @@
                                                                 </a>
                                                                 <button type="button" 
                                                                         class="btn btn-sm btn-outline-danger"
-                                                                        onclick="deleteIndependentFile({{ $file['material_id'] }}, '{{ $file['file_type'] }}', this)"
+                                                                        onclick="deleteIndependentFile({{ $materialId }}, 'material', this)"
                                                                         data-bs-toggle="tooltip" 
                                                                         title="حذف الملف">
                                                                     <i class="fas fa-trash"></i>
@@ -942,6 +1093,7 @@
                                                             </div>
                                                         </td>
                                                     </tr>
+                                                    @endif
                                                 @endforeach
                                             @else
                                                 <tr>
@@ -2000,7 +2152,7 @@ document.head.appendChild(style);
 <script src="{{ asset('js/materials-page.js') }}"></script>
 
 <script>
-// حذف ملف مستقل
+// حذف ملف مستقل (حذف المادة التي تحتوي على الملف)
 function deleteIndependentFile(materialId, fileType, button) {
     Swal.fire({
         title: 'هل أنت متأكد؟',
@@ -2013,28 +2165,83 @@ function deleteIndependentFile(materialId, fileType, button) {
         cancelButtonText: 'إلغاء'
     }).then((result) => {
         if (result.isConfirmed) {
-            // إنشاء form مخفي للحذف
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = `{{ route('admin.work-orders.materials.delete-file', [$workOrder, ':material_id']) }}`.replace(':material_id', materialId);
+            // إظهار مؤشر التحميل
+            button.disabled = true;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
             
-            // إضافة CSRF token
-            const csrfToken = document.createElement('input');
-            csrfToken.type = 'hidden';
-            csrfToken.name = '_token';
-            csrfToken.value = '{{ csrf_token() }}';
-            form.appendChild(csrfToken);
-            
-            // إضافة نوع الملف
-            const fileTypeInput = document.createElement('input');
-            fileTypeInput.type = 'hidden';
-            fileTypeInput.name = 'file_type';
-            fileTypeInput.value = fileType;
-            form.appendChild(fileTypeInput);
-            
-            // إضافة الفورم للصفحة وإرساله
-            document.body.appendChild(form);
-            form.submit();
+            // إرسال طلب الحذف
+            fetch(`{{ route('admin.work-orders.materials.destroy', [$workOrder, ':material_id']) }}`.replace(':material_id', materialId), {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    // إزالة الصف من الجدول
+                    const row = button.closest('tr');
+                    row.style.transition = 'all 0.3s ease';
+                    row.style.opacity = '0';
+                    row.style.transform = 'translateX(-20px)';
+                    
+                    setTimeout(() => {
+                        row.remove();
+                        
+                        // التحقق من وجود ملفات أخرى
+                        const tbody = document.querySelector('#independentFilesTable tbody');
+                        if (tbody.children.length === 0) {
+                            tbody.innerHTML = `
+                                <tr>
+                                    <td colspan="3" class="text-center py-5">
+                                        <div class="empty-state">
+                                            <i class="fas fa-cloud-upload-alt fa-4x text-muted mb-3"></i>
+                                            <h5 class="text-muted mb-2">لا توجد ملفات مستقلة مرفوعة</h5>
+                                            <p class="text-muted small mb-3">لم يتم رفع أي ملفات مستقلة حتى الآن</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            `;
+                        }
+                        
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'تم الحذف بنجاح',
+                            text: 'تم حذف الملف نهائياً',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                    }, 300);
+                } else {
+                    button.disabled = false;
+                    button.innerHTML = '<i class="fas fa-trash"></i>';
+                    
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'خطأ في الحذف',
+                        text: data.message || 'حدث خطأ أثناء حذف الملف'
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                button.disabled = false;
+                button.innerHTML = '<i class="fas fa-trash"></i>';
+                
+                Swal.fire({
+                    icon: 'error',
+                    title: 'خطأ في الاتصال',
+                    text: 'حدث خطأ أثناء الاتصال بالخادم'
+                });
+            });
         }
     });
 }
@@ -2442,6 +2649,65 @@ document.querySelectorAll('.quantity-input').forEach(input => {
         }, 500);
     });
 });
+
+// معالجة تحديث الملاحظات ديناميكياً
+document.querySelectorAll('.spent-notes-input, .executed-notes-input').forEach(input => {
+    let updateTimeout;
+    
+    input.addEventListener('input', function() {
+        const materialId = this.dataset.materialId;
+        const newValue = this.value;
+        const notesType = this.classList.contains('spent-notes-input') ? 'spent_notes' : 'executed_notes';
+        
+        // إلغاء التوقيت السابق
+        if (updateTimeout) clearTimeout(updateTimeout);
+        
+        // إنشاء مؤشر التحميل
+        const loadingSpinner = document.createElement('div');
+        loadingSpinner.className = 'spinner-border spinner-border-sm text-primary ms-2';
+        loadingSpinner.style.width = '0.8rem';
+        loadingSpinner.style.height = '0.8rem';
+        this.parentElement.appendChild(loadingSpinner);
+        
+        // تحديث الملاحظات في قاعدة البيانات
+        updateTimeout = setTimeout(() => {
+            fetch(`{{ route('admin.work-orders.materials.update-notes', ['workOrder' => $workOrder->id]) }}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    material_id: materialId,
+                    notes_type: notesType,
+                    value: newValue
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                loadingSpinner.remove();
+                
+                if (data.success) {
+                    // إظهار أيقونة النجاح
+                    const successIcon = document.createElement('i');
+                    successIcon.className = 'fas fa-check text-success ms-2';
+                    successIcon.style.fontSize = '0.8rem';
+                    this.parentElement.appendChild(successIcon);
+                    setTimeout(() => successIcon.remove(), 1000);
+                    
+                    // عدم إظهار toastr للملاحظات لتجنب الإزعاج
+                } else {
+                    toastr.error(data.message || 'حدث خطأ أثناء حفظ الملاحظات');
+                }
+            })
+            .catch(error => {
+                loadingSpinner.remove();
+                console.error('Error:', error);
+                toastr.error('حدث خطأ أثناء حفظ الملاحظات');
+            });
+        }, 800); // مدة أطول للملاحظات عشان المستخدم يكمل كتابة
+    });
+});
 </script>
 
 <style>
@@ -2570,6 +2836,59 @@ document.querySelectorAll('.quantity-input').forEach(input => {
 
 .table-warning {
     background-color: rgba(255, 193, 7, 0.2) !important;
+}
+
+/* تأثيرات حذف الملفات المستقلة */
+#independentFilesTable tr {
+    transition: all 0.3s ease;
+}
+
+#independentFilesTable tr.deleting {
+    opacity: 0;
+    transform: translateX(-20px);
+}
+
+/* تحسين أزرار الحذف */
+.btn-outline-danger {
+    transition: all 0.2s ease;
+}
+
+.btn-outline-danger:hover {
+    transform: scale(1.05);
+}
+
+.btn-outline-danger:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* تحسين مظهر الجدول */
+#independentFilesTable {
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+#independentFilesTable th {
+    background: linear-gradient(135deg, #343a40 0%, #495057 100%);
+    border: none;
+    font-weight: 600;
+}
+
+#independentFilesTable tbody tr:hover {
+    background-color: #f8f9fa;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* تحسين حالة الفراغ */
+.empty-state {
+    padding: 2rem;
+    text-align: center;
+}
+
+.empty-state i {
+    opacity: 0.5;
 }
 </style>
 @endpush
@@ -2771,6 +3090,172 @@ function updateMaterialsCount() {
         }
     });
 }
+
+// دالة معاينة الملفات المختارة
+function previewSelectedFiles(input, previewId) {
+    const previewContainer = document.getElementById(previewId);
+    previewContainer.innerHTML = '';
+    
+    if (input.files && input.files.length > 0) {
+        const fileList = document.createElement('div');
+        fileList.className = 'selected-files-list mt-2';
+        
+        for (let i = 0; i < input.files.length; i++) {
+            const file = input.files[i];
+            const fileItem = document.createElement('div');
+            fileItem.className = 'selected-file-item d-flex align-items-center justify-content-between bg-light p-2 mb-1 rounded';
+            
+            // أيقونة حسب نوع الملف
+            let fileIcon = 'fas fa-file';
+            if (file.type.startsWith('image/')) {
+                fileIcon = 'fas fa-image text-success';
+            } else if (file.type === 'application/pdf') {
+                fileIcon = 'fas fa-file-pdf text-danger';
+            } else if (file.type.includes('word')) {
+                fileIcon = 'fas fa-file-word text-primary';
+            }
+            
+            fileItem.innerHTML = `
+                <div class="d-flex align-items-center">
+                    <i class="${fileIcon} me-2"></i>
+                    <span class="file-name text-truncate" style="max-width: 200px;">${file.name}</span>
+                    <small class="text-muted ms-2">(${(file.size / 1024 / 1024).toFixed(2)} MB)</small>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeFileFromInput('${input.id}', ${i}, '${previewId}')">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            
+            fileList.appendChild(fileItem);
+        }
+        
+        // إضافة عداد الملفات
+        const fileCounter = document.createElement('div');
+        fileCounter.className = 'file-counter text-info mt-1';
+        fileCounter.innerHTML = `<small><i class="fas fa-info-circle me-1"></i>تم اختيار ${input.files.length} ملف</small>`;
+        
+        previewContainer.appendChild(fileList);
+        previewContainer.appendChild(fileCounter);
+    }
+}
+
+// دالة إزالة ملف من القائمة
+function removeFileFromInput(inputId, fileIndex, previewId) {
+    const input = document.getElementById(inputId);
+    const dt = new DataTransfer();
+    
+    for (let i = 0; i < input.files.length; i++) {
+        if (i !== fileIndex) {
+            dt.items.add(input.files[i]);
+        }
+    }
+    
+    input.files = dt.files;
+    previewSelectedFiles(input, previewId);
+}
+
+// دالة توسيع حقول الملاحظات حسب المحتوى
+function adjustNotesFieldWidth() {
+    const notesInputs = document.querySelectorAll('.spent-notes-input, .executed-notes-input');
+    
+    notesInputs.forEach(input => {
+        // إنشاء عنصر مؤقت لحساب العرض المطلوب
+        const tempSpan = document.createElement('span');
+        tempSpan.style.visibility = 'hidden';
+        tempSpan.style.position = 'absolute';
+        tempSpan.style.fontSize = window.getComputedStyle(input).fontSize;
+        tempSpan.style.fontFamily = window.getComputedStyle(input).fontFamily;
+        tempSpan.style.padding = '4px 8px';
+        tempSpan.textContent = input.value || input.placeholder;
+        
+        document.body.appendChild(tempSpan);
+        
+        // حساب العرض المطلوب
+        const requiredWidth = Math.max(200, Math.min(400, tempSpan.offsetWidth + 20));
+        input.style.width = requiredWidth + 'px';
+        
+        document.body.removeChild(tempSpan);
+    });
+}
+
+// إضافة معالجة لـ form submission
+document.addEventListener('DOMContentLoaded', function() {
+    // تطبيق التوسيع التلقائي عند تحميل الصفحة
+    adjustNotesFieldWidth();
+    
+    // تطبيق التوسيع عند تغيير المحتوى
+    document.addEventListener('input', function(e) {
+        if (e.target.classList.contains('spent-notes-input') || e.target.classList.contains('executed-notes-input')) {
+            // توسيع الحقل حسب المحتوى
+            const tempSpan = document.createElement('span');
+            tempSpan.style.visibility = 'hidden';
+            tempSpan.style.position = 'absolute';
+            tempSpan.style.fontSize = window.getComputedStyle(e.target).fontSize;
+            tempSpan.style.fontFamily = window.getComputedStyle(e.target).fontFamily;
+            tempSpan.style.padding = '4px 8px';
+            tempSpan.textContent = e.target.value || e.target.placeholder;
+            
+            document.body.appendChild(tempSpan);
+            
+            const requiredWidth = Math.max(200, Math.min(400, tempSpan.offsetWidth + 20));
+            e.target.style.width = requiredWidth + 'px';
+            
+            // إضافة tooltip إذا كان النص طويل
+            if (e.target.value && e.target.value.length > 30) {
+                e.target.setAttribute('title', e.target.value);
+                e.target.setAttribute('data-bs-toggle', 'tooltip');
+            } else {
+                e.target.removeAttribute('title');
+                e.target.removeAttribute('data-bs-toggle');
+            }
+            
+            document.body.removeChild(tempSpan);
+        }
+    });
+    const uploadForm = document.getElementById('uploadMaterialFilesForm');
+    const uploadBtn = document.getElementById('uploadFilesBtn');
+    
+    if (uploadForm && uploadBtn) {
+        uploadForm.addEventListener('submit', function(e) {
+            // التحقق من وجود ملفات مختارة
+            const fileInputs = uploadForm.querySelectorAll('input[type="file"]');
+            let hasFiles = false;
+            
+            fileInputs.forEach(input => {
+                if (input.files && input.files.length > 0) {
+                    hasFiles = true;
+                }
+            });
+            
+            if (!hasFiles) {
+                e.preventDefault();
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'تنبيه',
+                    text: 'يرجى اختيار ملف واحد على الأقل للرفع',
+                    confirmButtonText: 'موافق'
+                });
+                return false;
+            }
+            
+            // إظهار مؤشر التحميل
+            uploadBtn.disabled = true;
+            uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>جاري الرفع...';
+            
+            // إظهار رسالة تحميل
+            Swal.fire({
+                title: 'جاري رفع الملفات...',
+                html: 'يرجى الانتظار حتى اكتمال رفع الملفات',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                showConfirmButton: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+        });
+    }
+});
 </script>
 @endpush
 @endsection 

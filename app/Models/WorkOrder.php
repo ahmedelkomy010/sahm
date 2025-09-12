@@ -21,6 +21,7 @@ class WorkOrder extends Model
         'execution_status' => 'required|in:1,2,3,4,5,6,7',
         'municipality' => 'nullable|string|max:255',
         'office' => 'nullable|string|max:255',
+        'task_number' => 'nullable|string|max:255',
         'station_number' => 'nullable|string|max:255',
         'consultant_name' => 'nullable|string|max:255',
         'city' => 'required|string|max:255',
@@ -34,6 +35,8 @@ class WorkOrder extends Model
     ];
 
     protected $fillable = [
+        'is_received',
+        'received_at',
         'order_number',
         'work_type',
         'work_description',
@@ -92,6 +95,7 @@ class WorkOrder extends Model
         'first_partial_payment_without_tax',
         'second_partial_payment_with_tax',
         'municipality',
+        'task_number',
 
         'pre_operation_tests',
         'license_id',
@@ -100,10 +104,13 @@ class WorkOrder extends Model
     ];
 
     protected $casts = [
+        'is_received' => 'boolean',
+        'received_at' => 'datetime',
         'approval_date' => 'date',
         'procedure_155_delivery_date' => 'date',
         'procedure_211_date' => 'date',
         'extract_date' => 'date',
+        'payment_date' => 'datetime',
         'partial_deletion' => 'boolean',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',

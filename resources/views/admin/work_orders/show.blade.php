@@ -398,6 +398,10 @@
                                                 </td>
                                             </tr>
                                             <tr>
+                                                <th>رقم المهمة</th>
+                                                <td>{{ $workOrder->task_number ?? 'غير متوفر' }}</td>
+                                            </tr>
+                                            <tr>
                                                 <th>رقم المحطة</th>
                                                 <td>{{ $workOrder->station_number ?? 'غير متوفر' }}</td>
                                             </tr>

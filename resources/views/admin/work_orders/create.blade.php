@@ -91,6 +91,9 @@
                                                 <option value="403" {{ old('work_type') == '403' ? 'selected' : '' }}> -  توصيل عداد شبكة هوائية VL</option>
                                                 <option value="806" {{ old('work_type') == '806' ? 'selected' : '' }}> -  ايصال وزارة الاسكان جهد منخفض</option>
                                                 <option value="444" {{ old('work_type') == '444' ? 'selected' : '' }}> -  تحويل الشبكه من هوائي الي ارضي </option>
+                                                <option value="111" {{ old('work_type') == '111' ? 'selected' : '' }}> -  Mv- طوارئ ضغط متوسط  </option>
+                                                <option value="222" {{ old('work_type') == '222' ? 'selected' : '' }}> -  Lv - طوارئ ض منخفض </option>
+                                                <option value="333" {{ old('work_type') == '333' ? 'selected' : '' }}> -  Oh  - طوارئ هوائي </option>
                                             </select>
                                         </div>
                                     </div>
@@ -114,11 +117,33 @@
                                 <div class="form-group mb-3">
                                     <label for="approval_date" class="form-label fw-bold">تاريخ الاعتماد</label>
                                     <div class="input-group">
-                                        <input id="approval_date" type="date" class="form-control @error('approval_date') is-invalid @enderror" name="approval_date" value="{{ old('approval_date') }}">
+                                        <input id="approval_date" type="date" class="form-control @error('approval_date') is-invalid @enderror" name="approval_date" value="{{ old('approval_date') }}" readonly>
+                                        <button type="button" class="btn btn-outline-primary" onclick="toggleDatePicker()">
+                                            <i class="fas fa-calendar-alt"></i>
+                                        </button>
                                         <span class="input-group-text bg-light">
                                             <i class="fas fa-calendar me-1"></i>
                                             <span id="approval_info" class="text-muted">-</span>
                                         </span>
+                                    </div>
+                                    <!-- منتقي التاريخ المخصص -->
+                                    <div id="custom-date-picker" class="custom-date-picker" style="display: none;">
+                                        <div class="date-picker-header">
+                                            <button type="button" onclick="previousMonth()" class="btn btn-sm btn-outline-secondary">
+                                                <i class="fas fa-chevron-left"></i>
+                                            </button>
+                                            <span id="month-year" class="mx-3"></span>
+                                            <button type="button" onclick="nextMonth()" class="btn btn-sm btn-outline-secondary">
+                                                <i class="fas fa-chevron-right"></i>
+                                            </button>
+                                        </div>
+                                        <div class="date-picker-calendar" id="calendar-grid">
+                                            <!-- التقويم سيتم إنشاؤه بـ JavaScript -->
+                                        </div>
+                                        <div class="date-picker-footer">
+                                            <button type="button" onclick="setToday()" class="btn btn-sm btn-primary">اليوم</button>
+                                            <button type="button" onclick="closeDatePicker()" class="btn btn-sm btn-secondary">إغلاق</button>
+                                        </div>
                                     </div>
                                     @error('approval_date')
                                         <span class="invalid-feedback" role="alert">
@@ -230,7 +255,20 @@
                                         </span>
                                     @enderror
                                 </div>
+                                <div class="col-md-4">
+                                <div class="form-group mb-3">
+                                    <label for="task_number" class="form-label fw-bold">رقم المهمة (اختياري)</label>
+                                    <input type="text" id="task_number" class="form-control @error('task_number') is-invalid @enderror" name="task_number" value="{{ old('task_number') }}">
+                                    @error('task_number')
+                                        <span class="invalid-feedback" role="alert">
+                                            <strong>{{ $message }}</strong>
+                                        </span>
+                                    @enderror
+                                </div>
                             </div>
+                            </div>
+
+                            
 
                             <div class="col-md-6">
                                 <div class="row">
@@ -317,9 +355,9 @@
                                             مقايسة الأعمال
                                         </h4>
                                         <div class="d-flex gap-2">
-                                            <!-- <button type="button" class="btn btn-primary" onclick="addWorkItem()">
+                                            <button type="button" class="btn btn-outline-primary" onclick="addWorkItem()">
                                                 <i class="fas fa-plus"></i> إضافة بند عمل
-                                            </button> -->
+                                            </button>
                                             @if(isset($project))
                                                 @if($project == 'riyadh')
                                                 <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#riyadhExcelImportModal">
@@ -337,7 +375,7 @@
                                     <!-- حقل البحث عن بند العقد -->
                                     <div class="row mb-3">
                                         <div class="col-md-6">
-                                            <div class="input-group">
+                                            <!-- <div class="input-group">
                                                 <input type="text" class="form-control" id="searchContractItem" 
                                                        placeholder="البحث عن بند العقد بالكود أو الوصف..." 
                                                        onkeyup="searchContractItems(this.value)">
@@ -347,7 +385,7 @@
                                                 <button class="btn btn-outline-primary" type="button" onclick="searchContractItems(document.getElementById('searchContractItem').value)">
                                                     <i class="fas fa-search"></i>
                                                 </button>
-                                            </div>
+                                            </div> -->
                                         </div>
                                         <div class="col-md-6">
                                             <div id="searchResults" class="text-muted small">
@@ -857,7 +895,7 @@
 </div>
 
 <!-- Modal البحث في البنود -->
-<div class="modal fade" id="workItemsSearchModal" tabindex="-1" aria-hidden="true">
+<!-- <div class="modal fade" id="workItemsSearchModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-xl">
         <div class="modal-content">
             <div class="modal-header">
@@ -905,10 +943,10 @@
             </div>
         </div>
     </div>
-</div>
+</div> -->
 
 <!-- Modal البحث في المواد -->
-<div class="modal fade" id="materialsSearchModal" tabindex="-1" aria-hidden="true">
+<!-- <div class="modal fade" id="materialsSearchModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-xl">
         <div class="modal-content">
             <div class="modal-header bg-warning text-dark">
@@ -963,7 +1001,7 @@
             </div>
         </div>
     </div>
-</div>
+</div> -->
 
 <!-- Modal for Riyadh Excel Import -->
 <div class="modal fade" id="riyadhExcelImportModal" tabindex="-1" aria-labelledby="riyadhExcelImportModalLabel" aria-hidden="true">
@@ -1106,8 +1144,182 @@
 </div>
 
 <style>
-    /* تخصيص النموذج */
-    .custom-form label {
+      /* تنسيق قائمة بنود العقد */
+      .work-item-dropdown {
+          background-color: white;
+          border: 1px solid #ddd;
+          border-radius: 8px;
+          box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+          padding: 0;
+          margin-top: 2px;
+          max-height: 250px;
+          overflow-y: auto;
+          width: 100%;
+          min-width: 350px;
+          z-index: 1050;
+      }
+
+      .work-item-dropdown .dropdown-item {
+          padding: 12px 16px;
+          border-bottom: 1px solid #f0f0f0;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          display: flex;
+          flex-direction: column;
+          position: relative;
+      }
+
+      .work-item-dropdown .dropdown-item:last-child {
+          border-bottom: none;
+      }
+
+      .work-item-dropdown .dropdown-item:hover {
+          background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+          transform: translateY(-1px);
+      }
+
+      .work-item-dropdown .item-code {
+          font-weight: 600;
+          color: #2196F3;
+          font-size: 0.95em;
+          margin-bottom: 4px;
+          display: flex;
+          align-items: center;
+      }
+
+      .work-item-dropdown .item-code::before {
+          content: "📋";
+          margin-left: 8px;
+          font-size: 0.8em;
+      }
+
+      .work-item-dropdown .item-description {
+          font-size: 0.9em;
+          color: #495057;
+          line-height: 1.4;
+          margin-bottom: 4px;
+      }
+
+      .work-item-dropdown .item-price {
+          font-size: 0.85em;
+          color: #28a745;
+          font-weight: 500;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+      }
+
+      .work-item-dropdown .item-price::before {
+          content: "💰";
+          margin-left: 6px;
+          font-size: 0.8em;
+      }
+
+      /* تحسين الـ scrollbar */
+      .work-item-dropdown::-webkit-scrollbar {
+          width: 6px;
+      }
+
+      .work-item-dropdown::-webkit-scrollbar-track {
+          background: #f1f1f1;
+          border-radius: 3px;
+      }
+
+      .work-item-dropdown::-webkit-scrollbar-thumb {
+          background: #c1c1c1;
+          border-radius: 3px;
+      }
+
+      .work-item-dropdown::-webkit-scrollbar-thumb:hover {
+          background: #a8a8a8;
+      }
+
+      /* تنسيق منتقي التاريخ المخصص */
+      .custom-date-picker {
+          background: white;
+          border: 1px solid #ddd;
+          border-radius: 8px;
+          box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+          padding: 10px;
+          margin-top: 5px;
+          z-index: 1050;
+          width: 280px;
+          font-size: 0.9em;
+      }
+
+      .date-picker-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 10px;
+          padding-bottom: 8px;
+          border-bottom: 1px solid #eee;
+      }
+
+      .date-picker-calendar {
+          display: grid;
+          grid-template-columns: repeat(7, 1fr);
+          gap: 3px;
+          margin-bottom: 10px;
+      }
+
+      .calendar-day {
+          padding: 6px;
+          text-align: center;
+          border: 1px solid #eee;
+          border-radius: 4px;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          font-size: 0.8em;
+          min-height: 28px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+      }
+
+      .calendar-day:hover {
+          background-color: #e3f2fd;
+          border-color: #2196F3;
+      }
+
+      .calendar-day.selected {
+          background-color: #2196F3;
+          color: white;
+          border-color: #2196F3;
+      }
+
+      .calendar-day.other-month {
+          color: #ccc;
+      }
+
+      .calendar-day.today {
+          background-color: #fff3e0;
+          border-color: #ff9800;
+          font-weight: bold;
+      }
+
+      .calendar-header {
+          font-weight: bold;
+          text-align: center;
+          padding: 4px;
+          background-color: #f5f5f5;
+          border-radius: 4px;
+          margin-bottom: 3px;
+          font-size: 0.75em;
+          min-height: 24px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+      }
+
+      .date-picker-footer {
+          display: flex;
+          justify-content: space-between;
+          gap: 10px;
+      }
+
+      /* تخصيص النموذج */
+      .custom-form label {
         color: #333;
         font-size: 0.95rem;
         margin-bottom: 0.5rem;
@@ -1309,7 +1521,10 @@ document.addEventListener('DOMContentLoaded', function() {
             '450': 'مشاريع ربط محطات التحويل',
             '403': 'توصيل عداد شبكة هوائية VL',
             '806': 'ايصال وزارة الاسكان جهد منخفض',
-            '444': 'تحويل الشبكه من هوائي الي ارضي'
+            '444': 'تحويل الشبكه من هوائي الي ارضي',
+            '111': 'Mv- ضغط متوسط',
+            '222': 'Lv- ض منخفض',
+            '333': 'هوائي Oh'
         };
         return descriptions[workType] || '';
     }
@@ -1435,20 +1650,19 @@ function searchWorkItem(input, index) {
         item.description.toLowerCase().includes(searchTerm)
     );
     
-    if (filteredItems.length > 0) {
-        dropdown.innerHTML = filteredItems.map(item => `
-            <div class="dropdown-item" style="cursor: pointer; padding: 8px 12px; border-bottom: 1px solid #eee;" 
-                 onclick="selectWorkItem(${index}, '${item.id}', '${item.code}', '${item.description}', '${item.unit}', '${item.unit_price || 0}')">
-                <div><strong>${item.code}</strong></div>
-                <div style="font-size: 0.9em; color: #666;">${item.description}</div>
-                <div style="font-size: 0.8em; color: #888;">${item.unit} - ${item.unit_price ? parseFloat(item.unit_price).toFixed(2) + ' ﷼' : 'غير محدد'}</div>
-            </div>
-        `).join('');
-        dropdown.style.display = 'block';
-    } else {
-        dropdown.innerHTML = '<div class="dropdown-item" style="padding: 8px 12px; color: #999;">لا توجد نتائج</div>';
-        dropdown.style.display = 'block';
-    }
+     if (filteredItems.length > 0) {
+         dropdown.innerHTML = filteredItems.map(item => `
+             <div class="dropdown-item" onclick="selectWorkItem(${index}, '${item.id}', '${item.code}', '${item.description}', '${item.unit}', '${item.unit_price || 0}')">
+                 <div class="item-code">${item.code}</div>
+                 <div class="item-description">${item.description}</div>
+                 <div class="item-price">${item.unit} - ${item.unit_price ? parseFloat(item.unit_price).toFixed(2) + ' ﷼' : 'غير محدد'}</div>
+             </div>
+         `).join('');
+         dropdown.style.display = 'block';
+     } else {
+         dropdown.innerHTML = '<div class="dropdown-item"><div class="item-description text-muted">لا توجد نتائج</div></div>';
+         dropdown.style.display = 'block';
+     }
 }
 
 // إظهار قائمة بنود العمل
@@ -1457,11 +1671,10 @@ function showWorkItemDropdown(input, index) {
     
     if (workItems.length > 0) {
         dropdown.innerHTML = workItems.slice(0, 10).map(item => `
-            <div class="dropdown-item" style="cursor: pointer; padding: 8px 12px; border-bottom: 1px solid #eee;" 
-                 onclick="selectWorkItem(${index}, '${item.id}', '${item.code}', '${item.description}', '${item.unit}', '${item.unit_price || 0}')">
-                <div><strong>${item.code}</strong></div>
-                <div style="font-size: 0.9em; color: #666;">${item.description}</div>
-                <div style="font-size: 0.8em; color: #888;">${item.unit} - ${item.unit_price ? parseFloat(item.unit_price).toFixed(2) + ' ﷼' : 'غير محدد'}</div>
+            <div class="dropdown-item" onclick="selectWorkItem(${index}, '${item.id}', '${item.code}', '${item.description}', '${item.unit}', '${item.unit_price || 0}')">
+                <div class="item-code">${item.code}</div>
+                <div class="item-description">${item.description}</div>
+                <div class="item-price">${item.unit} - ${item.unit_price ? parseFloat(item.unit_price).toFixed(2) + ' ﷼' : 'غير محدد'}</div>
             </div>
         `).join('');
         dropdown.style.display = 'block';
@@ -3316,8 +3529,18 @@ function addMaterialToTable(material) {
 
     // حساب قيمة أمر العمل بدون استشاري ديناميكياً
     document.addEventListener('DOMContentLoaded', function() {
-        const orderValueWithConsultantInput = document.getElementById('order_value_with_consultant');
         const orderValueWithoutConsultantInput = document.getElementById('order_value_without_consultant');
+        const orderValueWithConsultantInput = document.getElementById('order_value_with_consultant');
+
+        // حساب قيمة أمر العمل شامل الاستشاري (12%)
+        if (orderValueWithoutConsultantInput && orderValueWithConsultantInput) {
+            orderValueWithoutConsultantInput.addEventListener('input', function() {
+                const value = parseFloat(this.value) || 0;
+                // القيمة المدخلة تمثل 88% من إجمالي القيمة مع الاستشاري
+                const valueWithConsultant = value / 0.88;
+                orderValueWithConsultantInput.value = valueWithConsultant.toFixed(2);
+            });
+        }
 
         function calculateWithoutConsultant() {
             const valueWithConsultant = parseFloat(orderValueWithConsultantInput.value);
@@ -3354,4 +3577,167 @@ function addMaterialToTable(material) {
 <script src="{{ asset('js/work-items-import.js') }}"></script>
 @endsection
 
-@endsection 
+@endsection
+
+@push('scripts')
+<script>
+// إضافة صفين جاهزين عند تحميل الصفحة
+document.addEventListener('DOMContentLoaded', function() {
+    // إضافة الصف الأول
+    addWorkItem();
+    // إضافة الصف الثاني
+    addWorkItem();
+    
+    // تعيين تاريخ الاعتماد للتاريخ الحالي إذا لم يكن محدد
+    const approvalDateInput = document.getElementById('approval_date');
+    if (!approvalDateInput.value) {
+        const today = new Date().toISOString().split('T')[0];
+        approvalDateInput.value = today;
+    }
+});
+
+// متغيرات التقويم
+let currentMonth = new Date().getMonth();
+let currentYear = new Date().getFullYear();
+let selectedDate = null;
+
+// أسماء الشهور بالعربية
+const monthNames = [
+    'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
+    'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'
+];
+
+// أسماء أيام الأسبوع
+const dayNames = ['أحد', 'إثنين', 'ثلاثاء', 'أربعاء', 'خميس', 'جمعة', 'سبت'];
+
+// تبديل عرض منتقي التاريخ
+function toggleDatePicker() {
+    const picker = document.getElementById('custom-date-picker');
+    if (picker.style.display === 'none' || picker.style.display === '') {
+        picker.style.display = 'block';
+        initializeDatePicker();
+    } else {
+        picker.style.display = 'none';
+    }
+}
+
+// إغلاق منتقي التاريخ
+function closeDatePicker() {
+    document.getElementById('custom-date-picker').style.display = 'none';
+}
+
+// تهيئة منتقي التاريخ
+function initializeDatePicker() {
+    const currentDate = document.getElementById('approval_date').value;
+    if (currentDate) {
+        const date = new Date(currentDate);
+        currentMonth = date.getMonth();
+        currentYear = date.getFullYear();
+        selectedDate = new Date(date);
+    }
+    generateCalendar();
+}
+
+// إنشاء التقويم
+function generateCalendar() {
+    const monthYear = document.getElementById('month-year');
+    const calendarGrid = document.getElementById('calendar-grid');
+    
+    monthYear.textContent = `${monthNames[currentMonth]} ${currentYear}`;
+    
+    // مسح المحتوى السابق
+    calendarGrid.innerHTML = '';
+    
+    // إضافة أسماء أيام الأسبوع
+    dayNames.forEach(day => {
+        const dayHeader = document.createElement('div');
+        dayHeader.className = 'calendar-header';
+        dayHeader.textContent = day;
+        calendarGrid.appendChild(dayHeader);
+    });
+    
+    // الحصول على أول يوم في الشهر
+    const firstDay = new Date(currentYear, currentMonth, 1);
+    const lastDay = new Date(currentYear, currentMonth + 1, 0);
+    const startDate = new Date(firstDay);
+    startDate.setDate(startDate.getDate() - firstDay.getDay());
+    
+    // إنشاء أيام التقويم (6 أسابيع)
+    for (let i = 0; i < 42; i++) {
+        const date = new Date(startDate);
+        date.setDate(startDate.getDate() + i);
+        
+        const dayElement = document.createElement('div');
+        dayElement.className = 'calendar-day';
+        dayElement.textContent = date.getDate();
+        
+        // تحديد فئات CSS
+        if (date.getMonth() !== currentMonth) {
+            dayElement.classList.add('other-month');
+        }
+        
+        if (isToday(date)) {
+            dayElement.classList.add('today');
+        }
+        
+        if (selectedDate && isSameDate(date, selectedDate)) {
+            dayElement.classList.add('selected');
+        }
+        
+        // إضافة حدث النقر
+        dayElement.onclick = () => selectDate(date);
+        
+        calendarGrid.appendChild(dayElement);
+    }
+}
+
+// اختيار تاريخ
+function selectDate(date) {
+    selectedDate = new Date(date);
+    const formattedDate = date.toISOString().split('T')[0];
+    document.getElementById('approval_date').value = formattedDate;
+    updateApprovalInfo();
+    generateCalendar(); // إعادة رسم التقويم لإظهار التحديد
+    closeDatePicker();
+}
+
+// الشهر السابق
+function previousMonth() {
+    currentMonth--;
+    if (currentMonth < 0) {
+        currentMonth = 11;
+        currentYear--;
+    }
+    generateCalendar();
+}
+
+// الشهر التالي
+function nextMonth() {
+    currentMonth++;
+    if (currentMonth > 11) {
+        currentMonth = 0;
+        currentYear++;
+    }
+    generateCalendar();
+}
+
+// تعيين تاريخ اليوم
+function setToday() {
+    const today = new Date();
+    selectDate(today);
+}
+
+// فحص إذا كان التاريخ هو اليوم
+function isToday(date) {
+    const today = new Date();
+    return isSameDate(date, today);
+}
+
+// فحص إذا كان التاريخان متطابقان
+function isSameDate(date1, date2) {
+    return date1.getDate() === date2.getDate() &&
+           date1.getMonth() === date2.getMonth() &&
+           date1.getFullYear() === date2.getFullYear();
+}
+</script>
+@endpush
