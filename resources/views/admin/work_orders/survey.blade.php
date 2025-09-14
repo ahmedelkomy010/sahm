@@ -187,14 +187,18 @@
                                         <div class="row mb-3">
                                             <div class="col-12">
                                                 <div class="form-group">
-                                                    <label for="site_images" class="form-label">صور الموقع</label>
+                                                    <label for="site_images" class="form-label">
+                                                        صور الموقع 
+                                                        <small class="text-muted">(حد أقصى 50 ملف)</small>
+                                                    </label>
                                                     <div class="input-group">
                                                                                                             <input type="file" 
                                                            class="form-control @error('site_images.*') is-invalid @enderror" 
                                                            id="site_images" 
                                                            name="site_images[]" 
                                                            accept="image/*,application/pdf" 
-                                                           multiple>
+                                                           multiple
+                                                           onchange="validateFileCount(this, 50)">
                                                         <button type="button" 
                                                                 class="btn btn-outline-primary" 
                                                                 onclick="openCamera()">
@@ -271,7 +275,18 @@
                                                         <div class="card-body">
                                                             <p class="card-text small">{{ $file->original_filename }}</p>
                                                             <div class="btn-group w-100">
-                                                                @if(strtolower(pathinfo($file->original_filename, PATHINFO_EXTENSION)) == 'pdf')
+                                                                @if(in_array(strtolower(pathinfo($file->original_filename, PATHINFO_EXTENSION)), ['jpg', 'jpeg', 'png']))
+                                                                    @php
+                                                                        $imageUrl = \App\Helpers\FileHelper::getImageUrl($file->file_path);
+                                                                    @endphp
+                                                                    @if($imageUrl)
+                                                                        <button type="button" 
+                                                                                class="btn btn-sm btn-primary"
+                                                                                onclick="viewImage('{{ $imageUrl }}', '{{ $file->original_filename }}')">
+                                                                            <i class="fas fa-eye"></i> عرض
+                                                                        </button>
+                                                                    @endif
+                                                                @elseif(strtolower(pathinfo($file->original_filename, PATHINFO_EXTENSION)) == 'pdf')
                                                                     <a href="{{ asset('storage/' . $file->file_path) }}" 
                                                                        target="_blank" 
                                                                        class="btn btn-sm btn-primary">
@@ -409,16 +424,39 @@
                                                                     @php
                                                                         $imageUrl = \App\Helpers\FileHelper::getImageUrl($file->file_path);
                                                                     @endphp
-                                                                    @if($imageUrl)
-                                                                        <div class="col-md-4">
-                                                                            <div class="card h-100">
+                                                                    <div class="col-md-4">
+                                                                        <div class="card h-100">
+                                                                            @if($imageUrl)
                                                                                 <img src="{{ $imageUrl }}" class="card-img-top" alt="{{ $file->original_filename }}" style="height: 200px; object-fit: cover;">
-                                                                                <div class="card-body">
-                                                                                    <p class="card-text small">{{ $file->original_filename }}</p>
+                                                                            @elseif(strtolower(pathinfo($file->original_filename, PATHINFO_EXTENSION)) == 'pdf')
+                                                                                <div class="card-img-top d-flex align-items-center justify-content-center bg-light" style="height: 200px;">
+                                                                                    <i class="fas fa-file-pdf fa-5x text-danger"></i>
+                                                                                </div>
+                                                                            @else
+                                                                                <div class="card-img-top d-flex align-items-center justify-content-center bg-light" style="height: 200px;">
+                                                                                    <i class="fas fa-file fa-3x text-muted"></i>
+                                                                                </div>
+                                                                            @endif
+                                                                            <div class="card-body">
+                                                                                <p class="card-text small">{{ $file->original_filename }}</p>
+                                                                                <div class="btn-group w-100">
+                                                                                    @if(in_array(strtolower(pathinfo($file->original_filename, PATHINFO_EXTENSION)), ['jpg', 'jpeg', 'png']) && $imageUrl)
+                                                                                        <button type="button" 
+                                                                                                class="btn btn-sm btn-primary"
+                                                                                                onclick="viewImage('{{ $imageUrl }}', '{{ $file->original_filename }}')">
+                                                                                            <i class="fas fa-eye"></i> عرض
+                                                                                        </button>
+                                                                                    @elseif(strtolower(pathinfo($file->original_filename, PATHINFO_EXTENSION)) == 'pdf')
+                                                                                        <a href="{{ asset('storage/' . $file->file_path) }}" 
+                                                                                           target="_blank" 
+                                                                                           class="btn btn-sm btn-primary">
+                                                                                            <i class="fas fa-eye"></i> عرض
+                                                                                        </a>
+                                                                                    @endif
                                                                                 </div>
                                                                             </div>
                                                                         </div>
-                                                                    @endif
+                                                                    </div>
                                                                 @empty
                                                                     <div class="col-12">
                                                                         <div class="alert alert-info mb-0">
@@ -1207,6 +1245,105 @@ function showImagePreview(file) {
         }, 3000);
     };
     reader.readAsDataURL(file);
+}
+
+// دالة عرض الصورة في نافذة منبثقة
+function viewImage(imageUrl, filename) {
+    // إنشاء النافذة المنبثقة
+    const modal = document.createElement('div');
+    modal.className = 'modal fade';
+    modal.id = 'imageViewModal';
+    modal.setAttribute('tabindex', '-1');
+    modal.setAttribute('aria-hidden', 'true');
+    
+    modal.innerHTML = `
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">عرض الصورة - ${filename}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <img src="${imageUrl}" class="img-fluid" alt="${filename}" style="max-height: 80vh; width: auto;">
+                </div>
+                <div class="modal-footer">
+                    <a href="${imageUrl}" download="${filename}" class="btn btn-success">
+                        <i class="fas fa-download"></i> تحميل الصورة
+                    </a>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // إضافة النافذة إلى الصفحة
+    document.body.appendChild(modal);
+    
+    // إظهار النافذة
+    const bootstrapModal = new bootstrap.Modal(modal);
+    bootstrapModal.show();
+    
+    // إزالة النافذة عند الإغلاق
+    modal.addEventListener('hidden.bs.modal', function () {
+        document.body.removeChild(modal);
+    });
+}
+
+// دالة للتحقق من عدد الملفات المسموح برفعها
+function validateFileCount(input, maxFiles) {
+    const files = input.files;
+    
+    if (files.length > maxFiles) {
+        // إظهار رسالة تحذير
+        const alert = document.createElement('div');
+        alert.className = 'alert alert-warning alert-dismissible fade show mt-2';
+        alert.innerHTML = `
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            <strong>تنبيه:</strong> يمكنك رفع حد أقصى ${maxFiles} ملف فقط. تم اختيار ${files.length} ملف.
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        // إضافة التنبيه بعد حقل الإدخال
+        input.parentNode.parentNode.appendChild(alert);
+        
+        // مسح الملفات الزائدة
+        const dt = new DataTransfer();
+        for (let i = 0; i < Math.min(files.length, maxFiles); i++) {
+            dt.items.add(files[i]);
+        }
+        input.files = dt.files;
+        
+        // إزالة التنبيه بعد 5 ثواني
+        setTimeout(() => {
+            if (alert.parentNode) {
+                alert.remove();
+            }
+        }, 5000);
+        
+        // تحديث معاينة الملفات
+        updateFilePreview();
+    } else {
+        // إظهار رسالة نجاح
+        const successAlert = document.createElement('div');
+        successAlert.className = 'alert alert-success alert-dismissible fade show mt-2';
+        successAlert.innerHTML = `
+            <i class="fas fa-check-circle me-2"></i>
+            تم اختيار ${files.length} ملف بنجاح.
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        input.parentNode.parentNode.appendChild(successAlert);
+        
+        // إزالة التنبيه بعد 3 ثواني
+        setTimeout(() => {
+            if (successAlert.parentNode) {
+                successAlert.remove();
+            }
+        }, 3000);
+        
+        // تحديث معاينة الملفات
+        updateFilePreview();
+    }
 }
 </script>
 

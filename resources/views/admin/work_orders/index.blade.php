@@ -786,7 +786,12 @@ function resetCountdown(workOrderId) {
                         </table>
                     </div>
 
-                    <div class="d-flex justify-content-center mt-4">
+                    <div class="d-flex flex-column align-items-center mt-4">
+                        <div class="showing-text mb-2">
+                             Page 
+                            <span class="current-page">{{ $workOrders->currentPage() }}</span> 
+                            of {{ $workOrders->lastPage() }}
+                        </div>
                         {{ $workOrders->appends(request()->query())->links() }}
                     </div>
                 </div>
@@ -1133,6 +1138,45 @@ function resetCountdown(workOrderId) {
     .date-value {
         font-weight: 600;
         color: #495057;
+    }
+
+    /* تنسيق أزرار التنقل */
+    .pagination {
+        gap: 5px;
+    }
+
+    .page-link {
+        border-radius: 4px !important;
+        color: #4e73df;
+        padding: 8px 16px;
+        font-weight: 500;
+    }
+
+    .page-item.active .page-link {
+        background-color: #4e73df;
+        border-color: #4e73df;
+        color: white;
+        box-shadow: 0 2px 4px rgba(78, 115, 223, 0.3);
+    }
+
+    .page-item.disabled .page-link {
+        background-color: #f8f9fc;
+        border-color: #e3e6f0;
+        color: #858796;
+    }
+
+    /* تحديد الصفحة الحالية في Showing */
+    .showing-text {
+        color:rgb(128, 20, 20);
+    }
+
+    .showing-text .current-page {
+        color: #4e73df;
+        font-weight: bold;
+        padding: 2px 6px;
+        background-color: #f8f9fc;
+        border-radius: 4px;
+        margin: 0 2px;
     }
 </style>
 

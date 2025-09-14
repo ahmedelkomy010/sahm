@@ -1370,6 +1370,9 @@ class LicenseController extends Controller
             'extension_end_date' => $request->input('extension_end_date'),
         ]);
         
+        // تعريف المتغير خارج الـ if block
+        $extension = null;
+        
         // حفظ بيانات التمديد في جدول التمديدات
         if ($request->has(['extension_start_date', 'extension_end_date'])) {
             $startDate = $request->input('extension_start_date');
@@ -1424,12 +1427,19 @@ class LicenseController extends Controller
             
             // حفظ الرخصة مع التواريخ المحدثة فقط
             $license->save();
+            
+            \Log::info('Extension created successfully', [
+                'extension_id' => $extension->id,
+                'license_id' => $license->id,
+                'extension_value' => $request->input('extension_value'),
+                'days_count' => $daysCount
+            ]);
         }
         
-        \Log::info('Extension section saved', [
+        \Log::info('Extension section processing completed', [
             'license_id' => $license->id,
-            'extension_id' => $extension->id ?? null,
-            'extension_value' => $request->input('extension_value')
+            'extension_id' => $extension ? $extension->id : null,
+            'has_extension_data' => $request->has(['extension_start_date', 'extension_end_date'])
         ]);
     }
 
@@ -2692,32 +2702,38 @@ class LicenseController extends Controller
             return false;
         }
 
-        // التحقق من حالة أمر العمل
-        if ($license->workOrder && $license->workOrder->execution_status >= 7) {
-            // لا يمكن التمديد على الرخص المنتهية
+        // التحقق من وجود رقم الرخصة
+        if (empty($license->license_number)) {
             return false;
         }
 
-        // التحقق من تاريخ انتهاء الرخصة
+        // التحقق من حالة أمر العمل - السماح بالتمديد للرخص الجديدة
+        if ($license->workOrder && $license->workOrder->execution_status >= 8) {
+            // لا يمكن التمديد على أوامر العمل المكتملة بالكامل فقط
+            return false;
+        }
+
+        // التحقق من تاريخ انتهاء الرخصة - إذا لم يكن موجود، السماح بالتمديد
         if ($license->license_end_date) {
             $endDate = new \DateTime($license->license_end_date);
             $now = new \DateTime();
             
-            if ($endDate < $now) {
-                // لا يمكن التمديد على الرخص المنتهية
+            // السماح بالتمديد للرخص المنتهية منذ أقل من 30 يوم
+            $daysDiff = $now->diff($endDate)->days;
+            if ($endDate < $now && $daysDiff > 30) {
                 return false;
             }
         }
 
-        // التحقق من آخر تمديد
+        // التحقق من آخر تمديد - إذا كان منتهي منذ أكثر من 30 يوم
         if ($license->extensions()->count() > 0) {
             $latestExtension = $license->extensions()->latest()->first();
             if ($latestExtension && $latestExtension->end_date) {
                 $extensionEndDate = new \DateTime($latestExtension->end_date);
                 $now = new \DateTime();
                 
-                if ($extensionEndDate < $now) {
-                    // لا يمكن التمديد على التمديدات المنتهية
+                $daysDiff = $now->diff($extensionEndDate)->days;
+                if ($extensionEndDate < $now && $daysDiff > 30) {
                     return false;
                 }
             }

@@ -12,45 +12,7 @@
                             <small class="text-white-50">أمر العمل رقم: {{ $workOrder->work_order_number ?? $workOrder->order_number }}</small>
                         </div>
                         <div class="d-flex align-items-center gap-3">
-                            @php
-                                $approvalDate = \Carbon\Carbon::parse($workOrder->approval_date);
-                                $daysPassed = (int) $approvalDate->diffInDays(now());
-                                $isToday = $approvalDate->isToday();
-                                $isYesterday = $approvalDate->isYesterday();
-                                
-                                if ($isToday) {
-                                    $daysText = 'اليوم';
-                                    $badgeColor = 'success';
-                                } elseif ($isYesterday) {
-                                    $daysText = 'أمس';
-                                    $badgeColor = 'info';
-                                } elseif ($daysPassed <= 7) {
-                                    $daysText = $daysPassed . ' ' . ($daysPassed == 1 ? 'يوم' : 'أيام');
-                                    $badgeColor = 'success';
-                                } elseif ($daysPassed <= 30) {
-                                    $daysText = $daysPassed . ' يوم';
-                                    $badgeColor = 'info';
-                                } elseif ($daysPassed <= 90) {
-                                    $daysText = $daysPassed . ' يوم';
-                                    $badgeColor = 'primary';
-                                } elseif ($daysPassed <= 180) {
-                                    $daysText = $daysPassed . ' يوم';
-                                    $badgeColor = 'warning';
-                                } elseif ($daysPassed <= 365) {
-                                    $daysText = $daysPassed . ' يوم';
-                                    $badgeColor = 'orange';
-                                } elseif ($daysPassed <= 500) {
-                                    $daysText = $daysPassed . ' يوم';
-                                    $badgeColor = 'danger';
-                                } else {
-                                    $daysText = 'أكثر من 500 يوم';
-                                    $badgeColor = 'dark';
-                                }
-                            @endphp
-                            <span class="badge bg-{{ $badgeColor }} fs-6">
-                                <i class="fas fa-clock me-1"></i>
-                                {{ $daysText }}
-                            </span>
+                           
                             <a href="{{ route('admin.work-orders.show', $workOrder) }}" class="btn btn-success">
                                 <i class="fas fa-arrow-left"></i> عودة الي تفاصيل أمر العمل  
                             </a>
