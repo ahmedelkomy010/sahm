@@ -720,26 +720,11 @@
                                                         $totalExtensions += $license->extensions()->count();
                                                         $totalExtensionValue += $license->extensions()->sum('extension_value');
                                                     }
-                                                @endphp
-                                                <tr>
-                                                    <th>إجمالي قيمة تمديدات الرخص</th>
-                                                    <td>
-                                                        <div class="d-flex align-items-center gap-3">
-                                                            <span class="badge bg-info fs-6">
-                                                                {{ $totalExtensions }} تمديد
-                                                            </span>
-                                                            <span class="text-info fw-bold">
-                                                                {{ number_format($totalExtensionValue, 2) }} ﷼
-                                                            </span>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                                @php
-                                                    // حساب إجمالي مبلغ الإخلاء لجميع الرخص (نقل الكود هنا)
-                                                    $allLicensesForEvacuation = $workOrder->licenses;
+                                                    
+                                                    // حساب إجمالي مبلغ الإخلاء لجميع الرخص
                                                     $totalEvacuationValue = 0;
                                                     $totalEvacuationCount = 0;
-                                                    foreach($allLicensesForEvacuation as $license) {
+                                                    foreach($workOrder->licenses as $license) {
                                                         // جمع مبالغ الإخلاء من الحقول المختلفة
                                                         $evacuationAmount = 0;
                                                         $evacuationAmount += ($license->evac_amount ?? 0);
@@ -761,6 +746,19 @@
                                                         $totalEvacuationValue += $evacuationAmount;
                                                     }
                                                 @endphp
+                                                <tr>
+                                                    <th>إجمالي قيمة تمديدات الرخص</th>
+                                                    <td>
+                                                        <div class="d-flex align-items-center gap-3">
+                                                            <span class="badge bg-info fs-6">
+                                                                {{ $totalExtensions }} تمديد
+                                                            </span>
+                                                            <span class="text-info fw-bold">
+                                                                {{ number_format($totalExtensionValue, 2) }} ﷼
+                                                            </span>
+                                                        </div>
+                                                    </td>
+                                                </tr>
                                                 <tr>
                                                     <th>إجمالي قيمة اخلاءات الرخص</th>
                                                     <td>
@@ -786,7 +784,14 @@
                                                     </td>
                                                 </tr>
                                                 @if(($licensesTotals['paid_violations_value'] ?? 0) > 0 || ($licensesTotals['pending_violations_value'] ?? 0) > 0)
-                                                
+                                                <tr>
+                                                    <th>المخالفات المدفوعة</th>
+                                                    <td><span class="text-success">{{ number_format($licensesTotals['paid_violations_value'] ?? 0, 2) }} ﷼</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <th>المخالفات المتأخرة</th>
+                                                    <td><span class="text-warning">{{ number_format($licensesTotals['pending_violations_value'] ?? 0, 2) }} ﷼</span></td>
+                                                </tr>
                                                 @endif
                                                 @php
                                                     $grandTotal = ($licensesTotals['total_license_value'] ?? 0) + ($licensesTotals['total_extension_value'] ?? 0) + $totalEvacuationValue + ($licensesTotals['total_violations_value'] ?? 0);

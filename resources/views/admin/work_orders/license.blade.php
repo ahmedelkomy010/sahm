@@ -889,8 +889,15 @@ $(document).ready(function() {
                     "hideMethod": "fadeOut"
                 });
                 
-                // تحديث جدول رخص الحفر
-                loadDigLicenses();
+                // تحديث جدول رخص الحفر فوراً
+                setTimeout(() => {
+                    loadDigLicenses();
+                }, 500);
+                
+                // تحديث إضافي بعد ثانية للتأكد
+                setTimeout(() => {
+                    loadDigLicenses();
+                }, 1500);
                 
                 // إعادة تعيين النموذج (اختياري - يمكن تعطيله إذا كان المستخدم يريد الاحتفاظ بالبيانات)
                 // document.getElementById('coordinationForm').reset();
@@ -911,14 +918,12 @@ $(document).ready(function() {
                     });
                 }, 3000);
                 
-                // إظهار رسالة نجاح إضافية وإعادة تحميل الصفحة
+                // إظهار رسالة نجاح بدون إعادة تحميل الصفحة
                 setTimeout(() => {
-                    toastr.success('تم حفظ شهادة التنسيق بنجاح! سيتم تحديث الصفحة...', 'تم الحفظ بنجاح');
-                    
-                    // إعادة تحميل الصفحة بعد ثانيتين
-                    setTimeout(() => {
-                        location.reload();
-                    }, 2000);
+                    toastr.success('تم حفظ شهادة التنسيق بنجاح وتحديث الجدول!', 'تم الحفظ بنجاح', {
+                        "closeButton": true,
+                        "timeOut": "3000"
+                    });
                 }, 1000);
             },
             error: function(xhr) {
@@ -948,16 +953,21 @@ $(document).ready(function() {
     // دالة تحميل جدول رخص الحفر
     function loadDigLicenses() {
         $.ajax({
-            url: `/admin/licenses/by-work-order/{{ $workOrder->id }}`,
+            url: `/admin/licenses/all-by-work-order/{{ $workOrder->id }}`,
             type: 'GET',
             success: function(response) {
+                console.log('loadDigLicenses response:', response);
+                
                 const tbody = document.getElementById('dig-licenses-table-body');
                 const totalRow = document.getElementById('licenses-total-row');
-                if (!tbody) return;
+                if (!tbody) {
+                    console.error('dig-licenses-table-body not found');
+                    return;
+                }
                 
                 tbody.innerHTML = '';
 
-                if (!response.licenses || response.licenses.length === 0) {
+                if (!response.success || !response.licenses || response.licenses.length === 0) {
                     tbody.innerHTML = `
                         <tr>
                             <td colspan="11" class="text-center">لا توجد رخص حفر</td>

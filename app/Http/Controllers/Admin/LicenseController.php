@@ -531,11 +531,54 @@ class LicenseController extends Controller
 
             return response()->json([
                 'success' => true,
-                'licenses' => $licensesWithFiles
+                'licenses' => $licensesWithFiles->values()
             ]);
 
         } catch (\Exception $e) {
-            \Log::error('Get licenses by work order error: ' . $e->getMessage());
+            \Log::error('Error fetching licenses by work order: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ في جلب الرخص'
+            ], 500);
+        }
+    }
+
+    /**
+     * الحصول على جميع الرخص حسب أمر العمل للعرض (بدون فلترة)
+     */
+    public function getAllByWorkOrder($workOrderId)
+    {
+        try {
+            // جلب جميع الرخص بدون فلترة للعرض في الجدول
+            $licenses = License::where('work_order_id', $workOrderId)
+                ->with(['workOrder', 'extensions']) // إضافة العلاقات المطلوبة
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            // إضافة مسارات الملفات الصحيحة
+            $licensesWithFiles = $licenses->map(function ($license) {
+                $licenseArray = $license->toArray();
+                
+                // إضافة روابط الملفات
+                $licenseArray['license_file_url'] = $license->getFileUrl('license_file_path');
+                $licenseArray['payment_proof_url'] = $license->getFileUrl('payment_proof_path');
+                $licenseArray['payment_proof_urls'] = $license->getMultipleFileUrls('payment_proof_path');
+                $licenseArray['payment_invoices_urls'] = $license->getMultipleFileUrls('payment_invoices_path');
+                $licenseArray['license_activation_urls'] = $license->getMultipleFileUrls('license_activation_path');
+                
+                // إضافة حالة التنفيذ من أمر العمل
+                $licenseArray['work_order_execution_status'] = $license->workOrder ? $license->workOrder->execution_status : null;
+                
+                return $licenseArray;
+            });
+
+            return response()->json([
+                'success' => true,
+                'licenses' => $licensesWithFiles->values()
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error fetching all licenses by work order: ' . $e->getMessage());
             
             return response()->json([
                 'success' => false,
@@ -1058,10 +1101,14 @@ class LicenseController extends Controller
                 $license->license_date = now()->format('Y-m-d');
             }
             
+            // حفظ الرخصة في قاعدة البيانات
+            $license->save();
+            
             \Log::info('Coordination section saved successfully', [
-                'license_id' => $license->id ?? 'new',
+                'license_id' => $license->id,
                 'work_order_id' => $license->work_order_id,
-                'license_date' => $license->license_date
+                'license_date' => $license->license_date,
+                'coordination_certificate_number' => $license->coordination_certificate_number
             ]);
             
         } catch (\Exception $e) {
