@@ -101,6 +101,7 @@ class WorkOrder extends Model
         'license_id',
         'city',
         'manual_days',
+        'materials_notes',
     ];
 
     protected $casts = [

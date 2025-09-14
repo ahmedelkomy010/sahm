@@ -712,13 +712,69 @@
                                                     <th>إجمالي قيمة رخص الحفر</th>
                                                     <td><span class="text-primary fw-bold">{{ number_format($licensesTotals['total_license_value'] ?? 0, 2) }} ﷼</span></td>
                                                 </tr>
+                                                @php
+                                                    // حساب إجمالي عدد التمديدات وقيمتها
+                                                    $totalExtensions = 0;
+                                                    $totalExtensionValue = 0;
+                                                    foreach($workOrder->licenses as $license) {
+                                                        $totalExtensions += $license->extensions()->count();
+                                                        $totalExtensionValue += $license->extensions()->sum('extension_value');
+                                                    }
+                                                @endphp
                                                 <tr>
                                                     <th>إجمالي قيمة تمديدات الرخص</th>
-                                                    <td><span class="text-info fw-bold">{{ number_format($licensesTotals['total_extension_value'] ?? 0, 2) }} ﷼</span></td>
+                                                    <td>
+                                                        <div class="d-flex align-items-center gap-3">
+                                                            <span class="badge bg-info fs-6">
+                                                                {{ $totalExtensions }} تمديد
+                                                            </span>
+                                                            <span class="text-info fw-bold">
+                                                                {{ number_format($totalExtensionValue, 2) }} ﷼
+                                                            </span>
+                                                        </div>
+                                                    </td>
                                                 </tr>
+                                                @php
+                                                    // حساب إجمالي مبلغ الإخلاء لجميع الرخص (نقل الكود هنا)
+                                                    $allLicensesForEvacuation = $workOrder->licenses;
+                                                    $totalEvacuationValue = 0;
+                                                    $totalEvacuationCount = 0;
+                                                    foreach($allLicensesForEvacuation as $license) {
+                                                        // جمع مبالغ الإخلاء من الحقول المختلفة
+                                                        $evacuationAmount = 0;
+                                                        $evacuationAmount += ($license->evac_amount ?? 0);
+                                                        $evacuationAmount += ($license->evac_license_value ?? 0);
+                                                        
+                                                        // جمع بيانات الإخلاء من additional_details إذا وجدت
+                                                        if ($license->additional_details) {
+                                                            $additionalDetails = json_decode($license->additional_details, true);
+                                                            if (isset($additionalDetails['evacuation_data']) && is_array($additionalDetails['evacuation_data'])) {
+                                                                foreach ($additionalDetails['evacuation_data'] as $evacData) {
+                                                                    if (isset($evacData['evacuation_amount']) && is_numeric($evacData['evacuation_amount'])) {
+                                                                        $evacuationAmount += floatval($evacData['evacuation_amount']);
+                                                                        $totalEvacuationCount++;
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                        
+                                                        $totalEvacuationValue += $evacuationAmount;
+                                                    }
+                                                @endphp
                                                 <tr>
                                                     <th>إجمالي قيمة اخلاءات الرخص</th>
-                                                    <td><span class="text-warning fw-bold">{{ number_format($licensesTotals['total_evacuation_value'] ?? 0, 2) }} ﷼</span></td>
+                                                    <td>
+                                                        <div class="d-flex align-items-center gap-3">
+                                                            @if($totalEvacuationCount > 0)
+                                                            <span class="badge bg-warning fs-6">
+                                                                {{ $totalEvacuationCount }} إخلاء
+                                                            </span>
+                                                            @endif
+                                                            <span class="text-warning fw-bold">
+                                                                {{ number_format($totalEvacuationValue, 2) }} ﷼
+                                                            </span>
+                                                        </div>
+                                                    </td>
                                                 </tr>
                                                 <tr>
                                                     <th>إجمالي قيمة مخالفات الرخص</th>
@@ -730,35 +786,41 @@
                                                     </td>
                                                 </tr>
                                                 @if(($licensesTotals['paid_violations_value'] ?? 0) > 0 || ($licensesTotals['pending_violations_value'] ?? 0) > 0)
-                                                <tr>
-                                                    <th>المخالفات المدفوعة</th>
-                                                    <td><span class="text-success">{{ number_format($licensesTotals['paid_violations_value'] ?? 0, 2) }} ﷼</span></td>
-                                                </tr>
-                                                <tr>
-                                                    <th>المخالفات المتأخرة</th>
-                                                    <td><span class="text-warning">{{ number_format($licensesTotals['pending_violations_value'] ?? 0, 2) }} ﷼</span></td>
-                                                </tr>
+                                                
                                                 @endif
                                                 @php
-                                                    $grandTotal = ($licensesTotals['total_license_value'] ?? 0) + ($licensesTotals['total_extension_value'] ?? 0) + ($licensesTotals['total_evacuation_value'] ?? 0) + ($licensesTotals['total_violations_value'] ?? 0);
+                                                    $grandTotal = ($licensesTotals['total_license_value'] ?? 0) + ($licensesTotals['total_extension_value'] ?? 0) + $totalEvacuationValue + ($licensesTotals['total_violations_value'] ?? 0);
                                                 @endphp
                                                
-                                                @php $latestLicense = $workOrder->licenses()->latest()->first(); @endphp
-                                                @if($latestLicense)
+                                                @php 
+                                                    // حساب إجمالي الاختبارات لجميع الرخص
+                                                    $allLicenses = $workOrder->licenses;
+                                                    $totalSuccessfulTests = $allLicenses->sum('successful_tests_count') ?? 0;
+                                                    $totalFailedTests = $allLicenses->sum('failed_tests_count') ?? 0;
+                                                    $totalSuccessfulTestsValue = $allLicenses->sum('successful_tests_value') ?? 0;
+                                                    $totalFailedTestsValue = $allLicenses->sum('failed_tests_value') ?? 0;
+                                                @endphp
+                                                @if($allLicenses->count() > 0)
                                                 <tr>
                                                     <th>إجمالي الاختبارات الناجحة</th>
                                                     <td>
-                                                        <span class="text-success fw-bold">
-                                                            {{ number_format($latestLicense->successful_tests_value ?? 0, 2) }} ﷼
-                                                        </span>
+                                                        <div class="d-flex align-items-center gap-3">
+                                                            
+                                                            <span class="text-success fw-bold">
+                                                                {{ number_format($totalSuccessfulTestsValue, 2) }} ﷼
+                                                            </span>
+                                                        </div>
                                                     </td>
                                                 </tr>
                                                 <tr>
                                                     <th>إجمالي الاختبارات الراسبة</th>
                                                     <td>
-                                                        <span class="text-danger fw-bold">
-                                                            {{ number_format($latestLicense->failed_tests_value ?? 0, 2) }} ﷼
-                                                        </span>
+                                                        <div class="d-flex align-items-center gap-3">
+                                                            
+                                                            <span class="text-danger fw-bold">
+                                                                {{ number_format($totalFailedTestsValue, 2) }} ﷼
+                                                            </span>
+                                                        </div>
                                                     </td>
                                                 </tr>
                                                 @endif

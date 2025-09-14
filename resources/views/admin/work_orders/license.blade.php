@@ -135,6 +135,21 @@ $(document).ready(function() {
         box-shadow: 0 10px 30px rgba(0,0,0,0.1);
     }
     
+    /* ضمان ظهور إجمالي الإخلاء */
+    #evacuationDataTable tfoot {
+        display: table-footer-group !important;
+        background-color: #d1ecf1 !important;
+    }
+    
+    #total-evacuation-amount {
+        display: table-cell !important;
+        visibility: visible !important;
+        background-color: #b8daff !important;
+        color: #004085 !important;
+        font-weight: bold !important;
+        font-size: 1.1em !important;
+    }
+    
     .section-card {
         background: white;
         border-radius: 15px;
@@ -4037,6 +4052,18 @@ function deleteExtension(extensionId) {
                                         </td>
                                     </tr>
                                 </tbody>
+                                <tfoot class="table-success" style="display: table-footer-group !important;">
+                                    <tr>
+                                        <td colspan="3" class="text-end fw-bold" style="background-color: #d1ecf1; color: #0c5460;">
+                                            <i class="fas fa-calculator me-2"></i>
+                                            إجمالي مبلغ الإخلاء:
+                                        </td>
+                                        <td class="text-center fw-bold" id="total-evacuation-amount" style="background-color: #b8daff; color: #004085; font-size: 1.1em;">
+                                            0.00 ريال
+                                        </td>
+                                        <td colspan="4" style="background-color: #d1ecf1;"></td>
+                                    </tr>
+                                </tfoot>
                             </table>
                         </div>
 
@@ -5873,7 +5900,7 @@ function addNewEvacuationRow() {
             <input type="date" class="form-control form-control-sm" name="evacuation_data[${rowCount}][evacuation_date]" required>
         </td>
         <td>
-            <input type="number" step="0.01" class="form-control form-control-sm" name="evacuation_data[${rowCount}][evacuation_amount]" placeholder="0.00" required>
+            <input type="number" step="0.01" class="form-control form-control-sm evacuation-amount" name="evacuation_data[${rowCount}][evacuation_amount]" placeholder="0.00" required onchange="calculateEvacuationTotal()" oninput="calculateEvacuationTotal()">
         </td>
         <td>
             <input type="datetime-local" class="form-control form-control-sm" name="evacuation_data[${rowCount}][evacuation_datetime]" required>
@@ -5944,7 +5971,7 @@ function loadEvacuationDataForLicense(licenseId) {
                             <input type="date" class="form-control form-control-sm" name="evacuation_data[${index + 1}][evacuation_date]" value="${evacuation.evacuation_date || ''}" required>
                         </td>
                         <td>
-                            <input type="number" step="0.01" class="form-control form-control-sm" name="evacuation_data[${index + 1}][evacuation_amount]" value="${evacuation.evacuation_amount || ''}" placeholder="0.00" required>
+                            <input type="number" step="0.01" class="form-control form-control-sm evacuation-amount" name="evacuation_data[${index + 1}][evacuation_amount]" value="${evacuation.evacuation_amount || ''}" placeholder="0.00" required onchange="calculateEvacuationTotal()" oninput="calculateEvacuationTotal()">
                         </td>
                         <td>
                             <input type="datetime-local" class="form-control form-control-sm" name="evacuation_data[${index + 1}][evacuation_datetime]" value="${evacuation.evacuation_datetime || ''}" required>
@@ -6012,6 +6039,84 @@ function updateEvacuationRowNumbers() {
         const firstCell = row.cells[0];
         firstCell.textContent = index + 1;
     });
+    
+    // إعادة حساب الإجمالي بعد تحديث الصفوف
+    calculateEvacuationTotal();
+}
+
+// دالة حساب إجمالي مبلغ الإخلاء
+function calculateEvacuationTotal() {
+    console.log('=== calculateEvacuationTotal called ===');
+    
+    // البحث عن عنصر الإجمالي أولاً وفرض ظهوره
+    const totalElement = document.getElementById('total-evacuation-amount');
+    
+    if (totalElement) {
+        // فرض الظهور فوراً باستخدام setProperty
+        totalElement.style.setProperty('display', 'table-cell', 'important');
+        totalElement.style.setProperty('visibility', 'visible', 'important');
+        totalElement.style.backgroundColor = '#b8daff';
+        totalElement.style.color = '#004085';
+        totalElement.style.fontWeight = 'bold';
+        totalElement.style.fontSize = '1.1em';
+        totalElement.style.border = '2px solid #007bff';
+        
+        // فرض ظهور الـ tfoot أيضاً
+        const tfoot = totalElement.closest('tfoot');
+        if (tfoot) {
+            tfoot.style.setProperty('display', 'table-footer-group', 'important');
+            tfoot.style.backgroundColor = '#d1ecf1';
+            tfoot.style.border = '2px solid #28a745';
+        }
+    }
+    
+    // البحث عن الجدول
+    const table = document.getElementById('evacuationDataTable');
+    if (!table) {
+        console.error('evacuationDataTable not found!');
+        if (totalElement) totalElement.textContent = '0.00 ريال';
+        return;
+    }
+    
+    if (!totalElement) {
+        console.error('total-evacuation-amount element not found!');
+        return;
+    }
+    
+    // البحث عن حقول المبلغ بطرق متعددة
+    let amountInputs = document.querySelectorAll('#evacuationDataTable .evacuation-amount');
+    
+    // إذا لم توجد حقول بالطريقة الأولى، جرب طريقة أخرى
+    if (amountInputs.length === 0) {
+        amountInputs = document.querySelectorAll('#evacuationDataTable input[name*="evacuation_amount"]');
+    }
+    
+    // إذا لم توجد بعد، جرب البحث عن جميع حقول الأرقام
+    if (amountInputs.length === 0) {
+        const allInputs = document.querySelectorAll('#evacuationDataTable input[type="number"]');
+        // فلتر للحصول على حقول المبلغ فقط
+        amountInputs = Array.from(allInputs).filter(input => 
+            input.name && input.name.includes('evacuation_amount')
+        );
+    }
+    
+    console.log('Amount inputs found:', amountInputs.length);
+    
+    let total = 0;
+    
+    amountInputs.forEach((input, index) => {
+        const value = parseFloat(input.value) || 0;
+        total += value;
+        console.log(`Input ${index}: value="${input.value}", parsed=${value}`);
+    });
+    
+    console.log('Final total:', total);
+    
+    // تحديث النص
+    const displayText = total.toFixed(2) + ' ريال';
+    totalElement.textContent = displayText;
+    
+    console.log('Updated total element with:', displayText);
 }
 
 function saveAllEvacuationDataSimple() {
@@ -6146,11 +6251,16 @@ function loadSavedEvacuationAttachments(licenseId) {
 }
 
 function saveAllEvacuationData() {
-    // استخدام الرخصة المرتبطة بأمر العمل
-    const licenseId = @if($workOrder->license) {{ $workOrder->license->id }} @else null @endif;
+    // الحصول على معرف الرخصة المختارة
+    const licenseSelector = document.getElementById('evacuation-license-selector');
+    const licenseId = licenseSelector ? licenseSelector.value : null;
+    
     if (!licenseId) {
+        toastr.error('يجب اختيار رخصة أولاً');
         return;
     }
+
+    console.log('Saving evacuation data for license:', licenseId);
 
     // تجميع بيانات الجدول
     const rows = document.getElementById('evacuationDataTable').getElementsByTagName('tbody')[0].rows;
@@ -6246,9 +6356,17 @@ function saveAllEvacuationData() {
     .then(data => {
         console.log('Response data:', data);
         if (data.success) {
+            toastr.success('تم حفظ بيانات الإخلاء بنجاح');
+            
             // إعادة تحميل البيانات لإظهار المرفقات المحفوظة
             loadEvacuationDataForLicense(licenseId);
+            
+            // حساب الإجمالي بعد الحفظ
+            setTimeout(() => {
+                calculateEvacuationTotal();
+            }, 500);
         } else {
+            toastr.error(data.message || 'حدث خطأ في حفظ البيانات');
             if (data.errors) {
                 console.error('Validation errors:', data.errors);
                 Object.keys(data.errors).forEach(field => {
@@ -6259,6 +6377,7 @@ function saveAllEvacuationData() {
     })
     .catch(error => {
         console.error('Full error:', error);
+        toastr.error('حدث خطأ في الاتصال بالخادم');
     })
     .finally(() => {
         // إعادة تعيين زر الحفظ
@@ -6288,6 +6407,8 @@ function loadEvacuationDataForLicense(licenseId) {
                 data.evacuation_data.forEach((item, index) => {
                     addEvacuationRowWithData(item, index + 1);
                 });
+                // حساب الإجمالي بعد تحميل البيانات
+                setTimeout(() => calculateEvacuationTotal(), 100);
             } else {
                 console.log('No existing evacuation data found');
                 tbody.innerHTML = `
@@ -6298,6 +6419,8 @@ function loadEvacuationDataForLicense(licenseId) {
                         </td>
                     </tr>
                 `;
+                // حساب الإجمالي حتى لو لم توجد بيانات (سيكون 0.00)
+                calculateEvacuationTotal();
             }
         })
         .catch(error => {
@@ -6329,7 +6452,7 @@ function addEvacuationRowWithData(data, rowNumber) {
             <input type="date" class="form-control form-control-sm" name="evacuation_data[${rowNumber}][evacuation_date]" value="${data.evacuation_date || ''}" required>
         </td>
         <td>
-            <input type="number" step="0.01" class="form-control form-control-sm" name="evacuation_data[${rowNumber}][evacuation_amount]" value="${data.evacuation_amount || ''}" placeholder="0.00" required>
+            <input type="number" step="0.01" class="form-control form-control-sm evacuation-amount" name="evacuation_data[${rowNumber}][evacuation_amount]" value="${data.evacuation_amount || ''}" placeholder="0.00" required onchange="calculateEvacuationTotal()" oninput="calculateEvacuationTotal()">
         </td>
         <td>
             <input type="datetime-local" class="form-control form-control-sm" name="evacuation_data[${rowNumber}][evacuation_datetime]" value="${data.evacuation_datetime || ''}" required>
@@ -6615,6 +6738,147 @@ function deleteEvacuationAttachment(attachmentIndex) {
     });
 }
 
+// استدعاء دالة حساب الإجمالي عند تحميل الصفحة
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM Content Loaded - initializing evacuation total');
+    
+    // دالة للتأكد من ظهور الإجمالي
+    function ensureTotalVisible() {
+        const totalElement = document.getElementById('total-evacuation-amount');
+        const tfoot = document.querySelector('#evacuationDataTable tfoot');
+        
+        console.log('Ensuring total visibility:', {
+            totalElement: !!totalElement,
+            tfoot: !!tfoot
+        });
+        
+        if (totalElement) {
+            // استخدام setProperty لضمان تطبيق الـ CSS
+            totalElement.style.setProperty('display', 'table-cell', 'important');
+            totalElement.style.setProperty('visibility', 'visible', 'important');
+            totalElement.style.backgroundColor = '#b8daff';
+            totalElement.style.color = '#004085';
+            totalElement.style.fontWeight = 'bold';
+            totalElement.style.fontSize = '1.1em';
+            
+            // إضافة حد واضح للتأكد من الظهور
+            totalElement.style.border = '2px solid #007bff';
+            
+            if (totalElement.textContent === '' || totalElement.textContent === '0.00 ريال') {
+                totalElement.textContent = '0.00 ريال';
+            }
+        }
+        
+        if (tfoot) {
+            tfoot.style.setProperty('display', 'table-footer-group', 'important');
+            tfoot.style.backgroundColor = '#d1ecf1';
+            tfoot.style.border = '2px solid #28a745';
+        }
+        
+        calculateEvacuationTotal();
+    }
+    
+    // تشغيل الدالة عدة مرات للتأكد
+    setTimeout(ensureTotalVisible, 500);
+    setTimeout(ensureTotalVisible, 1000);
+    setTimeout(ensureTotalVisible, 2000);
+    setTimeout(ensureTotalVisible, 5000); // إضافة تأخير أطول
+    
+    // إضافة مراقب للنقر لفرض ظهور الإجمالي
+    document.addEventListener('click', function(e) {
+        setTimeout(ensureTotalVisible, 50);
+    });
+    
+    // إضافة مراقب للتغيير في أي input
+    document.addEventListener('input', function(e) {
+        if (e.target.type === 'number' || e.target.name.includes('evacuation')) {
+            setTimeout(ensureTotalVisible, 50);
+        }
+    });
+    
+    // إضافة مراقب للتمرير
+    document.addEventListener('scroll', function(e) {
+        setTimeout(ensureTotalVisible, 100);
+    });
+    
+    // إضافة مراقب لتغيير الحجم
+    window.addEventListener('resize', function(e) {
+        setTimeout(ensureTotalVisible, 100);
+    });
+    
+    // تشغيل دوري كل 3 ثوان
+    setInterval(ensureTotalVisible, 3000);
+});
+
+// دالة تشخيص مشاكل الإجمالي
+function debugEvacuationTotal() {
+    console.log('=== DEBUG EVACUATION TOTAL ===');
+    
+    const table = document.getElementById('evacuationDataTable');
+    const totalElement = document.getElementById('total-evacuation-amount');
+    const tfoot = document.querySelector('#evacuationDataTable tfoot');
+    
+    console.log('Elements check:', {
+        table: !!table,
+        totalElement: !!totalElement,
+        tfoot: !!tfoot
+    });
+    
+    if (table) {
+        console.log('Table HTML:', table.outerHTML.substring(0, 500));
+    }
+    
+    if (totalElement) {
+        console.log('Total element:', {
+            id: totalElement.id,
+            textContent: totalElement.textContent,
+            innerHTML: totalElement.innerHTML,
+            display: window.getComputedStyle(totalElement).display,
+            visibility: window.getComputedStyle(totalElement).visibility,
+            backgroundColor: window.getComputedStyle(totalElement).backgroundColor,
+            position: totalElement.getBoundingClientRect()
+        });
+        
+        // فرض الظهور
+        totalElement.style.display = 'table-cell !important';
+        totalElement.style.visibility = 'visible !important';
+        totalElement.style.backgroundColor = '#ff0000'; // أحمر للتأكد من الظهور
+        totalElement.textContent = 'TEST 123.45 ريال';
+        
+        console.log('After forced styling:', {
+            display: totalElement.style.display,
+            visibility: totalElement.style.visibility,
+            backgroundColor: totalElement.style.backgroundColor,
+            textContent: totalElement.textContent
+        });
+    }
+    
+    if (tfoot) {
+        console.log('Tfoot element:', {
+            display: window.getComputedStyle(tfoot).display,
+            visibility: window.getComputedStyle(tfoot).visibility
+        });
+        
+        tfoot.style.display = 'table-footer-group !important';
+        tfoot.style.backgroundColor = '#00ff00'; // أخضر للتأكد من الظهور
+    }
+    
+    // البحث عن جميع حقول المبلغ
+    const amountInputs = document.querySelectorAll('#evacuationDataTable input[type="number"]');
+    console.log('Number inputs:', amountInputs.length);
+    
+    amountInputs.forEach((input, index) => {
+        console.log(`Input ${index}:`, {
+            name: input.name,
+            value: input.value,
+            className: input.className,
+            type: input.type
+        });
+    });
+    
+    alert('تم إجراء التشخيص - تحقق من الكونسول للتفاصيل');
+}
+
 // تحديث دالة اختيار رخصة الإخلاءات لتحميل المرفقات
 const originalSelectEvacuationLicense = selectEvacuationLicense;
 selectEvacuationLicense = function() {
@@ -6625,7 +6889,12 @@ selectEvacuationLicense = function() {
         // تحميل المرفقات للرخصة المختارة
         setTimeout(() => {
             loadEvacuationAttachments(selector.value);
+            // حساب إجمالي مبلغ الإخلاء بعد تحميل البيانات
+            calculateEvacuationTotal();
         }, 500);
+    } else {
+        // إعادة تعيين الإجمالي إلى 0.00 عند عدم اختيار رخصة
+        calculateEvacuationTotal();
     }
 };
 

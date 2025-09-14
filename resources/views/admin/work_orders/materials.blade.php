@@ -225,11 +225,35 @@
                         <span class="fs-5">المواد</span>
                         <span class="badge bg-light text-primary ms-2">{{ $materials->total() }} مادة</span>
                     </div>
-                    <div>
-                        <a href="{{ route('admin.work-orders.show', $workOrder) }}" class="btn btn-outline-light btn-sm">
-                            <i class="fas fa-arrow-right"></i> عودة الي تفاصيل أمر العمل
-                        </a>
-                    </div>
+                        <div class="d-flex gap-2">
+                            @php
+                                $projectName = strtolower($workOrder->project_name ?? '');
+                                $projectDescription = strtolower($workOrder->project_description ?? '');
+                                $city = strtolower($workOrder->city ?? '');
+                                
+                                $isRiyadh = str_contains($projectName, 'الرياض') || str_contains($projectName, 'riyadh') || 
+                                           str_contains($projectDescription, 'الرياض') || str_contains($projectDescription, 'riyadh') ||
+                                           str_contains($city, 'الرياض') || str_contains($city, 'riyadh');
+                                           
+                                $isMadinah = str_contains($projectName, 'المدينة') || str_contains($projectName, 'madinah') || 
+                                            str_contains($projectDescription, 'المدينة') || str_contains($projectDescription, 'madinah') ||
+                                            str_contains($city, 'المدينة') || str_contains($city, 'madinah');
+                            @endphp
+                            
+                            @if($isRiyadh)
+                                <a href="{{ route('admin.materials.riyadh-overview') }}" class="btn btn-outline-light btn-sm">
+                                    <i class="fas fa-eye"></i> تفاصيل عامة للمواد - الرياض
+                                </a>
+                            @elseif($isMadinah)
+                                <a href="{{ route('admin.materials.madinah-overview') }}" class="btn btn-outline-light btn-sm">
+                                    <i class="fas fa-eye"></i> تفاصيل عامة للمواد - المدينة المنورة
+                                </a>
+                            @endif
+                            
+                            <a href="{{ route('admin.work-orders.show', $workOrder) }}" class="btn btn-outline-light btn-sm">
+                                <i class="fas fa-arrow-right"></i> عودة الي تفاصيل أمر العمل
+                            </a>
+                        </div>
                 </div>
             </div>
         </div>
@@ -760,7 +784,7 @@
                                                             <span class="btn-text">تعديل</span>
                                                         </a>
                                                         
-                                                        <!-- <button type="button" 
+                                                        <button type="button" 
                                                                 class="btn btn-action btn-delete"
                                                                 onclick="deleteMaterial({{ $material->id }})"
                                                                 data-bs-toggle="tooltip"
@@ -768,7 +792,7 @@
                                                                 title="حذف">
                                                             <i class="fas fa-trash"></i>
                                                             <span class="btn-text">حذف</span>
-                                                        </button> -->
+                                                        </button>
 
                                                     </div>
                                                 </div>
@@ -792,6 +816,39 @@
                             </a>
                         </div>
                     @endif
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- قسم ملاحظات المواد -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-sticky-note me-2"></i>
+                        ملاحظات المواد
+                        <small class="ms-2 opacity-75">(يتم الحفظ تلقائياً)</small>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label for="materials_notes" class="form-label">الملاحظات:</label>
+                        <textarea 
+                            class="form-control" 
+                            id="materials_notes" 
+                            name="materials_notes" 
+                            rows="4" 
+                            placeholder="اكتب ملاحظاتك حول المواد هنا..."
+                            data-work-order-id="{{ $workOrder->id }}"
+                        >{{ $workOrder->materials_notes ?? '' }}</textarea>
+                        <div class="form-text">
+                            <i class="fas fa-info-circle me-1"></i>
+                            يتم حفظ الملاحظات تلقائياً عند التوقف عن الكتابة
+                            <span id="save-status" class="ms-3"></span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -3253,6 +3310,57 @@ document.addEventListener('DOMContentLoaded', function() {
                     Swal.showLoading();
                 }
             });
+        });
+    }
+
+    // وظيفة الحفظ التلقائي للملاحظات
+    const materialsNotes = document.getElementById('materials_notes');
+    const saveStatus = document.getElementById('save-status');
+    let saveTimeout;
+    
+    if (materialsNotes) {
+        materialsNotes.addEventListener('input', function() {
+            // إلغاء المهلة الزمنية السابقة
+            clearTimeout(saveTimeout);
+            
+            // عرض حالة الحفظ
+            saveStatus.innerHTML = '<i class="fas fa-clock text-warning"></i> جاري الحفظ...';
+            
+            // تعيين مهلة زمنية جديدة للحفظ
+            saveTimeout = setTimeout(function() {
+                saveMaterialsNotes();
+            }, 1000); // حفظ بعد ثانية واحدة من التوقف عن الكتابة
+        });
+    }
+    
+    function saveMaterialsNotes() {
+        const workOrderId = materialsNotes.dataset.workOrderId;
+        const notes = materialsNotes.value;
+        
+        fetch(`/admin/work-orders/${workOrderId}/save-materials-notes`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({
+                materials_notes: notes
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                saveStatus.innerHTML = '<i class="fas fa-check text-success"></i> تم الحفظ';
+                setTimeout(() => {
+                    saveStatus.innerHTML = '';
+                }, 3000);
+            } else {
+                saveStatus.innerHTML = '<i class="fas fa-exclamation-triangle text-danger"></i> خطأ في الحفظ';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            saveStatus.innerHTML = '<i class="fas fa-exclamation-triangle text-danger"></i> خطأ في الحفظ';
         });
     }
 });

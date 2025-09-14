@@ -8,11 +8,146 @@ use App\Models\WorkOrderMaterial;
 use App\Models\ReferenceMaterial;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Pagination\Paginator;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\MaterialsExport;
 
 class MaterialsController extends Controller
 {
+    /**
+     * Display general materials overview for Riyadh project.
+     */
+    public function riyadhOverview(Request $request)
+    {
+        return $this->cityOverview($request, 'riyadh');
+    }
+
+    /**
+     * Display general materials overview for Madinah project.
+     */
+    public function madinahOverview(Request $request)
+    {
+        return $this->cityOverview($request, 'madinah');
+    }
+
+    /**
+     * Display general materials overview for a specific city.
+     */
+    public function cityOverview(Request $request, $cityName = 'riyadh')
+    {
+        $citySearchTerms = $this->getCitySearchTerms($cityName);
+        
+        // جلب جميع أوامر العمل للمدينة المحددة
+        $cityWorkOrders = WorkOrder::where(function($query) use ($citySearchTerms) {
+                foreach ($citySearchTerms as $term) {
+                    $query->orWhere('project_name', 'like', "%{$term}%")
+                          ->orWhere('project_description', 'like', "%{$term}%")
+                          ->orWhere('city', 'like', "%{$term}%");
+                }
+            })
+            ->pluck('id');
+
+        // Debug: Log the search results
+        \Log::info("City search for {$cityName}", [
+            'search_terms' => $citySearchTerms,
+            'found_work_orders' => $cityWorkOrders->count(),
+            'work_order_ids' => $cityWorkOrders->toArray()
+        ]);
+
+        // التحقق من وجود أوامر عمل للمدينة
+        if ($cityWorkOrders->isEmpty()) {
+            // Get some sample project names for debugging
+            $sampleProjects = WorkOrder::select('project_name', 'city', 'project_description')
+                ->whereNotNull('project_name')
+                ->orWhereNotNull('city')
+                ->take(10)
+                ->get();
+            
+            \Log::info("Sample projects in database", [
+                'projects' => $sampleProjects->toArray()
+            ]);
+
+            // إذا لم توجد أوامر عمل، إنشاء paginator فارغ
+            $materials = new LengthAwarePaginator(
+                collect(),
+                0,
+                50,
+                1,
+                ['path' => request()->url(), 'pageName' => 'page']
+            );
+            $units = collect();
+            $workOrders = collect();
+            
+            $viewName = $cityName === 'madinah' ? 'admin.materials.madinah-overview' : 'admin.materials.riyadh-overview';
+            return view($viewName, compact(
+                'materials', 
+                'units', 
+                'workOrders'
+            ))->with('cityName', $cityName);
+        }
+
+        // بناء الاستعلام الأساسي - استخدام Material بدلاً من WorkOrderMaterial
+        $query = Material::whereIn('work_order_id', $cityWorkOrders)
+            ->with(['workOrder'])
+            ->where('code', 'NOT LIKE', 'GENERAL_FILES_%')
+            ->where(function($q) {
+                $q->where('line', '!=', 'ملفات مستقلة')
+                  ->orWhereNull('line');
+            })
+            ->where(function($q) {
+                // استبعاد الملفات المستقلة بناءً على الكود
+                $q->where('code', 'NOT LIKE', 'check_in_file_%')
+                  ->where('code', 'NOT LIKE', 'check_out_file_%')
+                  ->where('code', 'NOT LIKE', 'stock_in_file_%')
+                  ->where('code', 'NOT LIKE', 'stock_out_file_%')
+                  ->where('code', 'NOT LIKE', 'gate_pass_file_%')
+                  ->where('code', 'NOT LIKE', 'ddo_file_%');
+            });
+
+        // تطبيق الفلاتر
+        if ($request->filled('search_code')) {
+            $query->where('code', 'like', '%' . $request->search_code . '%');
+        }
+
+        if ($request->filled('search_description')) {
+            $query->where('description', 'like', '%' . $request->search_description . '%');
+        }
+
+        if ($request->filled('unit_filter')) {
+            $query->where('unit', $request->unit_filter);
+        }
+
+        if ($request->filled('work_order_filter')) {
+            $query->where('work_order_id', $request->work_order_filter);
+        }
+
+        // ترتيب النتائج
+        $materials = $query->orderBy('code')
+            ->paginate(50)
+            ->appends($request->query());
+
+        // جلب قائمة الوحدات المتاحة للفلتر
+        $units = Material::whereIn('work_order_id', $cityWorkOrders)
+            ->whereNotNull('unit')
+            ->distinct()
+            ->pluck('unit')
+            ->sort();
+
+        // جلب قائمة أوامر العمل للفلتر
+        $workOrders = WorkOrder::whereIn('id', $cityWorkOrders)
+            ->select('id', 'order_number', 'project_name', 'project_description')
+            ->orderBy('order_number')
+            ->get();
+
+        $viewName = $cityName === 'madinah' ? 'admin.materials.madinah-overview' : 'admin.materials.riyadh-overview';
+        return view($viewName, compact(
+            'materials', 
+            'units', 
+            'workOrders'
+        ))->with('cityName', $cityName);
+    }
+
     /**
      * Display a listing of the resource for a specific work order.
      */
@@ -1002,5 +1137,49 @@ class MaterialsController extends Controller
                 'message' => 'حدث خطأ أثناء حفظ الملاحظات: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Save materials notes for work order
+     */
+    public function saveMaterialsNotes(Request $request, WorkOrder $workOrder)
+    {
+        try {
+            $request->validate([
+                'materials_notes' => 'nullable|string|max:65535'
+            ]);
+
+            $workOrder->materials_notes = $request->input('materials_notes');
+            $workOrder->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'تم حفظ الملاحظات بنجاح'
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error saving materials notes: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء حفظ الملاحظات'
+            ], 500);
+        }
+    }
+
+    /**
+     * Get search terms for different cities
+     */
+    private function getCitySearchTerms($cityName)
+    {
+        $searchTerms = [
+            'riyadh' => ['الرياض', 'riyadh', 'Riyadh', 'RIYADH'],
+            'jeddah' => ['جدة', 'jeddah', 'Jeddah', 'JEDDAH'],
+            'dammam' => ['الدمام', 'dammam', 'Dammam', 'DAMMAM'],
+            'makkah' => ['مكة', 'مكة المكرمة', 'makkah', 'Makkah', 'MAKKAH'],
+            'madinah' => ['المدينة', 'المدينة المنورة', 'madinah', 'Madinah', 'MADINAH'],
+        ];
+
+        return $searchTerms[strtolower($cityName)] ?? [$cityName];
     }
 }

@@ -73,6 +73,7 @@ Route::get('/make-me-admin', function () {
 Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
     Route::delete('work-orders/{workOrder}', [App\Http\Controllers\Admin\WorkOrderDeleteController::class, '__invoke'])->name('work-orders.destroy');
+    Route::post('work-orders/{workOrder}/save-materials-notes', [MaterialsController::class, 'saveMaterialsNotes'])->name('work-orders.save-materials-notes');
     
     // التقارير العامة
     Route::get('reports/unified', [App\Http\Controllers\Admin\ReportsController::class, 'unified'])->name('reports.unified');
@@ -530,6 +531,28 @@ Route::middleware(['auth'])->group(function () {
 // مسارات البحث والحفظ التلقائي للمواد
 Route::get('admin/materials/search', [MaterialsController::class, 'search'])->name('admin.materials.search');
 Route::post('admin/materials/save', [MaterialsController::class, 'saveReference'])->name('admin.materials.save');
+
+// صفحات تفاصيل المواد العامة للمدن
+Route::get('admin/materials/riyadh-overview', [MaterialsController::class, 'riyadhOverview'])->name('admin.materials.riyadh-overview');
+Route::get('admin/materials/madinah-overview', [MaterialsController::class, 'madinahOverview'])->name('admin.materials.madinah-overview');
+Route::get('admin/materials/{city}-overview', function(\Illuminate\Http\Request $request, $city) {
+    return app(MaterialsController::class)->cityOverview($request, $city);
+})->name('admin.materials.city-overview');
+
+// Debug route to check database content
+Route::get('admin/materials/debug-projects', function() {
+    $projects = \App\Models\WorkOrder::select('id', 'order_number', 'project_name', 'project_description', 'city')
+        ->take(20)
+        ->get();
+    
+    $materialsCount = \App\Models\WorkOrderMaterial::count();
+    
+    return response()->json([
+        'total_work_orders' => \App\Models\WorkOrder::count(),
+        'total_materials' => $materialsCount,
+        'sample_projects' => $projects->toArray()
+    ]);
+})->name('admin.materials.debug');
 
 // Project Routes
 Route::middleware(['auth'])->group(function () {
