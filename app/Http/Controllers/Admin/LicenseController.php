@@ -502,10 +502,15 @@ class LicenseController extends Controller
     public function getByWorkOrder($workOrderId)
     {
         try {
+            // جلب الرخص مع التحقق من صلاحيتها للتمديد
             $licenses = License::where('work_order_id', $workOrderId)
-                ->with('workOrder') // إضافة العلاقة مع أمر العمل
+                ->with(['workOrder', 'extensions']) // إضافة العلاقات المطلوبة
                 ->orderBy('created_at', 'desc')
-                ->get();
+                ->get()
+                ->filter(function ($license) {
+                    // التحقق من أن الرخصة صالحة للتمديد
+                    return $this->canBeExtended($license);
+                });
 
             // إضافة مسارات الملفات الصحيحة
             $licensesWithFiles = $licenses->map(function ($license) {
@@ -573,7 +578,7 @@ class LicenseController extends Controller
                         'id' => $extension->id,
                         'license_id' => $license->id,
                         'license_number' => $license->license_number,
-                        'extension_value' => $license->extension_value,
+                        'extension_value' => $extension->extension_value,
                         'extension_start_date' => $extension->start_date,
                         'extension_end_date' => $extension->end_date,
                         'extension_days' => $extension->days_count,
@@ -639,7 +644,7 @@ class LicenseController extends Controller
                     'id' => $extension->id,
                     'license_id' => $license->id,
                     'license_number' => $license->license_number,
-                    'extension_value' => $license->extension_value,
+                    'extension_value' => $extension->extension_value,
                     'extension_start_date' => $extension->start_date,
                     'extension_end_date' => $extension->end_date,
                     'extension_days' => $extension->days_count,
@@ -1304,6 +1309,20 @@ class LicenseController extends Controller
      */
     private function saveExtensionSection(Request $request, License $license)
     {
+        // التحقق من البيانات المطلوبة
+        $request->validate([
+            'extension_value' => 'required|numeric|min:0',
+            'extension_start_date' => 'required|date',
+            'extension_end_date' => 'required|date|after:extension_start_date',
+            'extension_days' => 'nullable|integer|min:1',
+        ]);
+        
+        \Log::info('Extension validation passed', [
+            'extension_value' => $request->input('extension_value'),
+            'extension_start_date' => $request->input('extension_start_date'),
+            'extension_end_date' => $request->input('extension_end_date'),
+        ]);
+        
         // حفظ بيانات التمديد في جدول التمديدات
         if ($request->has(['extension_start_date', 'extension_end_date'])) {
             $startDate = $request->input('extension_start_date');
@@ -1342,6 +1361,7 @@ class LicenseController extends Controller
             // إنشاء سجل تمديد جديد
             $extension = new \App\Models\LicenseExtension([
                 'license_id' => $license->id,
+                'extension_value' => $request->input('extension_value'),
                 'days_count' => $daysCount,
                 'start_date' => $startDate,
                 'end_date' => $endDate,
@@ -1351,16 +1371,77 @@ class LicenseController extends Controller
             
             $extension->save();
             
-            // تحديث بيانات التمديد في الرخصة
-            $license->extension_value = $request->input('extension_value');
+            // تحديث تواريخ آخر تمديد في الرخصة فقط (بدون القيمة)
             $license->extension_start_date = $startDate;
             $license->extension_end_date = $endDate;
+            
+            // حفظ الرخصة مع التواريخ المحدثة فقط
+            $license->save();
         }
         
         \Log::info('Extension section saved', [
             'license_id' => $license->id,
-            'extension_value' => $license->extension_value
+            'extension_id' => $extension->id ?? null,
+            'extension_value' => $request->input('extension_value')
         ]);
+    }
+
+    /**
+     * حذف تمديد رخصة
+     */
+    public function deleteExtension($extensionId)
+    {
+        try {
+            // البحث عن التمديد
+            $extension = \App\Models\LicenseExtension::findOrFail($extensionId);
+            
+            // التحقق من الصلاحيات (اختياري)
+            // يمكن إضافة التحقق من أن المستخدم له صلاحية حذف هذا التمديد
+            
+            \Log::info('Deleting extension', [
+                'extension_id' => $extension->id,
+                'license_id' => $extension->license_id,
+                'extension_value' => $extension->extension_value,
+                'deleted_by' => auth()->id()
+            ]);
+            
+            // حذف الملفات المرفقة إن وجدت
+            if ($extension->attachments && is_array($extension->attachments)) {
+                foreach ($extension->attachments as $attachment) {
+                    if ($attachment && \Storage::disk('public')->exists($attachment)) {
+                        \Storage::disk('public')->delete($attachment);
+                        \Log::info('Deleted attachment file: ' . $attachment);
+                    }
+                }
+            }
+            
+            // حذف التمديد من قاعدة البيانات
+            $extension->delete();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'تم حذف التمديد بنجاح'
+            ]);
+            
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            \Log::error('Extension not found for deletion: ' . $extensionId);
+            return response()->json([
+                'success' => false,
+                'message' => 'التمديد غير موجود'
+            ], 404);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error deleting extension: ' . $e->getMessage(), [
+                'extension_id' => $extensionId,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء حذف التمديد'
+            ], 500);
+        }
     }
 
     /**
@@ -1699,43 +1780,6 @@ class LicenseController extends Controller
         }
     }
 
-    /**
-     * جلب مرفقات الإخلاء
-     */
-    public function getEvacuationAttachments($licenseId)
-    {
-        try {
-            $license = License::findOrFail($licenseId);
-            $additionalDetails = $license->additional_details ? json_decode($license->additional_details, true) : [];
-            
-            $attachments = [];
-            if (isset($additionalDetails['evacuation_attachments']) && is_array($additionalDetails['evacuation_attachments'])) {
-                foreach ($additionalDetails['evacuation_attachments'] as $attachment) {
-                    $attachments[] = [
-                        'name' => $attachment['name'] ?? 'مرفق إخلاء',
-                        'path' => $attachment['path'] ?? '',
-                        'url' => \Storage::disk('public')->url($attachment['path'] ?? ''),
-                        'download_url' => \Storage::disk('public')->url($attachment['path'] ?? ''),
-                        'date' => isset($attachment['uploaded_at']) ? 
-                            \Carbon\Carbon::parse($attachment['uploaded_at'])->format('Y-m-d H:i') : 
-                            'غير محدد'
-                    ];
-                }
-            }
-            
-            return response()->json([
-                'success' => true,
-                'attachments' => $attachments
-            ]);
-            
-        } catch (\Exception $e) {
-            \Log::error('Error fetching evacuation attachments: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'خطأ في تحميل المرفقات: ' . $e->getMessage()
-            ], 500);
-        }
-    }
 
     /**
      * عرض مرفق الإخلاء
@@ -2590,12 +2634,165 @@ class LicenseController extends Controller
         }
     }
 
+
     /**
-     * حذف مرفق إخلاء محدد
+     * التحقق من إمكانية التمديد على الرخصة
      */
-    public function deleteEvacuationAttachment(License $license, $index)
+    private function canBeExtended($license)
+    {
+        // التحقق من وجود الرخصة
+        if (!$license) {
+            return false;
+        }
+
+        // التحقق من حالة أمر العمل
+        if ($license->workOrder && $license->workOrder->execution_status >= 7) {
+            // لا يمكن التمديد على الرخص المنتهية
+            return false;
+        }
+
+        // التحقق من تاريخ انتهاء الرخصة
+        if ($license->license_end_date) {
+            $endDate = new \DateTime($license->license_end_date);
+            $now = new \DateTime();
+            
+            if ($endDate < $now) {
+                // لا يمكن التمديد على الرخص المنتهية
+                return false;
+            }
+        }
+
+        // التحقق من آخر تمديد
+        if ($license->extensions()->count() > 0) {
+            $latestExtension = $license->extensions()->latest()->first();
+            if ($latestExtension && $latestExtension->end_date) {
+                $extensionEndDate = new \DateTime($latestExtension->end_date);
+                $now = new \DateTime();
+                
+                if ($extensionEndDate < $now) {
+                    // لا يمكن التمديد على التمديدات المنتهية
+                    return false;
+                }
+            }
+        }
+
+        // يمكن التمديد على الرخصة
+        return true;
+    }
+
+    /**
+     * رفع مرفقات الإخلاءات
+     */
+    public function uploadEvacuationAttachments(Request $request)
     {
         try {
+            $request->validate([
+                'license_id' => 'required|exists:licenses,id',
+                'attachments.*' => 'required|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:10240', // 10MB
+            ]);
+
+            $license = License::findOrFail($request->license_id);
+            
+            // فك تشفير البيانات الإضافية الحالية
+            $additionalDetails = $license->additional_details ? json_decode($license->additional_details, true) : [];
+            
+            // التأكد من وجود مصفوفة المرفقات
+            if (!isset($additionalDetails['evacuation_attachments'])) {
+                $additionalDetails['evacuation_attachments'] = [];
+            }
+
+            $uploadedFiles = [];
+            
+            if ($request->hasFile('attachments')) {
+                foreach ($request->file('attachments') as $file) {
+                    $fileName = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                    $filePath = $file->storeAs('licenses/evacuation_attachments', $fileName, 'public');
+                    
+                    $attachmentData = [
+                        'name' => $file->getClientOriginalName(),
+                        'path' => $filePath,
+                        'size' => $file->getSize(),
+                        'type' => $file->getMimeType(),
+                        'uploaded_at' => now()->toDateTimeString()
+                    ];
+                    
+                    $additionalDetails['evacuation_attachments'][] = $attachmentData;
+                    $uploadedFiles[] = $attachmentData;
+                }
+            }
+
+            // حفظ البيانات المحدثة
+            $license->additional_details = json_encode($additionalDetails, JSON_UNESCAPED_UNICODE);
+            $license->save();
+
+            \Log::info('Evacuation attachments uploaded successfully', [
+                'license_id' => $license->id,
+                'files_count' => count($uploadedFiles)
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'تم رفع المرفقات بنجاح',
+                'uploaded_files' => $uploadedFiles
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error uploading evacuation attachments: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ في رفع المرفقات'
+            ], 500);
+        }
+    }
+
+    /**
+     * جلب مرفقات الإخلاءات
+     */
+    public function getEvacuationAttachments($licenseId)
+    {
+        try {
+            $license = License::findOrFail($licenseId);
+            $additionalDetails = $license->additional_details ? json_decode($license->additional_details, true) : [];
+            
+            $attachments = [];
+            
+            if (isset($additionalDetails['evacuation_attachments']) && is_array($additionalDetails['evacuation_attachments'])) {
+                foreach ($additionalDetails['evacuation_attachments'] as $attachment) {
+                    $attachments[] = [
+                        'name' => $attachment['name'] ?? 'مرفق غير معروف',
+                        'path' => $attachment['path'] ?? '',
+                        'size' => $attachment['size'] ?? 0,
+                        'type' => $attachment['type'] ?? '',
+                        'uploaded_at' => $attachment['uploaded_at'] ?? '',
+                        'url' => $attachment['path'] ? \Storage::disk('public')->url($attachment['path']) : ''
+                    ];
+                }
+            }
+
+            return response()->json([
+                'success' => true,
+                'attachments' => $attachments
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error getting evacuation attachments: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ في جلب المرفقات',
+                'attachments' => []
+            ], 500);
+        }
+    }
+
+    /**
+     * حذف مرفق إخلاء
+     */
+    public function deleteEvacuationAttachment($licenseId, $index)
+    {
+        try {
+            $license = License::findOrFail($licenseId);
             $additionalDetails = $license->additional_details ? json_decode($license->additional_details, true) : [];
             
             if (!isset($additionalDetails['evacuation_attachments']) || !isset($additionalDetails['evacuation_attachments'][$index])) {
@@ -2604,7 +2801,7 @@ class LicenseController extends Controller
 
             // حذف الملف من التخزين
             $attachment = $additionalDetails['evacuation_attachments'][$index];
-            if (\Storage::disk('public')->exists($attachment['path'])) {
+            if (isset($attachment['path']) && \Storage::disk('public')->exists($attachment['path'])) {
                 \Storage::disk('public')->delete($attachment['path']);
             }
 

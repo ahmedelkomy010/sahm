@@ -448,38 +448,66 @@ use Illuminate\Support\Facades\Storage;
                             <table class="table table-hover align-middle">
                                 <thead class="table-light">
                                     <tr>
-                                        <th>رقم التمديد</th>
-                                        <th>تاريخ التمديد</th>
-                                        <th>المدة الجديدة</th>
-                                        <th>تاريخ الانتهاء الجديد</th>
-                                        <th>السبب</th>
-                                        <th>الحالة</th>
+                                        <th class="text-center" style="width: 8%;">#</th>
+                                        <th class="text-center" style="width: 15%;">تاريخ البداية</th>
+                                        <th class="text-center" style="width: 12%;">عدد الأيام</th>
+                                        <th class="text-center" style="width: 15%;">تاريخ الانتهاء</th>
+                                        <th class="text-center" style="width: 15%;">قيمة التمديد</th>
+                                        <th class="text-center" style="width: 25%;">السبب</th>
+                                        <th class="text-center" style="width: 10%;">الحالة</th>
                             </tr>
                         </thead>
                                 <tbody>
                                     @foreach($license->extensions as $extension)
                                     <tr>
-                                        <td><span class="badge bg-primary">{{ $extension->extension_number ?? 'غير محدد' }}</span></td>
-                                        <td>
+                                        <td class="text-center">
+                                            <span class="badge bg-primary">{{ $loop->iteration }}</span>
+                                        </td>
+                                        <td class="text-center">
                                             <i class="fas fa-calendar-alt text-muted me-1"></i>
-                                            {{ $extension->extension_date ? $extension->extension_date->format('Y-m-d') : 'غير محدد' }}
+                                            <small>{{ $extension->start_date ? \Carbon\Carbon::parse($extension->start_date)->format('Y-m-d') : 'غير محدد' }}</small>
                                         </td>
-                                        <td>
-                                            <span class="badge bg-info">{{ $extension->new_duration ?? 'غير محدد' }} يوم</span>
-                                        </td>
-                                        <td>
-                                            <i class="fas fa-calendar-check text-success me-1"></i>
-                                            {{ $extension->new_end_date ? $extension->new_end_date->format('Y-m-d') : 'غير محدد' }}
-                                        </td>
-                                        <td>{{ $extension->reason ?? 'غير محدد' }}</td>
-                                        <td>
-                                            <span class="badge bg-{{ $extension->status == 'approved' ? 'success' : ($extension->status == 'pending' ? 'warning' : 'danger') }}">
-                                                {{ $extension->status == 'approved' ? 'معتمد' : ($extension->status == 'pending' ? 'قيد المراجعة' : 'مرفوض') }}
+                                        <td class="text-center">
+                                            <span class="badge bg-warning text-dark">
+                                                <i class="fas fa-clock me-1"></i>{{ $extension->days_count ?? 'غير محدد' }} يوم
                                             </span>
-                                    </td>
-                                </tr>
+                                        </td>
+                                        <td class="text-center">
+                                            <i class="fas fa-calendar-check text-success me-1"></i>
+                                            <small>{{ $extension->end_date ? \Carbon\Carbon::parse($extension->end_date)->format('Y-m-d') : 'غير محدد' }}</small>
+                                        </td>
+                                        <td class="text-center">
+                                            <strong class="text-success">
+                                                {{ $extension->extension_value ? number_format($extension->extension_value, 2) . ' ر.س' : 'غير محدد' }}
+                                            </strong>
+                                        </td>
+                                        <td class="text-start">
+                                            <small class="text-muted" title="{{ $extension->reason ?? 'غير محدد' }}">
+                                                <i class="fas fa-comment-dots me-1"></i>
+                                                {{ $extension->reason ? (strlen($extension->reason) > 50 ? substr($extension->reason, 0, 50) . '...' : $extension->reason) : 'غير محدد' }}
+                                            </small>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge bg-success">
+                                                <i class="fas fa-check me-1"></i>معتمد
+                                            </span>
+                                        </td>
+                                    </tr>
                             @endforeach
                         </tbody>
+                        <tfoot class="table-secondary">
+                            <tr>
+                                <td colspan="4" class="text-end fw-bold">
+                                    <i class="fas fa-calculator me-2"></i>إجمالي قيمة التمديدات:
+                                </td>
+                                <td class="text-center">
+                                    <strong class="text-success fs-6">
+                                        {{ number_format($license->extensions->sum('extension_value'), 2) }} ر.س
+                                    </strong>
+                                </td>
+                                <td colspan="2"></td>
+                            </tr>
+                        </tfoot>
                     </table>
                 </div>
             @else

@@ -489,7 +489,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-    // Calculate and display work orders statistics
+    // Calculate and display work orders statistics immediately
     updateWorkOrdersStats();
     
     // Start observing table changes
@@ -497,30 +497,37 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Force update after a short delay to ensure DOM is ready
     setTimeout(() => {
-        const stats = getWorkOrdersStats();
-        updateStatsDisplay(stats.count, stats.total, 0);
-        
-        // Update execution stats
+        // Update all stats
+        updateWorkOrdersStats();
         updateExecutionStats();
-        
-        // Update in-progress stats
         updateInProgressStats();
         updateExtractStats();
         updateCompletedStats();
-    }, 1000);
+    }, 500);
     
-    // Update stats every 30 seconds to keep data fresh
+    // Additional update after 2 seconds to ensure all APIs have responded
+    setTimeout(() => {
+        updateWorkOrdersStats();
+        updateExecutionStats();
+        updateInProgressStats();
+        updateExtractStats();
+        updateCompletedStats();
+    }, 2000);
+    
+    // Update stats every 10 seconds to keep data fresh
     setInterval(() => {
         updateWorkOrdersStats();
         updateExecutionStats();
         updateInProgressStats();
         updateExtractStats();
         updateCompletedStats();
-    }, 30000);
+    }, 10000);
 });
 
 // Function to update work orders statistics from the API
 function updateWorkOrdersStats() {
+    console.log('Fetching receipts stats from API...');
+    
     // Get project from URL or default to 'riyadh'
     const project = window.location.pathname.includes('madinah') ? 'madinah' : 'riyadh';
     
@@ -532,9 +539,15 @@ function updateWorkOrdersStats() {
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
         }
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
     .then(data => {
-        if (data.success) {
+        if (data.success && data.summary) {
+            console.log('Received receipts stats:', data.summary);
             // Update the display with the summary data
             updateStatsDisplay(
                 data.summary.total_orders || 0,
@@ -542,7 +555,7 @@ function updateWorkOrdersStats() {
                 data.summary.percentage || 0
             );
         } else {
-            console.error('Failed to fetch receipts data:', data.message);
+            console.error('Failed to fetch receipts data:', data.message || 'No summary data');
             // Use fallback data
             const stats = getWorkOrdersStats();
             updateStatsDisplay(stats.count, stats.total, 0);
@@ -959,115 +972,50 @@ function calculateExtractStats() {
     });
 }
 
-// Calculate completed (منتهي تم الصرف) statistics
+// Calculate completed (منتهي تم الصرف) statistics from API
 function calculateCompletedStats() {
-    console.log('Calculating completed stats...');
+    console.log('Fetching completed stats from API...');
     
-    // Try to get completed data from work orders table
-    const workOrderRows = document.querySelectorAll('tr.work-order-row, tbody tr');
-    let completedCount = 0;
-    let completedTotalValue = 0;
-    let totalOrders = 0;
+    // Get project from URL or default to 'riyadh'
+    const project = window.location.pathname.includes('madinah') ? 'madinah' : 'riyadh';
     
-    workOrderRows.forEach(row => {
-        const cells = row.querySelectorAll('td');
-        if (cells.length > 0) {
-            totalOrders++;
-            
-            // Check if this order is completed and paid
-            let isCompleted = false;
-            let finalValue = 0;
-            
-            // Method 1: Check for completed status badges or indicators
-            const statusElements = row.querySelectorAll('.badge, .status');
-            statusElements.forEach(element => {
-                const statusText = element.textContent.trim();
-                // Look for completed statuses
-                if (statusText.includes('منتهي تم الصرف') || statusText.includes('مكتمل') || 
-                    statusText.includes('تم الصرف') || statusText.includes('مدفوع')) {
-                    isCompleted = true;
-                }
-            });
-            
-            // Method 2: Look for completed indicators in cells
-            cells.forEach((cell, index) => {
-                const cellText = cell.textContent.trim();
-                
-                // Check execution status column (status 7 = منتهي تم الصرف)
-                if (index >= 10 && cellText.includes('7')) {
-                    isCompleted = true;
-                }
-                
-                // Look for final value columns (القيمة الكلية النهائية غير شامل الضريبة)
-                // Usually in later columns and contains currency
-                if (index >= 13 && cellText.includes('ريال')) {
-                    const valueMatch = cellText.match(/([\d,]+\.?\d*)/);
-                    if (valueMatch) {
-                        const numericValue = parseFloat(valueMatch[1].replace(/,/g, ''));
-                        if (!isNaN(numericValue) && numericValue > 0) {
-                            finalValue = Math.max(finalValue, numericValue);
-                        }
-                    }
-                }
-                
-                // Alternative: look for any high-value amounts that might be final values
-                if (cellText.includes('ريال') && !cellText.includes('مبدئي')) {
-                    const valueMatch = cellText.match(/([\d,]+\.?\d*)/);
-                    if (valueMatch) {
-                        const numericValue = parseFloat(valueMatch[1].replace(/,/g, ''));
-                        if (!isNaN(numericValue) && numericValue > 1000) { // Assume final values are substantial
-                            finalValue = Math.max(finalValue, numericValue);
-                        }
-                    }
-                }
-            });
-            
-            // If no final value found but order is completed, estimate based on initial value
-            if (isCompleted && finalValue === 0 && cells.length > 12) {
-                const initialValueText = cells[12] ? cells[12].textContent.trim() : '';
-                const initialMatch = initialValueText.match(/([\d,]+\.?\d*)/);
-                if (initialMatch) {
-                    const initialValue = parseFloat(initialMatch[1].replace(/,/g, ''));
-                    if (!isNaN(initialValue)) {
-                        // Estimate final value as 110-120% of initial value (including additional costs)
-                        finalValue = initialValue * 1.15;
-                    }
-                }
-            }
-            
-            if (isCompleted) {
-                completedCount++;
-                completedTotalValue += finalValue;
-                console.log('Found completed order with final value:', finalValue);
-            }
+    // Call the completed orders API
+    return fetch(`/api/work-orders/completed?project=${project}`, {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
         }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            console.log('Received completed stats:', data.summary);
+            return {
+                completedCount: data.summary.total_orders || 0,
+                completedTotalValue: data.summary.total_final_value || 0,
+                completionPercentage: data.summary.completion_percentage || 0,
+                averageFinalValue: data.summary.average_final_value || 0
+            };
+        } else {
+            console.error('Failed to fetch completed data:', data.message);
+            return {
+                completedCount: 0,
+                completedTotalValue: 0,
+                completionPercentage: 0,
+                averageFinalValue: 0
+            };
+        }
+    })
+    .catch(error => {
+        console.error('Error fetching completed data:', error);
+        return {
+            completedCount: 0,
+            completedTotalValue: 0,
+            completionPercentage: 0,
+            averageFinalValue: 0
+        };
     });
-    
-    // If no specific completed data found, use sample data based on current page
-    if (completedCount === 0 && totalOrders > 0) {
-        // Estimate completed orders based on typical completion rates (20-25% of orders are fully completed)
-        completedCount = Math.floor(totalOrders * 0.2);
-        // Estimate total value (usually 15-20% higher than initial due to additional costs)
-        completedTotalValue = Math.floor(totalOrders * 0.2 * 6000); // Average 6000 per completed order
-        console.log('Using estimated completed stats - Count:', completedCount, 'Value:', completedTotalValue);
-    } else if (completedCount === 0) {
-    // Default empty data
-    completedCount = 0;
-    completedTotalValue = 0;
-    }
-    
-    // Calculate percentage
-    const percentage = totalOrders > 0 ? Math.round((completedCount / totalOrders) * 100) : 20;
-    
-    const stats = {
-        completedCount: completedCount,
-        completedTotalValue: completedTotalValue,
-        totalOrders: totalOrders,
-        percentage: percentage
-    };
-    
-    console.log('Completed stats calculated:', stats);
-    return stats;
 }
 
 // Update in-progress statistics display
@@ -1107,63 +1055,94 @@ function updateInProgressStats() {
 
 // Update extract statistics display
 function updateExtractStats() {
-    const stats = calculateExtractStats();
-    
-    const extractsCountElement = document.getElementById('extractsCount');
-    const extractOrdersCountElement = document.getElementById('extractOrdersCount');
-    const progressBar = document.getElementById('extractProgressBar');
-    const progressText = document.getElementById('extractProgressText');
-    
-    if (extractsCountElement) {
-        extractsCountElement.textContent = stats.extractsCount.toLocaleString('ar-SA');
-    }
-    
-    if (extractOrdersCountElement) {
-        extractOrdersCountElement.textContent = stats.extractOrdersCount.toLocaleString('ar-SA');
-    }
-    
-    if (progressBar) {
-        progressBar.style.width = stats.percentage + '%';
-    }
-    
-    if (progressText) {
-        progressText.textContent = `نسبة المستخلص ${stats.percentage}%`;
-    }
+    calculateExtractStats().then(stats => {
+        const extractsValueElement = document.getElementById('extractsValue');
+        const extractOrdersCountElement = document.getElementById('extractOrdersCount');
+        const progressBar = document.getElementById('extractProgressBar');
+        const progressText = document.getElementById('extractProgressText');
+        
+        if (extractsValueElement) {
+            // Format the currency value
+            const formattedValue = new Intl.NumberFormat('ar-SA', {
+                style: 'currency',
+                currency: 'SAR',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(stats.extractsValue);
+            extractsValueElement.textContent = formattedValue;
+        }
+        
+        if (extractOrdersCountElement) {
+            extractOrdersCountElement.textContent = stats.extractOrdersCount.toLocaleString('ar-SA');
+        }
+        
+        if (progressBar) {
+            progressBar.style.width = stats.extractPercentage + '%';
+        }
+        
+        if (progressText) {
+            progressText.textContent = `نسبة المستخلص ${stats.extractPercentage}%`;
+        }
+    }).catch(error => {
+        console.error('Error updating extract stats:', error);
+        // Set default values on error
+        const extractsValueElement = document.getElementById('extractsValue');
+        const extractOrdersCountElement = document.getElementById('extractOrdersCount');
+        
+        if (extractsValueElement) {
+            extractsValueElement.textContent = '0 ر.س';
+        }
+        
+        if (extractOrdersCountElement) {
+            extractOrdersCountElement.textContent = '0';
+        }
+    });
 }
 
 // Update completed statistics display
 function updateCompletedStats() {
-    const stats = calculateCompletedStats();
-    
-    const completedCountElement = document.getElementById('completedOrdersCount');
-    const completedValueElement = document.getElementById('completedTotalValue');
-    const progressBar = document.getElementById('completedProgressBar');
-    const progressText = document.getElementById('completedProgressText');
-    
-    if (completedCountElement) {
-        completedCountElement.textContent = stats.completedCount.toLocaleString('ar-SA');
-    }
-    
-    if (completedValueElement) {
-        if (stats.completedTotalValue >= 1000000) {
-            completedValueElement.textContent = (stats.completedTotalValue / 1000000).toFixed(1) + 'M';
-        } else if (stats.completedTotalValue >= 1000) {
-            completedValueElement.textContent = (stats.completedTotalValue / 1000).toFixed(1) + 'K';
-        } else {
-            completedValueElement.textContent = stats.completedTotalValue.toLocaleString('ar-SA', {
+    calculateCompletedStats().then(stats => {
+        const completedCountElement = document.getElementById('completedOrdersCount');
+        const completedValueElement = document.getElementById('completedTotalValue');
+        const progressBar = document.getElementById('completedProgressBar');
+        const progressText = document.getElementById('completedProgressText');
+        
+        if (completedCountElement) {
+            completedCountElement.textContent = stats.completedCount.toLocaleString('ar-SA');
+        }
+        
+        if (completedValueElement) {
+            // Format the currency value
+            const formattedValue = new Intl.NumberFormat('ar-SA', {
+                style: 'currency',
+                currency: 'SAR',
                 minimumFractionDigits: 0,
                 maximumFractionDigits: 0
-            });
+            }).format(stats.completedTotalValue);
+            completedValueElement.textContent = formattedValue;
         }
-    }
-    
-    if (progressBar) {
-        progressBar.style.width = stats.percentage + '%';
-    }
-    
-    if (progressText) {
-        progressText.textContent = `نسبة الإنجاز الكامل ${stats.percentage}%`;
-    }
+        
+        if (progressBar) {
+            progressBar.style.width = stats.completionPercentage + '%';
+        }
+        
+        if (progressText) {
+            progressText.textContent = `نسبة الإنجاز الكامل ${stats.completionPercentage}%`;
+        }
+    }).catch(error => {
+        console.error('Error updating completed stats:', error);
+        // Set default values on error
+        const completedCountElement = document.getElementById('completedOrdersCount');
+        const completedValueElement = document.getElementById('completedTotalValue');
+        
+        if (completedCountElement) {
+            completedCountElement.textContent = '0';
+        }
+        
+        if (completedValueElement) {
+            completedValueElement.textContent = '0 ر.س';
+        }
+    });
 }
 
 function navigateToSection(section) {

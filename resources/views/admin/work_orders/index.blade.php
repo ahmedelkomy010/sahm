@@ -236,8 +236,8 @@ function resetCountdown(workOrderId) {
                                         <option value="806" {{ request('work_type') == '806' ? 'selected' : '' }}>806 - ايصال وزارة الاسكان جهد منخفض</option>
                                         <option value="444" {{ request('work_type') == '444' ? 'selected' : '' }}>444 -  تحويل الشبكه من هوائي الي ارضي</option>
                                         <option value="111" {{ old('work_type') == '111' ? 'selected' : '' }}> -  Mv- طوارئ ضغط متوسط  </option>
-                                                <option value="222" {{ old('work_type') == '222' ? 'selected' : '' }}> -  Lv - طوارئ ض منخفض </option>
-                                                <option value="333" {{ old('work_type') == '333' ? 'selected' : '' }}> -  Oh  - طوارئ هوائي </option>
+                                        <option value="222" {{ old('work_type') == '222' ? 'selected' : '' }}> -  Lv - طوارئ ض منخفض </option>
+                                        <option value="333" {{ old('work_type') == '333' ? 'selected' : '' }}> -  Oh  - طوارئ هوائي </option>
                                     </select>
                                 </div>
                             </div>

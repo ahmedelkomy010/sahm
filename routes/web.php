@@ -221,11 +221,16 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::post('licenses/save-evacuation-data', [\App\Http\Controllers\Admin\LicenseController::class, 'saveEvacuationData'])->name('licenses.save-evacuation-data');
 Route::post('licenses/save-evacuation-data-simple', [\App\Http\Controllers\Admin\LicenseController::class, 'saveEvacuationDataSimple'])->name('licenses.save-evacuation-data-simple');
                 Route::get('licenses/get-evacuation-data/{license}', [\App\Http\Controllers\Admin\LicenseController::class, 'getEvacuationData'])->name('licenses.get-evacuation-data');
-            Route::get('licenses/get-evacuation-attachments/{license}', [\App\Http\Controllers\Admin\LicenseController::class, 'getEvacuationAttachments'])->name('licenses.get-evacuation-attachments');
 
     // مسارات التمديدات
     Route::get('licenses/extensions/by-work-order/{workOrder}', [\App\Http\Controllers\Admin\LicenseController::class, 'getExtensionsByWorkOrder'])->name('licenses.extensions.by-work-order');
     Route::get('licenses/extensions/by-license/{license}', [\App\Http\Controllers\Admin\LicenseController::class, 'getExtensionsByLicense'])->name('licenses.extensions.by-license');
+    Route::delete('license-extensions/{extension}', [\App\Http\Controllers\Admin\LicenseController::class, 'deleteExtension'])->name('license-extensions.destroy');
+    
+    // Evacuation attachments routes
+    Route::post('licenses/evacuation-attachments/upload', [\App\Http\Controllers\Admin\LicenseController::class, 'uploadEvacuationAttachments'])->name('licenses.evacuation-attachments.upload');
+    Route::get('licenses/{license}/evacuation-attachments', [\App\Http\Controllers\Admin\LicenseController::class, 'getEvacuationAttachments'])->name('licenses.evacuation-attachments.get');
+    Route::delete('licenses/{license}/evacuation-attachments/{index}', [\App\Http\Controllers\Admin\LicenseController::class, 'deleteEvacuationAttachment'])->name('licenses.evacuation-attachments.delete');
 
     // مسارات الاختبارات المعملية الديناميكية
     Route::post('licenses/lab-test/save-status', [\App\Http\Controllers\Admin\LicenseController::class, 'saveLabTestStatus'])->name('licenses.lab-test.save-status');
@@ -521,8 +526,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('licenses/evacuation-file/{license}/{index}', [\App\Http\Controllers\Admin\LicenseController::class, 'showEvacuationFile'])->name('licenses.evacuation-file');
     Route::get('licenses/{license}/download/{type}', [\App\Http\Controllers\Admin\LicenseController::class, 'downloadFile'])->name('admin.licenses.download');
 
-// حذف مرفق إخلاء
-Route::delete('/admin/licenses/{license}/evacuation-attachments/{index}', [\App\Http\Controllers\Admin\LicenseController::class, 'deleteEvacuationAttachment'])->name('licenses.delete-evacuation-attachment');
 
 // مسارات البحث والحفظ التلقائي للمواد
 Route::get('admin/materials/search', [MaterialsController::class, 'search'])->name('admin.materials.search');

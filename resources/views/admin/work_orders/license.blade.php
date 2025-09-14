@@ -566,15 +566,49 @@ $(document).ready(function() {
     }
 
     /* تحسين مظهر الجدول للتمديدات */
+    #extensionsTable {
+        font-size: 0.9rem;
+    }
+    
     #extensionsTable .table-warning {
         background: linear-gradient(45deg, #fff3cd, #ffeaa7);
+    }
+    
+    #extensionsTable th {
+        vertical-align: middle;
+        font-weight: 600;
+        border-bottom: 2px solid #dee2e6;
+    }
+    
+    #extensionsTable td {
+        vertical-align: middle;
+        padding: 0.5rem 0.3rem;
     }
 
     /* تأثيرات المرور على صفوف التمديدات */
     #extensions-table-body tr:hover {
         background: linear-gradient(45deg, rgba(255,193,7,0.1), rgba(255,235,59,0.1));
-        transform: scale(1.01);
-        transition: all 0.3s ease;
+        transform: scale(1.005);
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    /* تحسين عرض الأزرار في الجدول */
+    #extensionsTable .btn-group-sm .btn {
+        padding: 0.25rem 0.4rem;
+        font-size: 0.8rem;
+    }
+    
+    /* تحسين عرض التواريخ */
+    #extensionsTable small {
+        font-size: 0.85rem;
+        color: #495057;
+    }
+    
+    /* تحسين عرض البادج */
+    #extensionsTable .badge {
+        font-size: 0.75rem;
+        padding: 0.35em 0.5em;
     }
 
     /* تحسين مظهر badges عدد الأيام */
@@ -651,6 +685,43 @@ $(document).ready(function() {
         border-color: transparent;
         transform: scale(1.1);
         box-shadow: 0 4px 12px rgba(220,53,69,0.4);
+    }
+
+    /* تنسيق قسم المرفقات */
+    .min-height-100 {
+        min-height: 100px;
+    }
+    
+    #evacuation-attachments-list .card {
+        transition: all 0.3s ease;
+        cursor: default;
+    }
+    
+    #evacuation-attachments-list .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    #evacuation-attachments-list .btn-group-sm .btn {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.8rem;
+    }
+    
+    /* تحسين مظهر حقل رفع الملفات */
+    #evacuation-attachments {
+        border: 2px dashed #17a2b8;
+        background: rgba(23, 162, 184, 0.05);
+        transition: all 0.3s ease;
+    }
+    
+    #evacuation-attachments:hover {
+        border-color: #138496;
+        background: rgba(23, 162, 184, 0.1);
+    }
+    
+    #evacuation-attachments:focus {
+        border-color: #0c5460;
+        box-shadow: 0 0 0 0.2rem rgba(23, 162, 184, 0.25);
     }
 </style>
 
@@ -2103,12 +2174,17 @@ function loadLicensesForSelectors() {
         type: 'GET',
         success: function(response) {
             if (response.licenses && response.licenses.length > 0) {
-                const labSelector = document.getElementById('lab-license-selector');
-                const evacuationSelector = document.getElementById('evacuation-license-selector');
-                const violationSelector = document.getElementById('violation-license-selector');
+                // تجميع كل الرخص المتاحة
+                const allSelectors = {
+                    'lab-license-selector': 'المختبر',
+                    'evacuation-license-selector': 'الإخلاءات',
+                    'violation-license-selector': 'المخالفات',
+                    'extension-license-selector': 'التمديدات'
+                };
                 
-                // مسح الخيارات الحالية (عدا الخيار الافتراضي)
-                [labSelector, evacuationSelector, violationSelector].forEach(selector => {
+                // مسح وتحديث كل القوائم
+                Object.keys(allSelectors).forEach(selectorId => {
+                    const selector = document.getElementById(selectorId);
                     if (selector) {
                         // حفظ الخيار الافتراضي
                         const defaultOption = selector.querySelector('option[value=""]');
@@ -2116,42 +2192,31 @@ function loadLicensesForSelectors() {
                         if (defaultOption) {
                             selector.appendChild(defaultOption.cloneNode(true));
                         }
-                    }
-                });
-                
-                // إضافة الرخص لكل قائمة
-                response.licenses.forEach(license => {
-                    const optionText = `رخصة #${license.license_number} - ${license.license_type || 'غير محدد'}`;
-                    
-                    [labSelector, evacuationSelector, violationSelector].forEach(selector => {
-                        if (selector) {
+                        
+                        // إضافة الرخص
+                        response.licenses.forEach(license => {
                             const option = document.createElement('option');
                             option.value = license.id;
-                            option.textContent = optionText;
+                            
+                            // تحسين عرض معلومات الرخصة
+                            let licenseInfo = [
+                                `رخصة #${license.license_number}`,
+                                license.license_type || 'غير محدد',
+                                license.work_order_execution_status >= 7 ? '- منتهية' : ''
+                            ];
+                            
+                            // إضافة معلومات إضافية للتمديدات
+                            if (selectorId === 'extension-license-selector') {
+                                if (license.extension_end_date) {
+                                    licenseInfo.push(`تنتهي في ${new Date(license.extension_end_date).toLocaleDateString()}`);
+                                }
+                            }
+                            
+                            option.textContent = licenseInfo.join(' - ');
                             selector.appendChild(option);
-                        }
-                    });
-                });
-                
-                // إضافة الرخص لقائمة التمديدات أيضاً
-                const extensionSelector = document.getElementById('extension-license-selector');
-                if (extensionSelector) {
-                    // حفظ الخيار الافتراضي
-                    const defaultOption = extensionSelector.querySelector('option[value=""]');
-                    extensionSelector.innerHTML = '';
-                    if (defaultOption) {
-                        extensionSelector.appendChild(defaultOption.cloneNode(true));
+                        });
                     }
-                    
-                    // إضافة الرخص
-                    response.licenses.forEach(license => {
-                        const optionText = `رخصة #${license.license_number} - ${license.license_type || 'غير محدد'}`;
-                        const option = document.createElement('option');
-                        option.value = license.id;
-                        option.textContent = optionText;
-                        extensionSelector.appendChild(option);
-                    });
-                }
+                });
                 
                 // إذا كان هناك رخصة واحدة فقط، اختارها تلقائياً
                 if (response.licenses.length === 1) {
@@ -2346,6 +2411,16 @@ function selectEvacuationLicense() {
             // تفعيل جميع الأزرار
             enableEvacuationButtons();
             
+            // إظهار قسم المرفقات وإخفاء الـ placeholder
+            const attachmentsSection = document.getElementById('evacuation-attachments-section');
+            const attachmentsPlaceholder = document.getElementById('evacuation-attachments-placeholder');
+            if (attachmentsSection) {
+                attachmentsSection.style.display = 'block';
+            }
+            if (attachmentsPlaceholder) {
+                attachmentsPlaceholder.style.display = 'none';
+            }
+            
             // تحميل بيانات الإخلاءات للرخصة المختارة
             loadEvacuationDataForLicense(selector.value);
             
@@ -2363,6 +2438,16 @@ function selectEvacuationLicense() {
             
             // تعطيل جميع الأزرار
             disableEvacuationButtons();
+            
+            // إخفاء قسم المرفقات وإظهار الـ placeholder
+            const attachmentsSection = document.getElementById('evacuation-attachments-section');
+            const attachmentsPlaceholder = document.getElementById('evacuation-attachments-placeholder');
+            if (attachmentsSection) {
+                attachmentsSection.style.display = 'none';
+            }
+            if (attachmentsPlaceholder) {
+                attachmentsPlaceholder.style.display = 'block';
+            }
             
             // مسح الجدول عند عدم اختيار رخصة
             elements.tbody.innerHTML = `
@@ -2433,21 +2518,45 @@ function selectExtensionLicense() {
     const displayElement = document.getElementById('extension-license-display');
     const addBtn = document.getElementById('add-extension-btn');
     
+    // تحديث حالة الزر والمعلومات
+    function updateUI(enabled, text = '') {
+        // تحديث الحقل المخفي
+        licenseIdField.value = enabled ? selector.value : '';
+        
+        // تحديث عرض المعلومات
+        if (enabled && text) {
+            displayElement.textContent = text;
+            infoDiv.style.display = 'block';
+        } else {
+            infoDiv.style.display = 'none';
+        }
+        
+        // تحديث حالة الزر
+        addBtn.disabled = !enabled;
+        addBtn.classList.toggle('btn-success', enabled);
+        addBtn.classList.toggle('btn-secondary', !enabled);
+        
+        // إخفاء نموذج التمديد إذا لم يتم اختيار رخصة
+        if (!enabled) {
+            hideExtensionForm();
+        }
+    }
+    
     if (selector.value) {
-        licenseIdField.value = selector.value;
-        const selectedText = selector.options[selector.selectedIndex].text;
-        displayElement.textContent = selectedText;
-        infoDiv.style.display = 'block';
-        addBtn.disabled = false;
-        addBtn.classList.remove('btn-secondary');
-        addBtn.classList.add('btn-success');
+        const selectedOption = selector.options[selector.selectedIndex];
+        const selectedText = selectedOption.text;
+        
+        // تحديث الواجهة
+        updateUI(true, selectedText);
+        
+        // إظهار رسالة نجاح
+        toastr.success('تم اختيار الرخصة بنجاح');
     } else {
-        licenseIdField.value = '';
-        infoDiv.style.display = 'none';
-        addBtn.disabled = true;
-        addBtn.classList.remove('btn-success');
-        addBtn.classList.add('btn-secondary');
-        hideExtensionForm(); // إخفاء النموذج إذا لم يتم اختيار رخصة
+        // إعادة تعيين الواجهة
+        updateUI(false);
+        
+        // إظهار رسالة تحذير
+        toastr.warning('يجب اختيار رخصة قبل إضافة التمديد');
     }
 }
 
@@ -2480,20 +2589,56 @@ function showExtensionForm() {
         toastr.warning('يجب اختيار رخصة أولاً');
         return;
     }
-    
+
+    // تنظيف النموذج بالكامل قبل الإظهار
+    const form = document.getElementById('extensionForm');
+    if (form) {
+        form.reset();
+        
+        // تنظيف جميع الحقول يدوياً عدا work_order_id
+        const inputs = form.querySelectorAll('input, select, textarea');
+        inputs.forEach(input => {
+            if (input.name !== 'work_order_id') {
+                if (input.type === 'checkbox' || input.type === 'radio') {
+                    input.checked = false;
+                } else if (input.type === 'file') {
+                    input.value = '';
+                } else {
+                    input.value = '';
+                }
+            }
+        });
+        
+        // تنظيف عرض الأيام
+        const extensionDaysDisplay = document.getElementById('extension-days-display');
+        if (extensionDaysDisplay) {
+            extensionDaysDisplay.value = '';
+        }
+        
+        console.log('Extension form cleared before showing');
+    }
+
     formCard.style.display = 'block';
     formCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
     
     // تعيين التاريخ الافتراضي (اليوم لتاريخ البداية)
     const today = new Date().toISOString().split('T')[0];
-    document.getElementById('extension-start-date').value = today;
+    const startDateInput = document.getElementById('extension-start-date');
+    if (startDateInput) {
+        startDateInput.value = today;
+    }
     
     // إضافة مستمعي الأحداث لحساب الأيام
-    const startDateInput = document.getElementById('extension-start-date');
     const endDateInput = document.getElementById('extension-end-date');
     
-    startDateInput.addEventListener('change', calculateExtensionDays);
-    endDateInput.addEventListener('change', calculateExtensionDays);
+    if (startDateInput) {
+        startDateInput.removeEventListener('change', calculateExtensionDays);
+        startDateInput.addEventListener('change', calculateExtensionDays);
+    }
+    if (endDateInput) {
+        endDateInput.removeEventListener('change', calculateExtensionDays);
+        endDateInput.addEventListener('change', calculateExtensionDays);
+    }
 }
 
 // دالة إخفاء نموذج التمديد
@@ -2503,10 +2648,53 @@ function hideExtensionForm() {
     
     formCard.style.display = 'none';
     
-    // إعادة تعيين النموذج
+    // إعادة تعيين النموذج بالكامل
     if (form) {
         form.reset();
-        document.getElementById('extension-days-display').value = '';
+        
+        // تنظيف جميع الحقول يدوياً
+        const inputs = form.querySelectorAll('input, select, textarea');
+        inputs.forEach(input => {
+            if (input.type === 'checkbox' || input.type === 'radio') {
+                input.checked = false;
+            } else if (input.type === 'file') {
+                input.value = '';
+            } else {
+                input.value = '';
+            }
+        });
+        
+        // تنظيف الحقول المخفية
+        const extensionLicenseId = document.getElementById('extension-license-id');
+        if (extensionLicenseId) {
+            extensionLicenseId.value = '';
+        }
+        
+        // تنظيف عرض الأيام
+        const extensionDaysDisplay = document.getElementById('extension-days-display');
+        if (extensionDaysDisplay) {
+            extensionDaysDisplay.value = '';
+        }
+        
+        // إعادة تعيين اختيار الرخصة
+        const licenseSelector = document.getElementById('extension-license-selector');
+        if (licenseSelector) {
+            licenseSelector.value = '';
+        }
+        
+        // إخفاء معلومات الرخصة المختارة
+        const licenseInfo = document.getElementById('selected-extension-license-info');
+        if (licenseInfo) {
+            licenseInfo.style.display = 'none';
+        }
+        
+        // تعطيل زر الإضافة
+        const addBtn = document.getElementById('add-extension-btn');
+        if (addBtn) {
+            addBtn.disabled = true;
+        }
+        
+        console.log('Extension form has been completely reset');
     }
 }
 
@@ -2589,8 +2777,26 @@ function saveExtensionData() {
                 saveBtn.innerHTML = '<i class="fas fa-save me-2"></i>حفظ التمديد';
             }
             
-            // إخفاء النموذج وإعادة تعيينه
+            // إخفاء النموذج وإعادة تعيينه بالكامل
             hideExtensionForm();
+            
+            // تنظيف إضافي للتأكد من عدم بقاء أي بيانات
+            setTimeout(() => {
+                const form = document.getElementById('extensionForm');
+                if (form) {
+                    form.reset();
+                    
+                    // التأكد من تنظيف جميع الحقول
+                    const allInputs = form.querySelectorAll('input, select, textarea');
+                    allInputs.forEach(input => {
+                        if (input.type !== 'hidden' || input.name !== 'work_order_id') {
+                            input.value = '';
+                        }
+                    });
+                    
+                    console.log('Form completely cleared after successful save');
+                }
+            }, 100);
             
             // تحديث جدول التمديدات فوراً
             setTimeout(() => {
@@ -2599,7 +2805,7 @@ function saveExtensionData() {
             
             // إشعار بنجاح العملية
             setTimeout(() => {
-                toastr.info('يمكنك عرض التمديد في صفحة تفاصيل الرخصة');
+                toastr.info('يمكنك إضافة تمديد جديد الآن');
             }, 1000);
         },
         error: function(xhr) {
@@ -2705,7 +2911,7 @@ function loadExtensions() {
                 const noDataRow = document.createElement('tr');
                 noDataRow.id = 'no-extensions-row';
                 noDataRow.innerHTML = `
-                    <td colspan="8" class="text-center text-muted">
+                    <td colspan="9" class="text-center text-muted">
                         <i class="fas fa-calendar-times fa-2x mb-3 d-block"></i>
                         لا توجد تمديدات محفوظة
                     </td>
@@ -2749,29 +2955,47 @@ function loadExtensions() {
                 
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td>${index + 1}</td>
-                    <td><strong class="text-primary">رخصة #${extension.license_number || 'غير محدد'}</strong></td>
-                    <td><strong class="text-success">${formatCurrency(extension.extension_value)}</strong></td>
-                    <td><small>${startDate}</small></td>
-                    <td><small>${endDate}</small></td>
-                    <td>
+                    <td class="text-center">
+                        <span class="badge bg-secondary">${index + 1}</span>
+                    </td>
+                    <td class="text-center">
+                        <strong class="text-primary">رخصة #${extension.license_number || 'غير محدد'}</strong>
+                    </td>
+                    <td class="text-center">
+                        <strong class="text-success">${formatCurrency(extension.extension_value || 0)}</strong>
+                    </td>
+                    <td class="text-center">
+                        <small class="text-info">
+                            <i class="fas fa-calendar-alt me-1"></i>${startDate || 'غير محدد'}
+                        </small>
+                    </td>
+                    <td class="text-center">
+                        <small class="text-danger">
+                            <i class="fas fa-calendar-check me-1"></i>${endDate || 'غير محدد'}
+                        </small>
+                    </td>
+                    <td class="text-center">
                         <span class="badge bg-warning text-dark">
                             <i class="fas fa-clock me-1"></i>${extensionDays} يوم
                         </span>
                     </td>
-                    <td>
-                        <span class="text-muted" title="${extension.reason || 'لا توجد ملاحظات'}">
-                            ${reasonText}
-                        </span>
+                    <td class="text-start">
+                        <small class="text-muted" title="${extension.reason || 'لا توجد ملاحظات'}" style="cursor: help;">
+                            <i class="fas fa-comment-dots me-1"></i>${reasonText}
+                        </small>
                     </td>
-                    <td>${attachments.join('') || '<span class="text-muted">لا توجد مرفقات</span>'}</td>
-                    <td>
+                    <td class="text-center">
+                        <div class="d-flex flex-column gap-1">
+                            ${attachments.join('') || '<small class="text-muted">لا توجد مرفقات</small>'}
+                        </div>
+                    </td>
+                    <td class="text-center">
                         <div class="btn-group btn-group-sm">
-                            <button class="btn btn-outline-info" onclick="viewExtension(${extension.id})" title="عرض">
+                            <button class="btn btn-outline-info" onclick="viewExtension(${extension.id})" title="عرض التفاصيل">
                                 <i class="fas fa-eye"></i>
                             </button>
-                            <button class="btn btn-outline-danger" onclick="deleteExtension(${extension.id})" title="حذف">
-                                <i class="fas fa-trash"></i>
+                            <button class="btn btn-outline-danger" onclick="deleteExtension(${extension.id})" title="حذف التمديد">
+                                <i class="fas fa-trash-alt"></i>
                             </button>
                         </div>
                     </td>
@@ -3032,46 +3256,13 @@ function deleteExtension(extensionId) {
                 deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
             }
             
-            // في حالة عدم وجود endpoint، محاكاة الحذف
+            // عرض رسالة خطأ مناسبة
             if (xhr.status === 404) {
-                // حذف الصف من الجدول مباشرة (للاختبار)
-                const row = deleteBtn.closest('tr');
-                if (row) {
-                    row.remove();
-                    toastr.success('تم حذف التمديد بنجاح (محاكاة)');
-                    
-                    // التحقق من وجود صفوف أخرى وتحديث الإجمالي
-                    const tbody = document.getElementById('extensions-table-body');
-                    if (tbody && tbody.children.length === 0) {
-                        const noDataRow = document.createElement('tr');
-                        noDataRow.id = 'no-extensions-row';
-                        noDataRow.innerHTML = `
-                            <td colspan="8" class="text-center text-muted">
-                                <i class="fas fa-calendar-times fa-2x mb-3 d-block"></i>
-                                لا توجد تمديدات محفوظة
-                            </td>
-                        `;
-                        tbody.appendChild(noDataRow);
-                        
-                        // تحديث الإجمالي إلى صفر
-                        updateExtensionsTotal([]);
-                    } else {
-                        // إعادة حساب الإجمالي من الصفوف المتبقية
-                        const remainingExtensions = [];
-                        if (tbody) {
-                            const rows = tbody.querySelectorAll('tr:not(#no-extensions-row)');
-                            rows.forEach(row => {
-                            const valueCell = row.cells[2]; // عمود قيمة التمديد
-                            if (valueCell) {
-                                const valueText = valueCell.textContent.trim();
-                                const value = parseFloat(valueText.replace(/[^\d.]/g, '')) || 0;
-                                remainingExtensions.push({ extension_value: value });
-                            }
-                                                    });
-                        }
-                        updateExtensionsTotal(remainingExtensions);
-                    }
-                }
+                toastr.error('التمديد غير موجود');
+            } else if (xhr.status === 403) {
+                toastr.error('ليس لديك صلاحية لحذف هذا التمديد');
+            } else if (xhr.responseJSON && xhr.responseJSON.message) {
+                toastr.error(xhr.responseJSON.message);
             } else {
                 toastr.error('حدث خطأ في حذف التمديد');
             }
@@ -3477,18 +3668,18 @@ function deleteExtension(extensionId) {
                                 </div>
                                 <div class="card-body">
                                     <div class="table-responsive">
-                                        <table class="table table-bordered table-hover" id="extensionsTable">
+                                        <table class="table table-bordered table-hover table-sm" id="extensionsTable">
                                             <thead class="table-warning">
                                                 <tr>
-                                                    <th>#</th>
-                                                    <th>رقم الرخصة</th>
-                                                    <th>قيمة التمديد</th>
-                                                    <th>تاريخ البداية</th>
-                                                    <th>تاريخ النهاية</th>
-                                                    <th>عدد أيام التمديد</th>
-                                                    <th>الملاحظات</th>
-                                                    <th>المرفقات</th>
-                                                    <th>الإجراءات</th>
+                                                    <th class="text-center" style="width: 5%;">#</th>
+                                                    <th class="text-center" style="width: 15%;">رقم الرخصة</th>
+                                                    <th class="text-center" style="width: 12%;">قيمة التمديد</th>
+                                                    <th class="text-center" style="width: 12%;">تاريخ البداية</th>
+                                                    <th class="text-center" style="width: 12%;">تاريخ النهاية</th>
+                                                    <th class="text-center" style="width: 10%;">المدة</th>
+                                                    <th class="text-center" style="width: 20%;">الملاحظات</th>
+                                                    <th class="text-center" style="width: 8%;">المرفقات</th>
+                                                    <th class="text-center" style="width: 6%;">الإجراءات</th>
                                                 </tr>
                                             </thead>
                                             <tbody id="extensions-table-body">
@@ -3970,6 +4161,76 @@ function deleteExtension(extensionId) {
                         </div>
                         </form>
                     </div> <!-- End evacuation-form-container -->
+                    
+                    <!-- رسالة عدم اختيار رخصة للمرفقات -->
+                    <div class="row mt-5" id="evacuation-attachments-placeholder">
+                        <div class="col-12">
+                            <div class="card border-secondary">
+                                <div class="card-body text-center py-5">
+                                    <i class="fas fa-paperclip fa-3x text-muted mb-3"></i>
+                                    <h5 class="text-muted">مرفقات الإخلاءات</h5>
+                                    <p class="text-muted mb-0">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        يجب اختيار رخصة أولاً لتتمكن من رفع المرفقات
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- قسم مرفقات الإخلاءات -->
+                    <div class="row mt-5" id="evacuation-attachments-section" style="display: none;">
+                        <div class="col-12">
+                            <div class="card border-info shadow">
+                                <div class="card-header bg-info text-white">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-paperclip me-2"></i>
+                                        مرفقات الإخلاءات والتعهدات
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <!-- رفع المرفقات -->
+                                    <div class="row mb-4">
+                                        <div class="col-md-8">
+                                            <label for="evacuation-attachments" class="form-label fw-bold">
+                                                <i class="fas fa-upload me-1"></i>رفع مرفقات الإخلاءات
+                                            </label>
+                                            <input type="file" class="form-control" id="evacuation-attachments" 
+                                                   multiple accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" 
+                                                   onchange="handleEvacuationAttachments(this.files)">
+                                            <small class="text-muted">
+                                                يمكن رفع ملفات PDF, Word, أو صور (حد أقصى 10 ملفات لكل مرة)
+                                            </small>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <button type="button" class="btn btn-success w-100 mt-4" 
+                                                    onclick="uploadEvacuationAttachments()" id="upload-evacuation-btn" disabled>
+                                                <i class="fas fa-cloud-upload-alt me-2"></i>
+                                                رفع المرفقات
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- عرض المرفقات المرفوعة -->
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <h6 class="text-primary mb-3">
+                                                <i class="fas fa-folder-open me-1"></i>
+                                                المرفقات المرفوعة
+                                            </h6>
+                                            <div id="evacuation-attachments-list" class="border rounded p-3 bg-light min-height-100">
+                                                <div class="text-center text-muted py-3" id="no-evacuation-attachments">
+                                                    <i class="fas fa-file-upload fa-2x mb-2"></i>
+                                                    <br>لا توجد مرفقات مرفوعة حتى الآن
+                                                    <br><small>استخدم الحقل أعلاه لرفع المرفقات</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -6134,6 +6395,239 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+// ========== دوال مرفقات الإخلاءات ==========
+
+// متغيرات عامة للمرفقات
+let selectedEvacuationFiles = [];
+let currentLicenseId = null;
+
+// دالة معالجة اختيار المرفقات
+function handleEvacuationAttachments(files) {
+    const uploadBtn = document.getElementById('upload-evacuation-btn');
+    
+    if (files.length === 0) {
+        uploadBtn.disabled = true;
+        selectedEvacuationFiles = [];
+        return;
+    }
+    
+    // التحقق من عدد الملفات
+    if (files.length > 10) {
+        toastr.error('لا يمكن رفع أكثر من 10 ملفات في المرة الواحدة');
+        document.getElementById('evacuation-attachments').value = '';
+        return;
+    }
+    
+    // التحقق من حجم الملفات
+    let totalSize = 0;
+    for (let file of files) {
+        totalSize += file.size;
+        if (file.size > 10 * 1024 * 1024) { // 10MB
+            toastr.error(`الملف ${file.name} كبير جداً. الحد الأقصى 10 ميجابايت`);
+            document.getElementById('evacuation-attachments').value = '';
+            return;
+        }
+    }
+    
+    if (totalSize > 50 * 1024 * 1024) { // 50MB إجمالي
+        toastr.error('حجم الملفات الإجمالي كبير جداً. الحد الأقصى 50 ميجابايت');
+        document.getElementById('evacuation-attachments').value = '';
+        return;
+    }
+    
+    selectedEvacuationFiles = Array.from(files);
+    uploadBtn.disabled = false;
+    
+    toastr.info(`تم اختيار ${files.length} ملف للرفع`);
+}
+
+// دالة رفع المرفقات
+function uploadEvacuationAttachments() {
+    const licenseSelector = document.getElementById('evacuation-license-selector');
+    
+    if (!licenseSelector.value) {
+        toastr.error('يجب اختيار رخصة أولاً');
+        return;
+    }
+    
+    if (selectedEvacuationFiles.length === 0) {
+        toastr.error('يجب اختيار ملفات للرفع');
+        return;
+    }
+    
+    const formData = new FormData();
+    formData.append('license_id', licenseSelector.value);
+    formData.append('attachment_type', 'evacuation');
+    
+    selectedEvacuationFiles.forEach((file, index) => {
+        formData.append(`attachments[${index}]`, file);
+    });
+    
+    const uploadBtn = document.getElementById('upload-evacuation-btn');
+    const originalText = uploadBtn.innerHTML;
+    
+    // إظهار مؤشر التحميل
+    uploadBtn.disabled = true;
+    uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>جاري الرفع...';
+    
+    $.ajax({
+        url: '/admin/licenses/evacuation-attachments/upload',
+        type: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        },
+        success: function(response) {
+            if (response.success) {
+                toastr.success(`تم رفع ${selectedEvacuationFiles.length} ملف بنجاح`);
+                
+                // مسح اختيار الملفات
+                document.getElementById('evacuation-attachments').value = '';
+                selectedEvacuationFiles = [];
+                
+                // تحديث قائمة المرفقات
+                loadEvacuationAttachments(licenseSelector.value);
+            } else {
+                toastr.error(response.message || 'حدث خطأ في رفع المرفقات');
+            }
+        },
+        error: function(xhr) {
+            console.error('Error uploading attachments:', xhr);
+            const errorMsg = xhr.responseJSON?.message || 'حدث خطأ في رفع المرفقات';
+            toastr.error(errorMsg);
+        },
+        complete: function() {
+            // إعادة تفعيل الزر
+            uploadBtn.disabled = false;
+            uploadBtn.innerHTML = originalText;
+        }
+    });
+}
+
+// دالة تحميل المرفقات المرفوعة
+function loadEvacuationAttachments(licenseId) {
+    if (!licenseId) return;
+    
+    $.ajax({
+        url: `/admin/licenses/${licenseId}/evacuation-attachments`,
+        type: 'GET',
+        success: function(response) {
+            const attachmentsList = document.getElementById('evacuation-attachments-list');
+            const noAttachmentsMsg = document.getElementById('no-evacuation-attachments');
+            
+            if (response.attachments && response.attachments.length > 0) {
+                // إخفاء رسالة عدم وجود مرفقات
+                if (noAttachmentsMsg) {
+                    noAttachmentsMsg.style.display = 'none';
+                }
+                
+                // عرض المرفقات
+                let attachmentsHtml = '<div class="row g-3">';
+                response.attachments.forEach((attachment, index) => {
+                    const fileName = attachment.path ? attachment.path.split('/').pop() : `مرفق ${index + 1}`;
+                    const fileExtension = fileName.split('.').pop().toLowerCase();
+                    let iconClass = 'fas fa-file';
+                    
+                    if (['pdf'].includes(fileExtension)) {
+                        iconClass = 'fas fa-file-pdf text-danger';
+                    } else if (['doc', 'docx'].includes(fileExtension)) {
+                        iconClass = 'fas fa-file-word text-primary';
+                    } else if (['jpg', 'jpeg', 'png'].includes(fileExtension)) {
+                        iconClass = 'fas fa-file-image text-success';
+                    }
+                    
+                    attachmentsHtml += `
+                        <div class="col-md-4 col-sm-6">
+                            <div class="card h-100 border-secondary">
+                                <div class="card-body text-center p-3">
+                                    <i class="${iconClass} fa-2x mb-2"></i>
+                                    <h6 class="card-title text-truncate" title="${fileName}">${fileName}</h6>
+                                    <div class="btn-group btn-group-sm w-100">
+                                        <a href="${attachment.url}" target="_blank" class="btn btn-outline-primary">
+                                            <i class="fas fa-eye"></i> عرض
+                                        </a>
+                                        <button class="btn btn-outline-danger" onclick="deleteEvacuationAttachment(${index})">
+                                            <i class="fas fa-trash"></i> حذف
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                attachmentsHtml += '</div>';
+                
+                attachmentsList.innerHTML = attachmentsHtml;
+            } else {
+                // عرض رسالة عدم وجود مرفقات
+                if (noAttachmentsMsg) {
+                    noAttachmentsMsg.style.display = 'block';
+                }
+                attachmentsList.innerHTML = `
+                    <div class="text-center text-muted py-3" id="no-evacuation-attachments">
+                        <i class="fas fa-file-upload fa-2x mb-2"></i>
+                        <br>لا توجد مرفقات مرفوعة حتى الآن
+                        <br><small>استخدم الحقل أعلاه لرفع المرفقات</small>
+                    </div>
+                `;
+            }
+        },
+        error: function(xhr) {
+            console.error('Error loading attachments:', xhr);
+        }
+    });
+}
+
+// دالة حذف مرفق
+function deleteEvacuationAttachment(attachmentIndex) {
+    const licenseSelector = document.getElementById('evacuation-license-selector');
+    
+    if (!licenseSelector.value) {
+        toastr.error('خطأ في تحديد الرخصة');
+        return;
+    }
+    
+    if (!confirm('هل أنت متأكد من حذف هذا المرفق؟')) {
+        return;
+    }
+    
+    $.ajax({
+        url: `/admin/licenses/${licenseSelector.value}/evacuation-attachments/${attachmentIndex}`,
+        type: 'DELETE',
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        },
+        success: function(response) {
+            if (response.success) {
+                toastr.success('تم حذف المرفق بنجاح');
+                loadEvacuationAttachments(licenseSelector.value);
+            } else {
+                toastr.error(response.message || 'حدث خطأ في حذف المرفق');
+            }
+        },
+        error: function(xhr) {
+            console.error('Error deleting attachment:', xhr);
+            toastr.error('حدث خطأ في حذف المرفق');
+        }
+    });
+}
+
+// تحديث دالة اختيار رخصة الإخلاءات لتحميل المرفقات
+const originalSelectEvacuationLicense = selectEvacuationLicense;
+selectEvacuationLicense = function() {
+    originalSelectEvacuationLicense();
+    
+    const selector = document.getElementById('evacuation-license-selector');
+    if (selector && selector.value) {
+        // تحميل المرفقات للرخصة المختارة
+        setTimeout(() => {
+            loadEvacuationAttachments(selector.value);
+        }, 500);
+    }
+};
 
 </script>
 

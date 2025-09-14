@@ -12,6 +12,7 @@ class LicenseExtension extends Model
 
     protected $fillable = [
         'license_id',
+        'extension_value',
         'days_count',
         'start_date',
         'end_date',
