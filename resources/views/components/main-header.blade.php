@@ -25,7 +25,7 @@
                     @auth
                         @if(auth()->user()->is_admin)
                         <div class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle px-3 py-2 rounded {{ request()->is('admin/users*') || request()->is('admin/settings*') || request()->is('admin/reports*') ? 'active' : '' }}" href="#" role="button" data-bs-toggle="dropdown">
+                            <a class="nav-link dropdown-toggle px-3 py-2 rounded text-white {{ request()->is('admin/users*') || request()->is('admin/settings*') || request()->is('admin/reports*') ? 'active' : '' }}" href="#" role="button" data-bs-toggle="dropdown">
                                 <i class="fas fa-cog me-1"></i>
                                 الإعدادات
                             </a>
@@ -263,7 +263,7 @@
     border-radius: 6px;
 }
     width: auto;
-}
+
 
 .nav-item.nav-link {
     color: rgba(255, 255, 255, 0.9) !important;
