@@ -322,13 +322,15 @@ function resetCountdown(workOrderId) {
                                     </label>
                                     <select class="form-select" id="execution_status" name="execution_status">
                                         <option value="">كل الحالات</option>
-                                        <option value="1" {{ request('execution_status') == '1' ? 'selected' : '' }}>جاري العمل ....</option>
-                                        <option value="2" {{ request('execution_status') == '2' ? 'selected' : '' }}>تم تسليم 155 ولم تصدر شهادة الانجاز</option>
+                                        <option value="1" {{ request('execution_status') == '1' ? 'selected' : '' }}>جاري العمل بالموقع</option>
+                                        <option value="8" {{ request('execution_status') == '8' ? 'selected' : '' }}>جاري تسليم 155</option>
+                                        <option value="2" {{ request('execution_status') == '2' ? 'selected' : '' }}>تم تسليم 155 ولم تصدر شهادة انجاز</option>
                                         <option value="3" {{ request('execution_status') == '3' ? 'selected' : '' }}>صدرت شهادة ولم تعتمد</option>
                                         <option value="4" {{ request('execution_status') == '4' ? 'selected' : '' }}>تم اعتماد شهادة الانجاز</option>
                                         <option value="5" {{ request('execution_status') == '5' ? 'selected' : '' }}>مؤكد ولم تدخل مستخلص</option>
                                         <option value="6" {{ request('execution_status') == '6' ? 'selected' : '' }}>دخلت مستخلص ولم تصرف</option>
                                         <option value="7" {{ request('execution_status') == '7' ? 'selected' : '' }}>منتهي تم الصرف</option>
+                                        <option value="9" {{ request('execution_status') == '9' ? 'selected' : '' }}>إلغاء امر العمل</option>
                                     </select>
                                 </div>
                             </div>
@@ -469,14 +471,16 @@ function resetCountdown(workOrderId) {
                                         @endif
                                         @if(request('execution_status'))
                                             <span class="filter-badge">
-                                                حالة التنفيذ: @switch(request('execution_status'))
-                                                    @case('1') جاري العمل @break
-                                                    @case('2') تم تسليم 155 ولم تصدر شهادة الانجاز @break
+                                                حالة التنفيذ:                                                 @switch(request('execution_status'))
+                                                    @case('1') جاري العمل بالموقع @break
+                                                    @case('8') جاري تسليم 155 @break
+                                                    @case('2') تم تسليم 155 ولم تصدر شهادة انجاز @break
                                                     @case('3') صدرت شهادة ولم تعتمد @break
                                                     @case('4') تم اعتماد شهادة الانجاز @break
                                                     @case('5') مؤكد ولم تدخل مستخلص @break
                                                     @case('6') دخلت مستخلص ولم تصرف @break
                                                     @case('7') منتهي تم الصرف @break
+                                                    @case('9') إلغاء امر العمل @break
                                                     @default {{ request('execution_status') }}
                                                 @endswitch
                                                 <i class="fas fa-times clear-filter" onclick="clearFilter('execution_status')"></i>
@@ -547,12 +551,10 @@ function resetCountdown(workOrderId) {
                                 <label for="per_page" class="form-label me-2 mb-0 text-muted">عرض:</label>
                                 <select class="form-select form-select-sm" id="per_page" onchange="changePerPage(this.value)" style="width: auto;">
                                     <option value="10" {{ request('per_page') == 10 ? 'selected' : '' }}>10</option>
-                                    <option value="15" {{ request('per_page', 15) == 15 ? 'selected' : '' }}>15</option>
                                     <option value="25" {{ request('per_page') == 25 ? 'selected' : '' }}>25</option>
                                     <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50</option>
                                     <option value="100" {{ request('per_page') == 100 ? 'selected' : '' }}>100</option>
                                     <option value="300" {{ request('per_page') == 300 ? 'selected' : '' }}>300</option>
-                                    <option value="500" {{ request('per_page') == 500 ? 'selected' : '' }}>500</option>
                                     <option value="1000" {{ request('per_page') == 1000 ? 'selected' : '' }}>1000</option>
                                 </select>
                                 <span class="text-muted ms-2">نتيجة</span>
@@ -730,10 +732,13 @@ function resetCountdown(workOrderId) {
                                         <td>
                                             @switch($workOrder->execution_status)
                                                 @case('1')
-                                                    <span class="badge" style="background-color:rgb(228, 196, 14)">جاري العمل ....</span>
+                                                    <span class="badge" style="background-color:rgb(228, 196, 14)">جاري العمل بالموقع</span>
+                                                    @break
+                                                @case('8')
+                                                    <span class="badge" style="background-color:rgb(112, 68, 2)">جاري تسليم 155</span>
                                                     @break
                                                 @case('2')
-                                                    <span class="badge" style="background-color:rgb(4, 163, 226); color: white">تم تسليم 155 ولم تصدر شهادة الانجاز</span>
+                                                    <span class="badge" style="background-color:rgb(4, 163, 226); color: white">تم تسليم 155 ولم تصدر شهادة انجاز</span>
                                                     @break
                                                 @case('3')
                                                     <span class="badge" style="background-color:rgb(86, 168, 110)">صدرت شهادة ولم تعتمد</span>
@@ -749,6 +754,9 @@ function resetCountdown(workOrderId) {
                                                     @break
                                                 @case('7')
                                                     <span class="badge" style="background-color:rgb(0, 66, 0)">منتهي تم الصرف</span>
+                                                    @break
+                                                @case('9')
+                                                    <span class="badge" style="background-color:rgb(220, 53, 69)">إلغاء امر العمل</span>
                                                     @break
                                                 @default
                                                     <span class="badge bg-secondary">{{ $workOrder->execution_status }}</span>
@@ -794,6 +802,8 @@ function resetCountdown(workOrderId) {
                                 <option value="25" {{ request('per_page') == 25 ? 'selected' : '' }}>25 نتيجة</option>
                                 <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50 نتيجة</option>
                                 <option value="100" {{ request('per_page') == 100 ? 'selected' : '' }}>100 نتيجة</option>
+                                <option value="300" {{ request('per_page') == 300 ? 'selected' : '' }}>300 نتيجة</option>
+                                <option value="1000" {{ request('per_page') == 1000 ? 'selected' : '' }}>1000 نتيجة</option>
                             </select>
                             <span class="text-muted small">
                                 عرض {{ $workOrders->firstItem() ?? 0 }} إلى {{ $workOrders->lastItem() ?? 0 }} من {{ $workOrders->total() }} نتيجة
@@ -1362,10 +1372,13 @@ function performSearch(filters) {
             isVisible = false;
         }
         
-        // فلتر حالة التنفيذ
-        if (filters.executionStatus && workOrder.executionStatus !== filters.executionStatus) {
-            isVisible = false;
-        }
+                    // فلتر حالة التنفيذ
+                        if (filters.executionStatus) {
+                            const status = workOrder.executionStatus.toString();
+                            if (status !== filters.executionStatus) {
+                                isVisible = false;
+                            }
+                        }
         
         // فلتر التاريخ
         if (filters.approvalDateFrom || filters.approvalDateTo) {

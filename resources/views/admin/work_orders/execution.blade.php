@@ -232,9 +232,13 @@
                                                 @endif
                                             </td>
                                             <td class="text-center">
-                                                <button type="button" class="btn btn-danger btn-sm delete-item" data-id="{{ $workOrderItem->id }}">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
+                                                @if(auth()->user()->is_admin)
+                                                    <button type="button" class="btn btn-danger btn-sm delete-item" data-id="{{ $workOrderItem->id }}">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                @else
+                                                    <span class="text-muted">-</span>
+                                                @endif
                                             </td>
                                         </tr>
                                     @endforeach
@@ -336,9 +340,11 @@
                                         <i class="fas {{ $isPdf ? 'fa-eye' : 'fa-search' }} me-1"></i>
                                         عرض
                                     </a>
-                                    <button class="btn btn-sm btn-danger delete-image" data-image-id="{{ $image->id }}">
-                                        <i class="fas fa-trash-alt"></i>
-                                    </button>
+                                    @if(auth()->user()->is_admin)
+                                        <button class="btn btn-sm btn-danger delete-image" data-image-id="{{ $image->id }}">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -617,8 +623,13 @@
                     <div class="col-md-4">
                         <div class="mb-3">
                             <label for="quantity" class="form-label">الكمية المخططة</label>
-                            <input type="number" step="0.01" class="form-control" id="quantity" name="quantity" readonly style="background-color: #f8f9fa; cursor: not-allowed;">
-                            <small class="text-muted">سيتم تحديد الكمية من خلال الجدول</small>
+                            @if(auth()->user()->is_admin)
+                                <input type="number" step="0.01" class="form-control" id="quantity" name="quantity" min="0">
+                                <small class="text-muted">يمكن لمشرف النظام تعديل الكمية المخططة</small>
+                            @else
+                                <input type="number" step="0.01" class="form-control" id="quantity" name="quantity" readonly style="background-color: #f8f9fa; cursor: not-allowed;">
+                                <small class="text-muted">سيتم تحديد الكمية من خلال الجدول</small>
+                            @endif
                         </div>
                     </div>
                     <div class="col-md-4">
@@ -755,9 +766,14 @@ function initializeEventListeners() {
             document.getElementById('unit_price').value = selectedOption.dataset.unitPrice || '';
             document.getElementById('unit').value = selectedOption.dataset.unit || '';
             
-            // تعيين كمية افتراضية (0) عند اختيار بند
+            // تعيين كمية افتراضية (0) عند اختيار بند - فقط إذا لم يكن المستخدم مشرف نظام
             if (selectedOption.value) {
-                document.getElementById('quantity').value = '0.00';
+                @if(auth()->user()->is_admin)
+                    // مشرف النظام يمكنه تحديد الكمية بنفسه
+                    document.getElementById('quantity').value = '';
+                @else
+                    document.getElementById('quantity').value = '0.00';
+                @endif
             } else {
                 document.getElementById('quantity').value = '';
             }
@@ -1209,9 +1225,11 @@ document.addEventListener('DOMContentLoaded', function() {
                                                 <i class="fas ${image.is_pdf ? 'fa-eye' : 'fa-search'} me-1"></i>
                                                 عرض
                                             </a>
-                                            <button class="btn btn-sm btn-danger delete-image" data-image-id="${image.id}">
-                                                <i class="fas fa-trash-alt"></i>
-                                            </button>
+                                            @if(auth()->user()->is_admin)
+                                                <button class="btn btn-sm btn-danger delete-image" data-image-id="${image.id}">
+                                                    <i class="fas fa-trash-alt"></i>
+                                                </button>
+                                            @endif
                                         </div>
                                     </div>
                                 </div>

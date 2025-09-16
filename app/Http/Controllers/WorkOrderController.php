@@ -677,11 +677,12 @@ class WorkOrderController extends Controller
             'district' => 'required|string|max:255',
             'order_value_with_consultant' => 'required|numeric|min:0',
             'order_value_without_consultant' => 'required|numeric|min:0',
-            'execution_status' => 'required|in:1,2,3,4,5,6,7',
+            'execution_status' => 'required|in:1,2,3,4,5,6,7,8,9',
             'municipality' => 'nullable|string|max:255',
             'office' => 'nullable|string|max:255',
             'station_number' => 'nullable|string|max:255',
             'consultant_name' => 'nullable|string|max:255',
+            'task_number' => 'nullable|string|max:255',
         ]);
         // تحديث بيانات أمر العمل
         $workOrder->update($validated);
@@ -897,6 +898,7 @@ class WorkOrderController extends Controller
             $request->validate([
                 'work_order_id' => 'required|exists:work_orders,id',
                 'work_item_id' => 'required|exists:work_items,id',
+                'quantity' => 'nullable|numeric|min:0',
                 'notes' => 'nullable|string',
                 'work_date' => 'required|date'
             ]);
@@ -917,11 +919,14 @@ class WorkOrderController extends Controller
                 ]);
             }
 
-            // إنشاء ربط بين أمر العمل وبند العمل مع كمية افتراضية 0.00
+            // تحديد الكمية المخططة - إما من الإدخال أو القيمة الافتراضية
+            $plannedQuantity = $request->quantity ?? 0.00;
+            
+            // إنشاء ربط بين أمر العمل وبند العمل
             $workOrderItem = \App\Models\WorkOrderItem::create([
                 'work_order_id' => $request->work_order_id,
                 'work_item_id' => $workItem->id,
-                'quantity' => 0.00, // كمية افتراضية
+                'quantity' => $plannedQuantity, // الكمية المخططة من الإدخال أو افتراضية
                 'unit_price' => $workItem->unit_price ?? 0, // سعر الوحدة من بند العمل
                 'unit' => $workItem->unit ?? 'EA', // الوحدة من بند العمل
                 'executed_quantity' => 0,

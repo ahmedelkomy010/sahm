@@ -99,7 +99,7 @@
                                     <div class="row">
                                         <div class="col-md-6">
                                             <div class="input-group">
-                                                <input id="approval_date" type="date" class="form-control @error('approval_date') is-invalid @enderror" name="approval_date" value="{{ old('approval_date', $workOrder->approval_date->format('Y-m-d')) }}" onchange="updateCountdown()">
+                                                <input id="approval_date" type="date" class="form-control @error('approval_date') is-invalid @enderror" name="approval_date" value="{{ old('approval_date', $workOrder->approval_date ? $workOrder->approval_date->format('Y-m-d') : '') }}" onchange="updateCountdown()">
                                                 <span class="input-group-text bg-light">
                                                     <i class="fas fa-clock me-1"></i>
                                                     <span id="countdown" class="text-muted">-</span>

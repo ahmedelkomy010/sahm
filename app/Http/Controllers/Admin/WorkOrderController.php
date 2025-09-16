@@ -480,7 +480,7 @@ class WorkOrderController extends Controller
                 'office' => 'nullable|string|max:255',
                 'station_number' => 'nullable|string|max:255',
                 'consultant_name' => 'nullable|string|max:255',
-                'execution_status' => 'required|in:1,2,3,4,5,6,7',
+                'execution_status' => 'required|in:1,2,3,4,5,6,7,8,9',
                 'manual_days' => 'required|integer|min:0',
             ]);
 
