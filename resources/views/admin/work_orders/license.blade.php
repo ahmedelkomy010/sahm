@@ -995,7 +995,7 @@ $(document).ready(function() {
                     const period = startDate && endDate ? `${startDate} - ${endDate}` : '-';
                     
                     // حساب العد التنازلي مع التحقق من حالة التنفيذ
-                    const countdown = calculateCountdown(license.license_end_date, license.work_order_execution_status);
+                    const countdown = calculateCountdown(license.license_end_date, license.work_order_execution_status, license.license_start_date);
                     
                     // إضافة قيمة الرخصة للإجمالي
                     if (license.license_value) {
@@ -1020,7 +1020,7 @@ $(document).ready(function() {
                             <td><strong class="text-success">${formatCurrency(license.license_value)}</strong></td>
                             <td><small>${dimensions}</small></td>
                             <td><small>${period}</small></td>
-                            <td data-end-date="${license.license_end_date || ''}" data-execution-status="${license.work_order_execution_status || ''}">${countdown}</td>
+                            <td data-end-date="${license.license_end_date || ''}" data-start-date="${license.license_start_date || ''}" data-execution-status="${license.work_order_execution_status || ''}">${countdown}</td>
                             <td>
                                 <div class="btn-group btn-group-sm" role="group">
                                     ${license.license_file_url ? 
@@ -1102,16 +1102,45 @@ $(document).ready(function() {
                 
                 // بدء تحديث العد التنازلي كل دقيقة
                 startCountdownUpdates();
+                
+                // تحديث مفتاح حالة الرخص
+                updateLicenseToggle(response.licenses && response.licenses.length > 0);
             },
             error: function(xhr) {
                 console.error('Error loading dig licenses:', xhr);
                 toastr.error('حدث خطأ في تحميل رخص الحفر');
+                
+                // تحديث المفتاح في حالة الخطأ
+                updateLicenseToggle(false);
             }
         });
     }
 
-    // دالة حساب العد التنازلي
-    function calculateCountdown(endDate, executionStatus) {
+    // دالة تحديث مفتاح حالة الرخص
+    function updateLicenseToggle(hasLicenses) {
+        const toggleIcon = document.getElementById('toggleIcon');
+        const toggleText = document.getElementById('toggleText');
+        const toggleContainer = document.querySelector('.toggle-switch');
+        
+        if (hasLicenses) {
+            // يوجد رخص - مفتوح
+            toggleIcon.className = 'fas fa-unlock toggle-icon me-2 fs-5';
+            toggleIcon.style.color = '#28a745';
+            toggleText.textContent = 'مفتوح - يوجد رخص';
+            toggleText.style.color = '#28a745';
+            toggleContainer.style.background = 'rgba(40, 167, 69, 0.2)';
+        } else {
+            // لا توجد رخص - مقفل
+            toggleIcon.className = 'fas fa-lock toggle-icon me-2 fs-5';
+            toggleIcon.style.color = '#ff6b6b';
+            toggleText.textContent = 'مقفل - لا توجد رخص';
+            toggleText.style.color = '#ff6b6b';
+            toggleContainer.style.background = 'rgba(255, 107, 107, 0.2)';
+        }
+    }
+
+    // دالة حساب العد التنازلي والمدة الكاملة للرخصة
+    function calculateCountdown(endDate, executionStatus, startDate = null) {
         // التحقق من حالة التنفيذ - إذا كانت "تم تسليم 155" (حالة 2)، توقف العد التنازلي
         if (executionStatus && parseInt(executionStatus) >= 2) {
             return '<span class="badge bg-info"><i class="fas fa-check me-1"></i>تم التسليم</span>';
@@ -1125,22 +1154,33 @@ $(document).ready(function() {
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
         const diffHours = Math.ceil(diffTime / (1000 * 60 * 60));
         
+        // حساب المدة الكاملة للرخصة إذا كان تاريخ البداية متوفر
+        let totalDaysText = '';
+        if (startDate) {
+            const start = new Date(startDate);
+            const totalTime = end.getTime() - start.getTime();
+            const totalDays = Math.ceil(totalTime / (1000 * 60 * 60 * 24));
+            if (totalDays > 0) {
+                totalDaysText = ` من ${totalDays}`;
+            }
+        }
+        
         if (diffDays < 0) {
-            return `<span class="badge bg-danger"><i class="fas fa-exclamation-triangle me-1"></i>منتهية منذ ${Math.abs(diffDays)} يوم</span>`;
+            return `<span class="badge bg-danger"><i class="fas fa-exclamation-triangle me-1"></i>منتهية منذ ${Math.abs(diffDays)} يوم${totalDaysText}</span>`;
         } else if (diffDays === 0) {
             if (diffHours > 0) {
-                return `<span class="badge bg-warning text-dark"><i class="fas fa-clock me-1"></i>تنتهي خلال ${diffHours} ساعة</span>`;
+                return `<span class="badge bg-warning text-dark"><i class="fas fa-clock me-1"></i>تنتهي خلال ${diffHours} ساعة${totalDaysText}</span>`;
             } else {
-                return '<span class="badge bg-danger"><i class="fas fa-exclamation-triangle me-1"></i>منتهية</span>';
+                return `<span class="badge bg-danger"><i class="fas fa-exclamation-triangle me-1"></i>منتهية${totalDaysText}</span>`;
             }
         } else if (diffDays === 1) {
-            return '<span class="badge bg-warning text-dark"><i class="fas fa-hourglass-half me-1"></i>تنتهي غداً</span>';
+            return `<span class="badge bg-warning text-dark"><i class="fas fa-hourglass-half me-1"></i>تنتهي غداً${totalDaysText}</span>`;
         } else if (diffDays <= 7) {
-            return `<span class="badge bg-warning text-dark"><i class="fas fa-hourglass-half me-1"></i>باقي ${diffDays} أيام</span>`;
+            return `<span class="badge bg-warning text-dark"><i class="fas fa-hourglass-half me-1"></i>باقي ${diffDays} أيام${totalDaysText}</span>`;
         } else if (diffDays <= 30) {
-            return `<span class="badge bg-info"><i class="fas fa-calendar-check me-1"></i>باقي ${diffDays} يوم</span>`;
+            return `<span class="badge bg-info"><i class="fas fa-calendar-check me-1"></i>باقي ${diffDays} يوم${totalDaysText}</span>`;
         } else {
-            return `<span class="badge bg-success"><i class="fas fa-check-circle me-1"></i>باقي ${diffDays} يوم</span>`;
+            return `<span class="badge bg-success"><i class="fas fa-check-circle me-1"></i>باقي ${diffDays} يوم${totalDaysText}</span>`;
         }
     }
 
@@ -1174,7 +1214,7 @@ $(document).ready(function() {
             
             const countdownCell = row.cells[7]; // عمود العد التنازلي
             if (countdownCell && countdownCell.dataset.endDate) {
-                const countdown = calculateCountdown(countdownCell.dataset.endDate, countdownCell.dataset.executionStatus);
+                const countdown = calculateCountdown(countdownCell.dataset.endDate, countdownCell.dataset.executionStatus, countdownCell.dataset.startDate);
                 countdownCell.innerHTML = countdown;
             }
         });
@@ -2436,6 +2476,15 @@ function selectEvacuationLicense() {
             // تفعيل جميع الأزرار
             enableEvacuationButtons();
             
+            // تفعيل جدول التفاصيل الفنية للمختبر
+            const labDetailsCard = document.getElementById('lab-details-card');
+            if (labDetailsCard) {
+                labDetailsCard.style.opacity = '1';
+                labDetailsCard.style.pointerEvents = 'auto';
+                // إضافة تأثير بصري لإظهار أن الجدول أصبح متاحاً
+                labDetailsCard.classList.add('border-success');
+            }
+            
             // إظهار قسم المرفقات وإخفاء الـ placeholder
             const attachmentsSection = document.getElementById('evacuation-attachments-section');
             const attachmentsPlaceholder = document.getElementById('evacuation-attachments-placeholder');
@@ -2463,6 +2512,14 @@ function selectEvacuationLicense() {
             
             // تعطيل جميع الأزرار
             disableEvacuationButtons();
+            
+            // تعطيل جدول التفاصيل الفنية للمختبر
+            const labDetailsCard = document.getElementById('lab-details-card');
+            if (labDetailsCard) {
+                labDetailsCard.style.opacity = '0.5';
+                labDetailsCard.style.pointerEvents = 'none';
+                labDetailsCard.classList.remove('border-success');
+            }
             
             // إخفاء قسم المرفقات وإظهار الـ placeholder
             const attachmentsSection = document.getElementById('evacuation-attachments-section');
@@ -3356,11 +3413,14 @@ function deleteExtension(extensionId) {
                                     <small class="text-muted d-block">حالة التنفيذ</small>
                                     <strong class="text-success fs-6">
                                         @switch($workOrder->execution_status)
+                                            @case(1)
+                                                جاري العمل بالموقع
+                                                @break
+                                            @case(8)
+                                                جاري تسليم 155
+                                                @break
                                             @case(2)
                                                 تم تسليم 155
-                                                @break
-                                            @case(1)
-                                                جاري العمل
                                                 @break
                                             @case(3)
                                                 صدرت شهادة
@@ -3377,10 +3437,32 @@ function deleteExtension(extensionId) {
                                             @case(7)
                                                 منتهي
                                                 @break
+                                            @case(9)
+                                                إلغاء امر العمل
+                                                @break
                                             @default
                                                 غير محدد
                                         @endswitch
                                     </strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- مفتاح حالة الرخص -->
+                    <div class="row align-items-center mt-4">
+                        <div class="col-12 text-center">
+                            <div class="license-status-container p-3 rounded-3" style="background: rgba(255,255,255,0.1); backdrop-filter: blur(10px);">
+                                <div class="d-flex align-items-center justify-content-center">
+                                    <div class="license-status-indicator" id="licenseStatusIndicator">
+                                        <div class="d-flex align-items-center">
+                                            
+                                            <div class="toggle-switch d-flex align-items-center p-2 rounded-pill" style="background: rgba(255,255,255,0.2);">
+                                                <i class="fas fa-lock toggle-icon me-2 fs-5" id="toggleIcon" style="color: #ff6b6b;"></i>
+                                                <span class="toggle-text fw-bold" id="toggleText" style="color: #ff6b6b;">مقفل - لا توجد رخص</span>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -4139,7 +4221,7 @@ function deleteExtension(extensionId) {
                         </div>
 
                         <!-- جدول التفاصيل الفنية للمختبر -->
-                                                    <div class="card mb-4 shadow-lg border-0">
+                                                    <div class="card mb-4 shadow-lg border-0" id="lab-details-card" style="opacity: 0.5; pointer-events: none;">
                             <div class="card-header bg-gradient-success text-white">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div class="btn-group btn-group-sm">
@@ -4149,6 +4231,10 @@ function deleteExtension(extensionId) {
                                         <button type="button" class="btn btn-outline-light" onclick="saveAllLabDetails()">
                                             <i class="fas fa-save me-1"></i>حفظ جميع البيانات
                                         </button>
+                                        <small class="text-white-50 ms-2">
+                                            <i class="fas fa-info-circle me-1"></i>
+                                            يجب اختيار رخصة من الأعلى أولاً
+                                        </small>
                                         
                                         
                                         
@@ -4974,20 +5060,38 @@ function reloadLicenses() {
 }
 
 function saveAllLabDetails() {
-    // استخدام الرخصة المختارة من المستخدم في قسم المختبر
-    const licenseIdField = document.getElementById('lab-license-id');
-    const licenseSelector = document.getElementById('lab-license-selector');
+    // استخدام الرخصة المختارة من قسم الإخلاءات (لأن الجدول موجود في قسم الإخلاءات)
+    const evacuationLicenseIdField = document.getElementById('evacuation-license-id');
+    const evacuationLicenseSelector = document.getElementById('evacuation-license-selector');
     
-    // تحقق محسن من وجود الرخصة
+    // تحقق محسن من وجود الرخصة من قسم الإخلاءات
     let licenseId = null;
+    let licenseSelector = null;
     
-    if (licenseIdField && licenseIdField.value) {
-        licenseId = licenseIdField.value;
-    } else if (licenseSelector && licenseSelector.value) {
+    if (evacuationLicenseIdField && evacuationLicenseIdField.value) {
+        licenseId = evacuationLicenseIdField.value;
+        licenseSelector = evacuationLicenseSelector;
+    } else if (evacuationLicenseSelector && evacuationLicenseSelector.value) {
         // إذا كانت القيمة موجودة في القائمة المنسدلة بس مش في الحقل المخفي
-        licenseId = licenseSelector.value;
-        if (licenseIdField) {
-            licenseIdField.value = licenseId; // تعيين القيمة
+        licenseId = evacuationLicenseSelector.value;
+        licenseSelector = evacuationLicenseSelector;
+        if (evacuationLicenseIdField) {
+            evacuationLicenseIdField.value = licenseId; // تعيين القيمة
+        }
+    } else {
+        // في حالة عدم وجود رخصة مختارة في قسم الإخلاءات، جرب قسم المختبر
+        const labLicenseIdField = document.getElementById('lab-license-id');
+        const labLicenseSelector = document.getElementById('lab-license-selector');
+        
+        if (labLicenseIdField && labLicenseIdField.value) {
+            licenseId = labLicenseIdField.value;
+            licenseSelector = labLicenseSelector;
+        } else if (labLicenseSelector && labLicenseSelector.value) {
+            licenseId = labLicenseSelector.value;
+            licenseSelector = labLicenseSelector;
+            if (labLicenseIdField) {
+                labLicenseIdField.value = licenseId;
+            }
         }
     }
     
@@ -4995,22 +5099,30 @@ function saveAllLabDetails() {
         // محاولة إصلاح المشكلة تلقائياً قبل الرفض
         if (licenseSelector && licenseSelector.value) {
             licenseId = licenseSelector.value;
-            if (licenseIdField) {
-                licenseIdField.value = licenseId;
+            // تحديث الحقل المخفي المناسب
+            if (evacuationLicenseIdField && licenseSelector === evacuationLicenseSelector) {
+                evacuationLicenseIdField.value = licenseId;
+            } else if (document.getElementById('lab-license-id') && licenseSelector === document.getElementById('lab-license-selector')) {
+                document.getElementById('lab-license-id').value = licenseId;
             }
             toastr.success('تم إصلاح مشكلة اختيار الرخصة وسيتم المتابعة');
         } else if (licenseSelector && licenseSelector.options.length > 1) {
             // اختيار أول رخصة متاحة
             licenseSelector.selectedIndex = 1;
             licenseId = licenseSelector.value;
-            if (licenseIdField) {
-                licenseIdField.value = licenseId;
+            // تحديث الحقل المخفي المناسب
+            if (evacuationLicenseIdField && licenseSelector === evacuationLicenseSelector) {
+                evacuationLicenseIdField.value = licenseId;
+                selectEvacuationLicense(); // تشغيل دالة الاختيار للإخلاءات
+            } else if (document.getElementById('lab-license-id') && licenseSelector === document.getElementById('lab-license-selector')) {
+                document.getElementById('lab-license-id').value = licenseId;
+                selectLabLicense(); // تشغيل دالة الاختيار للمختبر
             }
-            selectLabLicense(); // تشغيل دالة الاختيار
             toastr.success('تم اختيار أول رخصة متاحة تلقائياً وسيتم المتابعة');
         } else {
             toastr.error('لا توجد رخص متاحة لهذا أمر العمل. يجب إنشاء رخصة أولاً من تبويب الرخص.');
-            console.log('Debug: licenseIdField value:', licenseIdField ? licenseIdField.value : 'field not found');
+            console.log('Debug: evacuation license field value:', evacuationLicenseIdField ? evacuationLicenseIdField.value : 'field not found');
+            console.log('Debug: evacuation license selector value:', evacuationLicenseSelector ? evacuationLicenseSelector.value : 'selector not found');
             console.log('Debug: licenseSelector value:', licenseSelector ? licenseSelector.value : 'selector not found');
             console.log('Debug: available options:', licenseSelector ? licenseSelector.options.length : 'selector not found');
             return;

@@ -786,14 +786,65 @@ function resetCountdown(workOrderId) {
                         </table>
                     </div>
 
-                    <div class="d-flex flex-column align-items-center mt-4">
-                        <div class="showing-text mb-2">
-                             Page 
-                            <span class="current-page">{{ $workOrders->currentPage() }}</span> 
-                            of {{ $workOrders->lastPage() }}
+                    <!-- Pagination and Per Page Selection -->
+                    <div class="d-flex justify-content-between align-items-center mt-4">
+                        <div class="d-flex align-items-center">
+                            <select class="form-select form-select-sm me-2" id="perPage" onchange="changePerPage(this.value)" style="width: auto;">
+                                <option value="10" {{ request('per_page', 10) == 10 ? 'selected' : '' }}>10 نتائج</option>
+                                <option value="25" {{ request('per_page') == 25 ? 'selected' : '' }}>25 نتيجة</option>
+                                <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50 نتيجة</option>
+                                <option value="100" {{ request('per_page') == 100 ? 'selected' : '' }}>100 نتيجة</option>
+                            </select>
+                            <span class="text-muted small">
+                                عرض {{ $workOrders->firstItem() ?? 0 }} إلى {{ $workOrders->lastItem() ?? 0 }} من {{ $workOrders->total() }} نتيجة
+                            </span>
                         </div>
-                        {{ $workOrders->appends(request()->query())->links() }}
+                        <div class="pagination-container">
+                            {{ $workOrders->appends(request()->query())->links() }}
+                        </div>
                     </div>
+
+                    <script>
+                    function changePerPage(value) {
+                        let url = new URL(window.location.href);
+                        let params = new URLSearchParams(url.search);
+                        params.set('per_page', value);
+                        params.set('page', '1');
+                        window.location.href = `${url.pathname}?${params.toString()}`;
+                    }
+                    </script>
+
+                    <style>
+                    .pagination {
+                        margin: 0;
+                        display: flex;
+                        padding-right: 0;
+                    }
+                    .page-link {
+                        padding: 0.375rem 0.75rem;
+                        font-size: 0.875rem;
+                        border-radius: 0.25rem;
+                        margin: 0 2px;
+                    }
+                    .page-item.active .page-link {
+                        background-color: #0d6efd;
+                        border-color: #0d6efd;
+                    }
+                    .page-link:hover {
+                        background-color: #e9ecef;
+                        border-color: #dee2e6;
+                    }
+                    .form-select-sm {
+                        font-size: 0.875rem;
+                        padding: 0.25rem 2rem 0.25rem 0.5rem;
+                    }
+                    .pagination-container {
+                        direction: rtl;
+                    }
+                    .pagination-container .pagination {
+                        justify-content: center;
+                    }
+                    </style>
                 </div>
             </div>
         </div>

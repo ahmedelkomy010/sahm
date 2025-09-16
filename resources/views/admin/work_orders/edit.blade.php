@@ -239,13 +239,15 @@
                                 <div class="form-group mb-3">
                                     <label for="execution_status" class="form-label fw-bold">حالة تنفيذ أمر العمل</label>
                                     <select id="execution_status" class="form-select @error('execution_status') is-invalid @enderror" name="execution_status">
-                                        <option value="1" {{ old('execution_status', $workOrder->execution_status) == '1' ? 'selected' : '' }}>جاري العمل ...</option>
+                                        <option value="1" {{ old('execution_status', $workOrder->execution_status) == '1' ? 'selected' : '' }}>جاري العمل بالموقع ...</option>
+                                        <option value="8" {{ old('execution_status', $workOrder->execution_status) == '8' ? 'selected' : '' }}>جاري تسليم 155</option>
                                         <option value="2" {{ old('execution_status', $workOrder->execution_status) == '2' ? 'selected' : '' }}> تم تسليم 155 ولم تصدر شهادة انجاز </option>
                                         <option value="3" {{ old('execution_status', $workOrder->execution_status) == '3' ? 'selected' : '' }}> صدرت شهادة ولم تعتمد</option>
                                         <option value="4" {{ old('execution_status', $workOrder->execution_status) == '4' ? 'selected' : '' }}> تم اعتماد شهادة الانجاز</option>
                                         <option value="5" {{ old('execution_status', $workOrder->execution_status) == '5' ? 'selected' : '' }}>مؤكد ولم تدخل مستخلص </option>
                                         <option value="6" {{ old('execution_status', $workOrder->execution_status) == '6' ? 'selected' : '' }}> دخلت مستخلص ولم تصرف </option>
                                         <option value="7" {{ old('execution_status', $workOrder->execution_status) == '7' ? 'selected' : '' }}> منتهي تم الصرف </option>
+                                        <option value="9" {{ old('execution_status', $workOrder->execution_status) == '9' ? 'selected' : '' }}>إلغاء امر العمل</option>
                                     </select>
                                     @error('execution_status')
                                         <span class="invalid-feedback" role="alert">

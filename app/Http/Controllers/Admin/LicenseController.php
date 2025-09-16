@@ -101,7 +101,13 @@ class LicenseController extends Controller
             $failedTestsCount = (clone $statsQuery)->where('failed_tests_count', '>', 0)->count();
             $evacuationsCount = (clone $statsQuery)->where('is_evacuated', true)->count();
 
-            $licenses = $query->with(['workOrder', 'extensions'])->latest()->paginate(10);
+            // عدد النتائج في الصفحة (من الطلب أو القيمة الافتراضية 10)
+            $perPage = $request->get('per_page', 10);
+            
+            // التأكد من أن القيمة صحيحة
+            $perPage = in_array($perPage, [10, 25, 50, 100]) ? $perPage : 10;
+            
+            $licenses = $query->with(['workOrder', 'extensions'])->latest()->paginate($perPage);
 
             // Calculate total license values for filtered data
             $totalLicenseValue = $licenses->sum('license_value');
@@ -506,11 +512,8 @@ class LicenseController extends Controller
             $licenses = License::where('work_order_id', $workOrderId)
                 ->with(['workOrder', 'extensions']) // إضافة العلاقات المطلوبة
                 ->orderBy('created_at', 'desc')
-                ->get()
-                ->filter(function ($license) {
-                    // التحقق من أن الرخصة صالحة للتمديد
-                    return $this->canBeExtended($license);
-                });
+                ->get();
+                // إزالة الفلترة لإظهار جميع الرخص
 
             // إضافة مسارات الملفات الصحيحة
             $licensesWithFiles = $licenses->map(function ($license) {
@@ -2708,8 +2711,8 @@ class LicenseController extends Controller
         }
 
         // التحقق من حالة أمر العمل - السماح بالتمديد للرخص الجديدة
-        if ($license->workOrder && $license->workOrder->execution_status >= 8) {
-            // لا يمكن التمديد على أوامر العمل المكتملة بالكامل فقط
+        if ($license->workOrder && $license->workOrder->execution_status == 9) {
+            // لا يمكن التمديد على أوامر العمل الملغاة فقط
             return false;
         }
 

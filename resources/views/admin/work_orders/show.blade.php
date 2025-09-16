@@ -282,7 +282,10 @@
                                                 <td>
                                                     @switch($workOrder->execution_status)
                                                         @case('1')
-                                                            <span class="badge bg-info">جاري العمل ...</span>
+                                                            <span class="badge bg-info">جاري العمل بالموقع ...</span>
+                                                            @break
+                                                        @case('8')
+                                                            <span class="badge bg-warning">جاري تسليم 155</span>
                                                             @break
                                                         @case('2')
                                                             <span class="badge bg-warning">تم تسليم 155 ولم تصدر شهادة انجاز</span>
@@ -301,6 +304,9 @@
                                                             @break
                                                         @case('7')
                                                             <span class="badge bg-success">منتهي تم الصرف</span>
+                                                            @break
+                                                        @case('9')
+                                                            <span class="badge bg-danger">إلغاء امر العمل</span>
                                                             @break
                                                         @default
                                                             <span class="badge bg-secondary">{{ $workOrder->execution_status }}</span>
@@ -321,36 +327,56 @@
                                                             $remainingDays = 0; //   تم التنفيذ
                                                             $overdueDays = 0;
                                                         } else {
-                                                            // إذا لم يكن هناك تاريخ تسليم إجراء 155، استخدم الحساب القديم
+                                                            // حساب الأيام المتبقية على أساس مدة التنفيذ
                                                             $now = \Carbon\Carbon::now();
                                                             $daysSinceApproval = (int)$now->diffInDays($approvalDate);
                                                             $manualDays = (int)($workOrder->manual_days ?? 0);
-                                                            $remainingDays = (int)max(0, $manualDays - $daysSinceApproval);
-                                                            $overdueDays = (int)max(0, $daysSinceApproval - $manualDays);
+                                                            
+                                                            // حساب تاريخ انتهاء المدة المفترضة (تاريخ الاعتماد + مدة التنفيذ)
+                                                            $expectedEndDate = $approvalDate->copy()->addDays($manualDays);
+                                                            $daysUntilDeadline = (int)$now->diffInDays($expectedEndDate, false);
+                                                            
+                                                            if ($daysUntilDeadline > 0) {
+                                                                $remainingDays = $daysUntilDeadline;
+                                                                $overdueDays = 0;
+                                                            } else {
+                                                                $remainingDays = 0;
+                                                                $overdueDays = abs($daysUntilDeadline);
+                                                            }
                                                         }
                                                     @endphp
                                                     <div class="mt-2">
                                                         <small class="text-muted">
                                                             <i class="fas fa-clock me-1"></i>
                                                             @if($procedure155Date)
-                                                                تاريخ تسليم إجراء 155: {{ $procedure155Date->format('Y-m-d') }}
-                                                                <span class="mx-1">•</span>
+                                                             
                                                                 <span class="text-success">
-                                                                    <i class="fas fa-check-circle me-1"></i>
+                                                                   
                                                                       تم التنفيذ    {{ $completionDays }} يوم
                                                                 </span>
                                                             @else
                                                                 مدة التنفيذ: {{ $manualDays ?? 0 }} يوم
                                                                 @if(isset($daysSinceApproval) && $daysSinceApproval > 0)
                                                                     <span class="mx-1">•</span>
-                                                                    منذ {{ $daysSinceApproval }} يوم من الاعتماد
+                                                                    مر {{ $daysSinceApproval }} يوم من الاعتماد
                                                                 @endif
+                                                                @php
+                                                                    $expectedEndDate = $approvalDate->copy()->addDays($manualDays);
+                                                                @endphp
+                                                                <span class="mx-1">•</span>
+                                                                <small class="text-info">الموعد المتوقع: {{ $expectedEndDate->format('Y-m-d') }}</small>
                                                                 @if($remainingDays > 0)
                                                                     <span class="mx-1">•</span>
-                                                                    <span class="text-success">متبقي {{ $remainingDays }} يوم</span>
+                                                                    <span class="text-success">
+                                                                        <i class="fas fa-hourglass-half me-1"></i>
+                                                                        متبقي {{ $remainingDays }} يوم
+                                                                    </span>
                                                                 @else
                                                                     <span class="mx-1">•</span>
-                                                                    <span class="text-danger">متأخر {{ $overdueDays }} يوم</span>
+                                                                    <span class="text-danger">
+                                                                        <i class="fas fa-exclamation-triangle me-1"></i>
+                                                                        متأخر {{ $overdueDays }} يوم
+                                                                    </span>
                                                                 @endif
                                                             @endif
                                                         </small>
@@ -408,93 +434,6 @@
                                             <tr>
                                                 <th>اسم الاستشاري</th>
                                                 <td>{{ $workOrder->consultant_name ?? 'غير متوفر' }}</td>
-                                            </tr>
-                                            <tr>
-                                                <th>اختبارات ما قبل التشغيل 211</th>
-                                                <td>
-                                                    @php
-                                                        $preOperationTestsFiles = $workOrder->files()
-                                                            ->where('file_category', 'post_execution_files')
-                                                            ->where('attachment_type', 'pre_operation_tests_file')
-                                                            ->get();
-                                                    @endphp
-                                                    @if($preOperationTestsFiles->count() > 0)
-                                                        <div class="row g-2">
-                                                            @foreach($preOperationTestsFiles as $file)
-                                                                <div class="col-12">
-                                                                    <div class="d-flex align-items-center justify-content-between p-2 bg-light rounded">
-                                                                        <div class="d-flex align-items-center">
-                                                                            @php
-                                                                                $fileExtension = strtolower(pathinfo($file->original_filename, PATHINFO_EXTENSION));
-                                                                                $fileIcon = 'fas fa-file';
-                                                                                $iconColor = 'text-secondary';
-                                                                                
-                                                                                switch($fileExtension) {
-                                                                                    case 'pdf':
-                                                                                        $fileIcon = 'fas fa-file-pdf';
-                                                                                        $iconColor = 'text-danger';
-                                                                                        break;
-                                                                                    case 'doc':
-                                                                                    case 'docx':
-                                                                                        $fileIcon = 'fas fa-file-word';
-                                                                                        $iconColor = 'text-primary';
-                                                                                        break;
-                                                                                    case 'xls':
-                                                                                    case 'xlsx':
-                                                                                        $fileIcon = 'fas fa-file-excel';
-                                                                                        $iconColor = 'text-success';
-                                                                                        break;
-                                                                                    case 'jpg':
-                                                                                    case 'jpeg':
-                                                                                    case 'png':
-                                                                                    case 'gif':
-                                                                                        $fileIcon = 'fas fa-file-image';
-                                                                                        $iconColor = 'text-info';
-                                                                                        break;
-                                                                                }
-                                                                            @endphp
-                                                                            <i class="{{ $fileIcon }} {{ $iconColor }} me-2"></i>
-                                                                            <div>
-                                                                                <a href="{{ Storage::url($file->file_path) }}" 
-                                                                                   target="_blank" 
-                                                                                   class="text-decoration-none fw-bold">
-                                                                                    {{ $file->original_filename }}
-                                                                                </a>
-                                                                                <br>
-                                                                                <small class="text-muted">
-                                                                                    <i class="fas fa-calendar me-1"></i>
-                                                                                    {{ $file->created_at->format('Y-m-d H:i') }}
-                                                                                    <span class="mx-2">|</span>
-                                                                                    <i class="fas fa-weight-hanging me-1"></i>
-                                                                                    {{ number_format($file->file_size / 1024 / 1024, 2) }} MB
-                                                                                </small>
-                                                                            </div>
-                                                                        </div>
-                                                                        <div class="d-flex gap-1">
-                                                                            <a href="{{ Storage::url($file->file_path) }}" 
-                                                                               target="_blank" 
-                                                                               class="btn btn-sm btn-outline-primary"
-                                                                               title="عرض الملف">
-                                                                                <i class="fas fa-eye"></i>
-                                                                            </a>
-                                                                            <a href="{{ Storage::url($file->file_path) }}" 
-                                                                               download="{{ $file->original_filename }}" 
-                                                                               class="btn btn-sm btn-outline-success"
-                                                                               title="تحميل الملف">
-                                                                                <i class="fas fa-download"></i>
-                                                                            </a>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                            @endforeach
-                                                        </div>
-                                                    @else
-                                                        <div class="text-center py-2">
-                                                            <i class="fas fa-file-times text-muted me-2"></i>
-                                                            <span class="text-muted">لا توجد مرفقات</span>
-                                                        </div>
-                                                    @endif
-                                                </td>
                                             </tr>
                                             <tr>
                                                 <th>مرفقات الفاتورة</th>

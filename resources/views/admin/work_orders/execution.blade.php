@@ -66,7 +66,7 @@
                                                     <strong class="text-dark">
                                                         @switch($workOrder->execution_status)
                                                             @case(1)
-                                                                جاري العمل
+                                                                جاري العمل بالموقع
                                                                 @break
                                                             @case(2)
                                                                 تم تسليم 155

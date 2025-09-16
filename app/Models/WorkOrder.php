@@ -18,7 +18,7 @@ class WorkOrder extends Model
         'district' => 'required|string|max:255',
         'order_value_with_consultant' => 'required|numeric|min:0',
         'order_value_without_consultant' => 'required|numeric|min:0',
-        'execution_status' => 'required|in:1,2,3,4,5,6,7',
+        'execution_status' => 'required|in:1,2,3,4,5,6,7,8,9',
         'municipality' => 'nullable|string|max:255',
         'office' => 'nullable|string|max:255',
         'task_number' => 'nullable|string|max:255',

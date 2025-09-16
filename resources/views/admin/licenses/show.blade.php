@@ -5,6 +5,65 @@ use Illuminate\Support\Facades\Storage;
 
 @section('title', 'تفاصيل الرخصة رقم ' . $license->license_number)
 
+<style>
+/* تحسين الانيميشن للأيقونات */
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+@keyframes bounce {
+    0%, 20%, 53%, 80%, 100% {
+        transform: translateY(0);
+    }
+    40%, 43% {
+        transform: translateY(-10px);
+    }
+    70% {
+        transform: translateY(-5px);
+    }
+}
+
+.animate__animated.animate__pulse {
+    animation: pulse 2s infinite;
+}
+
+.animate__animated.animate__bounce {
+    animation: bounce 2s;
+}
+
+/* تحسين التنسيق العربي */
+.rtl-content {
+    direction: rtl;
+    text-align: right;
+}
+
+/* تحسين الـ cards */
+.card {
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+/* تحسين الـ alerts */
+.alert {
+    border-radius: 10px;
+}
+
+/* تحسين الأيقونات الدائرية */
+.rounded-circle {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+</style>
+
 @section('content')
 <div class="container-fluid">
     <!-- Header Section -->
@@ -23,11 +82,11 @@ use Illuminate\Support\Facades\Storage;
                         </div>
                         <div>
                             <div class="d-flex gap-2">
-                                <a href="{{ route('admin.licenses.export-pdf', $license->id) }}" 
+                                <!-- <a href="{{ route('admin.licenses.export-pdf', $license->id) }}" 
                                    class="btn btn-light btn-lg">
                                     <i class="fas fa-file-pdf me-2"></i>
                                     تصدير PDF
-                                </a>
+                                </a> -->
                                 <a href="{{ route('admin.work-orders.license', $license->workOrder) }}" 
                                    class="btn btn-light btn-lg">
                                     <i class="fas fa-arrow-right me-2"></i>
@@ -66,6 +125,15 @@ use Illuminate\Support\Facades\Storage;
                                 <label class="fw-bold text-muted small">نوع الرخصة</label>
                                 <p class="mb-0">
                                     @switch($license->license_type)
+                                        @case('طوارئ')
+                                            <span class="badge bg-danger fs-6">طوارئ</span>
+                                            @break
+                                        @case('مشروع')
+                                            <span class="badge bg-info fs-6">مشروع</span>
+                                            @break
+                                        @case('عادي')
+                                            <span class="badge bg-success fs-6">عادي</span>
+                                            @break
                                         @case('emergency')
                                             <span class="badge bg-danger fs-6">طوارئ</span>
                                             @break
@@ -76,7 +144,7 @@ use Illuminate\Support\Facades\Storage;
                                             <span class="badge bg-success fs-6">عادي</span>
                                             @break
                                         @default
-                                            <span class="badge bg-secondary fs-6">غير محدد</span>
+                                            <span class="badge bg-secondary fs-6">{{ $license->license_type ?? 'غير محدد' }}</span>
                                     @endswitch
                                 </p>
                             </div>
@@ -228,34 +296,116 @@ use Illuminate\Support\Facades\Storage;
 
             <!-- Restriction Information -->
             <div class="card shadow-sm mb-4">
-                <div class="card-header bg-danger text-white">
+                @php
+                    $hasRestriction = $license->has_restriction || $license->is_restricted;
+                    $headerClass = $hasRestriction ? 'bg-danger' : 'bg-success';
+                    $iconClass = $hasRestriction ? 'fa-ban' : 'fa-check-shield';
+                @endphp
+                <div class="card-header {{ $headerClass }} text-white">
                     <h5 class="card-title mb-0">
-                        <i class="fas fa-ban me-2"></i>
+                        <i class="fas {{ $iconClass }} me-2"></i>
                         معلومات الحظر
                     </h5>
-                        </div>
-                <div class="card-body">
-                    <div class="text-center">
-                        @if($license->has_restriction)
-                            <i class="fas fa-exclamation-triangle fa-3x text-danger mb-3"></i>
-                            <div class="alert alert-danger">
-                                <h6 class="fw-bold">يوجد حظر</h6>
-                                @if($license->restriction_authority)
-                                    <p class="mb-1"><strong>جهة الحظر:</strong> {{ $license->restriction_authority }}</p>
-                                @endif
-                                @if($license->restriction_reason)
-                                    <p class="mb-0"><strong>سبب الحظر:</strong> {{ $license->restriction_reason }}</p>
-                                @endif
-                            </div>
-                        @else
-                            <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
-                            <div class="alert alert-success mb-0">
-                                <h6 class="fw-bold mb-0">لا يوجد حظر</h6>
-                            </div>
-                        @endif
-                    </div>
-                    </div>
                 </div>
+                <div class="card-body" dir="rtl">
+                    @if($hasRestriction)
+                        <div class="text-center mb-3">
+                            <i class="fas fa-exclamation-triangle fa-3x text-danger mb-3 animate__animated animate__pulse animate__infinite"></i>
+                        </div>
+                        <div class="alert alert-danger border-0 shadow-sm">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="bg-danger rounded-circle p-2 me-3">
+                                    <i class="fas fa-exclamation-circle text-white"></i>
+                                </div>
+                                <div>
+                                    <h6 class="fw-bold mb-0 text-danger">يوجد حظر على هذه الرخصة</h6>
+                                    <small class="text-muted">يُرجى مراجعة التفاصيل أدناه</small>
+                                </div>
+                            </div>
+                            
+                            @if($license->restriction_authority)
+                                <div class="row mb-2">
+                                    <div class="col-sm-4"><strong>جهة الحظر:</strong></div>
+                                    <div class="col-sm-8">{{ $license->restriction_authority }}</div>
+                                </div>
+                            @endif
+                            
+                            @if($license->restriction_reason)
+                                <div class="row mb-2">
+                                    <div class="col-sm-4"><strong>سبب الحظر:</strong></div>
+                                    <div class="col-sm-8">{{ $license->restriction_reason }}</div>
+                                </div>
+                            @endif
+                            
+                            @if($license->restriction_notes)
+                                
+                            @endif
+                            
+                            @if(!$license->restriction_authority && !$license->restriction_reason && !$license->restriction_notes)
+                                <div class="text-center py-2">
+                                    <div class="alert alert-warning mb-0">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        <strong>تنبيه:</strong> تم تسجيل وجود حظر على هذه الرخصة ولكن لم يتم تسجيل التفاصيل.
+                                        <br><small class="mt-1 d-block">يُرجى مراجعة بيانات الرخصة وإضافة تفاصيل الحظر.</small>
+                                    </div>
+                                </div>
+                            @endif
+                        </div>
+                    @else
+                        <div class="text-center">
+                            <i class="fas fa-check-circle fa-3x text-success mb-3 animate__animated animate__bounce"></i>
+                            <div class="alert alert-success border-0 shadow-sm mb-0">
+                                <div class="d-flex align-items-center justify-content-center mb-2">
+                                    <div class="bg-success rounded-circle p-2 me-3">
+                                        <i class="fas fa-shield-alt text-white"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="fw-bold mb-0 text-success">لا يوجد حظر على هذه الرخصة</h6>
+                                        <small class="text-muted">الرخصة صالحة للاستخدام</small>
+                                    </div>
+                                </div>
+                                <div class="text-center">
+                                    <small class="text-success fw-bold">
+                                        <i class="fas fa-check me-1"></i>
+                                        يمكن التعامل مع هذه الرخصة بشكل طبيعي دون أي قيود
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+                    
+                    <!-- معلومات التشخيص - يمكن حذفها لاحقاً -->
+                    @if(config('app.debug'))
+                        <div class="mt-3 p-3 bg-light rounded border" dir="rtl">
+                            <div class="text-center mb-2">
+                                <small class="text-muted fw-bold">معلومات التشخيص</small>
+                            </div>
+                            <div class="row g-2 small text-muted">
+                                <div class="col-12">
+                                    <div class="d-flex justify-content-between border-bottom pb-1">
+                                        <span><strong>حالة الحظر:</strong></span>
+                                        <span class="badge {{ $license->has_restriction ? 'bg-danger' : 'bg-success' }}">
+                                            {{ $license->has_restriction ? 'يوجد حظر' : 'لا يوجد حظر' }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="d-flex justify-content-between border-bottom pb-1">
+                                        <span><strong>جهة الحظر:</strong></span>
+                                        <span>{{ $license->restriction_authority ?? 'غير محدد' }}</span>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="d-flex justify-content-between">
+                                        <span><strong>سبب الحظر:</strong></span>
+                                        <span>{{ $license->restriction_reason ?? 'غير محدد' }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+                </div>
+            </div>
 
             <!-- Quick Stats -->
             <div class="card shadow-sm mb-4">
