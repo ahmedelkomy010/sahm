@@ -55,29 +55,32 @@
                                             @case(1)
                                                 جاري العمل بالموقع
                                                 @break
-                                            @case(8)
-                                                جاري تسليم 155
-                                                @break
                                             @case(2)
-                                                تم تسليم 155
+                                                تم التنفيذ بالموقع وجاري تسليم 155
                                                 @break
                                             @case(3)
-                                                صدرت شهادة
+                                                تم تسليم 155 جاري اصدار شهادة الانجاز
                                                 @break
                                             @case(4)
-                                                تم اعتماد الشهادة
+                                                اعداد مستخلص الدفعة الجزئية الاولي وجاري الصرف
                                                 @break
                                             @case(5)
-                                                مؤكد
+                                                تم صرف مستخلص الدفعة الجزئية الاولي
                                                 @break
                                             @case(6)
-                                                دخل مستخلص
+                                                اعداد مستخلص الدفعة الجزئية الثانية وجاري الصرف
                                                 @break
                                             @case(7)
-                                                منتهي
+                                                تم الصرف وتم الانتهاء
+                                                @break
+                                            @case(8)
+                                                تم اصدار شهادة الانجاز
                                                 @break
                                             @case(9)
-                                                إلغاء امر العمل
+                                                تم الالغاء او تحويل امر العمل
+                                                @break
+                                            @case(10)
+                                                تم اعداد المستخلص الكلي وجاري الصرف
                                                 @break
                                             @default
                                                 غير محدد
@@ -374,15 +377,17 @@
                 <div class="form-group mb-3">
                 <label for="execution_status" class="form-label fw-bold">حالة تنفيذ أمر العمل</label>
                  <select id="execution_status" class="form-select @error('execution_status') is-invalid @enderror" name="execution_status">
-                    <option value="1" {{ old('execution_status', $workOrder->execution_status) == '1' ? 'selected' : '' }}>جاري العمل بالموقع ...</option>
-                    <option value="8" {{ old('execution_status', $workOrder->execution_status) == '8' ? 'selected' : '' }}>جاري تسليم 155</option>
-                    <option value="2" {{ old('execution_status', $workOrder->execution_status) == '2' ? 'selected' : '' }}> تم تسليم 155 ولم تصدر شهادة انجاز </option>
-                    <option value="3" {{ old('execution_status', $workOrder->execution_status) == '3' ? 'selected' : '' }}> صدرت شهادة ولم تعتمد</option>
-                    <option value="4" {{ old('execution_status', $workOrder->execution_status) == '4' ? 'selected' : '' }}> تم اعتماد شهادة الانجاز</option>
-                    <option value="5" {{ old('execution_status', $workOrder->execution_status) == '5' ? 'selected' : '' }}>مؤكد ولم تدخل مستخلص </option>
-                    <option value="6" {{ old('execution_status', $workOrder->execution_status) == '6' ? 'selected' : '' }}> دخلت مستخلص ولم تصرف </option>
-                    <option value="7" {{ old('execution_status', $workOrder->execution_status) == '7' ? 'selected' : '' }}> منتهي تم الصرف </option>
-                    <option value="9" {{ old('execution_status', $workOrder->execution_status) == '9' ? 'selected' : '' }}>إلغاء امر العمل</option>
+                    <option value="1" {{ old('execution_status', $workOrder->execution_status) == '1' ? 'selected' : '' }}>جاري العمل بالموقع</option>
+                    <option value="2" {{ old('execution_status', $workOrder->execution_status) == '2' ? 'selected' : '' }}>تم التنفيذ بالموقع وجاري تسليم 155</option>
+                    <option value="3" {{ old('execution_status', $workOrder->execution_status) == '3' ? 'selected' : '' }}>تم تسليم 155 جاري اصدار شهادة الانجاز</option>
+                    <option value="4" {{ old('execution_status', $workOrder->execution_status) == '4' ? 'selected' : '' }}>اعداد مستخلص الدفعة الجزئية الاولي وجاري الصرف</option>
+                    <option value="5" {{ old('execution_status', $workOrder->execution_status) == '5' ? 'selected' : '' }}>تم صرف مستخلص الدفعة الجزئية الاولي</option>
+                    <option value="6" {{ old('execution_status', $workOrder->execution_status) == '6' ? 'selected' : '' }}>اعداد مستخلص الدفعة الجزئية الثانية وجاري الصرف</option>
+                    <option value="8" {{ old('execution_status', $workOrder->execution_status) == '8' ? 'selected' : '' }}>تم اصدار شهادة الانجاز</option>
+                    <option value="10" {{ old('execution_status', $workOrder->execution_status) == '10' ? 'selected' : '' }}>تم اعداد المستخلص الكلي وجاري الصرف</option>
+                    <option value="7" {{ old('execution_status', $workOrder->execution_status) == '7' ? 'selected' : '' }}>تم الصرف وتم الانتهاء</option> 
+                    <option value="9" {{ old('execution_status', $workOrder->execution_status) == '9' ? 'selected' : '' }}>تم الالغاء او تحويل امر العمل</option>
+                    
                 </select>
                 @error('execution_status')
                     <span class="invalid-feedback" role="alert">
@@ -407,7 +412,11 @@
                     <input type="text" name="extract_number" class="form-control" value="{{ old('extract_number', $workOrder->extract_number) }}">
                 </div>
                 <div class="col-md-4 col-12 mb-2">
-                    <label class="form-label">قيمة التنفيذ الفعلي للاستشاري:</label>
+                    <label class="form-label">غرامات التأخير:</label>
+                    <input type="number" step="0.01" name="delay_penalties" class="form-control" value="{{ old('delay_penalties', $workOrder->delay_penalties) }}" placeholder="أدخل قيمة غرامات التأخير">
+                </div>
+                <div class="col-md-4 col-12 mb-2">
+                    <label class="form-label">قيمة التنفيذ الفعلي شامل الاستشاري بدون الضريبة</label>
                     <input type="number" step="0.01" name="actual_execution_value_consultant" class="form-control" value="{{ old('actual_execution_value_consultant', $workOrder->actual_execution_value_consultant) }}">
                 </div>
                 <div class="col-md-4 col-12 mb-2">
@@ -415,11 +424,11 @@
                     <input type="number" step="0.01" name="actual_execution_value_without_consultant" class="form-control" value="{{ old('actual_execution_value_without_consultant', $workOrder->actual_execution_value_without_consultant) }}">
                 </div>
                 <div class="col-md-4 col-12 mb-2">
-                    <label class="form-label">قيمة الدفعة الجزئية الأولى غير شامل الضريبة:</label>
+                    <label class="form-label">قيمة مستخلص الدفعة الجزئية الأولى غير شامل الضريبة:</label>
                     <input type="number" step="0.01" name="first_partial_payment_without_tax" class="form-control" value="{{ old('first_partial_payment_without_tax', $workOrder->first_partial_payment_without_tax) }}">
                 </div>
                 <div class="col-md-4 col-12 mb-2">
-                    <label class="form-label">قيمة الدفعة الجزئية الثانية غير شامل الضريبة:</label>
+                    <label class="form-label">قيمة مستخلص الدفعة الجزئية الثانية غير شامل الضريبة:</label>
                     <input type="number" step="0.01" name="second_partial_payment_with_tax" class="form-control" value="{{ old('second_partial_payment_with_tax', $workOrder->second_partial_payment_with_tax) }}">
                 </div>
                 <div class="col-md-4 col-12 mb-2">
@@ -428,14 +437,14 @@
                 </div>
                 <div class="col-md-4 col-12 mb-2">
                     <label class="form-label">تاريخ تسليم إجراء 155:</label>
-                    <input type="date" name="procedure_155_delivery_date" class="form-control" value="{{ old('procedure_155_delivery_date', $workOrder->procedure_155_delivery_date ? $workOrder->procedure_155_delivery_date->format('Y-m-d') : '') }}">
+                    <input type="date" name="procedure_155_delivery_date" class="form-control" value="{{ old('procedure_155_delivery_date', $workOrder->procedure_155_delivery_date ? $workOrder->procedure_155_delivery_date->format('Y-m-d') : '') }}"required>
                 </div>
                 <div class="col-md-4 col-12 mb-2">
-                    <label class="form-label">القيمة الكلية النهائية غير شامل الضريبة:</label>
+                    <label class="form-label">قيمة مستخلص الكلية النهائية غير شامل الضريبة:</label>
                     <input type="number" step="0.01" name="final_total_value" class="form-control" value="{{ old('final_total_value', $workOrder->final_total_value) }}">
                 </div>
                 <div class="col-md-4 col-12 mb-2">
-                    <label class="form-label">اختبارات ما قبل التشغيل:</label>
+                    <label class="form-label">قيمة اختبارات ما قبل التشغيل:</label>
                     <input type="text" name="pre_operation_tests" class="form-control" value="{{ old('pre_operation_tests', $workOrder->pre_operation_tests) }}">
                 </div>
                 
@@ -445,6 +454,121 @@
             </form>
         </div>
     </div>
+
+    {{-- كارد ملف الرخصة --}}
+    @if($workOrder->license && $workOrder->license->license_file_path)
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-success text-white d-flex align-items-center">
+            <i class="fas fa-file-contract me-2"></i>
+            ملف الرخصة
+        </div>
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-file-pdf text-danger fs-3 me-3"></i>
+                        <div>
+                            <h6 class="mb-1 text-dark">ملف رخصة الحفر</h6>
+                            <small class="text-muted">
+                                <i class="fas fa-hashtag me-1"></i>
+                                رقم الرخصة: {{ $workOrder->license->license_number ?? 'غير محدد' }}
+                            </small>
+                            @if($workOrder->license->license_date)
+                            <br>
+                            <small class="text-muted">
+                                <i class="fas fa-calendar me-1"></i>
+                                تاريخ الإصدار: {{ $workOrder->license->license_date->format('Y-m-d') }}
+                            </small>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 text-end">
+                    <div class="btn-group" role="group">
+                        <a href="{{ Storage::url($workOrder->license->license_file_path) }}" 
+                           target="_blank" 
+                           class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-eye me-1"></i>عرض الملف
+                        </a>
+                        <a href="{{ Storage::url($workOrder->license->license_file_path) }}" 
+                           download 
+                           class="btn btn-outline-success btn-sm">
+                            <i class="fas fa-download me-1"></i>تحميل
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+
+    {{-- كارد ملفات التمديدات --}}
+    @if($workOrder->license && $workOrder->license->extensions->count() > 0)
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-warning text-dark d-flex align-items-center">
+            <i class="fas fa-file-plus me-2"></i>
+            ملفات التمديدات ({{ $workOrder->license->extensions->count() }})
+        </div>
+        <div class="card-body">
+            @foreach($workOrder->license->extensions as $index => $extension)
+                @if($extension->attachments && is_array($extension->attachments) && count($extension->attachments) > 0)
+                <div class="row align-items-center mb-3 @if(!$loop->last) pb-3 border-bottom @endif">
+                    <div class="col-md-8">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-file-alt text-info fs-3 me-3"></i>
+                            <div>
+                                <h6 class="mb-1 text-dark">التمديد رقم {{ $index + 1 }}</h6>
+                                <small class="text-muted">
+                                    <i class="fas fa-calendar-plus me-1"></i>
+                                    @if($extension->start_date && $extension->end_date)
+                                        من {{ $extension->start_date->format('Y-m-d') }} إلى {{ $extension->end_date->format('Y-m-d') }}
+                                    @else
+                                        تواريخ غير محددة
+                                    @endif
+                                </small>
+                                @if($extension->days_count)
+                                <br>
+                                <small class="text-muted">
+                                    <i class="fas fa-clock me-1"></i>
+                                    مدة التمديد: {{ $extension->days_count }} يوم
+                                </small>
+                                @endif
+                                @if($extension->extension_value)
+                                <br>
+                                <small class="text-muted">
+                                    <i class="fas fa-money-bill me-1"></i>
+                                    قيمة التمديد: {{ number_format($extension->extension_value, 2) }} ريال
+                                </small>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <div class="d-flex flex-wrap gap-1 justify-content-end">
+                            @foreach($extension->attachments as $attachmentIndex => $attachment)
+                                @if($attachment)
+                                <div class="btn-group mb-1" role="group">
+                                    <a href="{{ Storage::url($attachment) }}" 
+                                       target="_blank" 
+                                       class="btn btn-outline-primary btn-sm">
+                                        <i class="fas fa-eye me-1"></i>عرض
+                                    </a>
+                                    <a href="{{ Storage::url($attachment) }}" 
+                                       download 
+                                       class="btn btn-outline-success btn-sm">
+                                        <i class="fas fa-download me-1"></i>تحميل
+                                    </a>
+                                </div>
+                                @endif
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+                @endif
+            @endforeach
+        </div>
+    </div>
+    @endif
 
     {{-- كارد المرفقات --}}
     <div class="card mb-4 shadow-sm">
@@ -456,7 +580,7 @@
                 <div class="row">
                     @php
                         $fileTypes = [
-                            'quantities_statement_file' => 'بيان كميات التنفيذ',
+                            'quantities_statement_file' => 'بيان كميات التنفيذ النهائي',
                             'final_materials_file' => 'كميات المواد النهائية',
                             'final_measurement_file' => 'ورقة القياس النهائية',
                             'soil_tests_file' => 'اختبارات التربة',
@@ -519,7 +643,7 @@
                                             @foreach($files->sortByDesc('created_at')->take(3) as $index => $file)
                                                 <a href="{{ Storage::url($file->file_path) }}" target="_blank" 
                                                    class="btn btn-sm btn-info" title="{{ $file->original_filename ?? 'ملف ' . ($index + 1) }}">
-                                                    <i class="fas fa-file-pdf"></i> {{ $index + 1 }}
+                                                    <i class="fas fa-file-pdf"></i> عرض
                                                 </a>
                                             @endforeach
                                             @if($files->count() > 3)

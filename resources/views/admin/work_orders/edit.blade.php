@@ -30,16 +30,6 @@
                                 </div>
 
                                 <div class="form-group mb-3">
-                                    <label for="task_number" class="form-label fw-bold">رقم المهمة</label>
-                                    <input id="task_number" type="text" class="form-control @error('task_number') is-invalid @enderror" name="task_number" value="{{ old('task_number', $workOrder->task_number) }}">
-                                    @error('task_number')
-                                        <span class="invalid-feedback" role="alert">
-                                            <strong>{{ $message }}</strong>
-                                        </span>
-                                    @enderror
-                                </div>
-
-                                <div class="form-group mb-3">
                                     <label for="work_type" class="form-label fw-bold">نوع العمل</label>
                                     <div class="row">
                                         <div class="col-md-4">
@@ -202,6 +192,15 @@
                                         </span>
                                     @enderror
                                 </div>
+                                <div class="form-group mb-3">
+                                    <label for="task_number" class="form-label fw-bold">رقم المهمة</label>
+                                    <input id="task_number" type="text" class="form-control @error('task_number') is-invalid @enderror" name="task_number" value="{{ old('task_number', $workOrder->task_number) }}">
+                                    @error('task_number')
+                                        <span class="invalid-feedback" role="alert">
+                                            <strong>{{ $message }}</strong>
+                                        </span>
+                                    @enderror
+                                </div>
                             </div>
 
                             <div class="col-md-6">
@@ -224,7 +223,7 @@
                                         <div class="form-group mb-3">
                                             <label for="order_value_without_consultant" class="form-label fw-bold">قيمة أمر العمل المبدئية بدون استشاري</label>
                                             <div class="input-group">
-                                                <span class="input-group-text">₪</span>
+                                                <span class="input-group-text">ريال</span>
                                                 <input id="order_value_without_consultant" type="number" step="0.01" class="form-control @error('order_value_without_consultant') is-invalid @enderror" name="order_value_without_consultant" value="{{ old('order_value_without_consultant', $workOrder->order_value_without_consultant) }}">
                                             </div>
                                             @error('order_value_without_consultant')
@@ -239,15 +238,16 @@
                                 <div class="form-group mb-3">
                                     <label for="execution_status" class="form-label fw-bold">حالة تنفيذ أمر العمل</label>
                                     <select id="execution_status" class="form-select @error('execution_status') is-invalid @enderror" name="execution_status">
-                                        <option value="1" {{ old('execution_status', $workOrder->execution_status) == '1' ? 'selected' : '' }}>جاري العمل بالموقع ...</option>
-                                        <option value="8" {{ old('execution_status', $workOrder->execution_status) == '8' ? 'selected' : '' }}>جاري تسليم 155</option>
-                                        <option value="2" {{ old('execution_status', $workOrder->execution_status) == '2' ? 'selected' : '' }}> تم تسليم 155 ولم تصدر شهادة انجاز </option>
-                                        <option value="3" {{ old('execution_status', $workOrder->execution_status) == '3' ? 'selected' : '' }}> صدرت شهادة ولم تعتمد</option>
-                                        <option value="4" {{ old('execution_status', $workOrder->execution_status) == '4' ? 'selected' : '' }}> تم اعتماد شهادة الانجاز</option>
-                                        <option value="5" {{ old('execution_status', $workOrder->execution_status) == '5' ? 'selected' : '' }}>مؤكد ولم تدخل مستخلص </option>
-                                        <option value="6" {{ old('execution_status', $workOrder->execution_status) == '6' ? 'selected' : '' }}> دخلت مستخلص ولم تصرف </option>
-                                        <option value="7" {{ old('execution_status', $workOrder->execution_status) == '7' ? 'selected' : '' }}> منتهي تم الصرف </option>
-                                        <option value="9" {{ old('execution_status', $workOrder->execution_status) == '9' ? 'selected' : '' }}>إلغاء امر العمل</option>
+                                        <option value="1" {{ old('execution_status', $workOrder->execution_status) == '1' ? 'selected' : '' }}>جاري العمل بالموقع</option>
+                                        <option value="2" {{ old('execution_status', $workOrder->execution_status) == '2' ? 'selected' : '' }}>تم التنفيذ بالموقع وجاري تسليم 155</option>
+                                        <option value="3" {{ old('execution_status', $workOrder->execution_status) == '3' ? 'selected' : '' }}>تم تسليم 155 جاري اصدار شهادة الانجاز</option>
+                                        <option value="4" {{ old('execution_status', $workOrder->execution_status) == '4' ? 'selected' : '' }}>اعداد مستخلص الدفعة الجزئية الاولي وجاري الصرف</option>
+                                        <option value="5" {{ old('execution_status', $workOrder->execution_status) == '5' ? 'selected' : '' }}>تم صرف مستخلص الدفعة الجزئية الاولي</option>
+                                        <option value="6" {{ old('execution_status', $workOrder->execution_status) == '6' ? 'selected' : '' }}>اعداد مستخلص الدفعة الجزئية الثانية وجاري الصرف</option>
+                                        <option value="7" {{ old('execution_status', $workOrder->execution_status) == '7' ? 'selected' : '' }}>تم الصرف وتم الانتهاء</option>
+                                        <option value="8" {{ old('execution_status', $workOrder->execution_status) == '8' ? 'selected' : '' }}>تم اصدار شهادة الانجاز</option>
+                                        <option value="9" {{ old('execution_status', $workOrder->execution_status) == '9' ? 'selected' : '' }}>تم الالغاء او تحويل امر العمل</option>
+                                        <option value="10" {{ old('execution_status', $workOrder->execution_status) == '10' ? 'selected' : '' }}>تم اعداد المستخلص الكلي وجاري الصرف</option>
                                     </select>
                                     @error('execution_status')
                                         <span class="invalid-feedback" role="alert">
@@ -468,6 +468,46 @@ document.addEventListener('DOMContentLoaded', function() {
     // تحديث العداد التنازلي عند تحميل الصفحة
     updateCountdown();
 
+    // حساب قيمة أمر العمل المبدئية شامل الاستشاري
+    const orderValueWithoutConsultantInput = document.getElementById('order_value_without_consultant');
+    const orderValueWithConsultantInput = document.getElementById('order_value_with_consultant');
+
+    if (orderValueWithoutConsultantInput && orderValueWithConsultantInput) {
+        orderValueWithoutConsultantInput.addEventListener('input', function() {
+            const value = parseFloat(this.value);
+            if (!isNaN(value) && value > 0) {
+                const valueWithConsultant = value * 1.1199403;
+                orderValueWithConsultantInput.value = valueWithConsultant.toFixed(2);
+            }
+        });
+    }
+
+    function calculateWithoutConsultant() {
+        const valueWithConsultant = parseFloat(orderValueWithConsultantInput.value);
+
+        if (!isNaN(valueWithConsultant) && valueWithConsultant > 0) {
+            // 100% - 12% = 88%
+            const valueWithoutConsultant = valueWithConsultant / 1.1199403;
+            
+            orderValueWithoutConsultantInput.value = valueWithoutConsultant.toFixed(2);
+            
+            orderValueWithoutConsultantInput.classList.remove('is-invalid');
+            
+            orderValueWithoutConsultantInput.style.backgroundColor = '#e8f5e8';
+            setTimeout(() => {
+                orderValueWithoutConsultantInput.style.backgroundColor = '';
+            }, 500);
+        } else {
+            orderValueWithoutConsultantInput.value = '';
+        }
+    }
+
+    if (orderValueWithConsultantInput && orderValueWithoutConsultantInput) {
+        orderValueWithConsultantInput.addEventListener('input', calculateWithoutConsultant);
+        orderValueWithConsultantInput.addEventListener('change', calculateWithoutConsultant);
+        orderValueWithConsultantInput.addEventListener('keyup', calculateWithoutConsultant);
+    }
+
     // إضافة معالج حذف الملفات
     document.querySelectorAll('.delete-file').forEach(button => {
         button.addEventListener('click', function() {
@@ -530,7 +570,10 @@ document.addEventListener('DOMContentLoaded', function() {
             '405': 'توصيل عداد بمحطة شبكة هوائية VM',
             '430': 'مخططات منح وزارة البلدية',
             '450': 'مشاريع ربط محطات التحويل',
-            '403': 'توصيل عداد شبكة هوائية VL'
+            '403': 'توصيل عداد شبكة هوائية VL',
+            '111': 'Mv- ضغط متوسط',
+            '222': 'Lv- ض منخفض',
+            '333': 'هوائي Oh'
         };
         return descriptions[workType] || '';
     }

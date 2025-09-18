@@ -3537,7 +3537,7 @@ function addMaterialToTable(material) {
             orderValueWithoutConsultantInput.addEventListener('input', function() {
                 const value = parseFloat(this.value) || 0;
                 // القيمة المدخلة تمثل 88% من إجمالي القيمة مع الاستشاري
-                const valueWithConsultant = value / 0.88;
+                const valueWithConsultant = value * 1.1199403;
                 orderValueWithConsultantInput.value = valueWithConsultant.toFixed(2);
             });
         }
@@ -3547,7 +3547,7 @@ function addMaterialToTable(material) {
             
             if (!isNaN(valueWithConsultant) && valueWithConsultant > 0) {
                 // حساب القيمة بدون استشاري (خصم 12%)
-                const valueWithoutConsultant = valueWithConsultant * 0.88; // 100% - 12% = 88%
+                const valueWithoutConsultant = valueWithConsultant / 1.1199403; // 100% - 12% = 88%
                 
                 // تعيين القيمة في الحقل مع تقريب لرقمين عشريين
                 orderValueWithoutConsultantInput.value = valueWithoutConsultant.toFixed(2);

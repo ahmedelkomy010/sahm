@@ -32,7 +32,12 @@ function updateCountdowns() {
         const executionStatus = badge.dataset.executionStatus;
         if (executionStatus && parseInt(executionStatus) >= 2) {
             badge.className = 'badge countdown-badge bg-info';
-            badge.innerHTML = '<i class="fas fa-check me-1"></i>تم التسليم';
+            if (parseInt(executionStatus) === 9) {
+                badge.innerHTML = '<i class="fas fa-times me-1"></i>الغاء او تحويل امر العمل';
+                badge.className = 'badge countdown-badge bg-danger';
+            } else {
+                badge.innerHTML = '<i class="fas fa-check me-1"></i>تم التسليم';
+            }
             return;
         }
         
@@ -323,14 +328,15 @@ function resetCountdown(workOrderId) {
                                     <select class="form-select" id="execution_status" name="execution_status">
                                         <option value="">كل الحالات</option>
                                         <option value="1" {{ request('execution_status') == '1' ? 'selected' : '' }}>جاري العمل بالموقع</option>
-                                        <option value="8" {{ request('execution_status') == '8' ? 'selected' : '' }}>جاري تسليم 155</option>
-                                        <option value="2" {{ request('execution_status') == '2' ? 'selected' : '' }}>تم تسليم 155 ولم تصدر شهادة انجاز</option>
-                                        <option value="3" {{ request('execution_status') == '3' ? 'selected' : '' }}>صدرت شهادة ولم تعتمد</option>
-                                        <option value="4" {{ request('execution_status') == '4' ? 'selected' : '' }}>تم اعتماد شهادة الانجاز</option>
-                                        <option value="5" {{ request('execution_status') == '5' ? 'selected' : '' }}>مؤكد ولم تدخل مستخلص</option>
-                                        <option value="6" {{ request('execution_status') == '6' ? 'selected' : '' }}>دخلت مستخلص ولم تصرف</option>
-                                        <option value="7" {{ request('execution_status') == '7' ? 'selected' : '' }}>منتهي تم الصرف</option>
-                                        <option value="9" {{ request('execution_status') == '9' ? 'selected' : '' }}>إلغاء امر العمل</option>
+                                        <option value="2" {{ request('execution_status') == '2' ? 'selected' : '' }}>تم التنفيذ بالموقع وجاري تسليم 155</option>
+                                        <option value="3" {{ request('execution_status') == '3' ? 'selected' : '' }}>تم تسليم 155 جاري اصدار شهادة الانجاز</option>
+                                        <option value="4" {{ request('execution_status') == '4' ? 'selected' : '' }}>اعداد مستخلص الدفعة الجزئية الاولي وجاري الصرف</option>
+                                        <option value="5" {{ request('execution_status') == '5' ? 'selected' : '' }}>تم صرف مستخلص الدفعة الجزئية الاولي</option>
+                                        <option value="6" {{ request('execution_status') == '6' ? 'selected' : '' }}>اعداد مستخلص الدفعة الجزئية الثانية وجاري الصرف</option>
+                                        <option value="7" {{ request('execution_status') == '7' ? 'selected' : '' }}>تم الصرف وتم الانتهاء</option>
+                                        <option value="8" {{ request('execution_status') == '8' ? 'selected' : '' }}>تم اصدار شهادة الانجاز</option>
+                                        <option value="9" {{ request('execution_status') == '9' ? 'selected' : '' }}>تم الالغاء او تحويل امر العمل</option>
+                                        <option value="10" {{ request('execution_status') == '10' ? 'selected' : '' }}>تم اعداد المستخلص الكلي وجاري الصرف</option>
                                     </select>
                                 </div>
                             </div>
@@ -473,14 +479,15 @@ function resetCountdown(workOrderId) {
                                             <span class="filter-badge">
                                                 حالة التنفيذ:                                                 @switch(request('execution_status'))
                                                     @case('1') جاري العمل بالموقع @break
-                                                    @case('8') جاري تسليم 155 @break
-                                                    @case('2') تم تسليم 155 ولم تصدر شهادة انجاز @break
-                                                    @case('3') صدرت شهادة ولم تعتمد @break
-                                                    @case('4') تم اعتماد شهادة الانجاز @break
-                                                    @case('5') مؤكد ولم تدخل مستخلص @break
-                                                    @case('6') دخلت مستخلص ولم تصرف @break
-                                                    @case('7') منتهي تم الصرف @break
-                                                    @case('9') إلغاء امر العمل @break
+                                                    @case('2') تم التنفيذ بالموقع وجاري تسليم 155 @break
+                                                    @case('3') تم تسليم 155 جاري اصدار شهادة الانجاز @break
+                                                    @case('4') اعداد مستخلص الدفعة الجزئية الاولي وجاري الصرف @break
+                                                    @case('5') تم صرف مستخلص الدفعة الجزئية الاولي @break
+                                                    @case('6') اعداد مستخلص الدفعة الجزئية الثانية وجاري الصرف @break
+                                                    @case('7') تم الصرف وتم الانتهاء @break
+                                                    @case('8') تم اصدار شهادة الانجاز @break
+                                                    @case('9') تم الالغاء او تحويل امر العمل @break
+                                                    @case('10') تم اعداد المستخلص الكلي وجاري الصرف @break
                                                     @default {{ request('execution_status') }}
                                                 @endswitch
                                                 <i class="fas fa-times clear-filter" onclick="clearFilter('execution_status')"></i>
@@ -734,29 +741,32 @@ function resetCountdown(workOrderId) {
                                                 @case('1')
                                                     <span class="badge" style="background-color:rgb(228, 196, 14)">جاري العمل بالموقع</span>
                                                     @break
-                                                @case('8')
-                                                    <span class="badge" style="background-color:rgb(112, 68, 2)">جاري تسليم 155</span>
-                                                    @break
                                                 @case('2')
-                                                    <span class="badge" style="background-color:rgb(4, 163, 226); color: white">تم تسليم 155 ولم تصدر شهادة انجاز</span>
+                                                    <span class="badge" style="background-color:rgb(112, 68, 2)">تم التنفيذ بالموقع وجاري تسليم 155</span>
                                                     @break
                                                 @case('3')
-                                                    <span class="badge" style="background-color:rgb(86, 168, 110)">صدرت شهادة ولم تعتمد</span>
+                                                    <span class="badge" style="background-color:rgb(4, 163, 226); color: white">تم تسليم 155 جاري اصدار شهادة الانجاز</span>
                                                     @break
                                                 @case('4')
-                                                    <span class="badge" style="background-color:rgb(39, 138, 83)">تم اعتماد شهادة الانجاز</span>
+                                                    <span class="badge" style="background-color:rgb(86, 168, 110)">اعداد مستخلص الدفعة الجزئية الاولي وجاري الصرف</span>
                                                     @break
                                                 @case('5')
-                                                    <span class="badge" style="background-color:rgb(1, 128, 64)">مؤكد ولم تدخل مستخلص</span>
+                                                    <span class="badge" style="background-color:rgb(39, 138, 83)">تم صرف مستخلص الدفعة الجزئية الاولي</span>
                                                     @break
                                                 @case('6')
-                                                    <span class="badge" style="background-color:rgb(1, 119, 31)">دخلت مستخلص ولم تصرف</span>
+                                                    <span class="badge" style="background-color:rgb(1, 128, 64)">اعداد مستخلص الدفعة الجزئية الثانية وجاري الصرف</span>
                                                     @break
                                                 @case('7')
-                                                    <span class="badge" style="background-color:rgb(0, 66, 0)">منتهي تم الصرف</span>
+                                                    <span class="badge" style="background-color:rgb(1, 119, 31)">تم الصرف وتم الانتهاء</span>
+                                                    @break
+                                                @case('8')
+                                                    <span class="badge" style="background-color:rgb(0, 66, 0)">تم اصدار شهادة الانجاز</span>
                                                     @break
                                                 @case('9')
-                                                    <span class="badge" style="background-color:rgb(220, 53, 69)">إلغاء امر العمل</span>
+                                                    <span class="badge" style="background-color:rgb(220, 53, 69)">تم الالغاء او تحويل امر العمل</span>
+                                                    @break
+                                                @case('10')
+                                                    <span class="badge" style="background-color:rgb(13, 110, 253)">تم اعداد المستخلص الكلي وجاري الصرف</span>
                                                     @break
                                                 @default
                                                     <span class="badge bg-secondary">{{ $workOrder->execution_status }}</span>

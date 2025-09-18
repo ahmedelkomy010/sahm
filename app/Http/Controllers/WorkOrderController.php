@@ -417,10 +417,13 @@ class WorkOrderController extends Controller
     // عرض أمر عمل محدد
     public function show(WorkOrder $workOrder)
     {
-        $workOrder->load(['files', 'basicAttachments', 'invoiceAttachments', 'licenses.violations']);
+        $workOrder->load(['files', 'basicAttachments', 'invoiceAttachments', 'licenses.violations', 'safetyViolations']);
         
         // تحديد المشروع بناءً على المدينة
         $project = $workOrder->city === 'المدينة المنورة' ? 'madinah' : 'riyadh';
+        
+        // حساب إجمالي قيمة مخالفات السلامة
+        $totalSafetyViolations = $workOrder->safetyViolations->sum('violation_amount');
         
         // حساب إجماليات القيم
         $licensesTotals = [
@@ -455,7 +458,7 @@ class WorkOrderController extends Controller
             }
         }
         
-        return view('admin.work_orders.show', compact('workOrder', 'licensesTotals', 'project'));
+        return view('admin.work_orders.show', compact('workOrder', 'licensesTotals', 'project', 'totalSafetyViolations'));
     }
 
     /**
@@ -655,6 +658,7 @@ class WorkOrderController extends Controller
                 'entry_sheet_1',
                 'entry_sheet_2',
                 'extract_number',
+                'delay_penalties',
                 'actual_execution_value_consultant',
                 'actual_execution_value_without_consultant',
                 'first_partial_payment_without_tax',
@@ -677,7 +681,7 @@ class WorkOrderController extends Controller
             'district' => 'required|string|max:255',
             'order_value_with_consultant' => 'required|numeric|min:0',
             'order_value_without_consultant' => 'required|numeric|min:0',
-            'execution_status' => 'required|in:1,2,3,4,5,6,7,8,9',
+            'execution_status' => 'required|in:1,2,3,4,5,6,7,8,9,10',
             'municipality' => 'nullable|string|max:255',
             'office' => 'nullable|string|max:255',
             'station_number' => 'nullable|string|max:255',
@@ -3609,13 +3613,16 @@ class WorkOrderController extends Controller
     private function getExecutionStatusText($status)
     {
         $statuses = [
-            '1' => 'جاري العمل ...',
-            '2' => 'تم تسليم 155 ولم تصدر شهادة انجاز',
-            '3' => 'صدرت شهادة ولم تعتمد',
-            '4' => 'تم اعتماد شهادة الانجاز',
-            '5' => 'مؤكد ولم تدخل مستخلص',
-            '6' => 'دخلت مستخلص ولم تصرف',
-            '7' => 'منتهي تم الصرف'
+            '1' => 'جاري العمل بالموقع',
+            '2' => 'تم التنفيذ بالموقع وجاري تسليم 155',
+            '3' => 'تم تسليم 155 جاري اصدار شهادة الانجاز',
+            '4' => 'اعداد مستخلص الدفعة الجزئية الاولي وجاري الصرف',
+            '5' => 'تم صرف مستخلص الدفعة الجزئية الاولي',
+            '6' => 'اعداد مستخلص الدفعة الجزئية الثانية وجاري الصرف',
+            '7' => 'تم الصرف وتم الانتهاء',
+            '8' => 'تم اصدار شهادة الانجاز',
+            '9' => 'تم الالغاء او تحويل امر العمل',
+            '10' => 'تم اعداد المستخلص الكلي وجاري الصرف'
         ];
 
         return $statuses[$status] ?? 'غير محدد';
@@ -3644,6 +3651,349 @@ class WorkOrderController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'حدث خطأ أثناء حذف الصورة'
+            ], 500);
+        }
+    }
+
+    /**
+     * عرض صفحة السلامة لأمر العمل
+     */
+    public function safety(WorkOrder $workOrder)
+    {
+        // تحديد المشروع بناءً على المدينة
+        $project = $workOrder->city === 'المدينة المنورة' ? 'madinah' : 'riyadh';
+        
+        // جلب مخالفات السلامة
+        $safetyViolations = $workOrder->safetyViolations()->orderBy('violation_date', 'desc')->get();
+        
+        return view('admin.work_orders.safety', compact('workOrder', 'project', 'safetyViolations'));
+    }
+
+    /**
+     * تحديث بيانات السلامة لأمر العمل
+     */
+    public function updateSafety(Request $request, WorkOrder $workOrder)
+    {
+        try {
+            \Log::info('Safety update request received', [
+                'workOrderId' => $workOrder->id,
+                'hasPermitsImages' => $request->hasFile('permits_images'),
+                'hasTeamImages' => $request->hasFile('team_images'),
+                'hasEquipmentImages' => $request->hasFile('equipment_images'),
+                'hasGeneralImages' => $request->hasFile('general_images'),
+                'hasTbtImages' => $request->hasFile('tbt_images'),
+                'allFiles' => array_keys($request->allFiles())
+            ]);
+            
+            $validated = $request->validate([
+                'safety_notes' => 'nullable|string',
+                'safety_status' => 'nullable|string',
+                'safety_officer' => 'nullable|string|max:255',
+                'inspection_date' => 'nullable|date',
+                'permits_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240',
+                'team_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240',
+                'equipment_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240',
+                'general_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240',
+                'tbt_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240',
+            ]);
+
+            // تحديث البيانات الأساسية
+            $workOrder->update([
+                'safety_notes' => $validated['safety_notes'],
+                'safety_status' => $validated['safety_status'],
+                'safety_officer' => $validated['safety_officer'],
+                'inspection_date' => $validated['inspection_date'],
+            ]);
+
+            // رفع صور التصاريح
+            if ($request->hasFile('permits_images')) {
+                $this->uploadSafetyImages($request->file('permits_images'), $workOrder, 'permits');
+            }
+
+            // رفع صور فريق العمل
+            if ($request->hasFile('team_images')) {
+                $this->uploadSafetyImages($request->file('team_images'), $workOrder, 'team');
+            }
+
+            // رفع صور المعدات
+            if ($request->hasFile('equipment_images')) {
+                $this->uploadSafetyImages($request->file('equipment_images'), $workOrder, 'equipment');
+            }
+
+            // رفع الصور العامة
+            if ($request->hasFile('general_images')) {
+                $this->uploadSafetyImages($request->file('general_images'), $workOrder, 'general');
+            }
+
+            // رفع صور اجتماع ما قبل بدء العمل TBT
+            if ($request->hasFile('tbt_images')) {
+                $this->uploadSafetyImages($request->file('tbt_images'), $workOrder, 'tbt');
+            }
+
+            return redirect()->route('admin.work-orders.safety', $workOrder)
+                ->with('success', 'تم تحديث بيانات السلامة بنجاح');
+
+        } catch (\Exception $e) {
+            \Log::error('Error updating safety data: ' . $e->getMessage());
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'حدث خطأ أثناء تحديث بيانات السلامة');
+        }
+    }
+
+    /**
+     * رفع صور السلامة
+     */
+    private function uploadSafetyImages($files, WorkOrder $workOrder, $category)
+    {
+        try {
+            $uploadedImages = [];
+            $fieldName = 'safety_' . $category . '_images';
+            
+            \Log::info('Starting uploadSafetyImages', [
+                'category' => $category,
+                'fieldName' => $fieldName,
+                'workOrderId' => $workOrder->id,
+                'filesCount' => count($files)
+            ]);
+            
+            // الحصول على الصور الموجودة
+            $existingImages = $workOrder->$fieldName ?? [];
+            \Log::info('Existing images', ['count' => count($existingImages)]);
+
+            foreach ($files as $index => $file) {
+                \Log::info('Processing file', [
+                    'index' => $index,
+                    'originalName' => $file->getClientOriginalName(),
+                    'size' => $file->getSize()
+                ]);
+                
+                $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                $path = 'work_orders/' . $workOrder->id . '/safety/' . $category;
+                
+                if (!Storage::disk('public')->exists($path)) {
+                    Storage::disk('public')->makeDirectory($path);
+                }
+                
+                $filePath = $file->storeAs($path, $filename, 'public');
+                $uploadedImages[] = $filePath;
+                
+                \Log::info('File uploaded successfully', [
+                    'filename' => $filename,
+                    'filePath' => $filePath
+                ]);
+            }
+
+            // دمج الصور الجديدة مع الموجودة
+            $allImages = array_merge($existingImages, $uploadedImages);
+            
+            \Log::info('Merging images', [
+                'existingCount' => count($existingImages),
+                'newCount' => count($uploadedImages),
+                'totalCount' => count($allImages)
+            ]);
+            
+            // تحديث قاعدة البيانات
+            $updateResult = $workOrder->update([
+                $fieldName => $allImages
+            ]);
+            
+            \Log::info('Database update', [
+                'fieldName' => $fieldName,
+                'success' => $updateResult,
+                'finalImageCount' => count($allImages)
+            ]);
+            
+            // التأكد من الحفظ
+            $workOrder->refresh();
+            $savedImages = $workOrder->$fieldName ?? [];
+            \Log::info('Verification after save', [
+                'savedCount' => count($savedImages),
+                'savedImages' => $savedImages
+            ]);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error in uploadSafetyImages', [
+                'error' => $e->getMessage(),
+                'category' => $category,
+                'workOrderId' => $workOrder->id
+            ]);
+            throw $e;
+        }
+    }
+
+    /**
+     * رفع ملفات السلامة
+     */
+    public function uploadSafety(Request $request, WorkOrder $workOrder)
+    {
+        try {
+            $request->validate([
+                'safety_files.*' => 'required|file|mimes:pdf,jpg,jpeg,png|max:20480',
+            ]);
+
+            if ($request->hasFile('safety_files')) {
+                foreach ($request->file('safety_files') as $file) {
+                    $originalName = $file->getClientOriginalName();
+                    $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                    $path = 'work_orders/' . $workOrder->id . '/safety';
+                    
+                    if (!Storage::disk('public')->exists($path)) {
+                        Storage::disk('public')->makeDirectory($path);
+                    }
+                    
+                    $filePath = $file->storeAs($path, $filename, 'public');
+                    
+                    WorkOrderFile::create([
+                        'work_order_id' => $workOrder->id,
+                        'filename' => $filename,
+                        'original_filename' => $originalName,
+                        'file_name' => $originalName,
+                        'file_path' => $filePath,
+                        'file_type' => $file->getClientMimeType(),
+                        'mime_type' => $file->getClientMimeType(),
+                        'file_size' => $file->getSize(),
+                        'file_category' => 'safety_files'
+                    ]);
+                }
+            }
+
+            return redirect()->route('admin.work-orders.safety', $workOrder)
+                ->with('success', 'تم رفع ملفات السلامة بنجاح');
+
+        } catch (\Exception $e) {
+            \Log::error('Error uploading safety files: ' . $e->getMessage());
+            return redirect()->back()
+                ->with('error', 'حدث خطأ أثناء رفع ملفات السلامة');
+        }
+    }
+
+    /**
+     * حذف ملف السلامة
+     */
+    public function deleteSafetyFile($fileId)
+    {
+        try {
+            $file = WorkOrderFile::where('id', $fileId)
+                ->where('file_category', 'safety_files')
+                ->firstOrFail();
+
+            // حذف الملف من التخزين
+            if (Storage::disk('public')->exists($file->file_path)) {
+                Storage::disk('public')->delete($file->file_path);
+            }
+
+            // حذف السجل من قاعدة البيانات
+            $file->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'تم حذف ملف السلامة بنجاح'
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error deleting safety file: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء حذف ملف السلامة'
+            ], 500);
+        }
+    }
+
+    /**
+     * حذف صورة السلامة
+     */
+    public function deleteSafetyImage(WorkOrder $workOrder, $category, $index)
+    {
+        try {
+            $fieldName = 'safety_' . $category . '_images';
+            $images = $workOrder->$fieldName ?? [];
+
+            if (!isset($images[$index])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'الصورة غير موجودة'
+                ], 404);
+            }
+
+            $imagePath = $images[$index];
+
+            // حذف الصورة من التخزين
+            if (Storage::disk('public')->exists($imagePath)) {
+                Storage::disk('public')->delete($imagePath);
+            }
+
+            // إزالة الصورة من المصفوفة
+            unset($images[$index]);
+            $images = array_values($images); // إعادة ترقيم المصفوفة
+
+            // تحديث قاعدة البيانات
+            $workOrder->update([
+                $fieldName => $images
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'تم حذف الصورة بنجاح'
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error deleting safety image: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء حذف الصورة'
+            ], 500);
+        }
+    }
+
+    /**
+     * إضافة مخالفة سلامة جديدة
+     */
+    public function addSafetyViolation(Request $request, WorkOrder $workOrder)
+    {
+        try {
+            $validated = $request->validate([
+                'violation_amount' => 'required|numeric|min:0',
+                'violator' => 'required|string|max:255',
+                'violation_date' => 'required|date',
+                'notes' => 'nullable|string',
+            ]);
+
+            $workOrder->safetyViolations()->create($validated);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'تم إضافة المخالفة بنجاح'
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error adding safety violation: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء إضافة المخالفة'
+            ], 500);
+        }
+    }
+
+    /**
+     * حذف مخالفة سلامة
+     */
+    public function deleteSafetyViolation($violationId)
+    {
+        try {
+            $violation = \App\Models\SafetyViolation::findOrFail($violationId);
+            $violation->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'تم حذف المخالفة بنجاح'
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error deleting safety violation: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء حذف المخالفة'
             ], 500);
         }
     }

@@ -28,6 +28,9 @@
     .btn-license { background-color: #9C27B0; }
     .btn-license:hover { background-color: #8E24AA; }
     
+    .btn-safety { background-color:rgb(3, 102, 26); }
+    .btn-safety:hover { background-color:rgb(17, 216, 61); }
+    
     .btn-execution { background-color: #FF9800; }
     .btn-execution:hover { background-color: #FB8C00; }
     
@@ -213,6 +216,14 @@
                                 @endif
 
                                 @if(auth()->user()->is_admin || 
+                                    (auth()->user()->hasPermission('riyadh_manage_quality') && $project == 'riyadh') || 
+                                    (auth()->user()->hasPermission('madinah_manage_quality') && $project == 'madinah'))
+                                <a href="{{ route('admin.work-orders.safety', $workOrder) }}" class="custom-btn btn-safety">
+                                    <i class="fas fa-shield-alt me-1"></i> السلامة
+                                </a>
+                                @endif
+
+                                @if(auth()->user()->is_admin || 
                                     (auth()->user()->hasPermission('riyadh_manage_execution') && $project == 'riyadh') || 
                                     (auth()->user()->hasPermission('madinah_manage_execution') && $project == 'madinah'))
                                 <a href="{{ route('admin.work-orders.execution', $workOrder) }}" class="custom-btn btn-execution">
@@ -273,40 +284,40 @@
                                                 <th>تاريخ تسليم إجراء 155</th>
                                                 <td>{{ $workOrder->procedure_155_delivery_date ? $workOrder->procedure_155_delivery_date->format('Y-m-d') : 'غير متوفر' }}</td>
                                             </tr>
-                                            <tr>
-                                                <th>اختبارات ما قبل التشغيل</th>
-                                                <td>{{ $workOrder->pre_operation_tests ?? 'غير متوفر' }}</td>
-                                            </tr>
+                                            
                                             <tr>
                                                 <th>حالة التنفيذ</th>
                                                 <td>
                                                     @switch($workOrder->execution_status)
                                                         @case('1')
-                                                            <span class="badge bg-info">جاري العمل بالموقع ...</span>
-                                                            @break
-                                                        @case('8')
-                                                            <span class="badge bg-warning">جاري تسليم 155</span>
+                                                            <span class="badge bg-info">جاري العمل بالموقع</span>
                                                             @break
                                                         @case('2')
-                                                            <span class="badge bg-warning">تم تسليم 155 ولم تصدر شهادة انجاز</span>
+                                                            <span class="badge bg-warning">تم التنفيذ بالموقع وجاري تسليم 155</span>
                                                             @break
                                                         @case('3')
-                                                            <span class="badge bg-primary">صدرت شهادة ولم تعتمد</span>
+                                                            <span class="badge bg-warning">تم تسليم 155 جاري اصدار شهادة الانجاز</span>
                                                             @break
                                                         @case('4')
-                                                            <span class="badge bg-secondary">تم اعتماد شهادة الانجاز</span>
+                                                            <span class="badge bg-primary">اعداد مستخلص الدفعة الجزئية الاولي وجاري الصرف</span>
                                                             @break
                                                         @case('5')
-                                                            <span class="badge bg-success">مؤكد ولم تدخل مستخلص</span>
+                                                            <span class="badge bg-secondary">تم صرف مستخلص الدفعة الجزئية الاولي</span>
                                                             @break
                                                         @case('6')
-                                                            <span class="badge bg-dark">دخلت مستخلص ولم تصرف</span>
+                                                            <span class="badge bg-success">اعداد مستخلص الدفعة الجزئية الثانية وجاري الصرف</span>
                                                             @break
                                                         @case('7')
-                                                            <span class="badge bg-success">منتهي تم الصرف</span>
+                                                            <span class="badge bg-dark">تم الصرف وتم الانتهاء</span>
+                                                            @break
+                                                        @case('8')
+                                                            <span class="badge bg-success">تم اصدار شهادة الانجاز</span>
                                                             @break
                                                         @case('9')
-                                                            <span class="badge bg-danger">إلغاء امر العمل</span>
+                                                            <span class="badge bg-danger">تم الالغاء او تحويل امر العمل</span>
+                                                            @break
+                                                        @case('10')
+                                                            <span class="badge bg-info">تم اعداد المستخلص الكلي وجاري الصرف</span>
                                                             @break
                                                         @default
                                                             <span class="badge bg-secondary">{{ $workOrder->execution_status }}</span>
@@ -348,7 +359,12 @@
                                                     <div class="mt-2">
                                                         <small class="text-muted">
                                                             <i class="fas fa-clock me-1"></i>
-                                                            @if($procedure155Date)
+                                                            @if($workOrder->execution_status == 9)
+                                                                <span class="text-danger fw-bold">
+                                                                    <i class="fas fa-times-circle me-1"></i>
+                                                                    ملغي
+                                                                </span>
+                                                            @elseif($procedure155Date)
                                                              
                                                                 <span class="text-success">
                                                                    
@@ -642,6 +658,35 @@
                                                 <th>رقم المستخلص</th>
                                                 <td>{{ $workOrder->extract_number ?? 'غير متوفر' }}</td>
                                             </tr>
+                                            <tr>
+                                                <th>غرامات التأخير</th>
+                                                <td>
+                                                    @if($workOrder->delay_penalties)
+                                                        <span class="text-danger fw-bold">{{ number_format($workOrder->delay_penalties, 2) }} ﷼</span>
+                                                    @else
+                                                        <span class="text-muted">لا توجد غرامات</span>
+                                                    @endif
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th>إجمالي مخالفات السلامة</th>
+                                                <td>
+                                                    @if($totalSafetyViolations > 0)
+                                                        <span class="text-danger fw-bold">
+                                                            <i class="fas fa-exclamation-triangle me-1"></i>
+                                                            {{ number_format($totalSafetyViolations, 2) }} ﷼
+                                                        </span>
+                                                        <small class="text-muted d-block">
+                                                            ({{ $workOrder->safetyViolations->count() }} مخالفة)
+                                                        </small>
+                                                    @else
+                                                        <span class="text-success">
+                                                            <i class="fas fa-check-circle me-1"></i>
+                                                            لا توجد مخالفات سلامة
+                                                        </span>
+                                                    @endif
+                                                </td>
+                                            </tr>
                                             @if($workOrder->licenses->count() > 0)
                                                 <tr>
                                                     <th>عدد الرخص</th>
@@ -781,6 +826,18 @@
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- تاريخ إنشاء أمر العمل -->
+    <div class="row mt-3">
+        <div class="col-12">
+            <div class="text-center">
+                <small class="text-muted">
+                    <i class="fas fa-calendar-plus me-1"></i>
+                    تم إنشاء أمر العمل في: {{ $workOrder->created_at->format('Y-m-d H:i') }}
+                </small>
             </div>
         </div>
     </div>

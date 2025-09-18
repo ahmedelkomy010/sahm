@@ -168,6 +168,15 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::put('work-orders/{workOrder}/license', [WorkOrderController::class, 'updateLicense'])->name('work-orders.update-license');
     Route::post('work-orders/{workOrder}/upload-license', [WorkOrderController::class, 'uploadLicense'])->name('work-orders.upload-license');
     Route::delete('work-orders/license-files/{fileId}', [WorkOrderController::class, 'deleteLicenseFile'])->name('work-orders.delete-license-file');
+    
+    // صفحة السلامة
+    Route::get('work-orders/{workOrder}/safety', [WorkOrderController::class, 'safety'])->name('work-orders.safety');
+    Route::put('work-orders/{workOrder}/safety', [WorkOrderController::class, 'updateSafety'])->name('work-orders.update-safety');
+    Route::post('work-orders/{workOrder}/upload-safety', [WorkOrderController::class, 'uploadSafety'])->name('work-orders.upload-safety');
+    Route::delete('work-orders/safety-files/{fileId}', [WorkOrderController::class, 'deleteSafetyFile'])->name('work-orders.delete-safety-file');
+    Route::delete('work-orders/{workOrder}/safety-image/{category}/{index}', [WorkOrderController::class, 'deleteSafetyImage'])->name('work-orders.delete-safety-image');
+    Route::post('work-orders/{workOrder}/safety-violation', [WorkOrderController::class, 'addSafetyViolation'])->name('work-orders.add-safety-violation');
+    Route::delete('work-orders/safety-violation/{violationId}', [WorkOrderController::class, 'deleteSafetyViolation'])->name('work-orders.delete-safety-violation');
 
 
 

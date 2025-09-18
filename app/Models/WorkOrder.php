@@ -102,6 +102,16 @@ class WorkOrder extends Model
         'city',
         'manual_days',
         'materials_notes',
+        'delay_penalties',
+        'safety_notes',
+        'safety_status',
+        'safety_officer',
+        'inspection_date',
+        'safety_permits_images',
+        'safety_team_images',
+        'safety_equipment_images',
+        'safety_general_images',
+        'safety_tbt_images',
     ];
 
     protected $casts = [
@@ -115,6 +125,12 @@ class WorkOrder extends Model
         'partial_deletion' => 'boolean',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
+        'inspection_date' => 'date',
+        'safety_permits_images' => 'array',
+        'safety_team_images' => 'array',
+        'safety_equipment_images' => 'array',
+        'safety_general_images' => 'array',
+        'safety_tbt_images' => 'array',
         'single_meter_installation' => 'string',
         'double_meter_installation' => 'string',
         'excavation_unsurfaced_soil' => 'array',
@@ -165,6 +181,14 @@ class WorkOrder extends Model
     public function surveys()
     {
         return $this->hasMany(Survey::class);
+    }
+
+    /**
+     * العلاقة مع مخالفات السلامة
+     */
+    public function safetyViolations()
+    {
+        return $this->hasMany(SafetyViolation::class);
     }
 
     public function survey()
