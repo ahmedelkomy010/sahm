@@ -3956,8 +3956,30 @@ class WorkOrderController extends Controller
                 'violation_amount' => 'required|numeric|min:0',
                 'violator' => 'required|string|max:255',
                 'violation_date' => 'required|date',
+                'description' => 'required|string',
                 'notes' => 'nullable|string',
+                'violation_attachments.*' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png,gif|max:10240',
             ]);
+
+            // رفع المرفقات إن وجدت
+            $attachments = [];
+            if ($request->hasFile('violation_attachments')) {
+                foreach ($request->file('violation_attachments') as $file) {
+                    $originalName = $file->getClientOriginalName();
+                    $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                    $path = 'work_orders/' . $workOrder->id . '/safety_violations';
+                    
+                    if (!Storage::disk('public')->exists($path)) {
+                        Storage::disk('public')->makeDirectory($path);
+                    }
+                    
+                    $filePath = $file->storeAs($path, $filename, 'public');
+                    $attachments[] = $filePath;
+                }
+            }
+
+            // إضافة المرفقات للبيانات المحققة
+            $validated['attachments'] = $attachments;
 
             $workOrder->safetyViolations()->create($validated);
 
@@ -3982,6 +4004,16 @@ class WorkOrderController extends Controller
     {
         try {
             $violation = \App\Models\SafetyViolation::findOrFail($violationId);
+            
+            // حذف المرفقات من التخزين
+            if ($violation->attachments && is_array($violation->attachments)) {
+                foreach ($violation->attachments as $attachment) {
+                    if (Storage::disk('public')->exists($attachment)) {
+                        Storage::disk('public')->delete($attachment);
+                    }
+                }
+            }
+            
             $violation->delete();
 
             return response()->json([

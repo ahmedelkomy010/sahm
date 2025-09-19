@@ -244,10 +244,11 @@
                                         <option value="4" {{ old('execution_status', $workOrder->execution_status) == '4' ? 'selected' : '' }}>اعداد مستخلص الدفعة الجزئية الاولي وجاري الصرف</option>
                                         <option value="5" {{ old('execution_status', $workOrder->execution_status) == '5' ? 'selected' : '' }}>تم صرف مستخلص الدفعة الجزئية الاولي</option>
                                         <option value="6" {{ old('execution_status', $workOrder->execution_status) == '6' ? 'selected' : '' }}>اعداد مستخلص الدفعة الجزئية الثانية وجاري الصرف</option>
+                                        <option value="10" {{ old('execution_status', $workOrder->execution_status) == '10' ? 'selected' : '' }}>تم اعداد المستخلص الكلي وجاري الصرف</option>
                                         <option value="7" {{ old('execution_status', $workOrder->execution_status) == '7' ? 'selected' : '' }}>تم الصرف وتم الانتهاء</option>
                                         <option value="8" {{ old('execution_status', $workOrder->execution_status) == '8' ? 'selected' : '' }}>تم اصدار شهادة الانجاز</option>
                                         <option value="9" {{ old('execution_status', $workOrder->execution_status) == '9' ? 'selected' : '' }}>تم الالغاء او تحويل امر العمل</option>
-                                        <option value="10" {{ old('execution_status', $workOrder->execution_status) == '10' ? 'selected' : '' }}>تم اعداد المستخلص الكلي وجاري الصرف</option>
+                                        
                                     </select>
                                     @error('execution_status')
                                         <span class="invalid-feedback" role="alert">
@@ -476,7 +477,7 @@ document.addEventListener('DOMContentLoaded', function() {
         orderValueWithoutConsultantInput.addEventListener('input', function() {
             const value = parseFloat(this.value);
             if (!isNaN(value) && value > 0) {
-                const valueWithConsultant = value * 1.1199403;
+                const valueWithConsultant = value * 1.12;
                 orderValueWithConsultantInput.value = valueWithConsultant.toFixed(2);
             }
         });
@@ -487,7 +488,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (!isNaN(valueWithConsultant) && valueWithConsultant > 0) {
             // 100% - 12% = 88%
-            const valueWithoutConsultant = valueWithConsultant / 1.1199403;
+            const valueWithoutConsultant = valueWithConsultant / 1.12;
             
             orderValueWithoutConsultantInput.value = valueWithoutConsultant.toFixed(2);
             

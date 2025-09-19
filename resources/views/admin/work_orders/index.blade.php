@@ -332,11 +332,13 @@ function resetCountdown(workOrderId) {
                                         <option value="3" {{ request('execution_status') == '3' ? 'selected' : '' }}>تم تسليم 155 جاري اصدار شهادة الانجاز</option>
                                         <option value="4" {{ request('execution_status') == '4' ? 'selected' : '' }}>اعداد مستخلص الدفعة الجزئية الاولي وجاري الصرف</option>
                                         <option value="5" {{ request('execution_status') == '5' ? 'selected' : '' }}>تم صرف مستخلص الدفعة الجزئية الاولي</option>
-                                        <option value="6" {{ request('execution_status') == '6' ? 'selected' : '' }}>اعداد مستخلص الدفعة الجزئية الثانية وجاري الصرف</option>
-                                        <option value="7" {{ request('execution_status') == '7' ? 'selected' : '' }}>تم الصرف وتم الانتهاء</option>
                                         <option value="8" {{ request('execution_status') == '8' ? 'selected' : '' }}>تم اصدار شهادة الانجاز</option>
-                                        <option value="9" {{ request('execution_status') == '9' ? 'selected' : '' }}>تم الالغاء او تحويل امر العمل</option>
+                                        <option value="6" {{ request('execution_status') == '6' ? 'selected' : '' }}>اعداد مستخلص الدفعة الجزئية الثانية وجاري الصرف</option>
                                         <option value="10" {{ request('execution_status') == '10' ? 'selected' : '' }}>تم اعداد المستخلص الكلي وجاري الصرف</option>
+                                        <option value="7" {{ request('execution_status') == '7' ? 'selected' : '' }}>تم الصرف وتم الانتهاء</option>
+                                        
+                                        <option value="9" {{ request('execution_status') == '9' ? 'selected' : '' }}>تم الالغاء او تحويل امر العمل</option>
+                                        
                                     </select>
                                 </div>
                             </div>
@@ -365,9 +367,7 @@ function resetCountdown(workOrderId) {
                                     </select>
                                 </div>
                             </div>
-                            
-                            
-                            
+          
                             <!-- الصف الثالث - فلاتر التاريخ والقيمة -->
                             <div class="col-md-3">
                                 <div class="form-group">

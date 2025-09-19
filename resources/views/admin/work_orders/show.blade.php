@@ -216,8 +216,8 @@
                                 @endif
 
                                 @if(auth()->user()->is_admin || 
-                                    (auth()->user()->hasPermission('riyadh_manage_quality') && $project == 'riyadh') || 
-                                    (auth()->user()->hasPermission('madinah_manage_quality') && $project == 'madinah'))
+                                    (auth()->user()->hasPermission('riyadh_manage_safety') && $project == 'riyadh') || 
+                                    (auth()->user()->hasPermission('madinah_manage_safety') && $project == 'madinah'))
                                 <a href="{{ route('admin.work-orders.safety', $workOrder) }}" class="custom-btn btn-safety">
                                     <i class="fas fa-shield-alt me-1"></i> السلامة
                                 </a>

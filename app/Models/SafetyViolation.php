@@ -14,12 +14,15 @@ class SafetyViolation extends Model
         'violation_amount',
         'violator',
         'violation_date',
+        'description',
         'notes',
+        'attachments',
     ];
 
     protected $casts = [
         'violation_date' => 'date',
         'violation_amount' => 'decimal:2',
+        'attachments' => 'array',
     ];
 
     /**

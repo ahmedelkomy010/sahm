@@ -241,13 +241,13 @@
                             @endphp
                             
                             @if($isRiyadh)
-                                <a href="{{ route('admin.materials.riyadh-overview') }}" class="btn btn-outline-light btn-sm">
+                                <!-- <a href="{{ route('admin.materials.riyadh-overview') }}" class="btn btn-outline-light btn-sm">
                                     <i class="fas fa-eye"></i> تفاصيل عامة للمواد - الرياض
-                                </a>
+                                </a> -->
                             @elseif($isMadinah)
-                                <a href="{{ route('admin.materials.madinah-overview') }}" class="btn btn-outline-light btn-sm">
+                                <!-- <a href="{{ route('admin.materials.madinah-overview') }}" class="btn btn-outline-light btn-sm">
                                     <i class="fas fa-eye"></i> تفاصيل عامة للمواد - المدينة المنورة
-                                </a>
+                                </a> -->
                             @endif
                             
                             <a href="{{ route('admin.work-orders.show', $workOrder) }}" class="btn btn-outline-light btn-sm">
@@ -849,6 +849,149 @@
                             <span id="save-status" class="ms-3"></span>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- فاصل بصري بين الأقسام -->
+    <hr class="section-divider">
+
+    <!-- قسم الإزالة والسكراب -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <h5 class="m-0 font-weight-bold">
+                            <i class="fas fa-trash-alt me-2"></i>
+                            في حالة وجود إزالة أو سكراب على أمر العمل
+                        </h5>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <button type="button" class="btn btn-outline-dark btn-sm" data-bs-toggle="modal" data-bs-target="#addRemovalScrapModal">
+                            <i class="fas fa-plus"></i> إضافة مادة للإزالة
+                        </button>
+                        <button type="button" class="btn btn-outline-info btn-sm" onclick="updateRemovalScrapTable()">
+                            <i class="fas fa-sync"></i> عرض مواد الازالةوالسكراب المضافة
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover align-middle" id="removalScrapTable">
+                            <thead>
+                                <tr class="bg-light">
+                                    <th class="text-center" width="5%">
+                                        <i class="fas fa-list-ol text-muted me-1"></i>
+                                        #
+                                    </th>
+                                    <th width="15%">
+                                        <i class="fas fa-barcode text-secondary me-1"></i>
+                                        كود المادة
+                                    </th>
+                                    <th width="35%">
+                                        <i class="fas fa-align-left text-primary me-1"></i>
+                                        وصف المادة
+                                    </th>
+                                    <th class="text-center" width="10%">
+                                        <i class="fas fa-ruler text-secondary me-1"></i>
+                                        الوحدة
+                                    </th>
+                                    <th class="text-center" width="10%">
+                                        <i class="fas fa-calculator text-danger me-1"></i>
+                                        الكمية
+                                    </th>
+                                    <th width="20%">
+                                        <i class="fas fa-sticky-note text-info me-1"></i>
+                                        ملاحظات
+                                    </th>
+                                    <th class="text-center" width="5%">
+                                        <i class="fas fa-cogs text-secondary me-1"></i>
+                                        إجراءات
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody id="removalScrapTableBody">
+                                <!-- سيتم إضافة البيانات هنا عبر JavaScript -->
+                                <tr id="noRemovalScrapRow">
+                                    <td colspan="7" class="text-center text-muted py-4">
+                                        <i class="fas fa-info-circle fs-3 text-info mb-2"></i>
+                                        <br>لا توجد مواد مضافة للإزالة أو السكراب
+                                        <br><small>استخدم زر "إضافة مادة للإزالة" لإضافة مواد جديدة</small>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal إضافة مادة للإزالة -->
+    <div class="modal fade" id="addRemovalScrapModal" tabindex="-1" aria-labelledby="addRemovalScrapModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title" id="addRemovalScrapModalLabel">
+                        <i class="fas fa-trash-alt me-2"></i>
+                        إضافة مادة للإزالة أو السكراب
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addRemovalScrapForm">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="removal_material_code" class="form-label fw-bold">
+                                    <i class="fas fa-barcode me-1 text-secondary"></i>
+                                    كود المادة
+                                </label>
+                                <input type="text" class="form-control" id="removal_material_code" name="material_code" required placeholder="أدخل كود المادة">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="removal_material_unit" class="form-label fw-bold">
+                                    <i class="fas fa-ruler me-1 text-secondary"></i>
+                                    الوحدة
+                                </label>
+                                <input type="text" class="form-control" id="removal_material_unit" name="unit" required placeholder="مثال: متر، قطعة، كيلو">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-12 mb-3">
+                                <label for="removal_material_description" class="form-label fw-bold">
+                                    <i class="fas fa-align-left me-1 text-primary"></i>
+                                    وصف المادة
+                                </label>
+                                <textarea class="form-control" id="removal_material_description" name="material_description" rows="2" required placeholder="أدخل وصف المادة"></textarea>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="removal_quantity" class="form-label fw-bold">
+                                    <i class="fas fa-calculator me-1 text-danger"></i>
+                                    الكمية
+                                </label>
+                                <input type="number" class="form-control" id="removal_quantity" name="quantity" step="0.01" min="0" required placeholder="0.00">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="removal_notes" class="form-label fw-bold">
+                                    <i class="fas fa-sticky-note me-1 text-info"></i>
+                                    ملاحظات
+                                </label>
+                                <input type="text" class="form-control" id="removal_notes" name="notes" placeholder="ملاحظات إضافية (اختياري)">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i>إلغاء
+                    </button>
+                    <button type="button" class="btn btn-warning" id="saveRemovalScrapBtn">
+                        <i class="fas fa-plus me-1"></i>إضافة المادة
+                    </button>
                 </div>
             </div>
         </div>
@@ -2585,8 +2728,8 @@ function updateDifferences(materialId, spentValue, executedValue) {
     const plannedQuantity = parseFloat(document.querySelector(`.spent-quantity[data-material-id="${materialId}"]`).dataset.plannedQuantity) || 0;
     
     // حساب الفروق
-    const plannedSpentDiff = plannedQuantity - spentValue;
-    const executedSpentDiff = executedValue - spentValue;
+    const plannedSpentDiff = spentValue -  plannedQuantity;
+    const executedSpentDiff = spentValue - executedValue;
     
     // تحديث فرق المخطط والمصروف
     const plannedDiffElement = document.querySelector(`#planned-spent-diff-${materialId} .diff-value`);
@@ -3363,6 +3506,261 @@ document.addEventListener('DOMContentLoaded', function() {
             saveStatus.innerHTML = '<i class="fas fa-exclamation-triangle text-danger"></i> خطأ في الحفظ';
         });
     }
+
+    // وظائف جدول الإزالة والسكراب
+    let removalScrapData = @json($workOrder->removal_scrap_materials ?? []);
+    let removalScrapCounter = 0;
+    
+    // تحميل البيانات الموجودة عند فتح الصفحة
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Loaded removal scrap data:', removalScrapData);
+        console.log('Data length:', removalScrapData.length);
+        
+        // تأخير صغير للتأكد من تحميل DOM كامل
+        setTimeout(function() {
+            console.log('Delayed update call');
+            updateRemovalScrapTable();
+        }, 100);
+    });
+
+    // إضافة مادة للإزالة
+    document.getElementById('saveRemovalScrapBtn').addEventListener('click', function() {
+        const form = document.getElementById('addRemovalScrapForm');
+        const formData = new FormData(form);
+        const submitBtn = this;
+        const originalText = submitBtn.innerHTML;
+        
+        // التحقق من صحة البيانات
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+        
+        // تعطيل الزر أثناء الإرسال
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>جاري الإضافة...';
+        
+        // إرسال البيانات للسيرفر
+        fetch(`/admin/work-orders/{{ $workOrder->id }}/removal-scrap-materials`, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json'
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // إظهار رسالة نجاح
+                toastr.success(data.message, '', {
+                    timeOut: 1500,
+                    positionClass: 'toast-top-left',
+                    progressBar: true
+                });
+                
+                // إغلاق الـ modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('addRemovalScrapModal'));
+                modal.hide();
+                
+                // إعادة تحميل الصفحة بعد تأخير قصير
+                setTimeout(() => {
+                    location.reload();
+                }, 1000);
+            } else {
+                toastr.error(data.message || 'حدث خطأ أثناء إضافة المادة', '', {
+                    timeOut: 3000,
+                    positionClass: 'toast-top-left',
+                    progressBar: true
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            toastr.error('حدث خطأ أثناء إضافة المادة', '', {
+                timeOut: 3000,
+                positionClass: 'toast-top-left',
+                progressBar: true
+            });
+        })
+        .finally(() => {
+            // إعادة تفعيل الزر
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+        });
+    });
+
+    // تحديث جدول الإزالة والسكراب
+    function updateRemovalScrapTable() {
+        console.log('updateRemovalScrapTable called');
+        const tableBody = document.getElementById('removalScrapTableBody');
+        const noDataRow = document.getElementById('noRemovalScrapRow');
+        
+        console.log('tableBody:', tableBody);
+        console.log('noDataRow:', noDataRow);
+        console.log('removalScrapData:', removalScrapData);
+        
+        if (removalScrapData.length === 0) {
+            console.log('No data, showing no data row');
+            if (noDataRow) noDataRow.style.display = '';
+            return;
+        }
+        
+        console.log('Has data, hiding no data row');
+        if (noDataRow) noDataRow.style.display = 'none';
+        
+        if (!tableBody) {
+            console.error('Table body not found!');
+            return;
+        }
+        
+        // إزالة الصفوف الموجودة (عدا صف "لا توجد بيانات")
+        const existingRows = tableBody.querySelectorAll('tr:not(#noRemovalScrapRow)');
+        console.log('Existing rows to remove:', existingRows.length);
+        existingRows.forEach(row => row.remove());
+        
+        // إضافة الصفوف الجديدة
+        console.log('Adding rows for data:', removalScrapData.length);
+        removalScrapData.forEach((item, index) => {
+            const row = document.createElement('tr');
+            row.className = 'align-middle';
+            row.innerHTML = `
+                <td class="text-center">
+                    <span class="badge bg-warning text-dark">${index + 1}</span>
+                </td>
+                <td>
+                    <span class="badge bg-light text-dark border">${item.material_code}</span>
+                </td>
+                <td>
+                    <div class="text-wrap" style="max-width: 300px;">
+                        ${item.material_description}
+                    </div>
+                </td>
+                <td class="text-center">
+                    <span class="badge bg-light text-dark border">${item.material_unit}</span>
+                </td>
+                <td class="text-center">
+                    <span class="badge bg-danger text-white">
+                        ${parseFloat(item.quantity).toFixed(2)}
+                    </span>
+                </td>
+                <td>
+                    <div class="text-wrap" style="max-width: 200px;">
+                        ${item.notes || '-'}
+                    </div>
+                </td>
+                <td class="text-center">
+                    <button type="button" class="btn btn-sm btn-outline-danger delete-removal-item" 
+                            data-item-id="${item.id}"
+                            title="حذف المادة">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            `;
+            
+            console.log('Adding row for item:', item);
+            tableBody.appendChild(row);
+        });
+        
+        console.log('Finished updating table. Total rows added:', removalScrapData.length);
+        
+        // إضافة event listeners لأزرار الحذف
+        document.querySelectorAll('.delete-removal-item').forEach(button => {
+            button.addEventListener('click', function() {
+                const itemId = this.dataset.itemId;
+                console.log('Delete button clicked for item:', itemId);
+                removeRemovalScrapItem(itemId);
+            });
+        });
+    }
+
+    // حذف مادة من جدول الإزالة
+    function removeRemovalScrapItem(itemId) {
+        console.log('removeRemovalScrapItem called with:', itemId, 'type:', typeof itemId);
+        console.log('Current data:', removalScrapData);
+        
+        Swal.fire({
+            title: 'تأكيد الحذف',
+            text: 'هل أنت متأكد من حذف هذه المادة؟',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'نعم، احذف',
+            cancelButtonText: 'إلغاء'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // العثور على فهرس العنصر
+                console.log('Looking for item with ID:', itemId);
+                const itemIndex = removalScrapData.findIndex(item => {
+                    console.log('Comparing:', item.id, '(type:', typeof item.id, ') with', itemId, '(type:', typeof itemId, ')');
+                    // استخدام == للتعامل مع type differences
+                    const match = item.id == itemId;
+                    console.log('Match result:', match);
+                    return match;
+                });
+                console.log('Found index:', itemIndex);
+                
+                if (itemIndex === -1) {
+                    toastr.error('العنصر غير موجود', '', {
+                        timeOut: 2000,
+                        positionClass: 'toast-top-left',
+                        progressBar: true
+                    });
+                    return;
+                }
+                
+                // إرسال طلب الحذف للسيرفر
+                fetch(`/admin/work-orders/{{ $workOrder->id }}/removal-scrap-materials/${itemIndex}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // إزالة العنصر من المصفوفة المحلية
+                        console.log('Removing item with ID:', itemId, 'from local array');
+                        const beforeLength = removalScrapData.length;
+                        removalScrapData = removalScrapData.filter(item => item.id != itemId);
+                        console.log('Array length before:', beforeLength, 'after:', removalScrapData.length);
+                        
+                        // تحديث الجدول
+                        updateRemovalScrapTable();
+                        
+                        // إظهار رسالة نجاح
+                        Swal.fire({
+                            title: 'تم الحذف!',
+                            text: data.message,
+                            icon: 'success',
+                            timer: 1500,
+                            showConfirmButton: false
+                        });
+                    } else {
+                        toastr.error(data.message || 'حدث خطأ أثناء حذف المادة', '', {
+                            timeOut: 3000,
+                            positionClass: 'toast-top-left',
+                            progressBar: true
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    toastr.error('حدث خطأ أثناء حذف المادة', '', {
+                        timeOut: 3000,
+                        positionClass: 'toast-top-left',
+                        progressBar: true
+                    });
+                });
+            }
+        });
+    }
+
+    // جعل الدوال متاحة عالمياً
+    window.removeRemovalScrapItem = removeRemovalScrapItem;
+    window.updateRemovalScrapTable = updateRemovalScrapTable;
 });
 </script>
 @endpush

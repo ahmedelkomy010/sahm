@@ -112,6 +112,7 @@ class WorkOrder extends Model
         'safety_equipment_images',
         'safety_general_images',
         'safety_tbt_images',
+        'removal_scrap_materials',
     ];
 
     protected $casts = [
@@ -131,6 +132,7 @@ class WorkOrder extends Model
         'safety_equipment_images' => 'array',
         'safety_general_images' => 'array',
         'safety_tbt_images' => 'array',
+        'removal_scrap_materials' => 'array',
         'single_meter_installation' => 'string',
         'double_meter_installation' => 'string',
         'excavation_unsurfaced_soil' => 'array',

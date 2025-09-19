@@ -79,86 +79,6 @@
             <form method="POST" action="{{ route('admin.work-orders.update-safety', $workOrder) }}" enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
-                
-                <!-- البيانات الأساسية للسلامة -->
-                <div class="row mb-4">
-                    <div class="col-md-6 mb-3">
-                        <label for="safety_notes" class="form-label fw-bold">
-                            <i class="fas fa-sticky-note me-2 text-info"></i>
-                            ملاحظات السلامة
-                        </label>
-                        <textarea class="form-control @error('safety_notes') is-invalid @enderror" 
-                                  name="safety_notes" 
-                                  id="safety_notes" 
-                                  rows="4" 
-                                  placeholder="أدخل ملاحظات السلامة...">{{ old('safety_notes', $workOrder->safety_notes) }}</textarea>
-                        @error('safety_notes')
-                            <span class="invalid-feedback" role="alert">
-                                <strong>{{ $message }}</strong>
-                            </span>
-                        @enderror
-                    </div>
-                    
-                    <div class="col-md-6">
-                        <div class="row">
-                            <div class="col-12 mb-3">
-                                <label for="safety_status" class="form-label fw-bold">
-                                    <i class="fas fa-check-circle me-2 text-success"></i>
-                                    حالة السلامة
-                                </label>
-                                <select class="form-select @error('safety_status') is-invalid @enderror" 
-                                        name="safety_status" 
-                                        id="safety_status">
-                                    <option value="">اختر حالة السلامة</option>
-                                    <option value="مطابق" {{ old('safety_status', $workOrder->safety_status) == 'مطابق' ? 'selected' : '' }}>مطابق</option>
-                                    <option value="غير مطابق" {{ old('safety_status', $workOrder->safety_status) == 'غير مطابق' ? 'selected' : '' }}>غير مطابق</option>
-                                    <option value="يحتاج مراجعة" {{ old('safety_status', $workOrder->safety_status) == 'يحتاج مراجعة' ? 'selected' : '' }}>يحتاج مراجعة</option>
-                                </select>
-                                @error('safety_status')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
-                            </div>
-                            
-                            <div class="col-12 mb-3">
-                                <label for="safety_officer" class="form-label fw-bold">
-                                    <i class="fas fa-user-tie me-2 text-primary"></i>
-                                    مسؤول السلامة
-                                </label>
-                                <input type="text" 
-                                       class="form-control @error('safety_officer') is-invalid @enderror" 
-                                       name="safety_officer" 
-                                       id="safety_officer" 
-                                       value="{{ old('safety_officer', $workOrder->safety_officer) }}"
-                                       placeholder="اسم مسؤول السلامة">
-                                @error('safety_officer')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
-                            </div>
-                            
-                            <div class="col-12 mb-3">
-                                <label for="inspection_date" class="form-label fw-bold">
-                                    <i class="fas fa-calendar me-2 text-warning"></i>
-                                    تاريخ التفتيش
-                                </label>
-                                <input type="date" 
-                                       class="form-control @error('inspection_date') is-invalid @enderror" 
-                                       name="inspection_date" 
-                                       id="inspection_date" 
-                                       value="{{ old('inspection_date', $workOrder->inspection_date ? $workOrder->inspection_date->format('Y-m-d') : '') }}">
-                                @error('inspection_date')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- حقول الصور -->
                 <div class="row">
                     <!-- صور التصاريح PERMITS -->
@@ -167,11 +87,16 @@
                             <i class="fas fa-file-contract me-2 text-warning"></i>
                             صور التصاريح PERMITS
                         </label>
-                        <input type="file" class="form-control @error('permits_images.*') is-invalid @enderror" 
-                               name="permits_images[]" 
-                               id="permits_images"
-                               accept="image/*"
-                               multiple>
+                        <div class="input-group">
+                            <button type="button" class="btn btn-outline-primary" onclick="openCamera('permits_images')" title="فتح كاميرا الجوال">
+                                <i class="fas fa-camera"></i>
+                            </button>
+                            <input type="file" class="form-control @error('permits_images.*') is-invalid @enderror" 
+                                   name="permits_images[]" 
+                                   id="permits_images"
+                                   accept="image/*"
+                                   multiple>
+                        </div>
                         <div class="form-text">يمكن رفع عدة صور (JPG, PNG, GIF) - الحد الأقصى 10 ميجابايت لكل صورة</div>
                         @error('permits_images.*')
                             <span class="invalid-feedback" role="alert">
@@ -186,11 +111,16 @@
                             <i class="fas fa-users me-2 text-info"></i>
                             صور فريق العمل والتأهيل للعمالة
                         </label>
-                        <input type="file" class="form-control @error('team_images.*') is-invalid @enderror" 
-                               name="team_images[]" 
-                               id="team_images"
-                               accept="image/*"
-                               multiple>
+                        <div class="input-group">
+                            <button type="button" class="btn btn-outline-primary" onclick="openCamera('team_images')" title="فتح كاميرا الجوال">
+                                <i class="fas fa-camera"></i>
+                            </button>
+                            <input type="file" class="form-control @error('team_images.*') is-invalid @enderror" 
+                                   name="team_images[]" 
+                                   id="team_images"
+                                   accept="image/*"
+                                   multiple>
+                        </div>
                         <div class="form-text">يمكن رفع عدة صور (JPG, PNG, GIF) - الحد الأقصى 10 ميجابايت لكل صورة</div>
                         @error('team_images.*')
                             <span class="invalid-feedback" role="alert">
@@ -207,11 +137,16 @@
                             <i class="fas fa-tools me-2 text-primary"></i>
                             صور المعدات والتأهيل للمعدات
                         </label>
-                        <input type="file" class="form-control @error('equipment_images.*') is-invalid @enderror" 
-                               name="equipment_images[]" 
-                               id="equipment_images"
-                               accept="image/*"
-                               multiple>
+                        <div class="input-group">
+                            <button type="button" class="btn btn-outline-primary" onclick="openCamera('equipment_images')" title="فتح كاميرا الجوال">
+                                <i class="fas fa-camera"></i>
+                            </button>
+                            <input type="file" class="form-control @error('equipment_images.*') is-invalid @enderror" 
+                                   name="equipment_images[]" 
+                                   id="equipment_images"
+                                   accept="image/*"
+                                   multiple>
+                        </div>
                         <div class="form-text">يمكن رفع عدة صور (JPG, PNG, GIF) - الحد الأقصى 10 ميجابايت لكل صورة</div>
                         @error('equipment_images.*')
                             <span class="invalid-feedback" role="alert">
@@ -226,11 +161,16 @@
                             <i class="fas fa-images me-2 text-secondary"></i>
                             صور عامة للسلامة
                         </label>
-                        <input type="file" class="form-control @error('general_images.*') is-invalid @enderror" 
-                               name="general_images[]" 
-                               id="general_images"
-                               accept="image/*"
-                               multiple>
+                        <div class="input-group">
+                            <button type="button" class="btn btn-outline-primary" onclick="openCamera('general_images')" title="فتح كاميرا الجوال">
+                                <i class="fas fa-camera"></i>
+                            </button>
+                            <input type="file" class="form-control @error('general_images.*') is-invalid @enderror" 
+                                   name="general_images[]" 
+                                   id="general_images"
+                                   accept="image/*"
+                                   multiple>
+                        </div>
                         <div class="form-text">يمكن رفع عدة صور (JPG, PNG, GIF) - الحد الأقصى 10 ميجابايت لكل صورة</div>
                         @error('general_images.*')
                             <span class="invalid-feedback" role="alert">
@@ -245,11 +185,16 @@
                             <i class="fas fa-users-cog me-2 text-success"></i>
                             صور اجتماع ما قبل بدء العمل TBT
                         </label>
-                        <input type="file" class="form-control @error('tbt_images.*') is-invalid @enderror" 
-                               name="tbt_images[]" 
-                               id="tbt_images"
-                               accept="image/*"
-                               multiple>
+                        <div class="input-group">
+                            <button type="button" class="btn btn-outline-primary" onclick="openCamera('tbt_images')" title="فتح كاميرا الجوال">
+                                <i class="fas fa-camera"></i>
+                            </button>
+                            <input type="file" class="form-control @error('tbt_images.*') is-invalid @enderror" 
+                                   name="tbt_images[]" 
+                                   id="tbt_images"
+                                   accept="image/*"
+                                   multiple>
+                        </div>
                         <div class="form-text">يمكن رفع عدة صور (JPG, PNG, GIF) - الحد الأقصى 10 ميجابايت لكل صورة</div>
                         @error('tbt_images.*')
                             <span class="invalid-feedback" role="alert">
@@ -258,6 +203,97 @@
                         @enderror
                     </div>
                 </div>
+                 <!-- البيانات الأساسية للسلامة -->
+                 <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <i class="fas fa-shield-alt me-2"></i>
+                        بيانات السلامة الأساسية
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <!-- مسؤول السلامة -->
+                            <div class="col-md-4 mb-3">
+                                <label for="safety_officer" class="form-label fw-bold">
+                                    <i class="fas fa-user-tie me-2 text-primary"></i>
+                                    مسؤول السلامة
+                                </label>
+                                <input type="text" 
+                                    class="form-control @error('safety_officer') is-invalid @enderror" 
+                                    name="safety_officer" 
+                                    id="safety_officer" 
+                                    value="{{ old('safety_officer', $workOrder->safety_officer) }}"
+                                    placeholder="اسم مسؤول السلامة">
+                                @error('safety_officer')
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong>{{ $message }}</strong>
+                                    </span>
+                                @enderror
+                            </div>
+
+                            <!-- حالة السلامة -->
+                            <div class="col-md-4 mb-3">
+                                <label for="safety_status" class="form-label fw-bold">
+                                    <i class="fas fa-check-circle me-2 text-success"></i>
+                                    حالة السلامة
+                                </label>
+                                <select class="form-select @error('safety_status') is-invalid @enderror" 
+                                        name="safety_status" 
+                                        id="safety_status">
+                                    <option value="">اختر حالة السلامة</option>
+                                    <option value="مطابق" {{ old('safety_status', $workOrder->safety_status) == 'مطابق' ? 'selected' : '' }}>
+                                        <i class="fas fa-check text-success"></i> مطابق
+                                    </option>
+                                    <option value="غير مطابق" {{ old('safety_status', $workOrder->safety_status) == 'غير مطابق' ? 'selected' : '' }}>
+                                        <i class="fas fa-times text-danger"></i> غير مطابق
+                                    </option>
+                                    
+                                </select>
+                                @error('safety_status')
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong>{{ $message }}</strong>
+                                    </span>
+                                @enderror
+                            </div>
+
+                            <!-- تاريخ التفتيش -->
+                            <div class="col-md-4 mb-3">
+                                <label for="inspection_date" class="form-label fw-bold">
+                                    <i class="fas fa-calendar me-2 text-warning"></i>
+                                    تاريخ التفتيش
+                                </label>
+                                <input type="date" 
+                                    class="form-control @error('inspection_date') is-invalid @enderror" 
+                                    name="inspection_date" 
+                                    id="inspection_date" 
+                                    value="{{ old('inspection_date', $workOrder->inspection_date ? $workOrder->inspection_date->format('Y-m-d') : '') }}">
+                                @error('inspection_date')
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong>{{ $message }}</strong>
+                                    </span>
+                                @enderror
+                            </div>
+
+                            <!-- ملاحظات السلامة -->
+                            <div class="col-12">
+                                <label for="safety_notes" class="form-label fw-bold">
+                                    <i class="fas fa-sticky-note me-2 text-info"></i>
+                                    ملاحظات السلامة
+                                </label>
+                                <textarea class="form-control @error('safety_notes') is-invalid @enderror" 
+                                    name="safety_notes" 
+                                    id="safety_notes" 
+                                    rows="4" 
+                                    placeholder="أدخل ملاحظات السلامة...">{{ old('safety_notes', $workOrder->safety_notes) }}</textarea>
+                                @error('safety_notes')
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong>{{ $message }}</strong>
+                                    </span>
+                                @enderror
+                            </div>
+                        </div>
+                    </div>
+                 </div>
+                
 
                 <div class="text-center">
                     <button type="submit" class="btn btn-success px-4">
@@ -362,7 +398,7 @@
             <!-- نموذج إضافة مخالفة سريع -->
             <div class="row mb-4 p-3 bg-light rounded">
                 <h6 class="mb-3"><i class="fas fa-plus-circle me-2 text-danger"></i>إضافة مخالفة جديدة</h6>
-                <form id="addViolationForm">
+                <form id="addViolationForm" enctype="multipart/form-data">
                     @csrf
                     <div class="row">
                         <div class="col-md-3 mb-2">
@@ -385,9 +421,22 @@
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-12">
+                        <div class="col-12 mb-2">
+                            <label class="form-label fw-bold">وصف المخالفة</label>
+                            <textarea class="form-control" name="description" rows="2" placeholder="اكتب وصف تفصيلي للمخالفة" required></textarea>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-2">
                             <label class="form-label fw-bold">ملاحظات</label>
                             <textarea class="form-control" name="notes" rows="2" placeholder="ملاحظات إضافية (اختياري)"></textarea>
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <label class="form-label fw-bold">مرفقات المخالفة</label>
+                            <input type="file" class="form-control" name="violation_attachments[]" multiple 
+                                   accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif" 
+                                   title="يمكن رفع ملفات PDF, Word, أو صور">
+                            <small class="text-muted">يمكن اختيار عدة ملفات (PDF, Word, صور)</small>
                         </div>
                     </div>
                 </form>
@@ -402,7 +451,9 @@
                             <th>قيمة المخالفة</th>
                             <th>المتسبب</th>
                             <th>تاريخ المخالفة</th>
+                            <th>وصف المخالفة</th>
                             <th>ملاحظات</th>
+                            <th>مرفقات</th>
                             <th>إجراءات</th>
                         </tr>
                     </thead>
@@ -418,10 +469,34 @@
                                 <td>{{ $violation->violator }}</td>
                                 <td>{{ $violation->violation_date->format('Y-m-d') }}</td>
                                 <td>
+                                    @if($violation->description)
+                                        <span class="text-dark">{{ Str::limit($violation->description, 100) }}</span>
+                                    @else
+                                        <span class="text-muted fst-italic">لا يوجد وصف</span>
+                                    @endif
+                                </td>
+                                <td>
                                     @if($violation->notes)
                                         <span class="text-muted">{{ Str::limit($violation->notes, 50) }}</span>
                                     @else
                                         <span class="text-muted fst-italic">لا توجد ملاحظات</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if($violation->attachments && count($violation->attachments) > 0)
+                                        <div class="d-flex flex-wrap gap-1">
+                                            @foreach($violation->attachments as $attachment)
+                                                <a href="{{ Storage::url($attachment) }}" 
+                                                   target="_blank" 
+                                                   class="btn btn-sm btn-outline-primary"
+                                                   title="{{ basename($attachment) }}">
+                                                    <i class="fas fa-paperclip me-1"></i>
+                                                    {{ Str::limit(basename($attachment), 10) }}
+                                                </a>
+                                            @endforeach
+                                        </div>
+                                    @else
+                                        <span class="text-muted fst-italic">لا توجد مرفقات</span>
                                     @endif
                                 </td>
                                 <td>
@@ -434,7 +509,7 @@
                             </tr>
                         @empty
                             <tr id="noViolationsRow">
-                                <td colspan="6" class="text-center text-muted py-4">
+                                <td colspan="7" class="text-center text-muted py-4">
                                     <i class="fas fa-check-circle fs-3 text-success mb-2"></i>
                                     <br>لا توجد مخالفات سلامة مسجلة
                                 </td>
@@ -606,7 +681,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         if (tbody.children.length === 0) {
                             tbody.innerHTML = `
                                 <tr id="noViolationsRow">
-                                    <td colspan="6" class="text-center text-muted py-4">
+                                    <td colspan="7" class="text-center text-muted py-4">
                                         <i class="fas fa-check-circle fs-3 text-success mb-2"></i>
                                         <br>لا توجد مخالفات سلامة مسجلة
                                     </td>
@@ -690,6 +765,17 @@ function showSuccessMessage(message) {
             alert.remove();
         }
     }, 3000);
+}
+
+// دالة فتح كاميرا الجوال
+function openCamera(inputId) {
+    const input = document.getElementById(inputId);
+    if (input) {
+        // تغيير خاصية accept لتشمل الكاميرا
+        input.setAttribute('accept', 'image/*');
+        input.setAttribute('capture', 'environment'); // استخدام الكاميرا الخلفية
+        input.click();
+    }
 }
 </script>
 

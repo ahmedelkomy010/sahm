@@ -135,6 +135,10 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::post('work-orders/{workOrder}/materials/upload-files', [MaterialsController::class, 'uploadFiles'])->name('work-orders.materials.upload-files');
     Route::delete('work-orders/{workOrder}/materials/{material}/delete-file', [MaterialsController::class, 'deleteFile'])->name('work-orders.materials.delete-file');
     
+    // مسارات مواد الإزالة والسكراب
+    Route::post('work-orders/{workOrder}/removal-scrap-materials', [MaterialsController::class, 'addRemovalScrapMaterial'])->name('work-orders.add-removal-scrap-material');
+    Route::delete('work-orders/{workOrder}/removal-scrap-materials/{index}', [MaterialsController::class, 'deleteRemovalScrapMaterial'])->name('work-orders.delete-removal-scrap-material');
+    
     // وظائف أوامر العمل الأخرى
     Route::delete('work-orders/files/{file}', [WorkOrderController::class, 'deleteFile'])->name('work-orders.files.delete');
     Route::get('work-orders/descriptions/{workType}', [WorkOrderController::class, 'getWorkDescription'])->name('work-orders.descriptions');

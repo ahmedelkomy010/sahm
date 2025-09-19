@@ -228,6 +228,12 @@
                                             class="h-3 w-3 ml-1 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
                                         <label for="riyadh_manage_post_execution" class="text-xs text-blue-700 mr-2">إدارة إجراءات ما بعد التنفيذ</label>
                                     </div>
+                                    <div class="flex items-center">
+                                        <input type="checkbox" id="riyadh_manage_safety" name="permissions[]" value="riyadh_manage_safety" 
+                                            {{ (is_array($user->permissions) && in_array('riyadh_manage_safety', $user->permissions)) ? 'checked' : '' }}
+                                            class="h-3 w-3 ml-1 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                        <label for="riyadh_manage_safety" class="text-xs text-blue-700 mr-2">إدارة السلامة</label>
+                                    </div>
                                 </div>
                             </div>
                             
@@ -276,6 +282,12 @@
                                             {{ (is_array($user->permissions) && in_array('madinah_manage_post_execution', $user->permissions)) ? 'checked' : '' }}
                                             class="h-3 w-3 ml-1 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
                                         <label for="madinah_manage_post_execution" class="text-xs text-blue-700 mr-2">إدارة إجراءات ما بعد التنفيذ</label>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <input type="checkbox" id="madinah_manage_safety" name="permissions[]" value="madinah_manage_safety" 
+                                            {{ (is_array($user->permissions) && in_array('madinah_manage_safety', $user->permissions)) ? 'checked' : '' }}
+                                            class="h-3 w-3 ml-1 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                        <label for="madinah_manage_safety" class="text-xs text-blue-700 mr-2">إدارة السلامة</label>
                                     </div>
                                 </div>
                             </div>

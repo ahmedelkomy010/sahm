@@ -235,7 +235,13 @@ class MaterialsController extends Controller
             }
         }
         
-        return view('admin.work_orders.materials', compact('workOrder', 'materials', 'workOrderMaterials', 'independentFiles'));
+         // إضافة logging للتأكد من البيانات
+         \Log::info('Removal scrap materials for work order ' . $workOrder->id, [
+             'data' => $workOrder->removal_scrap_materials,
+             'count' => count($workOrder->removal_scrap_materials ?? [])
+         ]);
+         
+         return view('admin.work_orders.materials', compact('workOrder', 'materials', 'workOrderMaterials', 'independentFiles'));
     }
 
     /**
@@ -539,6 +545,11 @@ class MaterialsController extends Controller
         $data['planned_quantity'] = $data['planned_quantity'] ?? 0;
         $data['spent_quantity'] = $data['spent_quantity'] ?? 0;
         $data['executed_quantity'] = $data['executed_quantity'] ?? 0;
+        
+        // التأكد من أن الوحدة لا تكون null
+        if (empty($data['unit'])) {
+            $data['unit'] = 'قطعة'; // وحدة افتراضية
+        }
         
         // إذا كان الوصف فارغًا، نحاول جلب الوصف من جدول المواد المرجعية
         if (empty($data['description'])) {
@@ -1084,6 +1095,12 @@ class MaterialsController extends Controller
             // تحديث الكمية المناسبة
             $field = $validated['quantity_type'] . '_quantity';
             $material->$field = $validated['value'];
+            
+            // التأكد من أن الوحدة ليست null قبل الحفظ
+            if (empty($material->unit)) {
+                $material->unit = 'قطعة';
+            }
+            
             $material->save();
             
             return response()->json([
@@ -1124,6 +1141,12 @@ class MaterialsController extends Controller
             // تحديث الملاحظات المناسبة
             $field = $validated['notes_type'];
             $material->$field = $validated['value'];
+            
+            // التأكد من أن الوحدة ليست null قبل الحفظ
+            if (empty($material->unit)) {
+                $material->unit = 'قطعة';
+            }
+            
             $material->save();
             
             return response()->json([
@@ -1181,5 +1204,95 @@ class MaterialsController extends Controller
         ];
 
         return $searchTerms[strtolower($cityName)] ?? [$cityName];
+    }
+
+    /**
+     * إضافة مادة إزالة/سكراب جديدة
+     */
+    public function addRemovalScrapMaterial(Request $request, WorkOrder $workOrder)
+    {
+        try {
+            $validated = $request->validate([
+                'material_code' => 'required|string|max:50',
+                'material_description' => 'required|string|max:500',
+                'unit' => 'required|string|max:20',
+                'quantity' => 'required|numeric|min:0.01',
+                'notes' => 'nullable|string|max:1000'
+            ]);
+
+            // الحصول على المواد الموجودة
+            $existingMaterials = $workOrder->removal_scrap_materials ?? [];
+
+            // إضافة المادة الجديدة
+            $newMaterial = [
+                'id' => uniqid(), // معرف فريد للمادة
+                'material_code' => $validated['material_code'],
+                'material_description' => $validated['material_description'],
+                'unit' => $validated['unit'],
+                'quantity' => (float)$validated['quantity'],
+                'notes' => $validated['notes'] ?? null,
+                'created_at' => now()->toISOString()
+            ];
+
+            $existingMaterials[] = $newMaterial;
+
+            // حفظ في قاعدة البيانات
+            $workOrder->update([
+                'removal_scrap_materials' => $existingMaterials
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'تم إضافة مادة الإزالة بنجاح',
+                'material' => $newMaterial
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء إضافة المادة: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * حذف مادة إزالة/سكراب
+     */
+    public function deleteRemovalScrapMaterial(Request $request, WorkOrder $workOrder, $index)
+    {
+        try {
+            // الحصول على المواد الموجودة
+            $existingMaterials = $workOrder->removal_scrap_materials ?? [];
+
+            // التحقق من صحة الفهرس
+            if (!isset($existingMaterials[$index])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'المادة المطلوب حذفها غير موجودة'
+                ], 404);
+            }
+
+            // حذف المادة
+            unset($existingMaterials[$index]);
+            
+            // إعادة ترتيب الفهارس
+            $existingMaterials = array_values($existingMaterials);
+
+            // حفظ في قاعدة البيانات
+            $workOrder->update([
+                'removal_scrap_materials' => $existingMaterials
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'تم حذف مادة الإزالة بنجاح'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء حذف المادة: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

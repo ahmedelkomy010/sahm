@@ -117,7 +117,7 @@
                                 <div class="d-flex gap-2">
                                     <button type="submit" class="btn btn-danger">
                                         <i class="fas fa-search me-1"></i>
-                                        بحث 
+                                        بحث     
                                     </button>
                                     <button type="button" class="btn btn-secondary" onclick="clearFilters()">
                                         <i class="fas fa-times me-1"></i>

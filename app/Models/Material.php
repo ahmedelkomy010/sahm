@@ -49,7 +49,7 @@ class Material extends Model
         'planned_spent_difference' => 'decimal:2',
         'executed_spent_difference' => 'decimal:2',
     ];
-
+    
     protected $attributes = [
         'name' => '',  // قيمة افتراضية فارغة
         'planned_quantity' => 0,
@@ -70,6 +70,11 @@ class Material extends Model
         parent::boot();
 
         static::saving(function ($material) {
+            // التأكد من أن الوحدة ليست null أو فارغة
+            if (empty($material->unit)) {
+                $material->unit = 'قطعة';
+            }
+            
             // إذا كان الاسم فارغاً، نستخدم الوصف أو الكود
             if (empty($material->name)) {
                 $material->name = $material->description ?? $material->code ?? '';
