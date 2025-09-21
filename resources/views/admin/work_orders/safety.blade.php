@@ -81,6 +81,26 @@
                 @method('PUT')
                 <!-- حقول الصور -->
                 <div class="row">
+                    <!-- صور اجتماع ما قبل بدء العمل TBT -->
+                    <div class="col-md-4 mb-3">
+                        <label for="tbt_images" class="form-label fw-bold">
+                            <i class="fas fa-users-cog me-2 text-success"></i>
+                            صور اجتماع ما قبل بدء العمل TBT
+                        </label>
+                        <div class="input-group">
+                            <input type="file" class="form-control @error('tbt_images.*') is-invalid @enderror" 
+                                   name="tbt_images[]" 
+                                   id="tbt_images"
+                                   accept="image/*"
+                                   multiple>
+                        </div>
+                        <div class="form-text">يمكن رفع عدة صور (JPG, PNG, GIF) - الحد الأقصى 10 ميجابايت لكل صورة</div>
+                        @error('tbt_images.*')
+                            <span class="invalid-feedback" role="alert">
+                                <strong>{{ $message }}</strong>
+                            </span>
+                        @enderror
+                    </div>
                     <!-- صور التصاريح PERMITS -->
                     <div class="col-md-6 mb-3">
                         <label for="permits_images" class="form-label fw-bold">
@@ -88,9 +108,6 @@
                             صور التصاريح PERMITS
                         </label>
                         <div class="input-group">
-                            <button type="button" class="btn btn-outline-primary" onclick="openCamera('permits_images')" title="فتح كاميرا الجوال">
-                                <i class="fas fa-camera"></i>
-                            </button>
                             <input type="file" class="form-control @error('permits_images.*') is-invalid @enderror" 
                                    name="permits_images[]" 
                                    id="permits_images"
@@ -112,9 +129,6 @@
                             صور فريق العمل والتأهيل للعمالة
                         </label>
                         <div class="input-group">
-                            <button type="button" class="btn btn-outline-primary" onclick="openCamera('team_images')" title="فتح كاميرا الجوال">
-                                <i class="fas fa-camera"></i>
-                            </button>
                             <input type="file" class="form-control @error('team_images.*') is-invalid @enderror" 
                                    name="team_images[]" 
                                    id="team_images"
@@ -138,9 +152,6 @@
                             صور المعدات والتأهيل للمعدات
                         </label>
                         <div class="input-group">
-                            <button type="button" class="btn btn-outline-primary" onclick="openCamera('equipment_images')" title="فتح كاميرا الجوال">
-                                <i class="fas fa-camera"></i>
-                            </button>
                             <input type="file" class="form-control @error('equipment_images.*') is-invalid @enderror" 
                                    name="equipment_images[]" 
                                    id="equipment_images"
@@ -162,9 +173,6 @@
                             صور عامة للسلامة
                         </label>
                         <div class="input-group">
-                            <button type="button" class="btn btn-outline-primary" onclick="openCamera('general_images')" title="فتح كاميرا الجوال">
-                                <i class="fas fa-camera"></i>
-                            </button>
                             <input type="file" class="form-control @error('general_images.*') is-invalid @enderror" 
                                    name="general_images[]" 
                                    id="general_images"
@@ -179,29 +187,7 @@
                         @enderror
                     </div>
 
-                    <!-- صور اجتماع ما قبل بدء العمل TBT -->
-                    <div class="col-md-4 mb-3">
-                        <label for="tbt_images" class="form-label fw-bold">
-                            <i class="fas fa-users-cog me-2 text-success"></i>
-                            صور اجتماع ما قبل بدء العمل TBT
-                        </label>
-                        <div class="input-group">
-                            <button type="button" class="btn btn-outline-primary" onclick="openCamera('tbt_images')" title="فتح كاميرا الجوال">
-                                <i class="fas fa-camera"></i>
-                            </button>
-                            <input type="file" class="form-control @error('tbt_images.*') is-invalid @enderror" 
-                                   name="tbt_images[]" 
-                                   id="tbt_images"
-                                   accept="image/*"
-                                   multiple>
-                        </div>
-                        <div class="form-text">يمكن رفع عدة صور (JPG, PNG, GIF) - الحد الأقصى 10 ميجابايت لكل صورة</div>
-                        @error('tbt_images.*')
-                            <span class="invalid-feedback" role="alert">
-                                <strong>{{ $message }}</strong>
-                            </span>
-                        @enderror
-                    </div>
+                    
                 </div>
                  <!-- البيانات الأساسية للسلامة -->
                  <div class="card mb-4">
@@ -238,7 +224,8 @@
                                 </label>
                                 <select class="form-select @error('safety_status') is-invalid @enderror" 
                                         name="safety_status" 
-                                        id="safety_status">
+                                        id="safety_status"
+                                        onchange="toggleNonComplianceFields()">
                                     <option value="">اختر حالة السلامة</option>
                                     <option value="مطابق" {{ old('safety_status', $workOrder->safety_status) == 'مطابق' ? 'selected' : '' }}>
                                         <i class="fas fa-check text-success"></i> مطابق
@@ -267,6 +254,44 @@
                                     id="inspection_date" 
                                     value="{{ old('inspection_date', $workOrder->inspection_date ? $workOrder->inspection_date->format('Y-m-d') : '') }}">
                                 @error('inspection_date')
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong>{{ $message }}</strong>
+                                    </span>
+                                @enderror
+                            </div>
+
+                            <!-- أسباب عدم المطابقة (تظهر فقط عند اختيار غير مطابق) -->
+                            <div class="col-12 mb-3" id="non_compliance_reasons_field" style="display: none;">
+                                <label for="non_compliance_reasons" class="form-label fw-bold">
+                                    <i class="fas fa-exclamation-triangle me-2 text-danger"></i>
+                                    أسباب عدم المطابقة
+                                </label>
+                                <textarea class="form-control @error('non_compliance_reasons') is-invalid @enderror" 
+                                    name="non_compliance_reasons" 
+                                    id="non_compliance_reasons" 
+                                    rows="4" 
+                                    placeholder="اذكر أسباب عدم المطابقة بالتفصيل...">{{ old('non_compliance_reasons', $workOrder->non_compliance_reasons ?? '') }}</textarea>
+                                @error('non_compliance_reasons')
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong>{{ $message }}</strong>
+                                    </span>
+                                @enderror
+                            </div>
+
+                            <!-- مرفقات عدم المطابقة (تظهر فقط عند اختيار غير مطابق) -->
+                            <div class="col-12 mb-3" id="non_compliance_attachments_field" style="display: none;">
+                                <label for="non_compliance_attachments" class="form-label fw-bold">
+                                    <i class="fas fa-paperclip me-2 text-danger"></i>
+                                    مرفقات عدم المطابقة
+                                </label>
+                                <input type="file" 
+                                    class="form-control @error('non_compliance_attachments.*') is-invalid @enderror" 
+                                    name="non_compliance_attachments[]" 
+                                    id="non_compliance_attachments"
+                                    accept="image/*,.pdf,.doc,.docx"
+                                    multiple>
+                                <div class="form-text">يمكن رفع عدة ملفات (صور، PDF، Word) - الحد الأقصى 10 ميجابايت لكل ملف</div>
+                                @error('non_compliance_attachments.*')
                                     <span class="invalid-feedback" role="alert">
                                         <strong>{{ $message }}</strong>
                                     </span>
@@ -361,15 +386,25 @@
                                          style="height: 200px; object-fit: cover; cursor: pointer;"
                                          onclick="showImageModal('{{ Storage::url($imagePath) }}', '{{ $data['title'] }}')">
                                     
-                                    <!-- زر الحذف -->
-                                    <button type="button" 
-                                            class="btn btn-danger btn-sm position-absolute top-0 end-0 m-2 delete-safety-image"
-                                            data-work-order="{{ $workOrder->id }}"
-                                            data-category="{{ $category }}"
-                                            data-index="{{ $index }}"
-                                            title="حذف الصورة">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
+                                    <!-- أزرار العمليات -->
+                                    <div class="position-absolute top-0 end-0 m-2">
+                                        <!-- زر العرض -->
+                                        <button type="button" 
+                                                class="btn btn-primary btn-sm me-1"
+                                                onclick="showImageModal('{{ Storage::url($imagePath) }}', '{{ $data['title'] }}')"
+                                                title="عرض الصورة">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <!-- زر الحذف -->
+                                        <button type="button" 
+                                                class="btn btn-danger btn-sm delete-safety-image"
+                                                data-work-order="{{ $workOrder->id }}"
+                                                data-category="{{ $category }}"
+                                                data-index="{{ $index }}"
+                                                title="حذف الصورة">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
                                 </div>
                                 <div class="card-body p-2 text-center">
                                     <small class="text-muted">صورة {{ $index + 1 }}</small>
@@ -382,6 +417,80 @@
         </div>
         @endif
     @endforeach
+
+    <!-- عرض مرفقات عدم المطابقة -->
+    @if(isset($workOrder->non_compliance_attachments) && is_array($workOrder->non_compliance_attachments) && count($workOrder->non_compliance_attachments) > 0)
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-danger text-white d-flex align-items-center">
+            <i class="fas fa-paperclip me-2"></i>
+            مرفقات عدم المطابقة ({{ count($workOrder->non_compliance_attachments) }})
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                @foreach($workOrder->non_compliance_attachments as $index => $attachmentPath)
+                    <div class="col-md-3 col-sm-4 col-6">
+                        <div class="card border non-compliance-attachment-card" data-index="{{ $index }}">
+                            <div class="position-relative">
+                                @php
+                                    $fileExtension = pathinfo($attachmentPath, PATHINFO_EXTENSION);
+                                    $isImage = in_array(strtolower($fileExtension), ['jpg', 'jpeg', 'png', 'gif', 'webp']);
+                                @endphp
+                                
+                                @if($isImage)
+                                    <img src="{{ Storage::url($attachmentPath) }}" 
+                                         class="card-img-top" 
+                                         alt="مرفق عدم المطابقة"
+                                         style="height: 200px; object-fit: cover; cursor: pointer;"
+                                         onclick="showImageModal('{{ Storage::url($attachmentPath) }}', 'مرفق عدم المطابقة')">
+                                @else
+                                    <div class="d-flex align-items-center justify-content-center bg-light" style="height: 200px;">
+                                        <div class="text-center">
+                                            <i class="fas fa-file-alt fs-1 text-secondary mb-2"></i>
+                                            <br>
+                                            <small class="text-muted">{{ strtoupper($fileExtension) }}</small>
+                                        </div>
+                                    </div>
+                                @endif
+                                
+                                <!-- أزرار العمليات -->
+                                <div class="position-absolute top-0 end-0 m-2">
+                                    @if($isImage)
+                                        <!-- زر العرض للصور -->
+                                        <button type="button" 
+                                                class="btn btn-primary btn-sm me-1"
+                                                onclick="showImageModal('{{ Storage::url($attachmentPath) }}', 'مرفق عدم المطابقة')"
+                                                title="عرض الصورة">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    @else
+                                        <!-- زر العرض للملفات -->
+                                        <a href="{{ Storage::url($attachmentPath) }}" 
+                                           target="_blank" 
+                                           class="btn btn-primary btn-sm me-1"
+                                           title="عرض الملف">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    @endif
+                                    <!-- زر الحذف -->
+                                    <button type="button" 
+                                            class="btn btn-danger btn-sm delete-non-compliance-attachment"
+                                            data-work-order="{{ $workOrder->id }}"
+                                            data-index="{{ $index }}"
+                                            title="حذف المرفق">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body p-2 text-center">
+                                <small class="text-muted d-block">{{ basename($attachmentPath) }}</small>
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    </div>
+    @endif
 
     <!-- سكشن مخالفات السلامة والكهرباء -->
     <div class="card mb-4 shadow-sm">
@@ -559,8 +668,60 @@
     </div>
 </div>
 
+<style>
+/* تحسين شكل أزرار العمليات على الصور */
+.safety-image-card:hover .position-absolute {
+    opacity: 1;
+}
+
+.safety-image-card .position-absolute {
+    opacity: 0.8;
+    transition: opacity 0.3s ease;
+}
+
+.safety-image-card .position-absolute .btn {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    backdrop-filter: blur(2px);
+}
+
+.non-compliance-attachment-card:hover .position-absolute {
+    opacity: 1;
+}
+
+.non-compliance-attachment-card .position-absolute {
+    opacity: 0.8;
+    transition: opacity 0.3s ease;
+}
+
+.non-compliance-attachment-card .position-absolute .btn {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    backdrop-filter: blur(2px);
+}
+</style>
+
 <script>
+// دالة إظهار/إخفاء حقول عدم المطابقة
+function toggleNonComplianceFields() {
+    const safetyStatus = document.getElementById('safety_status').value;
+    const reasonsField = document.getElementById('non_compliance_reasons_field');
+    const attachmentsField = document.getElementById('non_compliance_attachments_field');
+    
+    if (safetyStatus === 'غير مطابق') {
+        reasonsField.style.display = 'block';
+        attachmentsField.style.display = 'block';
+        // جعل حقل الأسباب مطلوب
+        document.getElementById('non_compliance_reasons').setAttribute('required', 'required');
+    } else {
+        reasonsField.style.display = 'none';
+        attachmentsField.style.display = 'none';
+        // إزالة خاصية المطلوب
+        document.getElementById('non_compliance_reasons').removeAttribute('required');
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
+    // تشغيل الدالة عند تحميل الصفحة لإظهار الحقول إذا كانت القيمة محفوظة مسبقاً
+    toggleNonComplianceFields();
     // معالج حذف صور السلامة
     document.querySelectorAll('.delete-safety-image').forEach(button => {
         button.addEventListener('click', function(e) {
@@ -697,6 +858,56 @@ document.addEventListener('DOMContentLoaded', function() {
                 .catch(error => {
                     console.error('Error:', error);
                     alert('حدث خطأ أثناء حذف المخالفة');
+                });
+            }
+        });
+    });
+
+    // معالج حذف مرفقات عدم المطابقة
+    document.querySelectorAll('.delete-non-compliance-attachment').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            if (confirm('هل أنت متأكد من حذف هذا المرفق؟')) {
+                const workOrderId = this.dataset.workOrder;
+                const index = this.dataset.index;
+                const attachmentCard = this.closest('.col-md-3');
+                
+                fetch(`/admin/work-orders/${workOrderId}/non-compliance-attachment/${index}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        attachmentCard.remove();
+                        
+                        // تحديث عداد المرفقات في العنوان
+                        const cardHeader = attachmentCard.closest('.card').querySelector('.card-header');
+                        const currentCount = cardHeader.textContent.match(/\((\d+)\)/);
+                        if (currentCount) {
+                            const newCount = parseInt(currentCount[1]) - 1;
+                            if (newCount === 0) {
+                                // إخفاء القسم كاملاً إذا لم تعد هناك مرفقات
+                                attachmentCard.closest('.card').remove();
+                            } else {
+                                cardHeader.innerHTML = cardHeader.innerHTML.replace(/\(\d+\)/, `(${newCount})`);
+                            }
+                        }
+                        
+                        // إظهار رسالة نجاح
+                        showSuccessMessage('تم حذف المرفق بنجاح');
+                    } else {
+                        alert('حدث خطأ أثناء حذف المرفق');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('حدث خطأ أثناء حذف المرفق');
                 });
             }
         });

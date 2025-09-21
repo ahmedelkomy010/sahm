@@ -102,11 +102,11 @@ class LicenseController extends Controller
             $evacuationsCount = (clone $statsQuery)->where('is_evacuated', true)->count();
 
             // عدد النتائج في الصفحة (من الطلب أو القيمة الافتراضية 10)
-            $perPage = $request->get('per_page', 10);
+            // تطبيق الترقيم مع عدد العناصر المطلوب
+            $perPage = $request->get('per_page', 50); // القيمة الافتراضية 50
             
             // التأكد من أن القيمة صحيحة
-            $perPage = in_array($perPage, [10, 25, 50, 100]) ? $perPage : 10;
-            
+            $perPage = in_array((int)$perPage, [50, 100, 400, 700]) ? (int)$perPage : 50;
             $licenses = $query->with(['workOrder', 'extensions'])->latest()->paginate($perPage);
 
             // Calculate total license values for filtered data
@@ -2883,6 +2883,36 @@ class LicenseController extends Controller
         } catch (\Exception $e) {
             \Log::error('Error deleting evacuation attachment: ' . $e->getMessage());
             return response()->json(['success' => false, 'message' => 'حدث خطأ أثناء حذف المرفق']);
+        }
+    }
+
+    /**
+     * Toggle license status (active/cancelled)
+     */
+    public function toggleStatus(Request $request, License $license)
+    {
+        try {
+            $isCancelled = $request->input('is_cancelled', false);
+            
+            $license->update([
+                'is_cancelled' => $isCancelled
+            ]);
+            
+            $status = $isCancelled ? 'ملغاة' : 'متاحة';
+            
+            return response()->json([
+                'success' => true,
+                'message' => "تم تحديث حالة الرخصة إلى: {$status}",
+                'is_cancelled' => $isCancelled
+            ]);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error toggling license status: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء تحديث حالة الرخصة'
+            ], 500);
         }
     }
 } 

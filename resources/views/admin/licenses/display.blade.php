@@ -1,19 +1,20 @@
 @extends('layouts.admin')
 
-@section('title', 'لوحة تحكم الرخص')
+@section('title', 'لوحة تحكم الجودة والرخص')
 
 @section('content')
 <div class="container mx-auto px-4 py-6">
     <!-- رأس الصفحة -->
     <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
         <div class="flex justify-between items-center">
-            <a href="{{ route('admin.work-orders.index', ['project' => $project ?? 'riyadh']) }}" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 flex items-center">
-                <i class="fas fa-arrow-right ml-2"></i>
-                العودة لأوامر العمل
-            </a>
-            <div class="text-right">
-                <h1 class="text-2xl font-bold text-gray-800">لوحة تحكم الرخص</h1>
+                
+                <h1 class="text-2xl font-bold text-gray-800">لوحة تحكم الجودة والرخص</h1>
                 <p class="text-sm text-gray-600 mt-1">{{ $projectName ?? 'مشروع الرياض' }}</p>
+            <div class="text-right">
+            <a href="{{ route('admin.work-orders.index', ['project' => $project]) }}" class="btn btn-success btn-lg">
+                    <i class="fas fa-arrow-right me-2"></i>
+                    العودة لأوامر العمل
+                </a>
             </div>
         </div>
     </div>
@@ -43,6 +44,16 @@
                     <option value="">جميع الحالات</option>
                     <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>سارية</option>
                     <option value="expired" {{ request('status') == 'expired' ? 'selected' : '' }}>منتهية</option>
+                </select>
+            </div>
+            <div class="flex-1 min-w-[200px]">
+                <label for="per_page" class="block text-sm font-medium text-gray-700 mb-1">عدد العناصر في الصفحة</label>
+                <select id="per_page" name="per_page" 
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <option value="50" {{ request('per_page') == '50' ? 'selected' : '' }}>50 عنصر</option>
+                    <option value="100" {{ request('per_page') == '100' ? 'selected' : '' }}>100 عنصر</option>
+                    <option value="400" {{ request('per_page') == '400' ? 'selected' : '' }}>400 عنصر</option>
+                    <option value="700" {{ request('per_page') == '700' ? 'selected' : '' }}>700 عنصر</option>
                 </select>
             </div>
             <div>

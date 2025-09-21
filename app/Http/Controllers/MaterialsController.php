@@ -80,10 +80,12 @@ class MaterialsController extends Controller
             $workOrders = collect();
             
             $viewName = $cityName === 'madinah' ? 'admin.materials.madinah-overview' : 'admin.materials.riyadh-overview';
+            $project = $cityName === 'madinah' ? 'madinah' : 'riyadh';
             return view($viewName, compact(
                 'materials', 
                 'units', 
-                'workOrders'
+                'workOrders',
+                'project'
             ))->with('cityName', $cityName);
         }
 
@@ -140,12 +142,14 @@ class MaterialsController extends Controller
             ->orderBy('order_number')
             ->get();
 
-        $viewName = $cityName === 'madinah' ? 'admin.materials.madinah-overview' : 'admin.materials.riyadh-overview';
-        return view($viewName, compact(
-            'materials', 
-            'units', 
-            'workOrders'
-        ))->with('cityName', $cityName);
+            $viewName = $cityName === 'madinah' ? 'admin.materials.madinah-overview' : 'admin.materials.riyadh-overview';
+            $project = $cityName === 'madinah' ? 'madinah' : 'riyadh';
+            return view($viewName, compact(
+                'materials', 
+                'units', 
+                'workOrders',
+                'project'
+            ))->with('cityName', $cityName);
     }
 
     /**
@@ -1078,7 +1082,7 @@ class MaterialsController extends Controller
         try {
             $validated = $request->validate([
                 'material_id' => 'required|exists:materials,id',
-                'quantity_type' => 'required|in:spent,executed',
+                'quantity_type' => 'required|in:spent,executed,completion,recovery',
                 'value' => 'required|numeric|min:0'
             ]);
             

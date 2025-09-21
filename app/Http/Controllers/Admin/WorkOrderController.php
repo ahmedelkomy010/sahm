@@ -484,6 +484,11 @@ class WorkOrderController extends Controller
                 'manual_days' => 'required|integer|min:0',
             ]);
 
+            // إذا تم تغيير حالة التنفيذ، احفظ تاريخ التغيير
+            if (isset($validated['execution_status']) && $validated['execution_status'] != $workOrder->execution_status) {
+                $validated['execution_status_date'] = now();
+            }
+            
             $workOrder->update($validated);
 
             return redirect()->route('admin.work-orders.show', $workOrder)

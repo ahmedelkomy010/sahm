@@ -27,6 +27,7 @@ class License extends Model
         'status',
         'issue_date',
         'description',
+        'is_cancelled',
         // حقول شهادة التنسيق
         'coordination_certificate_number',
         'coordination_certificate_path',

@@ -281,7 +281,7 @@
                                                 <td>{{ $workOrder->work_description ?? 'غير متوفر' }}</td>
                                             </tr>
                                             <tr>
-                                                <th>تاريخ تسليم إجراء 155</th>
+                                                <th>تاريخ اجراء حالة تنفيذ امر العمل :</th>
                                                 <td>{{ $workOrder->procedure_155_delivery_date ? $workOrder->procedure_155_delivery_date->format('Y-m-d') : 'غير متوفر' }}</td>
                                             </tr>
                                             
@@ -452,6 +452,14 @@
                                                 <td>{{ $workOrder->consultant_name ?? 'غير متوفر' }}</td>
                                             </tr>
                                             <tr>
+                                                <th>رقم أمر الشراء</th>
+                                                <td>{{ $workOrder->purchase_order_number ?? 'غير متوفر' }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>رقم المستخلص</th>
+                                                <td>{{ $workOrder->extract_number ?? 'غير متوفر' }}</td>
+                                            </tr>
+                                            <tr>
                                                 <th>مرفقات الفاتورة</th>
                                                 <td>
                                                     @if($workOrder->invoiceAttachments->count() > 0)
@@ -615,66 +623,129 @@
                                             <!-- قيم الاختبارات -->
                                             <tr>
                                                 <th style="width: 40%">قيمة أمر العمل المبدئية شامل الاستشاري بدون الضريبة</th>
-                                                <td>{{ number_format($workOrder->order_value_with_consultant, 2) }} ﷼</td>
+                                                <td>
+                                                    <div class="d-flex align-items-center">
+                                                        <span>{{ number_format($workOrder->order_value_with_consultant, 2) }}</span>
+                                                        <img src="{{ asset('images/Saudi_Riyal.png') }}" alt="ريال" style="width:16px; height:16px; margin-left: 3px; vertical-align: middle;">
+                                                    </div>
+                                                </td>
                                             </tr>
                                             <tr>
                                                 <th>قيمة أمر العمل المبدئية غير شامل الاستشاري بدون الضريبة</th>
-                                                <td>{{ number_format($workOrder->order_value_without_consultant, 2) }} ﷼</td>
+                                                <td>
+                                                    <div class="d-flex align-items-center">
+                                                        <span>{{ number_format($workOrder->order_value_without_consultant, 2) }}</span>
+                                                        <img src="{{ asset('images/Saudi_Riyal.png') }}" alt="ريال" style="width:16px; height:16px; margin-left: 3px; vertical-align: middle;">
+                                                    </div>
+                                                </td>
                                             </tr>
                                             <tr>
                                                 <th>قيمة التنفيذ الفعلي شامل الاستشاري بدون الضريبة</th>
-                                                <td>{{ $workOrder->actual_execution_value_consultant ? number_format($workOrder->actual_execution_value_consultant, 2) . ' ﷼' : 'غير متوفر' }}</td>
+                                                <td>
+                                                    @if($workOrder->actual_execution_value_consultant)
+                                                        <div class="d-flex align-items-center">
+                                                            <span>{{ number_format($workOrder->actual_execution_value_consultant, 2) }}</span>
+                                                            <img src="{{ asset('images/Saudi_Riyal.png') }}" alt="ريال" style="width:16px; height:16px; margin-left: 3px; vertical-align: middle;">
+                                                        </div>
+                                                    @else
+                                                        غير متوفر
+                                                    @endif
+                                                </td>
                                             </tr>
                                             <tr>
                                                 <th>قيمة التنفيذ الفعلي غير شامل الاستشاري بدون الضريبة</th>
-                                                <td>{{ $workOrder->actual_execution_value_without_consultant ? number_format($workOrder->actual_execution_value_without_consultant, 2) . ' ﷼' : 'غير متوفر' }}</td>
+                                                <td>
+                                                    @if($workOrder->actual_execution_value_without_consultant)
+                                                        <div class="d-flex align-items-center">
+                                                            <span>{{ number_format($workOrder->actual_execution_value_without_consultant, 2) }}</span>
+                                                            <img src="{{ asset('images/Saudi_Riyal.png') }}" alt="ريال" style="width:16px; height:16px; margin-left: 3px; vertical-align: middle;">
+                                                        </div>
+                                                    @else
+                                                        غير متوفر
+                                                    @endif
+                                                </td>
                                             </tr>
                                             <tr>
                                                 <th>قيمة الدفعة الجزئية الأولى غير شامل الضريبة</th>
-                                                <td>{{ $workOrder->first_partial_payment_without_tax ? number_format($workOrder->first_partial_payment_without_tax, 2, '.', '') . ' ﷼' : 'غير متوفر' }}</td>
+                                                <td>
+                                                    @if($workOrder->first_partial_payment_without_tax)
+                                                        <div class="d-flex align-items-center">
+                                                            <span>{{ number_format($workOrder->first_partial_payment_without_tax, 2, '.', '') }}</span>
+                                                            <img src="{{ asset('images/Saudi_Riyal.png') }}" alt="ريال" style="width:16px; height:16px; margin-left: 3px; vertical-align: middle;">
+                                                        </div>
+                                                    @else
+                                                        غير متوفر
+                                                    @endif
+                                                </td>
                                             </tr>
                                             <tr>
                                                 <th>قيمة الدفعة الجزئية الثانية غير شامل الضريبة</th>
-                                                <td>{{ $workOrder->second_partial_payment_with_tax ? number_format($workOrder->second_partial_payment_with_tax, 2, '.', '') . ' ﷼' : 'غير متوفر' }}</td>
+                                                <td>
+                                                    @if($workOrder->second_partial_payment_with_tax)
+                                                        <div class="d-flex align-items-center">
+                                                            <span>{{ number_format($workOrder->second_partial_payment_with_tax, 2, '.', '') }}</span>
+                                                            <img src="{{ asset('images/Saudi_Riyal.png') }}" alt="ريال" style="width:16px; height:16px; margin-left: 3px; vertical-align: middle;">
+                                                        </div>
+                                                    @else
+                                                        غير متوفر
+                                                    @endif
+                                                </td>
                                             </tr>
                                             <tr>
                                                 <th>القيمة الكلية النهائية غير شامل الضريبة</th>
-                                                <td>{{ $workOrder->final_total_value ? number_format($workOrder->final_total_value, 2, '.', '') . ' ﷼' : 'غير متوفر' }}</td>
+                                                <td>
+                                                    @if($workOrder->final_total_value)
+                                                        <div class="d-flex align-items-center">
+                                                            <span>{{ number_format($workOrder->final_total_value, 2, '.', '') }}</span>
+                                                            <img src="{{ asset('images/Saudi_Riyal.png') }}" alt="ريال" style="width:16px; height:16px; margin-left: 3px; vertical-align: middle;">
+                                                        </div>
+                                                    @else
+                                                        غير متوفر
+                                                    @endif
+                                                </td>
                                             </tr>
                                             
                                             <tr>
                                                 <th>قيمة الضريبة</th>
-                                                <td>{{ $workOrder->tax_value ? number_format($workOrder->tax_value, 2) . ' ﷼' : 'غير متوفر' }}</td>
+                                                <td>
+                                                    @if($workOrder->tax_value)
+                                                        <div class="d-flex align-items-center">
+                                                            <span>{{ number_format($workOrder->tax_value, 2) }}</span>
+                                                            <img src="{{ asset('images/Saudi_Riyal.png') }}" alt="ريال" style="width:16px; height:16px; margin-left: 3px; vertical-align: middle;">
+                                                        </div>
+                                                    @else
+                                                        غير متوفر
+                                                    @endif
+                                                </td>
                                             </tr>
                                             <tr>
                                                 <th>قيمة اختبارات ما قبل التشغيل</th>
                                                 <td>{{ $workOrder->pre_operation_tests ?? 'غير متوفر' }}</td>
                                             </tr>
+                                            
                                             <tr>
-                                                <th>رقم أمر الشراء</th>
-                                                <td>{{ $workOrder->purchase_order_number ?? 'غير متوفر' }}</td>
-                                            </tr>
-                                            <tr>
-                                                <th>رقم المستخلص</th>
-                                                <td>{{ $workOrder->extract_number ?? 'غير متوفر' }}</td>
-                                            </tr>
-                                            <tr>
-                                                <th>غرامات التأخير</th>
+                                                <th>قيمة غرامات التأخير</th>
                                                 <td>
                                                     @if($workOrder->delay_penalties)
-                                                        <span class="text-danger fw-bold">{{ number_format($workOrder->delay_penalties, 2) }} ﷼</span>
+                                                        <div class="d-flex align-items-center">
+                                                            <span class="text-danger fw-bold">{{ number_format($workOrder->delay_penalties, 2) }}</span>
+                                                            <img src="{{ asset('images/Saudi_Riyal.png') }}" alt="ريال" style="width:16px; height:16px; margin-left: 3px; vertical-align: middle;">
+                                                        </div>
                                                     @else
                                                         <span class="text-muted">لا توجد غرامات</span>
                                                     @endif
                                                 </td>
                                             </tr>
                                             <tr>
-                                                <th>إجمالي مخالفات السلامة</th>
+                                                <th>قيمة مخالفات السلامة</th>
                                                 <td>
                                                     @if($totalSafetyViolations > 0)
                                                         <span class="text-danger fw-bold">
                                                             <i class="fas fa-exclamation-triangle me-1"></i>
-                                                            {{ number_format($totalSafetyViolations, 2) }} ﷼
+                                                            <div class="d-flex align-items-center">
+                                                                <span>{{ number_format($totalSafetyViolations, 2) }}</span>
+                                                                <img src="{{ asset('images/Saudi_Riyal.png') }}" alt="ريال" style="width:16px; height:16px; margin-left: 3px; vertical-align: middle;">
+                                                            </div>
                                                         </span>
                                                         <small class="text-muted d-block">
                                                             ({{ $workOrder->safetyViolations->count() }} مخالفة)
@@ -693,8 +764,13 @@
                                                     <td><span class="badge bg-info">{{ $workOrder->licenses->count() }} رخصة</span></td>
                                                 </tr>
                                                 <tr>
-                                                    <th>إجمالي قيمة رخص الحفر</th>
-                                                    <td><span class="text-primary fw-bold">{{ number_format($licensesTotals['total_license_value'] ?? 0, 2) }} ﷼</span></td>
+                                                    <th>قيمة رخص الحفر</th>
+                                                    <td>
+                                                        <div class="d-flex align-items-center">
+                                                            <span class="text-primary fw-bold">{{ number_format($licensesTotals['total_license_value'] ?? 0, 2) }}</span>
+                                                            <img src="{{ asset('images/Saudi_Riyal.png') }}" alt="ريال" style="width:16px; height:16px; margin-left: 3px; vertical-align: middle;">
+                                                        </div>
+                                                    </td>
                                                 </tr>
                                                 @php
                                                     // حساب إجمالي عدد التمديدات وقيمتها
@@ -731,20 +807,21 @@
                                                     }
                                                 @endphp
                                                 <tr>
-                                                    <th>إجمالي قيمة تمديدات الرخص</th>
+                                                    <th> قيمة تمديدات الرخص</th>
                                                     <td>
                                                         <div class="d-flex align-items-center gap-3">
                                                             <span class="badge bg-info fs-6">
                                                                 {{ $totalExtensions }} تمديد
                                                             </span>
-                                                            <span class="text-info fw-bold">
-                                                                {{ number_format($totalExtensionValue, 2) }} ﷼
-                                                            </span>
+                                                            <div class="d-flex align-items-center">
+                                                                <span class="text-info fw-bold">{{ number_format($totalExtensionValue, 2) }}</span>
+                                                                <img src="{{ asset('images/Saudi_Riyal.png') }}" alt="ريال" style="width:16px; height:16px; margin-left: 3px; vertical-align: middle;">
+                                                            </div>
                                                         </div>
                                                     </td>
                                                 </tr>
                                                 <tr>
-                                                    <th>إجمالي قيمة اخلاءات الرخص</th>
+                                                    <th> قيمة اخلاءات الرخص</th>
                                                     <td>
                                                         <div class="d-flex align-items-center gap-3">
                                                             @if($totalEvacuationCount > 0)
@@ -752,30 +829,27 @@
                                                                 {{ $totalEvacuationCount }} إخلاء
                                                             </span>
                                                             @endif
-                                                            <span class="text-warning fw-bold">
-                                                                {{ number_format($totalEvacuationValue, 2) }} ﷼
-                                                            </span>
+                                                            <div class="d-flex align-items-center">
+                                                                <span class="text-warning fw-bold">{{ number_format($totalEvacuationValue, 2) }}</span>
+                                                                <img src="{{ asset('images/Saudi_Riyal.png') }}" alt="ريال" style="width:16px; height:16px; margin-left: 3px; vertical-align: middle;">
+                                                            </div>
                                                         </div>
                                                     </td>
                                                 </tr>
                                                 <tr>
-                                                    <th>إجمالي قيمة مخالفات الرخص</th>
+                                                    <th> قيمة مخالفات الرخص</th>
                                                     <td>
-                                                        <span class="text-danger fw-bold">{{ number_format($licensesTotals['total_violations_value'] ?? 0, 2) }} ﷼</span>
+                                                        <div class="d-flex align-items-center">
+                                                            <span class="text-danger fw-bold">{{ number_format($licensesTotals['total_violations_value'] ?? 0, 2) }}</span>
+                                                            <img src="{{ asset('images/Saudi_Riyal.png') }}" alt="ريال" style="width:16px; height:16px; margin-left: 3px; vertical-align: middle;">
+                                                        </div>
                                                         @if(($licensesTotals['total_violations_count'] ?? 0) > 0)
                                                             <br><small class="text-muted">({{ $licensesTotals['total_violations_count'] }} مخالفة)</small>
                                                         @endif
                                                     </td>
                                                 </tr>
                                                 @if(($licensesTotals['paid_violations_value'] ?? 0) > 0 || ($licensesTotals['pending_violations_value'] ?? 0) > 0)
-                                                <tr>
-                                                    <th>المخالفات المدفوعة</th>
-                                                    <td><span class="text-success">{{ number_format($licensesTotals['paid_violations_value'] ?? 0, 2) }} ﷼</span></td>
-                                                </tr>
-                                                <tr>
-                                                    <th>المخالفات المتأخرة</th>
-                                                    <td><span class="text-warning">{{ number_format($licensesTotals['pending_violations_value'] ?? 0, 2) }} ﷼</span></td>
-                                                </tr>
+                                               
                                                 @endif
                                                 @php
                                                     $grandTotal = ($licensesTotals['total_license_value'] ?? 0) + ($licensesTotals['total_extension_value'] ?? 0) + $totalEvacuationValue + ($licensesTotals['total_violations_value'] ?? 0);
@@ -791,24 +865,26 @@
                                                 @endphp
                                                 @if($allLicenses->count() > 0)
                                                 <tr>
-                                                    <th>إجمالي الاختبارات الناجحة</th>
+                                                    <th>قيمة الاختبارات الناجحة</th>
                                                     <td>
                                                         <div class="d-flex align-items-center gap-3">
                                                             
-                                                            <span class="text-success fw-bold">
-                                                                {{ number_format($totalSuccessfulTestsValue, 2) }} ﷼
-                                                            </span>
+                                                            <div class="d-flex align-items-center">
+                                                                <span class="text-success fw-bold">{{ number_format($totalSuccessfulTestsValue, 2) }}</span>
+                                                                <img src="{{ asset('images/Saudi_Riyal.png') }}" alt="ريال" style="width:16px; height:16px; margin-left: 3px; vertical-align: middle;">
+                                                            </div>
                                                         </div>
                                                     </td>
                                                 </tr>
                                                 <tr>
-                                                    <th>إجمالي الاختبارات الراسبة</th>
+                                                    <th>قيمة الاختبارات الراسبة</th>
                                                     <td>
                                                         <div class="d-flex align-items-center gap-3">
                                                             
-                                                            <span class="text-danger fw-bold">
-                                                                {{ number_format($totalFailedTestsValue, 2) }} ﷼
-                                                            </span>
+                                                            <div class="d-flex align-items-center">
+                                                                <span class="text-danger fw-bold">{{ number_format($totalFailedTestsValue, 2) }}</span>
+                                                                <img src="{{ asset('images/Saudi_Riyal.png') }}" alt="ريال" style="width:16px; height:16px; margin-left: 3px; vertical-align: middle;">
+                                                            </div>
                                                         </div>
                                                     </td>
                                                 </tr>

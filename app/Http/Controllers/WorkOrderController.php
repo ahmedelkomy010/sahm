@@ -652,7 +652,7 @@ class WorkOrderController extends Controller
     {
         // دعم التحديث الجزئي لحقول رقم أمر الشراء وصحيفة الإدخال ورقم المستخلص والحقول الجديدة
         if ($request->input('_section') === 'extract_number_group') {
-            $workOrder->update($request->only([
+            $updateData = $request->only([
                 'purchase_order_number',
                 'entry_sheet',
                 'entry_sheet_1',
@@ -668,7 +668,14 @@ class WorkOrderController extends Controller
                 'final_total_value',
                 'execution_status',
                 'pre_operation_tests',
-            ]));
+            ]);
+            
+            // إذا تم تغيير حالة التنفيذ، احفظ تاريخ التغيير
+            if (isset($updateData['execution_status']) && $updateData['execution_status'] != $workOrder->execution_status) {
+                $updateData['execution_status_date'] = now();
+            }
+            
+            $workOrder->update($updateData);
             return redirect()->route('admin.work-orders.actions-execution', $workOrder->id)->with('success', 'تم تحديث البيانات بنجاح');
         }
         
@@ -688,6 +695,11 @@ class WorkOrderController extends Controller
             'consultant_name' => 'nullable|string|max:255',
             'task_number' => 'nullable|string|max:255',
         ]);
+        // إذا تم تغيير حالة التنفيذ، احفظ تاريخ التغيير
+        if (isset($validated['execution_status']) && $validated['execution_status'] != $workOrder->execution_status) {
+            $validated['execution_status_date'] = now();
+        }
+        
         // تحديث بيانات أمر العمل
         $workOrder->update($validated);
 
@@ -3690,11 +3702,13 @@ class WorkOrderController extends Controller
                 'safety_status' => 'nullable|string',
                 'safety_officer' => 'nullable|string|max:255',
                 'inspection_date' => 'nullable|date',
+                'non_compliance_reasons' => 'required_if:safety_status,غير مطابق|nullable|string',
                 'permits_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240',
                 'team_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240',
                 'equipment_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240',
                 'general_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240',
                 'tbt_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240',
+                'non_compliance_attachments.*' => 'nullable|file|mimes:jpeg,png,jpg,gif,pdf,doc,docx|max:10240',
             ]);
 
             // تحديث البيانات الأساسية
@@ -3703,6 +3717,7 @@ class WorkOrderController extends Controller
                 'safety_status' => $validated['safety_status'],
                 'safety_officer' => $validated['safety_officer'],
                 'inspection_date' => $validated['inspection_date'],
+                'non_compliance_reasons' => $validated['non_compliance_reasons'],
             ]);
 
             // رفع صور التصاريح
@@ -3728,6 +3743,11 @@ class WorkOrderController extends Controller
             // رفع صور اجتماع ما قبل بدء العمل TBT
             if ($request->hasFile('tbt_images')) {
                 $this->uploadSafetyImages($request->file('tbt_images'), $workOrder, 'tbt');
+            }
+
+            // رفع مرفقات عدم المطابقة
+            if ($request->hasFile('non_compliance_attachments')) {
+                $this->uploadNonComplianceAttachments($request->file('non_compliance_attachments'), $workOrder);
             }
 
             return redirect()->route('admin.work-orders.safety', $workOrder)
@@ -3816,6 +3836,74 @@ class WorkOrderController extends Controller
             \Log::error('Error in uploadSafetyImages', [
                 'error' => $e->getMessage(),
                 'category' => $category,
+                'workOrderId' => $workOrder->id
+            ]);
+            throw $e;
+        }
+    }
+
+    /**
+     * رفع مرفقات عدم المطابقة
+     */
+    private function uploadNonComplianceAttachments($files, WorkOrder $workOrder)
+    {
+        try {
+            $uploadedAttachments = [];
+            
+            \Log::info('Starting uploadNonComplianceAttachments', [
+                'workOrderId' => $workOrder->id,
+                'filesCount' => count($files)
+            ]);
+            
+            // الحصول على المرفقات الموجودة
+            $existingAttachments = $workOrder->non_compliance_attachments ?? [];
+            \Log::info('Existing attachments', ['count' => count($existingAttachments)]);
+
+            foreach ($files as $index => $file) {
+                \Log::info('Processing file', [
+                    'index' => $index,
+                    'originalName' => $file->getClientOriginalName(),
+                    'size' => $file->getSize()
+                ]);
+                
+                $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                $path = 'work_orders/' . $workOrder->id . '/safety/non_compliance';
+                
+                if (!Storage::disk('public')->exists($path)) {
+                    Storage::disk('public')->makeDirectory($path);
+                }
+                
+                $filePath = $file->storeAs($path, $filename, 'public');
+                $uploadedAttachments[] = $filePath;
+                
+                \Log::info('File uploaded successfully', [
+                    'filename' => $filename,
+                    'filePath' => $filePath
+                ]);
+            }
+
+            // دمج المرفقات الجديدة مع الموجودة
+            $allAttachments = array_merge($existingAttachments, $uploadedAttachments);
+            
+            \Log::info('Merging attachments', [
+                'existingCount' => count($existingAttachments),
+                'newCount' => count($uploadedAttachments),
+                'totalCount' => count($allAttachments)
+            ]);
+            
+            // تحديث قاعدة البيانات
+            $updateResult = $workOrder->update([
+                'non_compliance_attachments' => $allAttachments
+            ]);
+            
+            \Log::info('Database update', [
+                'success' => $updateResult,
+                'finalAttachmentCount' => count($allAttachments)
+            ]);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error in uploadNonComplianceAttachments', [
+                'error' => $e->getMessage(),
                 'workOrderId' => $workOrder->id
             ]);
             throw $e;
@@ -3947,6 +4035,51 @@ class WorkOrderController extends Controller
     }
 
     /**
+     * حذف مرفق عدم المطابقة
+     */
+    public function deleteNonComplianceAttachment(WorkOrder $workOrder, $index)
+    {
+        try {
+            $attachments = $workOrder->non_compliance_attachments ?? [];
+
+            if (!isset($attachments[$index])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'المرفق غير موجود'
+                ], 404);
+            }
+
+            $attachmentPath = $attachments[$index];
+
+            // حذف المرفق من التخزين
+            if (Storage::disk('public')->exists($attachmentPath)) {
+                Storage::disk('public')->delete($attachmentPath);
+            }
+
+            // إزالة المرفق من المصفوفة
+            unset($attachments[$index]);
+            $attachments = array_values($attachments); // إعادة ترقيم المصفوفة
+
+            // تحديث قاعدة البيانات
+            $workOrder->update([
+                'non_compliance_attachments' => $attachments
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'تم حذف المرفق بنجاح'
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error deleting non-compliance attachment: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء حذف المرفق'
+            ], 500);
+        }
+    }
+
+    /**
      * إضافة مخالفة سلامة جديدة
      */
     public function addSafetyViolation(Request $request, WorkOrder $workOrder)
@@ -4028,5 +4161,103 @@ class WorkOrderController extends Controller
                 'message' => 'حدث خطأ أثناء حذف المخالفة'
             ], 500);
         }
+    }
+
+    /**
+     * عرض انتاجية التنفيذ
+     */
+    public function executionProductivity(Request $request)
+    {
+        // التحقق من وجود المشروع
+        $project = $request->get('project');
+        
+        if (!$project || !in_array($project, ['riyadh', 'madinah'])) {
+            return redirect()->route('project.selection');
+        }
+        
+        // تحديد المدينة بناءً على المشروع
+        $city = $project === 'madinah' ? 'المدينة المنورة' : 'الرياض';
+        $projectName = $project === 'madinah' ? 'مشروع المدينة المنورة' : 'مشروع الرياض';
+        
+        // بناء الاستعلام الأساسي - تخفيف الشروط للاختبار
+        $query = WorkOrder::where('city', $city)
+            ->where(function($q) {
+                $q->where('execution_status', '>=', 2) // أوامر العمل المنفذة
+                  ->orWhereNotNull('procedure_155_delivery_date') // أو التي لها تاريخ تسليم
+                  ->orWhereNotNull('final_total_value'); // أو التي لها قيمة إجمالية
+            });
+        
+        // فلتر التاريخ من
+        if ($request->filled('date_from')) {
+            $query->where('procedure_155_delivery_date', '>=', $request->date_from);
+        }
+        
+        // فلتر التاريخ إلى
+        if ($request->filled('date_to')) {
+            $query->where('procedure_155_delivery_date', '<=', $request->date_to);
+        }
+        
+        // فلتر نوع العمل
+        if ($request->filled('work_type')) {
+            $query->where('work_type', $request->work_type);
+        }
+        
+        // فلتر الحي
+        if ($request->filled('district')) {
+            $query->where('district', 'like', '%' . $request->district . '%');
+        }
+        
+        // Debug: طباعة عدد النتائج
+        $totalCount = $query->count();
+        \Log::info("Execution Productivity Debug: Total work orders found: $totalCount for city: $city");
+        
+        // بدلاً من عرض أوامر العمل، سنعرض بنود العمل المنفذة مباشرة
+        $workOrderItems = \App\Models\WorkOrderItem::whereHas('workOrder', function($q) use ($city, $request) {
+            $q->where('city', $city)
+              ->where(function($subQ) {
+                  $subQ->where('execution_status', '>=', 2)
+                       ->orWhereNotNull('procedure_155_delivery_date')
+                       ->orWhereNotNull('final_total_value');
+              });
+            
+            // فلتر التاريخ من
+            if ($request->filled('date_from')) {
+                $q->where('procedure_155_delivery_date', '>=', $request->date_from);
+            }
+            
+            // فلتر التاريخ إلى
+            if ($request->filled('date_to')) {
+                $q->where('procedure_155_delivery_date', '<=', $request->date_to);
+            }
+            
+            // فلتر رقم أمر العمل
+            if ($request->filled('order_number')) {
+                $q->where('order_number', 'like', '%' . $request->order_number . '%');
+            }
+        })
+        ->where('executed_quantity', '>', 0)
+        ->when($request->filled('work_item_code'), function($query) use ($request) {
+            $query->whereHas('workItem', function($q) use ($request) {
+                $q->where('code', 'like', '%' . $request->work_item_code . '%');
+            });
+        })
+        ->with(['workOrder', 'workItem'])
+        ->orderBy('created_at', 'desc')
+        ->paginate(20);
+        
+        // حساب الإحصائيات
+        $totalWorkOrders = $query->count();
+        $totalValue = $query->sum('final_total_value');
+        $totalWorkItems = $workOrderItems->total();
+        $totalExecutedValue = $workOrderItems->sum(function($item) {
+            return $item->executed_quantity * $item->unit_price;
+        });
+        
+        // لا نحتاج لقوائم الأنواع والأحياء بعد الآن
+        
+        return view('admin.work_orders.execution-productivity', compact(
+            'workOrderItems', 'project', 'projectName', 'city',
+            'totalWorkOrders', 'totalValue', 'totalWorkItems', 'totalExecutedValue'
+        ));
     }
 } 

@@ -226,29 +226,6 @@
                         <span class="badge bg-light text-primary ms-2">{{ $materials->total() }} مادة</span>
                     </div>
                         <div class="d-flex gap-2">
-                            @php
-                                $projectName = strtolower($workOrder->project_name ?? '');
-                                $projectDescription = strtolower($workOrder->project_description ?? '');
-                                $city = strtolower($workOrder->city ?? '');
-                                
-                                $isRiyadh = str_contains($projectName, 'الرياض') || str_contains($projectName, 'riyadh') || 
-                                           str_contains($projectDescription, 'الرياض') || str_contains($projectDescription, 'riyadh') ||
-                                           str_contains($city, 'الرياض') || str_contains($city, 'riyadh');
-                                           
-                                $isMadinah = str_contains($projectName, 'المدينة') || str_contains($projectName, 'madinah') || 
-                                            str_contains($projectDescription, 'المدينة') || str_contains($projectDescription, 'madinah') ||
-                                            str_contains($city, 'المدينة') || str_contains($city, 'madinah');
-                            @endphp
-                            
-                            @if($isRiyadh)
-                                <!-- <a href="{{ route('admin.materials.riyadh-overview') }}" class="btn btn-outline-light btn-sm">
-                                    <i class="fas fa-eye"></i> تفاصيل عامة للمواد - الرياض
-                                </a> -->
-                            @elseif($isMadinah)
-                                <!-- <a href="{{ route('admin.materials.madinah-overview') }}" class="btn btn-outline-light btn-sm">
-                                    <i class="fas fa-eye"></i> تفاصيل عامة للمواد - المدينة المنورة
-                                </a> -->
-                            @endif
                             
                             <a href="{{ route('admin.work-orders.show', $workOrder) }}" class="btn btn-outline-light btn-sm">
                                 <i class="fas fa-arrow-right"></i> عودة الي تفاصيل أمر العمل
@@ -652,6 +629,14 @@
                                             <i class="fas fa-clipboard-check text-success me-1"></i>
                                             ملاحظات<br>المنفذة
                                         </th>
+                                        <th class="text-center" width="6%">
+                                            <i class="fas fa-plus-circle text-info me-1"></i>
+                                            الاستكمال<br>المنفذة
+                                        </th>
+                                        <th class="text-center" width="6%">
+                                            <i class="fas fa-undo text-warning me-1"></i>
+                                            الاسترجاع<br>المنفذة
+                                        </th>
                                         <th class="text-center" width="5%">
                                             <i class="fas fa-cogs text-secondary me-1"></i>
                                             إجراءات
@@ -770,6 +755,32 @@
                                                            data-material-id="{{ $material->id }}"
                                                            placeholder="ملاحظات المنفذة..."
                                                            style="font-size: 0.85rem; text-align: right; padding: 4px 8px;">
+                                                </div>
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="quantity-badge">
+                                                    <input type="number" 
+                                                           class="quantity-input completion-quantity" 
+                                                           value="{{ number_format($material->completion_quantity ?? 0, 2) }}"
+                                                           data-material-id="{{ $material->id }}"
+                                                           data-original-value="{{ $material->completion_quantity }}"
+                                                           step="0.01"
+                                                           min="0"
+                                                           placeholder="0.00"
+                                                           style="width: 60px; text-align: center; padding: 2px 5px; font-size: 0.85rem;">
+                                                </div>
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="quantity-badge">
+                                                    <input type="number" 
+                                                           class="quantity-input recovery-quantity" 
+                                                           value="{{ number_format($material->recovery_quantity ?? 0, 2) }}"
+                                                           data-material-id="{{ $material->id }}"
+                                                           data-original-value="{{ $material->recovery_quantity }}"
+                                                           step="0.01"
+                                                           min="0"
+                                                           placeholder="0.00"
+                                                           style="width: 60px; text-align: center; padding: 2px 5px; font-size: 0.85rem;">
                                                 </div>
                                             </td>
                                             <td class="text-center">
@@ -2813,7 +2824,9 @@ document.querySelectorAll('.quantity-input').forEach(input => {
                 },
                 body: JSON.stringify({
                     material_id: materialId,
-                    quantity_type: this.classList.contains('spent-quantity') ? 'spent' : 'executed',
+                    quantity_type: this.classList.contains('spent-quantity') ? 'spent' : 
+                                  (this.classList.contains('executed-quantity') ? 'executed' : 
+                                  (this.classList.contains('completion-quantity') ? 'completion' : 'recovery')),
                     value: newValue
                 })
             })

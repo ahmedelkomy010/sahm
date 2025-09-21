@@ -260,6 +260,24 @@
                                             class="h-3 w-3 ml-1 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
                                         <label for="riyadh_manage_safety" class="text-xs text-blue-700 mr-2">إدارة السلامة</label>
                                     </div>
+                                    <div class="flex items-center">
+                                        <input type="checkbox" id="riyadh_materials_overview" name="permissions[]" value="riyadh_materials_overview" 
+                                            {{ (is_array(old('permissions')) && in_array('riyadh_materials_overview', old('permissions'))) ? 'checked' : '' }}
+                                            class="h-3 w-3 ml-1 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                        <label for="riyadh_materials_overview" class="text-xs text-blue-700 mr-2">تفاصيل عامة للمواد</label>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <input type="checkbox" id="riyadh_execution_productivity" name="permissions[]" value="riyadh_execution_productivity" 
+                                            {{ (is_array(old('permissions')) && in_array('riyadh_execution_productivity', old('permissions'))) ? 'checked' : '' }}
+                                            class="h-3 w-3 ml-1 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                        <label for="riyadh_execution_productivity" class="text-xs text-blue-700 mr-2">انتاجية التنفيذ</label>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <input type="checkbox" id="riyadh_license_details" name="permissions[]" value="riyadh_license_details" 
+                                            {{ (is_array(old('permissions')) && in_array('riyadh_license_details', old('permissions'))) ? 'checked' : '' }}
+                                            class="h-3 w-3 ml-1 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                        <label for="riyadh_license_details" class="text-xs text-blue-700 mr-2">تفاصيل الرخص</label>
+                                    </div>
                                 </div>
                             </div>
                             
@@ -314,6 +332,24 @@
                                             {{ (is_array(old('permissions')) && in_array('madinah_manage_safety', old('permissions'))) ? 'checked' : '' }}
                                             class="h-3 w-3 ml-1 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
                                         <label for="madinah_manage_safety" class="text-xs text-blue-700 mr-2">إدارة السلامة</label>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <input type="checkbox" id="madinah_materials_overview" name="permissions[]" value="madinah_materials_overview" 
+                                            {{ (is_array(old('permissions')) && in_array('madinah_materials_overview', old('permissions'))) ? 'checked' : '' }}
+                                            class="h-3 w-3 ml-1 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                        <label for="madinah_materials_overview" class="text-xs text-blue-700 mr-2">تفاصيل عامة للمواد</label>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <input type="checkbox" id="madinah_execution_productivity" name="permissions[]" value="madinah_execution_productivity" 
+                                            {{ (is_array(old('permissions')) && in_array('madinah_execution_productivity', old('permissions'))) ? 'checked' : '' }}
+                                            class="h-3 w-3 ml-1 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                        <label for="madinah_execution_productivity" class="text-xs text-blue-700 mr-2">انتاجية التنفيذ</label>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <input type="checkbox" id="madinah_license_details" name="permissions[]" value="madinah_license_details" 
+                                            {{ (is_array(old('permissions')) && in_array('madinah_license_details', old('permissions'))) ? 'checked' : '' }}
+                                            class="h-3 w-3 ml-1 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                        <label for="madinah_license_details" class="text-xs text-blue-700 mr-2">تفاصيل الرخص</label>
                                     </div>
                                 </div>
                             </div>
@@ -558,7 +594,7 @@
                         riyadhCheckbox.checked = true;
                         riyadhDetailedDiv.classList.remove('hidden');
                         // تحديد كل صلاحيات الرياض
-                        document.querySelectorAll('[id^="riyadh_manage_"]').forEach(checkbox => {
+                        document.querySelectorAll('[id^="riyadh_manage_"], [id^="riyadh_materials_"], [id^="riyadh_execution_"], [id^="riyadh_license_"]').forEach(checkbox => {
                             checkbox.checked = true;
                         });
                     } else if (selectedCity.value === 'madinah') {
@@ -566,7 +602,7 @@
                         madinahCheckbox.checked = true;
                         madinahDetailedDiv.classList.remove('hidden');
                         // تحديد كل صلاحيات المدينة المنورة
-                        document.querySelectorAll('[id^="madinah_manage_"]').forEach(checkbox => {
+                        document.querySelectorAll('[id^="madinah_manage_"], [id^="madinah_materials_"], [id^="madinah_execution_"], [id^="madinah_license_"]').forEach(checkbox => {
                             checkbox.checked = true;
                         });
                     }
@@ -607,7 +643,7 @@
                 madinahDetailedDiv.classList.add('hidden');
                 
                 // إلغاء تحديد كل الصلاحيات التفصيلية
-                document.querySelectorAll('[id^="riyadh_manage_"], [id^="madinah_manage_"]').forEach(checkbox => {
+                document.querySelectorAll('[id^="riyadh_manage_"], [id^="riyadh_materials_"], [id^="riyadh_execution_"], [id^="riyadh_license_"], [id^="madinah_manage_"], [id^="madinah_materials_"], [id^="madinah_execution_"], [id^="madinah_license_"]').forEach(checkbox => {
                     checkbox.checked = false;
                 });
 
@@ -616,14 +652,14 @@
                     riyadhCheckbox.checked = true;
                     riyadhDetailedDiv.classList.remove('hidden');
                     // تحديد كل صلاحيات الرياض
-                    document.querySelectorAll('[id^="riyadh_manage_"]').forEach(checkbox => {
+                    document.querySelectorAll('[id^="riyadh_manage_"], [id^="riyadh_materials_"], [id^="riyadh_execution_"], [id^="riyadh_license_"]').forEach(checkbox => {
                         checkbox.checked = true;
                     });
                 } else if (this.value === 'madinah') {
                     madinahCheckbox.checked = true;
                     madinahDetailedDiv.classList.remove('hidden');
                     // تحديد كل صلاحيات المدينة المنورة
-                    document.querySelectorAll('[id^="madinah_manage_"]').forEach(checkbox => {
+                    document.querySelectorAll('[id^="madinah_manage_"], [id^="madinah_materials_"], [id^="madinah_execution_"], [id^="madinah_license_"]').forEach(checkbox => {
                         checkbox.checked = true;
                     });
                 }

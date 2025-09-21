@@ -114,35 +114,55 @@
                                     @enderror
                                 </div>
 
-                                <div class="form-group mb-3">
+                                <div class="form-group mb-3"> 
                                     <label for="approval_date" class="form-label fw-bold">تاريخ الاعتماد</label>
                                     <div class="input-group">
-                                        <input id="approval_date" type="date" class="form-control @error('approval_date') is-invalid @enderror" name="approval_date" value="{{ old('approval_date') }}" readonly>
-                                        <button type="button" class="btn btn-outline-primary" onclick="toggleDatePicker()">
+                                        <input id="approval_date" type="text" class="form-control @error('approval_date') is-invalid @enderror" name="approval_date" value="{{ old('approval_date') }}" readonly placeholder="اختر تاريخ الاعتماد">
+                                        <button type="button" class="btn btn-primary" onclick="toggleDatePicker()">
                                             <i class="fas fa-calendar-alt"></i>
                                         </button>
                                         <span class="input-group-text bg-light">
-                                            <i class="fas fa-calendar me-1"></i>
+                                            <i class="fas fa-info-circle me-1"></i>
                                             <span id="approval_info" class="text-muted">-</span>
                                         </span>
                                     </div>
-                                    <!-- منتقي التاريخ المخصص -->
-                                    <div id="custom-date-picker" class="custom-date-picker" style="display: none;">
+                                    
+                                    <!-- أزرار الاختيار السريع -->
+                                    <p class="text-danger mt-2 fs-6 mb-0 mt-2 mb-2">يرجي التأكد من تاريخ الاعتماد قبل انشاء أمر العمل</p>
+                                    <div class="mt-2 d-flex gap-2 flex-wrap">
+                                        
+                                        <button type="button" class="btn btn-sm btn-outline-success" onclick="setDateQuick(-1)">
+                                            <i class="fas fa-arrow-left me-1"></i>أمس
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-success" onclick="setDateQuick(0)">
+                                            <i class="fas fa-calendar-day me-1"></i>اليوم
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="setDateQuick(1)">
+                                            بكرة<i class="fas fa-arrow-right ms-1"></i>
+                                        </button>
+                                    </div>
+                                    
+                                    <!-- منتقي التاريخ المخصص المحسن -->
+                                    <div id="custom-date-picker" class="custom-date-picker shadow-lg" style="display: none;">
                                         <div class="date-picker-header">
-                                            <button type="button" onclick="previousMonth()" class="btn btn-sm btn-outline-secondary">
-                                                <i class="fas fa-chevron-left"></i>
-                                            </button>
-                                            <span id="month-year" class="mx-3"></span>
-                                            <button type="button" onclick="nextMonth()" class="btn btn-sm btn-outline-secondary">
+                                            <button type="button" onclick="previousMonth()" class="btn btn-sm btn-light border-0 shadow-sm">
                                                 <i class="fas fa-chevron-right"></i>
                                             </button>
+                                            <span id="month-year" class="mx-3 fw-bold fs-5"></span>
+                                            <button type="button" onclick="nextMonth()" class="btn btn-sm btn-light border-0 shadow-sm">
+                                                <i class="fas fa-chevron-left"></i>
+                                            </button>
                                         </div>
-                                        <div class="date-picker-calendar" id="calendar-grid">
+                                        <div class="date-picker-calendar p-2" id="calendar-grid">
                                             <!-- التقويم سيتم إنشاؤه بـ JavaScript -->
                                         </div>
-                                        <div class="date-picker-footer">
-                                            <button type="button" onclick="setToday()" class="btn btn-sm btn-primary">اليوم</button>
-                                            <button type="button" onclick="closeDatePicker()" class="btn btn-sm btn-secondary">إغلاق</button>
+                                        <div class="date-picker-footer bg-light p-2 d-flex justify-content-between">
+                                            <button type="button" onclick="setToday()" class="btn btn-sm btn-primary">
+                                                <i class="fas fa-calendar-day me-1"></i>اليوم
+                                            </button>
+                                            <button type="button" onclick="closeDatePicker()" class="btn btn-sm btn-secondary">
+                                                <i class="fas fa-times me-1"></i>إغلاق
+                                            </button>
                                         </div>
                                     </div>
                                     @error('approval_date')
@@ -3610,6 +3630,23 @@ const monthNames = [
 // أسماء أيام الأسبوع
 const dayNames = ['أحد', 'إثنين', 'ثلاثاء', 'أربعاء', 'خميس', 'جمعة', 'سبت'];
 
+// دالة الاختيار السريع للتواريخ
+function setDateQuick(days) {
+    const today = new Date();
+    const targetDate = new Date(today);
+    targetDate.setDate(today.getDate() + days);
+    
+    const dateString = targetDate.toISOString().split('T')[0];
+    document.getElementById('approval_date').value = dateString;
+    
+    // تحديث معلومات التاريخ
+    updateApprovalInfo();
+    updateExecutionCountdown();
+    
+    // إغلاق التقويم إذا كان مفتوح
+    closeDatePicker();
+}
+
 // تبديل عرض منتقي التاريخ
 function toggleDatePicker() {
     const picker = document.getElementById('custom-date-picker');
@@ -3697,6 +3734,7 @@ function selectDate(date) {
     const formattedDate = date.toISOString().split('T')[0];
     document.getElementById('approval_date').value = formattedDate;
     updateApprovalInfo();
+    updateExecutionCountdown();
     generateCalendar(); // إعادة رسم التقويم لإظهار التحديد
     closeDatePicker();
 }
@@ -3725,6 +3763,7 @@ function nextMonth() {
 function setToday() {
     const today = new Date();
     selectDate(today);
+    updateExecutionCountdown();
 }
 
 // فحص إذا كان التاريخ هو اليوم
@@ -3739,5 +3778,215 @@ function isSameDate(date1, date2) {
            date1.getMonth() === date2.getMonth() &&
            date1.getFullYear() === date2.getFullYear();
 }
+
+// إضافة CSS للتقويم المحسن
+const style = document.createElement('style');
+style.textContent = `
+.custom-date-picker {
+    position: absolute;
+    z-index: 1050;
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 0.75rem;
+    margin-top: 8px;
+    min-width: 320px;
+    max-width: 380px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    overflow: hidden;
+}
+
+.date-picker-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.25rem;
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    color: white;
+}
+
+.date-picker-header .btn-light {
+    background: rgba(255, 255, 255, 0.9);
+    color: #007bff;
+    border: none;
+    border-radius: 50%;
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.date-picker-header .btn-light:hover {
+    background: white;
+    color: #0056b3;
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.date-picker-calendar {
+    background: #fafafa;
+    padding: 1rem;
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    background: white;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.calendar-day {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border-radius: 0.375rem;
+    font-weight: 500;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    min-height: 40px;
+    font-size: 0.95rem;
+    border: 1px solid transparent;
+    position: relative;
+    background: #f8f9fa;
+}
+
+.calendar-day:hover {
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    color: #1565c0;
+    transform: scale(1.08);
+    border-color: #2196f3;
+    box-shadow: 0 4px 12px rgba(33, 150, 243, 0.2);
+}
+
+.calendar-day.today {
+    background: linear-gradient(135deg, #ffc107 0%, #ff8f00 100%);
+    color: #000;
+    font-weight: bold;
+    border: 2px solid #ff6f00;
+    box-shadow: 0 4px 15px rgba(255, 193, 7, 0.4);
+    animation: pulse-today 2s infinite;
+}
+
+@keyframes pulse-today {
+    0% { box-shadow: 0 4px 15px rgba(255, 193, 7, 0.4); }
+    50% { box-shadow: 0 6px 20px rgba(255, 193, 7, 0.6); }
+    100% { box-shadow: 0 4px 15px rgba(255, 193, 7, 0.4); }
+}
+
+.calendar-day.selected {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    color: white;
+    font-weight: bold;
+    border: 2px solid #0056b3;
+    box-shadow: 0 6px 20px rgba(0, 123, 255, 0.5);
+    transform: scale(1.05);
+}
+
+.calendar-day.other-month {
+    color: #adb5bd;
+    opacity: 0.4;
+    background: #f1f3f4;
+}
+
+.calendar-day.other-month:hover {
+    opacity: 0.7;
+    background: #e9ecef;
+}
+
+/* أسماء أيام الأسبوع */
+.calendar-header {
+    font-weight: 600;
+    color: #343a40;
+    background: linear-gradient(135deg, #e9ecef 0%, #f8f9fa 100%);
+    border-radius: 0.375rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 35px;
+    font-size: 0.85rem;
+    border: 1px solid #dee2e6;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* تحسين Footer التقويم */
+.date-picker-footer {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    padding: 1rem 1.25rem;
+    border-top: 1px solid #dee2e6;
+}
+
+.date-picker-footer .btn {
+    border-radius: 0.5rem;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    transition: all 0.3s ease;
+}
+
+.date-picker-footer .btn-primary {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    border: none;
+    box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
+}
+
+.date-picker-footer .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 123, 255, 0.4);
+}
+
+.date-picker-footer .btn-secondary {
+    background: #6c757d;
+    border: none;
+}
+
+.date-picker-footer .btn-secondary:hover {
+    background: #545b62;
+    transform: translateY(-1px);
+}
+
+/* تحسين الأزرار السريعة */
+.btn-outline-success:hover, .btn-success:hover, .btn-outline-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+}
+
+.btn-outline-success, .btn-success, .btn-outline-primary {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 0.5rem;
+    font-weight: 500;
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
+    border: none;
+    box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+}
+
+.btn-outline-success {
+    border: 2px solid #28a745;
+    color: #28a745;
+}
+
+.btn-outline-success:hover {
+    background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
+    border-color: #1e7e34;
+}
+
+.btn-outline-primary {
+    border: 2px solid #007bff;
+    color: #007bff;
+}
+
+.btn-outline-primary:hover {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    border-color: #0056b3;
+}
+`;
+document.head.appendChild(style);
 </script>
 @endpush

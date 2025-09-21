@@ -1065,10 +1065,20 @@ $(document).ready(function() {
                                     <button class="btn btn-outline-info" onclick="viewLicense(${license.id})" title="عرض">
                                         <i class="fas fa-eye"></i>
                                     </button>
-                                    
                                     <button class="btn btn-outline-danger" onclick="deleteLicense(${license.id})" title="حذف">
                                         <i class="fas fa-trash"></i>
                                     </button>
+                                    ${license.is_cancelled ? 
+                                        `<button class="btn btn-outline-warning btn-sm" onclick="toggleLicenseStatus(${license.id}, false)" title="الرخصة ملغاة - اضغط لتفعيلها">
+                                            <i class="fas fa-ban"></i>
+                                            <small>ملغاة</small>
+                                        </button>` : 
+                                        `<button class="btn btn-outline-success btn-sm" onclick="toggleLicenseStatus(${license.id}, true)" title="الرخصة متاحة - اضغط لإلغائها">
+                                            <i class="fas fa-check-circle"></i>
+                                            <small>متاحة</small>
+                                        </button>`
+                                    }
+                                    
                                 </div>
                             </td>
                         </tr>
@@ -1469,6 +1479,41 @@ $(document).ready(function() {
             error: function(xhr) {
                 console.error('Error deleting license:', xhr);
                 toastr.error('حدث خطأ في حذف الرخصة');
+            }
+        });
+    }
+
+    // دالة لتغيير حالة الرخصة (متاحة/ملغاة)
+    function toggleLicenseStatus(licenseId, isCancelled) {
+        const statusText = isCancelled ? 'إلغاء' : 'تفعيل';
+        const confirmMessage = `هل أنت متأكد من ${statusText} هذه الرخصة؟`;
+        
+        if (!confirm(confirmMessage)) {
+            return;
+        }
+
+        $.ajax({
+            url: `/admin/licenses/${licenseId}/toggle-status`,
+            type: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+                'Content-Type': 'application/json'
+            },
+            data: JSON.stringify({
+                is_cancelled: isCancelled
+            }),
+            success: function(response) {
+                if (response.success) {
+                    toastr.success(response.message);
+                    // إعادة تحميل قائمة الرخص
+                    loadDigLicenses();
+                } else {
+                    toastr.error(response.message || 'حدث خطأ أثناء تحديث حالة الرخصة');
+                }
+            },
+            error: function(xhr) {
+                console.error('خطأ:', xhr);
+                toastr.error('حدث خطأ أثناء تحديث حالة الرخصة');
             }
         });
     }
@@ -2272,8 +2317,23 @@ function loadLicensesForSelectors() {
                             
                             // إضافة معلومات إضافية للتمديدات
                             if (selectorId === 'extension-license-selector') {
+                                // إضافة تاريخ انتهاء الرخصة الأصلية
+                                if (license.license_end_date) {
+                                    const endDate = new Date(license.license_end_date);
+                                    const today = new Date();
+                                    const isExpired = endDate < today;
+                                    licenseInfo.push(`تنتهي: ${endDate.toLocaleDateString()}${isExpired ? ' (منتهية)' : ''}`);
+                                }
+                                
+                                // إضافة معلومات التمديد إذا وجد
                                 if (license.extension_end_date) {
-                                    licenseInfo.push(`تنتهي في ${new Date(license.extension_end_date).toLocaleDateString()}`);
+                                    const extEndDate = new Date(license.extension_end_date);
+                                    licenseInfo.push(`تمديد حتى: ${extEndDate.toLocaleDateString()}`);
+                                }
+                                
+                                // إضافة قيمة الرخصة
+                                if (license.license_value) {
+                                    licenseInfo.push(`${parseFloat(license.license_value).toLocaleString()} ريال`);
                                 }
                             }
                             
@@ -2592,6 +2652,100 @@ function clearEvacuationLicenseSelection() {
     toastr.info('تم مسح اختيار الرخصة');
 }
 
+// دالة فلترة خيارات الرخص
+function filterLicenseOptions() {
+    const searchInput = document.getElementById('license-search-input');
+    const selector = document.getElementById('extension-license-selector');
+    const searchTerm = searchInput.value.toLowerCase().trim();
+    
+    // إظهار جميع الخيارات إذا كان البحث فارغ
+    if (!searchTerm) {
+        Array.from(selector.options).forEach(option => {
+            option.style.display = '';
+        });
+        return;
+    }
+    
+    // فلترة الخيارات بناءً على النص المدخل
+    Array.from(selector.options).forEach(option => {
+        if (option.value === '') {
+            option.style.display = '';
+            return;
+        }
+        
+        const optionText = option.textContent.toLowerCase();
+        if (optionText.includes(searchTerm)) {
+            option.style.display = '';
+        } else {
+            option.style.display = 'none';
+        }
+    });
+}
+
+// دالة اختيار أحدث رخصة
+function selectLatestLicense() {
+    const selector = document.getElementById('extension-license-selector');
+    const visibleOptions = Array.from(selector.options).filter(option => 
+        option.value !== '' && option.style.display !== 'none'
+    );
+    
+    if (visibleOptions.length > 0) {
+        // اختيار أول خيار مرئي (الأحدث)
+        selector.value = visibleOptions[0].value;
+        selectExtensionLicense();
+        toastr.success('تم اختيار أحدث رخصة');
+    } else {
+        toastr.warning('لا توجد رخص متاحة');
+    }
+}
+
+// دالة فلترة الرخص السارية فقط
+function selectActiveOnlyLicenses() {
+    const selector = document.getElementById('extension-license-selector');
+    let hasActiveFound = false;
+    
+    Array.from(selector.options).forEach(option => {
+        if (option.value === '') {
+            option.style.display = '';
+            return;
+        }
+        
+        const optionText = option.textContent.toLowerCase();
+        // البحث عن الرخص غير المنتهية
+        if (optionText.includes('منتهية') || optionText.includes('منتهي')) {
+            option.style.display = 'none';
+        } else {
+            option.style.display = '';
+            hasActiveFound = true;
+        }
+    });
+    
+    if (hasActiveFound) {
+        toastr.info('يتم عرض الرخص السارية فقط');
+    } else {
+        toastr.warning('لا توجد رخص سارية');
+    }
+}
+
+// دالة مسح البحث
+function clearLicenseSearch() {
+    const searchInput = document.getElementById('license-search-input');
+    const selector = document.getElementById('extension-license-selector');
+    
+    searchInput.value = '';
+    
+    // إظهار جميع الخيارات
+    Array.from(selector.options).forEach(option => {
+        option.style.display = '';
+    });
+    
+    // مسح الاختيار
+    selector.value = '';
+    selectExtensionLicense();
+    
+    toastr.info('تم مسح البحث وإعادة تعيين القائمة');
+}
+
 // دالة اختيار الرخصة للتمديد
 function selectExtensionLicense() {
     const selector = document.getElementById('extension-license-selector');
@@ -2768,6 +2922,19 @@ function hideExtensionForm() {
         const licenseInfo = document.getElementById('selected-extension-license-info');
         if (licenseInfo) {
             licenseInfo.style.display = 'none';
+        }
+        
+        // مسح حقل البحث
+        const searchInput = document.getElementById('license-search-input');
+        if (searchInput) {
+            searchInput.value = '';
+        }
+        
+        // إظهار جميع خيارات الرخص
+        if (licenseSelector) {
+            Array.from(licenseSelector.options).forEach(option => {
+                option.style.display = '';
+            });
         }
         
         // تعطيل زر الإضافة
@@ -3367,10 +3534,10 @@ function deleteExtension(extensionId) {
                 </div>
                 
                 <div class="col-lg-4 text-end">
-                    <a href="{{ route('admin.licenses.display', ['project' => $project ?? 'riyadh']) }}" class="btn btn-light btn-lg ms-1">
+                    <!-- <a href="{{ route('admin.licenses.display', ['project' => $project ?? 'riyadh']) }}" class="btn btn-light btn-lg ms-1">
                         
                          تفاصيل الرخص 
-                    </a>
+                    </a> -->
                     <a href="{{ route('admin.work-orders.show', $workOrder) }}" class="btn btn-success">
                             <i class="fas fa-arrow-right"></i> عودة الي تفاصيل أمر العمل  
                         </a> 
@@ -3629,21 +3796,46 @@ function deleteExtension(extensionId) {
                                         </div>
                                         <div class="card-body">
                                             <div class="row">
-                                                <div class="col-md-8">
+                                                <div class="col-md-12">
                                                     <label class="form-label fw-bold">
                                                         <i class="fas fa-search me-2"></i>اختر الرخصة المراد تمديدها:
                                                     </label>
-                                                    <select class="form-select" id="extension-license-selector" onchange="selectExtensionLicense()">
+                                                    
+                                                    <!-- حقل البحث -->
+                                                    <div class="mb-2">
+                                                        <input type="text" 
+                                                               class="form-control" 
+                                                               id="license-search-input" 
+                                                               placeholder="ابحث برقم الرخصة أو نوعها..."
+                                                               onkeyup="filterLicenseOptions()">
+                                                    </div>
+                                                    
+                                                    <!-- قائمة الرخص -->
+                                                    <select class="form-select" id="extension-license-selector" onchange="selectExtensionLicense()" size="4">
                                                         <option value="">-- اختر الرخصة للتمديد --</option>
                                                     </select>
+                                                    
+                                                    <!-- أزرار سريعة -->
+                                                    <div class="mt-2 d-flex gap-2 flex-wrap">
+                                                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="selectLatestLicense()">
+                                                            <i class="fas fa-clock me-1"></i>الأحدث
+                                                        </button>
+                                                        <button type="button" class="btn btn-sm btn-outline-info" onclick="selectActiveOnlyLicenses()">
+                                                            <i class="fas fa-filter me-1"></i>السارية فقط
+                                                        </button>
+                                                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="clearLicenseSearch()">
+                                                            <i class="fas fa-times me-1"></i>مسح البحث
+                                                        </button>
+                                                    </div>
+                                                    
                                                     <div class="mt-2">
                                                         <small class="text-muted">
                                                             <i class="fas fa-info-circle me-1"></i>
-                                                            يجب اختيار رخصة قبل إدخال بيانات التمديد
+                                                            يجب اختيار رخصة قبل إدخال بيانات التمديد. استخدم البحث لسهولة الوصول للرخصة المطلوبة.
                                                         </small>
                                                     </div>
                                                 </div>
-                                                <div class="col-md-4">
+                                                <div class="col-md-12">
                                                     <label class="form-label fw-bold">إجراءات:</label>
                                                     <div class="d-grid gap-2">
                                                         <button type="button" class="btn btn-success" id="add-extension-btn" onclick="showExtensionForm()" disabled>

@@ -81,12 +81,13 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     // Work Orders Routes
     Route::get('work-orders', [App\Http\Controllers\WorkOrderController::class, 'index'])->name('work-orders.index');
     Route::get('work-orders/create', [App\Http\Controllers\WorkOrderController::class, 'create'])->name('work-orders.create');
+    Route::get('work-orders/execution-productivity', [App\Http\Controllers\WorkOrderController::class, 'executionProductivity'])->name('work-orders.execution-productivity');
+    Route::get('work-orders/export/excel', [App\Http\Controllers\WorkOrderController::class, 'exportExcel'])->name('work-orders.export.excel');
     Route::post('work-orders', [App\Http\Controllers\WorkOrderController::class, 'store'])->name('work-orders.store');
     Route::get('work-orders/{workOrder}', [App\Http\Controllers\WorkOrderController::class, 'show'])->name('work-orders.show');
     Route::get('work-orders/{workOrder}/edit', [App\Http\Controllers\WorkOrderController::class, 'edit'])->name('work-orders.edit');
     Route::put('work-orders/{workOrder}', [App\Http\Controllers\WorkOrderController::class, 'update'])->name('work-orders.update');
     // Route::delete('work-orders/{workOrder}', [App\Http\Controllers\Admin\WorkOrderDeleteController::class, '__invoke'])->name('admin.work-orders.destroy');
-    Route::get('work-orders/export/excel', [App\Http\Controllers\WorkOrderController::class, 'exportExcel'])->name('work-orders.export.excel');
     
     // تصدير أوامر العمل لإكسل
     Route::get('work-orders/export/excel', [WorkOrderController::class, 'exportExcel'])->name('work-orders.export.excel');
@@ -179,6 +180,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::post('work-orders/{workOrder}/upload-safety', [WorkOrderController::class, 'uploadSafety'])->name('work-orders.upload-safety');
     Route::delete('work-orders/safety-files/{fileId}', [WorkOrderController::class, 'deleteSafetyFile'])->name('work-orders.delete-safety-file');
     Route::delete('work-orders/{workOrder}/safety-image/{category}/{index}', [WorkOrderController::class, 'deleteSafetyImage'])->name('work-orders.delete-safety-image');
+    Route::delete('work-orders/{workOrder}/non-compliance-attachment/{index}', [WorkOrderController::class, 'deleteNonComplianceAttachment'])->name('work-orders.delete-non-compliance-attachment');
     Route::post('work-orders/{workOrder}/safety-violation', [WorkOrderController::class, 'addSafetyViolation'])->name('work-orders.add-safety-violation');
     Route::delete('work-orders/safety-violation/{violationId}', [WorkOrderController::class, 'deleteSafetyViolation'])->name('work-orders.delete-safety-violation');
 
@@ -220,6 +222,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     // مسار مؤقت لحل مشكلة save-section1 - يجب حذفه لاحقاً
     Route::post('licenses/save-section1', [\App\Http\Controllers\Admin\LicenseController::class, 'saveSection'])->name('licenses.save-section1');
     Route::delete('licenses/{license}', [\App\Http\Controllers\Admin\LicenseController::class, 'destroy'])->name('licenses.destroy');
+    Route::post('licenses/{license}/toggle-status', [\App\Http\Controllers\Admin\LicenseController::class, 'toggleStatus'])->name('licenses.toggle-status');
     Route::get('licenses/export/excel', [\App\Http\Controllers\Admin\LicenseController::class, 'exportExcel'])->name('licenses.export.excel');
     Route::put('licenses/{license}/update', [\App\Http\Controllers\Admin\LicenseController::class, 'update'])->name('licenses.update-inline');
     

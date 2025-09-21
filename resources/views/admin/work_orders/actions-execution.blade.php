@@ -396,24 +396,20 @@
                 @enderror
             </div>
                 <div class="col-md-4 col-12 mb-2">
-                    <label class="form-label">رقم أمر الشراء:</label>
-                    <input type="text" name="purchase_order_number" class="form-control" value="{{ old('purchase_order_number', $workOrder->purchase_order_number) }}">
+                    <label class="form-label">تاريخ اجراء حالة تنفيذ امر العمل :</label>
+                    <input type="date" name="procedure_155_delivery_date" class="form-control" value="{{ old('procedure_155_delivery_date', $workOrder->procedure_155_delivery_date ? $workOrder->procedure_155_delivery_date->format('Y-m-d') : '') }}"required>
                 </div>
                 <div class="col-md-4 col-12 mb-2">
-                    <label class="form-label">صحيفة الإدخال 1:</label>
-                    <input type="text" name="entry_sheet_1" class="form-control" value="{{ $workOrder->entry_sheet_1 ?? '' }}" placeholder="رقم صحيفة الإدخال الأولى">
-                </div>
-                <div class="col-md-4 col-12 mb-2">
-                    <label class="form-label">صحيفة الإدخال 2:</label>
-                    <input type="text" name="entry_sheet_2" class="form-control" value="{{ $workOrder->entry_sheet_2 ?? '' }}" placeholder="رقم صحيفة الإدخال الثانية">
-                </div>
-                <div class="col-md-4 col-12 mb-2">
-                    <label class="form-label">رقم المستخلص:</label>
-                    <input type="text" name="extract_number" class="form-control" value="{{ old('extract_number', $workOrder->extract_number) }}">
+                    <label class="form-label">قيمة اختبارات ما قبل التشغيل:</label>
+                    <input type="text" name="pre_operation_tests" class="form-control" value="{{ old('pre_operation_tests', $workOrder->pre_operation_tests) }}">
                 </div>
                 <div class="col-md-4 col-12 mb-2">
                     <label class="form-label">غرامات التأخير:</label>
                     <input type="number" step="0.01" name="delay_penalties" class="form-control" value="{{ old('delay_penalties', $workOrder->delay_penalties) }}" placeholder="أدخل قيمة غرامات التأخير">
+                </div>
+                <div class="col-md-4 col-12 mb-2">
+                    <label class="form-label">رقم المستخلص:</label>
+                    <input type="text" name="extract_number" class="form-control" value="{{ old('extract_number', $workOrder->extract_number) }}">
                 </div>
                 <div class="col-md-4 col-12 mb-2">
                     <label class="form-label">قيمة التنفيذ الفعلي شامل الاستشاري بدون الضريبة</label>
@@ -435,17 +431,23 @@
                     <label class="form-label">قيمة الضريبة:</label>
                     <input type="number" step="0.01" name="tax_value" class="form-control" value="{{ old('tax_value', $workOrder->tax_value) }}">
                 </div>
-                <div class="col-md-4 col-12 mb-2">
-                    <label class="form-label">تاريخ تسليم إجراء 155:</label>
-                    <input type="date" name="procedure_155_delivery_date" class="form-control" value="{{ old('procedure_155_delivery_date', $workOrder->procedure_155_delivery_date ? $workOrder->procedure_155_delivery_date->format('Y-m-d') : '') }}"required>
-                </div>
+                
                 <div class="col-md-4 col-12 mb-2">
                     <label class="form-label">قيمة مستخلص الكلية النهائية غير شامل الضريبة:</label>
                     <input type="number" step="0.01" name="final_total_value" class="form-control" value="{{ old('final_total_value', $workOrder->final_total_value) }}">
                 </div>
+                
                 <div class="col-md-4 col-12 mb-2">
-                    <label class="form-label">قيمة اختبارات ما قبل التشغيل:</label>
-                    <input type="text" name="pre_operation_tests" class="form-control" value="{{ old('pre_operation_tests', $workOrder->pre_operation_tests) }}">
+                    <label class="form-label">رقم أمر الشراء:</label>
+                    <input type="text" name="purchase_order_number" class="form-control" value="{{ old('purchase_order_number', $workOrder->purchase_order_number) }}">
+                </div>
+                <div class="col-md-4 col-12 mb-2">
+                    <label class="form-label">صحيفة الإدخال 1:</label>
+                    <input type="text" name="entry_sheet_1" class="form-control" value="{{ $workOrder->entry_sheet_1 ?? '' }}" placeholder="رقم صحيفة الإدخال الأولى">
+                </div>
+                <div class="col-md-4 col-12 mb-2">
+                    <label class="form-label">صحيفة الإدخال 2:</label>
+                    <input type="text" name="entry_sheet_2" class="form-control" value="{{ $workOrder->entry_sheet_2 ?? '' }}" placeholder="رقم صحيفة الإدخال الثانية">
                 </div>
                 
                 <div class="col-12 text-center mt-3">

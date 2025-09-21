@@ -138,6 +138,13 @@
                 </h1>
                 <p class="mb-0 fs-5">عرض شامل لجميع المواد المستخدمة في المشروع</p>
             </div>
+            <div class="text-left">
+                <a href="{{ route('admin.work-orders.index', ['project' => $project]) }}" class="btn btn-success btn-lg">
+                    <i class="fas fa-arrow-right me-2"></i>
+                    العودة لأوامر العمل
+                </a>
+            </div>
+            
         </div>
     </div>
 

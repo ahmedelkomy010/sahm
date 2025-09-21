@@ -177,6 +177,32 @@ function resetCountdown(workOrderId) {
                     @endif
 
                     <div class="d-flex justify-content-end align-items-center mb-4">
+                        @php
+                            $projectLower = strtolower($project ?? '');
+                            $isRiyadh = str_contains($projectLower, 'riyadh') || str_contains($projectLower, 'الرياض') || 
+                                        str_contains($projectLower, 'riyad') || str_contains($projectLower, 'رياض');
+                            $isMadinah = str_contains($projectLower, 'medina') || str_contains($projectLower, 'المدينة') || 
+                                         str_contains($projectLower, 'madinah');
+                        @endphp
+                        
+                        @if($isRiyadh)
+                            <a href="{{ route('admin.materials.riyadh-overview') }}" class="btn btn-info me-2 px-4">
+                                <i class="fas fa-eye me-1"></i> تفاصيل عامة للمواد
+                            </a>
+                        @elseif($isMadinah)
+                            <a href="{{ route('admin.materials.madinah-overview') }}" class="btn btn-info me-2 px-4">
+                                <i class="fas fa-eye me-1"></i> تفاصيل عامة للمواد 
+                            </a>
+                        @endif
+                        
+                        <a href="{{ route('admin.work-orders.execution-productivity', ['project' => $project ?? 'riyadh']) }}" class="btn btn-purple me-2 px-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; color: white;">
+                            <i class="fas fa-chart-line me-1"></i> انتاجية التنفيذ
+                        </a>
+                        
+                        <a href="{{ route('admin.licenses.display', ['project' => $project ?? 'riyadh']) }}" class="btn btn-warning me-2 px-4">
+                            <i class="fas fa-file-contract me-1"></i> تفاصيل الرخص
+                        </a>
+                        
                         <a href="{{ route('admin.work-orders.export.excel', ['project' => $project]) }}" class="btn btn-success me-2 px-4">
                             <i class="fas fa-file-excel me-1"></i> تصدير إكسل
                         </a>
@@ -737,40 +763,51 @@ function resetCountdown(workOrderId) {
                                             </div>
                                         </td>
                                         <td>
-                                            @switch($workOrder->execution_status)
-                                                @case('1')
-                                                    <span class="badge" style="background-color:rgb(228, 196, 14)">جاري العمل بالموقع</span>
-                                                    @break
-                                                @case('2')
-                                                    <span class="badge" style="background-color:rgb(112, 68, 2)">تم التنفيذ بالموقع وجاري تسليم 155</span>
-                                                    @break
-                                                @case('3')
-                                                    <span class="badge" style="background-color:rgb(4, 163, 226); color: white">تم تسليم 155 جاري اصدار شهادة الانجاز</span>
-                                                    @break
-                                                @case('4')
-                                                    <span class="badge" style="background-color:rgb(86, 168, 110)">اعداد مستخلص الدفعة الجزئية الاولي وجاري الصرف</span>
-                                                    @break
-                                                @case('5')
-                                                    <span class="badge" style="background-color:rgb(39, 138, 83)">تم صرف مستخلص الدفعة الجزئية الاولي</span>
-                                                    @break
-                                                @case('6')
-                                                    <span class="badge" style="background-color:rgb(1, 128, 64)">اعداد مستخلص الدفعة الجزئية الثانية وجاري الصرف</span>
-                                                    @break
-                                                @case('7')
-                                                    <span class="badge" style="background-color:rgb(1, 119, 31)">تم الصرف وتم الانتهاء</span>
-                                                    @break
-                                                @case('8')
-                                                    <span class="badge" style="background-color:rgb(0, 66, 0)">تم اصدار شهادة الانجاز</span>
-                                                    @break
-                                                @case('9')
-                                                    <span class="badge" style="background-color:rgb(220, 53, 69)">تم الالغاء او تحويل امر العمل</span>
-                                                    @break
-                                                @case('10')
-                                                    <span class="badge" style="background-color:rgb(13, 110, 253)">تم اعداد المستخلص الكلي وجاري الصرف</span>
-                                                    @break
-                                                @default
-                                                    <span class="badge bg-secondary">{{ $workOrder->execution_status }}</span>
-                                            @endswitch
+                                            <div class="d-flex flex-column">
+                                                @switch($workOrder->execution_status)
+                                                    @case('1')
+                                                        <span class="badge" style="background-color:rgb(228, 196, 14)">جاري العمل بالموقع</span>
+                                                        @break
+                                                    @case('2')
+                                                        <span class="badge" style="background-color:rgb(112, 68, 2)">تم التنفيذ بالموقع وجاري تسليم 155</span>
+                                                        @break
+                                                    @case('3')
+                                                        <span class="badge" style="background-color:rgb(4, 163, 226); color: white">تم تسليم 155 جاري اصدار شهادة الانجاز</span>
+                                                        @break
+                                                    @case('4')
+                                                        <span class="badge" style="background-color:rgb(86, 168, 110)">اعداد مستخلص الدفعة الجزئية الاولي وجاري الصرف</span>
+                                                        @break
+                                                    @case('5')
+                                                        <span class="badge" style="background-color:rgb(39, 138, 83)">تم صرف مستخلص الدفعة الجزئية الاولي</span>
+                                                        @break
+                                                    @case('6')
+                                                        <span class="badge" style="background-color:rgb(1, 128, 64)">اعداد مستخلص الدفعة الجزئية الثانية وجاري الصرف</span>
+                                                        @break
+                                                    @case('7')
+                                                        <span class="badge" style="background-color:rgb(1, 119, 31)">تم الصرف وتم الانتهاء</span>
+                                                        @break
+                                                    @case('8')
+                                                        <span class="badge" style="background-color:rgb(0, 66, 0)">تم اصدار شهادة الانجاز</span>
+                                                        @break
+                                                    @case('9')
+                                                        <span class="badge" style="background-color:rgb(220, 53, 69)">تم الالغاء او تحويل امر العمل</span>
+                                                        @break
+                                                    @case('10')
+                                                        <span class="badge" style="background-color:rgb(13, 110, 253)">تم اعداد المستخلص الكلي وجاري الصرف</span>
+                                                        @break
+                                                    @default
+                                                        <span class="badge bg-secondary">{{ $workOrder->execution_status }}</span>
+                                                @endswitch
+                                                @if($workOrder->execution_status_date)
+                                                    <small class="text-muted mt-1" style="font-size: 0.75rem;">
+                                                        <i class="fas fa-calendar-alt me-1"></i>
+                                                        {{ $workOrder->execution_status_date->format('Y-m-d') }}
+                                                        <br>
+                                                        <i class="fas fa-clock me-1"></i>
+                                                        {{ $workOrder->execution_status_date->format('H:i') }}
+                                                    </small>
+                                                @endif
+                                            </div>
                                         </td>
                                         <td>
                                             @if($workOrder->extract_number)

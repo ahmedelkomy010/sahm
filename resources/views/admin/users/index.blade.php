@@ -74,7 +74,7 @@
             </div>
             <div>
                 <p class="text-sm text-gray-600">آخر تسجيل</p>
-                <p class="text-xl font-bold text-gray-800">{{ optional($users->sortByDesc('created_at')->first())->created_at->diffForHumans() ?? 'غير متوفر' }}</p>
+                <p class="text-xl font-bold text-gray-800">{{ optional(optional($users->sortByDesc('created_at')->first())->created_at)->diffForHumans() ?? 'غير متوفر' }}</p>
             </div>
         </div>
     </div>
