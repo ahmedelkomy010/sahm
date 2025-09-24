@@ -150,10 +150,17 @@ class WorkOrderController extends Controller
         }
         
         // جلب عدد أوامر العمل لكل حالة تنفيذ
-        $executionStatusCounts = $baseQuery->selectRaw('execution_status, COUNT(*) as count')
+        $statusCounts = $baseQuery->selectRaw('execution_status, COUNT(*) as count')
             ->groupBy('execution_status')
             ->pluck('count', 'execution_status')
             ->toArray();
+            
+        // تأكد من وجود كل الحالات (1-10) مع القيم الافتراضية
+        $executionStatusCounts = [];
+        for ($i = 1; $i <= 10; $i++) {
+            $executionStatusCounts[$i] = $statusCounts[$i] ?? 0;
+        }
+        
         
         return view('admin.work_orders.index', compact('workOrders', 'project', 'executionStatusCounts'));
     }

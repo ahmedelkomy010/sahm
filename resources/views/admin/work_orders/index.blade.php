@@ -808,7 +808,7 @@ function resetCountdown(workOrderId) {
                                                                 <span class="flex-grow-1 me-2">جاري العمل بالموقع</span>
                                                                 <i class="fas fa-hammer text-warning"></i>
                                                             </div>
-                                                            <span class="badge bg-secondary rounded-pill">{{ $executionStatusCounts[1] ?? 0 }}</span>
+                                                            <span class="badge bg-secondary rounded-pill">{{ isset($executionStatusCounts) ? ($executionStatusCounts[1] ?? 0) : 0 }}</span>
                                                         </label>
                                                     </div>
                                                 </div>
@@ -824,7 +824,7 @@ function resetCountdown(workOrderId) {
                                                                 <span class="flex-grow-1 me-2">تم التنفيذ بالموقع وجاري تسليم 155</span>
                                                                 <i class="fas fa-file-alt text-info"></i>
                                                             </div>
-                                                            <span class="badge bg-secondary rounded-pill">{{ $executionStatusCounts[2] ?? 0 }}</span>
+                                                            <span class="badge bg-secondary rounded-pill">{{ isset($executionStatusCounts) ? ($executionStatusCounts[2] ?? 0) : 0 }}</span>
                                                         </label>
                                                     </div>
                                                 </div>
@@ -840,7 +840,7 @@ function resetCountdown(workOrderId) {
                                                                 <span class="flex-grow-1 me-2">تم تسليم 155 جاري اصدار شهادة الانجاز</span>
                                                                 <i class="fas fa-certificate text-primary"></i>
                                                             </div>
-                                                            <span class="badge bg-secondary rounded-pill">{{ $executionStatusCounts[3] ?? 0 }}</span>
+                                                            <span class="badge bg-secondary rounded-pill">{{ isset($executionStatusCounts) ? ($executionStatusCounts[3] ?? 0) : 0 }}</span>
                                                         </label>
                                                     </div>
                                                 </div>
@@ -856,7 +856,7 @@ function resetCountdown(workOrderId) {
                                                                 <span class="flex-grow-1 me-2">اعداد مستخلص الدفعة الجزئية الاولي وجاري الصرف</span>
                                                                 <i class="fas fa-file-invoice-dollar text-secondary"></i>
                                                             </div>
-                                                            <span class="badge bg-secondary rounded-pill">{{ $executionStatusCounts[4] ?? 0 }}</span>
+                                                            <span class="badge bg-secondary rounded-pill">{{ isset($executionStatusCounts) ? ($executionStatusCounts[4] ?? 0) : 0 }}</span>
                                                         </label>
                                                     </div>
                                                 </div>
@@ -872,7 +872,7 @@ function resetCountdown(workOrderId) {
                                                                 <span class="flex-grow-1 me-2">تم صرف مستخلص الدفعة الجزئية الاولي</span>
                                                                 <i class="fas fa-money-bill-wave text-success"></i>
                                                             </div>
-                                                            <span class="badge bg-secondary rounded-pill">{{ $executionStatusCounts[5] ?? 0 }}</span>
+                                                            <span class="badge bg-secondary rounded-pill">{{ isset($executionStatusCounts) ? ($executionStatusCounts[5] ?? 0) : 0 }}</span>
                                                         </label>
                                                     </div>
                                                 </div>
@@ -888,7 +888,7 @@ function resetCountdown(workOrderId) {
                                                                 <span class="flex-grow-1 me-2">اعداد مستخلص الدفعة الجزئية الثانية وجاري الصرف</span>
                                                                 <i class="fas fa-file-invoice text-warning"></i>
                                                             </div>
-                                                            <span class="badge bg-secondary rounded-pill">{{ $executionStatusCounts[6] ?? 0 }}</span>
+                                                            <span class="badge bg-secondary rounded-pill">{{ isset($executionStatusCounts) ? ($executionStatusCounts[6] ?? 0) : 0 }}</span>
                                                         </label>
                                                     </div>
                                                 </div>
@@ -904,7 +904,7 @@ function resetCountdown(workOrderId) {
                                                                 <span class="flex-grow-1 me-2">تم الصرف وتم الانتهاء</span>
                                                                 <i class="fas fa-check-circle text-success"></i>
                                                             </div>
-                                                            <span class="badge bg-secondary rounded-pill">{{ $executionStatusCounts[7] ?? 0 }}</span>
+                                                            <span class="badge bg-secondary rounded-pill">{{ isset($executionStatusCounts) ? ($executionStatusCounts[7] ?? 0) : 0 }}</span>
                                                         </label>
                                                     </div>
                                                 </div>
@@ -920,7 +920,7 @@ function resetCountdown(workOrderId) {
                                                                 <span class="flex-grow-1 me-2">تم اصدار شهادة الانجاز</span>
                                                                 <i class="fas fa-award text-info"></i>
                                                             </div>
-                                                            <span class="badge bg-secondary rounded-pill">{{ $executionStatusCounts[8] ?? 0 }}</span>
+                                                            <span class="badge bg-secondary rounded-pill">{{ isset($executionStatusCounts) ? ($executionStatusCounts[8] ?? 0) : 0 }}</span>
                                                         </label>
                                                     </div>
                                                 </div>
@@ -936,7 +936,7 @@ function resetCountdown(workOrderId) {
                                                                 <span class="flex-grow-1 me-2">تم الالغاء او تحويل امر العمل</span>
                                                                 <i class="fas fa-times-circle text-danger"></i>
                                                             </div>
-                                                            <span class="badge bg-secondary rounded-pill">{{ $executionStatusCounts[9] ?? 0 }}</span>
+                                                            <span class="badge bg-secondary rounded-pill">{{ isset($executionStatusCounts) ? ($executionStatusCounts[9] ?? 0) : 0 }}</span>
                                                         </label>
                                                     </div>
                                                 </div>
@@ -952,7 +952,7 @@ function resetCountdown(workOrderId) {
                                                                 <span class="flex-grow-1 me-2">تم اعداد المستخلص الكلي وجاري الصرف</span>
                                                                 <i class="fas fa-file-contract text-primary"></i>
                                                             </div>
-                                                            <span class="badge bg-secondary rounded-pill">{{ $executionStatusCounts[10] ?? 0 }}</span>
+                                                            <span class="badge bg-secondary rounded-pill">{{ isset($executionStatusCounts) ? ($executionStatusCounts[10] ?? 0) : 0 }}</span>
                                                         </label>
                                                     </div>
                                                 </div>
