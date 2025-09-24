@@ -731,7 +731,7 @@ function resetCountdown(workOrderId) {
                                 </div>
                             </div>
                             
-                            <div class="col-md-2">
+                            <div class="col-md-3">
                                 <div class="form-group">
                                     <label for="station_number" class="form-label fw-bold">
                                         <i class="fas fa-broadcast-tower text-primary me-1"></i>
@@ -744,221 +744,36 @@ function resetCountdown(workOrderId) {
                             
                             
                             
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <div class="form-group">
                                     <label for="execution_status" class="form-label fw-bold">
                                         <i class="fas fa-tasks text-primary me-1"></i>
                                         حالة التنفيذ
                                     </label>
-                                    <!-- Multi-select dropdown for execution status -->
-                                    <div class="dropdown">
-                                        <button class="btn btn-outline-secondary dropdown-toggle w-100 d-flex justify-content-between align-items-center" 
-                                                type="button" 
-                                                id="executionStatusDropdown" 
-                                                data-bs-toggle="dropdown" 
-                                                aria-expanded="false"
-                                                style="text-align: right; height: 38px;">
-                                            <span id="executionStatusText">
-                                                @php
-                                                    $statusLabels = [
-                                                        '1' => 'جاري العمل بالموقع',
-                                                        '2' => 'تم التنفيذ بالموقع وجاري تسليم 155',
-                                                        '3' => 'تم تسليم 155 جاري اصدار شهادة الانجاز',
-                                                        '4' => 'اعداد مستخلص الدفعة الجزئية الاولي وجاري الصرف',
-                                                        '5' => 'تم صرف مستخلص الدفعة الجزئية الاولي',
-                                                        '6' => 'اعداد مستخلص الدفعة الجزئية الثانية وجاري الصرف',
-                                                        '7' => 'تم الصرف وتم الانتهاء',
-                                                        '8' => 'تم اصدار شهادة الانجاز',
-                                                        '9' => 'تم الالغاء او تحويل امر العمل',
-                                                        '10' => 'تم اعداد المستخلص الكلي وجاري الصرف'
-                                                    ];
-                                                    $selectedStatuses = request('execution_status') ? (is_array(request('execution_status')) ? request('execution_status') : [request('execution_status')]) : [];
-                                                @endphp
-                                                @if(empty($selectedStatuses))
-                                                    كل الحالات
-                                                @elseif(count($selectedStatuses) == 1)
-                                                    {{ $statusLabels[$selectedStatuses[0]] ?? 'غير محدد' }}
-                                                @else
-                                                    {{ count($selectedStatuses) }} حالات محددة
-                                                @endif
-                                            </span>
-                                            <i class="fas fa-chevron-down"></i>
-                                        </button>
-                                        <ul class="dropdown-menu w-100" aria-labelledby="executionStatusDropdown" style="max-height: 400px; overflow-y: auto;">
-                                            <li>
-                                                <div class="dropdown-item">
-                                                    <div class="form-check">
-                                                        <input class="form-check-input" type="checkbox" id="selectAllStatuses" onchange="toggleAllStatuses(this)">
-                                                        <label class="form-check-label" for="selectAllStatuses">
-                                                            <i class="fas fa-list-check me-2"></i>
-                                                            تحديد الكل / إلغاء التحديد
-                                                        </label>
-                                                    </div>
-                                                </div>
-                                            </li>
-                                            <li><hr class="dropdown-divider"></li>
-                                            <li>
-                                                <div class="dropdown-item">
-                                                    <div class="form-check">
-                                                        <input class="form-check-input execution-status-check" type="checkbox" name="execution_status[]" value="1" id="status1" 
-                                                               {{ in_array('1', $selectedStatuses) ? 'checked' : '' }} onchange="updateExecutionStatusText()">
-                                                        <label class="form-check-label d-flex justify-content-between align-items-center" for="status1">
-                                                            <div class="d-flex align-items-center">
-                                                                <span class="badge bg-warning text-dark">1</span>
-                                                                <span class="flex-grow-1 me-2">جاري العمل بالموقع</span>
-                                                                <i class="fas fa-hammer text-warning"></i>
-                                                            </div>
-                                                            <span class="badge bg-secondary rounded-pill">{{ isset($executionStatusCounts) ? ($executionStatusCounts[1] ?? 0) : 0 }}</span>
-                                                        </label>
-                                                    </div>
-                                                </div>
-                                            </li>
-                                            <li>
-                                                <div class="dropdown-item">
-                                                    <div class="form-check">
-                                                        <input class="form-check-input execution-status-check" type="checkbox" name="execution_status[]" value="2" id="status2" 
-                                                               {{ in_array('2', $selectedStatuses) ? 'checked' : '' }} onchange="updateExecutionStatusText()">
-                                                        <label class="form-check-label d-flex justify-content-between align-items-center" for="status2">
-                                                            <div class="d-flex align-items-center">
-                                                                <span class="badge bg-info">2</span>
-                                                                <span class="flex-grow-1 me-2">تم التنفيذ بالموقع وجاري تسليم 155</span>
-                                                                <i class="fas fa-file-alt text-info"></i>
-                                                            </div>
-                                                            <span class="badge bg-secondary rounded-pill">{{ isset($executionStatusCounts) ? ($executionStatusCounts[2] ?? 0) : 0 }}</span>
-                                                        </label>
-                                                    </div>
-                                                </div>
-                                            </li>
-                                            <li>
-                                                <div class="dropdown-item">
-                                                    <div class="form-check">
-                                                        <input class="form-check-input execution-status-check" type="checkbox" name="execution_status[]" value="3" id="status3" 
-                                                               {{ in_array('3', $selectedStatuses) ? 'checked' : '' }} onchange="updateExecutionStatusText()">
-                                                        <label class="form-check-label d-flex justify-content-between align-items-center" for="status3">
-                                                            <div class="d-flex align-items-center">
-                                                                <span class="badge bg-primary">3</span>
-                                                                <span class="flex-grow-1 me-2">تم تسليم 155 جاري اصدار شهادة الانجاز</span>
-                                                                <i class="fas fa-certificate text-primary"></i>
-                                                            </div>
-                                                            <span class="badge bg-secondary rounded-pill">{{ isset($executionStatusCounts) ? ($executionStatusCounts[3] ?? 0) : 0 }}</span>
-                                                        </label>
-                                                    </div>
-                                                </div>
-                                            </li>
-                                            <li>
-                                                <div class="dropdown-item">
-                                                    <div class="form-check">
-                                                        <input class="form-check-input execution-status-check" type="checkbox" name="execution_status[]" value="4" id="status4" 
-                                                               {{ in_array('4', $selectedStatuses) ? 'checked' : '' }} onchange="updateExecutionStatusText()">
-                                                        <label class="form-check-label d-flex justify-content-between align-items-center" for="status4">
-                                                            <div class="d-flex align-items-center">
-                                                                <span class="badge bg-secondary">4</span>
-                                                                <span class="flex-grow-1 me-2">اعداد مستخلص الدفعة الجزئية الاولي وجاري الصرف</span>
-                                                                <i class="fas fa-file-invoice-dollar text-secondary"></i>
-                                                            </div>
-                                                            <span class="badge bg-secondary rounded-pill">{{ isset($executionStatusCounts) ? ($executionStatusCounts[4] ?? 0) : 0 }}</span>
-                                                        </label>
-                                                    </div>
-                                                </div>
-                                            </li>
-                                            <li>
-                                                <div class="dropdown-item">
-                                                    <div class="form-check">
-                                                        <input class="form-check-input execution-status-check" type="checkbox" name="execution_status[]" value="5" id="status5" 
-                                                               {{ in_array('5', $selectedStatuses) ? 'checked' : '' }} onchange="updateExecutionStatusText()">
-                                                        <label class="form-check-label d-flex justify-content-between align-items-center" for="status5">
-                                                            <div class="d-flex align-items-center">
-                                                                <span class="badge bg-success">5</span>
-                                                                <span class="flex-grow-1 me-2">تم صرف مستخلص الدفعة الجزئية الاولي</span>
-                                                                <i class="fas fa-money-bill-wave text-success"></i>
-                                                            </div>
-                                                            <span class="badge bg-secondary rounded-pill">{{ isset($executionStatusCounts) ? ($executionStatusCounts[5] ?? 0) : 0 }}</span>
-                                                        </label>
-                                                    </div>
-                                                </div>
-                                            </li>
-                                            <li>
-                                                <div class="dropdown-item">
-                                                    <div class="form-check">
-                                                        <input class="form-check-input execution-status-check" type="checkbox" name="execution_status[]" value="6" id="status6" 
-                                                               {{ in_array('6', $selectedStatuses) ? 'checked' : '' }} onchange="updateExecutionStatusText()">
-                                                        <label class="form-check-label d-flex justify-content-between align-items-center" for="status6">
-                                                            <div class="d-flex align-items-center">
-                                                                <span class="badge bg-warning">6</span>
-                                                                <span class="flex-grow-1 me-2">اعداد مستخلص الدفعة الجزئية الثانية وجاري الصرف</span>
-                                                                <i class="fas fa-file-invoice text-warning"></i>
-                                                            </div>
-                                                            <span class="badge bg-secondary rounded-pill">{{ isset($executionStatusCounts) ? ($executionStatusCounts[6] ?? 0) : 0 }}</span>
-                                                        </label>
-                                                    </div>
-                                                </div>
-                                            </li>
-                                            <li>
-                                                <div class="dropdown-item">
-                                                    <div class="form-check">
-                                                        <input class="form-check-input execution-status-check" type="checkbox" name="execution_status[]" value="7" id="status7" 
-                                                               {{ in_array('7', $selectedStatuses) ? 'checked' : '' }} onchange="updateExecutionStatusText()">
-                                                        <label class="form-check-label d-flex justify-content-between align-items-center" for="status7">
-                                                            <div class="d-flex align-items-center">
-                                                                <span class="badge bg-success">7</span>
-                                                                <span class="flex-grow-1 me-2">تم الصرف وتم الانتهاء</span>
-                                                                <i class="fas fa-check-circle text-success"></i>
-                                                            </div>
-                                                            <span class="badge bg-secondary rounded-pill">{{ isset($executionStatusCounts) ? ($executionStatusCounts[7] ?? 0) : 0 }}</span>
-                                                        </label>
-                                                    </div>
-                                                </div>
-                                            </li>
-                                            <li>
-                                                <div class="dropdown-item">
-                                                    <div class="form-check">
-                                                        <input class="form-check-input execution-status-check" type="checkbox" name="execution_status[]" value="8" id="status8" 
-                                                               {{ in_array('8', $selectedStatuses) ? 'checked' : '' }} onchange="updateExecutionStatusText()">
-                                                        <label class="form-check-label d-flex justify-content-between align-items-center" for="status8">
-                                                            <div class="d-flex align-items-center">
-                                                                <span class="badge bg-info">8</span>
-                                                                <span class="flex-grow-1 me-2">تم اصدار شهادة الانجاز</span>
-                                                                <i class="fas fa-award text-info"></i>
-                                                            </div>
-                                                            <span class="badge bg-secondary rounded-pill">{{ isset($executionStatusCounts) ? ($executionStatusCounts[8] ?? 0) : 0 }}</span>
-                                                        </label>
-                                                    </div>
-                                                </div>
-                                            </li>
-                                            <li>
-                                                <div class="dropdown-item">
-                                                    <div class="form-check">
-                                                        <input class="form-check-input execution-status-check" type="checkbox" name="execution_status[]" value="9" id="status9" 
-                                                               {{ in_array('9', $selectedStatuses) ? 'checked' : '' }} onchange="updateExecutionStatusText()">
-                                                        <label class="form-check-label d-flex justify-content-between align-items-center" for="status9">
-                                                            <div class="d-flex align-items-center">
-                                                                <span class="badge bg-danger">9</span>
-                                                                <span class="flex-grow-1 me-2">تم الالغاء او تحويل امر العمل</span>
-                                                                <i class="fas fa-times-circle text-danger"></i>
-                                                            </div>
-                                                            <span class="badge bg-secondary rounded-pill">{{ isset($executionStatusCounts) ? ($executionStatusCounts[9] ?? 0) : 0 }}</span>
-                                                        </label>
-                                                    </div>
-                                                </div>
-                                            </li>
-                                            <li>
-                                                <div class="dropdown-item">
-                                                    <div class="form-check">
-                                                        <input class="form-check-input execution-status-check" type="checkbox" name="execution_status[]" value="10" id="status10" 
-                                                               {{ in_array('10', $selectedStatuses) ? 'checked' : '' }} onchange="updateExecutionStatusText()">
-                                                        <label class="form-check-label d-flex justify-content-between align-items-center" for="status10">
-                                                            <div class="d-flex align-items-center">
-                                                                <span class="badge bg-primary">10</span>
-                                                                <span class="flex-grow-1 me-2">تم اعداد المستخلص الكلي وجاري الصرف</span>
-                                                                <i class="fas fa-file-contract text-primary"></i>
-                                                            </div>
-                                                            <span class="badge bg-secondary rounded-pill">{{ isset($executionStatusCounts) ? ($executionStatusCounts[10] ?? 0) : 0 }}</span>
-                                                        </label>
-                                                    </div>
-                                                </div>
-                                            </li>
-                                        </ul>
-                                    </div>
+                                    <!-- Select dropdown for execution status -->
+                                    <select class="form-select" id="execution_status" name="execution_status" onchange="liveSearch()" style="height: 38px;">
+                                        <option value="">كل الحالات</option>
+                                        @php
+                                            $statusLabels = [
+                                                '1' => 'جاري العمل بالموقع',
+                                                '2' => 'تم التنفيذ بالموقع وجاري تسليم 155',
+                                                '3' => 'تم تسليم 155 جاري اصدار شهادة الانجاز',
+                                                '4' => 'اعداد مستخلص الدفعة الجزئية الاولي وجاري الصرف',
+                                                '5' => 'تم صرف مستخلص الدفعة الجزئية الاولي',
+                                                '6' => 'اعداد مستخلص الدفعة الجزئية الثانية وجاري الصرف',
+                                                '7' => 'تم الصرف وتم الانتهاء',
+                                                '8' => 'تم اصدار شهادة الانجاز',
+                                                '9' => 'تم الالغاء او تحويل امر العمل',
+                                                '10' => 'تم اعداد المستخلص الكلي وجاري الصرف'
+                                            ];
+                                            $selectedStatus = request('execution_status');
+                                        @endphp
+                                        @foreach($statusLabels as $value => $label)
+                                            <option value="{{ $value }}" {{ $selectedStatus == $value ? 'selected' : '' }}>
+                                                {{ $label }}
+                                            </option>
+                                        @endforeach
+                                    </select>
                                 </div>
                             </div>
                             
@@ -1096,7 +911,6 @@ function resetCountdown(workOrderId) {
                                         @endif
                                         @if(request('execution_status'))
                                             @php
-                                                $executionStatuses = is_array(request('execution_status')) ? request('execution_status') : [request('execution_status')];
                                                 $statusLabels = [
                                                     '1' => 'جاري العمل بالموقع',
                                                     '2' => 'تم التنفيذ بالموقع وجاري تسليم 155',
@@ -1110,26 +924,10 @@ function resetCountdown(workOrderId) {
                                                     '10' => 'تم اعداد المستخلص الكلي وجاري الصرف'
                                                 ];
                                             @endphp
-                                            @if(count($executionStatuses) == 1)
                                             <span class="filter-badge">
-                                                    حالة التنفيذ: {{ $statusLabels[$executionStatuses[0]] ?? $executionStatuses[0] }}
+                                                حالة التنفيذ: {{ $statusLabels[request('execution_status')] ?? request('execution_status') }}
                                                 <i class="fas fa-times clear-filter" onclick="clearFilter('execution_status')"></i>
                                             </span>
-                                            @else
-                                                <span class="filter-badge">
-                                                    حالة التنفيذ: {{ count($executionStatuses) }} حالات محددة
-                                                    <i class="fas fa-times clear-filter" onclick="clearFilter('execution_status')" title="حذف جميع حالات التنفيذ"></i>
-                                                </span>
-                                                @foreach($executionStatuses as $status)
-                                                    <span class="filter-badge filter-badge-secondary">
-                                                        {{ $statusLabels[$status] ?? $status }}
-                                                        <i class="fas fa-times clear-single-status" 
-                                                           onclick="event.stopPropagation(); clearSingleExecutionStatusSimple('{{ $status }}'); return false;" 
-                                                           title="حذف هذه الحالة فقط"
-                                                           style="margin-left: 5px; cursor: pointer; color: #dc3545; z-index: 10; position: relative;"></i>
-                                                    </span>
-                                                @endforeach
-                                            @endif
                                         @endif
                                         @if(request('extract_number'))
                                             <span class="filter-badge">
