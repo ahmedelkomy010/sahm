@@ -12,6 +12,179 @@
 .countdown-badge i {
     font-size: 0.9rem;
 }
+
+.filter-badge-secondary {
+    background-color: #f8f9fa;
+    color: #6c757d;
+    border: 1px solid #dee2e6;
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    margin: 0.1rem;
+    border-radius: 0.375rem;
+    display: inline-block;
+}
+
+/* Custom dropdown styles */
+.dropdown-toggle::after {
+    margin-left: auto;
+}
+
+.dropdown-menu {
+    border: 1px solid #dee2e6;
+    border-radius: 0.5rem;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    padding: 0.5rem 0;
+    min-width: 350px;
+}
+
+.dropdown-item {
+    padding: 0.5rem 1rem;
+    transition: all 0.2s ease;
+    border: none;
+}
+
+.dropdown-item:hover {
+    background-color: #f8f9fa;
+    transform: translateX(5px);
+}
+
+.dropdown-item .form-check {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.dropdown-item .form-check-input {
+    margin-top: 0;
+    margin-right: 0;
+    transform: scale(1.1);
+}
+
+.dropdown-item .form-check-label {
+    margin-bottom: 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 500;
+    color: #495057;
+    flex: 1;
+}
+
+.dropdown-item .badge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.375rem;
+    font-weight: 600;
+    min-width: 20px;
+    text-align: center;
+}
+
+/* Special styling for select all option */
+.dropdown-item:first-child {
+    border-bottom: 1px solid #dee2e6;
+    margin-bottom: 0.25rem;
+    padding-bottom: 0.75rem;
+}
+
+.dropdown-item:first-child .form-check-label {
+    font-weight: 700;
+    color: #0d6efd;
+}
+
+/* Divider styling */
+.dropdown-divider {
+    margin: 0.25rem 0;
+    border-color: #dee2e6;
+}
+
+/* Checked items highlighting */
+.dropdown-item .form-check-input:checked + .form-check-label {
+    background-color: rgba(13, 110, 253, 0.1);
+    border-radius: 0.375rem;
+    padding: 0.25rem 0.5rem;
+    margin: -0.25rem -0.5rem;
+    font-weight: 600;
+}
+
+/* Icon styling */
+.dropdown-item .form-check-label i {
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+}
+
+.dropdown-item:hover .form-check-label i {
+    opacity: 1;
+}
+
+/* Badge improvements */
+.dropdown-item .badge {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Smooth scrollbar */
+.dropdown-menu::-webkit-scrollbar {
+    width: 6px;
+}
+
+.dropdown-menu::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.dropdown-menu::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.dropdown-menu::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* Ensure dropdown button looks like a form control */
+#executionStatusDropdown {
+    border: 1px solid #ced4da;
+    border-radius: 0.375rem;
+    background-color: #fff;
+    color: #495057;
+}
+
+#executionStatusDropdown:hover {
+    border-color: #adb5bd;
+}
+
+#executionStatusDropdown:focus {
+    border-color: #86b7fe;
+    outline: 0;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+/* Styling for single status clear buttons */
+.clear-single-status {
+    font-size: 0.8rem;
+    margin-left: 5px;
+    cursor: pointer;
+    color: #dc3545 !important;
+    transition: all 0.2s ease;
+}
+
+.clear-single-status:hover {
+    color: #b02a37 !important;
+    transform: scale(1.1);
+}
+
+.filter-badge-secondary {
+    position: relative;
+    padding-right: 25px;
+}
+
+.filter-badge-secondary .clear-single-status {
+    position: absolute;
+    right: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+}
 </style>
 @endpush
         
@@ -92,6 +265,218 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // تحديث كل دقيقة
 setInterval(updateCountdowns, 60000);
+
+// Multi-select execution status functions
+function updateExecutionStatusText() {
+    const checkboxes = document.querySelectorAll('.execution-status-check:checked');
+    const textElement = document.getElementById('executionStatusText');
+    const statusLabels = {
+        '1': 'جاري العمل بالموقع',
+        '2': 'تم التنفيذ بالموقع وجاري تسليم 155',
+        '3': 'تم تسليم 155 جاري اصدار شهادة الانجاز',
+        '4': 'اعداد مستخلص الدفعة الجزئية الاولي وجاري الصرف',
+        '5': 'تم صرف مستخلص الدفعة الجزئية الاولي',
+        '6': 'اعداد مستخلص الدفعة الجزئية الثانية وجاري الصرف',
+        '7': 'تم الصرف وتم الانتهاء',
+        '8': 'تم اصدار شهادة الانجاز',
+        '9': 'تم الالغاء او تحويل امر العمل',
+        '10': 'تم اعداد المستخلص الكلي وجاري الصرف'
+    };
+    
+    if (checkboxes.length === 0) {
+        textElement.textContent = 'كل الحالات';
+    } else if (checkboxes.length === 1) {
+        textElement.textContent = statusLabels[checkboxes[0].value] || 'غير محدد';
+    } else {
+        textElement.textContent = checkboxes.length + ' حالات محددة';
+    }
+    
+    // Update "Select All" checkbox state
+    const selectAllCheckbox = document.getElementById('selectAllStatuses');
+    const allCheckboxes = document.querySelectorAll('.execution-status-check');
+    selectAllCheckbox.checked = checkboxes.length === allCheckboxes.length;
+    selectAllCheckbox.indeterminate = checkboxes.length > 0 && checkboxes.length < allCheckboxes.length;
+}
+
+function toggleAllStatuses(selectAllCheckbox) {
+    const checkboxes = document.querySelectorAll('.execution-status-check');
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = selectAllCheckbox.checked;
+    });
+    updateExecutionStatusText();
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    updateExecutionStatusText();
+    
+    // Ensure Bootstrap dropdown is properly initialized
+    const dropdownElement = document.getElementById('executionStatusDropdown');
+    
+    // Try Bootstrap 5 first
+    if (dropdownElement && typeof bootstrap !== 'undefined') {
+        try {
+            new bootstrap.Dropdown(dropdownElement);
+        } catch (e) {
+            console.log('Bootstrap dropdown initialization failed:', e);
+        }
+    }
+    
+    // Fallback with jQuery if available
+    if (typeof $ !== 'undefined') {
+        $('#executionStatusDropdown').dropdown();
+    }
+    
+    // Prevent dropdown from closing when clicking on checkboxes
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.dropdown-item')) {
+            e.stopPropagation();
+        }
+    });
+    
+    // Alternative click handler for the dropdown button
+    const dropdownButton = document.getElementById('executionStatusDropdown');
+    if (dropdownButton) {
+        dropdownButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            const dropdownMenu = this.nextElementSibling;
+            if (dropdownMenu.classList.contains('show')) {
+                dropdownMenu.classList.remove('show');
+            } else {
+                // Close other dropdowns first
+                document.querySelectorAll('.dropdown-menu.show').forEach(menu => {
+                    menu.classList.remove('show');
+                });
+                dropdownMenu.classList.add('show');
+            }
+        });
+    }
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.dropdown')) {
+            document.querySelectorAll('.dropdown-menu.show').forEach(menu => {
+                menu.classList.remove('show');
+            });
+        }
+    });
+});
+
+// Function to clear single execution status
+function clearSingleExecutionStatus(statusToRemove) {
+    console.log('Clearing status:', statusToRemove); // Debug log
+    
+    try {
+        const url = new URL(window.location.href);
+        console.log('Current URL:', url.toString()); // Debug log
+        
+        // Get current statuses (could be single value or array)
+        let currentStatuses = [];
+        
+        // Check for array format first
+        const arrayStatuses = url.searchParams.getAll('execution_status[]');
+        console.log('Array statuses:', arrayStatuses); // Debug log
+        
+        if (arrayStatuses.length > 0) {
+            currentStatuses = arrayStatuses;
+        } else {
+            // Check for single value format
+            const singleStatus = url.searchParams.get('execution_status');
+            console.log('Single status:', singleStatus); // Debug log
+            if (singleStatus) {
+                currentStatuses = [singleStatus];
+            }
+        }
+        
+        console.log('Current statuses before filter:', currentStatuses); // Debug log
+        
+        // Remove the specific status
+        const newStatuses = currentStatuses.filter(status => status !== statusToRemove);
+        console.log('New statuses after filter:', newStatuses); // Debug log
+        
+        // Clear all execution_status parameters
+        url.searchParams.delete('execution_status');
+        url.searchParams.delete('execution_status[]');
+        
+        // Add back the remaining statuses
+        if (newStatuses.length > 0) {
+            newStatuses.forEach(status => {
+                url.searchParams.append('execution_status[]', status);
+            });
+        }
+        
+        console.log('Final URL:', url.toString()); // Debug log
+        
+        // Redirect to the new URL
+        window.location.href = url.toString();
+        
+    } catch (error) {
+        console.error('Error in clearSingleExecutionStatus:', error);
+        // Fallback: Use form submission method
+        clearSingleExecutionStatusFallback(statusToRemove);
+    }
+}
+
+// Fallback method using form submission
+function clearSingleExecutionStatusFallback(statusToRemove) {
+    console.log('Using fallback method for status:', statusToRemove);
+    
+    // Get current URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    // Create a form to submit the new parameters
+    const form = document.createElement('form');
+    form.method = 'GET';
+    form.action = window.location.pathname;
+    
+    // Add all current parameters except the one we want to remove
+    for (const [key, value] of urlParams.entries()) {
+        if (key === 'execution_status[]' && value === statusToRemove) {
+            continue; // Skip this specific status
+        }
+        if (key === 'execution_status' && value === statusToRemove) {
+            continue; // Skip this specific status
+        }
+        
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = key;
+        input.value = value;
+        form.appendChild(input);
+    }
+    
+    // Submit the form
+    document.body.appendChild(form);
+    form.submit();
+}
+
+// Simple alternative method
+function clearSingleExecutionStatusSimple(statusToRemove) {
+    console.log('Using simple method for status:', statusToRemove);
+    
+    // Get current page URL
+    let currentUrl = window.location.href;
+    
+    // Remove the specific status from URL
+    // Handle array format: execution_status[]=value
+    const arrayPattern = new RegExp(`[&?]execution_status\\[\\]=${statusToRemove}`, 'g');
+    currentUrl = currentUrl.replace(arrayPattern, '');
+    
+    // Handle single format: execution_status=value
+    const singlePattern = new RegExp(`[&?]execution_status=${statusToRemove}`, 'g');
+    currentUrl = currentUrl.replace(singlePattern, '');
+    
+    // Clean up URL (remove double &, fix ? issues)
+    currentUrl = currentUrl.replace(/[&?]&+/g, '&').replace(/[?&]$/, '').replace(/\?&/, '?');
+    
+    // If no execution_status parameters left, make sure we don't have dangling &
+    if (!currentUrl.includes('execution_status')) {
+        currentUrl = currentUrl.replace(/[&?]$/, '');
+    }
+    
+    console.log('Redirecting to:', currentUrl);
+    window.location.href = currentUrl;
+}
 </script>
 @endsection
 
@@ -176,39 +561,51 @@ function resetCountdown(workOrderId) {
                         </div>
                     @endif
 
-                    <div class="d-flex justify-content-end align-items-center mb-4">
-                        @php
-                            $projectLower = strtolower($project ?? '');
-                            $isRiyadh = str_contains($projectLower, 'riyadh') || str_contains($projectLower, 'الرياض') || 
-                                        str_contains($projectLower, 'riyad') || str_contains($projectLower, 'رياض');
-                            $isMadinah = str_contains($projectLower, 'medina') || str_contains($projectLower, 'المدينة') || 
-                                         str_contains($projectLower, 'madinah');
-                        @endphp
-                        
-                        @if($isRiyadh)
-                            <a href="{{ route('admin.materials.riyadh-overview') }}" class="btn btn-info me-2 px-4">
-                                <i class="fas fa-eye me-1"></i> تفاصيل عامة للمواد
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <!-- الأزرار الثلاثة على اليسار -->
+                        <div class="d-flex align-items-center">
+                            @php
+                                $projectLower = strtolower($project ?? '');
+                                $isRiyadh = str_contains($projectLower, 'riyadh') || str_contains($projectLower, 'الرياض') || 
+                                            str_contains($projectLower, 'riyad') || str_contains($projectLower, 'رياض');
+                                $isMadinah = str_contains($projectLower, 'medina') || str_contains($projectLower, 'المدينة') || 
+                                             str_contains($projectLower, 'madinah');
+                            @endphp
+                            
+                            @if($isRiyadh && auth()->user()->hasPermission('riyadh_materials_overview'))
+                                <a href="{{ route('admin.materials.riyadh-overview') }}" class="btn btn-info ms-2 px-4">
+                                    <i class="fas fa-eye me-1"></i>موقف مواد المستودعات 
+                                </a>
+                            @elseif($isMadinah && auth()->user()->hasPermission('madinah_materials_overview'))
+                                <a href="{{ route('admin.materials.madinah-overview') }}" class="btn btn-info ms-2 px-4">
+                                    <i class="fas fa-eye me-1"></i>موقف مواد المستودعات 
+                                </a>
+                            @endif
+                            
+                            @if(($isRiyadh && auth()->user()->hasPermission('riyadh_execution_productivity')) || 
+                                ($isMadinah && auth()->user()->hasPermission('madinah_execution_productivity')))
+                            <a href="{{ route('admin.work-orders.execution-productivity', ['project' => $project ?? 'riyadh']) }}" class="btn btn-purple ms-2 px-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; color: white;">
+                                <i class="fas fa-chart-line me-1"></i> انتاجية التنفيذ
                             </a>
-                        @elseif($isMadinah)
-                            <a href="{{ route('admin.materials.madinah-overview') }}" class="btn btn-info me-2 px-4">
-                                <i class="fas fa-eye me-1"></i> تفاصيل عامة للمواد 
+                            @endif
+                            
+                            @if(($isRiyadh && auth()->user()->hasPermission('riyadh_license_details')) || 
+                                ($isMadinah && auth()->user()->hasPermission('madinah_license_details')))
+                            <a href="{{ route('admin.licenses.display', ['project' => $project ?? 'riyadh']) }}" class="btn btn-warning ms-2 px-4">
+                                <i class="fas fa-file-contract me-1"></i> تفاصيل الجودة والرخص
                             </a>
-                        @endif
-                        
-                        <a href="{{ route('admin.work-orders.execution-productivity', ['project' => $project ?? 'riyadh']) }}" class="btn btn-purple me-2 px-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; color: white;">
-                            <i class="fas fa-chart-line me-1"></i> انتاجية التنفيذ
-                        </a>
-                        
-                        <a href="{{ route('admin.licenses.display', ['project' => $project ?? 'riyadh']) }}" class="btn btn-warning me-2 px-4">
-                            <i class="fas fa-file-contract me-1"></i> تفاصيل الرخص
-                        </a>
-                        
-                        <a href="{{ route('admin.work-orders.export.excel', ['project' => $project]) }}" class="btn btn-success me-2 px-4">
-                            <i class="fas fa-file-excel me-1"></i> تصدير إكسل
-                        </a>
-                        <a href="{{ route('admin.work-orders.create', ['project' => $project]) }}" class="btn btn-primary px-4" style="min-width: 150px;">
-                            <i class="fas fa-plus me-1"></i> إنشاء أمر عمل جديد
-                        </a>
+                            @endif
+                        </div>
+
+                        <!-- أزرار التصدير والإنشاء على اليمين -->
+                        <div class="d-flex align-items-center">
+                            <a href="{{ route('admin.work-orders.export.excel', ['project' => $project]) }}" class="btn btn-success me-2 px-4">
+                                <i class="fas fa-file-excel me-1"></i> تصدير إكسل
+                            </a>
+                            <a href="{{ route('admin.work-orders.create', ['project' => $project]) }}" class="btn btn-primary px-4" style="min-width: 150px;">
+                                <i class="fas fa-plus me-1"></i> إنشاء أمر عمل جديد
+                            </a>
+                        </div>
                     </div>
 
                     فلاتر البحث
@@ -345,27 +742,195 @@ function resetCountdown(workOrderId) {
                                 </div>
                             </div>
                             
+                            
+                            
                             <div class="col-md-3">
                                 <div class="form-group">
                                     <label for="execution_status" class="form-label fw-bold">
                                         <i class="fas fa-tasks text-primary me-1"></i>
                                         حالة التنفيذ
                                     </label>
-                                    <select class="form-select" id="execution_status" name="execution_status">
-                                        <option value="">كل الحالات</option>
-                                        <option value="1" {{ request('execution_status') == '1' ? 'selected' : '' }}>جاري العمل بالموقع</option>
-                                        <option value="2" {{ request('execution_status') == '2' ? 'selected' : '' }}>تم التنفيذ بالموقع وجاري تسليم 155</option>
-                                        <option value="3" {{ request('execution_status') == '3' ? 'selected' : '' }}>تم تسليم 155 جاري اصدار شهادة الانجاز</option>
-                                        <option value="4" {{ request('execution_status') == '4' ? 'selected' : '' }}>اعداد مستخلص الدفعة الجزئية الاولي وجاري الصرف</option>
-                                        <option value="5" {{ request('execution_status') == '5' ? 'selected' : '' }}>تم صرف مستخلص الدفعة الجزئية الاولي</option>
-                                        <option value="8" {{ request('execution_status') == '8' ? 'selected' : '' }}>تم اصدار شهادة الانجاز</option>
-                                        <option value="6" {{ request('execution_status') == '6' ? 'selected' : '' }}>اعداد مستخلص الدفعة الجزئية الثانية وجاري الصرف</option>
-                                        <option value="10" {{ request('execution_status') == '10' ? 'selected' : '' }}>تم اعداد المستخلص الكلي وجاري الصرف</option>
-                                        <option value="7" {{ request('execution_status') == '7' ? 'selected' : '' }}>تم الصرف وتم الانتهاء</option>
-                                        
-                                        <option value="9" {{ request('execution_status') == '9' ? 'selected' : '' }}>تم الالغاء او تحويل امر العمل</option>
-                                        
-                                    </select>
+                                    <!-- Multi-select dropdown for execution status -->
+                                    <div class="dropdown">
+                                        <button class="btn btn-outline-secondary dropdown-toggle w-100 d-flex justify-content-between align-items-center" 
+                                                type="button" 
+                                                id="executionStatusDropdown" 
+                                                data-bs-toggle="dropdown" 
+                                                aria-expanded="false"
+                                                style="text-align: right; height: 38px;">
+                                            <span id="executionStatusText">
+                                                @php
+                                                    $statusLabels = [
+                                                        '1' => 'جاري العمل بالموقع',
+                                                        '2' => 'تم التنفيذ بالموقع وجاري تسليم 155',
+                                                        '3' => 'تم تسليم 155 جاري اصدار شهادة الانجاز',
+                                                        '4' => 'اعداد مستخلص الدفعة الجزئية الاولي وجاري الصرف',
+                                                        '5' => 'تم صرف مستخلص الدفعة الجزئية الاولي',
+                                                        '6' => 'اعداد مستخلص الدفعة الجزئية الثانية وجاري الصرف',
+                                                        '7' => 'تم الصرف وتم الانتهاء',
+                                                        '8' => 'تم اصدار شهادة الانجاز',
+                                                        '9' => 'تم الالغاء او تحويل امر العمل',
+                                                        '10' => 'تم اعداد المستخلص الكلي وجاري الصرف'
+                                                    ];
+                                                @endphp
+                                                @if(empty($selectedStatuses))
+                                                    كل الحالات
+                                                @elseif(count($selectedStatuses) == 1)
+                                                    {{ $statusLabels[$selectedStatuses[0]] ?? 'غير محدد' }}
+                                                @else
+                                                    {{ count($selectedStatuses) }} حالات محددة
+                                                @endif
+                                            </span>
+                                            <i class="fas fa-chevron-down"></i>
+                                        </button>
+                                        <ul class="dropdown-menu w-100" aria-labelledby="executionStatusDropdown" style="max-height: 400px; overflow-y: auto;">
+                                            <li>
+                                                <div class="dropdown-item">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" id="selectAllStatuses" onchange="toggleAllStatuses(this)">
+                                                        <label class="form-check-label" for="selectAllStatuses">
+                                                            <i class="fas fa-list-check me-2"></i>
+                                                            تحديد الكل / إلغاء التحديد
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            @php
+                                                $selectedStatuses = request('execution_status') ? (is_array(request('execution_status')) ? request('execution_status') : [request('execution_status')]) : [];
+                                            @endphp
+                                            <li>
+                                                <div class="dropdown-item">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input execution-status-check" type="checkbox" name="execution_status[]" value="1" id="status1" 
+                                                               {{ in_array('1', $selectedStatuses) ? 'checked' : '' }} onchange="updateExecutionStatusText()">
+                                                        <label class="form-check-label" for="status1">
+                                                            <span class="badge bg-warning text-dark">1</span>
+                                                            <span class="flex-grow-1">جاري العمل بالموقع</span>
+                                                            <i class="fas fa-hammer text-warning ms-2"></i>
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                            <li>
+                                                <div class="dropdown-item">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input execution-status-check" type="checkbox" name="execution_status[]" value="2" id="status2" 
+                                                               {{ in_array('2', $selectedStatuses) ? 'checked' : '' }} onchange="updateExecutionStatusText()">
+                                                        <label class="form-check-label" for="status2">
+                                                            <span class="badge bg-info">2</span>
+                                                            <span class="flex-grow-1">تم التنفيذ بالموقع وجاري تسليم 155</span>
+                                                            <i class="fas fa-file-alt text-info ms-2"></i>
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                            <li>
+                                                <div class="dropdown-item">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input execution-status-check" type="checkbox" name="execution_status[]" value="3" id="status3" 
+                                                               {{ in_array('3', $selectedStatuses) ? 'checked' : '' }} onchange="updateExecutionStatusText()">
+                                                        <label class="form-check-label" for="status3">
+                                                            <span class="badge bg-primary">3</span>
+                                                            <span class="flex-grow-1">تم تسليم 155 جاري اصدار شهادة الانجاز</span>
+                                                            <i class="fas fa-certificate text-primary ms-2"></i>
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                            <li>
+                                                <div class="dropdown-item">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input execution-status-check" type="checkbox" name="execution_status[]" value="4" id="status4" 
+                                                               {{ in_array('4', $selectedStatuses) ? 'checked' : '' }} onchange="updateExecutionStatusText()">
+                                                        <label class="form-check-label" for="status4">
+                                                            <span class="badge bg-secondary">4</span>
+                                                            <span class="flex-grow-1">اعداد مستخلص الدفعة الجزئية الاولي وجاري الصرف</span>
+                                                            <i class="fas fa-file-invoice-dollar text-secondary ms-2"></i>
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                            <li>
+                                                <div class="dropdown-item">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input execution-status-check" type="checkbox" name="execution_status[]" value="5" id="status5" 
+                                                               {{ in_array('5', $selectedStatuses) ? 'checked' : '' }} onchange="updateExecutionStatusText()">
+                                                        <label class="form-check-label" for="status5">
+                                                            <span class="badge bg-success">5</span>
+                                                            <span class="flex-grow-1">تم صرف مستخلص الدفعة الجزئية الاولي</span>
+                                                            <i class="fas fa-money-bill-wave text-success ms-2"></i>
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                            <li>
+                                                <div class="dropdown-item">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input execution-status-check" type="checkbox" name="execution_status[]" value="6" id="status6" 
+                                                               {{ in_array('6', $selectedStatuses) ? 'checked' : '' }} onchange="updateExecutionStatusText()">
+                                                        <label class="form-check-label" for="status6">
+                                                            <span class="badge bg-warning">6</span>
+                                                            <span class="flex-grow-1">اعداد مستخلص الدفعة الجزئية الثانية وجاري الصرف</span>
+                                                            <i class="fas fa-file-invoice text-warning ms-2"></i>
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                            <li>
+                                                <div class="dropdown-item">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input execution-status-check" type="checkbox" name="execution_status[]" value="7" id="status7" 
+                                                               {{ in_array('7', $selectedStatuses) ? 'checked' : '' }} onchange="updateExecutionStatusText()">
+                                                        <label class="form-check-label" for="status7">
+                                                            <span class="badge bg-success">7</span>
+                                                            <span class="flex-grow-1">تم الصرف وتم الانتهاء</span>
+                                                            <i class="fas fa-check-circle text-success ms-2"></i>
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                            <li>
+                                                <div class="dropdown-item">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input execution-status-check" type="checkbox" name="execution_status[]" value="8" id="status8" 
+                                                               {{ in_array('8', $selectedStatuses) ? 'checked' : '' }} onchange="updateExecutionStatusText()">
+                                                        <label class="form-check-label" for="status8">
+                                                            <span class="badge bg-info">8</span>
+                                                            <span class="flex-grow-1">تم اصدار شهادة الانجاز</span>
+                                                            <i class="fas fa-award text-info ms-2"></i>
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                            <li>
+                                                <div class="dropdown-item">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input execution-status-check" type="checkbox" name="execution_status[]" value="9" id="status9" 
+                                                               {{ in_array('9', $selectedStatuses) ? 'checked' : '' }} onchange="updateExecutionStatusText()">
+                                                        <label class="form-check-label" for="status9">
+                                                            <span class="badge bg-danger">9</span>
+                                                            <span class="flex-grow-1">تم الالغاء او تحويل امر العمل</span>
+                                                            <i class="fas fa-times-circle text-danger ms-2"></i>
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                            <li>
+                                                <div class="dropdown-item">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input execution-status-check" type="checkbox" name="execution_status[]" value="10" id="status10" 
+                                                               {{ in_array('10', $selectedStatuses) ? 'checked' : '' }} onchange="updateExecutionStatusText()">
+                                                        <label class="form-check-label" for="status10">
+                                                            <span class="badge bg-primary">10</span>
+                                                            <span class="flex-grow-1">تم اعداد المستخلص الكلي وجاري الصرف</span>
+                                                            <i class="fas fa-file-contract text-primary ms-2"></i>
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                        </ul>
+                                    </div>
                                 </div>
                             </div>
                             
@@ -502,22 +1067,41 @@ function resetCountdown(workOrderId) {
                                             </span>
                                         @endif
                                         @if(request('execution_status'))
+                                            @php
+                                                $executionStatuses = is_array(request('execution_status')) ? request('execution_status') : [request('execution_status')];
+                                                $statusLabels = [
+                                                    '1' => 'جاري العمل بالموقع',
+                                                    '2' => 'تم التنفيذ بالموقع وجاري تسليم 155',
+                                                    '3' => 'تم تسليم 155 جاري اصدار شهادة الانجاز',
+                                                    '4' => 'اعداد مستخلص الدفعة الجزئية الاولي وجاري الصرف',
+                                                    '5' => 'تم صرف مستخلص الدفعة الجزئية الاولي',
+                                                    '6' => 'اعداد مستخلص الدفعة الجزئية الثانية وجاري الصرف',
+                                                    '7' => 'تم الصرف وتم الانتهاء',
+                                                    '8' => 'تم اصدار شهادة الانجاز',
+                                                    '9' => 'تم الالغاء او تحويل امر العمل',
+                                                    '10' => 'تم اعداد المستخلص الكلي وجاري الصرف'
+                                                ];
+                                            @endphp
+                                            @if(count($executionStatuses) == 1)
                                             <span class="filter-badge">
-                                                حالة التنفيذ:                                                 @switch(request('execution_status'))
-                                                    @case('1') جاري العمل بالموقع @break
-                                                    @case('2') تم التنفيذ بالموقع وجاري تسليم 155 @break
-                                                    @case('3') تم تسليم 155 جاري اصدار شهادة الانجاز @break
-                                                    @case('4') اعداد مستخلص الدفعة الجزئية الاولي وجاري الصرف @break
-                                                    @case('5') تم صرف مستخلص الدفعة الجزئية الاولي @break
-                                                    @case('6') اعداد مستخلص الدفعة الجزئية الثانية وجاري الصرف @break
-                                                    @case('7') تم الصرف وتم الانتهاء @break
-                                                    @case('8') تم اصدار شهادة الانجاز @break
-                                                    @case('9') تم الالغاء او تحويل امر العمل @break
-                                                    @case('10') تم اعداد المستخلص الكلي وجاري الصرف @break
-                                                    @default {{ request('execution_status') }}
-                                                @endswitch
+                                                    حالة التنفيذ: {{ $statusLabels[$executionStatuses[0]] ?? $executionStatuses[0] }}
                                                 <i class="fas fa-times clear-filter" onclick="clearFilter('execution_status')"></i>
                                             </span>
+                                            @else
+                                                <span class="filter-badge">
+                                                    حالة التنفيذ: {{ count($executionStatuses) }} حالات محددة
+                                                    <i class="fas fa-times clear-filter" onclick="clearFilter('execution_status')" title="حذف جميع حالات التنفيذ"></i>
+                                                </span>
+                                                @foreach($executionStatuses as $status)
+                                                    <span class="filter-badge filter-badge-secondary">
+                                                        {{ $statusLabels[$status] ?? $status }}
+                                                        <i class="fas fa-times clear-single-status" 
+                                                           onclick="event.stopPropagation(); clearSingleExecutionStatusSimple('{{ $status }}'); return false;" 
+                                                           title="حذف هذه الحالة فقط"
+                                                           style="margin-left: 5px; cursor: pointer; color: #dc3545; z-index: 10; position: relative;"></i>
+                                                    </span>
+                                                @endforeach
+                                            @endif
                                         @endif
                                         @if(request('extract_number'))
                                             <span class="filter-badge">
@@ -1313,6 +1897,10 @@ function toggleAdvancedFilters() {
 function clearFilter(filterName) {
     const url = new URL(window.location);
     url.searchParams.delete(filterName);
+    // Also delete array version for execution_status
+    if (filterName === 'execution_status') {
+        url.searchParams.delete('execution_status[]');
+    }
     window.location.href = url.toString();
 }
 

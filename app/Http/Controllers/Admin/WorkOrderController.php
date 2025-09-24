@@ -62,9 +62,14 @@ class WorkOrderController extends Controller
             $query->where('station_number', 'like', '%' . $request->station_number . '%');
         }
         
-        // فلتر حالة التنفيذ
+        // فلتر حالة التنفيذ - يدعم اختيار متعدد
         if ($request->filled('execution_status')) {
-            $query->where('execution_status', $request->execution_status);
+            $executionStatuses = $request->execution_status;
+            if (is_array($executionStatuses)) {
+                $query->whereIn('execution_status', $executionStatuses);
+            } else {
+                $query->where('execution_status', $executionStatuses);
+            }
         }
         
         // فلتر تاريخ الاعتماد من
@@ -420,7 +425,9 @@ class WorkOrderController extends Controller
             'files', 
             'basicAttachments', 
             'workOrderItems.workItem', 
-            'workOrderMaterials.material'
+            'workOrderItems.dailyExecutions',
+            'workOrderMaterials.material',
+            'dailyExecutionNotes'
         ]);
 
         // جلب صور التنفيذ
@@ -429,17 +436,8 @@ class WorkOrderController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
         
-        // Filter work order items by date - only show items that match the selected date
-        if ($workDate) {
-            $workOrder->workOrderItems = $workOrder->workOrderItems->filter(function($item) use ($workDate) {
-                // إذا كان البند له تاريخ محفوظ، اعرضه فقط إذا كان يطابق التاريخ المحدد
-                if ($item->work_date) {
-                    return $item->work_date->format('Y-m-d') === $workDate;
-                }
-                // إذا لم يكن للبند تاريخ محفوظ، اعرضه فقط في تاريخ اليوم
-                return $workDate === now()->format('Y-m-d');
-            });
-        }
+        // عرض جميع البنود بغض النظر عن التاريخ
+        // سيتم تفريغ حقول الكمية المنفذة في Frontend عند تغيير التاريخ
         
         $hasWorkItems = $workOrder->workOrderItems()->count() > 0;
         $hasMaterials = $workOrder->workOrderMaterials()->count() > 0;
@@ -461,6 +459,75 @@ class WorkOrderController extends Controller
             'project',
             'executionImages'
         ));
+    }
+
+    /**
+     * حفظ أو تحديث ملاحظات التنفيذ اليومية
+     */
+    public function saveDailyExecutionNote(Request $request, WorkOrder $workOrder)
+    {
+        try {
+            $request->validate([
+                'execution_date' => 'required|date',
+                'notes' => 'required|string|max:2000'
+            ]);
+
+            $executionDate = $request->execution_date;
+            $notes = $request->notes;
+
+            // حفظ أو تحديث الملاحظة
+            $dailyNote = \App\Models\DailyExecutionNote::updateOrCreate(
+                [
+                    'work_order_id' => $workOrder->id,
+                    'execution_date' => $executionDate
+                ],
+                [
+                    'notes' => $notes,
+                    'created_by' => auth()->id()
+                ]
+            );
+
+            return response()->json([
+                'success' => true,
+                'message' => 'تم حفظ ملاحظات التنفيذ بنجاح',
+                'note_id' => $dailyNote->id,
+                'execution_date' => $executionDate
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء حفظ الملاحظات: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * تحميل ملاحظات التنفيذ لتاريخ محدد
+     */
+    public function getDailyExecutionNote(Request $request, WorkOrder $workOrder)
+    {
+        try {
+            $request->validate([
+                'execution_date' => 'required|date'
+            ]);
+
+            $executionDate = $request->execution_date;
+            $dailyNote = $workOrder->getDailyExecutionNoteForDate($executionDate);
+
+            return response()->json([
+                'success' => true,
+                'note' => $dailyNote ? $dailyNote->notes : '',
+                'execution_date' => $executionDate,
+                'has_note' => (bool) $dailyNote
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء تحميل الملاحظات: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**

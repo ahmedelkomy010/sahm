@@ -267,6 +267,22 @@ class WorkOrder extends Model
         return $this->hasMany(ExcavationDetail::class);
     }
 
+    /**
+     * Get daily execution notes for this work order
+     */
+    public function dailyExecutionNotes()
+    {
+        return $this->hasMany(DailyExecutionNote::class);
+    }
+
+    /**
+     * Get daily execution note for a specific date
+     */
+    public function getDailyExecutionNoteForDate($date)
+    {
+        return $this->dailyExecutionNotes()->where('execution_date', $date)->first();
+    }
+
 
 
 

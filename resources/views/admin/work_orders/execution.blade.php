@@ -184,11 +184,15 @@
                                         @php
                                             $workItem = $workOrderItem->workItem ?? null;
                                             $plannedQuantity = $workOrderItem->quantity ?? 0;
-                                            $executedQuantity = $workOrderItem->executed_quantity ?? 0;
                                             $unitPrice = $workItem ? ($workItem->unit_price ?? 0) : 0;
                                             $plannedAmount = $plannedQuantity * $unitPrice;
-                                            $executedAmount = $executedQuantity * $unitPrice;
-                                            $quantityDifference = $plannedQuantity - $executedQuantity;
+                                            
+                                            // الحصول على الكمية المنفذة للتاريخ المحدد
+                                            $currentDate = request('date', now()->format('Y-m-d'));
+                                            $currentDateExecution = $workOrderItem->getDailyExecutionForDate($currentDate);
+                                            $currentDateQuantity = $currentDateExecution ? $currentDateExecution->executed_quantity : 0;
+                                            $executedAmount = $currentDateQuantity * $unitPrice;
+                                            $quantityDifference = $plannedQuantity - $currentDateQuantity;
                                             
                                             $totalPlannedAmount += $plannedAmount;
                                             $totalExecutedAmount += $executedAmount;
@@ -214,10 +218,11 @@
                                                 <span class="text-primary fw-bold planned-amount">{{ number_format($plannedAmount, 2) }} ريال</span>
                                             </td>
                                             <td class="text-center">
-                                                <input type="number" step="0.01" value="{{ $executedQuantity }}" 
+                                                <input type="number" step="0.01" value="{{ $currentDateQuantity }}" 
                                                        class="form-control form-control-sm text-center actual-quantity" 
                                                        data-id="{{ $workOrderItem->id }}" style="width: 80px;"
-                                                       onchange="updateExecutedQuantity(this)">
+                                                       onchange="updateExecutedQuantity(this)"
+                                                       placeholder="0.00">
                                             </td>
                                             <td class="text-center">
                                                 <span class="text-success fw-bold executed-amount">{{ number_format($executedAmount, 2) }} ريال</span>
@@ -278,6 +283,218 @@
                             <p class="text-muted">قم بإضافة بنود العمل لبدء التنفيذ</p>
                         </div>
                     @endif
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- جدول سجل التنفيذ -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-info text-white py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="mb-0">
+                                <i class="fas fa-history me-2"></i>
+                                سجل التنفيذ
+                            </h5>
+                            <small class="text-white-50">تواريخ تنفيذ بنود العمل</small>
+                        </div>
+                        <div>
+                            <span class="badge bg-white text-info fs-6">
+                                {{ $workOrder->workOrderItems->count() }} بند إجمالي
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    @if($workOrder->workOrderItems && $workOrder->workOrderItems->count() > 0)
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0" id="executionHistoryTable">
+                            <thead class="table-info">
+                                <tr>
+                                    <th class="text-center" style="width: 5%">#</th>
+                                    <th class="text-center" style="width: 12%">رقم البند</th>
+                                    <th style="width: 35%">وصف البند</th>
+                                    <th class="text-center" style="width: 10%">الكمية المنفذة</th>
+                                    <th class="text-center" style="width: 8%">الوحدة</th>
+                                    <th class="text-center" style="width: 15%">تاريخ التنفيذ</th>
+                                    <th class="text-center" style="width: 15%">القيمة المنفذة</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @php 
+                                    $executionIndex = 1;
+                                    $allDailyExecutions = collect();
+                                    foreach($workOrder->workOrderItems as $item) {
+                                        foreach($item->dailyExecutions as $dailyExecution) {
+                                            $allDailyExecutions->push($dailyExecution);
+                                        }
+                                    }
+                                    $allDailyExecutions = $allDailyExecutions->sortByDesc('work_date');
+                                @endphp
+                                @foreach($allDailyExecutions as $dailyExecution)
+                                    @php
+                                        $workOrderItem = $dailyExecution->workOrderItem;
+                                        $workItem = $workOrderItem->workItem;
+                                        $executedValue = $dailyExecution->executed_quantity * $workOrderItem->unit_price;
+                                    @endphp
+                                    <tr class="{{ $dailyExecution->executed_quantity > 0 ? 'table-success' : 'table-light' }}">
+                                        <td class="text-center fw-bold">{{ $executionIndex++ }}</td>
+                                        <td class="text-center">
+                                            <span class="badge bg-primary">{{ $workItem ? ($workItem->code ?? '-') : '-' }}</span>
+                                        </td>
+                                        <td class="text-start">{{ $workItem ? ($workItem->description ?? '-') : '-' }}</td>
+                                        <td class="text-center">
+                                            @if($dailyExecution->executed_quantity > 0)
+                                                <span class="badge bg-success">{{ number_format($dailyExecution->executed_quantity, 2) }}</span>
+                                            @else
+                                                <span class="badge bg-secondary">{{ number_format($dailyExecution->executed_quantity, 2) }}</span>
+                                            @endif
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge bg-secondary">{{ $workOrderItem->unit ?? ($workItem ? ($workItem->unit ?? 'عدد') : 'عدد') }}</span>
+                                        </td>
+                        <td class="text-center execution-date-cell">
+                            @if($dailyExecution->work_date)
+                                <div class="d-flex flex-column align-items-center">
+                                    <span class="badge bg-info mb-1">
+                                        <i class="fas fa-calendar me-1"></i>
+                                        {{ $dailyExecution->work_date->format('Y-m-d') }}
+                                    </span>
+                                    <small class="text-muted">
+                                        {{ $dailyExecution->work_date->format('l') }}
+                                    </small>
+                                </div>
+                            @else
+                                <div class="d-flex flex-column align-items-center">
+                                    <span class="badge bg-warning mb-1">
+                                        <i class="fas fa-question me-1"></i>
+                                        غير محدد
+                                    </span>
+                                    <small class="text-muted">لا يوجد تاريخ</small>
+                                </div>
+                            @endif
+                        </td>
+                                        <td class="text-center">
+                                            @if($executedValue > 0)
+                                                <span class="badge bg-success fs-6">
+                                                    <i class="fas fa-money-bill me-1"></i>
+                                                    {{ number_format($executedValue, 2) }} ريال
+                                                </span>
+                                            @else
+                                                <span class="badge bg-secondary fs-6">
+                                                    <i class="fas fa-money-bill me-1"></i>
+                                                    {{ number_format($executedValue, 2) }} ريال
+                                                </span>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                            <tfoot class="table-light">
+                                <tr class="fw-bold">
+                                    <td colspan="3" class="text-end">إجمالي التنفيذات اليومية:</td>
+                                    <td class="text-center text-success">
+                                        {{ number_format($allDailyExecutions->sum('executed_quantity'), 2) }}
+                                    </td>
+                                    <td class="text-center">-</td>
+                                    <td class="text-center">-</td>
+                                    <td class="text-center text-success">
+                                        @php
+                                            $totalDailyExecutionValue = $allDailyExecutions->sum(function($dailyExecution) {
+                                                return $dailyExecution->executed_quantity * $dailyExecution->workOrderItem->unit_price;
+                                            });
+                                        @endphp
+                                        {{ number_format($totalDailyExecutionValue, 2) }} ريال
+                                    </td>
+                                </tr>
+                                <tr class="fw-bold text-info">
+                                    <td colspan="3" class="text-end">عدد التنفيذات اليومية:</td>
+                                    <td class="text-center">
+                                        {{ $allDailyExecutions->where('executed_quantity', '>', 0)->count() }} تنفيذ
+                                    </td>
+                                    <td class="text-center">-</td>
+                                    <td class="text-center">-</td>
+                                    <td class="text-center">-</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                    @else
+                        <div class="text-center py-5">
+                            <i class="fas fa-clipboard-list fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">لا توجد بنود عمل مضافة</h5>
+                            <p class="text-muted">قم بإضافة بنود العمل لبدء التنفيذ</p>
+                        </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- قسم ملاحظات التنفيذ اليومية -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-warning text-white py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="mb-0">
+                                <i class="fas fa-sticky-note me-2"></i>
+                                ملاحظات التنفيذ اليومية
+                            </h5>
+                            <small class="text-white-50">ملاحظات وتعليقات حول تنفيذ أعمال اليوم</small>
+                        </div>
+                        <div>
+                            <span class="badge bg-white text-warning fs-6" id="notesDateBadge">
+                                <i class="fas fa-calendar me-1"></i>
+                                {{ request('date', now()->format('Y-m-d')) }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="form-group">
+                                <label for="dailyExecutionNotes" class="form-label fw-bold">
+                                    <i class="fas fa-edit me-1"></i>
+                                    ملاحظات اليوم
+                                </label>
+                                <textarea 
+                                    class="form-control" 
+                                    id="dailyExecutionNotes" 
+                                    rows="5" 
+                                    placeholder="اكتب ملاحظاتك حول تنفيذ أعمال اليوم هنا... سيتم حفظ الملاحظات تلقائياً"
+                                    style="resize: vertical; min-height: 120px;"
+                                ></textarea>
+                                <div class="form-text text-muted">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    سيتم حفظ الملاحظات تلقائياً عند التوقف عن الكتابة
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- مؤشر الحفظ -->
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <div id="notesSaveIndicator" class="text-center" style="display: none;">
+                                <div class="d-inline-flex align-items-center">
+                                    <div class="spinner-border spinner-border-sm text-primary me-2" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    <span class="text-primary">جاري الحفظ...</span>
+                                </div>
+                            </div>
+                            <div id="notesSavedIndicator" class="text-center text-success" style="display: none;">
+                                <i class="fas fa-check-circle me-1"></i>
+                                تم حفظ الملاحظات بنجاح
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -487,6 +704,58 @@
     #workItemsTable {
         font-size: 0.8rem;
     }
+}
+
+/* تنسيق جدول سجل التنفيذ */
+#executionHistoryTable {
+    font-size: 0.9rem;
+}
+
+#executionHistoryTable th {
+    font-weight: 600;
+    border-bottom: 2px solid #dee2e6;
+    vertical-align: middle;
+}
+
+#executionHistoryTable td {
+    vertical-align: middle;
+    padding: 12px 8px;
+}
+
+#executionHistoryTable .badge {
+    font-size: 0.8rem;
+    padding: 0.4rem 0.6rem;
+}
+
+#executionHistoryTable .text-start {
+    text-align: right !important;
+    padding-right: 15px;
+}
+
+/* تحسين عرض تاريخ التنفيذ */
+.execution-date-cell {
+    min-width: 120px;
+}
+
+.execution-date-cell .badge {
+    font-size: 0.75rem;
+    padding: 0.3rem 0.5rem;
+}
+
+.execution-date-cell small {
+    font-size: 0.7rem;
+}
+
+@media (max-width: 1200px) {
+    #executionHistoryTable {
+        font-size: 0.8rem;
+    }
+    
+    #executionHistoryTable .badge {
+        font-size: 0.7rem;
+        padding: 0.3rem 0.5rem;
+    }
+}
     
     #workItemsTable th,
     #workItemsTable td {
@@ -507,6 +776,79 @@
     #workItemsTable th,
     #workItemsTable td {
         padding: 6px 4px;
+    }
+}
+
+/* تنسيق قسم الملاحظات */
+#dailyExecutionNotes {
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+}
+
+#dailyExecutionNotes:focus {
+    border-color: #ffc107;
+    box-shadow: 0 0 0 0.2rem rgba(255, 193, 7, 0.25);
+    background-color: #fffdf7;
+}
+
+#dailyExecutionNotes::placeholder {
+    color: #6c757d;
+    font-style: italic;
+}
+
+/* مؤشرات الحفظ */
+#notesSaveIndicator, #notesSavedIndicator {
+    font-size: 0.9rem;
+    padding: 8px 16px;
+    border-radius: 20px;
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    transition: all 0.3s ease;
+}
+
+#notesSavedIndicator {
+    background-color: #d1edff;
+    border-color: #0dcaf0;
+    animation: fadeInSuccess 0.5s ease-in-out;
+}
+
+@keyframes fadeInSuccess {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* تحسين عرض البطاقة */
+.card-header.bg-warning {
+    background: linear-gradient(135deg, #ffc107 0%, #ffcd39 100%) !important;
+}
+
+.card-header.bg-warning .badge.bg-white {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* تحسين responsive للملاحظات */
+@media (max-width: 768px) {
+    #dailyExecutionNotes {
+        font-size: 0.9rem;
+        min-height: 100px;
+    }
+    
+    .card-header.bg-warning .d-flex {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .card-header.bg-warning .badge {
+        align-self: flex-start;
     }
 }
 </style>
@@ -1013,12 +1355,73 @@ let currentWorkDate = '{{ request('date', now()->format('Y-m-d')) }}';
 
 function updateWorkDate(date) {
     currentWorkDate = date;
-    refreshWorkItems();
+    
+    // تفريغ جميع حقول الكمية المنفذة عند تغيير التاريخ
+    clearExecutedQuantities();
+    
+    // تحديث التاريخ في modal
+    document.getElementById('modalWorkDate').value = currentWorkDate;
+    
+    // تحديث تاريخ الملاحظات
+    updateNotesDate(date);
+    
+    // تحميل ملاحظات التاريخ الجديد
+    loadDailyExecutionNotes(date);
+    
+    // إظهار رسالة تأكيد
+    toastr.info('تم تغيير التاريخ. يمكنك الآن إدخال الكميات المنفذة والملاحظات لهذا التاريخ.');
+}
+
+function clearExecutedQuantities() {
+    // تفريغ جميع حقول الكمية المنفذة
+    document.querySelectorAll('.actual-quantity').forEach(input => {
+        input.value = '0.00';
+        // تحديث العرض
+        updateExecutedQuantityDisplay(input);
+    });
+    
+    // تحديث الإجماليات
+    updateTotals();
+}
+
+function updateExecutedQuantityDisplay(input) {
+    const row = input.closest('tr');
+    if (!row) return;
+    
+    const executedQuantity = parseFloat(input.value) || 0;
+    const plannedQuantity = parseFloat(row.querySelector('.planned-quantity').value) || 0;
+    
+    // الحصول على سعر الوحدة
+    const unitPriceText = row.querySelector('.text-success.fw-bold').textContent;
+    const unitPrice = parseFloat(unitPriceText.replace(/[^\d.]/g, '')) || 0;
+    
+    // حساب القيمة المنفذة
+    const executedAmount = executedQuantity * unitPrice;
+    const quantityDiff = plannedQuantity - executedQuantity;
+    
+    // تحديث عرض القيمة المنفذة
+    const executedAmountElement = row.querySelector('.executed-amount');
+    if (executedAmountElement) {
+        executedAmountElement.textContent = executedAmount.toFixed(2) + ' ريال';
+    }
+    
+    // تحديث فرق الكمية
+    const diffCell = row.querySelector('.quantity-diff');
+    if (diffCell) {
+        if (quantityDiff > 0) {
+            diffCell.innerHTML = `<span class="badge bg-danger">-${quantityDiff.toFixed(2)}</span>`;
+        } else if (quantityDiff < 0) {
+            diffCell.innerHTML = `<span class="badge bg-success">+${Math.abs(quantityDiff).toFixed(2)}</span>`;
+        } else {
+            diffCell.innerHTML = `<span class="badge bg-secondary">0.00</span>`;
+        }
+    }
 }
 
 function refreshWorkItems() {
-    // Reload the page with the new date
-    window.location.href = `{{ route('admin.work-orders.execution', $workOrder->id) }}?date=${currentWorkDate}`;
+    // بدلاً من إعادة تحميل الصفحة، نقوم بتفريغ الحقول فقط
+    clearExecutedQuantities();
+    toastr.success('تم تحديث البيانات. يمكنك الآن إدخال الكميات المنفذة للتاريخ المحدد.');
 }
 
 function updateExecutedQuantity(input) {
@@ -1062,6 +1465,13 @@ function updateExecutedQuantity(input) {
             
             // Show success message
             toastr.success('تم تحديث الكمية المنفذة بنجاح');
+            
+            // Refresh the execution history table if it exists
+            if (document.getElementById('executionHistoryTable')) {
+                setTimeout(() => {
+                    location.reload();
+                }, 1000);
+            }
         } else {
             // Show error message
             toastr.error(data.message || 'حدث خطأ أثناء تحديث الكمية المنفذة');
@@ -1318,6 +1728,162 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
+});
+
+// ===== إدارة ملاحظات التنفيذ اليومية =====
+
+let notesAutoSaveTimeout;
+let isLoadingNotes = false;
+
+/**
+ * تحديث تاريخ الملاحظات في الواجهة
+ */
+function updateNotesDate(date) {
+    const dateBadge = document.getElementById('notesDateBadge');
+    if (dateBadge) {
+        dateBadge.innerHTML = `<i class="fas fa-calendar me-1"></i>${date}`;
+    }
+}
+
+/**
+ * تحميل ملاحظات التنفيذ للتاريخ المحدد
+ */
+async function loadDailyExecutionNotes(date) {
+    if (isLoadingNotes) return;
+    
+    isLoadingNotes = true;
+    const notesTextarea = document.getElementById('dailyExecutionNotes');
+    
+    try {
+        const response = await fetch(`{{ route('admin.work-orders.execution.get-note', $workOrder->id) }}?execution_date=${date}`, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            }
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            if (notesTextarea) {
+                notesTextarea.value = result.note || '';
+            }
+        } else {
+            console.error('Error loading notes:', result.message);
+        }
+    } catch (error) {
+        console.error('Error loading notes:', error);
+    } finally {
+        isLoadingNotes = false;
+    }
+}
+
+/**
+ * حفظ ملاحظات التنفيذ
+ */
+async function saveDailyExecutionNotes(notes, date) {
+    // إظهار مؤشر الحفظ
+    showNotesSaveIndicator(true);
+    
+    try {
+        const response = await fetch(`{{ route('admin.work-orders.execution.save-note', $workOrder->id) }}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({
+                execution_date: date,
+                notes: notes
+            })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            showNotesSavedIndicator();
+        } else {
+            toastr.error(result.message || 'حدث خطأ أثناء حفظ الملاحظات');
+        }
+    } catch (error) {
+        console.error('Error saving notes:', error);
+        toastr.error('حدث خطأ أثناء حفظ الملاحظات');
+    } finally {
+        showNotesSaveIndicator(false);
+    }
+}
+
+/**
+ * إظهار/إخفاء مؤشر الحفظ
+ */
+function showNotesSaveIndicator(show) {
+    const saveIndicator = document.getElementById('notesSaveIndicator');
+    const savedIndicator = document.getElementById('notesSavedIndicator');
+    
+    if (show) {
+        if (saveIndicator) saveIndicator.style.display = 'block';
+        if (savedIndicator) savedIndicator.style.display = 'none';
+    } else {
+        if (saveIndicator) saveIndicator.style.display = 'none';
+    }
+}
+
+/**
+ * إظهار مؤشر تم الحفظ
+ */
+function showNotesSavedIndicator() {
+    const savedIndicator = document.getElementById('notesSavedIndicator');
+    if (savedIndicator) {
+        savedIndicator.style.display = 'block';
+        // إخفاء المؤشر بعد 3 ثواني
+        setTimeout(() => {
+            savedIndicator.style.display = 'none';
+        }, 3000);
+    }
+}
+
+/**
+ * إعداد الحفظ التلقائي للملاحظات
+ */
+function setupNotesAutoSave() {
+    const notesTextarea = document.getElementById('dailyExecutionNotes');
+    
+    if (notesTextarea) {
+        notesTextarea.addEventListener('input', function() {
+            // إلغاء المؤقت السابق
+            if (notesAutoSaveTimeout) {
+                clearTimeout(notesAutoSaveTimeout);
+            }
+            
+            // إعداد مؤقت جديد للحفظ التلقائي (بعد ثانيتين من التوقف عن الكتابة)
+            notesAutoSaveTimeout = setTimeout(() => {
+                const notes = this.value.trim();
+                if (notes) {
+                    saveDailyExecutionNotes(notes, currentWorkDate);
+                }
+            }, 2000);
+        });
+        
+        // حفظ عند فقدان التركيز
+        notesTextarea.addEventListener('blur', function() {
+            if (notesAutoSaveTimeout) {
+                clearTimeout(notesAutoSaveTimeout);
+            }
+            
+            const notes = this.value.trim();
+            if (notes) {
+                saveDailyExecutionNotes(notes, currentWorkDate);
+            }
+        });
+    }
+}
+
+// تهيئة نظام الملاحظات عند تحميل الصفحة
+document.addEventListener('DOMContentLoaded', function() {
+    setupNotesAutoSave();
+    loadDailyExecutionNotes(currentWorkDate);
 });
 </script>
 @endpush 

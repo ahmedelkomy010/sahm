@@ -65,15 +65,22 @@ class LicenseController extends Controller
                 $query->where('license_number', 'like', '%' . $request->quick_search . '%');
             }
 
-            // تطبيق فلتر التاريخ
-            if ($request->filled('start_date')) {
-                $query->where('license_date', '>=', $request->start_date);
-            }
-            if ($request->filled('end_date')) {
-                $query->where('license_date', '<=', $request->end_date);
+            // البحث برقم أمر العمل
+            if ($request->filled('work_order_search')) {
+                $query->whereHas('workOrder', function($q) use ($request) {
+                    $q->where('order_number', 'like', '%' . $request->work_order_search . '%');
+                });
             }
 
-            // حساب الإحصائيات للمدينة المحددة فقط
+            // تطبيق فلتر التاريخ
+            if ($request->filled('start_date')) {
+                $query->where('license_start_date', '>=', $request->start_date);
+            }
+            if ($request->filled('end_date')) {
+                $query->where('license_start_date', '<=', $request->end_date);
+            }
+
+            // حساب الإحصائيات بناءً على الفلاتر المطبقة
             $statsQuery = License::whereHas('workOrder', function($q) use ($project) {
                 if ($project === 'riyadh') {
                     $q->where('city', 'الرياض');
@@ -82,24 +89,54 @@ class LicenseController extends Controller
                 }
             });
 
-            $activeCount = (clone $statsQuery)->where(function($q) use ($now) {
-                $q->where('license_end_date', '>', $now)
-                  ->orWhereHas('extensions', function($q) use ($now) {
-                      $q->where('end_date', '>', $now);
-                  });
+            // تطبيق نفس الفلاتر على الإحصائيات
+            if ($request->filled('quick_search')) {
+                $statsQuery->where('license_number', 'like', '%' . $request->quick_search . '%');
+            }
+            if ($request->filled('work_order_search')) {
+                $statsQuery->whereHas('workOrder', function($q) use ($request) {
+                    $q->where('order_number', 'like', '%' . $request->work_order_search . '%');
+                });
+            }
+            if ($request->filled('start_date')) {
+                $statsQuery->where('license_start_date', '>=', $request->start_date);
+            }
+            if ($request->filled('end_date')) {
+                $statsQuery->where('license_start_date', '<=', $request->end_date);
+            }
+
+            // حساب الإحصائيات من البيانات المفلترة
+            $allStatsData = (clone $statsQuery)->with(['extensions', 'violations'])->get();
+
+            $activeCount = $allStatsData->filter(function($license) use ($now) {
+                return $license->license_end_date > $now || 
+                       $license->extensions()->where('end_date', '>', $now)->exists();
             })->count();
 
-            $expiredCount = (clone $statsQuery)->whereNotNull('license_end_date')
-                ->where('license_end_date', '<=', $now)
-                ->whereDoesntHave('extensions', function($q) use ($now) {
-                    $q->where('end_date', '>', $now);
-                })->count();
+            $expiredCount = $allStatsData->filter(function($license) use ($now) {
+                return $license->license_end_date <= $now && 
+                       !$license->extensions()->where('end_date', '>', $now)->exists();
+            })->count();
 
-            $violationsCount = (clone $statsQuery)->has('violations')->count();
-            $extensionsCount = (clone $statsQuery)->has('extensions')->count();
-            $passedTestsCount = (clone $statsQuery)->where('successful_tests_count', '>', 0)->count();
-            $failedTestsCount = (clone $statsQuery)->where('failed_tests_count', '>', 0)->count();
-            $evacuationsCount = (clone $statsQuery)->where('is_evacuated', true)->count();
+            $violationsCount = $allStatsData->filter(function($license) {
+                return $license->violations->count() > 0;
+            })->count();
+
+            $extensionsCount = $allStatsData->filter(function($license) {
+                return $license->extensions->count() > 0;
+            })->count();
+
+            $passedTestsCount = $allStatsData->filter(function($license) {
+                return ($license->successful_tests_count ?? 0) > 0;
+            })->count();
+
+            $failedTestsCount = $allStatsData->filter(function($license) {
+                return ($license->failed_tests_count ?? 0) > 0;
+            })->count();
+
+            $evacuationsCount = $allStatsData->filter(function($license) {
+                return $license->is_evacuated == true;
+            })->count();
 
             // عدد النتائج في الصفحة (من الطلب أو القيمة الافتراضية 10)
             // تطبيق الترقيم مع عدد العناصر المطلوب
@@ -109,9 +146,49 @@ class LicenseController extends Controller
             $perPage = in_array((int)$perPage, [50, 100, 400, 700]) ? (int)$perPage : 50;
             $licenses = $query->with(['workOrder', 'extensions'])->latest()->paginate($perPage);
 
-            // Calculate total license values for filtered data
-            $totalLicenseValue = $licenses->sum('license_value');
-            $totalExtensionValue = $licenses->sum('extension_value');
+            // Calculate total license values for ALL filtered data (not just current page)
+            $allFilteredLicenses = (clone $query)->with(['extensions', 'violations'])->get();
+            $totalLicenseValue = $allFilteredLicenses->sum('license_value');
+            $totalExtensionValue = $allFilteredLicenses->sum(function($license) {
+                return $license->extensions->sum('extension_value');
+            });
+            // حساب الإجماليات المالية الجديدة
+            $totalViolationsValue = 0;
+            $totalPassedTestsValue = 0;
+            $totalFailedTestsValue = 0;
+            $totalEvacuationLicenseValue = 0;
+            
+            foreach ($allFilteredLicenses as $license) {
+                $violationsSum = $license->violations->sum('violation_amount');
+                $totalViolationsValue += $violationsSum;
+                
+                // حساب قيمة الاختبارات الناجحة
+                $totalPassedTestsValue += floatval($license->successful_tests_amount ?? 0);
+                
+                // حساب قيمة الاختبارات الراسبة
+                $totalFailedTestsValue += floatval($license->failed_tests_amount ?? 0);
+                
+                // حساب قيمة إخلاءات الرخص
+                $totalEvacuationLicenseValue += floatval($license->evac_license_value ?? 0);
+            }
+            
+            // Alternative calculation method - get all violations for licenses in this city
+            if ($totalViolationsValue == 0) {
+                $licenseIds = $allFilteredLicenses->pluck('id');
+                $totalViolationsValue = \App\Models\LicenseViolation::whereIn('license_id', $licenseIds)
+                    ->sum('violation_amount');
+            }
+
+            // Debug - log the values
+            \Log::info('License Display Debug', [
+                'project' => $project,
+                'filtered_licenses_count' => $allFilteredLicenses->count(),
+                'totalViolationsValue' => $totalViolationsValue,
+                'totalPassedTestsValue' => $totalPassedTestsValue,
+                'totalFailedTestsValue' => $totalFailedTestsValue,
+                'totalEvacuationLicenseValue' => $totalEvacuationLicenseValue,
+                'license_ids' => $allFilteredLicenses->pluck('id')->toArray()
+            ]);
 
             // تحديد اسم المشروع
             $projectName = $project === 'riyadh' ? 'مشروع الرياض' : 'مشروع المدينة المنورة';
@@ -127,6 +204,10 @@ class LicenseController extends Controller
                 'evacuationsCount',
                 'totalLicenseValue',
                 'totalExtensionValue',
+                'totalViolationsValue',
+                'totalPassedTestsValue',
+                'totalFailedTestsValue',
+                'totalEvacuationLicenseValue',
                 'project',
                 'projectName'
             ));
@@ -144,6 +225,10 @@ class LicenseController extends Controller
                 'evacuationsCount' => 0,
                 'totalLicenseValue' => 0,
                 'totalExtensionValue' => 0,
+                'totalViolationsValue' => 0,
+                'totalPassedTestsValue' => 0,
+                'totalFailedTestsValue' => 0,
+                'totalEvacuationLicenseValue' => 0,
                 'project' => $request->get('project', 'riyadh'),
                 'projectName' => 'مشروع الرياض'
             ])->withErrors('حدث خطأ أثناء تحميل البيانات');

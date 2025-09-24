@@ -119,7 +119,6 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::post('work-orders/{workOrder}/materials/update-quantity', [MaterialsController::class, 'updateQuantity'])->name('work-orders.materials.update-quantity');
     Route::post('work-orders/{workOrder}/materials/update-notes', [MaterialsController::class, 'updateNotes'])->name('work-orders.materials.update-notes');
     Route::get('work-orders/{workOrder}/materials/{material}', [MaterialsController::class, 'show'])->name('work-orders.materials.show');
-    Route::get('work-orders/{workOrder}/materials/{material}/edit', [MaterialsController::class, 'edit'])->name('work-orders.materials.edit');
     
     // Post-execution routes
     Route::get('work-orders/{workOrder}/actions-execution', [WorkOrderController::class, 'actionsExecution'])->name('work-orders.actions-execution');
@@ -317,6 +316,11 @@ Route::post('licenses/save-evacuation-data-simple', [\App\Http\Controllers\Admin
     Route::post('work-orders/{workOrder}/execution/images', [App\Http\Controllers\Admin\WorkOrderController::class, 'uploadExecutionImages'])->name('work-orders.execution.upload-images');
     Route::delete('work-orders/{workOrder}/execution/images/{image}', [App\Http\Controllers\Admin\WorkOrderController::class, 'deleteExecutionImage'])->name('work-orders.execution.delete-image');
     Route::get('work-orders/{workOrder}/daily-totals', [App\Http\Controllers\Admin\WorkOrderController::class, 'dailyTotals'])->name('work-orders.daily-totals');
+    
+    // ملاحظات التنفيذ اليومية
+    Route::post('work-orders/{workOrder}/execution/notes', [App\Http\Controllers\Admin\WorkOrderController::class, 'saveDailyExecutionNote'])->name('work-orders.execution.save-note');
+    Route::get('work-orders/{workOrder}/execution/notes', [App\Http\Controllers\Admin\WorkOrderController::class, 'getDailyExecutionNote'])->name('work-orders.execution.get-note');
+    
     
     // Excel Import Routes
     Route::post('work-orders/import-work-items', [WorkOrderController::class, 'importWorkItems'])->name('work-orders.import-work-items');

@@ -30,6 +30,28 @@ class User extends Authenticatable
         // صلاحيات المدن
         'access_riyadh_contracts' => 'الوصول إلى عقود الرياض',
         'access_madinah_contracts' => 'الوصول إلى عقود المدينة المنورة',
+        
+        // صلاحيات مشاريع الرياض
+        'riyadh_manage_materials' => 'إدارة المواد - الرياض',
+        'riyadh_manage_survey' => 'إدارة المسح - الرياض',
+        'riyadh_manage_quality' => 'إدارة الجودة - الرياض',
+        'riyadh_manage_execution' => 'إدارة التنفيذ - الرياض',
+        'riyadh_manage_post_execution' => 'إدارة إجراءات ما بعد التنفيذ - الرياض',
+        'riyadh_manage_safety' => 'إدارة السلامة - الرياض',
+        'riyadh_materials_overview' => 'نظرة عامة على المواد - الرياض',
+        'riyadh_execution_productivity' => 'إنتاجية التنفيذ - الرياض',
+        'riyadh_license_details' => 'تفاصيل الرخص - الرياض',
+        
+        // صلاحيات مشاريع المدينة المنورة
+        'madinah_manage_materials' => 'إدارة المواد - المدينة المنورة',
+        'madinah_manage_survey' => 'إدارة المسح - المدينة المنورة',
+        'madinah_manage_quality' => 'إدارة الجودة - المدينة المنورة',
+        'madinah_manage_execution' => 'إدارة التنفيذ - المدينة المنورة',
+        'madinah_manage_post_execution' => 'إدارة إجراءات ما بعد التنفيذ - المدينة المنورة',
+        'madinah_manage_safety' => 'إدارة السلامة - المدينة المنورة',
+        'madinah_materials_overview' => 'نظرة عامة على المواد - المدينة المنورة',
+        'madinah_execution_productivity' => 'إنتاجية التنفيذ - المدينة المنورة',
+        'madinah_license_details' => 'تفاصيل الرخص - المدينة المنورة',
     ];
 
     /**

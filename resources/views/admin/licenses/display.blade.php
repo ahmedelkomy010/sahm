@@ -2,6 +2,59 @@
 
 @section('title', 'لوحة تحكم الجودة والرخص')
 
+@section('styles')
+<style>
+    .stats-card {
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .stats-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    }
+    
+    .stats-section h4 {
+        position: relative;
+        padding-bottom: 8px;
+    }
+    
+    .stats-section h4::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 40px;
+        height: 3px;
+        background: linear-gradient(90deg, #3B82F6, #10B981);
+        border-radius: 2px;
+    }
+    
+    .financial-stats .stats-card {
+        border-left: 4px solid transparent;
+    }
+    
+    .financial-stats .stats-card:nth-child(1) { border-left-color: #3B82F6; }
+    .financial-stats .stats-card:nth-child(2) { border-left-color: #6366F1; }
+    .financial-stats .stats-card:nth-child(3) { border-left-color: #EF4444; }
+    .financial-stats .stats-card:nth-child(4) { border-left-color: #059669; }
+    .financial-stats .stats-card:nth-child(5) { border-left-color: #EC4899; }
+    .financial-stats .stats-card:nth-child(6) { border-left-color: #8B5CF6; }
+    
+    .count-stats .stats-card {
+        border-left: 4px solid transparent;
+    }
+    
+    .count-stats .stats-card:nth-child(1) { border-left-color: #10B981; }
+    .count-stats .stats-card:nth-child(2) { border-left-color: #EF4444; }
+    .count-stats .stats-card:nth-child(3) { border-left-color: #F59E0B; }
+    .count-stats .stats-card:nth-child(4) { border-left-color: #EAB308; }
+    .count-stats .stats-card:nth-child(5) { border-left-color: #059669; }
+    .count-stats .stats-card:nth-child(6) { border-left-color: #EC4899; }
+    .count-stats .stats-card:nth-child(7) { border-left-color: #8B5CF6; }
+</style>
+@endsection
+
 @section('content')
 <div class="container mx-auto px-4 py-6">
     <!-- رأس الصفحة -->
@@ -21,6 +74,24 @@
 
     <!-- فلتر التواريخ وحالة الرخصة -->
     <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold text-gray-800">
+                <i class="fas fa-filter me-2"></i>الفلاتر والبحث
+            </h3>
+            @if(request()->hasAny(['start_date', 'end_date', 'status', 'quick_search', 'work_order_search']))
+                <div class="flex items-center gap-2">
+                    <span class="text-sm text-blue-600 bg-blue-100 px-2 py-1 rounded">
+                        <i class="fas fa-info-circle me-1"></i>
+                        فلاتر نشطة
+                    </span>
+                    <a href="{{ route('admin.licenses.display', ['project' => $project ?? 'riyadh']) }}" 
+                       class="text-sm text-red-600 hover:text-red-800">
+                        <i class="fas fa-times me-1"></i>مسح جميع الفلاتر
+                    </a>
+                </div>
+            @endif
+        </div>
+        
         <form action="{{ route('admin.licenses.display') }}" method="GET" class="flex flex-wrap gap-4 items-end">
             <!-- حفظ project parameter -->
             <input type="hidden" name="project" value="{{ $project ?? 'riyadh' }}">
@@ -47,6 +118,13 @@
                 </select>
             </div>
             <div class="flex-1 min-w-[200px]">
+                <label for="work_order_search" class="block text-sm font-medium text-gray-700 mb-1">رقم أمر العمل</label>
+                <input type="text" id="work_order_search" name="work_order_search" 
+                       value="{{ request('work_order_search') }}"
+                       placeholder="ابحث برقم أمر العمل..."
+                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+            </div>
+            <div class="flex-1 min-w-[200px]">
                 <label for="per_page" class="block text-sm font-medium text-gray-700 mb-1">عدد العناصر في الصفحة</label>
                 <select id="per_page" name="per_page" 
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
@@ -67,129 +145,201 @@
 
     <!-- لوحة الإحصائيات -->
     <div class="mb-6">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <!-- إجمالي قيمة الرخص -->
-            <div class="bg-white rounded-lg shadow p-4">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm text-gray-500 mb-1">إجمالي قيمة الرخص</p>
-                        <h3 class="text-2xl font-bold text-blue-600">{{ number_format($totalLicenseValue ?? 0, 2) }} ريال</h3>
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold text-gray-800">
+                <i class="fas fa-chart-bar me-2"></i>الإحصائيات
+            </h3>
+            @if(request()->hasAny(['start_date', 'end_date', 'status', 'quick_search', 'work_order_search']))
+                <span class="text-sm text-green-600 bg-green-100 px-2 py-1 rounded">
+                    <i class="fas fa-filter me-1"></i>
+                    الإحصائيات مفلترة
+                </span>
+            @else
+                <span class="text-sm text-gray-600 bg-gray-100 px-2 py-1 rounded">
+                    <i class="fas fa-chart-pie me-1"></i>
+                    جميع البيانات
+                </span>
+            @endif
+        </div>
+        
+        <!-- الإحصائيات المالية -->
+        <div class="mb-6 stats-section">
+            <h4 class="text-md font-semibold text-gray-700 mb-3 flex items-center">
+                <i class="fas fa-dollar-sign me-2 text-green-600"></i>
+                الإحصائيات المالية
+            </h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 financial-stats">
+                <!-- إجمالي قيمة الرخص -->
+                <div class="stats-card bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg shadow-md p-4 border border-blue-200">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-blue-600 mb-1 font-medium">إجمالي قيمة الرخص</p>
+                            <h3 class="text-2xl font-bold text-blue-700">{{ number_format($totalLicenseValue ?? 0, 2) }} ريال</h3>
+                        </div>
+                        <div class="w-12 h-12 bg-blue-200 rounded-full flex items-center justify-center">
+                            <i class="fas fa-file-contract text-xl text-blue-600"></i>
+                        </div>
                     </div>
-                    <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                        <i class="fas fa-money-bill text-xl text-blue-500"></i>
+                </div>
+
+                <!-- إجمالي قيمة التمديدات -->
+                <div class="stats-card bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-lg shadow-md p-4 border border-indigo-200">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-indigo-600 mb-1 font-medium">إجمالي قيمة التمديدات</p>
+                            <h3 class="text-2xl font-bold text-indigo-700">{{ number_format($totalExtensionValue ?? 0, 2) }} ريال</h3>
+                        </div>
+                        <div class="w-12 h-12 bg-indigo-200 rounded-full flex items-center justify-center">
+                            <i class="fas fa-clock text-xl text-indigo-600"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- إجمالي قيمة المخالفات -->
+                <div class="stats-card bg-gradient-to-br from-red-50 to-red-100 rounded-lg shadow-md p-4 border border-red-200">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-red-600 mb-1 font-medium">إجمالي قيمة المخالفات</p>
+                            <h3 class="text-2xl font-bold text-red-700">{{ number_format($totalViolationsValue ?? 0, 2) }} ريال</h3>
+                        </div>
+                        <div class="w-12 h-12 bg-red-200 rounded-full flex items-center justify-center">
+                            <i class="fas fa-exclamation-triangle text-xl text-red-600"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- إجمالي قيمة الاختبارات الناجحة -->
+                <div class="stats-card bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-lg shadow-md p-4 border border-emerald-200">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-emerald-600 mb-1 font-medium">إجمالي قيمة الاختبارات الناجحة</p>
+                            <h3 class="text-2xl font-bold text-emerald-700">{{ number_format($totalPassedTestsValue ?? 0, 2) }} ريال</h3>
+                        </div>
+                        <div class="w-12 h-12 bg-emerald-200 rounded-full flex items-center justify-center">
+                            <i class="fas fa-check-circle text-xl text-emerald-600"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- إجمالي قيمة الاختبارات الراسبة -->
+                <div class="stats-card bg-gradient-to-br from-pink-50 to-pink-100 rounded-lg shadow-md p-4 border border-pink-200">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-pink-600 mb-1 font-medium">إجمالي قيمة الاختبارات الراسبة</p>
+                            <h3 class="text-2xl font-bold text-pink-700">{{ number_format($totalFailedTestsValue ?? 0, 2) }} ريال</h3>
+                        </div>
+                        <div class="w-12 h-12 bg-pink-200 rounded-full flex items-center justify-center">
+                            <i class="fas fa-times-circle text-xl text-pink-600"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- إجمالي قيمة إخلاءات الرخص -->
+                <div class="stats-card bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg shadow-md p-4 border border-purple-200">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-purple-600 mb-1 font-medium">إجمالي قيمة إخلاءات الرخص</p>
+                            <h3 class="text-2xl font-bold text-purple-700">{{ number_format($totalEvacuationLicenseValue ?? 0, 2) }} ريال</h3>
+                        </div>
+                        <div class="w-12 h-12 bg-purple-200 rounded-full flex items-center justify-center">
+                            <i class="fas fa-truck-loading text-xl text-purple-600"></i>
+                        </div>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- إجمالي قيمة التمديدات -->
-            <div class="bg-white rounded-lg shadow p-4">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm text-gray-500 mb-1">إجمالي قيمة التمديدات</p>
-                        <h3 class="text-2xl font-bold text-indigo-600">{{ number_format($totalExtensionValue ?? 0, 2) }} ريال</h3>
-                    </div>
-                    <div class="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center">
-                        <i class="fas fa-clock text-xl text-indigo-500"></i>
+        <!-- الإحصائيات العددية -->
+        <div class="mb-6 stats-section">
+            <h4 class="text-md font-semibold text-gray-700 mb-3 flex items-center">
+                <i class="fas fa-chart-bar me-2 text-blue-600"></i>
+                الإحصائيات العددية
+            </h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 count-stats">
+                <!-- الرخص السارية -->
+                <div class="stats-card bg-gradient-to-br from-green-50 to-green-100 rounded-lg shadow-md p-4 border border-green-200">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-green-600 mb-1 font-medium">الرخص السارية</p>
+                            <h3 class="text-2xl font-bold text-green-700">{{ $activeCount ?? 0 }}</h3>
+                            <p class="text-xs text-green-500 mt-1">رخصة نشطة</p>
+                        </div>
+                        <div class="w-12 h-12 bg-green-200 rounded-full flex items-center justify-center">
+                            <i class="fas fa-check-circle text-xl text-green-600"></i>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- الرخص السارية -->
-            <div class="bg-white rounded-lg shadow p-4">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm text-gray-500 mb-1">الرخص السارية</p>
-                        <h3 class="text-2xl font-bold text-green-600">{{ $activeCount ?? 0 }}</h3>
-                    </div>
-                    <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                        <i class="fas fa-check-circle text-xl text-green-500"></i>
+                <!-- الرخص المنتهية -->
+                <div class="stats-card bg-gradient-to-br from-red-50 to-red-100 rounded-lg shadow-md p-4 border border-red-200">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-red-600 mb-1 font-medium">الرخص المنتهية</p>
+                            <h3 class="text-2xl font-bold text-red-700">{{ $expiredCount ?? 0 }}</h3>
+                            <p class="text-xs text-red-500 mt-1">رخصة منتهية</p>
+                        </div>
+                        <div class="w-12 h-12 bg-red-200 rounded-full flex items-center justify-center">
+                            <i class="fas fa-times-circle text-xl text-red-600"></i>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- الرخص المنتهية -->
-            <div class="bg-white rounded-lg shadow p-4">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm text-gray-500 mb-1">الرخص المنتهية</p>
-                        <h3 class="text-2xl font-bold text-red-600">{{ $expiredCount ?? 0 }}</h3>
-                    </div>
-                    <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
-                        <i class="fas fa-times-circle text-xl text-red-500"></i>
+                <!-- إجمالي المخالفات -->
+                <div class="bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg shadow-md p-4 border border-orange-200">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-orange-600 mb-1 font-medium">إجمالي المخالفات</p>
+                            <h3 class="text-2xl font-bold text-orange-700">{{ $violationsCount ?? 0 }}</h3>
+                            <p class="text-xs text-orange-500 mt-1">مخالفة مسجلة</p>
+                        </div>
+                        <div class="w-12 h-12 bg-orange-200 rounded-full flex items-center justify-center">
+                            <i class="fas fa-exclamation-triangle text-xl text-orange-600"></i>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- إجمالي المخالفات -->
-            <div class="bg-white rounded-lg shadow p-4">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm text-gray-500 mb-1">إجمالي المخالفات</p>
-                        <h3 class="text-2xl font-bold text-orange-600">{{ $violationsCount ?? 0 }}</h3>
-                    </div>
-                    <div class="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
-                        <i class="fas fa-exclamation-triangle text-xl text-orange-500"></i>
+                <!-- إجمالي التمديدات -->
+                <div class="bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-lg shadow-md p-4 border border-yellow-200">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-yellow-600 mb-1 font-medium">إجمالي التمديدات</p>
+                            <h3 class="text-2xl font-bold text-yellow-700">{{ $extensionsCount ?? 0 }}</h3>
+                            <p class="text-xs text-yellow-500 mt-1">تمديد مطلوب</p>
+                        </div>
+                        <div class="w-12 h-12 bg-yellow-200 rounded-full flex items-center justify-center">
+                            <i class="fas fa-calendar-plus text-xl text-yellow-600"></i>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- إجمالي التمديدات -->
-            <div class="bg-white rounded-lg shadow p-4">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm text-gray-500 mb-1">إجمالي تمديدات الرخص</p>
-                        <h3 class="text-2xl font-bold text-yellow-600">{{ $extensionsCount ?? 0 }}</h3>
-                    </div>
-                    <div class="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center">
-                        <i class="fas fa-calendar-plus text-xl text-yellow-500"></i>
-                    </div>
-                </div>
             </div>
+        </div>
 
-            <!-- الفحوصات الناجحة -->
-            <div class="bg-white rounded-lg shadow p-4">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm text-gray-500 mb-1">الفحوصات الناجحة</p>
-                        <h3 class="text-2xl font-bold text-emerald-600">{{ $passedTestsCount ?? 0 }}</h3>
-                    </div>
-                    <div class="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center">
-                        <i class="fas fa-vial text-xl text-emerald-500"></i>
-                    </div>
-                </div>
-            </div>
-
-            <!-- الفحوصات الراسبة -->
-            <div class="bg-white rounded-lg shadow p-4">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm text-gray-500 mb-1">الفحوصات الراسبة</p>
-                        <h3 class="text-2xl font-bold text-pink-600">{{ $failedTestsCount ?? 0 }}</h3>
-                    </div>
-                    <div class="w-12 h-12 bg-pink-100 rounded-full flex items-center justify-center">
-                        <i class="fas fa-times text-xl text-pink-500"></i>
-                    </div>
-                </div>
-            </div>
-
-            <!-- إجمالي الإخلاء -->
-            <div class="bg-white rounded-lg shadow p-4">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm text-gray-500 mb-1">إجمالي الإخلاء</p>
-                        <h3 class="text-2xl font-bold text-purple-600">{{ $evacuationsCount ?? 0 }}</h3>
-                    </div>
-                    <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
-                        <i class="fas fa-truck-loading text-xl text-purple-500"></i>
-                    </div>
-                </div>
-            </div>
-
-            <!-- البحث السريع -->
-            <div class="bg-white rounded-lg shadow p-4">
+        <!-- البحث السريع -->
+        <div class="mb-6">
+            <h4 class="text-md font-semibold text-gray-700 mb-3 flex items-center">
+                <i class="fas fa-search me-2 text-gray-600"></i>
+                البحث السريع
+            </h4>
+            <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg shadow-md p-4 border border-gray-200">
                 <form action="{{ route('admin.licenses.display') }}" method="GET" class="flex items-center">
-                    <!-- حفظ project parameter -->
+                    <!-- حفظ المعاملات -->
                     <input type="hidden" name="project" value="{{ $project ?? 'riyadh' }}">
+                    @if(request('start_date'))
+                        <input type="hidden" name="start_date" value="{{ request('start_date') }}">
+                    @endif
+                    @if(request('end_date'))
+                        <input type="hidden" name="end_date" value="{{ request('end_date') }}">
+                    @endif
+                    @if(request('status'))
+                        <input type="hidden" name="status" value="{{ request('status') }}">
+                    @endif
+                    @if(request('work_order_search'))
+                        <input type="hidden" name="work_order_search" value="{{ request('work_order_search') }}">
+                    @endif
+                    @if(request('per_page'))
+                        <input type="hidden" name="per_page" value="{{ request('per_page') }}">
+                    @endif
                     
                     <input type="text" name="quick_search" placeholder="رقم الرخصة..." 
                            class="flex-1 border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-lg text-sm"
@@ -204,7 +354,28 @@
 
     
 
+        <!-- معلومات النتائج -->
+        <div class="bg-white rounded-lg shadow-sm p-4 mb-4">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-800">
+                        <i class="fas fa-table me-2"></i>قائمة الرخص
+                    </h3>
+                    <p class="text-sm text-gray-600">
+                        عرض {{ $licenses->firstItem() ?? 0 }} - {{ $licenses->lastItem() ?? 0 }} من أصل {{ $licenses->total() }} رخصة
+                    </p>
+                </div>
+                @if($licenses->total() > 0)
+                    <div class="text-sm text-blue-600 bg-blue-50 px-3 py-2 rounded">
+                        <i class="fas fa-info-circle me-1"></i>
+                        {{ $licenses->count() }} رخصة في الصفحة الحالية
+                    </div>
+                @endif
+            </div>
+        </div>
+
         <!-- جدول الرخص -->
+        <div class="bg-white rounded-lg shadow-sm overflow-hidden">
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
@@ -265,9 +436,12 @@
             </table>
         </div>
 
+        </div>
+        
         <!-- الترقيم -->
         <div class="mt-4">
             {{ $licenses->links() }}
+        </div>
         </div>
     </div>
 </div>

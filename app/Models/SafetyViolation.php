@@ -13,6 +13,7 @@ class SafetyViolation extends Model
         'work_order_id',
         'violation_amount',
         'violator',
+        'violation_source',
         'violation_date',
         'description',
         'notes',
@@ -31,5 +32,21 @@ class SafetyViolation extends Model
     public function workOrder()
     {
         return $this->belongsTo(WorkOrder::class);
+    }
+
+    /**
+     * الحصول على نص جهة المخالفة
+     */
+    public function getViolationSourceLabelAttribute()
+    {
+        return $this->violation_source === 'internal' ? 'داخلية' : 'خارجية';
+    }
+
+    /**
+     * الحصول على لون badge حسب جهة المخالفة
+     */
+    public function getViolationSourceBadgeClassAttribute()
+    {
+        return $this->violation_source === 'internal' ? 'bg-warning' : 'bg-info';
     }
 }

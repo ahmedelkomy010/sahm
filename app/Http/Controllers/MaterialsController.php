@@ -112,8 +112,10 @@ class MaterialsController extends Controller
             $query->where('code', 'like', '%' . $request->search_code . '%');
         }
 
-        if ($request->filled('search_description')) {
-            $query->where('description', 'like', '%' . $request->search_description . '%');
+        if ($request->filled('work_order_number')) {
+            $query->whereHas('workOrder', function($q) use ($request) {
+                $q->where('order_number', 'like', '%' . $request->work_order_number . '%');
+            });
         }
 
         if ($request->filled('unit_filter')) {
@@ -122,6 +124,23 @@ class MaterialsController extends Controller
 
         if ($request->filled('work_order_filter')) {
             $query->where('work_order_id', $request->work_order_filter);
+        }
+
+        // فلتر الرصيد النهائي
+        if ($request->filled('balance_filter')) {
+            $balanceFilter = $request->balance_filter;
+            
+            $query->where(function($q) use ($balanceFilter) {
+                // حساب الرصيد النهائي لكل مادة
+                $q->whereRaw("
+                    CASE 
+                        WHEN ? = 'positive' THEN (COALESCE(spent_quantity, 0) + COALESCE(recovery_quantity, 0) - COALESCE(executed_quantity, 0) - COALESCE(completion_quantity, 0)) > 0
+                        WHEN ? = 'negative' THEN (COALESCE(spent_quantity, 0) + COALESCE(recovery_quantity, 0) - COALESCE(executed_quantity, 0) - COALESCE(completion_quantity, 0)) < 0
+                        WHEN ? = 'zero' THEN (COALESCE(spent_quantity, 0) + COALESCE(recovery_quantity, 0) - COALESCE(executed_quantity, 0) - COALESCE(completion_quantity, 0)) = 0
+                        ELSE 1 = 1
+                    END
+                ", [$balanceFilter, $balanceFilter, $balanceFilter]);
+            });
         }
 
         // ترتيب النتائج
@@ -178,14 +197,33 @@ class MaterialsController extends Controller
             $query->where('code', 'like', '%' . $request->search_code . '%');
         }
 
-        // البحث بالوصف
-        if ($request->filled('search_description')) {
-            $query->where('description', 'like', '%' . $request->search_description . '%');
+        // البحث برقم أمر العمل
+        if ($request->filled('work_order_number')) {
+            $query->whereHas('workOrder', function($q) use ($request) {
+                $q->where('order_number', 'like', '%' . $request->work_order_number . '%');
+            });
         }
 
         // فلتر الوحدة
         if ($request->filled('unit_filter')) {
             $query->where('unit', $request->unit_filter);
+        }
+
+        // فلتر الرصيد النهائي
+        if ($request->filled('balance_filter')) {
+            $balanceFilter = $request->balance_filter;
+            
+            $query->where(function($q) use ($balanceFilter) {
+                // حساب الرصيد النهائي لكل مادة
+                $q->whereRaw("
+                    CASE 
+                        WHEN ? = 'positive' THEN (COALESCE(spent_quantity, 0) + COALESCE(recovery_quantity, 0) - COALESCE(executed_quantity, 0) - COALESCE(completion_quantity, 0)) > 0
+                        WHEN ? = 'negative' THEN (COALESCE(spent_quantity, 0) + COALESCE(recovery_quantity, 0) - COALESCE(executed_quantity, 0) - COALESCE(completion_quantity, 0)) < 0
+                        WHEN ? = 'zero' THEN (COALESCE(spent_quantity, 0) + COALESCE(recovery_quantity, 0) - COALESCE(executed_quantity, 0) - COALESCE(completion_quantity, 0)) = 0
+                        ELSE 1 = 1
+                    END
+                ", [$balanceFilter, $balanceFilter, $balanceFilter]);
+            });
         }
 
         $materials = $query->latest()->paginate(15)->appends($request->query());
@@ -494,19 +532,6 @@ class MaterialsController extends Controller
         }
         
         return view('admin.work_orders.show_material', compact('workOrder', 'material'));
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(WorkOrder $workOrder, Material $material)
-    {
-        // التأكد من أن المادة تنتمي لأمر العمل
-        if ($material->work_order_id !== $workOrder->id) {
-            abort(404);
-        }
-        
-        return view('admin.work_orders.edit_material', compact('workOrder', 'material'));
     }
 
     /**

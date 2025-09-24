@@ -170,7 +170,7 @@
                     <div class="col-md-4 mb-3">
                         <label for="general_images" class="form-label fw-bold">
                             <i class="fas fa-images me-2 text-secondary"></i>
-                            صور عامة للسلامة
+                            صور عامة للموقعٍ
                         </label>
                         <div class="input-group">
                             <input type="file" class="form-control @error('general_images.*') is-invalid @enderror" 
@@ -514,20 +514,30 @@
                             <label class="form-label fw-bold">قيمة المخالفة</label>
                             <input type="number" step="0.01" class="form-control" name="violation_amount" placeholder="0.00" required>
                         </div>
-                        <div class="col-md-3 mb-2">
+                        <div class="col-md-2 mb-2">
                             <label class="form-label fw-bold">المتسبب في المخالفة</label>
                             <input type="text" class="form-control" name="violator" placeholder="اسم المتسبب" required>
+                        </div>
+                        <div class="col-md-2 mb-2">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-building me-1"></i>
+                                جهة المخالفة
+                            </label>
+                            <select class="form-select" name="violation_source" required>
+                                <option value="">اختر الجهة</option>
+                                <option value="internal">
+                                    <i class="fas fa-home"></i> داخلية
+                                </option>
+                                <option value="external">
+                                    <i class="fas fa-external-link-alt"></i> خارجية
+                                </option>
+                            </select>
                         </div>
                         <div class="col-md-3 mb-2">
                             <label class="form-label fw-bold">تاريخ المخالفة</label>
                             <input type="date" class="form-control" name="violation_date" required>
                         </div>
-                        <div class="col-md-3 mb-2">
-                            <label class="form-label fw-bold">إجراء</label>
-                            <button type="submit" class="btn btn-danger w-100">
-                                <i class="fas fa-plus me-1"></i>إضافة
-                            </button>
-                        </div>
+                        
                     </div>
                     <div class="row">
                         <div class="col-12 mb-2">
@@ -547,6 +557,12 @@
                                    title="يمكن رفع ملفات PDF, Word, أو صور">
                             <small class="text-muted">يمكن اختيار عدة ملفات (PDF, Word, صور)</small>
                         </div>
+                        <div class="col-md-3 mb-2">
+                            <label class="form-label fw-bold">إجراء</label>
+                            <button type="submit" class="btn btn-danger w-100">
+                                <i class="fas fa-plus me-1"></i>حفظ مخالفة
+                            </button>
+                        </div>
                     </div>
                 </form>
             </div>
@@ -559,6 +575,7 @@
                             <th>#</th>
                             <th>قيمة المخالفة</th>
                             <th>المتسبب</th>
+                            <th>جهة المخالفة</th>
                             <th>تاريخ المخالفة</th>
                             <th>وصف المخالفة</th>
                             <th>ملاحظات</th>
@@ -576,6 +593,16 @@
                                     </span>
                                 </td>
                                 <td>{{ $violation->violator }}</td>
+                                <td>
+                                    <span class="badge {{ $violation->violation_source_badge_class }} fs-6">
+                                        @if($violation->violation_source === 'internal')
+                                            <i class="fas fa-home me-1"></i>
+                                        @else
+                                            <i class="fas fa-external-link-alt me-1"></i>
+                                        @endif
+                                        {{ $violation->violation_source_label }}
+                                    </span>
+                                </td>
                                 <td>{{ $violation->violation_date->format('Y-m-d') }}</td>
                                 <td>
                                     @if($violation->description)
@@ -618,7 +645,7 @@
                             </tr>
                         @empty
                             <tr id="noViolationsRow">
-                                <td colspan="7" class="text-center text-muted py-4">
+                                <td colspan="9" class="text-center text-muted py-4">
                                     <i class="fas fa-check-circle fs-3 text-success mb-2"></i>
                                     <br>لا توجد مخالفات سلامة مسجلة
                                 </td>

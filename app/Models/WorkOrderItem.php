@@ -50,4 +50,29 @@ class WorkOrderItem extends Model
     {
         return $query->where('work_date', $date);
     }
+
+    /**
+     * Get daily executions for this work order item
+     */
+    public function dailyExecutions()
+    {
+        return $this->hasMany(DailyWorkExecution::class);
+    }
+
+    /**
+     * Get daily execution for a specific date
+     */
+    public function getDailyExecutionForDate($date)
+    {
+        return $this->dailyExecutions()->where('work_date', $date)->first();
+    }
+
+    /**
+     * Get executed quantity for a specific date
+     */
+    public function getExecutedQuantityForDate($date)
+    {
+        $dailyExecution = $this->getDailyExecutionForDate($date);
+        return $dailyExecution ? $dailyExecution->executed_quantity : 0;
+    }
 }

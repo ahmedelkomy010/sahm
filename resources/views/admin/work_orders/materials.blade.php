@@ -292,6 +292,16 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="mb-3">
+                            <label for="planned_quantity" class="form-label">
+                                <i class="fas fa-chart-line me-1 text-info"></i>
+                                الكمية المخططة
+                            </label>
+                            <input type="number" class="form-control" id="planned_quantity" name="planned_quantity" 
+                                   step="0.01" min="0" value="0" placeholder="أدخل الكمية المخططة"
+                                   oninput="updateModalPreview()">
+                            <div class="form-text">الكمية المطلوبة حسب التخطيط الأولي للمشروع</div>
+                        </div>
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
@@ -300,7 +310,7 @@
                                         الكمية المصروفة
                                     </label>
                                     <input type="number" class="form-control" id="spent_quantity" name="spent_quantity" 
-                                           step="0.01" min="0" value="0">
+                                           step="0.01" min="0" value="0" oninput="updateModalPreview()">
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -310,12 +320,28 @@
                                         الكمية المنفذة
                                     </label>
                                     <input type="number" class="form-control" id="executed_quantity" name="executed_quantity" 
-                                           step="0.01" min="0" value="0">
+                                           step="0.01" min="0" value="0" oninput="updateModalPreview()">
                                 </div>
                             </div>
                         </div>
-                        <!-- إضافة حقل مخفي للكمية المخططة -->
-                        <input type="hidden" name="planned_quantity" value="0">
+                        
+                        <!-- معاينة الفروق -->
+                        <div class="alert alert-info" id="modalPreview" style="display: none;">
+                            <h6 class="mb-2">
+                                <i class="fas fa-calculator me-1"></i>
+                                معاينة الفروق
+                            </h6>
+                            <div class="row text-center">
+                                <div class="col-md-6">
+                                    <small class="text-muted d-block">الفرق (مصروفة - مخططة)</small>
+                                    <span class="badge" id="plannedDiffPreview">0.00</span>
+                                </div>
+                                <div class="col-md-6">
+                                    <small class="text-muted d-block">الفرق (مصروفة - منفذة)</small>
+                                    <span class="badge" id="executedDiffPreview">0.00</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
@@ -580,6 +606,22 @@
                         <div class="table-responsive materials-table-wrapper">
                             <table class="table table-bordered table-hover align-middle" id="materialsTable">
                                 <thead>
+                                    <!-- هيدر رئيسي للشركتين -->
+                                    <tr class="bg-primary text-white">
+                                        <th class="text-center" width="5%">
+                                            <!-- عمود فارغ للترقيم -->
+                                        </th>
+                                        <th class="text-center fw-bold" colspan="8" style="background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%); border: 2px solid #fff;">
+                                            <i class="fas fa-building me-2"></i>
+                                            الشركة السعودية للكهرباء
+                                            <i class="fas fa-bolt ms-2"></i>
+                                        </th>
+                                        <th class="text-center fw-bold" colspan="5" style="background: linear-gradient(135deg, #198754 0%, #157347 100%); border: 2px solid #fff;">
+                                            <i class="fas fa-city me-2"></i>
+                                            شركة سهم بلدي
+                                            <i class="fas fa-handshake ms-2"></i>
+                                        </th>
+                                    </tr>
                                     <tr class="bg-light">
                                         <th class="text-center" width="5%">
                                             <i class="fas fa-list-ol text-muted me-1"></i>
@@ -611,7 +653,7 @@
                                         </th>
                                         <th class="text-center" width="7%">
                                             <i class="fas fa-calculator text-warning me-1"></i>
-                                            الفرق<br>(مخططة - مصروفة)
+                                            الفرق<br>(مصروفة - مخططة)
                                         </th>
                                         <th class="text-center" width="20%">
                                             <i class="fas fa-sticky-note text-info me-1"></i>
@@ -623,7 +665,7 @@
                                         </th>
                                         <th class="text-center" width="5%">
                                             <i class="fas fa-calculator text-primary me-1"></i>
-                                            الفرق<br>(منفذة - مصروفة)
+                                            الفرق<br>(مصروفة - منفذة)
                                         </th>
                                         <th class="text-center" width="20%">
                                             <i class="fas fa-clipboard-check text-success me-1"></i>
@@ -631,11 +673,15 @@
                                         </th>
                                         <th class="text-center" width="6%">
                                             <i class="fas fa-plus-circle text-info me-1"></i>
-                                            الاستكمال<br>المنفذة
+                                            أذن ارتجاع
                                         </th>
                                         <th class="text-center" width="6%">
                                             <i class="fas fa-undo text-warning me-1"></i>
-                                            الاسترجاع<br>المنفذة
+                                            أذن صرف
+                                        </th>
+                                        <th class="text-center" width="7%">
+                                            <i class="fas fa-balance-scale text-success me-1"></i>
+                                            الرصيد<br>النهائي
                                         </th>
                                         <th class="text-center" width="5%">
                                             <i class="fas fa-cogs text-secondary me-1"></i>
@@ -692,12 +738,12 @@
                                             </td>
                                             <td class="text-center">
                                                 @php
-                                                    $plannedSpentDiff = ($material->planned_quantity ?? 0) - ($material->spent_quantity ?? 0);
+                                                    $plannedSpentDiff = ($material->spent_quantity ?? 0) - ($material->planned_quantity ?? 0);
                                                 @endphp
                                                 <div class="quantity-badge difference {{ $plannedSpentDiff > 0 ? 'warning' : ($plannedSpentDiff < 0 ? 'danger' : 'success') }}"
                                                      id="planned-spent-diff-{{ $material->id }}"
                                                      data-bs-toggle="tooltip" 
-                                                     title="{{ $plannedSpentDiff > 0 ? 'يوجد كمية مخططة لم يتم صرفها' : ($plannedSpentDiff < 0 ? 'تم صرف كمية أكثر من المخطط' : 'متطابقة') }}">
+                                                     title="{{ $plannedSpentDiff > 0 ? 'تم صرف كمية أكثر من المخطط' : ($plannedSpentDiff < 0 ? 'يوجد كمية مخططة لم يتم صرفها' : 'متطابقة') }}">
                                                     <span class="diff-value">
                                                         @if($plannedSpentDiff == 0)
                                                             <i class="fas fa-check"></i>
@@ -732,12 +778,12 @@
                                             </td>
                                             <td class="text-center">
                                                 @php
-                                                    $executedSpentDiff = ($material->executed_quantity ?? 0) - ($material->spent_quantity ?? 0);
+                                                    $executedSpentDiff = ($material->spent_quantity ?? 0) - ($material->executed_quantity ?? 0);
                                                 @endphp
                                                 <div class="quantity-badge difference {{ $executedSpentDiff > 0 ? 'warning' : ($executedSpentDiff < 0 ? 'danger' : 'success') }}"
                                                      id="executed-spent-diff-{{ $material->id }}"
                                                      data-bs-toggle="tooltip" 
-                                                     title="{{ $executedSpentDiff > 0 ? 'تم تنفيذ كمية أكثر من المصروفة' : ($executedSpentDiff < 0 ? 'تم صرف كمية أكثر من المنفذة' : 'متطابقة') }}">
+                                                     title="{{ $executedSpentDiff > 0 ? 'تم صرف كمية أكثر من المنفذة' : ($executedSpentDiff < 0 ? 'تم تنفيذ كمية أكثر من المصروفة' : 'متطابقة') }}">
                                                     <span class="diff-value">
                                                         @if($executedSpentDiff == 0)
                                                             <i class="fas fa-check"></i>
@@ -784,17 +830,25 @@
                                                 </div>
                                             </td>
                                             <td class="text-center">
+                                                @php
+                                                    $finalBalance = ($material->spent_quantity ?? 0) + ($material->recovery_quantity ?? 0) - ($material->executed_quantity ?? 0) - ($material->completion_quantity ?? 0);
+                                                @endphp
+                                                <div class="quantity-badge final-balance {{ $finalBalance > 0 ? 'success' : ($finalBalance < 0 ? 'danger' : 'info') }}"
+                                                     id="final-balance-{{ $material->id }}"
+                                                     data-bs-toggle="tooltip" 
+                                                     title="الرصيد النهائي: {{ $finalBalance > 0 ? 'يوجد رصيد متبقي' : ($finalBalance < 0 ? 'رصيد سالب (نقص)' : 'رصيد متوازن') }}">
+                                                    <span class="balance-value">
+                                                        @if($finalBalance == 0)
+                                                            <i class="fas fa-balance-scale"></i>
+                                                        @else
+                                                            {{ $finalBalance > 0 ? '+' : '' }}{{ number_format($finalBalance, 2) }}
+                                                        @endif
+                                                    </span>
+                                                </div>
+                                            </td>
+                                            <td class="text-center">
                                                 <div class="action-buttons">
                                                     <div class="btn-group">
-                                                        <a href="{{ route('admin.work-orders.materials.edit', [$workOrder, $material]) }}" 
-                                                           class="btn btn-action btn-edit"
-                                                           data-bs-toggle="tooltip"
-                                                           data-bs-placement="top"
-                                                           title="تعديل">
-                                                            <i class="fas fa-edit"></i>
-                                                            <span class="btn-text">تعديل</span>
-                                                        </a>
-                                                        
                                                         <button type="button" 
                                                                 class="btn btn-action btn-delete"
                                                                 onclick="deleteMaterial({{ $material->id }})"
@@ -1862,6 +1916,32 @@
     color: #28a745;
 }
 
+/* تنسيق الرصيد النهائي */
+.quantity-badge.final-balance {
+    min-width: 65px;
+    font-weight: bold;
+    border-radius: 8px;
+    padding: 0.4rem 0.6rem;
+}
+
+.quantity-badge.final-balance.success {
+    background-color: rgba(40, 167, 69, 0.15);
+    border: 1px solid #28a745;
+    color: #28a745;
+}
+
+.quantity-badge.final-balance.danger {
+    background-color: rgba(220, 53, 69, 0.15);
+    border: 1px solid #dc3545;
+    color: #dc3545;
+}
+
+.quantity-badge.final-balance.info {
+    background-color: rgba(23, 162, 184, 0.15);
+    border: 1px solid #17a2b8;
+    color: #17a2b8;
+}
+
 .quantity-badge.difference.warning {
     background-color: rgba(255, 193, 7, 0.1);
     border: 1px solid #ffc107;
@@ -2739,7 +2819,7 @@ function updateDifferences(materialId, spentValue, executedValue) {
     const plannedQuantity = parseFloat(document.querySelector(`.spent-quantity[data-material-id="${materialId}"]`).dataset.plannedQuantity) || 0;
     
     // حساب الفروق
-    const plannedSpentDiff = spentValue -  plannedQuantity;
+    const plannedSpentDiff = spentValue - plannedQuantity;
     const executedSpentDiff = spentValue - executedValue;
     
     // تحديث فرق المخطط والمصروف
@@ -2757,6 +2837,9 @@ function updateDifferences(materialId, spentValue, executedValue) {
         executedDiffElement.parentElement.className = `quantity-badge difference ${getDifferenceClass(executedSpentDiff)}`;
         executedDiffElement.parentElement.title = getDifferenceTitle(executedSpentDiff, 'executed');
     }
+    
+    // تحديث الرصيد النهائي
+    updateFinalBalance(materialId);
 }
 
 // دالة إرجاع عرض الفرق
@@ -2775,9 +2858,48 @@ function getDifferenceClass(diff) {
 function getDifferenceTitle(diff, type) {
     if (diff === 0) return 'متطابقة';
     if (type === 'planned') {
-        return diff > 0 ? 'يوجد كمية مخططة لم يتم صرفها' : 'تم صرف كمية أكثر من المخطط';
+        return diff > 0 ? 'تم صرف كمية أكثر من المخطط' : 'يوجد كمية مخططة لم يتم صرفها';
     }
-    return diff > 0 ? 'تم تنفيذ كمية أكثر من المصروفة' : 'تم صرف كمية أكثر من المنفذة';
+    return diff > 0 ? 'تم صرف كمية أكثر من المنفذة' : 'تم تنفيذ كمية أكثر من المصروفة';
+}
+
+// دالة تحديث الرصيد النهائي
+function updateFinalBalance(materialId) {
+    // الحصول على جميع الكميات
+    const spentQuantity = parseFloat(document.querySelector(`.spent-quantity[data-material-id="${materialId}"]`).value) || 0;
+    const executedQuantity = parseFloat(document.querySelector(`.executed-quantity[data-material-id="${materialId}"]`).value) || 0;
+    const recoveryQuantity = parseFloat(document.querySelector(`.recovery-quantity[data-material-id="${materialId}"]`).value) || 0;
+    const completionQuantity = parseFloat(document.querySelector(`.completion-quantity[data-material-id="${materialId}"]`).value) || 0;
+    
+    // حساب الرصيد النهائي: المصروفة + أذن الصرف - المنفذة - أذن الارتجاع
+    const finalBalance = spentQuantity + recoveryQuantity - executedQuantity - completionQuantity;
+    
+    // تحديث عرض الرصيد النهائي
+    const balanceElement = document.querySelector(`#final-balance-${materialId} .balance-value`);
+    if (balanceElement) {
+        if (finalBalance === 0) {
+            balanceElement.innerHTML = '<i class="fas fa-balance-scale"></i>';
+        } else {
+            balanceElement.innerHTML = (finalBalance > 0 ? '+' : '') + finalBalance.toFixed(2);
+        }
+        
+        // تحديث الكلاسات والألوان
+        const balanceContainer = balanceElement.parentElement;
+        balanceContainer.className = `quantity-badge final-balance ${getFinalBalanceClass(finalBalance)}`;
+        balanceContainer.title = getFinalBalanceTitle(finalBalance);
+    }
+}
+
+// دالة إرجاع كلاس الرصيد النهائي
+function getFinalBalanceClass(balance) {
+    if (balance === 0) return 'info';
+    return balance > 0 ? 'success' : 'danger';
+}
+
+// دالة إرجاع عنوان الرصيد النهائي
+function getFinalBalanceTitle(balance) {
+    if (balance === 0) return 'الرصيد النهائي: رصيد متوازن';
+    return balance > 0 ? 'الرصيد النهائي: يوجد رصيد متبقي' : 'الرصيد النهائي: رصيد سالب (نقص)';
 }
 
 // معالجة تحديث الكميات
@@ -3775,6 +3897,58 @@ document.addEventListener('DOMContentLoaded', function() {
     window.removeRemovalScrapItem = removeRemovalScrapItem;
     window.updateRemovalScrapTable = updateRemovalScrapTable;
 });
+
+// حساب الرصيد النهائي لجميع المواد عند تحميل الصفحة
+document.addEventListener('DOMContentLoaded', function() {
+    // تأخير صغير للتأكد من تحميل جميع العناصر
+    setTimeout(function() {
+        const processedMaterials = new Set();
+        document.querySelectorAll('.quantity-input').forEach(input => {
+            const materialId = input.dataset.materialId;
+            if (materialId && !processedMaterials.has(materialId)) {
+                updateFinalBalance(materialId);
+                processedMaterials.add(materialId);
+            }
+        });
+    }, 500);
+});
+
+// دالة معاينة الفروق في نافذة إضافة مادة جديدة
+function updateModalPreview() {
+    const plannedQuantity = parseFloat(document.getElementById('planned_quantity').value) || 0;
+    const spentQuantity = parseFloat(document.getElementById('spent_quantity').value) || 0;
+    const executedQuantity = parseFloat(document.getElementById('executed_quantity').value) || 0;
+    
+    // حساب الفروق
+    const plannedDiff = spentQuantity - plannedQuantity;
+    const executedDiff = spentQuantity - executedQuantity;
+    
+    // تحديث العرض
+    const plannedDiffElement = document.getElementById('plannedDiffPreview');
+    const executedDiffElement = document.getElementById('executedDiffPreview');
+    const previewElement = document.getElementById('modalPreview');
+    
+    if (plannedQuantity > 0 || spentQuantity > 0 || executedQuantity > 0) {
+        previewElement.style.display = 'block';
+        
+        // تحديث الفرق المخطط
+        plannedDiffElement.textContent = (plannedDiff > 0 ? '+' : '') + plannedDiff.toFixed(2);
+        plannedDiffElement.className = `badge ${plannedDiff > 0 ? 'bg-warning' : (plannedDiff < 0 ? 'bg-danger' : 'bg-success')}`;
+        
+        // تحديث الفرق المنفذ
+        executedDiffElement.textContent = (executedDiff > 0 ? '+' : '') + executedDiff.toFixed(2);
+        executedDiffElement.className = `badge ${executedDiff > 0 ? 'bg-warning' : (executedDiff < 0 ? 'bg-danger' : 'bg-success')}`;
+    } else {
+        previewElement.style.display = 'none';
+    }
+}
+
+// إعادة تعيين النافذة عند إغلاقها
+document.getElementById('addMaterialModal').addEventListener('hidden.bs.modal', function() {
+    document.getElementById('modalPreview').style.display = 'none';
+    document.getElementById('addMaterialModal').querySelector('form').reset();
+});
+
 </script>
 @endpush
 @endsection 

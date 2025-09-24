@@ -795,6 +795,107 @@
         </div>
     </div>
 
+    {{-- صور التصاريح PERMITS --}}
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center">
+                <i class="fas fa-file-contract me-2"></i>
+                <span>صور التصاريح PERMITS</span>
+            </div>
+            @if($workOrder->safety_permits_images && count($workOrder->safety_permits_images) > 0)
+                <span class="badge bg-white text-warning fs-6">{{ count($workOrder->safety_permits_images) }} صورة</span>
+            @else
+                <span class="badge bg-white text-muted fs-6">لا توجد صور</span>
+            @endif
+        </div>
+        <div class="card-body">
+            @if($workOrder->safety_permits_images && count($workOrder->safety_permits_images) > 0)
+                <div class="row">
+                @foreach($workOrder->safety_permits_images as $index => $image)
+                    <div class="col-6 col-md-4 col-lg-3 mb-3">
+                        <div class="card h-100 shadow-sm">
+                            @php
+                                $imagePath = Storage::url($image);
+                                $isPdf = strtolower(pathinfo($image, PATHINFO_EXTENSION)) === 'pdf';
+                            @endphp
+                            
+                            @if($isPdf)
+                                <div class="card-img-top d-flex align-items-center justify-content-center bg-light" style="height: 150px;">
+                                    <i class="fas fa-file-pdf fa-3x text-danger"></i>
+                                </div>
+                            @else
+                                <img src="{{ $imagePath }}" 
+                                     class="card-img-top" 
+                                     style="height: 150px; object-fit: cover; cursor: pointer; transition: transform 0.2s;"
+                                     alt="صورة التصريح"
+                                     data-bs-toggle="modal" 
+                                     data-bs-target="#viewPermitImageModal"
+                                     data-image-url="{{ $imagePath }}"
+                                     data-image-name="صورة التصريح {{ $index + 1 }}"
+                                     data-image-index="{{ $index + 1 }}"
+                                     onmouseover="this.style.transform='scale(1.05)'"
+                                     onmouseout="this.style.transform='scale(1)'">
+                            @endif
+                            
+                            <div class="card-body p-2">
+                                <h6 class="card-title mb-1 text-truncate">
+                                    <i class="fas fa-certificate me-1 text-warning"></i>
+                                    تصريح رقم {{ $index + 1 }}
+                                </h6>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small class="text-muted">{{ $isPdf ? 'ملف PDF' : 'صورة' }}</small>
+                                    <div class="btn-group">
+                                        <a href="{{ $imagePath }}" 
+                                           target="_blank" 
+                                           class="btn btn-sm btn-outline-warning"
+                                           title="عرض">
+                                            <i class="fas fa-external-link-alt"> عرض </i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
+                </div>
+                
+                <!-- معلومات إضافية وروابط الإدارة -->
+                <div class="alert alert-info mt-3">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <div>
+                                <strong>معلومات:</strong> هذه صور التصاريح المرفوعة من صفحة السلامة. 
+                                يمكنك مراجعة صفحة السلامة لإضافة أو تعديل التصاريح.
+                            </div>
+                        </div>
+                        <a href="{{ route('admin.work-orders.safety', $workOrder) }}" 
+                           class="btn btn-outline-info btn-sm">
+                            <i class="fas fa-shield-alt me-1"></i>
+                            إدارة التصاريح
+                        </a>
+                    </div>
+                </div>
+            @else
+                <!-- حالة عدم وجود صور تصاريح -->
+                <div class="text-center py-4">
+                    <div class="mb-3">
+                        <i class="fas fa-file-contract fa-4x text-muted mb-3"></i>
+                    </div>
+                    <h5 class="text-muted mb-2">لا توجد صور تصاريح</h5>
+                    <p class="text-muted mb-3">
+                        لم يتم رفع أي صور للتصاريح بعد. يمكنك إضافة صور التصاريح من صفحة السلامة.
+                    </p>
+                    <a href="{{ route('admin.work-orders.safety', $workOrder) }}" 
+                       class="btn btn-warning">
+                        <i class="fas fa-shield-alt me-1"></i>
+                        انتقال إلى صفحة السلامة
+                    </a>
+                </div>
+            @endif
+        </div>
+    </div>
+
     {{-- مرفقات الفاتورة --}}
     <div class="card mb-4 shadow-sm">
         <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
@@ -843,6 +944,8 @@
             @endif
         </div>
     </div>
+
+   
 
     {{-- Modal رفع مرفقات جديدة --}}
     <div class="modal fade" id="uploadInvoiceAttachmentsModal" tabindex="-1">
@@ -908,6 +1011,22 @@
                 modal.querySelector('#modalImage').src = this.dataset.imageUrl;
                 modal.querySelector('#modalImageName').textContent = this.dataset.imageName;
                 modal.querySelector('#modalImageDate').textContent = this.dataset.imageDate;
+            });
+        });
+
+        // تحديث بيانات صور التصاريح في المودال عند النقر على صورة
+        document.querySelectorAll('[data-bs-target="#viewPermitImageModal"]').forEach(img => {
+            img.addEventListener('click', function() {
+                const modal = document.getElementById('viewPermitImageModal');
+                const imageUrl = this.dataset.imageUrl;
+                const imageName = this.dataset.imageName;
+                const imageIndex = this.dataset.imageIndex;
+                
+                modal.querySelector('#permitModalImage').src = imageUrl;
+                modal.querySelector('#permitModalImageName').textContent = imageName;
+                modal.querySelector('#permitModalImageIndex').textContent = `الصورة ${imageIndex}`;
+                modal.querySelector('#permitModalDownloadLink').href = imageUrl;
+                modal.querySelector('#permitModalTitle').textContent = imageName;
             });
         });
 

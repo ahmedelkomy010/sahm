@@ -824,7 +824,9 @@ class WorkOrderController extends Controller
             'files', 
             'basicAttachments', 
             'workOrderItems.workItem', 
-            'workOrderMaterials.material'
+            'workOrderItems.dailyExecutions',
+            'workOrderMaterials.material',
+            'dailyExecutionNotes'
         ]);
 
         // جلب صور التنفيذ
@@ -833,17 +835,8 @@ class WorkOrderController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
         
-        // Filter work order items by date - only show items that match the selected date
-        if ($workDate) {
-            $workOrder->workOrderItems = $workOrder->workOrderItems->filter(function($item) use ($workDate) {
-                // إذا كان البند له تاريخ محفوظ، اعرضه فقط إذا كان يطابق التاريخ المحدد
-                if ($item->work_date) {
-                    return $item->work_date->format('Y-m-d') === $workDate;
-                }
-                // إذا لم يكن للبند تاريخ محفوظ، اعرضه فقط في تاريخ اليوم
-                return $workDate === now()->format('Y-m-d');
-            });
-        }
+        // عرض جميع البنود بغض النظر عن التاريخ
+        // سيتم تفريغ حقول الكمية المنفذة في Frontend عند تغيير التاريخ
         
         $hasWorkItems = $workOrder->workOrderItems()->count() > 0;
         $hasMaterials = $workOrder->workOrderMaterials()->count() > 0;
@@ -964,38 +957,50 @@ class WorkOrderController extends Controller
     }
 
     /**
-     * تحديث بند عمل
+     * تحديث بند عمل - حفظ الكمية اليومية
      */
     public function updateWorkItem(Request $request, \App\Models\WorkOrderItem $workOrderItem)
     {
         try {
             $request->validate([
                 'executed_quantity' => 'required|numeric|min:0',
-                'work_date' => 'nullable|date'
+                'work_date' => 'required|date'
             ]);
 
-            $updateData = [
-                'executed_quantity' => $request->executed_quantity,
-            ];
+            $workDate = $request->work_date;
+            $executedQuantity = $request->executed_quantity;
 
-            // إضافة تاريخ العمل إذا تم تمريره، وإلا استخدم التاريخ الحالي للبند أو تاريخ اليوم
-            if ($request->has('work_date')) {
-                $updateData['work_date'] = $request->work_date;
-            } else if (!$workOrderItem->work_date) {
-                $updateData['work_date'] = now()->format('Y-m-d');
-            }
+            // البحث عن التنفيذ اليومي الموجود أو إنشاء جديد
+            $dailyExecution = \App\Models\DailyWorkExecution::updateOrCreate(
+                [
+                    'work_order_item_id' => $workOrderItem->id,
+                    'work_date' => $workDate
+                ],
+                [
+                    'work_order_id' => $workOrderItem->work_order_id,
+                    'executed_quantity' => $executedQuantity,
+                    'created_by' => auth()->id()
+                ]
+            );
 
-            $workOrderItem->update($updateData);
+            // تحديث إجمالي الكمية المنفذة في work_order_item
+            $totalExecutedQuantity = $workOrderItem->dailyExecutions()->sum('executed_quantity');
+            $workOrderItem->update([
+                'executed_quantity' => $totalExecutedQuantity,
+                'work_date' => $workDate // تحديث آخر تاريخ عمل
+            ]);
 
             return response()->json([
                 'success' => true,
-                'message' => 'تم تحديث بند العمل بنجاح'
+                'message' => 'تم حفظ الكمية المنفذة لتاريخ ' . $workDate . ' بنجاح',
+                'daily_execution_id' => $dailyExecution->id,
+                'total_executed_quantity' => $totalExecutedQuantity
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'حدث خطأ أثناء تحديث بند العمل: ' . $e->getMessage()
+                'message' => 'حدث خطأ أثناء حفظ البيانات: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -1020,6 +1025,7 @@ class WorkOrderController extends Controller
             ], 500);
         }
     }
+
 
     /**
      * عرض صفحة التركيبات
@@ -4088,6 +4094,7 @@ class WorkOrderController extends Controller
             $validated = $request->validate([
                 'violation_amount' => 'required|numeric|min:0',
                 'violator' => 'required|string|max:255',
+                'violation_source' => 'required|in:internal,external',
                 'violation_date' => 'required|date',
                 'description' => 'required|string',
                 'notes' => 'nullable|string',
@@ -4187,15 +4194,7 @@ class WorkOrderController extends Controller
                   ->orWhereNotNull('final_total_value'); // أو التي لها قيمة إجمالية
             });
         
-        // فلتر التاريخ من
-        if ($request->filled('date_from')) {
-            $query->where('procedure_155_delivery_date', '>=', $request->date_from);
-        }
-        
-        // فلتر التاريخ إلى
-        if ($request->filled('date_to')) {
-            $query->where('procedure_155_delivery_date', '<=', $request->date_to);
-        }
+        // ملاحظة: فلتر التاريخ تم نقله لمستوى بنود العمل (work_date) بدلاً من procedure_155_delivery_date
         
         // فلتر نوع العمل
         if ($request->filled('work_type')) {
@@ -4211,8 +4210,8 @@ class WorkOrderController extends Controller
         $totalCount = $query->count();
         \Log::info("Execution Productivity Debug: Total work orders found: $totalCount for city: $city");
         
-        // بدلاً من عرض أوامر العمل، سنعرض بنود العمل المنفذة مباشرة
-        $workOrderItems = \App\Models\WorkOrderItem::whereHas('workOrder', function($q) use ($city, $request) {
+        // عرض سجل التنفيذ اليومي من جدول daily_work_executions
+        $dailyExecutions = \App\Models\DailyWorkExecution::whereHas('workOrder', function($q) use ($city, $request) {
             $q->where('city', $city)
               ->where(function($subQ) {
                   $subQ->where('execution_status', '>=', 2)
@@ -4220,44 +4219,57 @@ class WorkOrderController extends Controller
                        ->orWhereNotNull('final_total_value');
               });
             
-            // فلتر التاريخ من
-            if ($request->filled('date_from')) {
-                $q->where('procedure_155_delivery_date', '>=', $request->date_from);
-            }
-            
-            // فلتر التاريخ إلى
-            if ($request->filled('date_to')) {
-                $q->where('procedure_155_delivery_date', '<=', $request->date_to);
-            }
-            
             // فلتر رقم أمر العمل
             if ($request->filled('order_number')) {
                 $q->where('order_number', 'like', '%' . $request->order_number . '%');
             }
         })
         ->where('executed_quantity', '>', 0)
+        // فلتر تاريخ التنفيذ - على مستوى التنفيذ اليومي
+        ->when($request->filled('date_from'), function($query) use ($request) {
+            $query->whereDate('work_date', '>=', $request->date_from);
+        })
+        ->when($request->filled('date_to'), function($query) use ($request) {
+            $query->whereDate('work_date', '<=', $request->date_to);
+        })
         ->when($request->filled('work_item_code'), function($query) use ($request) {
-            $query->whereHas('workItem', function($q) use ($request) {
+            $query->whereHas('workOrderItem.workItem', function($q) use ($request) {
                 $q->where('code', 'like', '%' . $request->work_item_code . '%');
             });
         })
-        ->with(['workOrder', 'workItem'])
+        ->when($request->filled('executed_by'), function($query) use ($request) {
+            $query->whereHas('createdBy', function($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->executed_by . '%');
+            });
+        })
+        ->when($request->filled('min_quantity'), function($query) use ($request) {
+            $query->where('executed_quantity', '>=', $request->min_quantity);
+        })
+        ->when($request->filled('max_quantity'), function($query) use ($request) {
+            $query->where('executed_quantity', '<=', $request->max_quantity);
+        })
+        ->with(['workOrder', 'workOrderItem.workItem', 'createdBy'])
+        ->orderBy('work_date', 'desc')
         ->orderBy('created_at', 'desc')
         ->paginate(20);
         
-        // حساب الإحصائيات
+        // حساب الإحصائيات بناءً على التنفيذ اليومي
         $totalWorkOrders = $query->count();
         $totalValue = $query->sum('final_total_value');
-        $totalWorkItems = $workOrderItems->total();
-        $totalExecutedValue = $workOrderItems->sum(function($item) {
-            return $item->executed_quantity * $item->unit_price;
+        $totalDailyExecutions = $dailyExecutions->total();
+        $totalExecutedValue = $dailyExecutions->sum(function($execution) {
+            return $execution->executed_quantity * $execution->workOrderItem->unit_price;
         });
+        
+        // حساب عدد أوامر العمل الفريدة التي لها تنفيذ يومي
+        $uniqueWorkOrdersWithExecution = $dailyExecutions->groupBy('work_order_id')->count();
         
         // لا نحتاج لقوائم الأنواع والأحياء بعد الآن
         
         return view('admin.work_orders.execution-productivity', compact(
-            'workOrderItems', 'project', 'projectName', 'city',
-            'totalWorkOrders', 'totalValue', 'totalWorkItems', 'totalExecutedValue'
+            'dailyExecutions', 'project', 'projectName', 'city',
+            'totalWorkOrders', 'totalValue', 'totalDailyExecutions', 'totalExecutedValue',
+            'uniqueWorkOrdersWithExecution'
         ));
     }
 } 
