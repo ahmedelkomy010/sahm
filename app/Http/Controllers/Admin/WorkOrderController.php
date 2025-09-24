@@ -111,7 +111,51 @@ class WorkOrderController extends Controller
         
         $workOrders = $query->paginate($perPage);
         
-        return view('admin.work_orders.index', compact('workOrders', 'project'));
+        // جلب إحصائيات حالات التنفيذ للمشروع الحالي (بدون تطبيق فلتر حالة التنفيذ)
+        $baseQuery = WorkOrder::where('city', $city);
+        
+        // تطبيق كل الفلاتر ما عدا فلتر حالة التنفيذ
+        if ($request->filled('order_number')) {
+            $baseQuery->where('order_number', 'like', '%' . $request->order_number . '%');
+        }
+        if ($request->filled('work_type')) {
+            $baseQuery->where('work_type', $request->work_type);
+        }
+        if ($request->filled('subscriber_name')) {
+            $baseQuery->where('subscriber_name', 'like', '%' . $request->subscriber_name . '%');
+        }
+        if ($request->filled('district')) {
+            $baseQuery->where('district', 'like', '%' . $request->district . '%');
+        }
+        if ($request->filled('office')) {
+            $baseQuery->where('office', $request->office);
+        }
+        if ($request->filled('consultant_name')) {
+            $baseQuery->where('consultant_name', 'like', '%' . $request->consultant_name . '%');
+        }
+        if ($request->filled('station_number')) {
+            $baseQuery->where('station_number', 'like', '%' . $request->station_number . '%');
+        }
+        if ($request->filled('approval_date_from')) {
+            $baseQuery->whereDate('approval_date', '>=', $request->approval_date_from);
+        }
+        if ($request->filled('approval_date_to')) {
+            $baseQuery->whereDate('approval_date', '<=', $request->approval_date_to);
+        }
+        if ($request->filled('min_value')) {
+            $baseQuery->where('order_value_without_consultant', '>=', $request->min_value);
+        }
+        if ($request->filled('max_value')) {
+            $baseQuery->where('order_value_without_consultant', '<=', $request->max_value);
+        }
+        
+        // جلب عدد أوامر العمل لكل حالة تنفيذ
+        $executionStatusCounts = $baseQuery->selectRaw('execution_status, COUNT(*) as count')
+            ->groupBy('execution_status')
+            ->pluck('count', 'execution_status')
+            ->toArray();
+        
+        return view('admin.work_orders.index', compact('workOrders', 'project', 'executionStatusCounts'));
     }
 
     /**

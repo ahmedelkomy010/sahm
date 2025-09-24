@@ -731,7 +731,7 @@ function resetCountdown(workOrderId) {
                                 </div>
                             </div>
                             
-                            <div class="col-md-3">
+                            <div class="col-md-2">
                                 <div class="form-group">
                                     <label for="station_number" class="form-label fw-bold">
                                         <i class="fas fa-broadcast-tower text-primary me-1"></i>
@@ -744,7 +744,7 @@ function resetCountdown(workOrderId) {
                             
                             
                             
-                            <div class="col-md-3">
+                            <div class="col-md-4">
                                 <div class="form-group">
                                     <label for="execution_status" class="form-label fw-bold">
                                         <i class="fas fa-tasks text-primary me-1"></i>
@@ -772,6 +772,7 @@ function resetCountdown(workOrderId) {
                                                         '9' => 'تم الالغاء او تحويل امر العمل',
                                                         '10' => 'تم اعداد المستخلص الكلي وجاري الصرف'
                                                     ];
+                                                    $selectedStatuses = request('execution_status') ? (is_array(request('execution_status')) ? request('execution_status') : [request('execution_status')]) : [];
                                                 @endphp
                                                 @if(empty($selectedStatuses))
                                                     كل الحالات
@@ -796,18 +797,18 @@ function resetCountdown(workOrderId) {
                                                 </div>
                                             </li>
                                             <li><hr class="dropdown-divider"></li>
-                                            @php
-                                                $selectedStatuses = request('execution_status') ? (is_array(request('execution_status')) ? request('execution_status') : [request('execution_status')]) : [];
-                                            @endphp
                                             <li>
                                                 <div class="dropdown-item">
                                                     <div class="form-check">
                                                         <input class="form-check-input execution-status-check" type="checkbox" name="execution_status[]" value="1" id="status1" 
                                                                {{ in_array('1', $selectedStatuses) ? 'checked' : '' }} onchange="updateExecutionStatusText()">
-                                                        <label class="form-check-label" for="status1">
-                                                            <span class="badge bg-warning text-dark">1</span>
-                                                            <span class="flex-grow-1">جاري العمل بالموقع</span>
-                                                            <i class="fas fa-hammer text-warning ms-2"></i>
+                                                        <label class="form-check-label d-flex justify-content-between align-items-center" for="status1">
+                                                            <div class="d-flex align-items-center">
+                                                                <span class="badge bg-warning text-dark">1</span>
+                                                                <span class="flex-grow-1 me-2">جاري العمل بالموقع</span>
+                                                                <i class="fas fa-hammer text-warning"></i>
+                                                            </div>
+                                                            <span class="badge bg-secondary rounded-pill">{{ $executionStatusCounts[1] ?? 0 }}</span>
                                                         </label>
                                                     </div>
                                                 </div>
@@ -817,10 +818,13 @@ function resetCountdown(workOrderId) {
                                                     <div class="form-check">
                                                         <input class="form-check-input execution-status-check" type="checkbox" name="execution_status[]" value="2" id="status2" 
                                                                {{ in_array('2', $selectedStatuses) ? 'checked' : '' }} onchange="updateExecutionStatusText()">
-                                                        <label class="form-check-label" for="status2">
-                                                            <span class="badge bg-info">2</span>
-                                                            <span class="flex-grow-1">تم التنفيذ بالموقع وجاري تسليم 155</span>
-                                                            <i class="fas fa-file-alt text-info ms-2"></i>
+                                                        <label class="form-check-label d-flex justify-content-between align-items-center" for="status2">
+                                                            <div class="d-flex align-items-center">
+                                                                <span class="badge bg-info">2</span>
+                                                                <span class="flex-grow-1 me-2">تم التنفيذ بالموقع وجاري تسليم 155</span>
+                                                                <i class="fas fa-file-alt text-info"></i>
+                                                            </div>
+                                                            <span class="badge bg-secondary rounded-pill">{{ $executionStatusCounts[2] ?? 0 }}</span>
                                                         </label>
                                                     </div>
                                                 </div>
@@ -830,10 +834,13 @@ function resetCountdown(workOrderId) {
                                                     <div class="form-check">
                                                         <input class="form-check-input execution-status-check" type="checkbox" name="execution_status[]" value="3" id="status3" 
                                                                {{ in_array('3', $selectedStatuses) ? 'checked' : '' }} onchange="updateExecutionStatusText()">
-                                                        <label class="form-check-label" for="status3">
-                                                            <span class="badge bg-primary">3</span>
-                                                            <span class="flex-grow-1">تم تسليم 155 جاري اصدار شهادة الانجاز</span>
-                                                            <i class="fas fa-certificate text-primary ms-2"></i>
+                                                        <label class="form-check-label d-flex justify-content-between align-items-center" for="status3">
+                                                            <div class="d-flex align-items-center">
+                                                                <span class="badge bg-primary">3</span>
+                                                                <span class="flex-grow-1 me-2">تم تسليم 155 جاري اصدار شهادة الانجاز</span>
+                                                                <i class="fas fa-certificate text-primary"></i>
+                                                            </div>
+                                                            <span class="badge bg-secondary rounded-pill">{{ $executionStatusCounts[3] ?? 0 }}</span>
                                                         </label>
                                                     </div>
                                                 </div>
@@ -843,10 +850,13 @@ function resetCountdown(workOrderId) {
                                                     <div class="form-check">
                                                         <input class="form-check-input execution-status-check" type="checkbox" name="execution_status[]" value="4" id="status4" 
                                                                {{ in_array('4', $selectedStatuses) ? 'checked' : '' }} onchange="updateExecutionStatusText()">
-                                                        <label class="form-check-label" for="status4">
-                                                            <span class="badge bg-secondary">4</span>
-                                                            <span class="flex-grow-1">اعداد مستخلص الدفعة الجزئية الاولي وجاري الصرف</span>
-                                                            <i class="fas fa-file-invoice-dollar text-secondary ms-2"></i>
+                                                        <label class="form-check-label d-flex justify-content-between align-items-center" for="status4">
+                                                            <div class="d-flex align-items-center">
+                                                                <span class="badge bg-secondary">4</span>
+                                                                <span class="flex-grow-1 me-2">اعداد مستخلص الدفعة الجزئية الاولي وجاري الصرف</span>
+                                                                <i class="fas fa-file-invoice-dollar text-secondary"></i>
+                                                            </div>
+                                                            <span class="badge bg-secondary rounded-pill">{{ $executionStatusCounts[4] ?? 0 }}</span>
                                                         </label>
                                                     </div>
                                                 </div>
@@ -856,10 +866,13 @@ function resetCountdown(workOrderId) {
                                                     <div class="form-check">
                                                         <input class="form-check-input execution-status-check" type="checkbox" name="execution_status[]" value="5" id="status5" 
                                                                {{ in_array('5', $selectedStatuses) ? 'checked' : '' }} onchange="updateExecutionStatusText()">
-                                                        <label class="form-check-label" for="status5">
-                                                            <span class="badge bg-success">5</span>
-                                                            <span class="flex-grow-1">تم صرف مستخلص الدفعة الجزئية الاولي</span>
-                                                            <i class="fas fa-money-bill-wave text-success ms-2"></i>
+                                                        <label class="form-check-label d-flex justify-content-between align-items-center" for="status5">
+                                                            <div class="d-flex align-items-center">
+                                                                <span class="badge bg-success">5</span>
+                                                                <span class="flex-grow-1 me-2">تم صرف مستخلص الدفعة الجزئية الاولي</span>
+                                                                <i class="fas fa-money-bill-wave text-success"></i>
+                                                            </div>
+                                                            <span class="badge bg-secondary rounded-pill">{{ $executionStatusCounts[5] ?? 0 }}</span>
                                                         </label>
                                                     </div>
                                                 </div>
@@ -869,10 +882,13 @@ function resetCountdown(workOrderId) {
                                                     <div class="form-check">
                                                         <input class="form-check-input execution-status-check" type="checkbox" name="execution_status[]" value="6" id="status6" 
                                                                {{ in_array('6', $selectedStatuses) ? 'checked' : '' }} onchange="updateExecutionStatusText()">
-                                                        <label class="form-check-label" for="status6">
-                                                            <span class="badge bg-warning">6</span>
-                                                            <span class="flex-grow-1">اعداد مستخلص الدفعة الجزئية الثانية وجاري الصرف</span>
-                                                            <i class="fas fa-file-invoice text-warning ms-2"></i>
+                                                        <label class="form-check-label d-flex justify-content-between align-items-center" for="status6">
+                                                            <div class="d-flex align-items-center">
+                                                                <span class="badge bg-warning">6</span>
+                                                                <span class="flex-grow-1 me-2">اعداد مستخلص الدفعة الجزئية الثانية وجاري الصرف</span>
+                                                                <i class="fas fa-file-invoice text-warning"></i>
+                                                            </div>
+                                                            <span class="badge bg-secondary rounded-pill">{{ $executionStatusCounts[6] ?? 0 }}</span>
                                                         </label>
                                                     </div>
                                                 </div>
@@ -882,10 +898,13 @@ function resetCountdown(workOrderId) {
                                                     <div class="form-check">
                                                         <input class="form-check-input execution-status-check" type="checkbox" name="execution_status[]" value="7" id="status7" 
                                                                {{ in_array('7', $selectedStatuses) ? 'checked' : '' }} onchange="updateExecutionStatusText()">
-                                                        <label class="form-check-label" for="status7">
-                                                            <span class="badge bg-success">7</span>
-                                                            <span class="flex-grow-1">تم الصرف وتم الانتهاء</span>
-                                                            <i class="fas fa-check-circle text-success ms-2"></i>
+                                                        <label class="form-check-label d-flex justify-content-between align-items-center" for="status7">
+                                                            <div class="d-flex align-items-center">
+                                                                <span class="badge bg-success">7</span>
+                                                                <span class="flex-grow-1 me-2">تم الصرف وتم الانتهاء</span>
+                                                                <i class="fas fa-check-circle text-success"></i>
+                                                            </div>
+                                                            <span class="badge bg-secondary rounded-pill">{{ $executionStatusCounts[7] ?? 0 }}</span>
                                                         </label>
                                                     </div>
                                                 </div>
@@ -895,10 +914,13 @@ function resetCountdown(workOrderId) {
                                                     <div class="form-check">
                                                         <input class="form-check-input execution-status-check" type="checkbox" name="execution_status[]" value="8" id="status8" 
                                                                {{ in_array('8', $selectedStatuses) ? 'checked' : '' }} onchange="updateExecutionStatusText()">
-                                                        <label class="form-check-label" for="status8">
-                                                            <span class="badge bg-info">8</span>
-                                                            <span class="flex-grow-1">تم اصدار شهادة الانجاز</span>
-                                                            <i class="fas fa-award text-info ms-2"></i>
+                                                        <label class="form-check-label d-flex justify-content-between align-items-center" for="status8">
+                                                            <div class="d-flex align-items-center">
+                                                                <span class="badge bg-info">8</span>
+                                                                <span class="flex-grow-1 me-2">تم اصدار شهادة الانجاز</span>
+                                                                <i class="fas fa-award text-info"></i>
+                                                            </div>
+                                                            <span class="badge bg-secondary rounded-pill">{{ $executionStatusCounts[8] ?? 0 }}</span>
                                                         </label>
                                                     </div>
                                                 </div>
@@ -908,10 +930,13 @@ function resetCountdown(workOrderId) {
                                                     <div class="form-check">
                                                         <input class="form-check-input execution-status-check" type="checkbox" name="execution_status[]" value="9" id="status9" 
                                                                {{ in_array('9', $selectedStatuses) ? 'checked' : '' }} onchange="updateExecutionStatusText()">
-                                                        <label class="form-check-label" for="status9">
-                                                            <span class="badge bg-danger">9</span>
-                                                            <span class="flex-grow-1">تم الالغاء او تحويل امر العمل</span>
-                                                            <i class="fas fa-times-circle text-danger ms-2"></i>
+                                                        <label class="form-check-label d-flex justify-content-between align-items-center" for="status9">
+                                                            <div class="d-flex align-items-center">
+                                                                <span class="badge bg-danger">9</span>
+                                                                <span class="flex-grow-1 me-2">تم الالغاء او تحويل امر العمل</span>
+                                                                <i class="fas fa-times-circle text-danger"></i>
+                                                            </div>
+                                                            <span class="badge bg-secondary rounded-pill">{{ $executionStatusCounts[9] ?? 0 }}</span>
                                                         </label>
                                                     </div>
                                                 </div>
@@ -921,10 +946,13 @@ function resetCountdown(workOrderId) {
                                                     <div class="form-check">
                                                         <input class="form-check-input execution-status-check" type="checkbox" name="execution_status[]" value="10" id="status10" 
                                                                {{ in_array('10', $selectedStatuses) ? 'checked' : '' }} onchange="updateExecutionStatusText()">
-                                                        <label class="form-check-label" for="status10">
-                                                            <span class="badge bg-primary">10</span>
-                                                            <span class="flex-grow-1">تم اعداد المستخلص الكلي وجاري الصرف</span>
-                                                            <i class="fas fa-file-contract text-primary ms-2"></i>
+                                                        <label class="form-check-label d-flex justify-content-between align-items-center" for="status10">
+                                                            <div class="d-flex align-items-center">
+                                                                <span class="badge bg-primary">10</span>
+                                                                <span class="flex-grow-1 me-2">تم اعداد المستخلص الكلي وجاري الصرف</span>
+                                                                <i class="fas fa-file-contract text-primary"></i>
+                                                            </div>
+                                                            <span class="badge bg-secondary rounded-pill">{{ $executionStatusCounts[10] ?? 0 }}</span>
                                                         </label>
                                                     </div>
                                                 </div>
