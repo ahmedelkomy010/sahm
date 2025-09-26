@@ -89,8 +89,8 @@ class MaterialsController extends Controller
             ))->with('cityName', $cityName);
         }
 
-        // بناء الاستعلام الأساسي - استخدام Material بدلاً من WorkOrderMaterial
-        $query = Material::whereIn('work_order_id', $cityWorkOrders)
+        // جلب جميع المواد للمدينة وتجميعها بالكود
+        $materialsQuery = Material::whereIn('work_order_id', $cityWorkOrders)
             ->with(['workOrder'])
             ->where('code', 'NOT LIKE', 'GENERAL_FILES_%')
             ->where(function($q) {
@@ -109,44 +109,117 @@ class MaterialsController extends Controller
 
         // تطبيق الفلاتر
         if ($request->filled('search_code')) {
-            $query->where('code', 'like', '%' . $request->search_code . '%');
+            $materialsQuery->where('code', 'like', '%' . $request->search_code . '%');
         }
 
         if ($request->filled('work_order_number')) {
-            $query->whereHas('workOrder', function($q) use ($request) {
+            $materialsQuery->whereHas('workOrder', function($q) use ($request) {
                 $q->where('order_number', 'like', '%' . $request->work_order_number . '%');
             });
         }
 
         if ($request->filled('unit_filter')) {
-            $query->where('unit', $request->unit_filter);
+            $materialsQuery->where('unit', $request->unit_filter);
         }
 
         if ($request->filled('work_order_filter')) {
-            $query->where('work_order_id', $request->work_order_filter);
+            $materialsQuery->where('work_order_id', $request->work_order_filter);
         }
 
-        // فلتر الرصيد النهائي
+        // جلب جميع المواد
+        $allMaterials = $materialsQuery->get();
+        
+        // تجميع المواد بالكود وحساب الرصيد الإجمالي
+        $groupedMaterials = $allMaterials->groupBy('code')->map(function($materials, $code) {
+            $firstMaterial = $materials->first();
+            
+            // حساب الرصيد الإجمالي لكل مادة
+            $totalSpentQuantity = $materials->sum('spent_quantity') ?? 0;
+            $totalRecoveryQuantity = $materials->sum('recovery_quantity') ?? 0;
+            $totalExecutedQuantity = $materials->sum('executed_quantity') ?? 0;
+            $totalCompletionQuantity = $materials->sum('completion_quantity') ?? 0;
+            
+            $finalBalance = $totalSpentQuantity + $totalRecoveryQuantity - $totalExecutedQuantity - $totalCompletionQuantity;
+            
+            // جمع أوامر العمل المرتبطة
+            $workOrders = $materials->map(function($material) {
+                return $material->workOrder;
+            })->filter()->unique('id');
+            
+            return (object) [
+                'id' => $firstMaterial->id,
+                'code' => $code,
+                'name' => $firstMaterial->name,
+                'description' => $firstMaterial->description ?: $firstMaterial->name,
+                'unit' => $firstMaterial->unit,
+                'total_spent_quantity' => $totalSpentQuantity,
+                'total_recovery_quantity' => $totalRecoveryQuantity,
+                'total_executed_quantity' => $totalExecutedQuantity,
+                'total_completion_quantity' => $totalCompletionQuantity,
+                'final_balance' => $finalBalance,
+                'work_orders' => $workOrders,
+                'work_orders_count' => $workOrders->count(),
+                'created_at' => $firstMaterial->created_at,
+            ];
+        });
+
+        // استبعاد المواد المتوازنة (رصيد = صفر) تلقائياً
+        $groupedMaterials = $groupedMaterials->filter(function($material) {
+            return $material->final_balance != 0;
+        });
+
+        // تطبيق فلتر الرصيد النهائي على المواد المجمعة
         if ($request->filled('balance_filter')) {
             $balanceFilter = $request->balance_filter;
             
-            $query->where(function($q) use ($balanceFilter) {
-                // حساب الرصيد النهائي لكل مادة
-                $q->whereRaw("
-                    CASE 
-                        WHEN ? = 'positive' THEN (COALESCE(spent_quantity, 0) + COALESCE(recovery_quantity, 0) - COALESCE(executed_quantity, 0) - COALESCE(completion_quantity, 0)) > 0
-                        WHEN ? = 'negative' THEN (COALESCE(spent_quantity, 0) + COALESCE(recovery_quantity, 0) - COALESCE(executed_quantity, 0) - COALESCE(completion_quantity, 0)) < 0
-                        WHEN ? = 'zero' THEN (COALESCE(spent_quantity, 0) + COALESCE(recovery_quantity, 0) - COALESCE(executed_quantity, 0) - COALESCE(completion_quantity, 0)) = 0
-                        ELSE 1 = 1
-                    END
-                ", [$balanceFilter, $balanceFilter, $balanceFilter]);
+            $groupedMaterials = $groupedMaterials->filter(function($material) use ($balanceFilter) {
+                switch ($balanceFilter) {
+                    case 'positive':
+                        return $material->final_balance > 0;
+                    case 'negative':
+                        return $material->final_balance < 0;
+                    default:
+                        return true;
+                }
             });
         }
 
-        // ترتيب النتائج
-        $materials = $query->orderBy('code')
-            ->paginate(50)
-            ->appends($request->query());
+        // تطبيق فلتر نوع العملية
+        if ($request->filled('operation_filter')) {
+            $operationFilter = $request->operation_filter;
+            
+            $groupedMaterials = $groupedMaterials->filter(function($material) use ($operationFilter) {
+                switch ($operationFilter) {
+                    case 'recovery':
+                        return $material->total_recovery_quantity > 0;
+                    case 'completion':
+                        return $material->total_completion_quantity > 0;
+                    default:
+                        return true;
+                }
+            });
+        }
+
+        // ترتيب المواد حسب الكود
+        $groupedMaterials = $groupedMaterials->sortBy('code');
+
+        // تطبيق التصفح اليدوي
+        $currentPage = request()->get('page', 1);
+        $perPage = 50;
+        $total = $groupedMaterials->count();
+        $items = $groupedMaterials->forPage($currentPage, $perPage)->values();
+
+        $materials = new LengthAwarePaginator(
+            $items,
+            $total,
+            $perPage,
+            $currentPage,
+            [
+                'path' => request()->url(),
+                'pageName' => 'page',
+            ]
+        );
+        $materials->appends(request()->query());
 
         // جلب قائمة الوحدات المتاحة للفلتر
         $units = Material::whereIn('work_order_id', $cityWorkOrders)

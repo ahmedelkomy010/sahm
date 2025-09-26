@@ -71,6 +71,11 @@ class Survey extends Model
         return $this->hasMany(WorkOrderFile::class, 'survey_id')->where('file_category', 'survey_images');
     }
 
+    public function completionFiles()
+    {
+        return $this->hasMany(WorkOrderFile::class, 'survey_id')->where('file_category', 'completion_files');
+    }
+
     protected static function boot()
     {
         parent::boot();

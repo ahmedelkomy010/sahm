@@ -82,6 +82,9 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::get('work-orders', [App\Http\Controllers\WorkOrderController::class, 'index'])->name('work-orders.index');
     Route::get('work-orders/create', [App\Http\Controllers\WorkOrderController::class, 'create'])->name('work-orders.create');
     Route::get('work-orders/execution-productivity', [App\Http\Controllers\WorkOrderController::class, 'executionProductivity'])->name('work-orders.execution-productivity');
+    Route::get('work-orders/revenues', [App\Http\Controllers\WorkOrderController::class, 'revenues'])->name('work-orders.revenues');
+    Route::post('work-orders/revenues/save', [App\Http\Controllers\WorkOrderController::class, 'saveRevenue'])->name('work-orders.revenues.save');
+    Route::delete('work-orders/revenues/{id}', [App\Http\Controllers\WorkOrderController::class, 'deleteRevenue'])->name('work-orders.revenues.delete');
     Route::get('work-orders/export/excel', [App\Http\Controllers\WorkOrderController::class, 'exportExcel'])->name('work-orders.export.excel');
     Route::post('work-orders', [App\Http\Controllers\WorkOrderController::class, 'store'])->name('work-orders.store');
     Route::get('work-orders/{workOrder}', [App\Http\Controllers\WorkOrderController::class, 'show'])->name('work-orders.show');
@@ -152,6 +155,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     // صفحات المسح (Survey)
     Route::get('work-orders/{workOrder}/survey', [WorkOrderController::class, 'survey'])->name('work-orders.survey');
     Route::post('work-orders/{workOrder}/survey', [WorkOrderController::class, 'storeSurvey'])->name('work-orders.survey.store');
+    Route::post('work-orders/{workOrder}/survey/completion-files', [WorkOrderController::class, 'uploadCompletionFiles'])->name('work-orders.survey.completion-files');
     Route::get('work-orders/survey/{survey}/edit', [WorkOrderController::class, 'editSurvey'])->name('work-orders.survey.edit');
     Route::put('work-orders/survey/{survey}', [WorkOrderController::class, 'updateSurvey'])->name('work-orders.survey.update');
     Route::delete('work-orders/survey/files/{file}', [WorkOrderController::class, 'deleteSurveyFile'])->name('work-orders.survey.files.delete');
@@ -258,6 +262,7 @@ Route::post('licenses/save-evacuation-data-simple', [\App\Http\Controllers\Admin
     Route::get('violations/by-work-order/{workOrder}', [\App\Http\Controllers\Admin\LicenseViolationController::class, 'getByWorkOrder'])->name('violations.by-work-order');
     Route::get('licenses/by-work-order/{workOrder}', [\App\Http\Controllers\Admin\LicenseController::class, 'getByWorkOrder'])->name('licenses.by-work-order');
     Route::get('licenses/all-by-work-order/{workOrder}', [\App\Http\Controllers\Admin\LicenseController::class, 'getAllByWorkOrder'])->name('licenses.all-by-work-order');
+    Route::post('licenses/search-by-number', [\App\Http\Controllers\Admin\LicenseController::class, 'searchByNumber'])->name('licenses.search-by-number');
     Route::get('licenses-list/by-work-order/{workOrder}', [\App\Http\Controllers\Admin\LicenseViolationController::class, 'getLicensesByWorkOrder'])->name('licenses-list.by-work-order');
     Route::post('license-violations', [\App\Http\Controllers\Admin\LicenseViolationController::class, 'store'])->name('license-violations.store');
     Route::get('license-violations/{violation}', [\App\Http\Controllers\Admin\LicenseViolationController::class, 'show'])->name('license-violations.show');

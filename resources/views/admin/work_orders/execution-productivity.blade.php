@@ -284,24 +284,6 @@
                     <input type="text" class="form-control" id="executed_by" name="executed_by" 
                            value="{{ request('executed_by') }}" placeholder="اسم المستخدم المنفذ...">
                 </div>
-                
-                <div class="col-md-4">
-                    <label for="min_quantity" class="form-label fw-semibold">
-                        <i class="fas fa-sort-amount-up me-1 text-primary"></i>
-                        الحد الأدنى للكمية
-                    </label>
-                    <input type="number" class="form-control" id="min_quantity" name="min_quantity" 
-                           value="{{ request('min_quantity') }}" placeholder="0.00" step="0.01" min="0">
-                </div>
-                
-                <div class="col-md-4">
-                    <label for="max_quantity" class="form-label fw-semibold">
-                        <i class="fas fa-sort-amount-down me-1 text-primary"></i>
-                        الحد الأقصى للكمية
-                    </label>
-                    <input type="number" class="form-control" id="max_quantity" name="max_quantity" 
-                           value="{{ request('max_quantity') }}" placeholder="9999.99" step="0.01" min="0">
-                </div>
             </div>
             
             <div class="row mt-3">
@@ -331,8 +313,8 @@
                         <th width="20%">وصف البند</th>
                         <th width="7%">سعر الوحدة</th>
                         <th width="8%">الكمية المنفذة</th>
-                        <th width="9%">تاريخ التنفيذ</th>
                         <th width="10%">السعر الإجمالي</th>
+                        <th width="9%">تاريخ التنفيذ</th>
                         <th width="8%">المنفذ بواسطة</th>
                         <th width="10%">ملاحظات</th>
                         <th width="8%">الإجراءات</th>
@@ -371,6 +353,11 @@
                                 </span>
                             </td>
                             <td class="text-center">
+                                <span class="badge bg-danger text-white fw-bold">
+                                    {{ number_format(($execution->executed_quantity * $execution->workOrderItem->unit_price), 2) }} ر.س
+                                </span>
+                            </td>
+                            <td class="text-center">
                                 <span class="badge bg-warning text-dark">
                                     {{ $execution->work_date->format('Y-m-d') }}
                                 </span>
@@ -378,11 +365,6 @@
                                 <small class="text-muted">
                                     {{ $execution->work_date->format('l') }}
                                 </small>
-                            </td>
-                            <td class="text-center">
-                                <span class="badge bg-danger text-white fw-bold">
-                                    {{ number_format(($execution->executed_quantity * $execution->workOrderItem->unit_price), 2) }} ر.س
-                                </span>
                             </td>
                             <td class="text-center">
                                 @if($execution->createdBy)

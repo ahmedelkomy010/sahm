@@ -46,12 +46,13 @@
     }
     
     .count-stats .stats-card:nth-child(1) { border-left-color: #10B981; }
-    .count-stats .stats-card:nth-child(2) { border-left-color: #EF4444; }
-    .count-stats .stats-card:nth-child(3) { border-left-color: #F59E0B; }
-    .count-stats .stats-card:nth-child(4) { border-left-color: #EAB308; }
-    .count-stats .stats-card:nth-child(5) { border-left-color: #059669; }
-    .count-stats .stats-card:nth-child(6) { border-left-color: #EC4899; }
-    .count-stats .stats-card:nth-child(7) { border-left-color: #8B5CF6; }
+    .count-stats .stats-card:nth-child(2) { border-left-color: #3B82F6; }
+    .count-stats .stats-card:nth-child(3) { border-left-color: #EF4444; }
+    .count-stats .stats-card:nth-child(4) { border-left-color: #F59E0B; }
+    .count-stats .stats-card:nth-child(5) { border-left-color: #EAB308; }
+    .count-stats .stats-card:nth-child(6) { border-left-color: #059669; }
+    .count-stats .stats-card:nth-child(7) { border-left-color: #EC4899; }
+    .count-stats .stats-card:nth-child(8) { border-left-color: #8B5CF6; }
 </style>
 @endsection
 
@@ -114,6 +115,7 @@
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                     <option value="">جميع الحالات</option>
                     <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>سارية</option>
+                    <option value="extended" {{ request('status') == 'extended' ? 'selected' : '' }}>ممددة</option>
                     <option value="expired" {{ request('status') == 'expired' ? 'selected' : '' }}>منتهية</option>
                 </select>
             </div>
@@ -255,7 +257,7 @@
                 <i class="fas fa-chart-bar me-2 text-blue-600"></i>
                 الإحصائيات العددية
             </h4>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 count-stats">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 count-stats">
                 <!-- الرخص السارية -->
                 <div class="stats-card bg-gradient-to-br from-green-50 to-green-100 rounded-lg shadow-md p-4 border border-green-200">
                     <div class="flex items-center justify-between">
@@ -266,6 +268,20 @@
                         </div>
                         <div class="w-12 h-12 bg-green-200 rounded-full flex items-center justify-center">
                             <i class="fas fa-check-circle text-xl text-green-600"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- الرخص الممددة -->
+                <div class="stats-card bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg shadow-md p-4 border border-blue-200">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-blue-600 mb-1 font-medium">الرخص الممددة</p>
+                            <h3 class="text-2xl font-bold text-blue-700">{{ $extendedCount ?? 0 }}</h3>
+                            <p class="text-xs text-blue-500 mt-1">رخصة ممددة</p>
+                        </div>
+                        <div class="w-12 h-12 bg-blue-200 rounded-full flex items-center justify-center">
+                            <i class="fas fa-clock text-xl text-blue-600"></i>
                         </div>
                     </div>
                 </div>
@@ -387,6 +403,7 @@
                         <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">قيمة الرخصة</th>
                         <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">تاريخ الإصدار</th>
                         <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">تاريخ الانتهاء</th>
+                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">رقم الرخصة الممددة</th>
                         <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الحالة</th>
                         <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الإجراءات</th>
                     </tr>
@@ -414,6 +431,40 @@
                                 <div class="text-sm text-gray-900">{{ $license->expiry_date ? $license->expiry_date->format('Y/m/d') : '-' }}</div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-900">
+                                    @php
+                                        $hasActiveExtensions = $license->extensions->where('end_date', '>', now())->count() > 0;
+                                        $totalExtensions = $license->extensions->count();
+                                    @endphp
+                                    
+                                    @if($license->status_text === 'ممددة' || $hasActiveExtensions)
+                                        <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
+                                            <i class="fas fa-clock me-1"></i>
+                                            {{ $license->extended_license_number ?? $license->license_number }}
+                                        </span>
+                                    @elseif($totalExtensions > 0)
+                                        <span class="bg-gray-100 text-gray-600 px-2 py-1 rounded-full text-xs font-medium">
+                                            <i class="fas fa-history me-1"></i>
+                                            {{ $license->license_number }} (منتهية)
+                                        </span>
+                                    @else
+                                        <span class="text-gray-400 text-xs">-</span>
+                                    @endif
+                                    
+                                    {{-- Debug info --}}
+                                    @if(config('app.debug'))
+                                        <small class="text-xs text-gray-500 block mt-1">
+                                            حالة: {{ $license->status_text }} | 
+                                            تمديدات: {{ $totalExtensions }} |
+                                            نشطة: {{ $hasActiveExtensions ? 'نعم' : 'لا' }}
+                                            @if($license->extended_license_number)
+                                                | رقم ممدد: {{ $license->extended_license_number }}
+                                            @endif
+                                        </small>
+                                    @endif
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
                                 <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full {{ $license->status_color }}">
                                     {{ $license->status_text }}
                                 </span>
@@ -427,7 +478,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="9" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
+                            <td colspan="10" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
                                 لا توجد رخص مسجلة
                             </td>
                         </tr>

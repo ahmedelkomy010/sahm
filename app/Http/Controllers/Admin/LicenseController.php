@@ -45,11 +45,15 @@ class LicenseController extends Controller
             // تطبيق فلتر الحالة
             if ($request->filled('status')) {
                 if ($request->status === 'active') {
-                    $query->where(function($q) use ($now) {
-                        $q->where('license_end_date', '>', $now)
-                          ->orWhereHas('extensions', function($q) use ($now) {
+                    // الرخص السارية بتاريخها الأصلي (بدون تمديد)
+                    $query->where('license_end_date', '>', $now)
+                          ->whereDoesntHave('extensions', function($q) use ($now) {
                               $q->where('end_date', '>', $now);
                           });
+                } elseif ($request->status === 'extended') {
+                    // الرخص الممددة (أي رخصة لديها تمديد ساري)
+                    $query->whereHas('extensions', function($q) use ($now) {
+                        $q->where('end_date', '>', $now);
                     });
                 } elseif ($request->status === 'expired') {
                     $query->whereNotNull('license_end_date')
@@ -109,8 +113,12 @@ class LicenseController extends Controller
             $allStatsData = (clone $statsQuery)->with(['extensions', 'violations'])->get();
 
             $activeCount = $allStatsData->filter(function($license) use ($now) {
-                return $license->license_end_date > $now || 
-                       $license->extensions()->where('end_date', '>', $now)->exists();
+                return $license->license_end_date > $now && 
+                       !$license->extensions()->where('end_date', '>', $now)->exists();
+            })->count();
+
+            $extendedCount = $allStatsData->filter(function($license) use ($now) {
+                return $license->extensions()->where('end_date', '>', $now)->exists();
             })->count();
 
             $expiredCount = $allStatsData->filter(function($license) use ($now) {
@@ -162,14 +170,38 @@ class LicenseController extends Controller
                 $violationsSum = $license->violations->sum('violation_amount');
                 $totalViolationsValue += $violationsSum;
                 
-                // حساب قيمة الاختبارات الناجحة
-                $totalPassedTestsValue += floatval($license->successful_tests_amount ?? 0);
+                // حساب قيمة الاختبارات الناجحة والراسبة من lab_tests_data
+                if ($license->lab_tests_data) {
+                    $testsData = json_decode($license->lab_tests_data, true);
+                    if (is_array($testsData)) {
+                        foreach ($testsData as $test) {
+                            $testTotal = floatval($test['total'] ?? 0);
+                            if (($test['result'] ?? '') === 'pass') {
+                                $totalPassedTestsValue += $testTotal;
+                            } elseif (($test['result'] ?? '') === 'fail') {
+                                $totalFailedTestsValue += $testTotal;
+                            }
+                        }
+                    }
+                }
                 
-                // حساب قيمة الاختبارات الراسبة
+                // إضافة القيم من الحقول المباشرة كبديل
+                $totalPassedTestsValue += floatval($license->successful_tests_amount ?? 0);
                 $totalFailedTestsValue += floatval($license->failed_tests_amount ?? 0);
                 
-                // حساب قيمة إخلاءات الرخص
+                // حساب قيمة إخلاءات الرخص من جميع المصادر المتاحة
                 $totalEvacuationLicenseValue += floatval($license->evac_license_value ?? 0);
+                $totalEvacuationLicenseValue += floatval($license->evac_amount ?? 0);
+                
+                // إضافة قيم الإخلاء من evacuation_data إذا كان موجود
+                if ($license->evacuation_data) {
+                    $evacuationData = json_decode($license->evacuation_data, true);
+                    if (is_array($evacuationData)) {
+                        foreach ($evacuationData as $evacItem) {
+                            $totalEvacuationLicenseValue += floatval($evacItem['evacuation_amount'] ?? 0);
+                        }
+                    }
+                }
             }
             
             // Alternative calculation method - get all violations for licenses in this city
@@ -196,6 +228,7 @@ class LicenseController extends Controller
             return view('admin.licenses.display', compact(
                 'licenses',
                 'activeCount',
+                'extendedCount',
                 'expiredCount',
                 'violationsCount',
                 'extensionsCount',
@@ -217,6 +250,7 @@ class LicenseController extends Controller
             return view('admin.licenses.display', [
                 'licenses' => collect(),
                 'activeCount' => 0,
+                'extendedCount' => 0,
                 'expiredCount' => 0,
                 'violationsCount' => 0,
                 'extensionsCount' => 0,
@@ -427,18 +461,19 @@ class LicenseController extends Controller
         if ($request->has('status') && !empty($request->status)) {
             $now = now();
             if ($request->status === 'active') {
-                $query->where(function($q) use ($now) {
-                    $q->where('license_end_date', '>', $now)
-                      ->orWhere('extension_end_date', '>', $now);
+                $query->where('license_end_date', '>', $now)
+                      ->whereDoesntHave('extensions', function($q) use ($now) {
+                          $q->where('end_date', '>', $now);
+                      });
+            } elseif ($request->status === 'extended') {
+                $query->whereHas('extensions', function($q) use ($now) {
+                    $q->where('end_date', '>', $now);
                 });
             } elseif ($request->status === 'expired') {
-                $query->where(function($q) use ($now) {
-                    $q->where('license_end_date', '<=', $now)
-                      ->where(function($q) use ($now) {
-                          $q->whereNull('extension_end_date')
-                            ->orWhere('extension_end_date', '<=', $now);
+                $query->where('license_end_date', '<=', $now)
+                      ->whereDoesntHave('extensions', function($q) use ($now) {
+                          $q->where('end_date', '>', $now);
                       });
-                });
             } elseif ($request->status === 'pending') {
                 $query->where(function($q) {
                     $q->whereNull('license_start_date')
@@ -593,10 +628,11 @@ class LicenseController extends Controller
     public function getByWorkOrder($workOrderId)
     {
         try {
-            // جلب الرخص مع التحقق من صلاحيتها للتمديد
+            // جلب الرخص مع التحقق من صلاحيتها للتمديد مرتبة حسب row_position
             $licenses = License::where('work_order_id', $workOrderId)
                 ->with(['workOrder', 'extensions']) // إضافة العلاقات المطلوبة
-                ->orderBy('created_at', 'desc')
+                ->orderBy('row_position', 'asc')
+                ->orderBy('created_at', 'desc') // ترتيب ثانوي للرخص التي ليس لها row_position
                 ->get();
                 // إزالة الفلترة لإظهار جميع الرخص
 
@@ -637,10 +673,11 @@ class LicenseController extends Controller
     public function getAllByWorkOrder($workOrderId)
     {
         try {
-            // جلب جميع الرخص بدون فلترة للعرض في الجدول
+            // جلب جميع الرخص بدون فلترة للعرض في الجدول مرتبة حسب row_position
             $licenses = License::where('work_order_id', $workOrderId)
                 ->with(['workOrder', 'extensions']) // إضافة العلاقات المطلوبة
-                ->orderBy('created_at', 'desc')
+                ->orderBy('row_position', 'asc')
+                ->orderBy('created_at', 'desc') // ترتيب ثانوي للرخص التي ليس لها row_position
                 ->get();
 
             // إضافة مسارات الملفات الصحيحة
@@ -1216,6 +1253,22 @@ class LicenseController extends Controller
                 'request_data' => $request->all()
             ]);
             
+            // معالجة رقم الصف المطلوب
+            $requestedPosition = $request->input('row_position');
+            if ($requestedPosition && is_numeric($requestedPosition)) {
+                $requestedPosition = (int)$requestedPosition;
+                
+                // تحديث مواضع الرخص الموجودة إذا لزم الأمر
+                $this->adjustLicensePositions($request->input('work_order_id'), $requestedPosition);
+                
+                $license->row_position = $requestedPosition;
+            } else {
+                // إذا لم يتم تحديد موضع، احصل على الموضع التالي
+                $nextPosition = License::where('work_order_id', $request->input('work_order_id'))
+                    ->max('row_position');
+                $license->row_position = $nextPosition ? $nextPosition + 1 : 1;
+            }
+            
             $license->license_number = $request->input('license_number');
             $license->license_date = $request->input('license_date');
             $license->license_type = $request->input('license_type');
@@ -1255,6 +1308,27 @@ class LicenseController extends Controller
             }
             
             throw $e;
+        }
+    }
+    
+    /**
+     * تعديل مواضع الرخص الموجودة لإفساح المجال للرخصة الجديدة
+     */
+    private function adjustLicensePositions($workOrderId, $requestedPosition)
+    {
+        try {
+            // زيادة موضع جميع الرخص التي لها موضع >= الموضع المطلوب
+            License::where('work_order_id', $workOrderId)
+                ->where('row_position', '>=', $requestedPosition)
+                ->increment('row_position');
+            
+            \Log::info('Adjusted license positions', [
+                'work_order_id' => $workOrderId,
+                'requested_position' => $requestedPosition
+            ]);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error adjusting license positions: ' . $e->getMessage());
         }
     }
     
@@ -2997,6 +3071,61 @@ class LicenseController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'حدث خطأ أثناء تحديث حالة الرخصة'
+            ], 500);
+        }
+    }
+
+    /**
+     * البحث عن رخصة برقمها لاستدعاء البيانات
+     */
+    public function searchByNumber(Request $request)
+    {
+        try {
+            $licenseNumber = $request->input('license_number');
+            
+            if (!$licenseNumber) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'رقم الرخصة مطلوب'
+                ], 400);
+            }
+
+            // البحث عن الرخصة برقمها
+            $license = License::where('license_number', $licenseNumber)->first();
+            
+            if (!$license) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'لم يتم العثور على رخصة بهذا الرقم'
+                ]);
+            }
+
+            // إرجاع بيانات الرخصة
+            return response()->json([
+                'success' => true,
+                'message' => 'تم العثور على الرخصة',
+                'license' => [
+                    'license_number' => $license->license_number,
+                    'license_date' => $license->license_date,
+                    'license_type' => $license->license_type,
+                    'license_value' => $license->license_value,
+                    'extension_value' => $license->extension_value,
+                    'excavation_length' => $license->excavation_length,
+                    'excavation_width' => $license->excavation_width,
+                    'excavation_depth' => $license->excavation_depth,
+                    'license_start_date' => $license->license_start_date,
+                    'license_end_date' => $license->license_end_date,
+                    'extension_start_date' => $license->extension_start_date,
+                    'extension_end_date' => $license->extension_end_date,
+                    'coordination_certificate_number' => $license->coordination_certificate_number,
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error searching license by number: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء البحث عن الرخصة'
             ], 500);
         }
     }

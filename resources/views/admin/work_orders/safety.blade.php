@@ -214,6 +214,40 @@
                                         <strong>{{ $message }}</strong>
                                     </span>
                                 @enderror
+
+                                <!-- عرض سجل مسؤولي السلامة -->
+                                @if(isset($safetyHistory) && $safetyHistory->where('safety_officer', '!=', null)->count() > 0)
+                                <div class="safety-officer-history mt-2">
+                                    <div class="d-flex align-items-center justify-content-between mb-2">
+                                        <small class="text-primary fw-bold">
+                                            <i class="fas fa-history me-1"></i>
+                                            سجل مسؤولي السلامة ({{ $safetyHistory->where('safety_officer', '!=', null)->count() }})
+                                        </small>
+                                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="toggleSafetyOfficerHistory()">
+                                            <i class="fas fa-eye" id="officer-toggle-icon"></i>
+                                            <span id="officer-toggle-text">عرض</span>
+                                        </button>
+                                    </div>
+                                    <div id="safety-officer-history" style="display: none;">
+                                        @foreach($safetyHistory->where('safety_officer', '!=', null)->take(5) as $index => $history)
+                                        <div class="history-item mb-1 p-2 bg-primary bg-opacity-10 border border-primary border-opacity-25 rounded">
+                                            <small class="text-primary fw-bold d-flex align-items-center justify-content-between">
+                                                <div>
+                                                    <i class="fas fa-user-tie me-1"></i>
+                                                    {{ $history->safety_officer }}
+                                                    @if($index === 0)
+                                                        <span class="badge bg-primary ms-2">الحالي</span>
+                                                    @endif
+                                                </div>
+                                                <div class="text-muted small">
+                                                    {{ \Carbon\Carbon::parse($history->created_at)->diffForHumans() }}
+                                                </div>
+                                            </small>
+                                        </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                                @endif
                             </div>
 
                             <!-- حالة السلامة -->
@@ -240,6 +274,40 @@
                                         <strong>{{ $message }}</strong>
                                     </span>
                                 @enderror
+
+                                <!-- عرض سجل حالة السلامة -->
+                                @if(isset($safetyHistory) && $safetyHistory->where('safety_status', '!=', null)->count() > 0)
+                                <div class="safety-status-history mt-2">
+                                    <div class="d-flex align-items-center justify-content-between mb-2">
+                                        <small class="text-success fw-bold">
+                                            <i class="fas fa-history me-1"></i>
+                                            سجل حالة السلامة ({{ $safetyHistory->where('safety_status', '!=', null)->count() }})
+                                        </small>
+                                        <button type="button" class="btn btn-sm btn-outline-success" onclick="toggleSafetyStatusHistory()">
+                                            <i class="fas fa-eye" id="status-toggle-icon"></i>
+                                            <span id="status-toggle-text">عرض</span>
+                                        </button>
+                                    </div>
+                                    <div id="safety-status-history" style="display: none;">
+                                        @foreach($safetyHistory->where('safety_status', '!=', null)->take(5) as $index => $history)
+                                        <div class="history-item mb-1 p-2 {{ $history->safety_status == 'مطابق' ? 'bg-success' : 'bg-danger' }} bg-opacity-10 border {{ $history->safety_status == 'مطابق' ? 'border-success' : 'border-danger' }} border-opacity-25 rounded">
+                                            <small class="{{ $history->safety_status == 'مطابق' ? 'text-success' : 'text-danger' }} fw-bold d-flex align-items-center justify-content-between">
+                                                <div>
+                                                    <i class="fas {{ $history->safety_status == 'مطابق' ? 'fa-check-circle' : 'fa-times-circle' }} me-1"></i>
+                                                    {{ $history->safety_status }}
+                                                    @if($index === 0)
+                                                        <span class="badge {{ $history->safety_status == 'مطابق' ? 'bg-success' : 'bg-danger' }} ms-2">الحالي</span>
+                                                    @endif
+                                                </div>
+                                                <div class="text-muted small">
+                                                    {{ \Carbon\Carbon::parse($history->created_at)->diffForHumans() }}
+                                                </div>
+                                            </small>
+                                        </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                                @endif
                             </div>
 
                             <!-- تاريخ التفتيش -->
@@ -252,12 +320,75 @@
                                     class="form-control @error('inspection_date') is-invalid @enderror" 
                                     name="inspection_date" 
                                     id="inspection_date" 
-                                    value="{{ old('inspection_date', $workOrder->inspection_date ? $workOrder->inspection_date->format('Y-m-d') : '') }}">
+                                    value=""
+                                    placeholder="أدخل تاريخ تفتيش جديد"
+                                    onchange="updateSavedDateDisplay()">
                                 @error('inspection_date')
                                     <span class="invalid-feedback" role="alert">
                                         <strong>{{ $message }}</strong>
                                     </span>
                                 @enderror
+                                
+                                
+                                
+                                <!-- عرض جميع التواريخ المحفوظة -->
+                                @if(isset($inspectionDates) && $inspectionDates->count() > 0)
+                                <div class="saved-dates-history mt-2">
+                                    <div class="d-flex align-items-center justify-content-between mb-2">
+                                        <small class="text-success fw-bold">
+                                            <i class="fas fa-history me-1"></i>
+                                            سجل تواريخ التفتيش ({{ $inspectionDates->count() }})
+                                        </small>
+                                        <button type="button" class="btn btn-sm btn-outline-success" onclick="toggleInspectionHistory()">
+                                            <i class="fas fa-eye" id="toggle-icon"></i>
+                                            <span id="toggle-text">عرض</span>
+                                        </button>
+                                    </div>
+                                    <div id="inspection-history" style="display: none;">
+                                        @foreach($inspectionDates as $index => $inspectionDate)
+                                        <div class="saved-date-display mb-2 p-2 bg-success bg-opacity-10 border border-success border-opacity-25 rounded">
+                                            <small class="text-success fw-bold d-flex align-items-center justify-content-between">
+                                                <div>
+                                                    <i class="fas fa-check-circle me-1"></i>
+                                                    {{ $inspectionDate->inspection_date->format('Y-m-d') }}
+                                                    <span class="text-muted">{{ $inspectionDate->inspection_date->format('(l, F j, Y)') }}</span>
+                                                    @if($index === 0)
+                                                        <span class="badge bg-success ms-2">الأحدث</span>
+                                                    @endif
+                                                </div>
+                                                <div class="text-muted small">
+                                                    {{ $inspectionDate->created_at->diffForHumans() }}
+                                                </div>
+                                            </small>
+                                            @if($inspectionDate->inspector_name && $inspectionDate->inspector_name !== 'غير محدد')
+                                            <div class="text-muted small mt-1">
+                                                <i class="fas fa-user me-1"></i>
+                                                المفتش: {{ $inspectionDate->inspector_name }}
+                                            </div>
+                                            @endif
+                                        </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                                @elseif($workOrder->inspection_date)
+                                <!-- عرض التاريخ القديم للتوافق مع النظام السابق -->
+                                <div class="saved-date-display mt-2 p-2 bg-success bg-opacity-10 border border-success border-opacity-25 rounded">
+                                    <small class="text-success fw-bold">
+                                        <i class="fas fa-check-circle me-1"></i>
+                                        تاريخ محفوظ: {{ $workOrder->inspection_date->format('Y-m-d') }}
+                                        <span class="text-muted">{{ $workOrder->inspection_date->format('(l, F j, Y)') }}</span>
+                                    </small>
+                                </div>
+                                @endif
+                                
+                                <!-- منطقة عرض التاريخ الجديد بعد التغيير -->
+                                <div id="new-date-display" class="new-date-display mt-2 p-2 bg-info bg-opacity-10 border border-info border-opacity-25 rounded" style="display: none;">
+                                    <small class="text-info fw-bold">
+                                        <i class="fas fa-clock me-1"></i>
+                                        تاريخ جديد: <span id="new-date-text"></span>
+                                        <span class="text-muted" id="new-date-formatted"></span>
+                                    </small>
+                                </div>
                             </div>
 
                             <!-- أسباب عدم المطابقة (تظهر فقط عند اختيار غير مطابق) -->
@@ -724,6 +855,90 @@
     box-shadow: 0 2px 4px rgba(0,0,0,0.3);
     backdrop-filter: blur(2px);
 }
+
+/* تنسيق عرض التاريخ المحفوظ */
+.saved-date-display {
+    animation: slideInFromLeft 0.5s ease-out;
+}
+
+.new-date-display {
+    animation: slideInFromRight 0.5s ease-out;
+}
+
+@keyframes slideInFromLeft {
+    0% {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideInFromRight {
+    0% {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideInFromTop {
+    0% {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* تحسين مظهر التاريخ المعروض */
+.saved-date-display small,
+.new-date-display small {
+    font-size: 0.8rem;
+    line-height: 1.4;
+}
+
+.saved-date-display .text-muted,
+.new-date-display .text-muted {
+    font-size: 0.75rem;
+    display: block;
+    margin-top: 2px;
+}
+
+/* تأثيرات رسالة تأكيد الحفظ */
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.02);
+        opacity: 0.9;
+    }
+}
+
+@keyframes fadeOut {
+    0% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+}
+
+.saved-confirmation {
+    border-left: 4px solid #ffffff;
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+}
 </style>
 
 <script>
@@ -746,9 +961,147 @@ function toggleNonComplianceFields() {
     }
 }
 
+// دالة تحديث عرض التاريخ المحفوظ
+function updateSavedDateDisplay() {
+    const dateInput = document.getElementById('inspection_date');
+    const newDateDisplay = document.getElementById('new-date-display');
+    const newDateText = document.getElementById('new-date-text');
+    const newDateFormatted = document.getElementById('new-date-formatted');
+    
+    if (dateInput.value) {
+        // تحويل التاريخ إلى تنسيق قابل للقراءة
+        const selectedDate = new Date(dateInput.value);
+        const formattedDate = formatDateToArabic(selectedDate);
+        
+        newDateText.textContent = dateInput.value;
+        newDateFormatted.textContent = `(${formattedDate})`;
+        newDateDisplay.style.display = 'block';
+        
+        // إضافة تأثير بصري لتأكيد التغيير
+        newDateDisplay.classList.add('animate__animated', 'animate__fadeIn');
+        setTimeout(() => {
+            newDateDisplay.classList.remove('animate__animated', 'animate__fadeIn');
+        }, 1000);
+    } else {
+        newDateDisplay.style.display = 'none';
+    }
+}
+
+// دالة تنسيق التاريخ باللغة العربية
+function formatDateToArabic(date) {
+    const arabicMonths = [
+        'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
+        'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'
+    ];
+    
+    const arabicDays = [
+        'الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'
+    ];
+    
+    const dayName = arabicDays[date.getDay()];
+    const dayNumber = date.getDate();
+    const monthName = arabicMonths[date.getMonth()];
+    const year = date.getFullYear();
+    
+    return `${dayName}, ${dayNumber} ${monthName} ${year}`;
+}
+
+// دالة تبديل عرض سجل تواريخ التفتيش
+function toggleInspectionHistory() {
+    const historyDiv = document.getElementById('inspection-history');
+    const toggleIcon = document.getElementById('toggle-icon');
+    const toggleText = document.getElementById('toggle-text');
+    
+    if (historyDiv.style.display === 'none') {
+        historyDiv.style.display = 'block';
+        toggleIcon.className = 'fas fa-eye-slash';
+        toggleText.textContent = 'إخفاء';
+        
+        // تأثير انيميشن
+        historyDiv.style.animation = 'slideInFromTop 0.3s ease-out';
+    } else {
+        historyDiv.style.display = 'none';
+        toggleIcon.className = 'fas fa-eye';
+        toggleText.textContent = 'عرض';
+    }
+}
+
+// دالة تبديل عرض سجل مسؤولي السلامة
+function toggleSafetyOfficerHistory() {
+    const historyDiv = document.getElementById('safety-officer-history');
+    const toggleIcon = document.getElementById('officer-toggle-icon');
+    const toggleText = document.getElementById('officer-toggle-text');
+    
+    if (historyDiv.style.display === 'none') {
+        historyDiv.style.display = 'block';
+        toggleIcon.className = 'fas fa-eye-slash';
+        toggleText.textContent = 'إخفاء';
+        
+        // تأثير انيميشن
+        historyDiv.style.animation = 'slideInFromTop 0.3s ease-out';
+    } else {
+        historyDiv.style.display = 'none';
+        toggleIcon.className = 'fas fa-eye';
+        toggleText.textContent = 'عرض';
+    }
+}
+
+// دالة تبديل عرض سجل حالة السلامة
+function toggleSafetyStatusHistory() {
+    const historyDiv = document.getElementById('safety-status-history');
+    const toggleIcon = document.getElementById('status-toggle-icon');
+    const toggleText = document.getElementById('status-toggle-text');
+    
+    if (historyDiv.style.display === 'none') {
+        historyDiv.style.display = 'block';
+        toggleIcon.className = 'fas fa-eye-slash';
+        toggleText.textContent = 'إخفاء';
+        
+        // تأثير انيميشن
+        historyDiv.style.animation = 'slideInFromTop 0.3s ease-out';
+    } else {
+        historyDiv.style.display = 'none';
+        toggleIcon.className = 'fas fa-eye';
+        toggleText.textContent = 'عرض';
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     // تشغيل الدالة عند تحميل الصفحة لإظهار الحقول إذا كانت القيمة محفوظة مسبقاً
     toggleNonComplianceFields();
+    
+    // معالج النموذج الرئيسي للسلامة
+    const safetyForm = document.querySelector('form[action*="update-safety"]');
+    if (safetyForm) {
+        safetyForm.addEventListener('submit', function(e) {
+            const dateInput = document.getElementById('inspection_date');
+            if (dateInput && dateInput.value) {
+                // حفظ التاريخ المحدد لعرضه بعد إعادة التحميل
+                sessionStorage.setItem('lastSavedInspectionDate', dateInput.value);
+                sessionStorage.setItem('shouldClearDateField', 'true');
+            }
+        });
+    }
+    
+    // التحقق من وجود تاريخ محفوظ في الجلسة وعرضه
+    const lastSavedDate = sessionStorage.getItem('lastSavedInspectionDate');
+    const shouldClearField = sessionStorage.getItem('shouldClearDateField');
+    
+    if (lastSavedDate) {
+        // إنشاء رسالة تأكيد الحفظ
+        showDateSavedMessage(lastSavedDate);
+        // إزالة التاريخ من التخزين المؤقت
+        sessionStorage.removeItem('lastSavedInspectionDate');
+    }
+    
+    if (shouldClearField === 'true') {
+        // مسح حقل التاريخ لإظهار أنه جاهز لتاريخ جديد
+        const dateInput = document.getElementById('inspection_date');
+        if (dateInput) {
+            dateInput.value = '';
+        }
+        sessionStorage.removeItem('shouldClearDateField');
+    }
     // معالج حذف صور السلامة
     document.querySelectorAll('.delete-safety-image').forEach(button => {
         button.addEventListener('click', function(e) {
@@ -1003,6 +1356,39 @@ function showSuccessMessage(message) {
             alert.remove();
         }
     }, 3000);
+}
+
+// دالة عرض رسالة تأكيد حفظ التاريخ
+function showDateSavedMessage(savedDate) {
+    const formattedDate = formatDateToArabic(new Date(savedDate));
+    const dateFieldContainer = document.querySelector('#inspection_date').closest('.col-md-4');
+    
+    // إنشاء رسالة تأكيد الحفظ
+    const savedConfirmationHtml = `
+        <div class="saved-confirmation mt-2 p-3 bg-success text-white rounded shadow-sm" style="animation: pulse 2s ease-in-out;">
+            <div class="d-flex align-items-center">
+                <i class="fas fa-check-circle me-2 fs-5"></i>
+                <div>
+                    <strong>تم حفظ التاريخ بنجاح!</strong>
+                    <div class="small mt-1">
+                        ${savedDate} - ${formattedDate}
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // إضافة الرسالة أسفل حقل التاريخ
+    dateFieldContainer.insertAdjacentHTML('beforeend', savedConfirmationHtml);
+    
+    // إزالة الرسالة تلقائياً بعد 5 ثوان
+    setTimeout(() => {
+        const confirmation = dateFieldContainer.querySelector('.saved-confirmation');
+        if (confirmation) {
+            confirmation.style.animation = 'fadeOut 0.5s ease-out';
+            setTimeout(() => confirmation.remove(), 500);
+        }
+    }, 5000);
 }
 
 // دالة فتح كاميرا الجوال

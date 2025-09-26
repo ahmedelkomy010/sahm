@@ -168,6 +168,11 @@
         transition: all 0.3s ease;
         border: none;
     }
+    
+    .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+    }
 
     .btn-primary {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -237,6 +242,13 @@
         margin-bottom: 1rem;
         opacity: 0.5;
     }
+    
+    /* تحسين عرض الجدول على الشاشات الصغيرة */
+    @media (max-width: 768px) {
+        .table-responsive {
+            font-size: 0.85rem;
+        }
+    }
 
     /* تنسيق التصفح */
     .pagination {
@@ -269,23 +281,7 @@
 @section('content')
 <div class="container-fluid px-4">
     <!-- Breadcrumb -->
-    <nav aria-label="breadcrumb" class="mb-4">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item">
-                <a href="{{ route('dashboard') }}" class="text-decoration-none">
-                    <i class="fas fa-home"></i> الرئيسية
-                </a>
-            </li>
-            <li class="breadcrumb-item">
-                <a href="#" class="text-decoration-none">
-                    <i class="fas fa-briefcase"></i> أوامر العمل
-                </a>
-            </li>
-            <li class="breadcrumb-item active" aria-current="page">
-                <i class="fas fa-boxes"></i> تفاصيل عامة للمواد - المدينة المنورة
-            </li>
-        </ol>
-    </nav>
+   
 
     <!-- Header -->
     <div class="page-header text-center">
@@ -293,11 +289,10 @@
             <div class="col-12">
                 <h1 class="mb-2">
                     <i class="fas fa-boxes me-3"></i>
-                    تفاصيل عامة للمواد - مشروع المدينة المنورة
+                     مستودعات المدينة المنورة
                 </h1>
-                <p class="mb-0 fs-5">عرض شامل لجميع المواد المستخدمة في مشروع المدينة المنورة</p>
             </div>
-            <div class="text-left mt-3">
+            <div class="text-left">
                 <a href="{{ route('admin.work-orders.index', ['project' => $project]) }}" class="btn btn-success btn-lg">
                     <i class="fas fa-arrow-right me-2"></i>
                     العودة لأوامر العمل
@@ -308,15 +303,15 @@
 
     <!-- إحصائيات سريعة -->
     <div class="row mb-4">
-        <div class="col-md-3 mb-3">
+        <div class="col-md-4 mb-3">
             <div class="card stats-card">
                 <div class="card-body">
                     <div class="stat-value">{{ $materials->total() }}</div>
-                    <div class="stat-label">إجمالي المواد</div>
+                    <div class="stat-label">إجمالي المواد الفريدة</div>
                 </div>
             </div>
         </div>
-        <div class="col-md-3 mb-3">
+        <div class="col-md-4 mb-3">
             <div class="card stats-card">
                 <div class="card-body">
                     <div class="stat-value">{{ $workOrders->count() }}</div>
@@ -324,22 +319,13 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3 mb-3">
-            <div class="card stats-card">
-                <div class="card-body">
-                    <div class="stat-value">{{ $units->count() }}</div>
-                    <div class="stat-label">أنواع الوحدات</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3 mb-3">
+        <div class="col-md-4 mb-3">
             <div class="card stats-card">
                 <div class="card-body">
                     @php
                         $totalFinalBalance = 0;
                         foreach($materials as $material) {
-                            $finalBalance = ($material->spent_quantity ?? 0) + ($material->recovery_quantity ?? 0) - ($material->executed_quantity ?? 0) - ($material->completion_quantity ?? 0);
-                            $totalFinalBalance += $finalBalance;
+                            $totalFinalBalance += $material->final_balance ?? 0;
                         }
                     @endphp
                     <div class="stat-value {{ $totalFinalBalance >= 0 ? 'text-success' : 'text-danger' }}">
@@ -372,62 +358,50 @@
                        value="{{ request('work_order_number') }}" placeholder="ابحث برقم أمر العمل...">
             </div>
             
-            <div class="col-md-2">
-                <label for="unit_filter" class="form-label">
-                    <i class="fas fa-ruler text-primary me-1"></i>
-                    الوحدة
-                </label>
-                <select class="form-select" id="unit_filter" name="unit_filter">
-                    <option value="">جميع الوحدات</option>
-                    <option value="Ech" {{ request('unit_filter') == 'Ech' ? 'selected' : '' }}>
-                        Ech
-                    </option>
-                    @foreach($units as $unit)
-                        <option value="{{ $unit }}" {{ request('unit_filter') == $unit ? 'selected' : '' }}>
-                            {{ $unit }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-            
-           
-            
-            <!-- فلتر الرصيد النهائي -->
+            <!-- فلتر حالة المستودع -->
             <div class="col-md-3">
                 <label class="form-label">
-                    <i class="fas fa-balance-scale text-primary me-1"></i>
-                    فلتر الرصيد النهائي
+                    <i class="fas fa-warehouse text-primary me-1"></i>
+                    حالة المستودع
                 </label>
                 <div class="btn-group w-100" role="group">
-                    <input type="radio" class="btn-check" name="balance_filter" value="" id="balance_all" 
-                           {{ !request('balance_filter') ? 'checked' : '' }}>
-                    <label class="btn btn-outline-secondary btn-sm" for="balance_all">
-                        <i class="fas fa-list me-1"></i>الكل
-                    </label>
-
                     <input type="radio" class="btn-check" name="balance_filter" value="positive" id="balance_positive" 
                            {{ request('balance_filter') == 'positive' ? 'checked' : '' }}>
                     <label class="btn btn-outline-success btn-sm" for="balance_positive">
-                        <i class="fas fa-plus me-1"></i>موجب
+                        <i class="fas fa-check-circle me-1"></i>متاحة
                     </label>
 
                     <input type="radio" class="btn-check" name="balance_filter" value="negative" id="balance_negative" 
                            {{ request('balance_filter') == 'negative' ? 'checked' : '' }}>
                     <label class="btn btn-outline-danger btn-sm" for="balance_negative">
-                        <i class="fas fa-minus me-1"></i>سالب
-                    </label>
-
-                    <input type="radio" class="btn-check" name="balance_filter" value="zero" id="balance_zero" 
-                           {{ request('balance_filter') == 'zero' ? 'checked' : '' }}>
-                    <label class="btn btn-outline-info btn-sm" for="balance_zero">
-                        <i class="fas fa-balance-scale me-1"></i>متوازن
+                        <i class="fas fa-exclamation-triangle me-1"></i>ناقصة
                     </label>
                 </div>
             </div>
             
-            <div class="col-md-2">
-                <label class="form-label">&nbsp;</label>
-                <div class="d-flex gap-2">
+            <!-- فلتر نوع العملية -->
+            <div class="col-md-3">
+                <label class="form-label">
+                    <i class="fas fa-exchange-alt text-primary me-1"></i>
+                    نوع العملية
+                </label>
+                <div class="btn-group w-100" role="group">
+                    <input type="radio" class="btn-check" name="operation_filter" value="recovery" id="operation_recovery" 
+                           {{ request('operation_filter') == 'recovery' ? 'checked' : '' }}>
+                    <label class="btn btn-outline-info btn-sm" for="operation_recovery">
+                        <i class="fas fa-undo me-1"></i>ارتجاع
+                    </label>
+
+                    <input type="radio" class="btn-check" name="operation_filter" value="completion" id="operation_completion" 
+                           {{ request('operation_filter') == 'completion' ? 'checked' : '' }}>
+                    <label class="btn btn-outline-warning btn-sm" for="operation_completion">
+                        <i class="fas fa-file-signature me-1"></i>أذن صرف
+                    </label>
+                </div>
+            </div>
+            
+            <div class="col-12 mt-3 text-center">
+                <div class="d-flex gap-2 justify-content-center">
                     <button type="submit" class="btn btn-primary">
                         <i class="fas fa-search"></i> بحث
                     </button>
@@ -458,11 +432,11 @@
                                 <i class="fas fa-list-ol me-1"></i>
                                 #
                             </th>
-                            <th width="15%">
+                            <th width="12%">
                                 <i class="fas fa-barcode me-1"></i>
                                 كود المادة
                             </th>
-                            <th width="35%">
+                            <th width="28%">
                                 <i class="fas fa-align-left me-1"></i>
                                 الوصف
                             </th>
@@ -471,12 +445,16 @@
                                 الوحدة
                             </th>
                             <th width="15%">
+                                <i class="fas fa-undo text-info me-1"></i>
+                                مواد الارتجاع
+                            </th>
+                            <th width="15%">
+                                <i class="fas fa-file-signature text-warning me-1"></i>
+                                أذن صرف
+                            </th>
+                            <th width="16%">
                                 <i class="fas fa-balance-scale me-1"></i>
                                 الرصيد النهائي
-                            </th>
-                            <th width="21%">
-                                <i class="fas fa-file-alt me-1"></i>
-                                رقم أمر العمل
                             </th>
                         </tr>
                     </thead>
@@ -502,45 +480,45 @@
                                     </span>
                                 </td>
                                 <td class="text-center">
-                                    @php
-                                        // حساب الرصيد النهائي: الكمية المصروفة + أذن الصرف - الكمية المنفذة - أذن ارتجاع
-                                        $finalBalance = ($material->spent_quantity ?? 0) + ($material->recovery_quantity ?? 0) - ($material->executed_quantity ?? 0) - ($material->completion_quantity ?? 0);
-                                    @endphp
+                                    <div class="d-flex flex-column align-items-center">
+                                        <span class="badge bg-info px-2 py-1 mb-1">
+                                            <i class="fas fa-undo me-1"></i>
+                                            {{ number_format($material->total_completion_quantity, 2) }}
+                                        </span>
+                                        <small class="text-muted">ارتجاع</small>
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    <div class="d-flex flex-column align-items-center">
+                                        <span class="badge bg-warning px-2 py-1 mb-1">
+                                            <i class="fas fa-file-signature me-1"></i>
+                                            {{ number_format($material->total_recovery_quantity, 2) }}
+                                        </span>
+                                        <small class="text-muted">أذن صرف</small>
+                                    </div>
+                                </td>
+                                <td class="text-center">
                                     <div class="d-flex align-items-center justify-content-center">
-                                        @if($finalBalance > 0)
-                                            <span class="badge bg-success fs-6 px-3 py-2 final-balance-badge" title="رصيد إيجابي: {{ number_format($finalBalance, 2) }}">
-                                                <i class="fas fa-plus me-1"></i>
-                                                {{ number_format($finalBalance, 2) }}
+                                        @if($material->final_balance > 0)
+                                            <span class="badge bg-success fs-6 px-3 py-2 final-balance-badge" title="متاح في المستودع: {{ number_format($material->final_balance, 2) }}">
+                                                <i class="fas fa-check-circle me-1"></i>
+                                                {{ number_format($material->final_balance, 2) }}
                                             </span>
-                                        @elseif($finalBalance < 0)
-                                            <span class="badge bg-danger fs-6 px-3 py-2 final-balance-badge" title="رصيد سالب: {{ number_format($finalBalance, 2) }}">
-                                                <i class="fas fa-minus me-1"></i>
-                                                {{ number_format(abs($finalBalance), 2) }}
-                                            </span>
-                                        @else
-                                            <span class="badge bg-secondary fs-6 px-3 py-2 final-balance-badge" title="رصيد متوازن: {{ number_format($finalBalance, 2) }}">
-                                                <i class="fas fa-balance-scale me-1"></i>
-                                                متوازن
+                                        @elseif($material->final_balance < 0)
+                                            <span class="badge bg-danger fs-6 px-3 py-2 final-balance-badge" title="ناقص من المستودع: {{ number_format($material->final_balance, 2) }}">
+                                                <i class="fas fa-exclamation-triangle me-1"></i>
+                                                {{ number_format(abs($material->final_balance), 2) }}
                                             </span>
                                         @endif
                                     </div>
                                     <small class="text-muted d-block mt-1">
-                                        {{ number_format($finalBalance, 2) }}
+                                        {{ number_format($material->final_balance, 2) }}
                                     </small>
-                                </td>
-                                <td>
-                                    @if($material->workOrder)
-                                        <span class="badge bg-light text-dark border">
-                                            {{ $material->workOrder->order_number }}
-                                        </span>
-                                    @else
-                                        <span class="text-muted">غير محدد</span>
-                                    @endif
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="text-center py-5">
+                                <td colspan="7" class="text-center py-5">
                                     <div class="text-muted">
                                         <i class="fas fa-search fa-3x mb-3"></i>
                                         <h5>لا توجد مواد تطابق معايير البحث</h5>
@@ -598,10 +576,10 @@
             });
         });
         
-        // تحسين تجربة المستخدم مع أزرار فلتر الرصيد
-        const balanceButtons = document.querySelectorAll('input[name="balance_filter"]');
+        // تحسين تجربة المستخدم مع أزرار الفلاتر
+        const filterButtons = document.querySelectorAll('input[name="balance_filter"], input[name="operation_filter"]');
         
-        balanceButtons.forEach(button => {
+        filterButtons.forEach(button => {
             button.addEventListener('change', function() {
                 // إضافة تأثير بصري عند التغيير
                 const label = document.querySelector(`label[for="${this.id}"]`);
@@ -616,10 +594,10 @@
         
         // إضافة tooltips للأزرار
         const tooltips = {
-            'balance_all': 'عرض جميع المواد بغض النظر عن الرصيد',
-            'balance_positive': 'عرض المواد ذات الرصيد الإيجابي فقط',
-            'balance_negative': 'عرض المواد ذات الرصيد السالب فقط',
-            'balance_zero': 'عرض المواد ذات الرصيد المتوازن فقط'
+            'balance_positive': 'عرض المواد المتاحة في المستودع (رصيد إيجابي)',
+            'balance_negative': 'عرض المواد الناقصة من المستودع (رصيد سالب)',
+            'operation_recovery': 'عرض المواد التي تم ارتجاعها فقط',
+            'operation_completion': 'عرض المواد التي لها أذون صرف فقط'
         };
         
         Object.keys(tooltips).forEach(id => {

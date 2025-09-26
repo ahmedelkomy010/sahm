@@ -595,6 +595,14 @@ function resetCountdown(workOrderId) {
                                 <i class="fas fa-file-contract me-1"></i> تفاصيل الجودة والرخص
                             </a>
                             @endif
+                            
+                            <!-- @if(($isRiyadh && auth()->user()->hasPermission('riyadh_revenues')) || 
+                                ($isMadinah && auth()->user()->hasPermission('madinah_revenues')) ||
+                                auth()->user()->hasPermission('view_revenues'))
+                            <a href="{{ route('admin.work-orders.revenues') }}" class="btn btn-success ms-2 px-4" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); border: none; color: white;">
+                                <i class="fas fa-chart-line me-1"></i> الإيرادات
+                            </a>
+                            @endif -->
                         </div>
 
                         <!-- أزرار التصدير والإنشاء على اليمين -->

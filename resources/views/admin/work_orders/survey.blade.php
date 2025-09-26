@@ -226,6 +226,7 @@
                                                 <!-- سيتم إضافة الصور هنا ديناميكياً -->
                                             </div>
                                         </div>
+
                                     </div>
                                     <div class="modal-footer">
                                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
@@ -472,7 +473,7 @@
                                             </div>
                                         @empty
                                             <tr>
-                                                <td colspan="8" class="text-center">لا توجد عمليات مسح مسجلة</td>
+                                                <td colspan="7" class="text-center">لا توجد عمليات مسح مسجلة</td>
                                             </tr>
                                         @endforelse
                                     </tbody>
@@ -480,6 +481,215 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- قسم ملفات بعد انتهاء العمل -->
+                    @if($workOrder->surveys->sum(function($survey) { return $survey->completionFiles->count(); }) > 0)
+                    <div class="card mt-4">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-check-circle me-2"></i>
+                                ملفات بعد انتهاء العمل
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            @foreach($workOrder->surveys as $survey)
+                                @if($survey->completionFiles->count() > 0)
+                                    <div class="mb-4">
+                                        <div class="d-flex align-items-center justify-content-between mb-3">
+                                            <h6 class="text-success mb-0">
+                                                <i class="fas fa-folder me-2"></i>
+                                                مسح رقم {{ $loop->iteration }} - {{ $survey->created_at->format('Y-m-d H:i') }}
+                                            </h6>
+                                            <span class="badge bg-success">
+                                                {{ $survey->completionFiles->count() }} ملف
+                                            </span>
+                                        </div>
+                                        
+                                        <div class="row g-3">
+                                            @foreach($survey->completionFiles as $file)
+                                                <div class="col-md-3">
+                                                    <div class="card h-100 border-success">
+                                                        @if(in_array(strtolower(pathinfo($file->original_filename, PATHINFO_EXTENSION)), ['jpg', 'jpeg', 'png']))
+                                                            @php
+                                                                $imageUrl = \App\Helpers\FileHelper::getImageUrl($file->file_path);
+                                                            @endphp
+                                                            @if($imageUrl)
+                                                                <img src="{{ $imageUrl }}" class="card-img-top" alt="{{ $file->original_filename }}" style="height: 150px; object-fit: cover;">
+                                                            @else
+                                                                <div class="card-img-top d-flex align-items-center justify-content-center bg-light" style="height: 150px;">
+                                                                    <i class="fas fa-image fa-2x text-muted"></i>
+                                                                </div>
+                                                            @endif
+                                                        @elseif(strtolower(pathinfo($file->original_filename, PATHINFO_EXTENSION)) == 'pdf')
+                                                            <div class="card-img-top d-flex align-items-center justify-content-center bg-light" style="height: 150px;">
+                                                                <i class="fas fa-file-pdf fa-3x text-danger"></i>
+                                                            </div>
+                                                        @elseif(in_array(strtolower(pathinfo($file->original_filename, PATHINFO_EXTENSION)), ['doc', 'docx']))
+                                                            <div class="card-img-top d-flex align-items-center justify-content-center bg-light" style="height: 150px;">
+                                                                <i class="fas fa-file-word fa-3x text-primary"></i>
+                                                            </div>
+                                                        @elseif(in_array(strtolower(pathinfo($file->original_filename, PATHINFO_EXTENSION)), ['xls', 'xlsx']))
+                                                            <div class="card-img-top d-flex align-items-center justify-content-center bg-light" style="height: 150px;">
+                                                                <i class="fas fa-file-excel fa-3x text-success"></i>
+                                                            </div>
+                                                        @else
+                                                            <div class="card-img-top d-flex align-items-center justify-content-center bg-light" style="height: 150px;">
+                                                                <i class="fas fa-file fa-2x text-muted"></i>
+                                                            </div>
+                                                        @endif
+                                                        
+                                                        <div class="card-body p-2">
+                                                            <p class="card-text small mb-2" title="{{ $file->original_filename }}">
+                                                                {{ Str::limit($file->original_filename, 25) }}
+                                                            </p>
+                                                            <div class="btn-group w-100" role="group">
+                                                                @if(in_array(strtolower(pathinfo($file->original_filename, PATHINFO_EXTENSION)), ['jpg', 'jpeg', 'png']))
+                                                                    @php
+                                                                        $imageUrl = \App\Helpers\FileHelper::getImageUrl($file->file_path);
+                                                                    @endphp
+                                                                    @if($imageUrl)
+                                                                        <button type="button" 
+                                                                                class="btn btn-sm btn-success"
+                                                                                onclick="viewImage('{{ $imageUrl }}', '{{ $file->original_filename }}')">
+                                                                            <i class="fas fa-eye"></i>
+                                                                        </button>
+                                                                    @endif
+                                                                @else
+                                                                    <a href="{{ asset('storage/' . $file->file_path) }}" 
+                                                                       target="_blank" 
+                                                                       class="btn btn-sm btn-success">
+                                                                        <i class="fas fa-eye"></i>
+                                                                    </a>
+                                                                @endif
+                                                                <a href="{{ asset('storage/' . $file->file_path) }}" 
+                                                                   download="{{ $file->original_filename }}"
+                                                                   class="btn btn-sm btn-primary">
+                                                                    <i class="fas fa-download"></i>
+                                                                </a>
+                                                                <button type="button" 
+                                                                        class="btn btn-sm btn-danger"
+                                                                        onclick="deleteCompletionFile({{ $file->id }})">
+                                                                    <i class="fas fa-trash"></i>
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                        
+                                        @if(!$loop->last)
+                                            <hr class="my-4">
+                                        @endif
+                                    </div>
+                                @endif
+                            @endforeach
+                        </div>
+                    </div>
+                    @endif
+
+                    <!-- قسم رفع ملفات بعد انتهاء العمل -->
+                    <div class="card mt-4">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-upload me-2"></i>
+                                رفع ملفات بعد انتهاء العمل
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            @if($workOrder->surveys->count() > 0)
+                                <form id="completionFilesForm" enctype="multipart/form-data" class="mb-4">
+                                    @csrf
+                                    <input type="hidden" name="work_order_id" value="{{ $workOrder->id }}">
+                                    
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <label for="survey_selection" class="form-label fw-bold">
+                                                <i class="fas fa-list me-2 text-primary"></i>
+                                                اختر المسح المرتبط
+                                                <span class="text-danger">*</span>
+                                            </label>
+                                            <select class="form-select" id="survey_selection" name="survey_id" required>
+                                                <option value="">-- اختر المسح --</option>
+                                                @foreach($workOrder->surveys as $survey)
+                                                    <option value="{{ $survey->id }}">
+                                                        مسح رقم {{ $loop->iteration }} - {{ $survey->created_at->format('Y-m-d H:i') }}
+                                                        ({{ $survey->files->count() }} ملف موقع)
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="completion_files_upload" class="form-label fw-bold">
+                                                <i class="fas fa-paperclip me-2 text-success"></i>
+                                                ملفات بعد الانتهاء
+                                                <small class="text-muted">(يمكن رفع أكثر من 50 ملف)</small>
+                                            </label>
+                                            <div class="input-group">
+                                                <input type="file" 
+                                                       class="form-control" 
+                                                       id="completion_files_upload" 
+                                                       name="completion_files[]" 
+                                                       accept="image/*,application/pdf,.doc,.docx,.xlsx,.xls" 
+                                                       multiple
+                                                       onchange="validateCompletionUploadFiles(this)">
+                                                <button type="button" 
+                                                        class="btn btn-outline-primary" 
+                                                        onclick="openCompletionUploadCamera()">
+                                                    <i class="fas fa-camera"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row mb-3">
+                                        <div class="col-12">
+                                            <div class="form-text text-muted">
+                                                <i class="fas fa-info-circle me-1"></i>
+                                                أنواع الملفات المدعومة: JPG, PNG, PDF, DOC, DOCX, XLS, XLSX - حد أقصى 50MB لكل ملف
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- عداد الملفات المحددة -->
+                                    <div id="uploadFilesCount" class="mb-3" style="display: none;">
+                                        <div class="alert alert-info py-2">
+                                            <i class="fas fa-file-alt me-2"></i>
+                                            تم اختيار <span id="uploadFilesNumber">0</span> ملف
+                                        </div>
+                                    </div>
+
+                                    <!-- معاينة الملفات المحددة -->
+                                    <div id="selectedFilesPreview" class="mb-3" style="display: none;">
+                                        <h6 class="text-primary">
+                                            <i class="fas fa-eye me-2"></i>
+                                            معاينة الملفات المحددة
+                                        </h6>
+                                        <div id="previewContainer" class="row g-2">
+                                            <!-- سيتم إضافة معاينة الملفات هنا -->
+                                        </div>
+                                    </div>
+
+                                    <div class="d-flex justify-content-end gap-2">
+                                        <button type="button" class="btn btn-secondary" onclick="clearCompletionFiles()">
+                                            <i class="fas fa-times me-1"></i>
+                                            مسح الملفات
+                                        </button>
+                                        <button type="submit" class="btn btn-success">
+                                            <i class="fas fa-upload me-1"></i>
+                                            رفع الملفات
+                                        </button>
+                                    </div>
+                                </form>
+                            @else
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    يجب إنشاء مسح أولاً قبل رفع ملفات بعد الانتهاء
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                    
                 </div>
             </div>
         </div>
@@ -1345,6 +1555,247 @@ function validateFileCount(input, maxFiles) {
         updateFilePreview();
     }
 }
+
+
+// دالة لحذف ملفات بعد انتهاء العمل
+function deleteCompletionFile(fileId) {
+    if (confirm('هل أنت متأكد من حذف هذا الملف؟')) {
+        fetch(`{{ url('admin/work-orders/survey/files') }}/${fileId}`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // إعادة تحميل الصفحة لإظهار التغييرات
+                location.reload();
+            } else {
+                alert('حدث خطأ أثناء حذف الملف: ' + (data.message || 'خطأ غير معروف'));
+            }
+        })
+        .catch(error => {
+            console.error('خطأ:', error);
+            alert('حدث خطأ أثناء حذف الملف');
+        });
+    }
+}
+
+// دوال قسم رفع ملفات بعد الانتهاء في أسفل الصفحة
+function validateCompletionUploadFiles(input) {
+    const files = input.files;
+    const maxFiles = 100;
+    const maxSizePerFile = 50 * 1024 * 1024; // 50MB
+    
+    // التحقق من عدد الملفات
+    if (files.length > maxFiles) {
+        showUploadAlert('warning', `يمكنك رفع حد أقصى ${maxFiles} ملف فقط. تم اختيار ${files.length} ملف.`);
+        
+        // تقليل عدد الملفات للحد المسموح
+        const dt = new DataTransfer();
+        for (let i = 0; i < Math.min(files.length, maxFiles); i++) {
+            dt.items.add(files[i]);
+        }
+        input.files = dt.files;
+    }
+    
+    // التحقق من حجم كل ملف
+    let hasOversizedFiles = false;
+    for (let i = 0; i < input.files.length; i++) {
+        if (input.files[i].size > maxSizePerFile) {
+            hasOversizedFiles = true;
+            break;
+        }
+    }
+    
+    if (hasOversizedFiles) {
+        showUploadAlert('warning', 'بعض الملفات تتجاوز الحد الأقصى المسموح (50MB لكل ملف).');
+    }
+    
+    // تحديث عداد الملفات ومعاينتها
+    updateUploadFilesCount(input.files.length);
+    previewSelectedFiles(input.files);
+    
+    if (input.files.length > 0 && !hasOversizedFiles) {
+        showUploadAlert('success', `تم اختيار ${input.files.length} ملف بنجاح.`);
+    }
+}
+
+function showUploadAlert(type, message) {
+    const alertClass = type === 'success' ? 'alert-success' : 'alert-warning';
+    const iconClass = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle';
+    
+    const alert = document.createElement('div');
+    alert.className = `alert ${alertClass} alert-dismissible fade show mt-2`;
+    alert.innerHTML = `
+        <i class="fas ${iconClass} me-2"></i>
+        <strong>${type === 'success' ? 'نجح' : 'تنبيه'}:</strong> ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    const container = document.getElementById('completion_files_upload').parentNode.parentNode.parentNode;
+    container.appendChild(alert);
+    
+    setTimeout(() => {
+        if (alert.parentNode) {
+            alert.remove();
+        }
+    }, 5000);
+}
+
+function updateUploadFilesCount(count) {
+    const countElement = document.getElementById('uploadFilesCount');
+    const numberElement = document.getElementById('uploadFilesNumber');
+    
+    if (count > 0) {
+        numberElement.textContent = count;
+        countElement.style.display = 'block';
+    } else {
+        countElement.style.display = 'none';
+    }
+}
+
+function previewSelectedFiles(files) {
+    const previewSection = document.getElementById('selectedFilesPreview');
+    const previewContainer = document.getElementById('previewContainer');
+    
+    if (files.length > 0) {
+        previewContainer.innerHTML = '';
+        
+        Array.from(files).forEach((file, index) => {
+            const col = document.createElement('div');
+            col.className = 'col-md-2 col-sm-3 col-4';
+            
+            const extension = file.name.split('.').pop().toLowerCase();
+            let iconClass = 'fa-file';
+            let iconColor = 'text-muted';
+            
+            if (['jpg', 'jpeg', 'png'].includes(extension)) {
+                iconClass = 'fa-image';
+                iconColor = 'text-primary';
+            } else if (extension === 'pdf') {
+                iconClass = 'fa-file-pdf';
+                iconColor = 'text-danger';
+            } else if (['doc', 'docx'].includes(extension)) {
+                iconClass = 'fa-file-word';
+                iconColor = 'text-primary';
+            } else if (['xls', 'xlsx'].includes(extension)) {
+                iconClass = 'fa-file-excel';
+                iconColor = 'text-success';
+            }
+            
+            col.innerHTML = `
+                <div class="card h-100 text-center p-2">
+                    <div class="card-body p-1">
+                        <i class="fas ${iconClass} fa-2x ${iconColor} mb-2"></i>
+                        <p class="card-text small mb-0" title="${file.name}">
+                            ${file.name.length > 15 ? file.name.substring(0, 15) + '...' : file.name}
+                        </p>
+                        <small class="text-muted">${(file.size / 1024 / 1024).toFixed(2)} MB</small>
+                    </div>
+                </div>
+            `;
+            
+            previewContainer.appendChild(col);
+        });
+        
+        previewSection.style.display = 'block';
+    } else {
+        previewSection.style.display = 'none';
+    }
+}
+
+function openCompletionUploadCamera() {
+    const input = document.getElementById('completion_files_upload');
+    if (input) {
+        input.setAttribute('accept', 'image/*');
+        input.setAttribute('capture', 'environment');
+        input.click();
+        
+        setTimeout(() => {
+            input.setAttribute('accept', 'image/*,application/pdf,.doc,.docx,.xlsx,.xls');
+            input.removeAttribute('capture');
+        }, 100);
+    }
+}
+
+function clearCompletionFiles() {
+    const input = document.getElementById('completion_files_upload');
+    const previewSection = document.getElementById('selectedFilesPreview');
+    const countElement = document.getElementById('uploadFilesCount');
+    
+    input.value = '';
+    previewSection.style.display = 'none';
+    countElement.style.display = 'none';
+    
+    showUploadAlert('success', 'تم مسح جميع الملفات المحددة.');
+}
+
+// معالجة إرسال النموذج
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('completionFilesForm');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const surveyId = document.getElementById('survey_selection').value;
+            const filesInput = document.getElementById('completion_files_upload');
+            
+            if (!surveyId) {
+                alert('يرجى اختيار المسح المرتبط');
+                return;
+            }
+            
+            if (!filesInput.files.length) {
+                alert('يرجى اختيار ملفات للرفع');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('_token', document.querySelector('input[name="_token"]').value);
+            formData.append('survey_id', surveyId);
+            
+            Array.from(filesInput.files).forEach(file => {
+                formData.append('completion_images[]', file);
+            });
+            
+            // إظهار رسالة التحميل
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> جاري الرفع...';
+            
+            fetch(`{{ route('admin.work-orders.survey.completion-files', $workOrder) }}`, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showUploadAlert('success', 'تم رفع الملفات بنجاح!');
+                    clearCompletionFiles();
+                    // إعادة تحميل الصفحة لإظهار الملفات الجديدة
+                    setTimeout(() => {
+                        location.reload();
+                    }, 2000);
+                } else {
+                    showUploadAlert('warning', 'حدث خطأ أثناء رفع الملفات: ' + (data.message || 'خطأ غير معروف'));
+                }
+            })
+            .catch(error => {
+                console.error('خطأ:', error);
+                showUploadAlert('warning', 'حدث خطأ أثناء رفع الملفات');
+            })
+            .finally(() => {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            });
+        });
+    }
+});
 </script>
 
 <style>

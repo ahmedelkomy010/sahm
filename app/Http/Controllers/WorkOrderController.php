@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\WorkOrder;
 use App\Models\WorkOrderFile;
 use App\Models\WorkOrderMaterial;
+use App\Models\WorkOrderInspectionDate;
+use App\Models\WorkOrderSafetyHistory;
 use App\Models\Survey;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -479,8 +481,134 @@ class WorkOrderController extends Controller
      */
     public function survey(WorkOrder $workOrder)
     {
-        $workOrder->load(['surveys.files']);
+        $workOrder->load(['surveys.files', 'surveys.completionFiles']);
         return view('admin.work_orders.survey', compact('workOrder'));
+    }
+
+    /**
+     * رفع ملفات بعد انتهاء العمل منفصل
+     */
+    public function uploadCompletionFiles(Request $request, WorkOrder $workOrder)
+    {
+        try {
+            $validated = $request->validate([
+                'survey_id' => 'required|exists:surveys,id',
+                'completion_images.*' => 'required|file|mimes:jpeg,png,jpg,pdf,doc,docx,xls,xlsx|max:51200', // 50MB max
+            ]);
+
+            $survey = Survey::findOrFail($validated['survey_id']);
+            
+            // التأكد من أن المسح ينتمي لأمر العمل
+            if ($survey->work_order_id !== $workOrder->id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'المسح المحدد لا ينتمي لأمر العمل هذا'
+                ], 403);
+            }
+
+            DB::beginTransaction();
+
+            try {
+                // إنشاء مجلد منفصل لملفات بعد انتهاء العمل
+                $completionPath = 'work_orders/' . $workOrder->id . '/surveys/' . $survey->id . '/completion';
+                if (!Storage::disk('public')->exists($completionPath)) {
+                    Storage::disk('public')->makeDirectory($completionPath, 0755, true);
+                }
+                
+                $uploadedFiles = [];
+                
+                foreach ($request->file('completion_images') as $file) {
+                    try {
+                        // التحقق من صحة الملف
+                        if (!$file->isValid()) {
+                            throw new \Exception('الملف غير صالح: ' . $file->getErrorMessage());
+                        }
+
+                        // التحقق من نوع الملف
+                        $allowedTypes = [
+                            'image/jpeg', 'image/png', 'image/jpg',
+                            'application/pdf',
+                            'application/msword',
+                            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                            'application/vnd.ms-excel',
+                            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                        ];
+                        if (!in_array($file->getMimeType(), $allowedTypes)) {
+                            throw new \Exception('نوع الملف غير مدعوم: ' . $file->getMimeType());
+                        }
+
+                        // التحقق من حجم الملف (50MB)
+                        if ($file->getSize() > 50 * 1024 * 1024) {
+                            throw new \Exception('حجم الملف يتجاوز الحد المسموح به (50 ميجابايت)');
+                        }
+
+                        // إنشاء اسم فريد للملف
+                        $filename = uniqid('completion_') . '_' . time() . '.' . $file->getClientOriginalExtension();
+                        
+                        // حفظ الملف
+                        $filePath = $file->storeAs($completionPath, $filename, 'public');
+                        
+                        if (!$filePath) {
+                            throw new \Exception('فشل في حفظ الملف');
+                        }
+
+                        // إنشاء سجل الملف
+                        $completionFile = new WorkOrderFile([
+                            'work_order_id' => $workOrder->id,
+                            'survey_id' => $survey->id,
+                            'filename' => $filename,
+                            'original_filename' => $file->getClientOriginalName(),
+                            'file_path' => $filePath,
+                            'file_type' => $file->getMimeType(),
+                            'file_size' => $file->getSize(),
+                            'file_category' => 'completion_files',
+                            'file_name' => $file->getClientOriginalName(),
+                            'mime_type' => $file->getMimeType()
+                        ]);
+
+                        if (!$completionFile->save()) {
+                            throw new \Exception('فشل في حفظ بيانات الملف في قاعدة البيانات');
+                        }
+                        
+                        $uploadedFiles[] = $completionFile;
+                        
+                    } catch (\Exception $e) {
+                        \Log::error('خطأ في معالجة ملف بعد انتهاء العمل: ' . $e->getMessage());
+                        // حذف الملف إذا تم حفظه
+                        if (isset($filePath) && Storage::disk('public')->exists($filePath)) {
+                            Storage::disk('public')->delete($filePath);
+                        }
+                        throw $e;
+                    }
+                }
+
+                DB::commit();
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'تم رفع ' . count($uploadedFiles) . ' ملف بنجاح',
+                    'files_count' => count($uploadedFiles)
+                ]);
+
+            } catch (\Exception $e) {
+                DB::rollBack();
+                
+                // حذف الملفات المحفوظة في حالة الفشل
+                foreach ($uploadedFiles ?? [] as $file) {
+                    if (Storage::disk('public')->exists($file->file_path)) {
+                        Storage::disk('public')->delete($file->file_path);
+                    }
+                }
+                
+                throw $e;
+            }
+        } catch (\Exception $e) {
+            \Log::error('خطأ في رفع ملفات بعد انتهاء العمل: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء رفع الملفات: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -3684,7 +3812,18 @@ class WorkOrderController extends Controller
         // جلب مخالفات السلامة
         $safetyViolations = $workOrder->safetyViolations()->orderBy('violation_date', 'desc')->get();
         
-        return view('admin.work_orders.safety', compact('workOrder', 'project', 'safetyViolations'));
+        // جلب تواريخ التفتيش مباشرة
+        $inspectionDates = WorkOrderInspectionDate::where('work_order_id', $workOrder->id)
+            ->orderBy('inspection_date', 'desc')
+            ->get();
+
+        // جلب سجل السلامة
+        $safetyHistory = \DB::table('work_order_safety_history')
+            ->where('work_order_id', $workOrder->id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+        
+        return view('admin.work_orders.safety', compact('workOrder', 'project', 'safetyViolations', 'inspectionDates', 'safetyHistory'));
     }
 
     /**
@@ -3717,14 +3856,73 @@ class WorkOrderController extends Controller
                 'non_compliance_attachments.*' => 'nullable|file|mimes:jpeg,png,jpg,gif,pdf,doc,docx|max:10240',
             ]);
 
-            // تحديث البيانات الأساسية
+            // حفظ البيانات الحالية في سجل السلامة إذا تم تغيير أي منها
+            $shouldSaveHistory = false;
+            $historyData = [];
+
+            if ($validated['safety_officer'] !== $workOrder->safety_officer) {
+                $shouldSaveHistory = true;
+                $historyData['safety_officer'] = $validated['safety_officer'];
+            }
+
+            if ($validated['safety_status'] !== $workOrder->safety_status) {
+                $shouldSaveHistory = true;
+                $historyData['safety_status'] = $validated['safety_status'];
+            }
+
+            if ($validated['safety_notes'] !== $workOrder->safety_notes) {
+                $shouldSaveHistory = true;
+                $historyData['safety_notes'] = $validated['safety_notes'];
+            }
+
+            if ($validated['non_compliance_reasons'] !== $workOrder->non_compliance_reasons) {
+                $shouldSaveHistory = true;
+                $historyData['non_compliance_reasons'] = $validated['non_compliance_reasons'];
+            }
+
+            // دائماً احفظ تاريخ التفتيش في السجل إذا تم إدخاله
+            if (!empty($validated['inspection_date'])) {
+                $shouldSaveHistory = true;
+                $historyData['inspection_date'] = $validated['inspection_date'];
+            }
+
+            // حفظ السجل التاريخي إذا كان هناك تغيير
+            if ($shouldSaveHistory) {
+                \DB::table('work_order_safety_history')->insert([
+                    'work_order_id' => $workOrder->id,
+                    'safety_officer' => $validated['safety_officer'],
+                    'safety_status' => $validated['safety_status'],
+                    'safety_notes' => $validated['safety_notes'],
+                    'non_compliance_reasons' => $validated['non_compliance_reasons'],
+                    'inspection_date' => $validated['inspection_date'],
+                    'updated_by' => auth()->user()->name ?? 'غير محدد',
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ]);
+            }
+
+            // تحديث البيانات الأساسية (بدون تاريخ التفتيش)
             $workOrder->update([
                 'safety_notes' => $validated['safety_notes'],
                 'safety_status' => $validated['safety_status'],
                 'safety_officer' => $validated['safety_officer'],
-                'inspection_date' => $validated['inspection_date'],
+                // إزالة تحديث inspection_date لمنع الكتابة فوق القديم
                 'non_compliance_reasons' => $validated['non_compliance_reasons'],
             ]);
+
+            // حفظ تاريخ التفتيش الجديد في الجدول المخصص إذا تم إدخال تاريخ
+            if (!empty($validated['inspection_date'])) {
+                // حفظ التاريخ دائماً (حتى لو كان مكرراً) لحفظ سجل كامل
+                \DB::table('work_order_inspection_dates')->insert([
+                    'work_order_id' => $workOrder->id,
+                    'inspection_date' => $validated['inspection_date'],
+                    'inspector_name' => $validated['safety_officer'] ?? 'غير محدد',
+                    'notes' => $validated['safety_notes'],
+                    'status' => 'completed',
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ]);
+            }
 
             // رفع صور التصاريح
             if ($request->hasFile('permits_images')) {
@@ -4171,6 +4369,135 @@ class WorkOrderController extends Controller
     }
 
     /**
+     * عرض صفحة إدارة الإيرادات
+     */
+    public function revenues(Request $request)
+    {
+        try {
+            // جلب جميع الإيرادات مرتبة حسب تاريخ الإنشاء
+            $revenues = \App\Models\Revenue::orderBy('created_at', 'desc')->get();
+            
+            // إحصائيات سريعة
+            $totalRevenues = $revenues->count();
+            $totalValue = $revenues->sum('extract_value');
+            
+            \Log::info('Revenues page loaded', [
+                'total_revenues' => $totalRevenues,
+                'total_value' => $totalValue
+            ]);
+            
+            return view('admin.work_orders.revenues', compact('revenues', 'totalRevenues', 'totalValue'));
+            
+        } catch (\Exception $e) {
+            \Log::error('Error loading revenues page: ' . $e->getMessage());
+            
+            // في حالة الخطأ، إرجاع مجموعة فارغة
+            $revenues = collect();
+            $totalRevenues = 0;
+            $totalValue = 0;
+            
+            return view('admin.work_orders.revenues', compact('revenues', 'totalRevenues', 'totalValue'))
+                ->with('error', 'حدث خطأ في تحميل البيانات: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * حفظ بيانات الإيرادات
+     */
+    public function saveRevenue(Request $request)
+    {
+        try {
+            $data = $request->validate([
+                'client_name' => 'nullable|string|max:255',
+                'project_area' => 'nullable|string|max:255',
+                'contract_number' => 'nullable|string|max:255',
+                'extract_number' => 'nullable|string|max:255',
+                'office' => 'nullable|string|max:255',
+                'extract_type' => 'nullable|string|max:255',
+                'po_number' => 'nullable|string|max:255',
+                'invoice_number' => 'nullable|string|max:255',
+                'extract_value' => 'nullable|numeric',
+                'tax_percentage' => 'nullable|numeric',
+                'tax_value' => 'nullable|numeric',
+                'penalties' => 'nullable|numeric',
+                'first_payment_tax' => 'nullable|numeric',
+                'net_extract_value' => 'nullable|numeric',
+                'extract_date' => 'nullable|date',
+                'year' => 'nullable|string|max:255',
+                'payment_type' => 'nullable|string|max:255',
+                'reference_number' => 'nullable|string|max:255',
+                'payment_date' => 'nullable|date',
+                'payment_value' => 'nullable|numeric',
+                'extract_status' => 'nullable|string|max:255',
+                'row_id' => 'nullable|string'
+            ]);
+
+            // إزالة row_id من البيانات
+            $rowId = $data['row_id'] ?? null;
+            unset($data['row_id']);
+
+            // البحث عن السجل الموجود أو إنشاء جديد
+            if ($rowId && is_numeric($rowId)) {
+                $revenue = \App\Models\Revenue::find($rowId);
+                if ($revenue) {
+                    $revenue->update($data);
+                } else {
+                    $revenue = \App\Models\Revenue::create($data);
+                }
+            } else {
+                $revenue = \App\Models\Revenue::create($data);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'تم حفظ البيانات بنجاح',
+                'revenue_id' => $revenue->id,
+                'data' => $revenue
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('خطأ في حفظ الإيرادات: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ في حفظ البيانات: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * حذف بيانات الإيرادات
+     */
+    public function deleteRevenue($id)
+    {
+        try {
+            $revenue = \App\Models\Revenue::find($id);
+            
+            if (!$revenue) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'السجل غير موجود'
+                ], 404);
+            }
+
+            $revenue->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'تم حذف السجل بنجاح'
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('خطأ في حذف الإيرادات: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ في حذف السجل'
+            ], 500);
+        }
+    }
+
+    /**
      * عرض انتاجية التنفيذ
      */
     public function executionProductivity(Request $request)
@@ -4241,12 +4568,6 @@ class WorkOrderController extends Controller
             $query->whereHas('createdBy', function($q) use ($request) {
                 $q->where('name', 'like', '%' . $request->executed_by . '%');
             });
-        })
-        ->when($request->filled('min_quantity'), function($query) use ($request) {
-            $query->where('executed_quantity', '>=', $request->min_quantity);
-        })
-        ->when($request->filled('max_quantity'), function($query) use ($request) {
-            $query->where('executed_quantity', '<=', $request->max_quantity);
         })
         ->with(['workOrder', 'workOrderItem.workItem', 'createdBy'])
         ->orderBy('work_date', 'desc')

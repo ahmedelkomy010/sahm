@@ -13,6 +13,7 @@ class License extends Model
 
     protected $fillable = [
         'work_order_id',
+        'row_position',
         'license_number',
         'license_date',
         'license_type',
@@ -514,7 +515,13 @@ class License extends Model
             return 'غير محدد';
         }
 
-        if ($this->license_end_date > $today || $hasActiveExtension) {
+        // إذا كانت الرخصة لديها تمديد ساري
+        if ($hasActiveExtension) {
+            return 'ممددة';
+        }
+
+        // إذا كانت الرخصة سارية بتاريخها الأصلي
+        if ($this->license_end_date > $today) {
             return 'سارية';
         }
         
@@ -525,6 +532,7 @@ class License extends Model
     {
         return match($this->status_text) {
             'سارية' => 'bg-green-100 text-green-800',
+            'ممددة' => 'bg-blue-100 text-blue-800',
             'منتهية' => 'bg-red-100 text-red-800',
             default => 'bg-gray-100 text-gray-800'
         };
@@ -534,5 +542,28 @@ class License extends Model
     public function attachments(): HasMany
     {
         return $this->hasMany(InvoiceAttachment::class, 'license_id');
+    }
+
+    /**
+     * Get the extended license number if this license has an active extension
+     */
+    public function getExtendedLicenseNumberAttribute(): ?string
+    {
+        $today = now();
+        
+        $activeExtension = $this->extensions()
+            ->where('end_date', '>', $today)
+            ->first();
+            
+        if ($activeExtension) {
+            // إذا كان رقم الرخصة الممددة محفوظ، ارجعه
+            if ($activeExtension->extended_license_number) {
+                return $activeExtension->extended_license_number;
+            }
+            // إذا مش محفوظ، ارجع رقم الرخصة الأصلية
+            return $this->license_number;
+        }
+        
+        return null;
     }
 } 

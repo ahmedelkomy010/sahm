@@ -7236,7 +7236,10 @@ selectEvacuationLicense = function() {
                             <label class="form-label fw-bold">رقم الرخصة</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="fas fa-hashtag"></i></span>
-                                <input type="text" class="form-control" name="license_number" required>
+                                <input type="text" class="form-control" name="license_number" id="license_number_input" required>
+                                <button type="button" class="btn btn-outline-primary" id="search_license_btn" title="البحث عن بيانات الرخصة">
+                                    <i class="fas fa-search"></i>
+                                </button>
                             </div>
                         </div>
                         <div class="col-md-3">
@@ -7372,6 +7375,125 @@ selectEvacuationLicense = function() {
 @push('scripts')
 <!-- تحميل معالج JavaScript الآمن للرخص -->
 <script src="{{ asset('js/work-order-license.js') }}?v={{ time() }}"></script>
+
+<!-- JavaScript لاستدعاء بيانات الرخصة -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchBtn = document.getElementById('search_license_btn');
+    const licenseNumberInput = document.getElementById('license_number_input');
+    
+    if (searchBtn && licenseNumberInput) {
+        // البحث عند الضغط على زر البحث
+        searchBtn.addEventListener('click', function() {
+            searchLicenseData();
+        });
+        
+        // البحث عند الضغط على Enter في حقل رقم الرخصة
+        licenseNumberInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                searchLicenseData();
+            }
+        });
+    }
+});
+
+function searchLicenseData() {
+    const licenseNumberInput = document.getElementById('license_number_input');
+    const searchBtn = document.getElementById('search_license_btn');
+    
+    if (!licenseNumberInput || !searchBtn) {
+        toastr.error('عناصر البحث غير موجودة');
+        return;
+    }
+    
+    const licenseNumber = licenseNumberInput.value.trim();
+    
+    if (!licenseNumber) {
+        toastr.warning('يرجى إدخال رقم الرخصة أولاً');
+        licenseNumberInput.focus();
+        return;
+    }
+    
+    // إظهار مؤشر التحميل
+    const originalContent = searchBtn.innerHTML;
+    searchBtn.disabled = true;
+    searchBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    
+    // إرسال طلب البحث
+    fetch('{{ route("admin.licenses.search-by-number") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify({
+            license_number: licenseNumber
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success && data.license) {
+            // ملء الحقول بالبيانات المستدعاة
+            fillLicenseData(data.license);
+            toastr.success('تم استدعاء بيانات الرخصة بنجاح');
+        } else {
+            toastr.info(data.message || 'لم يتم العثور على رخصة بهذا الرقم');
+        }
+    })
+    .catch(error => {
+        console.error('Error searching license:', error);
+        toastr.error('حدث خطأ أثناء البحث عن الرخصة');
+    })
+    .finally(() => {
+        // إعادة تفعيل زر البحث
+        searchBtn.disabled = false;
+        searchBtn.innerHTML = originalContent;
+    });
+}
+
+function fillLicenseData(license) {
+    // ملء الحقول بالبيانات
+    const form = document.getElementById('digLicenseForm');
+    if (!form) return;
+    
+    // الحقول الأساسية
+    const fields = {
+        'license_date': license.license_date,
+        'license_type': license.license_type,
+        'license_value': license.license_value,
+        'extension_value': license.extension_value,
+        'excavation_length': license.excavation_length,
+        'excavation_width': license.excavation_width,
+        'excavation_depth': license.excavation_depth,
+        'license_start_date': license.license_start_date,
+        'license_end_date': license.license_end_date,
+        'extension_start_date': license.extension_start_date,
+        'extension_end_date': license.extension_end_date,
+        'coordination_certificate_number': license.coordination_certificate_number
+    };
+    
+    // ملء كل حقل إذا كانت له قيمة
+    Object.keys(fields).forEach(fieldName => {
+        const field = form.querySelector(`[name="${fieldName}"]`);
+        if (field && fields[fieldName] !== null && fields[fieldName] !== undefined) {
+            field.value = fields[fieldName];
+            
+            // إضافة تأثير بصري للحقول المملوءة
+            field.classList.add('border-success');
+            setTimeout(() => {
+                field.classList.remove('border-success');
+            }, 2000);
+        }
+    });
+    
+    // حساب عدد الأيام إذا كانت تواريخ البداية والنهاية موجودة
+    if (license.license_start_date && license.license_end_date) {
+        calculateLicenseDays();
+    }
+}
+</script>
+
 <!-- تحميل معالج الإخلاءات -->
 <script src="{{ asset('js/evacuation-handler.js') }}?v={{ time() }}"></script>
 @endpush 
