@@ -3912,16 +3912,29 @@ class WorkOrderController extends Controller
 
             // حفظ تاريخ التفتيش الجديد في الجدول المخصص إذا تم إدخال تاريخ
             if (!empty($validated['inspection_date'])) {
-                // حفظ التاريخ دائماً (حتى لو كان مكرراً) لحفظ سجل كامل
-                \DB::table('work_order_inspection_dates')->insert([
+                \Log::info('Saving inspection date', [
                     'work_order_id' => $workOrder->id,
                     'inspection_date' => $validated['inspection_date'],
-                    'inspector_name' => $validated['safety_officer'] ?? 'غير محدد',
-                    'notes' => $validated['safety_notes'],
-                    'status' => 'completed',
-                    'created_at' => now(),
-                    'updated_at' => now()
+                    'inspector_name' => $validated['safety_officer'] ?? 'غير محدد'
                 ]);
+                
+                // حفظ التاريخ دائماً (حتى لو كان مكرراً) لحفظ سجل كامل
+                try {
+                    \DB::table('work_order_inspection_dates')->insert([
+                        'work_order_id' => $workOrder->id,
+                        'inspection_date' => $validated['inspection_date'],
+                        'inspector_name' => $validated['safety_officer'] ?? 'غير محدد',
+                        'notes' => $validated['safety_notes'],
+                        'status' => 'completed',
+                        'created_at' => now(),
+                        'updated_at' => now()
+                    ]);
+                    \Log::info('Inspection date saved successfully');
+                } catch (\Exception $e) {
+                    \Log::error('Failed to save inspection date: ' . $e->getMessage());
+                }
+            } else {
+                \Log::info('No inspection date provided in request');
             }
 
             // رفع صور التصاريح
@@ -4538,6 +4551,8 @@ class WorkOrderController extends Controller
         \Log::info("Execution Productivity Debug: Total work orders found: $totalCount for city: $city");
         
         // عرض سجل التنفيذ اليومي من جدول daily_work_executions
+        \Log::info("Execution Productivity: Searching for daily executions in city: $city");
+        
         $dailyExecutions = \App\Models\DailyWorkExecution::whereHas('workOrder', function($q) use ($city, $request) {
             $q->where('city', $city)
               ->where(function($subQ) {
@@ -4574,12 +4589,50 @@ class WorkOrderController extends Controller
         ->orderBy('created_at', 'desc')
         ->paginate(20);
         
+        \Log::info("Execution Productivity: Found " . $dailyExecutions->count() . " daily executions");
+        
+        // إذا لم توجد بيانات في daily_work_executions، استخدم work_order_items كبديل
+        if ($dailyExecutions->count() == 0) {
+            \Log::info("No daily executions found, falling back to work_order_items");
+            
+            $workOrderItems = \App\Models\WorkOrderItem::whereHas('workOrder', function($q) use ($city, $request) {
+                $q->where('city', $city)
+                  ->where(function($subQ) {
+                      $subQ->where('execution_status', '>=', 2)
+                           ->orWhereNotNull('procedure_155_delivery_date')
+                           ->orWhereNotNull('final_total_value');
+                  });
+                
+                // فلتر رقم أمر العمل
+                if ($request->filled('order_number')) {
+                    $q->where('order_number', 'like', '%' . $request->order_number . '%');
+                }
+            })
+            ->where('executed_quantity', '>', 0)
+            ->with(['workOrder', 'workItem'])
+            ->orderBy('updated_at', 'desc')
+            ->paginate(20);
+            
+            \Log::info("Found " . $workOrderItems->count() . " work order items as fallback");
+            
+            // استخدم work_order_items بدلاً من daily_executions
+            $dailyExecutions = $workOrderItems;
+            $usingFallbackData = true;
+        }
+        
         // حساب الإحصائيات بناءً على التنفيذ اليومي
         $totalWorkOrders = $query->count();
         $totalValue = $query->sum('final_total_value');
         $totalDailyExecutions = $dailyExecutions->total();
         $totalExecutedValue = $dailyExecutions->sum(function($execution) {
-            return $execution->executed_quantity * $execution->workOrderItem->unit_price;
+            // التحقق من نوع البيانات (daily_work_executions أو work_order_items)
+            if (isset($execution->workOrderItem) && $execution->workOrderItem) {
+                // من daily_work_executions
+                return $execution->executed_quantity * ($execution->workOrderItem->unit_price ?? 0);
+            } else {
+                // من work_order_items مباشرة
+                return $execution->executed_quantity * ($execution->unit_price ?? 0);
+            }
         });
         
         // حساب عدد أوامر العمل الفريدة التي لها تنفيذ يومي
@@ -4587,10 +4640,13 @@ class WorkOrderController extends Controller
         
         // لا نحتاج لقوائم الأنواع والأحياء بعد الآن
         
+        // تعيين متغير افتراضي إذا لم يكن موجوداً
+        $usingFallbackData = $usingFallbackData ?? false;
+        
         return view('admin.work_orders.execution-productivity', compact(
             'dailyExecutions', 'project', 'projectName', 'city',
             'totalWorkOrders', 'totalValue', 'totalDailyExecutions', 'totalExecutedValue',
-            'uniqueWorkOrdersWithExecution'
+            'uniqueWorkOrdersWithExecution', 'usingFallbackData'
         ));
     }
 } 

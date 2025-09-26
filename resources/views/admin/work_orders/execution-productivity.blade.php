@@ -331,20 +331,35 @@
                             </td>
                             <td class="text-center">
                                 <span class="badge bg-info text-white">
-                                    {{ $execution->workOrderItem->workItem->code ?? $execution->workOrderItem->work_item_id }}
+                                    @if($usingFallbackData ?? false)
+                                        {{ $execution->workItem->code ?? $execution->work_item_id }}
+                                    @else
+                                        {{ $execution->workOrderItem?->workItem?->code ?? $execution->workOrderItem?->work_item_id ?? 'غير محدد' }}
+                                    @endif
                                 </span>
                             </td>
                             <td>
                                 <div class="text-wrap" style="max-width: 250px;">
-                                    <strong>{{ $execution->workOrderItem->workItem->name ?? 'اسم غير متوفر' }}</strong>
-                                    @if($execution->workOrderItem->workItem->description)
-                                        <br><small class="text-muted">{{ Str::limit($execution->workOrderItem->workItem->description, 80) }}</small>
+                                    @if($usingFallbackData ?? false)
+                                        <strong>{{ $execution->workItem->name ?? 'اسم غير متوفر' }}</strong>
+                                        @if($execution->workItem->description)
+                                            <br><small class="text-muted">{{ Str::limit($execution->workItem->description, 80) }}</small>
+                                        @endif
+                                    @else
+                                        <strong>{{ $execution->workOrderItem?->workItem?->name ?? 'اسم غير متوفر' }}</strong>
+                                        @if($execution->workOrderItem?->workItem?->description)
+                                            <br><small class="text-muted">{{ Str::limit($execution->workOrderItem->workItem->description, 80) }}</small>
+                                        @endif
                                     @endif
                                 </div>
                             </td>
                             <td class="text-center">
                                 <span class="badge bg-secondary">
-                                    {{ number_format($execution->workOrderItem->unit_price ?? 0, 2) }} ر.س
+                                    @if($usingFallbackData ?? false)
+                                        {{ number_format($execution->unit_price ?? 0, 2) }} ر.س
+                                    @else
+                                        {{ number_format($execution->workOrderItem?->unit_price ?? 0, 2) }} ر.س
+                                    @endif
                                 </span>
                             </td>
                             <td class="text-center">
@@ -354,17 +369,31 @@
                             </td>
                             <td class="text-center">
                                 <span class="badge bg-danger text-white fw-bold">
-                                    {{ number_format(($execution->executed_quantity * $execution->workOrderItem->unit_price), 2) }} ر.س
+                                    @if($usingFallbackData ?? false)
+                                        {{ number_format(($execution->executed_quantity * $execution->unit_price), 2) }} ر.س
+                                    @else
+                                        {{ number_format(($execution->executed_quantity * ($execution->workOrderItem?->unit_price ?? 0)), 2) }} ر.س
+                                    @endif
                                 </span>
                             </td>
                             <td class="text-center">
-                                <span class="badge bg-warning text-dark">
-                                    {{ $execution->work_date->format('Y-m-d') }}
-                                </span>
-                                <br>
-                                <small class="text-muted">
-                                    {{ $execution->work_date->format('l') }}
-                                </small>
+                                @if($usingFallbackData ?? false)
+                                    <span class="badge bg-warning text-dark">
+                                        {{ $execution->updated_at->format('Y-m-d') }}
+                                    </span>
+                                    <br>
+                                    <small class="text-muted">
+                                        آخر تحديث
+                                    </small>
+                                @else
+                                    <span class="badge bg-warning text-dark">
+                                        {{ $execution->work_date->format('Y-m-d') }}
+                                    </span>
+                                    <br>
+                                    <small class="text-muted">
+                                        {{ $execution->work_date->format('l') }}
+                                    </small>
+                                @endif
                             </td>
                             <td class="text-center">
                                 @if($execution->createdBy)
@@ -442,7 +471,13 @@
                             <div class="border-end">
                                 @php
                                     $currentPageTotal = $dailyExecutions->sum(function($execution) {
-                                        return $execution->executed_quantity * $execution->workOrderItem->unit_price;
+                                        if (isset($execution->workOrderItem) && $execution->workOrderItem) {
+                                            // من daily_work_executions
+                                            return $execution->executed_quantity * ($execution->workOrderItem->unit_price ?? 0);
+                                        } else {
+                                            // من work_order_items مباشرة
+                                            return $execution->executed_quantity * ($execution->unit_price ?? 0);
+                                        }
                                     });
                                 @endphp
                                 <h4 class="text-success mb-1">{{ number_format($currentPageTotal, 2) }} ر.س</h4>
