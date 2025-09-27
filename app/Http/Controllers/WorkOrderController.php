@@ -8,6 +8,7 @@ use App\Models\WorkOrderMaterial;
 use App\Models\WorkOrderInspectionDate;
 use App\Models\WorkOrderSafetyHistory;
 use App\Models\Survey;
+use App\Imports\RevenuesImport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -16,6 +17,7 @@ use App\Models\License;
 use App\Models\Material;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Maatwebsite\Excel\Facades\Excel;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
@@ -474,6 +476,107 @@ class WorkOrderController extends Controller
         $project = $workOrder->city === 'المدينة المنورة' ? 'madinah' : 'riyadh';
         
         return view('admin.work_orders.license', compact('workOrder', 'project'));
+    }
+
+    /**
+     * الحصول على بيانات رخصة محددة لأمر العمل
+     */
+    public function getLicenseData(Request $request)
+    {
+        try {
+            $licenseId = $request->get('license_id');
+            $workOrderId = $request->get('work_order_id');
+            
+            if (!$licenseId || !$workOrderId) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'معرف الرخصة أو أمر العمل مفقود'
+                ], 400);
+            }
+            
+            // جلب الرخصة مع العلاقات المطلوبة
+            $license = \App\Models\License::with([
+                'workOrder',
+                'extensions' => function($query) {
+                    $query->orderBy('created_at', 'desc');
+                },
+                'violations' => function($query) {
+                    $query->orderBy('violation_date', 'desc');
+                }
+            ])
+            ->where('id', $licenseId)
+            ->where('work_order_id', $workOrderId)
+            ->first();
+            
+            if (!$license) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'الرخصة غير موجودة'
+                ], 404);
+            }
+            
+            // تحضير البيانات الإضافية
+            $licenseData = $license->toArray();
+            
+            // إضافة عدد التمديدات
+            $licenseData['extensions_count'] = $license->extensions->count();
+            
+            // إضافة آخر تمديد
+            $licenseData['latest_extension'] = $license->extensions->first();
+            
+            // إضافة عدد المخالفات
+            $licenseData['violations_count'] = $license->violations->count();
+            
+            // تحديد حالة الرخصة
+            $licenseData['status'] = $this->determineLicenseStatus($license);
+            
+            // إضافة روابط الملفات
+            $licenseData['license_file_url'] = $license->getFileUrl('license_file_path');
+            $licenseData['payment_proof_urls'] = $license->getMultipleFileUrls('payment_proof_path');
+            
+            return response()->json([
+                'success' => true,
+                'license' => $licenseData,
+                'message' => 'تم جلب بيانات الرخصة بنجاح'
+            ]);
+            
+        } catch (\Exception $e) {
+            \Log::error('خطأ في جلب بيانات الرخصة: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء جلب بيانات الرخصة'
+            ], 500);
+        }
+    }
+    
+    /**
+     * تحديد حالة الرخصة
+     */
+    private function determineLicenseStatus($license)
+    {
+        $now = now();
+        
+        // إذا كانت الرخصة ملغاة
+        if ($license->is_cancelled) {
+            return 'cancelled';
+        }
+        
+        // إذا كان هناك تمديدات، نتحقق من آخر تمديد
+        if ($license->extensions->count() > 0) {
+            $latestExtension = $license->extensions->first();
+            if ($latestExtension->end_date && $now->gt($latestExtension->end_date)) {
+                return 'expired';
+            }
+            return 'extended';
+        }
+        
+        // التحقق من تاريخ انتهاء الرخصة الأصلية
+        if ($license->expiry_date && $now->gt($license->expiry_date)) {
+            return 'expired';
+        }
+        
+        return 'active';
     }
 
     /**
@@ -4387,19 +4490,34 @@ class WorkOrderController extends Controller
     public function revenues(Request $request)
     {
         try {
-            // جلب جميع الإيرادات مرتبة حسب تاريخ الإنشاء
-            $revenues = \App\Models\Revenue::orderBy('created_at', 'desc')->get();
+            // التحقق من وجود المشروع
+            $project = $request->get('project');
+            
+            if (!$project || !in_array($project, ['riyadh', 'madinah'])) {
+                return redirect()->route('project.selection');
+            }
+            
+            // تحديد المدينة بناءً على المشروع
+            $city = $project === 'madinah' ? 'المدينة المنورة' : 'الرياض';
+            $projectName = $project === 'madinah' ? 'مشروع المدينة المنورة' : 'مشروع الرياض';
+            
+            // جلب الإيرادات المفلترة حسب المشروع
+            $revenues = \App\Models\Revenue::where('project', $project)
+                                          ->orderBy('created_at', 'desc')
+                                          ->get();
             
             // إحصائيات سريعة
             $totalRevenues = $revenues->count();
             $totalValue = $revenues->sum('extract_value');
             
             \Log::info('Revenues page loaded', [
+                'project' => $project,
+                'city' => $city,
                 'total_revenues' => $totalRevenues,
                 'total_value' => $totalValue
             ]);
             
-            return view('admin.work_orders.revenues', compact('revenues', 'totalRevenues', 'totalValue'));
+            return view('admin.work_orders.revenues', compact('revenues', 'totalRevenues', 'totalValue', 'project', 'projectName'));
             
         } catch (\Exception $e) {
             \Log::error('Error loading revenues page: ' . $e->getMessage());
@@ -4408,8 +4526,10 @@ class WorkOrderController extends Controller
             $revenues = collect();
             $totalRevenues = 0;
             $totalValue = 0;
+            $project = $request->get('project', 'riyadh');
+            $projectName = $project === 'madinah' ? 'مشروع المدينة المنورة' : 'مشروع الرياض';
             
-            return view('admin.work_orders.revenues', compact('revenues', 'totalRevenues', 'totalValue'))
+            return view('admin.work_orders.revenues', compact('revenues', 'totalRevenues', 'totalValue', 'project', 'projectName'))
                 ->with('error', 'حدث خطأ في تحميل البيانات: ' . $e->getMessage());
         }
     }
@@ -4421,6 +4541,8 @@ class WorkOrderController extends Controller
     {
         try {
             $data = $request->validate([
+                'project' => 'nullable|string|in:riyadh,madinah',
+                'city' => 'nullable|string|max:255',
                 'client_name' => 'nullable|string|max:255',
                 'project_area' => 'nullable|string|max:255',
                 'contract_number' => 'nullable|string|max:255',
@@ -4444,6 +4566,16 @@ class WorkOrderController extends Controller
                 'extract_status' => 'nullable|string|max:255',
                 'row_id' => 'nullable|string'
             ]);
+
+            // إذا لم يتم إرسال المشروع، جلبه من الـ query parameter أو استخدام الافتراضي
+            if (empty($data['project'])) {
+                $data['project'] = $request->get('project', 'riyadh');
+            }
+            
+            // تحديد المدينة بناءً على المشروع
+            if (empty($data['city'])) {
+                $data['city'] = $data['project'] === 'madinah' ? 'المدينة المنورة' : 'الرياض';
+            }
 
             // إزالة row_id من البيانات
             $rowId = $data['row_id'] ?? null;
@@ -4511,6 +4643,70 @@ class WorkOrderController extends Controller
     }
 
     /**
+     * استيراد الإيرادات من ملف Excel
+     */
+    public function importRevenues(Request $request)
+    {
+        try {
+            Log::info('ImportRevenues method called', ['request_data' => $request->all()]);
+            
+            // التحقق من وجود المشروع
+            $project = $request->get('project', 'riyadh');
+            if (!in_array($project, ['riyadh', 'madinah'])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'المشروع غير صحيح'
+                ], 400);
+            }
+            
+            // التحقق من وجود الملف
+            if (!$request->hasFile('file')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'لم يتم تحديد ملف للاستيراد'
+                ], 400);
+            }
+
+            $file = $request->file('file');
+            
+            // التحقق من نوع الملف
+            if (!in_array($file->getClientOriginalExtension(), ['xlsx', 'xls', 'csv'])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'نوع الملف غير مدعوم. الأنواع المدعومة هي: xlsx, xls, csv'
+                ], 400);
+            }
+
+            // تحديد المدينة بناءً على المشروع
+            $city = $project === 'madinah' ? 'المدينة المنورة' : 'الرياض';
+
+            // استخدام RevenuesImport للاستيراد مع تمرير المشروع والمدينة
+            Log::info('Creating RevenuesImport instance', ['project' => $project, 'city' => $city]);
+            $import = new RevenuesImport($project, $city);
+            
+            Log::info('Starting Excel import', ['file_name' => $file->getClientOriginalName()]);
+            Excel::import($import, $file);
+            
+            Log::info('Excel import completed successfully');
+            $errors = $import->getErrors();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'تم معالجة ملف الإيرادات بنجاح لـ ' . ($project === 'madinah' ? 'مشروع المدينة المنورة' : 'مشروع الرياض') . ' (البيانات لم يتم حفظها محلياً)',
+                'processed_count' => count($import->getImportedRevenues()),
+                'errors' => $errors
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error importing revenues: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء استيراد الإيرادات: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * عرض انتاجية التنفيذ
      */
     public function executionProductivity(Request $request)
@@ -4550,23 +4746,17 @@ class WorkOrderController extends Controller
         $totalCount = $query->count();
         \Log::info("Execution Productivity Debug: Total work orders found: $totalCount for city: $city");
         
-        // عرض سجل التنفيذ اليومي من جدول daily_work_executions
+        // عرض سجل التنفيذ اليومي من جدول daily_work_executions (نفس البيانات اللي في صفحة execution)
         \Log::info("Execution Productivity: Searching for daily executions in city: $city");
         
         $dailyExecutions = \App\Models\DailyWorkExecution::whereHas('workOrder', function($q) use ($city, $request) {
-            $q->where('city', $city)
-              ->where(function($subQ) {
-                  $subQ->where('execution_status', '>=', 2)
-                       ->orWhereNotNull('procedure_155_delivery_date')
-                       ->orWhereNotNull('final_total_value');
-              });
+            $q->where('city', $city);
             
             // فلتر رقم أمر العمل
             if ($request->filled('order_number')) {
                 $q->where('order_number', 'like', '%' . $request->order_number . '%');
             }
         })
-        ->where('executed_quantity', '>', 0)
         // فلتر تاريخ التنفيذ - على مستوى التنفيذ اليومي
         ->when($request->filled('date_from'), function($query) use ($request) {
             $query->whereDate('work_date', '>=', $request->date_from);
@@ -4587,7 +4777,7 @@ class WorkOrderController extends Controller
         ->with(['workOrder', 'workOrderItem.workItem', 'createdBy'])
         ->orderBy('work_date', 'desc')
         ->orderBy('created_at', 'desc')
-        ->paginate(20);
+        ->paginate($request->get('per_page', 20));
         
         \Log::info("Execution Productivity: Found " . $dailyExecutions->count() . " daily executions");
         
@@ -4611,7 +4801,7 @@ class WorkOrderController extends Controller
             ->where('executed_quantity', '>', 0)
             ->with(['workOrder', 'workItem'])
             ->orderBy('updated_at', 'desc')
-            ->paginate(20);
+            ->paginate($request->get('per_page', 20));
             
             \Log::info("Found " . $workOrderItems->count() . " work order items as fallback");
             

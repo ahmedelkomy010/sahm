@@ -115,6 +115,99 @@
         border-color: var(--bs-primary);
         color: white;
     }
+    
+    /* تحسين عرض معلومات الصفحة */
+    .pagination-info {
+        background: rgba(102, 126, 234, 0.1);
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        border: 1px solid rgba(102, 126, 234, 0.2);
+    }
+    
+    .pagination-links .pagination {
+        margin-bottom: 0;
+    }
+    
+    .pagination-links .page-link {
+        border-radius: 8px;
+        margin: 0 2px;
+        border: none;
+        color: #667eea;
+        font-weight: 500;
+    }
+    
+    .pagination-links .page-link:hover {
+        background-color: #667eea;
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3);
+    }
+    
+    .pagination-links .page-item.active .page-link {
+        background-color: #667eea;
+        border-color: #667eea;
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+    }
+    
+    /* تحسين مظهر اختيار عدد العناصر */
+    #per_page {
+        background: linear-gradient(145deg, #ffffff, #f8f9ff);
+        border: 2px solid #e2e8f0;
+        font-weight: 600;
+        color: #495057;
+    }
+    
+    #per_page:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        background: white;
+    }
+    
+    /* تحسين عرض معلومات العدد */
+    .badge.fs-6 {
+        font-size: 0.9rem !important;
+        padding: 0.5rem 1rem;
+        border-radius: 15px;
+    }
+    
+    /* تنسيق عمود تاريخ التنفيذ */
+    .execution-date-cell {
+        min-width: 120px;
+    }
+    
+    .execution-date-cell .badge {
+        font-size: 0.8rem;
+        padding: 0.4rem 0.6rem;
+    }
+    
+    /* تحسين عرض الأيقونات في الجدول */
+    .table .badge .fas {
+        font-size: 0.8em;
+        margin-right: 0.25rem;
+    }
+    
+    /* تحسين مظهر صفوف الجدول */
+    .productivity-table .table tbody tr:nth-child(even) {
+        background-color: rgba(102, 126, 234, 0.02);
+    }
+    
+    .productivity-table .table tbody tr:hover {
+        background-color: rgba(102, 126, 234, 0.08) !important;
+        transform: scale(1.005);
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
+    }
+    
+    /* تحسين عرض القيمة المنفذة */
+    .table .badge.bg-success.fs-6 {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 2px 4px rgba(40, 167, 69, 0.3);
+    }
+    
+    .table .badge.bg-secondary.fs-6 {
+        background: linear-gradient(135deg, #6c757d 0%, #495057 100%) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
 </style>
 @endpush
 
@@ -284,6 +377,19 @@
                     <input type="text" class="form-control" id="executed_by" name="executed_by" 
                            value="{{ request('executed_by') }}" placeholder="اسم المستخدم المنفذ...">
                 </div>
+                <div class="col-md-4">
+                    <label for="per_page" class="form-label fw-semibold">
+                        <i class="fas fa-list-ol me-1 text-primary"></i>
+                        عدد العناصر المعروضة
+                    </label>
+                    <select class="form-select" id="per_page" name="per_page">
+                        <option value="20" {{ request('per_page', 20) == 20 ? 'selected' : '' }}>20 عنصر</option>
+                        <option value="70" {{ request('per_page', 20) == 70 ? 'selected' : '' }}>70 عنصر</option>
+                        <option value="200" {{ request('per_page', 20) == 200 ? 'selected' : '' }}>200 عنصر</option>
+                        <option value="300" {{ request('per_page', 20) == 300 ? 'selected' : '' }}>300 عنصر</option>
+                        <option value="700" {{ request('per_page', 20) == 700 ? 'selected' : '' }}>700 عنصر</option>
+                    </select>
+                </div>
             </div>
             
             <div class="row mt-3">
@@ -301,6 +407,29 @@
         </form>
     </div>
 
+    <!-- معلومات العرض -->
+    @if($dailyExecutions->count() > 0)
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <div class="d-flex align-items-center">
+                <i class="fas fa-info-circle text-primary me-2"></i>
+                <span class="fw-semibold">
+                    عرض {{ $dailyExecutions->firstItem() }} - {{ $dailyExecutions->lastItem() }} 
+                    من أصل {{ number_format($dailyExecutions->total()) }} سجل تنفيذ
+                </span>
+            </div>
+        </div>
+        <div class="col-md-6 text-end">
+            <div class="d-flex align-items-center justify-content-end">
+                <i class="fas fa-list-ol text-success me-2"></i>
+                <span class="badge bg-success fs-6">
+                    {{ request('per_page', 20) }} عنصر في الصفحة
+                </span>
+            </div>
+        </div>
+    </div>
+    @endif
+
     <!-- جدول النتائج -->
     <div class="productivity-table">
         <div class="table-responsive">
@@ -313,6 +442,7 @@
                         <th width="20%">وصف البند</th>
                         <th width="7%">سعر الوحدة</th>
                         <th width="8%">الكمية المنفذة</th>
+                        <th width="6%">الوحدة</th>
                         <th width="10%">السعر الإجمالي</th>
                         <th width="9%">تاريخ التنفيذ</th>
                         <th width="8%">المنفذ بواسطة</th>
@@ -368,31 +498,61 @@
                                 </span>
                             </td>
                             <td class="text-center">
-                                <span class="badge bg-danger text-white fw-bold">
+                                <span class="badge bg-secondary">
                                     @if($usingFallbackData ?? false)
-                                        {{ number_format(($execution->executed_quantity * $execution->unit_price), 2) }} ر.س
+                                        {{ $execution->workItem->unit ?? 'عدد' }}
                                     @else
-                                        {{ number_format(($execution->executed_quantity * ($execution->workOrderItem?->unit_price ?? 0)), 2) }} ر.س
+                                        {{ $execution->workOrderItem?->unit ?? ($execution->workOrderItem?->workItem?->unit ?? 'عدد') }}
                                     @endif
                                 </span>
                             </td>
                             <td class="text-center">
-                                @if($usingFallbackData ?? false)
-                                    <span class="badge bg-warning text-dark">
-                                        {{ $execution->updated_at->format('Y-m-d') }}
+                                @php
+                                    $executedValue = $usingFallbackData ?? false 
+                                        ? ($execution->executed_quantity * $execution->unit_price)
+                                        : ($execution->executed_quantity * ($execution->workOrderItem?->unit_price ?? 0));
+                                @endphp
+                                @if($executedValue > 0)
+                                    <span class="badge bg-success fs-6">
+                                        <i class="fas fa-money-bill me-1"></i>
+                                        {{ number_format($executedValue, 2) }} ريال
                                     </span>
-                                    <br>
-                                    <small class="text-muted">
-                                        آخر تحديث
-                                    </small>
                                 @else
-                                    <span class="badge bg-warning text-dark">
-                                        {{ $execution->work_date->format('Y-m-d') }}
+                                    <span class="badge bg-secondary fs-6">
+                                        <i class="fas fa-money-bill me-1"></i>
+                                        {{ number_format($executedValue, 2) }} ريال
                                     </span>
-                                    <br>
-                                    <small class="text-muted">
-                                        {{ $execution->work_date->format('l') }}
-                                    </small>
+                                @endif
+                            </td>
+                            <td class="text-center execution-date-cell">
+                                @if($usingFallbackData ?? false)
+                                    <div class="d-flex flex-column align-items-center">
+                                        <span class="badge bg-warning text-dark mb-1">
+                                            <i class="fas fa-calendar me-1"></i>
+                                            {{ $execution->updated_at->format('Y-m-d') }}
+                                        </span>
+                                        <small class="text-muted">آخر تحديث</small>
+                                    </div>
+                                @else
+                                    @if($execution->work_date)
+                                        <div class="d-flex flex-column align-items-center">
+                                            <span class="badge bg-info mb-1">
+                                                <i class="fas fa-calendar me-1"></i>
+                                                {{ $execution->work_date->format('Y-m-d') }}
+                                            </span>
+                                            <small class="text-muted">
+                                                {{ $execution->work_date->format('l') }}
+                                            </small>
+                                        </div>
+                                    @else
+                                        <div class="d-flex flex-column align-items-center">
+                                            <span class="badge bg-warning mb-1">
+                                                <i class="fas fa-question me-1"></i>
+                                                غير محدد
+                                            </span>
+                                            <small class="text-muted">لا يوجد تاريخ</small>
+                                        </div>
+                                    @endif
                                 @endif
                             </td>
                             <td class="text-center">
@@ -427,12 +587,12 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="11" class="text-center py-5">
+                            <td colspan="12" class="text-center py-5">
                                 <div class="d-flex flex-column align-items-center">
                                     <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
                                     <h5 class="text-muted">لا توجد سجلات تنفيذ يومية</h5>
                                     <p class="text-muted">لم يتم العثور على سجلات تنفيذ يومية تطابق معايير البحث المحددة</p>
-                                    <small class="text-muted">تأكد من وجود تنفيذ يومي في الفترة المحددة</small>
+                                    <small class="text-muted">تأكد من وجود تنفيذ يومي في الفترة المحددة أو قم بإزالة الفلاتر</small>
                                 </div>
                             </td>
                         </tr>
@@ -442,8 +602,17 @@
         </div>
         
         @if($dailyExecutions->hasPages())
-        <div class="d-flex justify-content-center py-3">
-            {{ $dailyExecutions->withQueryString()->links() }}
+        <div class="d-flex justify-content-between align-items-center py-3 px-3">
+            <div class="pagination-info">
+                <small class="text-muted">
+                    <i class="fas fa-info-circle me-1"></i>
+                    صفحة {{ $dailyExecutions->currentPage() }} من {{ $dailyExecutions->lastPage() }}
+                    ({{ number_format($dailyExecutions->total()) }} سجل إجمالي)
+                </small>
+            </div>
+            <div class="pagination-links">
+                {{ $dailyExecutions->withQueryString()->links() }}
+            </div>
         </div>
         @endif
     </div>
@@ -649,6 +818,58 @@
                 }
             });
         }
+    });
+
+    // تحديث الصفحة تلقائياً عند تغيير عدد العناصر المعروضة
+    document.getElementById('per_page').addEventListener('change', function() {
+        const form = document.getElementById('filterForm');
+        form.submit();
+    });
+
+    // تحسين تأثيرات الجدول
+    document.addEventListener('DOMContentLoaded', function() {
+        // إضافة تأثير highlight للصفوف عند التمرير
+        const tableRows = document.querySelectorAll('.productivity-table tbody tr');
+        
+        tableRows.forEach(row => {
+            row.addEventListener('mouseenter', function() {
+                // إضافة تأثير للأزرار
+                const buttons = this.querySelectorAll('.btn');
+                buttons.forEach(btn => {
+                    btn.style.transform = 'scale(1.05)';
+                    btn.style.transition = 'all 0.2s ease';
+                });
+            });
+            
+            row.addEventListener('mouseleave', function() {
+                // إزالة التأثير
+                const buttons = this.querySelectorAll('.btn');
+                buttons.forEach(btn => {
+                    btn.style.transform = 'scale(1)';
+                });
+            });
+        });
+
+        // تحسين عرض الـ badges
+        const badges = document.querySelectorAll('.badge');
+        badges.forEach(badge => {
+            badge.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-1px)';
+                this.style.transition = 'all 0.2s ease';
+            });
+            
+            badge.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+            });
+        });
+
+        // إضافة tooltip للملاحظات الطويلة
+        const notesBadges = document.querySelectorAll('[title]');
+        notesBadges.forEach(badge => {
+            if (badge.title && badge.title.length > 30) {
+                badge.style.cursor = 'help';
+            }
+        });
     });
 </script>
 @endpush

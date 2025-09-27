@@ -684,7 +684,25 @@ class LicenseController extends Controller
             $licensesWithFiles = $licenses->map(function ($license) {
                 $licenseArray = $license->toArray();
                 
-                // إضافة روابط الملفات
+                // إضافة المرفقات بالحقول المطلوبة للـ Vue.js component
+                $licenseArray['license_file'] = $license->license_file_path;
+                $licenseArray['coordination_certificate_file'] = $license->coordination_certificate_path;
+                
+                // معالجة فواتير السداد (إذا كانت متعددة)
+                $paymentFiles = [];
+                if ($license->payment_proof_path) {
+                    // إذا كان JSON array
+                    $decodedFiles = json_decode($license->payment_proof_path, true);
+                    if (is_array($decodedFiles)) {
+                        $paymentFiles = $decodedFiles;
+                    } else {
+                        // إذا كان string واحد
+                        $paymentFiles = [$license->payment_proof_path];
+                    }
+                }
+                $licenseArray['payment_proof_files'] = $paymentFiles;
+                
+                // إضافة روابط الملفات للعرض
                 $licenseArray['license_file_url'] = $license->getFileUrl('license_file_path');
                 $licenseArray['payment_proof_url'] = $license->getFileUrl('payment_proof_path');
                 $licenseArray['payment_proof_urls'] = $license->getMultipleFileUrls('payment_proof_path');

@@ -13,6 +13,210 @@
     font-size: 0.9rem;
 }
 
+/* Enhanced Table Header Styles */
+.table-dark th {
+    background: linear-gradient(135deg,rgb(46, 110, 174) 0%,rgb(20, 72, 124) 100%) !important;
+    border-color: #6c757d !important;
+    color: #fff !important;
+    font-weight: 600;
+    text-align: center;
+    vertical-align: middle;
+    padding: 1rem 0.5rem;
+    position: relative;
+    font-size: 0.9rem;
+    line-height: 1.3;
+}
+
+.table-dark th i {
+    color: #ffc107;
+    font-size: 1rem;
+    margin-bottom: 2px;
+}
+
+.table-dark th small {
+    color: #e9ecef;
+    font-weight: 400;
+    font-size: 0.75rem;
+}
+
+.table-dark th:hover {
+    background: linear-gradient(135deg,rgb(19, 90, 153) 0%,rgb(16, 93, 169) 100%) !important;
+    transform: translateY(-2px);
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+/* Table Body Enhancement */
+.table-hover tbody tr:hover {
+    background-color: #f8f9fa !important;
+    transform: scale(1.005);
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.table-bordered td {
+    border-color: #dee2e6 !important;
+    padding: 0.75rem 0.5rem;
+    vertical-align: middle;
+}
+
+/* Responsive Header Text */
+@media (max-width: 768px) {
+    .table-dark th {
+        font-size: 0.8rem;
+        padding: 0.75rem 0.3rem;
+    }
+    
+    .table-dark th i {
+        font-size: 0.9rem;
+    }
+}
+
+/* Responsive Button Styles */
+.btn-responsive {
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    min-height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.btn-responsive:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.btn-responsive i {
+    font-size: 1rem;
+    margin-left: 0.5rem;
+}
+
+/* Mobile Responsive Buttons */
+@media (max-width: 991.98px) {
+    .btn-responsive {
+        padding: 0.6rem 0.8rem;
+        font-size: 0.85rem;
+        min-width: auto;
+        flex: 1 1 auto;
+        max-width: 200px;
+    }
+    
+    .btn-responsive .btn-text {
+        display: block;
+    }
+}
+
+@media (max-width: 576px) {
+    .btn-responsive {
+        padding: 0.5rem 0.7rem;
+        font-size: 0.8rem;
+        min-height: 40px;
+        border-radius: 6px;
+    }
+    
+    .btn-responsive i {
+        font-size: 0.9rem;
+        margin-left: 0.3rem;
+    }
+    
+    .btn-responsive .btn-text {
+        font-size: 0.75rem;
+        line-height: 1.2;
+    }
+}
+
+/* Extra small screens - show only icons */
+@media (max-width: 400px) {
+    .btn-responsive {
+        min-width: 45px;
+        padding: 0.5rem;
+    }
+    
+    .btn-responsive .btn-text {
+        display: none;
+    }
+    
+    .btn-responsive i {
+        margin: 0;
+        font-size: 1rem;
+    }
+}
+
+/* Button Group Responsive Layout */
+.d-flex.flex-wrap.gap-2 {
+    gap: 0.5rem !important;
+}
+
+@media (max-width: 576px) {
+    .d-flex.flex-wrap.gap-2 {
+        gap: 0.3rem !important;
+    }
+}
+
+/* Enhanced Button Colors and Effects */
+.btn-responsive.btn-info {
+    background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+    border: none;
+    color: white;
+}
+
+.btn-responsive.btn-info:hover {
+    background: linear-gradient(135deg, #138496 0%, #0f6674 100%);
+    color: white;
+}
+
+.btn-responsive.btn-warning {
+    background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
+    border: none;
+    color: #212529;
+}
+
+.btn-responsive.btn-warning:hover {
+    background: linear-gradient(135deg, #e0a800 0%, #c69500 100%);
+    color: #212529;
+}
+
+.btn-responsive.btn-success {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    border: none;
+    color: white;
+}
+
+.btn-responsive.btn-success:hover {
+    background: linear-gradient(135deg, #20c997 0%, #1e7e34 100%);
+    color: white;
+}
+
+.btn-responsive.btn-primary {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    border: none;
+    color: white;
+}
+
+.btn-responsive.btn-primary:hover {
+    background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
+    color: white;
+}
+
+/* Button Container Enhancements */
+.col-12.col-lg-8,
+.col-12.col-lg-4 {
+    margin-bottom: 0.5rem;
+}
+
+@media (max-width: 991.98px) {
+    .col-12.col-lg-8,
+    .col-12.col-lg-4 {
+        margin-bottom: 1rem;
+    }
+}
+
 .filter-badge-secondary {
     background-color: #f8f9fa;
     color: #6c757d;
@@ -142,23 +346,7 @@
     background: #a8a8a8;
 }
 
-/* Ensure dropdown button looks like a form control */
-#executionStatusDropdown {
-    border: 1px solid #ced4da;
-    border-radius: 0.375rem;
-    background-color: #fff;
-    color: #495057;
-}
-
-#executionStatusDropdown:hover {
-    border-color: #adb5bd;
-}
-
-#executionStatusDropdown:focus {
-    border-color: #86b7fe;
-    outline: 0;
-    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
-}
+/* تم إزالة CSS الخاص بـ executionStatusDropdown لأنه غير مستخدم */
 
 /* Styling for single status clear buttons */
 .clear-single-status {
@@ -266,101 +454,10 @@ document.addEventListener('DOMContentLoaded', function() {
 // تحديث كل دقيقة
 setInterval(updateCountdowns, 60000);
 
-// Multi-select execution status functions
-function updateExecutionStatusText() {
-    const checkboxes = document.querySelectorAll('.execution-status-check:checked');
-    const textElement = document.getElementById('executionStatusText');
-    const statusLabels = {
-        '1': 'جاري العمل بالموقع',
-        '2': 'تم التنفيذ بالموقع وجاري تسليم 155',
-        '3': 'تم تسليم 155 جاري اصدار شهادة الانجاز',
-        '4': 'اعداد مستخلص الدفعة الجزئية الاولي وجاري الصرف',
-        '5': 'تم صرف مستخلص الدفعة الجزئية الاولي',
-        '6': 'اعداد مستخلص الدفعة الجزئية الثانية وجاري الصرف',
-        '7': 'تم الصرف وتم الانتهاء',
-        '8': 'تم اصدار شهادة الانجاز',
-        '9': 'تم الالغاء او تحويل امر العمل',
-        '10': 'تم اعداد المستخلص الكلي وجاري الصرف'
-    };
-    
-    if (checkboxes.length === 0) {
-        textElement.textContent = 'كل الحالات';
-    } else if (checkboxes.length === 1) {
-        textElement.textContent = statusLabels[checkboxes[0].value] || 'غير محدد';
-    } else {
-        textElement.textContent = checkboxes.length + ' حالات محددة';
-    }
-    
-    // Update "Select All" checkbox state
-    const selectAllCheckbox = document.getElementById('selectAllStatuses');
-    const allCheckboxes = document.querySelectorAll('.execution-status-check');
-    selectAllCheckbox.checked = checkboxes.length === allCheckboxes.length;
-    selectAllCheckbox.indeterminate = checkboxes.length > 0 && checkboxes.length < allCheckboxes.length;
-}
-
-function toggleAllStatuses(selectAllCheckbox) {
-    const checkboxes = document.querySelectorAll('.execution-status-check');
-    checkboxes.forEach(checkbox => {
-        checkbox.checked = selectAllCheckbox.checked;
-    });
-    updateExecutionStatusText();
-}
+// تم إزالة Multi-select execution status functions لأنها غير مستخدمة حالياً
 
 // Initialize on page load
-document.addEventListener('DOMContentLoaded', function() {
-    updateExecutionStatusText();
-    
-    // Ensure Bootstrap dropdown is properly initialized
-    const dropdownElement = document.getElementById('executionStatusDropdown');
-    
-    // Try Bootstrap 5 first
-    if (dropdownElement && typeof bootstrap !== 'undefined') {
-        try {
-            new bootstrap.Dropdown(dropdownElement);
-        } catch (e) {
-            console.log('Bootstrap dropdown initialization failed:', e);
-        }
-    }
-    
-    // Fallback with jQuery if available
-    if (typeof $ !== 'undefined') {
-        $('#executionStatusDropdown').dropdown();
-    }
-    
-    // Prevent dropdown from closing when clicking on checkboxes
-    document.addEventListener('click', function(e) {
-        if (e.target.closest('.dropdown-item')) {
-            e.stopPropagation();
-        }
-    });
-    
-    // Alternative click handler for the dropdown button
-    const dropdownButton = document.getElementById('executionStatusDropdown');
-    if (dropdownButton) {
-        dropdownButton.addEventListener('click', function(e) {
-            e.preventDefault();
-            const dropdownMenu = this.nextElementSibling;
-            if (dropdownMenu.classList.contains('show')) {
-                dropdownMenu.classList.remove('show');
-            } else {
-                // Close other dropdowns first
-                document.querySelectorAll('.dropdown-menu.show').forEach(menu => {
-                    menu.classList.remove('show');
-                });
-                dropdownMenu.classList.add('show');
-            }
-        });
-    }
-    
-    // Close dropdown when clicking outside
-    document.addEventListener('click', function(e) {
-        if (!e.target.closest('.dropdown')) {
-            document.querySelectorAll('.dropdown-menu.show').forEach(menu => {
-                menu.classList.remove('show');
-            });
-        }
-    });
-});
+// تم إزالة JavaScript الخاص بـ executionStatusDropdown لأنه غير مستخدم
 
 // Function to clear single execution status
 function clearSingleExecutionStatus(statusToRemove) {
@@ -561,9 +658,10 @@ function resetCountdown(workOrderId) {
                         </div>
                     @endif
 
-                    <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div class="row mb-4 gy-3">
                         <!-- الأزرار الثلاثة على اليسار -->
-                        <div class="d-flex align-items-center">
+                        <div class="col-12 col-lg-8">
+                            <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center justify-content-lg-start">
                             @php
                                 $projectLower = strtolower($project ?? '');
                                 $isRiyadh = str_contains($projectLower, 'riyadh') || str_contains($projectLower, 'الرياض') || 
@@ -573,46 +671,56 @@ function resetCountdown(workOrderId) {
                             @endphp
                             
                             @if($isRiyadh && auth()->user()->hasPermission('riyadh_materials_overview'))
-                                <a href="{{ route('admin.materials.riyadh-overview') }}" class="btn btn-info ms-2 px-4">
-                                    <i class="fas fa-eye me-1"></i>موقف مواد المستودعات 
+                                <a href="{{ route('admin.materials.riyadh-overview') }}" class="btn btn-info btn-responsive">
+                                    <i class="fas fa-eye me-1"></i>
+                                    <span class="btn-text">موقف مواد المستودعات</span>
                                 </a>
                             @elseif($isMadinah && auth()->user()->hasPermission('madinah_materials_overview'))
-                                <a href="{{ route('admin.materials.madinah-overview') }}" class="btn btn-info ms-2 px-4">
-                                    <i class="fas fa-eye me-1"></i>موقف مواد المستودعات 
+                                <a href="{{ route('admin.materials.madinah-overview') }}" class="btn btn-info btn-responsive">
+                                    <i class="fas fa-eye me-1"></i>
+                                    <span class="btn-text">موقف مواد المستودعات</span>
                                 </a>
                             @endif
                             
                             @if(($isRiyadh && auth()->user()->hasPermission('riyadh_execution_productivity')) || 
                                 ($isMadinah && auth()->user()->hasPermission('madinah_execution_productivity')))
-                            <a href="{{ route('admin.work-orders.execution-productivity', ['project' => $project ?? 'riyadh']) }}" class="btn btn-purple ms-2 px-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; color: white;">
-                                <i class="fas fa-chart-line me-1"></i> انتاجية التنفيذ
+                            <a href="{{ route('admin.work-orders.execution-productivity', ['project' => $project ?? 'riyadh']) }}" class="btn btn-purple btn-responsive" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; color: white;">
+                                <i class="fas fa-chart-line me-1"></i>
+                                <span class="btn-text">انتاجية التنفيذ</span>
                             </a>
                             @endif
                             
                             @if(($isRiyadh && auth()->user()->hasPermission('riyadh_license_details')) || 
                                 ($isMadinah && auth()->user()->hasPermission('madinah_license_details')))
-                            <a href="{{ route('admin.licenses.display', ['project' => $project ?? 'riyadh']) }}" class="btn btn-warning ms-2 px-4">
-                                <i class="fas fa-file-contract me-1"></i> تفاصيل الجودة والرخص
+                            <a href="{{ route('admin.licenses.display', ['project' => $project ?? 'riyadh']) }}" class="btn btn-warning btn-responsive">
+                                <i class="fas fa-file-contract me-1"></i>
+                                <span class="btn-text">تفاصيل الجودة والرخص</span>
                             </a>
                             @endif
                             
                             <!-- @if(($isRiyadh && auth()->user()->hasPermission('riyadh_revenues')) || 
                                 ($isMadinah && auth()->user()->hasPermission('madinah_revenues')) ||
                                 auth()->user()->hasPermission('view_revenues'))
-                            <a href="{{ route('admin.work-orders.revenues') }}" class="btn btn-success ms-2 px-4" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); border: none; color: white;">
-                                <i class="fas fa-chart-line me-1"></i> الإيرادات
+                            <a href="{{ route('admin.work-orders.revenues', ['project' => $project ?? 'riyadh']) }}" class="btn btn-success btn-responsive" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); border: none; color: white;">
+                                <i class="fas fa-chart-line me-1"></i>
+                                <span class="btn-text">الإيرادات</span>
                             </a>
                             @endif -->
+                            </div>
                         </div>
 
                         <!-- أزرار التصدير والإنشاء على اليمين -->
-                        <div class="d-flex align-items-center">
-                            <a href="{{ route('admin.work-orders.export.excel', ['project' => $project]) }}" class="btn btn-success me-2 px-4">
-                                <i class="fas fa-file-excel me-1"></i> تصدير إكسل
-                            </a>
-                            <a href="{{ route('admin.work-orders.create', ['project' => $project]) }}" class="btn btn-primary px-4" style="min-width: 150px;">
-                                <i class="fas fa-plus me-1"></i> إنشاء أمر عمل جديد
-                            </a>
+                        <div class="col-12 col-lg-4">
+                            <div class="d-flex flex-wrap gap-2 justify-content-center justify-content-lg-end align-items-center">
+                                <a href="{{ route('admin.work-orders.export.excel', ['project' => $project]) }}" class="btn btn-success btn-responsive">
+                                    <i class="fas fa-file-excel me-1"></i>
+                                    <span class="btn-text">تصدير إكسل</span>
+                                </a>
+                                <a href="{{ route('admin.work-orders.create', ['project' => $project]) }}" class="btn btn-primary btn-responsive">
+                                    <i class="fas fa-plus me-1"></i>
+                                    <span class="btn-text">إنشاء أمر عمل جديد</span>
+                                </a>
+                            </div>
                         </div>
                     </div>
 
@@ -1023,31 +1131,84 @@ function resetCountdown(workOrderId) {
 
                     <!-- عرض النتائج -->
                     <div class="table-responsive" id="resultsTable">
-                        <table class="table table-bordered table-hover">
-                            <thead class="table-light">
+                        <table class="table table-bordered table-hover table-striped"
+                               style="box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); border-radius: 10px; overflow: hidden;">
+                            <thead class="table-dark">
                                 <tr>
-                                    <th>#</th>
-                                    <th>رقم أمر العمل</th>
-                                    <th>رقم نوع العمل</th>
-                                    <th>وصف العمل</th>
-                                    <th>اسم المشترك</th>
-                                    <th>الحي</th>
-                                    <th>المكتب</th>
-                                    <th>اسم الاستشاري</th>
-                                    <th>رقم المحطة</th>
-                                    <th>تاريخ الاعتماد <br> مدة التنفيذ</th>
-                                    <th>حالة التنفيذ</th>
-                                    <th>رقم المستخلص</th>
-                                    <th>قيمة أمر العمل المبدئية غير شامل الاستشاري</th>
-                                    <th>الإجراءات</th>
+                                    <th class="text-center" style="width: 4%;">
+                                        <i class="fas fa-hashtag me-1"></i>
+                                        #
+                                    </th>
+                                    <th class="text-center" style="width: 8%;">
+                                        <i class="fas fa-file-contract me-1"></i>
+                                        رقم أمر العمل
+                                    </th>
+                                    <th class="text-center" style="width: 6%;">
+                                        <i class="fas fa-code me-1"></i>
+                                        رقم نوع العمل
+                                    </th>
+                                    <th class="text-center" style="width: 12%;">
+                                        <i class="fas fa-clipboard-list me-1"></i>
+                                        وصف العمل
+                                    </th>
+                                    <th class="text-center" style="width: 10%;">
+                                        <i class="fas fa-user me-1"></i>
+                                        اسم المشترك
+                                    </th>
+                                    <th class="text-center" style="width: 8%;">
+                                        <i class="fas fa-map-marker-alt me-1"></i>
+                                        الحي
+                                    </th>
+                                    <th class="text-center" style="width: 8%;">
+                                        <i class="fas fa-building me-1"></i>
+                                        المكتب
+                                    </th>
+                                    <th class="text-center" style="width: 10%;">
+                                        <i class="fas fa-user-tie me-1"></i>
+                                        اسم الاستشاري
+                                    </th>
+                                    <th class="text-center" style="width: 8%;">
+                                        <i class="fas fa-broadcast-tower me-1"></i>
+                                        رقم المحطة
+                                    </th>
+                                    <th class="text-center" style="width: 10%;">
+                                        <i class="fas fa-calendar-check me-1"></i>
+                                        تاريخ الاعتماد
+                                        <br>
+                                        <small><i class="fas fa-clock me-1"></i>مدة التنفيذ</small>
+                                    </th>
+                                    <th class="text-center" style="width: 10%;">
+                                        <i class="fas fa-tasks me-1"></i>
+                                        حالة التنفيذ
+                                    </th>
+                                    <th class="text-center" style="width: 8%;">
+                                        <i class="fas fa-receipt me-1"></i>
+                                        رقم المستخلص
+                                    </th>
+                                    <th class="text-center" style="width: 12%;">
+                                        <i class="fas fa-money-bill-wave me-1"></i>
+                                        قيمة أمر العمل المبدئية
+                                        <br>
+                                        <small>غير شامل الاستشاري</small>
+                                    </th>
+                                    <th class="text-center" style="width: 8%;">
+                                        <i class="fas fa-cogs me-1"></i>
+                                        الإجراءات
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody id="workOrdersTableBody">
                                 @forelse ($workOrders as $workOrder)
                                     <tr class="work-order-row" data-id="{{ $workOrder->id }}" data-execution-status="{{ $workOrder->execution_status }}">
-                                        <td>{{ $loop->iteration + ($workOrders->currentPage() - 1) * $workOrders->perPage() }}</td>
-                                        <td>{{ $workOrder->order_number }}</td>
-                                        <td>{{ $workOrder->work_type }}</td>
+                                        <td class="text-center fw-bold text-primary">
+                                            <span class="badge bg-light text-dark">{{ $loop->iteration + ($workOrders->currentPage() - 1) * $workOrders->perPage() }}</span>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="fw-bold text-primary">{{ $workOrder->order_number }}</span>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge bg-info">{{ $workOrder->work_type }}</span>
+                                        </td>
                                         <td>
                                             @switch($workOrder->work_type)
                                                 @case('409')

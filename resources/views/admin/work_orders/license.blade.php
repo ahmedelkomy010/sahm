@@ -1933,6 +1933,9 @@ $(document).ready(function() {
                             <td>${attachmentCell}</td>
                             <td>
                                 <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-primary" onclick="editViolation(${violation.id})" title="تعديل">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
                                     <button class="btn btn-outline-danger" onclick="deleteViolation(${violation.id})" title="حذف">
                                         <i class="fas fa-trash"></i>
                                     </button>
@@ -1984,14 +1987,53 @@ $(document).ready(function() {
             return;
         }
 
-        // التحقق من البيانات المطلوبة
-        const violationNumber = form.querySelector('[name="violation_number"]').value;
-        const violationType = form.querySelector('[name="violation_type"]').value;
-        const violationAmount = form.querySelector('[name="violation_amount"]').value;
-        const responsibleParty = form.querySelector('[name="responsible_party"]').value;
+        // التحقق من البيانات المطلوبة مع عرض رسائل validation
+        const requiredFields = [
+            { name: 'violation_number', label: 'رقم المخالفة' },
+            { name: 'violation_type', label: 'تصنيف المخالفة' },
+            { name: 'violation_date', label: 'تاريخ رصد المخالفة' },
+            { name: 'payment_due_date', label: 'تاريخ الاستحقاق' },
+            { name: 'violation_description', label: 'وصف المخالفة' },
+            { name: 'responsible_party', label: 'المتسبب' },
+            { name: 'violation_amount', label: 'قيمة المخالفة' }
+        ];
         
-        if (!violationNumber || !violationType || !violationAmount || !responsibleParty) {
-            toastr.error('يجب ملء جميع الحقول المطلوبة');
+        let hasErrors = false;
+        let errorMessages = [];
+        
+        // إزالة classes الخطأ السابقة
+        form.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+        
+        requiredFields.forEach(field => {
+            const element = form.querySelector(`[name="${field.name}"]`);
+            if (!element || !element.value.trim()) {
+                element?.classList.add('is-invalid');
+                errorMessages.push(`• ${field.label}`);
+                hasErrors = true;
+            }
+        });
+        
+        // التحقق من قيمة المخالفة (يجب أن تكون أكبر من 0)
+        const amountField = form.querySelector('[name="violation_amount"]');
+        if (amountField && amountField.value && parseFloat(amountField.value) <= 0) {
+            amountField.classList.add('is-invalid');
+            errorMessages.push('• قيمة المخالفة يجب أن تكون أكبر من صفر');
+            hasErrors = true;
+        }
+        
+        if (hasErrors) {
+            toastr.error(`يرجى ملء الحقول التالية:\n${errorMessages.join('\n')}`, 'حقول مطلوبة', {
+                timeOut: 8000,
+                extendedTimeOut: 3000
+            });
+            
+            // التمرير للحقل الأول الذي به خطأ
+            const firstErrorField = form.querySelector('.is-invalid');
+            if (firstErrorField) {
+                firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                firstErrorField.focus();
+            }
+            
             return;
         }
 
@@ -2074,6 +2116,9 @@ $(document).ready(function() {
                      <td>${attachmentCell}</td>
                      <td>
                          <div class="btn-group btn-group-sm">
+                             <button class="btn btn-outline-primary" onclick="editViolation(${violation.id})" title="تعديل">
+                                 <i class="fas fa-edit"></i>
+                             </button>
                              <button class="btn btn-outline-danger" onclick="deleteViolation(${violation.id})" title="حذف">
                                  <i class="fas fa-trash"></i>
                              </button>
@@ -2253,6 +2298,240 @@ $(document).ready(function() {
         // فتح المرفق في نافذة جديدة
         const url = `/storage/${attachmentPath}`;
         window.open(url, '_blank');
+    }
+
+    function editViolation(violationId) {
+        // جلب بيانات المخالفة للتعديل
+        $.ajax({
+            url: `/admin/license-violations/${violationId}`,
+            type: 'GET',
+            success: function(response) {
+                if (response.success && response.violation) {
+                    const violation = response.violation;
+                    
+                    // ملء النموذج ببيانات المخالفة
+                    fillViolationForm(violation);
+                    
+                    // تغيير عنوان النموذج وزر الحفظ
+                    const headerTitle = document.querySelector('#violations-section .card-header .d-flex h5');
+                    if (headerTitle) {
+                        headerTitle.innerHTML = '<i class="fas fa-edit me-2"></i>تعديل المخالفة';
+                    }
+                    
+                    const saveButton = document.querySelector('button[onclick="saveViolationSection()"]');
+                    saveButton.innerHTML = '<i class="fas fa-save me-2"></i>حفظ التعديل';
+                    saveButton.setAttribute('onclick', `updateViolation(${violationId})`);
+                    
+                    // إضافة زر إلغاء
+                    if (!document.getElementById('cancel-edit-btn')) {
+                        const cancelBtn = document.createElement('button');
+                        cancelBtn.type = 'button';
+                        cancelBtn.className = 'btn btn-secondary me-2';
+                        cancelBtn.id = 'cancel-edit-btn';
+                        cancelBtn.innerHTML = '<i class="fas fa-times me-2"></i>إلغاء التعديل';
+                        cancelBtn.onclick = cancelViolationEdit;
+                        
+                        saveButton.parentNode.insertBefore(cancelBtn, saveButton);
+                    }
+                    
+                    // التمرير للنموذج
+                    document.getElementById('violationForm').scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'start' 
+                    });
+                    
+                    toastr.info('تم تحميل بيانات المخالفة للتعديل');
+                } else {
+                    toastr.error('فشل في تحميل بيانات المخالفة');
+                }
+            },
+            error: function(xhr) {
+                console.error('Error loading violation:', xhr);
+                toastr.error('حدث خطأ في تحميل بيانات المخالفة');
+            }
+        });
+    }
+    
+    function fillViolationForm(violation) {
+        const form = document.getElementById('violationForm');
+        if (!form) return;
+        
+        // ملء الحقول بالبيانات
+        form.querySelector('[name="violation_number"]').value = violation.violation_number || '';
+        form.querySelector('[name="violation_type"]').value = violation.violation_type || '';
+        form.querySelector('[name="violation_date"]').value = violation.violation_date || '';
+        form.querySelector('[name="payment_due_date"]').value = violation.payment_due_date || '';
+        form.querySelector('[name="violation_description"]').value = violation.violation_description || '';
+        form.querySelector('[name="responsible_party"]').value = violation.responsible_party || '';
+        form.querySelector('[name="violation_amount"]').value = violation.violation_amount || '';
+        form.querySelector('[name="payment_invoice_number"]').value = violation.payment_invoice_number || '';
+        form.querySelector('[name="payment_status"]').value = violation.payment_status || '0';
+        form.querySelector('[name="notes"]').value = violation.notes || '';
+        
+        // تعيين الرخصة المحددة
+        if (violation.license_id) {
+            document.getElementById('violation-license-id').value = violation.license_id;
+            if (violation.license && violation.license.license_number) {
+                document.getElementById('selected-license-number').value = violation.license.license_number;
+            }
+        }
+        
+        // إزالة classes الخطأ
+        form.querySelectorAll('.is-invalid, .is-valid').forEach(el => {
+            el.classList.remove('is-invalid', 'is-valid');
+        });
+    }
+    
+    function updateViolation(violationId) {
+        const form = document.getElementById('violationForm');
+        if (!form) {
+            toastr.error('لم يتم العثور على نموذج المخالفة');
+            return;
+        }
+        
+        // التحقق من البيانات المطلوبة (نفس validation الحفظ)
+        const requiredFields = [
+            { name: 'violation_number', label: 'رقم المخالفة' },
+            { name: 'violation_type', label: 'تصنيف المخالفة' },
+            { name: 'violation_date', label: 'تاريخ رصد المخالفة' },
+            { name: 'payment_due_date', label: 'تاريخ الاستحقاق' },
+            { name: 'violation_description', label: 'وصف المخالفة' },
+            { name: 'responsible_party', label: 'المتسبب' },
+            { name: 'violation_amount', label: 'قيمة المخالفة' }
+        ];
+        
+        let hasErrors = false;
+        let errorMessages = [];
+        
+        // إزالة classes الخطأ السابقة
+        form.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+        
+        requiredFields.forEach(field => {
+            const element = form.querySelector(`[name="${field.name}"]`);
+            if (!element || !element.value.trim()) {
+                element?.classList.add('is-invalid');
+                errorMessages.push(`• ${field.label}`);
+                hasErrors = true;
+            }
+        });
+        
+        // التحقق من قيمة المخالفة
+        const amountField = form.querySelector('[name="violation_amount"]');
+        if (amountField && amountField.value && parseFloat(amountField.value) <= 0) {
+            amountField.classList.add('is-invalid');
+            errorMessages.push('• قيمة المخالفة يجب أن تكون أكبر من صفر');
+            hasErrors = true;
+        }
+        
+        if (hasErrors) {
+            toastr.error(`يرجى ملء الحقول التالية:\n${errorMessages.join('\n')}`, 'حقول مطلوبة', {
+                timeOut: 8000,
+                extendedTimeOut: 3000
+            });
+            
+            const firstErrorField = form.querySelector('.is-invalid');
+            if (firstErrorField) {
+                firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                firstErrorField.focus();
+            }
+            
+            return;
+        }
+        
+        // عرض مؤشر التحميل
+        const saveButton = document.querySelector(`button[onclick="updateViolation(${violationId})"]`);
+        const originalText = saveButton.innerHTML;
+        saveButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>جاري التحديث...';
+        saveButton.disabled = true;
+        
+        const formData = new FormData(form);
+        formData.append('_method', 'PUT'); // Laravel method spoofing
+        
+        $.ajax({
+            url: `/admin/license-violations/${violationId}`,
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function(response) {
+                if (response.success) {
+                    toastr.success('تم تحديث المخالفة بنجاح!', '', {
+                        "timeOut": 3000,
+                        "closeButton": true,
+                        "progressBar": true,
+                        "showMethod": "fadeIn",
+                        "hideMethod": "fadeOut"
+                    });
+                    
+                    // إعادة تعيين النموذج
+                    cancelViolationEdit();
+                    
+                    // إعادة تحميل المخالفات
+                    loadViolations();
+                } else {
+                    toastr.error(response.message || 'فشل في تحديث المخالفة');
+                }
+            },
+            error: function(xhr) {
+                console.error('Error updating violation:', xhr);
+                let errorMessage = 'حدث خطأ أثناء تحديث المخالفة';
+                
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    errorMessage = xhr.responseJSON.message;
+                }
+                
+                toastr.error(errorMessage);
+            },
+            complete: function() {
+                // إعادة تفعيل زر الحفظ
+                saveButton.disabled = false;
+                saveButton.innerHTML = originalText;
+            }
+        });
+    }
+    
+    function cancelViolationEdit() {
+        // إعادة تعيين عنوان النموذج وزر الحفظ
+        const headerTitle = document.querySelector('#violations-section .card-header .d-flex h5');
+        if (headerTitle) {
+            headerTitle.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>تسجيل مخالفة جديدة';
+        }
+        
+        const saveButton = document.querySelector('button[onclick*="updateViolation"], button[onclick="saveViolationSection()"]');
+        saveButton.innerHTML = '<i class="fas fa-save me-2"></i>حفظ المخالفة';
+        saveButton.setAttribute('onclick', 'saveViolationSection()');
+        
+        // إزالة زر الإلغاء
+        const cancelBtn = document.getElementById('cancel-edit-btn');
+        if (cancelBtn) {
+            cancelBtn.remove();
+        }
+        
+        // مسح النموذج
+        document.getElementById('violationForm').reset();
+        
+        // إعادة تعيين التواريخ الافتراضية
+        const today = new Date().toISOString().split('T')[0];
+        const futureDate = new Date();
+        futureDate.setDate(futureDate.getDate() + 30);
+        const futureDateStr = futureDate.toISOString().split('T')[0];
+        
+        document.querySelector('[name="violation_date"]').value = today;
+        document.querySelector('[name="payment_due_date"]').value = futureDateStr;
+        
+        // إزالة classes التحقق
+        document.querySelectorAll('.is-invalid, .is-valid').forEach(el => {
+            el.classList.remove('is-invalid', 'is-valid');
+        });
+        
+        // مسح بيانات الرخصة
+        document.getElementById('violation-license-id').value = '';
+        document.getElementById('selected-license-number').value = '';
+        
+        toastr.info('تم إلغاء التعديل');
     }
 
     function deleteViolation(violationId) {
@@ -2746,55 +3025,463 @@ function clearLicenseSearch() {
     toastr.info('تم مسح البحث وإعادة تعيين القائمة');
 }
 
-// دالة اختيار الرخصة للتمديد
-function selectExtensionLicense() {
-    const selector = document.getElementById('extension-license-selector');
+// دالة اختيار الرخصة من الـ dropdown مع التحديث التلقائي وإظهار النموذج
+function selectExtensionLicenseFromDropdown(licenseId, licenseText, licenseData = null) {
     const licenseIdField = document.getElementById('extension-license-id');
     const infoDiv = document.getElementById('selected-extension-license-info');
     const displayElement = document.getElementById('extension-license-display');
-    const addBtn = document.getElementById('add-extension-btn');
+    const selectedLicenseText = document.getElementById('selected-license-text');
+    const dropdown = bootstrap.Dropdown.getInstance(document.getElementById('extensionLicenseDropdown'));
     
-    // تحديث حالة الزر والمعلومات
-    function updateUI(enabled, text = '') {
+    if (licenseId && licenseText) {
+        // تحديث النص المعروض في الـ dropdown
+        selectedLicenseText.innerHTML = `<i class="fas fa-certificate me-2 text-success"></i>${licenseText}`;
+        
         // تحديث الحقل المخفي
-        licenseIdField.value = enabled ? selector.value : '';
+        licenseIdField.value = licenseId;
         
-        // تحديث عرض المعلومات
-        if (enabled && text) {
-            displayElement.textContent = text;
-            infoDiv.style.display = 'block';
-        } else {
-            infoDiv.style.display = 'none';
+        // إغلاق الـ dropdown
+        if (dropdown) {
+            dropdown.hide();
         }
         
-        // تحديث حالة الزر
-        addBtn.disabled = !enabled;
-        addBtn.classList.toggle('btn-success', enabled);
-        addBtn.classList.toggle('btn-secondary', !enabled);
+        // تحديث بيانات الرخصة تلقائياً
+        updateLicenseDataAutomatically(licenseId);
         
-        // إخفاء نموذج التمديد إذا لم يتم اختيار رخصة
-        if (!enabled) {
-            hideExtensionForm();
-        }
-    }
-    
-    if (selector.value) {
-        const selectedOption = selector.options[selector.selectedIndex];
-        const selectedText = selectedOption.text;
-        
-        // تحديث الواجهة
-        updateUI(true, selectedText);
+        // إظهار نموذج التمديد تلقائياً
+        showExtensionFormAutomatically();
         
         // إظهار رسالة نجاح
-        toastr.success('تم اختيار الرخصة بنجاح');
-    } else {
+        toastr.success('تم اختيار الرخصة وإظهار نموذج التمديد تلقائياً');
+        } else {
         // إعادة تعيين الواجهة
-        updateUI(false);
+        selectedLicenseText.innerHTML = 'اختر الرخصة للتمديد';
+        licenseIdField.value = '';
+            infoDiv.style.display = 'none';
         
-        // إظهار رسالة تحذير
-        toastr.warning('يجب اختيار رخصة قبل إضافة التمديد');
+        // إخفاء نموذج التمديد
+        hideExtensionForm();
+        
+        toastr.warning('يجب اختيار رخصة صحيحة');
     }
 }
+
+// دالة إظهار نموذج التمديد تلقائياً (بدون الحاجة لزرار)
+function showExtensionFormAutomatically() {
+    const formCard = document.getElementById('extension-form-card');
+    const licenseId = document.getElementById('extension-license-id').value;
+    
+    if (!licenseId) {
+        return;
+    }
+
+    // تنظيف النموذج بالكامل قبل الإظهار
+    const form = document.getElementById('extensionForm');
+    if (form) {
+        form.reset();
+        
+        // تنظيف جميع الحقول يدوياً عدا work_order_id
+        const inputs = form.querySelectorAll('input, select, textarea');
+        inputs.forEach(input => {
+            if (input.name !== 'work_order_id') {
+                if (input.type === 'checkbox' || input.type === 'radio') {
+                    input.checked = false;
+                } else if (input.type === 'file') {
+                    input.value = '';
+                } else {
+                    input.value = '';
+                }
+            }
+        });
+        
+        // تنظيف عرض الأيام
+        const extensionDaysDisplay = document.getElementById('extension-days-display');
+        if (extensionDaysDisplay) {
+            extensionDaysDisplay.value = '';
+        }
+    }
+
+    // إظهار النموذج مع تأثير انتقالي
+    formCard.style.display = 'block';
+    formCard.style.opacity = '0';
+    formCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    
+    // تأثير fade in
+    setTimeout(() => {
+        formCard.style.transition = 'opacity 0.5s ease';
+        formCard.style.opacity = '1';
+    }, 100);
+    
+    // تعيين التاريخ الافتراضي (اليوم لتاريخ البداية)
+    const today = new Date().toISOString().split('T')[0];
+    const startDateInput = document.getElementById('extension-start-date');
+    if (startDateInput) {
+        startDateInput.value = today;
+    }
+    
+    // إضافة مستمعي الأحداث لحساب الأيام
+    const endDateInput = document.getElementById('extension-end-date');
+    
+    if (startDateInput) {
+        startDateInput.removeEventListener('change', calculateExtensionDays);
+        startDateInput.addEventListener('change', calculateExtensionDays);
+    }
+    if (endDateInput) {
+        endDateInput.removeEventListener('change', calculateExtensionDays);
+        endDateInput.addEventListener('change', calculateExtensionDays);
+    }
+}
+
+// دالة التحديث التلقائي لبيانات الرخصة
+function updateLicenseDataAutomatically(licenseId) {
+    if (!licenseId) return;
+    
+    // إظهار مؤشر التحديث
+    const updateIndicator = document.getElementById('license-update-indicator');
+    const infoDiv = document.getElementById('selected-extension-license-info');
+    const originalContent = infoDiv.innerHTML;
+    
+    // إظهار مؤشر التحديث التلقائي
+    updateIndicator.style.display = 'block';
+    
+    infoDiv.innerHTML = `
+        <div class="alert alert-info mb-0">
+            <i class="fas fa-sync fa-spin me-2"></i>
+            جاري تحديث بيانات الرخصة تلقائياً...
+        </div>
+    `;
+    
+    // إرسال طلب AJAX لتحديث البيانات
+    $.ajax({
+        url: '{{ route("admin.work-orders.get-license-data") }}',
+        method: 'GET',
+        data: { 
+            license_id: licenseId,
+            work_order_id: {{ $workOrder->id }}
+        },
+        success: function(response) {
+            if (response.success && response.license) {
+                const license = response.license;
+                
+                // تحديث عرض معلومات الرخصة
+                updateLicenseInfoDisplay(license);
+                
+                // تحديث جدول الرخص إذا كان موجوداً
+                updateLicenseTable();
+                
+                // إخفاء مؤشر التحديث مع تأخير قصير لإظهار النجاح
+                setTimeout(() => {
+                    updateIndicator.style.display = 'none';
+                }, 500);
+                
+                // إظهار رسالة نجاح مع تفاصيل التحديث
+                toastr.success(`تم تحديث بيانات الرخصة: ${license.license_number}`);
+                
+    } else {
+                // إعادة المحتوى الأصلي في حالة الفشل
+                infoDiv.innerHTML = originalContent;
+                updateIndicator.style.display = 'none';
+                toastr.error(response.message || 'فشل في تحديث بيانات الرخصة');
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error('خطأ في تحديث بيانات الرخصة:', error);
+            
+            // إعادة المحتوى الأصلي في حالة الخطأ
+            infoDiv.innerHTML = originalContent;
+            updateIndicator.style.display = 'none';
+            
+            toastr.error('حدث خطأ أثناء تحديث بيانات الرخصة');
+        }
+    });
+}
+
+// دالة تحديث عرض معلومات الرخصة المحسنة
+function updateLicenseInfoDisplay(license) {
+    const infoDiv = document.getElementById('selected-extension-license-info');
+    const displayElement = document.getElementById('extension-license-display');
+    
+    // تحديث النص الأساسي
+    displayElement.textContent = `${license.license_number} - ${license.license_type}`;
+    
+    // إنشاء عرض مفصل للرخصة
+    const detailedInfo = `
+        <div class="alert alert-success mb-0">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-certificate text-success me-2 fs-4"></i>
+                        <div>
+                            <strong class="text-success">الرخصة المختارة:</strong>
+                            <div class="mt-1">
+                                <span class="badge bg-primary me-2">${license.license_number}</span>
+                                <span class="badge bg-info">${license.license_type}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 text-end">
+                    <div class="license-status">
+                        <small class="text-muted d-block">الحالة:</small>
+                        <span class="badge ${getLicenseStatusClass(license.status)}">${getLicenseStatusText(license.status)}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row mt-3 pt-2 border-top border-light">
+                <div class="col-md-3">
+                    <small class="text-muted d-block">قيمة الرخصة:</small>
+                    <strong class="text-success">${formatCurrency(license.license_value)}</strong>
+                </div>
+                <div class="col-md-3">
+                    <small class="text-muted d-block">تاريخ الإصدار:</small>
+                    <strong>${formatDate(license.issue_date)}</strong>
+                </div>
+                <div class="col-md-3">
+                    <small class="text-muted d-block">تاريخ الانتهاء:</small>
+                    <strong class="${getExpiryDateClass(license.expiry_date)}">${formatDate(license.expiry_date)}</strong>
+                </div>
+                <div class="col-md-3">
+                    <small class="text-muted d-block">عدد التمديدات:</small>
+                    <span class="badge bg-secondary">${license.extensions_count || 0}</span>
+                </div>
+            </div>
+            
+            ${license.latest_extension ? `
+                <div class="mt-2 pt-2 border-top border-light">
+                    <small class="text-muted">
+                        <i class="fas fa-history me-1"></i>
+                        آخر تمديد: ${formatDate(license.latest_extension.start_date)} - ${formatDate(license.latest_extension.end_date)}
+                        (${license.latest_extension.days_count} يوم)
+                    </small>
+                </div>
+            ` : ''}
+        </div>
+    `;
+    
+    infoDiv.innerHTML = detailedInfo;
+    
+    // إضافة تأثير انتقالي لطيف
+    infoDiv.style.opacity = '0';
+    setTimeout(() => {
+        infoDiv.style.transition = 'opacity 0.3s ease';
+        infoDiv.style.opacity = '1';
+    }, 100);
+}
+
+// دوال مساعدة للتنسيق
+function getLicenseStatusClass(status) {
+    switch(status) {
+        case 'active': return 'bg-success';
+        case 'expired': return 'bg-danger';
+        case 'extended': return 'bg-warning';
+        case 'cancelled': return 'bg-secondary';
+        default: return 'bg-info';
+    }
+}
+
+function getLicenseStatusText(status) {
+    switch(status) {
+        case 'active': return 'سارية';
+        case 'expired': return 'منتهية';
+        case 'extended': return 'ممددة';
+        case 'cancelled': return 'ملغاة';
+        default: return 'غير محدد';
+    }
+}
+
+function getExpiryDateClass(expiryDate) {
+    if (!expiryDate) return '';
+    
+    const today = new Date();
+    const expiry = new Date(expiryDate);
+    const diffTime = expiry - today;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays < 0) return 'text-danger'; // منتهية
+    if (diffDays <= 30) return 'text-warning'; // تنتهي قريباً
+    return 'text-success'; // سارية
+}
+
+function formatCurrency(amount) {
+    if (!amount) return '0.00 ر.س';
+    return parseFloat(amount).toLocaleString('ar-SA', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    }) + ' ر.س';
+}
+
+function formatDate(dateString) {
+    if (!dateString) return 'غير محدد';
+    
+    const date = new Date(dateString);
+    // تنسيق التاريخ الميلادي بدلاً من الهجري
+    return date.toLocaleDateString('en-GB', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+    });
+}
+
+// دوال الـ dropdown الجديدة
+function loadLicensesIntoDropdown() {
+    const workOrderId = {{ $workOrder->id }};
+    const optionsList = document.getElementById('license-options-list');
+    
+    // إظهار مؤشر التحميل
+    optionsList.innerHTML = `
+        <div class="dropdown-item text-center text-muted py-3">
+            <i class="fas fa-spinner fa-spin me-2"></i>
+            جاري تحميل الرخص...
+        </div>
+    `;
+    
+    // جلب الرخص من الخادم
+    $.ajax({
+        url: '{{ route("admin.licenses.by-work-order", ":workOrderId") }}'.replace(':workOrderId', workOrderId),
+        method: 'GET',
+        success: function(response) {
+            if (response.success && response.licenses.length > 0) {
+                displayLicensesInDropdown(response.licenses);
+            } else {
+                optionsList.innerHTML = `
+                    <div class="dropdown-item text-center text-muted py-3">
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                        لا توجد رخص متاحة لهذا أمر العمل
+                    </div>
+                `;
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error('خطأ في جلب الرخص:', error);
+            optionsList.innerHTML = `
+                <div class="dropdown-item text-center text-danger py-3">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    حدث خطأ في تحميل الرخص
+                </div>
+            `;
+        }
+    });
+}
+
+function displayLicensesInDropdown(licenses) {
+    const optionsList = document.getElementById('license-options-list');
+    let html = '';
+    
+    licenses.forEach(license => {
+        const statusClass = getLicenseStatusClass(license.status || 'active');
+        const statusText = getLicenseStatusText(license.status || 'active');
+        
+        html += `
+            <div class="dropdown-item license-option" 
+                 data-license-id="${license.id}"
+                 data-license-text="${license.license_number} - ${license.license_type}"
+                 onclick="selectExtensionLicenseFromDropdown('${license.id}', '${license.license_number} - ${license.license_type}')">
+                <div class="d-flex align-items-center">
+                    <div class="me-3">
+                        <i class="fas fa-certificate text-primary"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="fw-bold text-dark">${license.license_number}</div>
+                        <small class="text-muted">${license.license_type}</small>
+                        <div class="mt-1">
+                            <span class="badge ${statusClass} me-2">${statusText}</span>
+                            <small class="text-muted">
+                                ${license.license_value ? formatCurrency(license.license_value) : 'غير محدد'}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    
+    optionsList.innerHTML = html;
+    
+    // إضافة تأثيرات hover
+    document.querySelectorAll('.license-option').forEach(option => {
+        option.addEventListener('mouseenter', function() {
+            this.style.backgroundColor = '#f8f9fa';
+        });
+        option.addEventListener('mouseleave', function() {
+            this.style.backgroundColor = '';
+        });
+    });
+}
+
+function filterLicenseDropdownOptions() {
+    const searchInput = document.getElementById('license-search-input');
+    const searchTerm = searchInput.value.toLowerCase().trim();
+    const options = document.querySelectorAll('.license-option');
+    
+    options.forEach(option => {
+        const licenseText = option.dataset.licenseText.toLowerCase();
+        if (licenseText.includes(searchTerm)) {
+            option.style.display = 'block';
+        } else {
+            option.style.display = 'none';
+        }
+    });
+}
+
+function selectLatestLicenseFromDropdown() {
+    const firstOption = document.querySelector('.license-option[data-license-id]');
+    if (firstOption) {
+        const licenseId = firstOption.dataset.licenseId;
+        const licenseText = firstOption.dataset.licenseText;
+        selectExtensionLicenseFromDropdown(licenseId, licenseText);
+    } else {
+        toastr.warning('لا توجد رخص متاحة');
+    }
+}
+
+function selectActiveLicensesFromDropdown() {
+    // فلترة الرخص لإظهار السارية فقط
+    const options = document.querySelectorAll('.license-option');
+    let hasActiveOptions = false;
+    
+    options.forEach(option => {
+        const statusBadge = option.querySelector('.badge');
+        if (statusBadge && (statusBadge.textContent.includes('سارية') || statusBadge.textContent.includes('ممددة'))) {
+            option.style.display = 'block';
+            hasActiveOptions = true;
+        } else {
+            option.style.display = 'none';
+        }
+    });
+    
+    if (!hasActiveOptions) {
+        toastr.info('لا توجد رخص سارية حالياً');
+    } else {
+        toastr.info('تم عرض الرخص السارية فقط');
+    }
+}
+
+function clearLicenseDropdownSearch() {
+    const searchInput = document.getElementById('license-search-input');
+    searchInput.value = '';
+    
+    // إظهار جميع الخيارات
+    const options = document.querySelectorAll('.license-option');
+    options.forEach(option => {
+        option.style.display = 'block';
+    });
+    
+    toastr.info('تم مسح البحث وإظهار جميع الرخص');
+}
+
+// تحميل الرخص عند فتح الـ dropdown
+document.addEventListener('DOMContentLoaded', function() {
+    const dropdownButton = document.getElementById('extensionLicenseDropdown');
+    if (dropdownButton) {
+        dropdownButton.addEventListener('shown.bs.dropdown', function() {
+            // تحميل الرخص فقط عند الحاجة
+            if (!document.querySelector('.license-option[data-license-id]')) {
+                loadLicensesIntoDropdown();
+            }
+        });
+    }
+});
 
 // دالة اختيار الرخصة للمخالفات
 function selectViolationLicense() {
@@ -3721,7 +4408,7 @@ function deleteExtension(extensionId) {
             </div>
         </div>
 
-        <!-- قسم رخصة الحفر -->
+        <!-- قسم رخصة الحفر مع Vue.js -->
         <div id="dig-license-section" class="tab-section" style="display: none;">
             <div class="section-card">
                 <div class="section-header">
@@ -3731,8 +4418,16 @@ function deleteExtension(extensionId) {
                     </h3>
                 </div>
                 <div class="section-body">
+                    <!-- Vue.js Dig License Manager -->
+                    <div id="dig-license-vue-app">
+                        <!-- سيتم تحميل المحتوى هنا بواسطة Vue.js -->
+                        <div class="text-center py-4">
+                            <i class="fas fa-spinner fa-spin fa-2x text-primary"></i>
+                            <p class="mt-2 text-muted">جاري تحميل مدير رخص الحفر...</p>
+                        </div>
+                    </div>
 
-                    <!-- جدول رخص الحفر -->
+                    <!-- جدول رخص الحفر
                     <div class="card">
                         <div class="card-header bg-info text-white">
                             <h5 class="mb-0">
@@ -3773,176 +4468,41 @@ function deleteExtension(extensionId) {
                                 </table>
                             </div>
                         </div>
-                    </div>
+                    </div> -->
 
-                    <!-- قسم التمديدات -->
-                    <div class="card mt-4">
+                    <!-- قسم التمديدات مع Vue.js -->
+                    <div id="extension-vue-app" class="card mt-4">
                         <div class="card-header bg-warning text-dark">
                             <h5 class="mb-0">
                                 <i class="fas fa-calendar-plus me-2"></i>
-                                تمديدات الرخص
+                                تمديدات رخص الحفر
                             </h5>
                         </div>
                         <div class="card-body">
-                            <!-- اختيار الرخصة للتمديد -->
-                            <div class="row mb-4">
-                                <div class="col-md-8">
-                                    <div class="card border-warning">
-                                        <div class="card-header bg-warning text-dark">
-                                            <h6 class="mb-0">
-                                                <i class="fas fa-clipboard-list me-2"></i>
-                                                اختيار الرخصة للتمديد
-                                            </h6>
+                            <!-- رسائل النجاح والخطأ -->
+                            <div id="success-message" class="alert alert-success alert-dismissible fade show" style="display: none;">
+                                <i class="fas fa-check-circle me-2"></i>
+                                <span id="success-text"></span>
+                                <button type="button" class="btn-close" onclick="clearMessages()"></button>
                                         </div>
-                                        <div class="card-body">
-                                            <div class="row">
-                                                <div class="col-md-12">
-                                                    <label class="form-label fw-bold">
-                                                        <i class="fas fa-search me-2"></i>اختر الرخصة المراد تمديدها:
-                                                    </label>
-                                                    
-                                                    <!-- حقل البحث -->
-                                                    <div class="mb-2">
-                                                        <input type="text" 
-                                                               class="form-control" 
-                                                               id="license-search-input" 
-                                                               placeholder="ابحث برقم الرخصة أو نوعها..."
-                                                               onkeyup="filterLicenseOptions()">
+                            
+                            <div id="error-message" class="alert alert-danger alert-dismissible fade show" style="display: none;">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                <span id="error-text"></span>
+                                <button type="button" class="btn-close" onclick="clearMessages()"></button>
                                                     </div>
                                                     
-                                                    <!-- قائمة الرخص -->
-                                                    <select class="form-select" id="extension-license-selector" onchange="selectExtensionLicense()" size="4">
-                                                        <option value="">-- اختر الرخصة للتمديد --</option>
-                                                    </select>
-                                                    
-                                                    <!-- أزرار سريعة -->
-                                                    <div class="mt-2 d-flex gap-2 flex-wrap">
-                                                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="selectLatestLicense()">
-                                                            <i class="fas fa-clock me-1"></i>الأحدث
-                                                        </button>
-                                                        <button type="button" class="btn btn-sm btn-outline-info" onclick="selectActiveOnlyLicenses()">
-                                                            <i class="fas fa-filter me-1"></i>السارية فقط
-                                                        </button>
-                                                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="clearLicenseSearch()">
-                                                            <i class="fas fa-times me-1"></i>مسح البحث
-                                                        </button>
-                                                    </div>
-                                                    
-                                                    <div class="mt-2">
-                                                        <small class="text-muted">
-                                                            <i class="fas fa-info-circle me-1"></i>
-                                                            يجب اختيار رخصة قبل إدخال بيانات التمديد. استخدم البحث لسهولة الوصول للرخصة المطلوبة.
-                                                        </small>
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-12">
-                                                    <label class="form-label fw-bold">إجراءات:</label>
-                                                    <div class="d-grid gap-2">
-                                                        <button type="button" class="btn btn-success" id="add-extension-btn" onclick="showExtensionForm()" disabled>
-                                                            <i class="fas fa-plus me-1"></i>
-                                                            إضافة تمديد
-                                                        </button>
-                                                    </div>
+                            <!-- Vue.js Extension Manager -->
+                            <div id="vue-extension-app">
+                                <!-- سيتم تحميل المحتوى هنا بواسطة Vue.js -->
+                                <div class="text-center py-4">
+                                    <i class="fas fa-spinner fa-spin fa-2x text-primary"></i>
+                                    <p class="mt-2 text-muted">جاري تحميل مدير التمديدات...</p>
                                                 </div>
                                             </div>
                                             
-                                            <div id="selected-extension-license-info" class="mt-3" style="display: none;">
-                                                <div class="alert alert-warning mb-0">
-                                                    <i class="fas fa-certificate me-2"></i>
-                                                    الرخصة المختارة: <strong id="extension-license-display"></strong>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                            <!-- تم حذف النموذج التقليدي - الآن نستخدم Vue.js component فقط -->
 
-                            <!-- نموذج إضافة التمديد -->
-                            <div id="extension-form-card" class="card border-primary mb-4" style="display: none;">
-                                <div class="card-header bg-primary text-white">
-                                    <h6 class="mb-0">
-                                        <i class="fas fa-plus-circle me-2"></i>
-                                        إضافة تمديد جديد
-                                    </h6>
-                                </div>
-                                <div class="card-body">
-                                    <form id="extensionForm" enctype="multipart/form-data">
-                                        @csrf
-                                        <input type="hidden" name="work_order_id" value="{{ $workOrder->id }}">
-                                        <input type="hidden" name="license_id" id="extension-license-id" value="">
-                                        
-                                        <div class="row g-3">
-                                            <div class="col-md-6">
-                                                <label class="form-label fw-bold">
-                                                    <i class="fas fa-money-bill me-2"></i>قيمة التمديد (ريال)
-                                                </label>
-                                                <div class="input-group">
-                                                    <input type="number" class="form-control" name="extension_value" step="0.01" required>
-                                                    <span class="input-group-text">ريال</span>
-                                                </div>
-                                            </div>
-                                            
-                                            <div class="col-md-3">
-                                                <label class="form-label fw-bold">
-                                                    <i class="fas fa-calendar me-2"></i>تاريخ البداية
-                                                </label>
-                                                <input type="date" class="form-control" name="extension_start_date" id="extension-start-date" required>
-                                            </div>
-                                            
-                                            <div class="col-md-3">
-                                                <label class="form-label fw-bold">
-                                                    <i class="fas fa-calendar-check me-2"></i>تاريخ النهاية
-                                                </label>
-                                                <input type="date" class="form-control" name="extension_end_date" id="extension-end-date" required>
-                                            </div>
-
-                                            <div class="col-md-6">
-                                                <label class="form-label fw-bold">
-                                                    <i class="fas fa-clock me-2"></i>عدد أيام التمديد
-                                                </label>
-                                                <input type="number" class="form-control bg-light" name="extension_days" id="extension-days-display" readonly>
-                                            </div>
-
-                                            <div class="col-md-6">
-                                                <label class="form-label fw-bold">
-                                                    <i class="fas fa-file-pdf me-2"></i>ملف الرخصة
-                                                </label>
-                                                <input type="file" class="form-control" name="extension_license_file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
-                                            </div>
-
-                                            <div class="col-md-6">
-                                                <label class="form-label fw-bold">
-                                                    <i class="fas fa-receipt me-2"></i>إثبات السداد
-                                                </label>
-                                                <input type="file" class="form-control" name="extension_payment_proof" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
-                                            </div>
-
-                                            <div class="col-md-6">
-                                                <label class="form-label fw-bold">
-                                                    <i class="fas fa-university me-2"></i>إثبات سداد البنك
-                                                </label>
-                                                <input type="file" class="form-control" name="extension_bank_proof" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
-                                            </div>
-
-                                            <div class="col-12">
-                                                <label class="form-label fw-bold">
-                                                    <i class="fas fa-sticky-note me-2"></i> الملاحظات
-                                                </label>
-                                                <textarea class="form-control" name="extension_reason" rows="3" placeholder="أذكر سبب التمديد أو أي ملاحظات إضافية..."></textarea>
-                                            </div>
-                                        </div>
-
-                                        <div class="d-flex justify-content-end gap-2 mt-4">
-                                            <button type="button" class="btn btn-secondary" onclick="hideExtensionForm()">
-                                                <i class="fas fa-times me-2"></i>إلغاء
-                                            </button>
-                                            <button type="button" class="btn btn-success" id="save-extension-btn" onclick="saveExtensionData()">
-                                                <i class="fas fa-save me-2"></i>حفظ التمديد
-                                            </button>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
 
                             <!-- جدول التمديدات المحفوظة -->
                             <div class="card">
@@ -3951,6 +4511,10 @@ function deleteExtension(extensionId) {
                                         <h6 class="mb-0">
                                             <i class="fas fa-list me-2"></i>
                                             سجل التمديدات المحفوظة
+                                            <small class="text-light ms-2">
+                                                <i class="fas fa-info-circle"></i>
+                                                يتم تحديثه تلقائياً عند الحفظ
+                                            </small>
                                         </h6>
                                         <div class="text-end">
                                             <div class="badge bg-secondary fs-6 px-3 py-2" id="extensions-total-badge">
@@ -4570,10 +5134,16 @@ function deleteExtension(extensionId) {
                         <!-- معلومات المخالفة -->
                         <div class="card border-danger mb-4">
                             <div class="card-header bg-danger text-white">
+                                <div class="d-flex justify-content-between align-items-center">
                                 <h5 class="mb-0">
                                     <i class="fas fa-exclamation-triangle me-2"></i>
                                     تسجيل مخالفة جديدة
                                 </h5>
+                                    <small class="text-light">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        الحقول المميزة بـ <span class="text-warning">*</span> مطلوبة
+                                    </small>
+                                </div>
                             </div>
                             <div class="card-body">
                                 <!-- اختيار الرخصة -->
@@ -4607,31 +5177,55 @@ function deleteExtension(extensionId) {
                                 <!-- معلومات المخالفة الأساسية -->
                                 <div class="row g-3 mb-4">
                                     <div class="col-md-3">
-                                        <label class="form-label fw-bold">رقم المخالفة</label>
+                                        <label class="form-label fw-bold">
+                                            رقم المخالفة
+                                            <span class="text-danger">*</span>
+                                        </label>
                                         <div class="input-group">
                                             <span class="input-group-text"><i class="fas fa-hashtag"></i></span>
                                             <input type="text" class="form-control" name="violation_number" required>
                                         </div>
+                                        <div class="invalid-feedback">
+                                            يرجى إدخال رقم المخالفة
+                                        </div>
                                     </div>
                                     <div class="col-md-3">
-                                        <label class="form-label fw-bold">تصنيف المخالفة</label>
+                                        <label class="form-label fw-bold">
+                                            تصنيف المخالفة
+                                            <span class="text-danger">*</span>
+                                        </label>
                                         <div class="input-group">
                                             <span class="input-group-text"><i class="fas fa-tag"></i></span>
                                             <input type="text" class="form-control" name="violation_type" required placeholder="أدخل تصنيف المخالفة">
                                         </div>
+                                        <div class="invalid-feedback">
+                                            يرجى إدخال تصنيف المخالفة
+                                        </div>
                                     </div>
                                     <div class="col-md-3">
-                                        <label class="form-label fw-bold">تاريخ رصد المخالفة</label>
+                                        <label class="form-label fw-bold">
+                                            تاريخ رصد المخالفة
+                                            <span class="text-danger">*</span>
+                                        </label>
                                         <div class="input-group">
                                             <span class="input-group-text"><i class="fas fa-calendar"></i></span>
                                             <input type="date" class="form-control" name="violation_date" value="{{ date('Y-m-d') }}" required>
                                         </div>
+                                        <div class="invalid-feedback">
+                                            يرجى اختيار تاريخ رصد المخالفة
+                                        </div>
                                     </div>
                                     <div class="col-md-3">
-                                        <label class="form-label fw-bold">تاريخ الاستحقاق</label>
+                                        <label class="form-label fw-bold">
+                                            تاريخ الاستحقاق
+                                            <span class="text-danger">*</span>
+                                        </label>
                                         <div class="input-group">
                                             <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
                                             <input type="date" class="form-control" name="payment_due_date" value="{{ date('Y-m-d', strtotime('+30 days')) }}" required>
+                                        </div>
+                                        <div class="invalid-feedback">
+                                            يرجى اختيار تاريخ الاستحقاق
                                         </div>
                                     </div>
                                 </div>
@@ -4639,17 +5233,29 @@ function deleteExtension(extensionId) {
                                 <!-- تفاصيل المخالفة -->
                                 <div class="row g-3 mb-4">
                                     <div class="col-md-6">
-                                        <label class="form-label fw-bold">وصف المخالفة</label>
+                                        <label class="form-label fw-bold">
+                                            وصف المخالفة
+                                            <span class="text-danger">*</span>
+                                        </label>
                                         <div class="input-group">
                                             <span class="input-group-text"><i class="fas fa-align-left"></i></span>
                                             <textarea class="form-control" name="violation_description" rows="3" required placeholder="اكتب وصفاً تفصيلياً للمخالفة"></textarea>
                                         </div>
+                                        <div class="invalid-feedback">
+                                            يرجى كتابة وصف للمخالفة
+                                        </div>
                                     </div>
                                     <div class="col-md-6">
-                                        <label class="form-label fw-bold">المتسبب</label>
+                                        <label class="form-label fw-bold">
+                                            المتسبب
+                                            <span class="text-danger">*</span>
+                                        </label>
                                         <div class="input-group">
                                             <span class="input-group-text"><i class="fas fa-user"></i></span>
                                             <input type="text" class="form-control" name="responsible_party" required placeholder="اسم الشخص أو الجهة المتسببة">
+                                        </div>
+                                        <div class="invalid-feedback">
+                                            يرجى إدخال اسم المتسبب
                                         </div>
                                     </div>
                                 </div>
@@ -4657,11 +5263,17 @@ function deleteExtension(extensionId) {
                                 <!-- معلومات السداد -->
                                 <div class="row g-3 mb-4">
                                     <div class="col-md-4">
-                                        <label class="form-label fw-bold">قيمة المخالفة</label>
+                                        <label class="form-label fw-bold">
+                                            قيمة المخالفة
+                                            <span class="text-danger">*</span>
+                                        </label>
                                         <div class="input-group">
                                             <span class="input-group-text"><i class="fas fa-money-bill"></i></span>
-                                            <input type="number" class="form-control" name="violation_amount" step="0.01" required>
+                                            <input type="number" class="form-control" name="violation_amount" step="0.01" required min="0">
                                             <span class="input-group-text">ريال</span>
+                                        </div>
+                                        <div class="invalid-feedback">
+                                            يرجى إدخال قيمة المخالفة
                                         </div>
                                     </div>
                                     <div class="col-md-4">
@@ -6139,6 +6751,61 @@ function showAutoSaveSuccess() {
     }, 2000);
 }
 
+// إضافة real-time validation للمخالفات
+function setupViolationValidation() {
+    const form = document.getElementById('violationForm');
+    if (!form) return;
+    
+    const requiredFields = [
+        'violation_number',
+        'violation_type', 
+        'violation_date',
+        'payment_due_date',
+        'violation_description',
+        'responsible_party',
+        'violation_amount'
+    ];
+    
+    requiredFields.forEach(fieldName => {
+        const field = form.querySelector(`[name="${fieldName}"]`);
+        if (field) {
+            field.addEventListener('blur', function() {
+                validateField(this);
+            });
+            
+            field.addEventListener('input', function() {
+                if (this.classList.contains('is-invalid')) {
+                    validateField(this);
+                }
+            });
+        }
+    });
+}
+
+function validateField(field) {
+    const value = field.value.trim();
+    const isValid = value !== '';
+    
+    // تحقق خاص لقيمة المخالفة
+    if (field.name === 'violation_amount' && value) {
+        const amount = parseFloat(value);
+        if (amount <= 0) {
+            field.classList.add('is-invalid');
+            return false;
+        }
+    }
+    
+    if (isValid) {
+        field.classList.remove('is-invalid');
+        field.classList.add('is-valid');
+    } else {
+        field.classList.remove('is-valid');
+        field.classList.add('is-invalid');
+    }
+    
+    return isValid;
+}
+
 // تهيئة النظام عند تحميل الصفحة
 document.addEventListener('DOMContentLoaded', function() {
     // تحميل الرخص والمخالفات
@@ -6147,6 +6814,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // تهيئة نموذج الإخلاءات في حالة معطلة
     disableEvacuationButtons();
+    
+    // تهيئة validation للمخالفات
+    setupViolationValidation();
     
     // تهيئة الجدول بدون اختبارات
     testsArray = [];
@@ -7372,7 +8042,675 @@ selectEvacuationLicense = function() {
 
 @endsection
 
+@push('styles')
+<style>
+/* تنسيقات الـ dropdown المحسن */
+.license-option {
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: none !important;
+    padding: 12px 16px;
+}
+
+.license-option:hover {
+    background-color: #f8f9fa !important;
+    transform: translateX(5px);
+}
+
+.license-option:active {
+    background-color: #e9ecef !important;
+}
+
+.dropdown-menu {
+    border: 1px solid #dee2e6;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    border-radius: 0.5rem;
+}
+
+.license-options-container {
+    border-radius: 0.375rem;
+}
+
+.license-options-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.license-options-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.license-options-container::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.license-options-container::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+.dropdown-toggle::after {
+    margin-left: auto;
+}
+
+#selected-license-text {
+    flex-grow: 1;
+}
+
+.dropdown-item.license-option .badge {
+    font-size: 0.7rem;
+}
+
+/* تأثيرات الانتقال للنموذج */
+#extension-form-card {
+    transition: all 0.5s ease;
+}
+
+#extension-form-card.fade-in {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* تحسينات إضافية للواجهة */
+.dropdown-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.license-update-indicator {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.02);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Vue.js License Items */
+.license-item {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.license-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}
+
+/* تحسينات validation للمخالفات */
+.form-label .text-danger {
+    font-weight: bold;
+    margin-left: 2px;
+}
+
+.is-invalid {
+    border-color: #dc3545 !important;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+}
+
+.invalid-feedback {
+    display: block !important;
+    width: 100%;
+    margin-top: 0.25rem;
+    font-size: 0.875em;
+    color: #dc3545;
+    font-weight: 500;
+}
+
+.is-invalid ~ .invalid-feedback {
+    display: block !important;
+}
+
+/* تحسين مظهر الحقول المطلوبة */
+.form-control:focus {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.form-control.is-invalid:focus {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
+.is-valid {
+    border-color: #198754 !important;
+    box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.25) !important;
+}
+
+.form-control.is-valid:focus {
+    border-color: #198754;
+    box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.25);
+}
+
+/* تحسين مظهر رسائل Toastr */
+.toast-error {
+    white-space: pre-line !important;
+}
+
+/* تحسينات أزرار الإجراءات في جدول المخالفات */
+.btn-group-sm .btn {
+    margin: 0 1px;
+    min-width: 32px;
+}
+
+.btn-outline-primary:hover {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+    color: white;
+}
+
+.btn-outline-danger:hover {
+    background-color: #dc3545;
+    border-color: #dc3545;
+    color: white;
+}
+
+/* تحسين مظهر زر الإلغاء */
+#cancel-edit-btn {
+    transition: all 0.3s ease;
+}
+
+#cancel-edit-btn:hover {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    color: white;
+}
+
+/* تحسينات Vue.js Dig License Manager */
+.dig-license-manager .card {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border: none;
+    margin-bottom: 1.5rem;
+}
+
+.dig-license-manager .card-header {
+    border-bottom: 2px solid rgba(255,255,255,0.2);
+}
+
+.dig-license-manager .form-control:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+.dig-license-manager .input-group-text {
+    background-color: #f8f9fa;
+    border-color: #dee2e6;
+    color: #6c757d;
+}
+
+.dig-license-manager .btn-outline-secondary:hover {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    color: white;
+}
+
+.dig-license-manager .table th {
+    background-color: #e3f2fd;
+    border-bottom: 2px solid #bbdefb;
+    font-weight: 600;
+    color: #1976d2;
+}
+
+.dig-license-manager .table td {
+    vertical-align: middle;
+}
+
+.dig-license-manager .badge {
+    font-size: 0.8em;
+    padding: 0.4em 0.6em;
+}
+
+.dig-license-manager .btn-group-sm .btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    border-radius: 0.2rem;
+}
+
+.dig-license-manager .btn-outline-primary:hover {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(13, 110, 253, 0.3);
+}
+
+.dig-license-manager .btn-outline-danger:hover {
+    background-color: #dc3545;
+    border-color: #dc3545;
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(220, 53, 69, 0.3);
+}
+
+/* تحسين مظهر النموذج */
+.dig-license-manager .form-label {
+    margin-bottom: 0.5rem;
+    color: #495057;
+}
+
+.dig-license-manager .text-danger {
+    color: #dc3545 !important;
+    font-weight: bold;
+}
+
+.dig-license-manager .invalid-feedback {
+    display: block !important;
+    width: 100%;
+    margin-top: 0.25rem;
+    font-size: 0.875em;
+    color: #dc3545;
+}
+
+.dig-license-manager .is-invalid {
+    border-color: #dc3545 !important;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+}
+
+/* تحسين الأيقونات */
+.dig-license-manager .input-group-text i {
+    width: 14px;
+    text-align: center;
+}
+
+/* تحسين الأزرار */
+.dig-license-manager .btn {
+    transition: all 0.3s ease;
+}
+
+.dig-license-manager .btn:hover {
+    transform: translateY(-1px);
+}
+
+/* تحسين الجدول */
+.dig-license-manager .table-responsive {
+    border-radius: 0.5rem;
+    overflow: hidden;
+}
+
+.dig-license-manager .table-striped > tbody > tr:nth-of-type(odd) > td {
+    background-color: rgba(0,0,0,.02);
+}
+
+.dig-license-manager .table-hover tbody tr:hover {
+    background-color: rgba(13, 110, 253, 0.1);
+}
+
+/* تحسينات حقول رفع المرفقات */
+.dig-license-manager input[type="file"] {
+    border: 2px dashed #dee2e6;
+    padding: 0.75rem;
+    background-color: #f8f9fa;
+    transition: all 0.3s ease;
+    border-radius: 0.5rem;
+}
+
+.dig-license-manager input[type="file"]:hover {
+    border-color: #0d6efd;
+    background-color: #e7f3ff;
+}
+
+.dig-license-manager input[type="file"]:focus {
+    border-color: #0d6efd;
+    background-color: #e7f3ff;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+.dig-license-manager .form-text {
+    font-size: 0.8em;
+    margin-top: 0.5rem;
+    color: #6c757d;
+}
+
+.dig-license-manager .text-success small {
+    font-weight: 500;
+}
+
+.dig-license-manager .list-unstyled li {
+    padding: 0.25rem 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.dig-license-manager .list-unstyled li:last-child {
+    border-bottom: none;
+}
+
+/* تحسين مظهر قسم المرفقات */
+.dig-license-manager h6.text-primary {
+    border-bottom: 2px solid #e3f2fd;
+    padding-bottom: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.dig-license-manager .fas.fa-paperclip {
+    color: #0d6efd;
+}
+
+.dig-license-manager .fas.fa-info-circle {
+    color: #6c757d;
+}
+
+.dig-license-manager .fas.fa-check {
+    color: #198754;
+}
+
+.dig-license-manager .fas.fa-file {
+    color: #6c757d;
+}
+
+/* تحسينات عمود المرفقات */
+.dig-license-manager .d-flex.gap-1 {
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 0.25rem !important;
+}
+
+.dig-license-manager .d-flex.gap-1 .badge {
+    font-size: 0.7em;
+    padding: 0.3em 0.5em;
+    cursor: help;
+}
+
+.dig-license-manager .badge.bg-success {
+    background-color: #198754 !important;
+}
+
+.dig-license-manager .badge.bg-warning {
+    background-color: #ffc107 !important;
+    color: #000;
+}
+
+.dig-license-manager .badge.bg-info {
+    background-color: #0dcaf0 !important;
+    color: #000;
+}
+
+.dig-license-manager .fas.fa-file-pdf {
+    margin-right: 0;
+}
+
+.dig-license-manager .fas.fa-file-invoice {
+    margin-right: 2px;
+}
+
+.dig-license-manager .fas.fa-certificate {
+    margin-right: 0;
+}
+
+/* تحسينات عمود الأبعاد */
+.dig-license-manager .badge.bg-light {
+    color: #495057 !important;
+    border: 1px solid #dee2e6;
+    font-size: 0.7em;
+    padding: 0.3em 0.5em;
+}
+
+.dig-license-manager .fas.fa-arrows-alt-h,
+.dig-license-manager .fas.fa-arrows-alt-v,
+.dig-license-manager .fas.fa-arrow-down {
+    font-size: 0.8em;
+}
+
+/* تحسينات العداد التنازلي */
+.dig-license-manager .countdown-display .progress {
+    border-radius: 10px;
+    background-color: #e9ecef;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.dig-license-manager .countdown-display .progress-bar {
+    border-radius: 10px;
+    transition: width 0.5s ease-in-out;
+    position: relative;
+    overflow: hidden;
+}
+
+.dig-license-manager .countdown-display .progress-bar::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background-image: linear-gradient(45deg, rgba(255,255,255,.15) 25%, transparent 25%, transparent 50%, rgba(255,255,255,.15) 50%, rgba(255,255,255,.15) 75%, transparent 75%, transparent);
+    background-size: 1rem 1rem;
+    animation: progress-bar-stripes 1s linear infinite;
+}
+
+@keyframes progress-bar-stripes {
+    0% { background-position: 1rem 0; }
+    100% { background-position: 0 0; }
+}
+
+.dig-license-manager .countdown-display .badge {
+    font-size: 0.85rem !important;
+    padding: 0.5em 0.75em;
+    font-weight: 600;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+}
+
+.dig-license-manager .countdown-display .badge.bg-danger {
+    animation: pulse-danger 2s infinite;
+}
+
+@keyframes pulse-danger {
+    0% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(220, 53, 69, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
+}
+
+.dig-license-manager .countdown-display .badge.bg-warning {
+    animation: pulse-warning 3s infinite;
+}
+
+@keyframes pulse-warning {
+    0% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.7); }
+    70% { box-shadow: 0 0 0 8px rgba(255, 193, 7, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0); }
+}
+
+/* تحسين أزرار الإجراءات في الجدول */
+.dig-license-manager .btn-group .btn {
+    min-width: 32px;
+    padding: 0.25rem 0.4rem;
+    font-size: 0.8rem;
+    border-radius: 4px;
+    margin: 0 1px;
+    transition: all 0.3s ease;
+}
+
+.dig-license-manager .btn-group .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.dig-license-manager .btn-outline-info {
+    border-color: #0dcaf0;
+    color: #0dcaf0;
+}
+
+.dig-license-manager .btn-outline-info:hover {
+    background-color: #0dcaf0;
+    border-color: #0dcaf0;
+    color: #fff;
+}
+
+.dig-license-manager .btn-outline-info:focus {
+    box-shadow: 0 0 0 0.2rem rgba(13, 202, 240, 0.25);
+}
+
+/* تحسين عرض المرفقات */
+.dig-license-manager .fas.fa-file-slash {
+    color: #6c757d;
+    font-size: 1.2em;
+}
+
+/* تصغير قسم اختيار الرخصة للتمديد */
+.extension-manager .fs-7 {
+    font-size: 0.875rem;
+}
+
+.extension-manager .license-item {
+    border-width: 1px;
+    padding: 8px 12px;
+    margin-bottom: 4px;
+    font-size: 0.9rem;
+}
+
+.extension-manager .license-item:hover {
+    background-color: rgba(13, 110, 253, 0.05);
+    border-color: #0d6efd;
+    transform: translateX(-2px);
+}
+
+.extension-manager .license-item.border-primary {
+    background-color: rgba(13, 110, 253, 0.1);
+    border-color: #0d6efd !important;
+}
+
+.extension-manager .badge-sm {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.4rem;
+}
+
+.extension-manager .input-group-sm {
+    font-size: 0.875rem;
+}
+
+.extension-manager .card-body {
+    padding: 1rem;
+}
+
+.extension-manager .license-list {
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem;
+    padding: 0.5rem;
+    background-color: #f8f9fa;
+}
+
+.extension-manager .license-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.extension-manager .license-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.extension-manager .license-list::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.extension-manager .license-list::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* تحسين select dropdown */
+.dig-license-manager .form-select {
+    border-radius: 0 0.375rem 0.375rem 0;
+    border-left: none;
+}
+
+.dig-license-manager .form-select:focus {
+    border-color: #86b7fe;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+.dig-license-manager .form-select option {
+    padding: 0.5rem;
+}
+
+/* تحسين عرض المرفقات */
+.dig-license-manager .attachments-display .badge {
+    font-size: 1rem;
+    padding: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.dig-license-manager .attachments-display .badge:hover {
+    opacity: 0.8;
+    transform: translateY(-1px);
+}
+
+.dig-license-manager .attachments-display .badge[data-bs-toggle="dropdown"] {
+    position: relative;
+}
+
+.dig-license-manager .attachments-display .badge small {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: rgba(0,0,0,0.2);
+    border-radius: 50%;
+    padding: 2px 4px;
+    font-size: 0.7rem;
+}
+
+.dig-license-manager .attachments-display .dropdown-menu {
+    min-width: 180px;
+    padding: 0.5rem;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+}
+
+.dig-license-manager .attachments-display .dropdown-item {
+    font-size: 0.85rem;
+    padding: 0.4rem 0.8rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.dig-license-manager .attachments-display .dropdown-item:hover {
+    background-color: #f8f9fa;
+}
+
+.dig-license-manager .attachments-display .fas {
+    font-size: 1.1em;
+}
+
+/* تحسين responsive للجدول */
+@media (max-width: 992px) {
+    .dig-license-manager .table-responsive {
+        font-size: 0.9em;
+    }
+    
+    .dig-license-manager .badge {
+        font-size: 0.6em !important;
+        padding: 0.2em 0.4em !important;
+    }
+    
+    .dig-license-manager .btn-group-sm .btn {
+        padding: 0.2rem 0.4rem;
+        font-size: 0.8rem;
+    }
+    
+    .dig-license-manager .attachments-display .btn {
+        font-size: 0.7rem;
+        padding: 0.2rem 0.4rem;
+    }
+}
+</style>
+@endpush
+
 @push('scripts')
+<!-- Vue.js و Axios -->
+<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
 <!-- تحميل معالج JavaScript الآمن للرخص -->
 <script src="{{ asset('js/work-order-license.js') }}?v={{ time() }}"></script>
 
@@ -7490,6 +8828,1768 @@ function fillLicenseData(license) {
     // حساب عدد الأيام إذا كانت تواريخ البداية والنهاية موجودة
     if (license.license_start_date && license.license_end_date) {
         calculateLicenseDays();
+    }
+}
+
+// دوال JavaScript عادية للرسائل
+function showSuccessMessage(message) {
+    const successDiv = document.getElementById('success-message');
+    const successText = document.getElementById('success-text');
+    
+    if (successDiv && successText) {
+        successText.textContent = message;
+        successDiv.style.display = 'block';
+        
+        setTimeout(() => {
+            successDiv.style.display = 'none';
+        }, 5000);
+    }
+}
+
+function showErrorMessage(message) {
+    const errorDiv = document.getElementById('error-message');
+    const errorText = document.getElementById('error-text');
+    
+    if (errorDiv && errorText) {
+        errorText.textContent = message;
+        errorDiv.style.display = 'block';
+    }
+}
+
+function clearMessages() {
+    const successDiv = document.getElementById('success-message');
+    const errorDiv = document.getElementById('error-message');
+    
+    if (successDiv) successDiv.style.display = 'none';
+    if (errorDiv) errorDiv.style.display = 'none';
+}
+
+// Vue.js Extension Manager Component
+const { createApp } = Vue;
+
+const ExtensionApp = createApp({
+  data() {
+    return {
+      workOrderId: {{ $workOrder->id }},
+      licenses: [],
+      selectedLicense: null,
+      isLoading: false,
+      isSubmitting: false,
+      searchTerm: '',
+      extensionForm: {
+        extension_value: '',
+        extension_start_date: '',
+        extension_end_date: '',
+        extension_reason: '',
+        extension_license_file: null,
+        extension_payment_proof: null,
+        extension_bank_proof: null
+      },
+      showForm: false,
+      errors: {}
+    };
+  },
+  
+  computed: {
+    filteredLicenses() {
+      if (!this.searchTerm) return this.licenses;
+      return this.licenses.filter(license => 
+        license.license_number.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+        license.license_type.toLowerCase().includes(this.searchTerm.toLowerCase())
+      );
+    },
+    
+    extensionDays() {
+      if (this.extensionForm.extension_start_date && this.extensionForm.extension_end_date) {
+        const start = new Date(this.extensionForm.extension_start_date);
+        const end = new Date(this.extensionForm.extension_end_date);
+        const diffTime = Math.abs(end - start);
+        return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      }
+      return 0;
+    }
+  },
+  
+  methods: {
+    async loadLicenses() {
+      this.isLoading = true;
+      try {
+        const response = await axios.get(`/admin/licenses/by-work-order/${this.workOrderId}`);
+        if (response.data.success) {
+          this.licenses = response.data.licenses;
+        } else {
+          showErrorMessage('فشل في تحميل الرخص');
+        }
+      } catch (error) {
+        console.error('خطأ في تحميل الرخص:', error);
+        showErrorMessage('حدث خطأ أثناء تحميل الرخص');
+      } finally {
+        this.isLoading = false;
+      }
+    },
+    
+    async selectLicense(license) {
+      this.selectedLicense = license;
+      this.showForm = true;
+      this.resetForm();
+      
+      // تعيين تاريخ اليوم كتاريخ بداية افتراضي
+      const today = new Date().toISOString().split('T')[0];
+      this.extensionForm.extension_start_date = today;
+      
+      // تحديث بيانات الرخصة
+      await this.updateLicenseData(license.id);
+      
+      // التمرير للنموذج
+      this.$nextTick(() => {
+        const formElement = this.$refs.extensionForm;
+        if (formElement) {
+          formElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+      
+      showSuccessMessage(`تم اختيار الرخصة: ${license.license_number}`);
+    },
+    
+    async updateLicenseData(licenseId) {
+      try {
+        const response = await axios.get('/admin/work-orders/get-license-data', {
+          params: {
+            license_id: licenseId,
+            work_order_id: this.workOrderId
+          }
+        });
+        
+        if (response.data.success) {
+          // تحديث بيانات الرخصة المختارة
+          const updatedLicense = response.data.license;
+          this.selectedLicense = { ...this.selectedLicense, ...updatedLicense };
+        }
+      } catch (error) {
+        console.error('خطأ في تحديث بيانات الرخصة:', error);
+      }
+    },
+    
+    async submitExtension() {
+      if (!this.selectedLicense) {
+        showErrorMessage('يجب اختيار رخصة أولاً');
+        return;
+      }
+      
+      this.isSubmitting = true;
+      this.errors = {};
+      clearMessages();
+      
+      try {
+        const formData = new FormData();
+        formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+        formData.append('work_order_id', this.workOrderId);
+        formData.append('license_id', this.selectedLicense.id);
+        formData.append('section_type', 'extension');
+        
+        // إضافة بيانات التمديد
+        Object.keys(this.extensionForm).forEach(key => {
+          if (this.extensionForm[key] !== null && this.extensionForm[key] !== '') {
+            formData.append(key, this.extensionForm[key]);
+          }
+        });
+        
+        // إضافة عدد الأيام المحسوب
+        formData.append('extension_days', this.extensionDays);
+        
+        const response = await axios.post('/admin/licenses/save-section', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        });
+        
+        if (response.data.success) {
+          showSuccessMessage('تم حفظ التمديد بنجاح!');
+          this.resetForm();
+          this.showForm = false;
+          this.selectedLicense = null;
+          
+          // إعادة تحميل جدول التمديدات
+          setTimeout(() => {
+            this.reloadExtensionsTable();
+          }, 1500);
+        } else {
+          showErrorMessage(response.data.message || 'فشل في حفظ التمديد');
+          if (response.data.errors) {
+            this.errors = response.data.errors;
+          }
+        }
+      } catch (error) {
+        console.error('خطأ في حفظ التمديد:', error);
+        if (error.response && error.response.data) {
+          showErrorMessage(error.response.data.message || 'حدث خطأ أثناء حفظ التمديد');
+          if (error.response.data.errors) {
+            this.errors = error.response.data.errors;
+          }
+        } else {
+          showErrorMessage('حدث خطأ في الاتصال بالخادم');
+        }
+      } finally {
+        this.isSubmitting = false;
+      }
+    },
+    
+    resetForm() {
+      this.extensionForm = {
+        extension_value: '',
+        extension_start_date: '',
+        extension_end_date: '',
+        extension_reason: '',
+        extension_license_file: null,
+        extension_payment_proof: null,
+        extension_bank_proof: null
+      };
+      this.errors = {};
+    },
+    
+    handleFileUpload(event, fieldName) {
+      const file = event.target.files[0];
+      if (file) {
+        this.extensionForm[fieldName] = file;
+      }
+    },
+    
+    formatCurrency(amount) {
+      if (!amount) return '0.00 ر.س';
+      return parseFloat(amount).toLocaleString('ar-SA', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }) + ' ر.س';
+    },
+    
+    formatDate(dateString) {
+      if (!dateString) return 'غير محدد';
+      const date = new Date(dateString);
+      // تنسيق التاريخ الميلادي بدلاً من الهجري
+      return date.toLocaleDateString('en-GB', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      });
+    },
+    
+    getLicenseStatusClass(status) {
+      switch(status) {
+        case 'active': return 'badge bg-success';
+        case 'expired': return 'badge bg-danger';
+        case 'extended': return 'badge bg-warning';
+        case 'cancelled': return 'badge bg-secondary';
+        default: return 'badge bg-info';
+      }
+    },
+    
+    getLicenseStatusText(status) {
+      switch(status) {
+        case 'active': return 'سارية';
+        case 'expired': return 'منتهية';
+        case 'extended': return 'ممددة';
+        case 'cancelled': return 'ملغاة';
+        default: return 'غير محدد';
+      }
+    },
+    
+    // دالة إضافية يمكن استخدامها لاحقاً
+    refreshLicenses() {
+      this.loadLicenses();
+    },
+    
+    // إعادة تحميل جدول التمديدات
+    reloadExtensionsTable() {
+      // إعادة تحميل الصفحة لتحديث جدول التمديدات
+      window.location.reload();
+    }
+  },
+  
+  mounted() {
+    this.loadLicenses();
+  },
+  
+  template: `
+    <div class="extension-manager">
+      <!-- حقل البحث المصغر -->
+      <div class="row mb-3">
+        <div class="col-12">
+          <div class="card border-primary" style="border-width: 1px;">
+            <div class="card-header bg-primary text-white py-2">
+              <h6 class="mb-0 fs-7">
+                <i class="fas fa-search me-1"></i>
+                اختيار الرخصة للتمديد
+              </h6>
+            </div>
+            <div class="card-body py-3">
+              <!-- البحث والاختيار في صف واحد -->
+              <div class="row align-items-center">
+                <div class="col-md-6">
+                  <div class="input-group input-group-sm">
+                    <span class="input-group-text">
+                      <i class="fas fa-search"></i>
+                    </span>
+                    <input 
+                      type="text" 
+                      class="form-control form-control-sm" 
+                      v-model="searchTerm"
+                      placeholder="ابحث برقم الرخصة..."
+                    >
+                  </div>
+                </div>
+                <div class="col-md-6" v-if="selectedLicense">
+                  <div class="d-flex align-items-center justify-content-between bg-light rounded p-2">
+                    <div>
+                      <span class="badge bg-primary me-2" v-text="selectedLicense.license_number"></span>
+                      <small class="text-muted" v-text="selectedLicense.license_type"></small>
+                    </div>
+                    <small class="text-success fw-bold" v-text="formatCurrency(selectedLicense.license_value)"></small>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- قائمة الرخص المصغرة -->
+              <div v-if="isLoading" class="text-center py-2">
+                <small><i class="fas fa-spinner fa-spin me-1"></i> جاري التحميل...</small>
+              </div>
+              
+              <div v-else-if="filteredLicenses.length === 0" class="text-center py-2 text-muted">
+                <small><i class="fas fa-exclamation-circle me-1"></i> لا توجد رخص</small>
+              </div>
+              
+              <div v-else class="license-list mt-3" style="max-height: 200px; overflow-y: auto;">
+                <div 
+                  v-for="license in filteredLicenses" 
+                  :key="license.id"
+                  class="license-item p-2 border rounded mb-1 cursor-pointer"
+                  :class="{ 'border-primary bg-primary bg-opacity-10': selectedLicense && selectedLicense.id === license.id }"
+                  @click="selectLicense(license)"
+                  style="transition: all 0.2s ease;"
+                >
+                  <div class="d-flex align-items-center">
+                    <div class="me-2">
+                      <i class="fas fa-certificate text-primary"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                      <div class="fw-bold text-dark small" v-text="license.license_number"></div>
+                      <div class="d-flex align-items-center">
+                        <small class="text-muted me-2" v-text="license.license_type"></small>
+                        <span :class="getLicenseStatusClass(license.status || 'active')" class="badge badge-sm me-1" v-text="getLicenseStatusText(license.status || 'active')"></span>
+                        <small class="text-success" v-text="formatCurrency(license.license_value)"></small>
+                      </div>
+                    </div>
+                    <div class="text-end">
+                      <i class="fas fa-chevron-left text-muted small"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- نموذج التمديد -->
+      <div v-if="showForm" ref="extensionForm" class="card border-success mt-4">
+        <div class="card-header bg-success text-white">
+          <h6 class="mb-0">
+            <i class="fas fa-calendar-plus me-2"></i>
+            إضافة تمديد جديد
+          </h6>
+        </div>
+        <div class="card-body">
+          <form @submit.prevent="submitExtension">
+            <div class="row">
+              <!-- قيمة التمديد -->
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold required">قيمة تمديد الرخصة</label>
+                <input 
+                  type="number" 
+                  step="0.01" 
+                  class="form-control"
+                  :class="{ 'is-invalid': errors.extension_value }"
+                  v-model="extensionForm.extension_value"
+                  placeholder="0.00"
+                  required
+                >
+                <div v-if="errors.extension_value" class="invalid-feedback" v-text="errors.extension_value[0]">
+                </div>
+              </div>
+              
+              <!-- تاريخ البداية -->
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold required">تاريخ بداية التمديد</label>
+                <input 
+                  type="date" 
+                  class="form-control"
+                  :class="{ 'is-invalid': errors.extension_start_date }"
+                  v-model="extensionForm.extension_start_date"
+                  required
+                >
+                <div v-if="errors.extension_start_date" class="invalid-feedback" v-text="errors.extension_start_date[0]">
+                </div>
+              </div>
+              
+              <!-- تاريخ النهاية -->
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold required">تاريخ نهاية التمديد</label>
+                <input 
+                  type="date" 
+                  class="form-control"
+                  :class="{ 'is-invalid': errors.extension_end_date }"
+                  v-model="extensionForm.extension_end_date"
+                  required
+                >
+                <div v-if="errors.extension_end_date" class="invalid-feedback" v-text="errors.extension_end_date[0]">
+                </div>
+              </div>
+              
+              <!-- عدد الأيام (محسوب تلقائياً) -->
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold">مدة التمديد (أيام)</label>
+                <input 
+                  type="text" 
+                  class="form-control bg-light" 
+                  :value="extensionDays + ' يوم'"
+                  readonly
+                >
+              </div>
+              
+              <!-- سبب التمديد -->
+              <div class="col-12 mb-3">
+                <label class="form-label fw-bold">سبب التمديد</label>
+                <textarea 
+                  class="form-control"
+                  :class="{ 'is-invalid': errors.extension_reason }"
+                  v-model="extensionForm.extension_reason"
+                  rows="3"
+                  placeholder="اذكر سبب طلب التمديد..."
+                ></textarea>
+                <div v-if="errors.extension_reason" class="invalid-feedback" v-text="errors.extension_reason[0]">
+                </div>
+              </div>
+              
+              <!-- الملفات -->
+              <div class="col-md-4 mb-3">
+                <label class="form-label fw-bold">ملف الرخصة الجديدة</label>
+                <input 
+                  type="file" 
+                  class="form-control"
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  @change="handleFileUpload($event, 'extension_license_file')"
+                >
+                <small class="form-text text-muted">PDF, JPG, PNG</small>
+              </div>
+              
+              <div class="col-md-4 mb-3">
+                <label class="form-label fw-bold">إثبات سداد البنك</label>
+                <input 
+                  type="file" 
+                  class="form-control"
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  @change="handleFileUpload($event, 'extension_payment_proof')"
+                >
+                <small class="form-text text-muted">PDF, JPG, PNG</small>
+              </div>
+              
+              <div class="col-md-4 mb-3">
+                <label class="form-label fw-bold">  فواتير سداد التمديد</label>
+                <input 
+                  type="file" 
+                  class="form-control"
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  @change="handleFileUpload($event, 'extension_bank_proof')"
+                >
+                <small class="form-text text-muted">PDF, JPG, PNG</small>
+              </div>
+            </div>
+            
+            <!-- أزرار التحكم -->
+            <div class="d-flex justify-content-end gap-2 mt-4">
+              <button 
+                type="button" 
+                class="btn btn-secondary"
+                @click="showForm = false; selectedLicense = null"
+                :disabled="isSubmitting"
+              >
+                <i class="fas fa-times me-1"></i>
+                إلغاء
+              </button>
+              <button 
+                type="submit" 
+                class="btn btn-success"
+                :disabled="isSubmitting || !selectedLicense"
+              >
+                <i v-if="isSubmitting" class="fas fa-spinner fa-spin me-1"></i>
+                <i v-else class="fas fa-save me-1"></i>
+                <span v-if="isSubmitting">جاري الحفظ...</span>
+                <span v-else>حفظ التمديد</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  `
+});
+
+// تشغيل Vue.js App
+ExtensionApp.mount('#vue-extension-app');
+
+// التحقق من وجود Vue.js و Axios
+if (typeof Vue === 'undefined') {
+  console.error('Vue.js is not loaded!');
+  document.getElementById('dig-license-vue-app').innerHTML = `
+    <div class="alert alert-danger">
+      <h5><i class="fas fa-exclamation-triangle me-2"></i>خطأ في تحميل Vue.js</h5>
+      <p>لم يتم تحميل مكتبة Vue.js بشكل صحيح. يرجى التحقق من الاتصال بالإنترنت وإعادة تحميل الصفحة.</p>
+    </div>
+  `;
+}
+
+if (typeof axios === 'undefined') {
+  console.error('Axios is not loaded!');
+  document.getElementById('dig-license-vue-app').innerHTML = `
+    <div class="alert alert-danger">
+      <h5><i class="fas fa-exclamation-triangle me-2"></i>خطأ في تحميل Axios</h5>
+      <p>لم يتم تحميل مكتبة Axios بشكل صحيح. يرجى التحقق من الاتصال بالإنترنت وإعادة تحميل الصفحة.</p>
+    </div>
+  `;
+}
+
+console.log('Vue version:', Vue ? Vue.version : 'Not loaded');
+console.log('Axios version:', axios ? axios.VERSION : 'Not loaded');
+
+// Vue.js Dig License Manager Component
+const DigLicenseApp = createApp({
+  data() {
+    return {
+      workOrderId: {{ $workOrder->id }},
+      licenses: [],
+      isLoading: false,
+      isSubmitting: false,
+      showForm: false,
+      editMode: false,
+      editingLicenseId: null,
+      licenseForm: {
+        license_number: '',
+        license_date: '',
+        license_type: '',
+        license_value: '',
+        excavation_length: '',
+        excavation_width: '',
+        excavation_depth: '',
+        license_start_date: '',
+        license_end_date: '',
+        extension_value: '',
+        extension_start_date: '',
+        extension_end_date: '',
+        license_file: null,
+        payment_proof_files: [],
+        coordination_certificate_file: null,
+        notes: ''
+      },
+      errors: {},
+      selectedLicense: null
+    };
+  },
+  
+  computed: {
+    licenseDays() {
+      if (this.licenseForm.license_start_date && this.licenseForm.license_end_date) {
+        const start = new Date(this.licenseForm.license_start_date);
+        const end = new Date(this.licenseForm.license_end_date);
+        const diffTime = Math.abs(end - start);
+        return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      }
+      return 0;
+    },
+    
+    extensionDays() {
+      if (this.licenseForm.extension_start_date && this.licenseForm.extension_end_date) {
+        const start = new Date(this.licenseForm.extension_start_date);
+        const end = new Date(this.licenseForm.extension_end_date);
+        const diffTime = Math.abs(end - start);
+        return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      }
+      return 0;
+    },
+    
+    totalLicenseValue() {
+      const licenseValue = parseFloat(this.licenseForm.license_value) || 0;
+      const extensionValue = parseFloat(this.licenseForm.extension_value) || 0;
+      return licenseValue + extensionValue;
+    }
+  },
+  
+  methods: {
+    async loadLicenses() {
+      this.isLoading = true;
+      try {
+        const response = await axios.get(`/admin/licenses/all-by-work-order/${this.workOrderId}`);
+        if (response.data.success) {
+          this.licenses = response.data.licenses || [];
+          console.log('Loaded licenses:', this.licenses);
+          
+          // معالجة المرفقات لكل رخصة
+          this.licenses.forEach((license, index) => {
+            console.log(`License ${index + 1} (${license.license_number}) files:`, {
+              license_file: license.license_file,
+              license_file_type: typeof license.license_file,
+              payment_proof_files: license.payment_proof_files,
+              payment_proof_files_type: typeof license.payment_proof_files,
+              payment_proof_files_length: license.payment_proof_files ? license.payment_proof_files.length : 'null',
+              coordination_certificate_file: license.coordination_certificate_file,
+              coordination_certificate_file_type: typeof license.coordination_certificate_file
+            });
+          });
+        } else {
+          showErrorMessage('فشل في تحميل رخص الحفر');
+        }
+      } catch (error) {
+        console.error('خطأ في تحميل رخص الحفر:', error);
+        showErrorMessage('حدث خطأ أثناء تحميل رخص الحفر');
+      } finally {
+        this.isLoading = false;
+      }
+    },
+    
+    showAddForm() {
+      this.resetForm();
+      this.showForm = true;
+      this.editMode = false;
+      this.editingLicenseId = null;
+      
+      // تعيين تاريخ اليوم كافتراضي
+      const today = new Date().toISOString().split('T')[0];
+      this.licenseForm.license_date = today;
+      this.licenseForm.license_start_date = today;
+    },
+    
+    async editLicense(license) {
+      this.editMode = true;
+      this.editingLicenseId = license.id;
+      this.showForm = true;
+      
+      console.log('Editing license:', license);
+      console.log('License files:', {
+        license_file: license.license_file,
+        payment_proof_files: license.payment_proof_files,
+        coordination_certificate_file: license.coordination_certificate_file
+      });
+      
+      // ملء النموذج ببيانات الرخصة
+      Object.keys(this.licenseForm).forEach(key => {
+        if (license[key] !== undefined && key !== 'license_file' && key !== 'payment_proof_files' && key !== 'coordination_certificate_file') {
+          this.licenseForm[key] = license[key] || '';
+        }
+      });
+      
+      // معالجة المرفقات الموجودة (للعرض فقط، لا يمكن تعديل الملفات)
+      if (license.license_file) {
+        this.licenseForm.license_file = license.license_file;
+        console.log('Set license_file:', license.license_file);
+      }
+      
+      if (license.payment_proof_files && Array.isArray(license.payment_proof_files)) {
+        this.licenseForm.payment_proof_files = license.payment_proof_files;
+        console.log('Set payment_proof_files:', license.payment_proof_files);
+      }
+      
+      if (license.coordination_certificate_file) {
+        this.licenseForm.coordination_certificate_file = license.coordination_certificate_file;
+        console.log('Set coordination_certificate_file:', license.coordination_certificate_file);
+      }
+      
+      // التمرير للنموذج
+      this.$nextTick(() => {
+        const formElement = this.$refs.licenseForm;
+        if (formElement) {
+          formElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+      
+      showSuccessMessage(`تم تحميل بيانات الرخصة: ${license.license_number}`);
+    },
+    
+    async searchLicenseByNumber() {
+      const licenseNumber = this.licenseForm.license_number.trim();
+      if (!licenseNumber) {
+        showErrorMessage('يرجى إدخال رقم الرخصة أولاً');
+        return;
+      }
+      
+      try {
+        const response = await axios.post('/admin/licenses/search-by-number', {
+          license_number: licenseNumber
+        });
+        
+        if (response.data.success && response.data.license) {
+          const license = response.data.license;
+          
+          // ملء النموذج بالبيانات المسترجعة
+          Object.keys(this.licenseForm).forEach(key => {
+            if (license[key] !== undefined && key !== 'license_file' && key !== 'payment_proof_files' && key !== 'coordination_certificate_file') {
+              this.licenseForm[key] = license[key] || '';
+            }
+          });
+          
+          showSuccessMessage('تم استدعاء بيانات الرخصة بنجاح');
+        } else {
+          showErrorMessage('لم يتم العثور على رخصة بهذا الرقم');
+        }
+      } catch (error) {
+        console.error('خطأ في البحث عن الرخصة:', error);
+        showErrorMessage('حدث خطأ أثناء البحث عن الرخصة');
+      }
+    },
+    
+    async submitLicense() {
+      console.log('submitLicense called');
+      this.isSubmitting = true;
+      this.errors = {};
+      clearMessages();
+      
+      try {
+        // التحقق من البيانات المطلوبة أولاً
+        if (!this.licenseForm.license_number.trim()) {
+          showErrorMessage('يرجى إدخال رقم الرخصة');
+          this.isSubmitting = false;
+          return;
+        }
+        
+        if (!this.licenseForm.license_date) {
+          showErrorMessage('يرجى إدخال تاريخ إصدار الرخصة');
+          this.isSubmitting = false;
+          return;
+        }
+        
+        if (!this.licenseForm.license_type.trim()) {
+          showErrorMessage('يرجى اختيار نوع الرخصة');
+          this.isSubmitting = false;
+          return;
+        }
+        
+        if (!this.licenseForm.license_value || parseFloat(this.licenseForm.license_value) <= 0) {
+          showErrorMessage('يرجى إدخال قيمة الرخصة');
+          this.isSubmitting = false;
+          return;
+        }
+        
+        const formData = new FormData();
+        const csrfToken = document.querySelector('meta[name="csrf-token"]');
+        if (!csrfToken) {
+          showErrorMessage('خطأ في الأمان: لم يتم العثور على CSRF token');
+          this.isSubmitting = false;
+          return;
+        }
+        
+        formData.append('_token', csrfToken.getAttribute('content'));
+        formData.append('work_order_id', this.workOrderId);
+        formData.append('section_type', 'dig_license');
+        
+        console.log('Form data being sent:', {
+          work_order_id: this.workOrderId,
+          license_number: this.licenseForm.license_number,
+          license_date: this.licenseForm.license_date,
+          license_type: this.licenseForm.license_type,
+          license_value: this.licenseForm.license_value
+        });
+        
+        // إضافة بيانات النموذج
+        Object.keys(this.licenseForm).forEach(key => {
+          if (key === 'payment_proof_files') {
+            // معالجة ملفات متعددة
+            this.licenseForm[key].forEach((file, index) => {
+              formData.append(`payment_proof_files[${index}]`, file);
+            });
+          } else if (this.licenseForm[key] instanceof File) {
+            formData.append(key, this.licenseForm[key]);
+          } else if (this.licenseForm[key] !== null && this.licenseForm[key] !== '') {
+            formData.append(key, this.licenseForm[key]);
+          }
+        });
+        
+        // إضافة عدد الأيام المحسوب
+        formData.append('license_days', this.licenseDays);
+        formData.append('extension_days', this.extensionDays);
+        
+        let url = '/admin/licenses/save-section';
+        let method = 'POST';
+        
+        if (this.editMode && this.editingLicenseId) {
+          url = `/admin/licenses/${this.editingLicenseId}`;
+          formData.append('_method', 'PUT');
+        }
+        
+        console.log('Sending request to:', url);
+        console.log('Request method:', this.editMode ? 'PUT' : 'POST');
+        
+        const response = await axios.post(url, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            'X-CSRF-TOKEN': csrfToken.getAttribute('content')
+          }
+        });
+        
+        console.log('Response received:', response.data);
+        
+        if (response.data.success) {
+          const action = this.editMode ? 'تحديث' : 'حفظ';
+          showSuccessMessage(`تم ${action} رخصة الحفر بنجاح!`);
+          this.resetForm();
+          this.showForm = false;
+          this.editMode = false;
+          this.editingLicenseId = null;
+          
+          // إعادة تحميل الرخص
+          await this.loadLicenses();
+        } else {
+          console.log('Server returned error:', response.data);
+          showErrorMessage(response.data.message || 'فشل في حفظ رخصة الحفر');
+          if (response.data.errors) {
+            this.errors = response.data.errors;
+            console.log('Validation errors:', this.errors);
+          }
+        }
+      } catch (error) {
+        console.error('خطأ في حفظ رخصة الحفر:', error);
+        console.error('Error details:', {
+          status: error.response?.status,
+          statusText: error.response?.statusText,
+          data: error.response?.data,
+          url: error.config?.url,
+          method: error.config?.method
+        });
+        
+        if (error.response && error.response.data) {
+          const errorMessage = error.response.data.message || 'حدث خطأ أثناء حفظ رخصة الحفر';
+          showErrorMessage(errorMessage);
+          
+          if (error.response.data.errors) {
+            this.errors = error.response.data.errors;
+            console.log('Server validation errors:', this.errors);
+          }
+          
+          // إذا كان خطأ 404، يعني الـ route غير موجود
+          if (error.response.status === 404) {
+            showErrorMessage('الرابط المطلوب غير موجود. تحقق من إعدادات الـ routes');
+          }
+          
+          // إذا كان خطأ 422، يعني validation error
+          if (error.response.status === 422) {
+            showErrorMessage('خطأ في التحقق من البيانات. تحقق من الحقول المطلوبة');
+          }
+          
+          // إذا كان خطأ 419، يعني CSRF token expired
+          if (error.response.status === 419) {
+            showErrorMessage('انتهت صلاحية الجلسة. يرجى إعادة تحميل الصفحة');
+          }
+        } else if (error.request) {
+          showErrorMessage('لا يمكن الوصول للخادم. تحقق من الاتصال بالإنترنت');
+          console.error('Request made but no response:', error.request);
+        } else {
+          showErrorMessage('حدث خطأ في الاتصال بالخادم');
+          console.error('Error setting up request:', error.message);
+        }
+      } finally {
+        this.isSubmitting = false;
+      }
+    },
+    
+    async deleteLicense(licenseId) {
+      if (!confirm('هل أنت متأكد من حذف هذه الرخصة؟')) {
+        return;
+      }
+      
+      try {
+        const response = await axios.delete(`/admin/licenses/${licenseId}`);
+        if (response.data.success) {
+          showSuccessMessage('تم حذف الرخصة بنجاح');
+          await this.loadLicenses();
+        } else {
+          showErrorMessage('فشل في حذف الرخصة');
+        }
+      } catch (error) {
+        console.error('خطأ في حذف الرخصة:', error);
+        showErrorMessage('حدث خطأ أثناء حذف الرخصة');
+      }
+    },
+    
+    resetForm() {
+      this.licenseForm = {
+        coordination_certificate_number: '',
+        license_number: '',
+        license_date: '',
+        license_type: '',
+        license_value: '',
+        excavation_length: '',
+        excavation_width: '',
+        excavation_depth: '',
+        license_start_date: '',
+        license_end_date: '',
+        extension_value: '',
+        extension_start_date: '',
+        extension_end_date: '',
+        license_file: null,
+        payment_proof_files: [],
+        coordination_certificate_file: null,
+        notes: ''
+      };
+      this.errors = {};
+    },
+    
+    handleFileUpload(event, fieldName) {
+      const file = event.target.files[0];
+      if (file) {
+        this.licenseForm[fieldName] = file;
+      }
+    },
+    
+    handleMultipleFileUpload(event, fieldName) {
+      const files = Array.from(event.target.files);
+      this.licenseForm[fieldName] = files;
+    },
+    
+    formatCurrency(amount) {
+      if (!amount) return '0.00 ر.س';
+      return parseFloat(amount).toLocaleString('ar-SA', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }) + ' ر.س';
+    },
+    
+    formatDate(dateString) {
+      if (!dateString) return 'غير محدد';
+      const date = new Date(dateString);
+      // تنسيق التاريخ الميلادي بدلاً من الهجري
+      return date.toLocaleDateString('en-GB', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      });
+    },
+    
+    getDaysProgress(license) {
+      const totalDays = license.license_days || 0;
+      const startDate = new Date(license.license_start_date);
+      const endDate = new Date(license.license_end_date);
+      const currentDate = new Date();
+      
+      if (currentDate < startDate) {
+        return 0; // لم تبدأ بعد
+      } else if (currentDate > endDate) {
+        return 100; // انتهت
+      } else {
+        const passedTime = currentDate - startDate;
+        const totalTime = endDate - startDate;
+        return Math.round((passedTime / totalTime) * 100);
+      }
+    },
+    
+    getDaysProgressColor(license) {
+      const progress = this.getDaysProgress(license);
+      if (progress < 50) {
+        return 'bg-success'; // أخضر - وقت كافي
+      } else if (progress < 80) {
+        return 'bg-warning'; // أصفر - تحذير
+      } else {
+        return 'bg-danger'; // أحمر - قريب من الانتهاء
+      }
+    },
+    
+    getDaysStatus(license) {
+      const startDate = new Date(license.license_start_date);
+      const endDate = new Date(license.license_end_date);
+      const currentDate = new Date();
+      
+      if (currentDate < startDate) {
+        const daysToStart = Math.ceil((startDate - currentDate) / (1000 * 60 * 60 * 24));
+        return `تبدأ خلال ${daysToStart} يوم`;
+      } else if (currentDate > endDate) {
+        const daysExpired = Math.ceil((currentDate - endDate) / (1000 * 60 * 60 * 24));
+        return `انتهت منذ ${daysExpired} يوم`;
+      } else {
+        const daysRemaining = Math.ceil((endDate - currentDate) / (1000 * 60 * 60 * 24));
+        return `متبقي ${daysRemaining} يوم`;
+      }
+    },
+    
+    // العداد التنازلي الجديد
+    getRemainingDays(license) {
+      if (!license.license_start_date || !license.license_end_date) {
+        return 'غير محدد';
+      }
+      
+      const startDate = new Date(license.license_start_date);
+      const endDate = new Date(license.license_end_date);
+      const currentDate = new Date();
+      
+      if (currentDate < startDate) {
+        const daysToStart = Math.ceil((startDate - currentDate) / (1000 * 60 * 60 * 24));
+        return `${daysToStart} يوم للبدء`;
+      } else if (currentDate > endDate) {
+        const daysExpired = Math.ceil((currentDate - endDate) / (1000 * 60 * 60 * 24));
+        return `انتهت منذ ${daysExpired} يوم`;
+      } else {
+        const daysRemaining = Math.ceil((endDate - currentDate) / (1000 * 60 * 60 * 24));
+        return `${daysRemaining} يوم متبقي`;
+      }
+    },
+    
+    getCountdownBadgeClass(license) {
+      if (!license.license_start_date || !license.license_end_date) {
+        return 'bg-secondary';
+      }
+      
+      const startDate = new Date(license.license_start_date);
+      const endDate = new Date(license.license_end_date);
+      const currentDate = new Date();
+      
+      if (currentDate < startDate) {
+        return 'bg-info'; // أزرق - لم تبدأ
+      } else if (currentDate > endDate) {
+        return 'bg-danger'; // أحمر - انتهت
+      } else {
+        const daysRemaining = Math.ceil((endDate - currentDate) / (1000 * 60 * 60 * 24));
+        if (daysRemaining > 7) {
+          return 'bg-success'; // أخضر - وقت كافي
+        } else if (daysRemaining > 3) {
+          return 'bg-warning'; // أصفر - تحذير
+        } else {
+          return 'bg-danger'; // أحمر - خطر
+        }
+      }
+    },
+    
+    getCountdownProgressColor(license) {
+      if (!license.license_start_date || !license.license_end_date) {
+        return 'bg-secondary';
+      }
+      
+      const startDate = new Date(license.license_start_date);
+      const endDate = new Date(license.license_end_date);
+      const currentDate = new Date();
+      
+      if (currentDate < startDate) {
+        return 'bg-info';
+      } else if (currentDate > endDate) {
+        return 'bg-danger';
+      } else {
+        const totalDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+        const daysRemaining = Math.ceil((endDate - currentDate) / (1000 * 60 * 60 * 24));
+        const percentage = (daysRemaining / totalDays) * 100;
+        
+        if (percentage > 50) {
+          return 'bg-success';
+        } else if (percentage > 25) {
+          return 'bg-warning';
+        } else {
+          return 'bg-danger';
+        }
+      }
+    },
+    
+    getCountdownProgress(license) {
+      if (!license.license_start_date || !license.license_end_date) {
+        return 0;
+      }
+      
+      const startDate = new Date(license.license_start_date);
+      const endDate = new Date(license.license_end_date);
+      const currentDate = new Date();
+      
+      if (currentDate < startDate) {
+        return 0;
+      } else if (currentDate > endDate) {
+        return 100;
+      } else {
+        const totalDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+        const daysPassed = Math.ceil((currentDate - startDate) / (1000 * 60 * 60 * 24));
+        return Math.min(100, Math.max(0, (daysPassed / totalDays) * 100));
+      }
+    },
+    
+    getCountdownTooltip(license) {
+      if (!license.license_start_date || !license.license_end_date) {
+        return 'غير محدد';
+      }
+      
+      const startDate = new Date(license.license_start_date);
+      const endDate = new Date(license.license_end_date);
+      const totalDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+      
+      return `إجمالي مدة الرخصة: ${totalDays} يوم`;
+    },
+    
+    getCountdownStatus(license) {
+      if (!license.license_start_date || !license.license_end_date) {
+        return 'غير محدد';
+      }
+      
+      const startDate = new Date(license.license_start_date);
+      const endDate = new Date(license.license_end_date);
+      const currentDate = new Date();
+      
+      if (currentDate < startDate) {
+        return 'لم تبدأ بعد';
+      } else if (currentDate > endDate) {
+        return 'منتهية الصلاحية';
+      } else {
+        const daysRemaining = Math.ceil((endDate - currentDate) / (1000 * 60 * 60 * 24));
+        if (daysRemaining === 1) {
+          return 'تنتهي اليوم';
+        } else if (daysRemaining <= 3) {
+          return 'تنتهي قريباً';
+        } else if (daysRemaining <= 7) {
+          return 'أسبوع متبقي';
+        } else {
+          return 'نشطة';
+        }
+      }
+    },
+    
+    viewAttachment(file) {
+      if (!file) {
+        showErrorMessage('الملف غير متوفر');
+        return;
+      }
+      
+      // إذا كان الملف عبارة عن string (path)
+      if (typeof file === 'string') {
+        const fileUrl = `/storage/${file}`;
+        window.open(fileUrl, '_blank');
+        return;
+      }
+      
+      // إذا كان الملف عبارة عن object
+      if (file.path) {
+        const fileUrl = `/storage/${file.path}`;
+        window.open(fileUrl, '_blank');
+      } else if (file.url) {
+        window.open(file.url, '_blank');
+      } else {
+        showErrorMessage('لا يمكن فتح الملف');
+      }
+    },
+    
+    getLicenseTypeBadge(type) {
+      switch(type) {
+        case 'طوارئ':
+          return 'badge bg-danger';
+        case 'مشروع':
+          return 'badge bg-info';
+        case 'عادي':
+          return 'badge bg-success';
+        default:
+          return 'badge bg-secondary';
+      }
+    },
+    
+    getLicenseTypeText(type) {
+      return type || 'غير محدد';
+    },
+    
+    viewLicenseDetails(license) {
+      // فتح صفحة تفاصيل الرخصة في تاب جديد
+      const url = `{{ url('admin/licenses') }}/${license.id}`;
+      window.open(url, '_blank');
+      
+      console.log('Opening license details page for license:', license.license_number);
+    }
+  },
+  
+  mounted() {
+    console.log('DigLicenseApp mounted successfully');
+    console.log('Work Order ID:', this.workOrderId);
+    this.loadLicenses();
+  },
+  
+  template: `
+    <div class="dig-license-manager">
+      <!-- أزرار التحكم -->
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h5 class="mb-0">
+          <i class="fas fa-list me-2"></i>
+          سجل رخص الحفر
+        </h5>
+        <button 
+          type="button" 
+          class="btn btn-primary"
+          @click="showAddForm()"
+          :disabled="isLoading"
+        >
+          <i class="fas fa-plus me-1"></i>
+          إضافة رخصة حفر جديدة
+        </button>
+      </div>
+      
+      <!-- نموذج إضافة/تعديل الرخصة -->
+      <div v-if="showForm" class="card border-primary mb-4">
+        <div class="card-header bg-primary text-white">
+          <div class="d-flex justify-content-between align-items-center">
+            <h6 class="mb-0">
+              <i class="fas fa-hard-hat me-2"></i>
+              <span v-if="editMode">تعديل رخصة الحفر</span>
+              <span v-else>إضافة رخصة حفر جديدة</span>
+            </h6>
+            <small class="text-light">
+              <i class="fas fa-info-circle me-1"></i>
+              الحقول المميزة بـ <span class="text-warning">*</span> مطلوبة
+            </small>
+          </div>
+        </div>
+        <div class="card-body">
+          <form @submit.prevent="submitLicense">
+            <!-- معلومات الرخصة الأساسية -->
+            <div class="row g-3 mb-4">
+              <div class="col-md-4">
+                <label class="form-label fw-bold">
+                  رقم الرخصة
+                  <span class="text-danger">*</span>
+                </label>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="fas fa-hashtag"></i></span>
+                  <input 
+                    type="text" 
+                    class="form-control" 
+                    v-model="licenseForm.license_number"
+                    :class="{ 'is-invalid': errors.license_number }"
+                    required
+                  >
+                  <button 
+                    type="button" 
+                    class="btn btn-outline-secondary"
+                    @click="searchLicenseByNumber()"
+                    title="البحث عن بيانات الرخصة"
+                  >
+                    <i class="fas fa-search"></i>
+                  </button>
+                </div>
+                <div v-if="errors.license_number" class="invalid-feedback" v-text="errors.license_number[0]"></div>
+              </div>
+              
+              <div class="col-md-4">
+                <label class="form-label fw-bold">
+                  تاريخ إصدار الرخصة
+                  <span class="text-danger">*</span>
+                </label>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="fas fa-calendar"></i></span>
+                  <input 
+                    type="date" 
+                    class="form-control" 
+                    v-model="licenseForm.license_date"
+                    :class="{ 'is-invalid': errors.license_date }"
+                    required
+                  >
+                </div>
+                <div v-if="errors.license_date" class="invalid-feedback" v-text="errors.license_date[0]"></div>
+              </div>
+              
+              <div class="col-md-4">
+                <label class="form-label fw-bold">
+                  نوع الرخصة
+                  <span class="text-danger">*</span>
+                </label>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="fas fa-tag"></i></span>
+                  <select 
+                    class="form-select" 
+                    v-model="licenseForm.license_type"
+                    :class="{ 'is-invalid': errors.license_type }"
+                    required
+                  >
+                    <option value="">اختر نوع الرخصة</option>
+                    <option value="عادي">عادي</option>
+                    <option value="مشروع">مشروع</option>
+                    <option value="طوارئ">طوارئ</option>
+                  </select>
+                </div>
+                <div v-if="errors.license_type" class="invalid-feedback" v-text="errors.license_type[0]"></div>
+              </div>
+            </div>
+            
+            <!-- معلومات القيمة والأبعاد -->
+            <div class="row g-3 mb-4">
+              <div class="col-md-3">
+                <label class="form-label fw-bold">
+                  قيمة الرخصة (ريال)
+                  <span class="text-danger">*</span>
+                </label>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="fas fa-money-bill"></i></span>
+                  <input 
+                    type="number" 
+                    step="0.01" 
+                    min="0"
+                    class="form-control" 
+                    v-model="licenseForm.license_value"
+                    :class="{ 'is-invalid': errors.license_value }"
+                    required
+                  >
+                  <span class="input-group-text">ر.س</span>
+                </div>
+                <div v-if="errors.license_value" class="invalid-feedback" v-text="errors.license_value[0]"></div>
+              </div>
+              
+              <div class="col-md-3">
+                <label class="form-label fw-bold">طول الحفر (متر)</label>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="fas fa-ruler-horizontal"></i></span>
+                  <input 
+                    type="number" 
+                    step="0.01" 
+                    min="0"
+                    class="form-control" 
+                    v-model="licenseForm.excavation_length"
+                    :class="{ 'is-invalid': errors.excavation_length }"
+                  >
+                  <span class="input-group-text">م</span>
+                </div>
+                <div v-if="errors.excavation_length" class="invalid-feedback" v-text="errors.excavation_length[0]"></div>
+              </div>
+              
+              <div class="col-md-3">
+                <label class="form-label fw-bold">عرض الحفر (متر)</label>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="fas fa-arrows-alt-h"></i></span>
+                  <input 
+                    type="number" 
+                    step="0.01" 
+                    min="0"
+                    class="form-control" 
+                    v-model="licenseForm.excavation_width"
+                    :class="{ 'is-invalid': errors.excavation_width }"
+                  >
+                  <span class="input-group-text">م</span>
+                </div>
+                <div v-if="errors.excavation_width" class="invalid-feedback" v-text="errors.excavation_width[0]"></div>
+              </div>
+              
+              <div class="col-md-3">
+                <label class="form-label fw-bold">عمق الحفر (متر)</label>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="fas fa-arrows-alt-v"></i></span>
+                  <input 
+                    type="number" 
+                    step="0.01" 
+                    min="0"
+                    class="form-control" 
+                    v-model="licenseForm.excavation_depth"
+                    :class="{ 'is-invalid': errors.excavation_depth }"
+                  >
+                  <span class="input-group-text">م</span>
+                </div>
+                <div v-if="errors.excavation_depth" class="invalid-feedback" v-text="errors.excavation_depth[0]"></div>
+              </div>
+            </div>
+            
+            <!-- تواريخ الرخصة -->
+            <div class="row g-3 mb-4">
+              <div class="col-md-4">
+                <label class="form-label fw-bold">
+                  تاريخ بداية الرخصة
+                  <span class="text-danger">*</span>
+                </label>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="fas fa-calendar-day"></i></span>
+                  <input 
+                    type="date" 
+                    class="form-control" 
+                    v-model="licenseForm.license_start_date"
+                    :class="{ 'is-invalid': errors.license_start_date }"
+                    required
+                  >
+                </div>
+                <div v-if="errors.license_start_date" class="invalid-feedback" v-text="errors.license_start_date[0]"></div>
+              </div>
+              
+              <div class="col-md-4">
+                <label class="form-label fw-bold">
+                  تاريخ انتهاء الرخصة
+                  <span class="text-danger">*</span>
+                </label>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="fas fa-calendar-times"></i></span>
+                  <input 
+                    type="date" 
+                    class="form-control" 
+                    v-model="licenseForm.license_end_date"
+                    :class="{ 'is-invalid': errors.license_end_date }"
+                    required
+                  >
+                </div>
+                <div v-if="errors.license_end_date" class="invalid-feedback" v-text="errors.license_end_date[0]"></div>
+              </div>
+              
+              <div class="col-md-4">
+                <label class="form-label fw-bold">مدة الرخصة (أيام)</label>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="fas fa-clock"></i></span>
+                  <input 
+                    type="text" 
+                    class="form-control bg-light" 
+                    :value="licenseDays + ' يوم'"
+                    readonly
+                  >
+                </div>
+              </div>
+            </div>
+            
+            <!-- حقول رفع المرفقات -->
+            <div class="row g-3 mb-4">
+              <div class="col-12">
+                <h6 class="fw-bold text-primary mb-3">
+                  <i class="fas fa-paperclip me-2"></i>
+                  المرفقات والوثائق
+                </h6>
+              </div>
+              
+              <div class="col-md-4">
+                <label class="form-label fw-bold">ملف الرخصة</label>
+                <input 
+                  type="file" 
+                  class="form-control"
+                  accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                  @change="handleFileUpload($event, 'license_file')"
+                  :class="{ 'is-invalid': errors.license_file }"
+                >
+                <small class="form-text text-muted">
+                  <i class="fas fa-info-circle me-1"></i>
+                  PDF, صور, مستندات Word
+                </small>
+                <div v-if="errors.license_file" class="invalid-feedback" v-text="errors.license_file[0]"></div>
+                <!-- عرض اسم الملف المختار أو الموجود -->
+                <div v-if="licenseForm.license_file" class="mt-2">
+                  <!-- ملف جديد تم اختياره -->
+                  <small v-if="licenseForm.license_file && licenseForm.license_file.name" class="text-success">
+                    <i class="fas fa-check me-1"></i>
+                    تم اختيار: <span v-text="licenseForm.license_file.name"></span>
+                  </small>
+                  <!-- ملف موجود (في حالة التعديل) -->
+                  <small v-else-if="editMode && typeof licenseForm.license_file === 'string'" class="text-info">
+                    <i class="fas fa-file me-1"></i>
+                    ملف موجود: 
+                    <button type="button" class="btn btn-link btn-sm p-0" @click="viewAttachment(licenseForm.license_file)">
+                      عرض الملف
+                    </button>
+                  </small>
+                </div>
+              </div>
+              
+              <div class="col-md-4">
+                <label class="form-label fw-bold">فواتير السداد</label>
+                <input 
+                  type="file" 
+                  class="form-control"
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  multiple
+                  @change="handleMultipleFileUpload($event, 'payment_proof_files')"
+                  :class="{ 'is-invalid': errors.payment_proof_files }"
+                >
+                <small class="form-text text-muted">
+                  <i class="fas fa-info-circle me-1"></i>
+                  يمكن رفع عدة ملفات - PDF وصور فقط
+                </small>
+                <div v-if="errors.payment_proof_files" class="invalid-feedback" v-text="errors.payment_proof_files[0]"></div>
+                <!-- عرض أسماء الملفات المختارة أو الموجودة -->
+                <div v-if="licenseForm.payment_proof_files && licenseForm.payment_proof_files.length > 0" class="mt-2">
+                  <!-- ملفات جديدة تم اختيارها -->
+                  <div v-if="licenseForm.payment_proof_files[0] && licenseForm.payment_proof_files[0].name">
+                    <small class="text-success">
+                      <i class="fas fa-check me-1"></i>
+                      تم اختيار <span v-text="licenseForm.payment_proof_files.length"></span> ملف
+                    </small>
+                    <ul class="list-unstyled mt-1">
+                      <li v-for="(file, index) in licenseForm.payment_proof_files" :key="index" class="small text-muted">
+                        <i class="fas fa-file me-1"></i>
+                        <span v-text="file.name"></span>
+                      </li>
+                    </ul>
+                  </div>
+                  <!-- ملفات موجودة (في حالة التعديل) -->
+                  <div v-else-if="editMode">
+                    <small class="text-info">
+                      <i class="fas fa-file-invoice me-1"></i>
+                      ملفات موجودة: <span v-text="licenseForm.payment_proof_files.length"></span> ملف
+                    </small>
+                    <ul class="list-unstyled mt-1">
+                      <li v-for="(file, index) in licenseForm.payment_proof_files" :key="index" class="small text-muted">
+                        <button type="button" class="btn btn-link btn-sm p-0" @click="viewAttachment(file)">
+                          <i class="fas fa-file me-1"></i>
+                          فاتورة <span v-text="index + 1"></span>
+                        </button>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="col-md-4">
+                <label class="form-label fw-bold"> اثبات سداد البنك</label>
+                <input 
+                  type="file" 
+                  class="form-control"
+                  accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                  @change="handleFileUpload($event, 'coordination_certificate_file')"
+                  :class="{ 'is-invalid': errors.coordination_certificate_file }"
+                >
+                <small class="form-text text-muted">
+                  <i class="fas fa-info-circle me-1"></i>
+                  شهادة التنسيق مع الجهات المختصة
+                </small>
+                <div v-if="errors.coordination_certificate_file" class="invalid-feedback" v-text="errors.coordination_certificate_file[0]"></div>
+                <!-- عرض اسم الملف المختار أو الموجود -->
+                <div v-if="licenseForm.coordination_certificate_file" class="mt-2">
+                  <!-- ملف جديد تم اختياره -->
+                  <small v-if="licenseForm.coordination_certificate_file && licenseForm.coordination_certificate_file.name" class="text-success">
+                    <i class="fas fa-check me-1"></i>
+                    تم اختيار: <span v-text="licenseForm.coordination_certificate_file.name"></span>
+                  </small>
+                  <!-- ملف موجود (في حالة التعديل) -->
+                  <small v-else-if="editMode && typeof licenseForm.coordination_certificate_file === 'string'" class="text-info">
+                    <i class="fas fa-receipt me-1"></i>
+                    ملف موجود: 
+                    <button type="button" class="btn btn-link btn-sm p-0" @click="viewAttachment(licenseForm.coordination_certificate_file)">
+                      عرض الملف
+                    </button>
+                  </small>
+                </div>
+              </div>
+            </div>
+            
+            <!-- أزرار التحكم -->
+            <div class="d-flex justify-content-end gap-2">
+              <button 
+                type="button" 
+                class="btn btn-secondary"
+                @click="showForm = false; resetForm()"
+                :disabled="isSubmitting"
+              >
+                <i class="fas fa-times me-1"></i>
+                إلغاء
+              </button>
+              <button 
+                type="submit" 
+                class="btn btn-success"
+                :disabled="isSubmitting"
+              >
+                <i v-if="isSubmitting" class="fas fa-spinner fa-spin me-1"></i>
+                <i v-else class="fas fa-save me-1"></i>
+                <span v-if="isSubmitting">جاري الحفظ...</span>
+                <span v-else-if="editMode">حفظ التعديل</span>
+                <span v-else>حفظ الرخصة</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+      
+      <!-- جدول الرخص -->
+      <div class="card">
+        <div class="card-header bg-info text-white">
+          <h6 class="mb-0">
+            <i class="fas fa-table me-2"></i>
+            رخص الحفر 
+          </h6>
+        </div>
+        <div class="card-body">
+          <div v-if="isLoading" class="text-center py-4">
+            <i class="fas fa-spinner fa-spin fa-2x text-primary"></i>
+            <p class="mt-2 text-muted">جاري تحميل الرخص...</p>
+          </div>
+          
+          <div v-else-if="licenses.length === 0" class="text-center py-4 text-muted">
+            <i class="fas fa-inbox fa-3x mb-3"></i>
+            <p>لا توجد رخص حفر محفوظة</p>
+            <button class="btn btn-primary" @click="showAddForm()">
+              <i class="fas fa-plus me-1"></i>
+              إضافة أول رخصة
+            </button>
+          </div>
+          
+          <div v-else class="table-responsive">
+            <table class="table table-striped table-hover">
+              <thead class="table-info">
+                <tr>
+                  <th>#</th>
+                  <th>رقم شهادة التنسيق</th>
+                  <th>رقم الرخصة</th>
+                  <th>نوع الرخصة</th>
+                  <th>تاريخ الإصدار</th>
+                  <th>قيمة الرخصة</th>
+                  <th>أبعاد الحفر</th>
+                  <th>تاريخ البداية</th>
+                  <th>تاريخ الانتهاء</th>
+                  <th>العد التنازلي</th>
+                  <th>المرفقات</th>
+                  <th>الإجراءات</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(license, index) in licenses" :key="license.id">
+                  <td v-text="index + 1"></td>
+                  <td>
+                    <span class="badge bg-info" v-text="license.coordination_certificate_number || '-'"></span>
+                  </td>
+                  <td>
+                    <span class="badge bg-primary" v-text="license.license_number"></span>
+                  </td>
+                  <td>
+                    <span :class="getLicenseTypeBadge(license.license_type)" v-text="getLicenseTypeText(license.license_type)"></span>
+                  </td>
+                  <td v-text="formatDate(license.license_date)"></td>
+                  <td>
+                    <span class="text-success fw-bold" v-text="formatCurrency(license.license_value)"></span>
+                  </td>
+                  <td>
+                    <div class="text-center">
+                      <div class="small text-muted mb-1">
+                        <i class="fas fa-ruler-combined me-1"></i>الأبعاد (م)
+                      </div>
+                      <div class="d-flex justify-content-center gap-1">
+                        <span class="badge bg-light text-dark" :title="'الطول: ' + (license.excavation_length || 0) + ' متر'">
+                          <i class="fas fa-arrows-alt-h me-1"></i>
+                          <span v-text="license.excavation_length || 0"></span>
+                        </span>
+                        <span class="badge bg-light text-dark" :title="'العرض: ' + (license.excavation_width || 0) + ' متر'">
+                          <i class="fas fa-arrows-alt-v me-1"></i>
+                          <span v-text="license.excavation_width || 0"></span>
+                        </span>
+                        <span class="badge bg-light text-dark" :title="'العمق: ' + (license.excavation_depth || 0) + ' متر'">
+                          <i class="fas fa-arrow-down me-1"></i>
+                          <span v-text="license.excavation_depth || 0"></span>
+                        </span>
+                      </div>
+                    </div>
+                  </td>
+                  <td v-text="formatDate(license.license_start_date)"></td>
+                  <td v-text="formatDate(license.license_end_date)"></td>
+                  <td>
+                    <div class="text-center">
+                      <div v-if="license.license_start_date && license.license_end_date" class="countdown-display">
+                        <div class="mb-2">
+                          <span class="badge fs-6" :class="getCountdownBadgeClass(license)" v-text="getRemainingDays(license)"></span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                          <div 
+                            class="progress-bar"
+                            :class="getCountdownProgressColor(license)"
+                            :style="{ width: getCountdownProgress(license) + '%' }"
+                            :title="getCountdownTooltip(license)"
+                          ></div>
+                        </div>
+                        <small class="text-muted" v-text="getCountdownStatus(license)"></small>
+                      </div>
+                      <div v-else class="text-muted">
+                        <small>غير محدد</small>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="attachments-display text-center">
+                      <div class="d-flex gap-1 justify-content-center flex-wrap">
+                        <!-- ملف الرخصة -->
+                        <span v-if="license.license_file && license.license_file !== '' && license.license_file !== null" 
+                              class="badge bg-success" 
+                              title="ملف الرخصة" 
+                              role="button" 
+                              @click="viewAttachment(license.license_file)">
+                          <i class="fas fa-file-pdf"></i>
+                        </span>
+
+                        <!-- فواتير السداد -->
+                        <div v-if="license.payment_proof_files && Array.isArray(license.payment_proof_files) && license.payment_proof_files.length > 0" class="dropdown">
+                          <span class="badge bg-warning" 
+                                role="button"
+                                :title="'فواتير السداد: ' + license.payment_proof_files.length + ' ملف'"
+                                data-bs-toggle="dropdown">
+                            <i class="fas fa-file-invoice"></i>
+                            <small v-text="license.payment_proof_files.length"></small>
+                          </span>
+                          <ul class="dropdown-menu">
+                            <li v-for="(file, fileIndex) in license.payment_proof_files" :key="fileIndex">
+                              <a class="dropdown-item" href="#" @click.prevent="viewAttachment(file)">
+                                <i class="fas fa-file me-1"></i>
+                                فاتورة <span v-text="fileIndex + 1"></span>
+                              </a>
+                            </li>
+                          </ul>
+                        </div>
+
+                        <!-- اثبات سداد البنك -->
+                        <span v-if="license.coordination_certificate_file && license.coordination_certificate_file !== '' && license.coordination_certificate_file !== null" 
+                              class="badge bg-info" 
+                              role="button"
+                              title="اثبات سداد البنك"
+                              @click="viewAttachment(license.coordination_certificate_file)">
+                          <i class="fas fa-receipt"></i>
+                        </span>
+
+                        <!-- لا توجد مرفقات -->
+                        <span v-if="(!license.license_file || license.license_file === '' || license.license_file === null) && 
+                                    (!license.payment_proof_files || !Array.isArray(license.payment_proof_files) || license.payment_proof_files.length === 0) && 
+                                    (!license.coordination_certificate_file || license.coordination_certificate_file === '' || license.coordination_certificate_file === null)" 
+                              class="badge bg-secondary"
+                              title="لا توجد مرفقات">
+                          <i class="fas fa-file-slash"></i>
+                        </span>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="btn-group btn-group-sm">
+                      <button 
+                        class="btn btn-outline-info" 
+                        @click="viewLicenseDetails(license)"
+                        title="عرض التفاصيل"
+                      >
+                        <i class="fas fa-eye"></i>
+                      </button>
+                      <button 
+                        class="btn btn-outline-primary" 
+                        @click="editLicense(license)"
+                        title="تعديل"
+                      >
+                        <i class="fas fa-edit"></i>
+                      </button>
+                      <button 
+                        class="btn btn-outline-danger" 
+                        @click="deleteLicense(license.id)"
+                        title="حذف"
+                      >
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  `
+});
+
+// تشغيل Dig License Vue.js App
+try {
+  console.log('Attempting to mount DigLicenseApp...');
+  const app = DigLicenseApp.mount('#dig-license-vue-app');
+  console.log('DigLicenseApp mounted successfully:', app);
+} catch (error) {
+  console.error('Error mounting DigLicenseApp:', error);
+  // عرض رسالة خطأ للمستخدم
+  const element = document.getElementById('dig-license-vue-app');
+  if (element) {
+    element.innerHTML = `
+      <div class="alert alert-danger">
+        <h5><i class="fas fa-exclamation-triangle me-2"></i>خطأ في تحميل مدير رخص الحفر</h5>
+        <p>حدث خطأ أثناء تحميل واجهة Vue.js. يرجى إعادة تحميل الصفحة أو التواصل مع المطور.</p>
+        <small>تفاصيل الخطأ: ${error.message}</small>
+      </div>
+    `;
     }
 }
 </script>

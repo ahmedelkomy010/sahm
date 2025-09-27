@@ -73,7 +73,7 @@
     <div class="card mb-4 shadow-sm">
         <div class="card-header bg-success text-white d-flex align-items-center">
             <i class="fas fa-shield-alt me-2"></i>
-            بيانات السلامة
+        صور السلامة
         </div>
         <div class="card-body">
             <form method="POST" action="{{ route('admin.work-orders.update-safety', $workOrder) }}" enctype="multipart/form-data">
@@ -189,11 +189,11 @@
 
                     
                 </div>
-                 <!-- البيانات الأساسية للسلامة -->
+                 <!-- البيانات بيانات التفتيش اليومي  -->
                  <div class="card mb-4">
                     <div class="card-header bg-primary text-white">
                         <i class="fas fa-shield-alt me-2"></i>
-                        بيانات السلامة الأساسية
+                        بيانات التفتيش اليومي 
                     </div>
                     <div class="card-body">
                         <div class="row">
@@ -433,7 +433,7 @@
                             <div class="col-12">
                                 <label for="safety_notes" class="form-label fw-bold">
                                     <i class="fas fa-sticky-note me-2 text-info"></i>
-                                    ملاحظات السلامة
+                                     اجراءات التصحيح المطلوب
                                 </label>
                                 <textarea class="form-control @error('safety_notes') is-invalid @enderror" 
                                     name="safety_notes" 
@@ -630,9 +630,7 @@
                 <i class="fas fa-exclamation-triangle me-2"></i>
                 مخالفات السلامة والكهرباء
             </div>
-            <button type="button" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#addViolationModal">
-                <i class="fas fa-plus me-1"></i>إضافة مخالفة
-            </button>
+            
         </div>
         <div class="card-body">
             <!-- نموذج إضافة مخالفة سريع -->

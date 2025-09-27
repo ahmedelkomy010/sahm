@@ -258,7 +258,12 @@
                                                                 $imageUrl = \App\Helpers\FileHelper::getImageUrl($file->file_path);
                                                             @endphp
                                                             @if($imageUrl)
-                                                                <img src="{{ $imageUrl }}" class="card-img-top" alt="{{ $file->original_filename }}" style="height: 200px; object-fit: cover;">
+                                                                <img src="{{ $imageUrl }}" 
+                                                                     class="card-img-top" 
+                                                                     alt="{{ $file->original_filename }}" 
+                                                                     style="height: 200px; object-fit: cover; cursor: pointer;" 
+                                                                     onclick="viewImage('{{ $imageUrl }}', '{{ $file->original_filename }}')"
+                                                                     title="انقر لعرض الصورة">
                                                             @else
                                                                 <div class="card-img-top d-flex align-items-center justify-content-center bg-light" style="height: 200px;">
                                                                     <i class="fas fa-image fa-3x text-muted"></i>
@@ -427,9 +432,14 @@
                                                                     @endphp
                                                                     <div class="col-md-4">
                                                                         <div class="card h-100">
-                                                                            @if($imageUrl)
-                                                                                <img src="{{ $imageUrl }}" class="card-img-top" alt="{{ $file->original_filename }}" style="height: 200px; object-fit: cover;">
-                                                                            @elseif(strtolower(pathinfo($file->original_filename, PATHINFO_EXTENSION)) == 'pdf')
+                                                            @if($imageUrl)
+                                                                <img src="{{ $imageUrl }}" 
+                                                                     class="card-img-top" 
+                                                                     alt="{{ $file->original_filename }}" 
+                                                                     style="height: 200px; object-fit: cover; cursor: pointer;" 
+                                                                     onclick="viewImage('{{ $imageUrl }}', '{{ $file->original_filename }}')"
+                                                                     title="انقر لعرض الصورة">
+                                                            @elseif(strtolower(pathinfo($file->original_filename, PATHINFO_EXTENSION)) == 'pdf')
                                                                                 <div class="card-img-top d-flex align-items-center justify-content-center bg-light" style="height: 200px;">
                                                                                     <i class="fas fa-file-pdf fa-5x text-danger"></i>
                                                                                 </div>
@@ -514,7 +524,12 @@
                                                                 $imageUrl = \App\Helpers\FileHelper::getImageUrl($file->file_path);
                                                             @endphp
                                                             @if($imageUrl)
-                                                                <img src="{{ $imageUrl }}" class="card-img-top" alt="{{ $file->original_filename }}" style="height: 150px; object-fit: cover;">
+                                                                <img src="{{ $imageUrl }}" 
+                                                                     class="card-img-top" 
+                                                                     alt="{{ $file->original_filename }}" 
+                                                                     style="height: 150px; object-fit: cover; cursor: pointer;" 
+                                                                     onclick="viewImage('{{ $imageUrl }}', '{{ $file->original_filename }}')"
+                                                                     title="انقر لعرض الصورة">
                                                             @else
                                                                 <div class="card-img-top d-flex align-items-center justify-content-center bg-light" style="height: 150px;">
                                                                     <i class="fas fa-image fa-2x text-muted"></i>
@@ -1457,7 +1472,7 @@ function showImagePreview(file) {
     reader.readAsDataURL(file);
 }
 
-// دالة عرض الصورة في نافذة منبثقة
+// دالة عرض الصورة في نافذة منبثقة محسنة
 function viewImage(imageUrl, filename) {
     // إنشاء النافذة المنبثقة
     const modal = document.createElement('div');
@@ -1467,20 +1482,76 @@ function viewImage(imageUrl, filename) {
     modal.setAttribute('aria-hidden', 'true');
     
     modal.innerHTML = `
-        <div class="modal-dialog modal-xl">
+        <div class="modal-dialog modal-fullscreen">
             <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">عرض الصورة - ${filename}</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title">
+                        <i class="fas fa-image me-2"></i>عرض الصورة - ${filename}
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body text-center">
-                    <img src="${imageUrl}" class="img-fluid" alt="${filename}" style="max-height: 80vh; width: auto;">
+                <div class="modal-body bg-dark d-flex flex-column" style="height: calc(100vh - 140px);">
+                    <!-- أزرار التحكم -->
+                    <div class="image-controls mb-3 text-center">
+                        <div class="btn-group me-3" role="group">
+                            <button type="button" class="btn btn-outline-light btn-sm" onclick="rotateImage(-90)" title="تدوير يساراً">
+                                <i class="fas fa-undo"></i> تدوير يساراً
+                            </button>
+                            <button type="button" class="btn btn-outline-light btn-sm" onclick="rotateImage(90)" title="تدوير يميناً">
+                                <i class="fas fa-redo"></i> تدوير يميناً
+                            </button>
+                        </div>
+                        <div class="btn-group me-3" role="group">
+                            <button type="button" class="btn btn-outline-light btn-sm" onclick="zoomImage(1.2)" title="تكبير">
+                                <i class="fas fa-search-plus"></i> تكبير
+                            </button>
+                            <button type="button" class="btn btn-outline-light btn-sm" onclick="zoomImage(0.8)" title="تصغير">
+                                <i class="fas fa-search-minus"></i> تصغير
+                            </button>
+                            <button type="button" class="btn btn-outline-light btn-sm" onclick="resetImageTransform()" title="إعادة تعيين">
+                                <i class="fas fa-expand-arrows-alt"></i> إعادة تعيين
+                            </button>
+                        </div>
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-outline-light btn-sm" onclick="toggleFullscreen()" title="ملء الشاشة">
+                                <i class="fas fa-expand"></i> ملء الشاشة
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- حاوي الصورة -->
+                    <div class="image-container flex-grow-1 d-flex align-items-center justify-content-center position-relative overflow-hidden" 
+                         style="cursor: grab;" 
+                         onmousedown="startImageDrag(event)"
+                         onmousemove="dragImage(event)"
+                         onmouseup="stopImageDrag()"
+                         onmouseleave="stopImageDrag()">
+                        <img id="viewedImage" 
+                             src="${imageUrl}" 
+                             alt="${filename}" 
+                             class="img-fluid user-select-none"
+                             style="max-width: 100%; max-height: 100%; object-fit: contain; transition: transform 0.3s ease;"
+                             draggable="false">
+                    </div>
+                    
+                    <!-- معلومات الصورة -->
+                    <div class="image-info text-center mt-2 text-white-50">
+                        <small id="imageInfoText">استخدم الأزرار أعلاه للتحكم في عرض الصورة</small>
+                        <div class="keyboard-shortcuts mt-2">
+                            <small class="text-muted">
+                                <i class="fas fa-keyboard me-1"></i>
+                                الاختصارات: ← → (تدوير) | + - (تكبير/تصغير) | R (إعادة تعيين) | F (ملء الشاشة) | Esc (إغلاق)
+                            </small>
+                        </div>
+                    </div>
                 </div>
-                <div class="modal-footer">
+                <div class="modal-footer bg-dark border-top border-secondary">
                     <a href="${imageUrl}" download="${filename}" class="btn btn-success">
-                        <i class="fas fa-download"></i> تحميل الصورة
+                        <i class="fas fa-download me-1"></i> تحميل الصورة
                     </a>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
+                    <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i> إغلاق
+                    </button>
                 </div>
             </div>
         </div>
@@ -1493,10 +1564,158 @@ function viewImage(imageUrl, filename) {
     const bootstrapModal = new bootstrap.Modal(modal);
     bootstrapModal.show();
     
+    // تهيئة متغيرات التحكم في الصورة
+    window.imageRotation = 0;
+    window.imageScale = 1;
+    window.imageTranslateX = 0;
+    window.imageTranslateY = 0;
+    window.isDragging = false;
+    window.dragStartX = 0;
+    window.dragStartY = 0;
+    
+    // إضافة مستمعي الأحداث للتحكم بالماوس
+    const imageContainer = modal.querySelector('.image-container');
+    imageContainer.addEventListener('wheel', function(e) {
+        e.preventDefault();
+        const zoomFactor = e.deltaY > 0 ? 0.9 : 1.1;
+        zoomImage(zoomFactor);
+    });
+    
+    // إضافة دعم التحكم بلوحة المفاتيح
+    const keyboardHandler = function(e) {
+        switch(e.key) {
+            case 'ArrowLeft':
+                e.preventDefault();
+                rotateImage(-90);
+                break;
+            case 'ArrowRight':
+                e.preventDefault();
+                rotateImage(90);
+                break;
+            case '+':
+            case '=':
+                e.preventDefault();
+                zoomImage(1.2);
+                break;
+            case '-':
+                e.preventDefault();
+                zoomImage(0.8);
+                break;
+            case 'r':
+            case 'R':
+                e.preventDefault();
+                resetImageTransform();
+                break;
+            case 'f':
+            case 'F':
+                e.preventDefault();
+                toggleFullscreen();
+                break;
+            case 'Escape':
+                bootstrapModal.hide();
+                break;
+        }
+    };
+    
+    document.addEventListener('keydown', keyboardHandler);
+    
     // إزالة النافذة عند الإغلاق
     modal.addEventListener('hidden.bs.modal', function () {
         document.body.removeChild(modal);
+        // إزالة مستمع لوحة المفاتيح
+        document.removeEventListener('keydown', keyboardHandler);
+        // تنظيف المتغيرات العامة
+        delete window.imageRotation;
+        delete window.imageScale;
+        delete window.imageTranslateX;
+        delete window.imageTranslateY;
+        delete window.isDragging;
+        delete window.dragStartX;
+        delete window.dragStartY;
     });
+}
+
+// دوال التحكم في الصورة
+function rotateImage(degrees) {
+    window.imageRotation = (window.imageRotation + degrees) % 360;
+    updateImageTransform();
+    updateImageInfo();
+}
+
+function zoomImage(factor) {
+    window.imageScale *= factor;
+    // تحديد الحد الأدنى والأقصى للتكبير
+    window.imageScale = Math.max(0.1, Math.min(window.imageScale, 5));
+    updateImageTransform();
+    updateImageInfo();
+}
+
+function resetImageTransform() {
+    window.imageRotation = 0;
+    window.imageScale = 1;
+    window.imageTranslateX = 0;
+    window.imageTranslateY = 0;
+    updateImageTransform();
+    updateImageInfo();
+}
+
+function toggleFullscreen() {
+    const modal = document.getElementById('imageViewModal');
+    const modalDialog = modal.querySelector('.modal-dialog');
+    
+    if (modalDialog.classList.contains('modal-fullscreen')) {
+        modalDialog.classList.remove('modal-fullscreen');
+        modalDialog.classList.add('modal-xl');
+        modal.querySelector('[onclick="toggleFullscreen()"] i').className = 'fas fa-expand';
+        modal.querySelector('[onclick="toggleFullscreen()"]').title = 'ملء الشاشة';
+    } else {
+        modalDialog.classList.remove('modal-xl');
+        modalDialog.classList.add('modal-fullscreen');
+        modal.querySelector('[onclick="toggleFullscreen()"] i').className = 'fas fa-compress';
+        modal.querySelector('[onclick="toggleFullscreen()"]').title = 'تصغير الشاشة';
+    }
+}
+
+function updateImageTransform() {
+    const image = document.getElementById('viewedImage');
+    if (image) {
+        const transform = `rotate(${window.imageRotation}deg) scale(${window.imageScale}) translate(${window.imageTranslateX}px, ${window.imageTranslateY}px)`;
+        image.style.transform = transform;
+    }
+}
+
+function updateImageInfo() {
+    const infoText = document.getElementById('imageInfoText');
+    if (infoText) {
+        infoText.textContent = `التدوير: ${window.imageRotation}° | التكبير: ${Math.round(window.imageScale * 100)}%`;
+    }
+}
+
+// دوال السحب والإفلات
+function startImageDrag(e) {
+    if (window.imageScale > 1) { // السماح بالسحب فقط عند التكبير
+        window.isDragging = true;
+        window.dragStartX = e.clientX - window.imageTranslateX;
+        window.dragStartY = e.clientY - window.imageTranslateY;
+        document.getElementById('viewedImage').style.cursor = 'grabbing';
+    }
+}
+
+function dragImage(e) {
+    if (window.isDragging) {
+        e.preventDefault();
+        window.imageTranslateX = e.clientX - window.dragStartX;
+        window.imageTranslateY = e.clientY - window.dragStartY;
+        updateImageTransform();
+    }
+}
+
+function stopImageDrag() {
+    window.isDragging = false;
+    const image = document.getElementById('viewedImage');
+    if (image) {
+        image.style.cursor = window.imageScale > 1 ? 'grab' : 'default';
+    }
 }
 
 // دالة للتحقق من عدد الملفات المسموح برفعها
@@ -1847,6 +2066,16 @@ document.addEventListener('DOMContentLoaded', function() {
     object-fit: cover;
 }
 
+.card-img-top[onclick] {
+    transition: transform 0.3s ease, filter 0.3s ease;
+}
+
+.card-img-top[onclick]:hover {
+    transform: scale(1.05);
+    filter: brightness(1.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
 .modal-xl {
     max-width: 90%;
 }
@@ -1855,6 +2084,175 @@ document.addEventListener('DOMContentLoaded', function() {
     .modal-xl {
         max-width: 100%;
     }
+}
+
+/* تحسينات عارض الصور المطور */
+#imageViewModal .modal-content {
+    background: #212529;
+    border: none;
+}
+
+#imageViewModal .modal-header {
+    border-bottom: 1px solid #495057;
+}
+
+#imageViewModal .modal-footer {
+    border-top: 1px solid #495057;
+}
+
+.image-controls {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    padding: 15px;
+    backdrop-filter: blur(5px);
+}
+
+.image-controls .btn {
+    margin: 0 2px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.image-controls .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
+}
+
+.image-container {
+    background: radial-gradient(circle at center, rgba(255, 255, 255, 0.1) 0%, rgba(0, 0, 0, 0.8) 100%);
+    border-radius: 10px;
+    position: relative;
+    overflow: hidden;
+}
+
+.image-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        linear-gradient(45deg, transparent 45%, rgba(255, 255, 255, 0.02) 49%, rgba(255, 255, 255, 0.02) 51%, transparent 55%),
+        linear-gradient(-45deg, transparent 45%, rgba(255, 255, 255, 0.02) 49%, rgba(255, 255, 255, 0.02) 51%, transparent 55%);
+    background-size: 20px 20px;
+    pointer-events: none;
+    opacity: 0.3;
+}
+
+#viewedImage {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
+}
+
+.image-info {
+    background: rgba(0, 0, 0, 0.6);
+    border-radius: 20px;
+    padding: 8px 16px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* تأثيرات الأزرار */
+.btn-outline-light:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.5);
+    color: white;
+}
+
+/* تحسينات للشاشات الصغيرة */
+@media (max-width: 768px) {
+    .image-controls {
+        padding: 10px;
+        margin-bottom: 15px;
+    }
+    
+    .image-controls .btn {
+        font-size: 0.8rem;
+        padding: 0.4rem 0.6rem;
+        margin: 1px;
+    }
+    
+    .image-controls .btn-group {
+        margin-right: 8px;
+        margin-bottom: 8px;
+    }
+    
+    .image-controls .btn-group:last-child {
+        margin-right: 0;
+    }
+    
+    .modal-body {
+        padding: 10px;
+    }
+    
+    #imageViewModal .modal-title {
+        font-size: 1rem;
+    }
+}
+
+/* تأثيرات التحميل */
+.image-container.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 40px;
+    height: 40px;
+    margin: -20px 0 0 -20px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* تحسين شكل المؤشر */
+.image-container[style*="cursor: grab"] {
+    cursor: grab !important;
+}
+
+.image-container[style*="cursor: grabbing"] {
+    cursor: grabbing !important;
+}
+
+/* تأثير النقر على الأزرار */
+.image-controls .btn:active {
+    transform: translateY(0) scale(0.95);
+}
+
+/* تحسين شكل الـ tooltip */
+.image-controls .btn[title]:hover::after {
+    content: attr(title);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    z-index: 1000;
+    margin-bottom: 5px;
+}
+
+.image-controls .btn[title]:hover::before {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 4px solid transparent;
+    border-top-color: rgba(0, 0, 0, 0.8);
+    z-index: 1000;
 }
 </style>
 @endsection 

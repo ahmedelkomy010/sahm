@@ -299,6 +299,12 @@
                             <i class="fas fa-database me-1"></i>
                             قاعدة البيانات
                         </span>
+                        @if(isset($projectName))
+                        <span class="badge bg-info text-white ms-2">
+                            <i class="fas fa-map-marker-alt me-1"></i>
+                            {{ $projectName }}
+                        </span>
+                        @endif
                     </div>
                     <div class="auto-save-status">
                         <i class="fas fa-save me-1"></i>
@@ -614,6 +620,9 @@ function autoSaveRow(row) {
     
     // جمع البيانات من الصف
     const data = {
+        @if(isset($project))
+        project: '{{ $project }}',
+        @endif
         client_name: row.querySelector('[data-field="client_name"]').textContent.trim(),
         project_area: row.querySelector('[data-field="project_area"]').textContent.trim(),
         contract_number: row.querySelector('[data-field="contract_number"]').textContent.trim(),
@@ -866,116 +875,94 @@ function importExcel(input) {
     
     // التحقق من نوع الملف
     const fileType = file.name.split('.').pop().toLowerCase();
-    if (!['xlsx', 'xls'].includes(fileType)) {
-        alert('يرجى اختيار ملف Excel صحيح (.xlsx أو .xls)');
+    if (!['xlsx', 'xls', 'csv'].includes(fileType)) {
+        alert('يرجى اختيار ملف Excel صحيح (.xlsx، .xls، أو .csv)');
         return;
     }
     
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        try {
-            const data = new Uint8Array(e.target.result);
-            const workbook = XLSX.read(data, {type: 'array'});
-            
-            // قراءة الورقة الأولى
-            const firstSheetName = workbook.SheetNames[0];
-            const worksheet = workbook.Sheets[firstSheetName];
-            
-            // تحويل إلى JSON
-            const jsonData = XLSX.utils.sheet_to_json(worksheet, {header: 1});
-            
-            if (jsonData.length < 2) {
-                alert('الملف فارغ أو لا يحتوي على بيانات صحيحة');
-                return;
-            }
-            
-            // تأكيد الاستيراد
-            if (confirm(`تم العثور على ${jsonData.length - 1} سجل. هل تريد المتابعة مع الاستيراد؟`)) {
-                processImportedData(jsonData);
-            }
-            
-        } catch (error) {
-            console.error('خطأ في قراءة الملف:', error);
-            alert('حدث خطأ في قراءة الملف. يرجى التأكد من أن الملف صحيح.');
-        }
-    };
+    // إظهار مؤشر التحميل
+    const loadingIndicator = document.createElement('div');
+    loadingIndicator.id = 'importLoadingIndicator';
+    loadingIndicator.innerHTML = `
+        <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; display: flex; justify-content: center; align-items: center;">
+            <div style="background: white; padding: 20px; border-radius: 10px; text-align: center;">
+                <div class="spinner-border text-primary" role="status"></div>
+                <p class="mt-3 mb-0">جاري استيراد البيانات وحفظها في قاعدة البيانات...</p>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(loadingIndicator);
     
-    reader.readAsArrayBuffer(file);
+    // إنشاء FormData لإرسال الملف
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    // الحصول على CSRF token
+    const csrfToken = document.querySelector('meta[name="csrf-token"]');
+    if (!csrfToken) {
+        alert('خطأ في إعدادات الأمان');
+        document.body.removeChild(loadingIndicator);
+        return;
+    }
+    
+    // إضافة معامل المشروع للـ FormData
+    @if(isset($project))
+    formData.append('project', '{{ $project }}');
+    @endif
+    
+    // إرسال الملف للخادم للاستيراد والحفظ التلقائي
+    console.log('Sending import request to:', '{{ route("admin.work-orders.revenues.import") }}');
+    console.log('FormData contents:', Array.from(formData.entries()));
+    
+    fetch('{{ route("admin.work-orders.revenues.import") }}', {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': csrfToken.getAttribute('content'),
+            'Accept': 'application/json'
+        },
+        body: formData
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(result => {
+        // إزالة مؤشر التحميل
+        document.body.removeChild(loadingIndicator);
+        
+        if (result.success) {
+            let message = result.message;
+            if (result.processed_count) {
+                message += '\n\nعدد الصفوف المعالجة: ' + result.processed_count;
+            }
+            if (result.errors && result.errors.length > 0) {
+                message += '\n\nأخطاء: ' + result.errors.join('\n');
+            }
+            alert(message);
+            
+            // لا نعيد تحميل الصفحة لأن البيانات لم يتم حفظها محلياً
+            console.log('تم معالجة الملف بنجاح، البيانات متاحة في اللوج');
+        } else {
+            alert('خطأ في الاستيراد: ' + result.message);
+        }
+    })
+    .catch(error => {
+        // إزالة مؤشر التحميل
+        if (document.getElementById('importLoadingIndicator')) {
+            document.body.removeChild(document.getElementById('importLoadingIndicator'));
+        }
+        
+        console.error('خطأ في الشبكة:', error);
+        alert('حدث خطأ في الاتصال بالخادم: ' + error.message);
+    });
     
     // إعادة تعيين قيمة input
     input.value = '';
 }
 
-// معالجة البيانات المستوردة
-function processImportedData(data) {
-    const tbody = document.getElementById('revenuesTableBody');
-    
-    // إزالة رسالة "لا توجد بيانات" إذا كانت موجودة
-    const emptyRow = document.getElementById('emptyRow');
-    if (emptyRow) {
-        emptyRow.remove();
-    }
-    
-    // تخطي الصف الأول (العناوين) والبدء من الصف الثاني
-    for (let i = 1; i < data.length; i++) {
-        const rowData = data[i];
-        
-        // تخطي الصفوف الفارغة
-        if (!rowData || rowData.every(cell => !cell)) continue;
-        
-        rowCounter++;
-        
-        const newRow = document.createElement('tr');
-        newRow.className = 'new-row';
-        newRow.dataset.rowId = rowCounter;
-        newRow.dataset.revenueId = 'null';
-        
-        newRow.innerHTML = `
-            <td class="serial-col">
-                <span class="badge bg-primary">${rowCounter}</span>
-            </td>
-            <td><div class="editable-field" contenteditable="true" data-field="client_name" placeholder="اسم العميل">${rowData[0] || ''}</div></td>
-            <td><div class="editable-field" contenteditable="true" data-field="project_area" placeholder="المشروع">${rowData[1] || ''}</div></td>
-            <td><div class="editable-field" contenteditable="true" data-field="contract_number" placeholder="رقم العقد">${rowData[2] || ''}</div></td>
-            <td><div class="editable-field" contenteditable="true" data-field="extract_number" placeholder="رقم المستخلص">${rowData[3] || ''}</div></td>
-            <td><div class="editable-field" contenteditable="true" data-field="office" placeholder="المكتب">${rowData[4] || ''}</div></td>
-            <td><div class="editable-field" contenteditable="true" data-field="extract_type" placeholder="نوع المستخلص">${rowData[5] || ''}</div></td>
-            <td><div class="editable-field" contenteditable="true" data-field="po_number" placeholder="رقم PO">${rowData[6] || ''}</div></td>
-            <td><div class="editable-field" contenteditable="true" data-field="invoice_number" placeholder="رقم الفاتورة">${rowData[7] || ''}</div></td>
-            <td><div class="editable-field" contenteditable="true" data-field="extract_value" placeholder="قيمة المستخلص">${rowData[8] || ''}</div></td>
-            <td><div class="editable-field" contenteditable="true" data-field="tax_percentage" placeholder="نسبة الضريبة">${rowData[9] || ''}</div></td>
-            <td><div class="editable-field" contenteditable="true" data-field="tax_value" placeholder="قيمة الضريبة">${rowData[10] || ''}</div></td>
-            <td><div class="editable-field" contenteditable="true" data-field="penalties" placeholder="الغرامات">${rowData[11] || ''}</div></td>
-            <td><div class="editable-field" contenteditable="true" data-field="first_payment_tax" placeholder="ضريبة الدفعة الأولى">${rowData[12] || ''}</div></td>
-            <td><div class="editable-field" contenteditable="true" data-field="net_extract_value" placeholder="صافي قيمة المستخلص">${rowData[13] || ''}</div></td>
-            <td class="date-col"><input type="date" class="date-input" data-field="extract_date" value="${formatDateForInput(rowData[14])}" placeholder="تاريخ الإعداد"></td>
-            <td><div class="editable-field" contenteditable="true" data-field="year" placeholder="العام">${rowData[15] || ''}</div></td>
-            <td><div class="editable-field" contenteditable="true" data-field="payment_type" placeholder="نوع الدفع">${rowData[16] || ''}</div></td>
-            <td><div class="editable-field" contenteditable="true" data-field="reference_number" placeholder="الرقم المرجعي">${rowData[17] || ''}</div></td>
-            <td class="date-col"><input type="date" class="date-input" data-field="payment_date" value="${formatDateForInput(rowData[18])}" placeholder="تاريخ الصرف"></td>
-            <td><div class="editable-field" contenteditable="true" data-field="payment_value" placeholder="قيمة الصرف">${rowData[19] || ''}</div></td>
-            <td><div class="editable-field" contenteditable="true" data-field="extract_status" placeholder="حالة المستخلص">${rowData[20] || ''}</div></td>
-            <td>
-                <div class="action-buttons">
-                    <button type="button" class="btn btn-danger btn-sm" onclick="deleteRow(${rowCounter})" title="حذف">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-            </td>
-        `;
-        
-        tbody.appendChild(newRow);
-        
-        // إضافة event listeners للصف الجديد
-        addEditableFieldListeners(newRow);
-    }
-    
-    // تحديث العداد
-    updateRowCounter();
-    
-    alert(`تم استيراد ${data.length - 1} سجل بنجاح!`);
-    console.log('تم استيراد البيانات من Excel');
-}
+// ملاحظة: تم إزالة function processImportedData لأن الاستيراد أصبح يحفظ مباشرة في قاعدة البيانات
 
 // تنسيق التاريخ لحقل الإدخال
 function formatDateForInput(dateValue) {

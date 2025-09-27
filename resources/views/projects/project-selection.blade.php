@@ -36,11 +36,18 @@
                         <h3 class="text-2xl font-bold text-blue-700"> إدارة مدينة الرياض</h3>
                     </div>
                     <p class="text-gray-600 mb-6"> العقد الموحد رقم 4400015737</p>
-                    <a href="{{ route('admin.work-orders.index', ['project' => 'riyadh']) }}" 
-                        class="block w-full bg-blue-600 hover:bg-blue-700 text-white text-center font-medium py-3 px-4 rounded-lg transition-colors duration-200">
-                        <i class="fas fa-arrow-left mr-2"></i>
-                        الدخول إلى أوامر عمل الرياض
-                    </a>
+                    <div class="space-y-2">
+                        <a href="{{ route('admin.work-orders.index', ['project' => 'riyadh']) }}" 
+                            class="block w-full bg-blue-600 hover:bg-blue-700 text-white text-center font-medium py-3 px-4 rounded-lg transition-colors duration-200">
+                            <i class="fas fa-arrow-left mr-2"></i>
+                            الدخول إلى أوامر عمل الرياض
+                        </a>
+                        <!-- <a href="{{ route('admin.work-orders.revenues', ['project' => 'riyadh']) }}" 
+                            class="block w-full bg-green-600 hover:bg-green-700 text-white text-center font-medium py-2 px-4 rounded-lg transition-colors duration-200">
+                            <i class="fas fa-chart-line mr-2"></i>
+                            إيرادات الرياض
+                        </a> -->
+                    </div>
                 </div>
             </div>
             @endif
@@ -56,11 +63,18 @@
                         <h3 class="text-2xl font-bold text-green-700">إدارة المدينة المنورة</h3>
                     </div>
                     <p class="text-gray-600 mb-6">العقد الموحد رقم 4400019706</p>
-                    <a href="{{ route('admin.work-orders.index', ['project' => 'madinah']) }}" 
-                        class="block w-full bg-green-600 hover:bg-green-700 text-white text-center font-medium py-3 px-4 rounded-lg transition-colors duration-200">
-                        <i class="fas fa-arrow-left mr-2"></i>
-                        الدخول إلى أوامر عمل المدينة المنورة
-                    </a>
+                    <div class="space-y-2">
+                        <a href="{{ route('admin.work-orders.index', ['project' => 'madinah']) }}" 
+                            class="block w-full bg-green-600 hover:bg-green-700 text-white text-center font-medium py-3 px-4 rounded-lg transition-colors duration-200">
+                            <i class="fas fa-arrow-left mr-2"></i>
+                            الدخول إلى أوامر عمل المدينة المنورة
+                        </a>
+                        <!-- <a href="{{ route('admin.work-orders.revenues', ['project' => 'madinah']) }}" 
+                            class="block w-full bg-blue-600 hover:bg-blue-700 text-white text-center font-medium py-2 px-4 rounded-lg transition-colors duration-200">
+                            <i class="fas fa-chart-line mr-2"></i>
+                            إيرادات المدينة المنورة
+                        </a> -->
+                    </div>
                 </div>
             </div>
             @endif

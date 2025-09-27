@@ -10,6 +10,8 @@ class Revenue extends Model
     use HasFactory;
 
     protected $fillable = [
+        'project',
+        'city',
         'client_name',
         'project_area',
         'contract_number',

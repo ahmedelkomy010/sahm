@@ -441,4 +441,36 @@ class WorkOrder extends Model
         // إذا كانت البيانات null أو غير صالحة، أرجع array فارغ
         return [];
     }
+
+    /**
+     * Get all inspection dates for this work order
+     */
+    public function inspectionDates()
+    {
+        return $this->hasMany(WorkOrderInspectionDate::class)->orderBy('inspection_date', 'desc');
+    }
+
+    /**
+     * Get the latest inspection date
+     */
+    public function latestInspectionDate()
+    {
+        return $this->hasOne(WorkOrderInspectionDate::class)->latestOfMany('inspection_date');
+    }
+
+    /**
+     * Get all safety history for this work order
+     */
+    public function safetyHistory()
+    {
+        return $this->hasMany(WorkOrderSafetyHistory::class)->orderBy('created_at', 'desc');
+    }
+
+    /**
+     * Get the latest safety history
+     */
+    public function latestSafetyHistory()
+    {
+        return $this->hasOne(WorkOrderSafetyHistory::class)->latestOfMany('created_at');
+    }
 }
