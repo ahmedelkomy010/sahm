@@ -698,14 +698,14 @@ function resetCountdown(workOrderId) {
                             </a>
                             @endif
                             
-                            <!-- @if(($isRiyadh && auth()->user()->hasPermission('riyadh_revenues')) || 
+                            @if(($isRiyadh && auth()->user()->hasPermission('riyadh_revenues')) || 
                                 ($isMadinah && auth()->user()->hasPermission('madinah_revenues')) ||
                                 auth()->user()->hasPermission('view_revenues'))
                             <a href="{{ route('admin.work-orders.revenues', ['project' => $project ?? 'riyadh']) }}" class="btn btn-success btn-responsive" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); border: none; color: white;">
                                 <i class="fas fa-chart-line me-1"></i>
                                 <span class="btn-text">الإيرادات</span>
                             </a>
-                            @endif -->
+                            @endif
                             </div>
                         </div>
 

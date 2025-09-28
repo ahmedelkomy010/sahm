@@ -593,4 +593,59 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/projects/{project}', [ProjectController::class, 'update'])->name('projects.update');
     Route::delete('/projects/{project}', [ProjectController::class, 'destroy'])->name('projects.destroy');
     Route::post('/projects/{project}/upload', [ProjectController::class, 'upload'])->name('projects.upload');
+    
+    // Project Management Routes
+    Route::get('/projects/{project}/design', [ProjectController::class, 'design'])->name('projects.design');
+    Route::get('/projects/{project}/supplying', [ProjectController::class, 'supplying'])->name('projects.supplying');
+    Route::get('/projects/{project}/installation', [ProjectController::class, 'installation'])->name('projects.installation');
+    Route::get('/projects/{project}/testing', [ProjectController::class, 'testing'])->name('projects.testing');
+    Route::get('/projects/{project}/quality', [ProjectController::class, 'quality'])->name('projects.quality');
+    Route::get('/projects/{project}/safety', [ProjectController::class, 'safety'])->name('projects.safety');
+    Route::get('/projects/{project}/bid-package', [ProjectController::class, 'bidPackage'])->name('projects.bid-package');
+    Route::get('/projects/{project}/reports', [ProjectController::class, 'reports'])->name('projects.reports');
+    Route::get('/projects/{project}/documents', [ProjectController::class, 'documents'])->name('projects.documents');
+    Route::get('/projects/{project}/revenues', [ProjectController::class, 'revenues'])->name('projects.revenues');
+    
+    // Revenue API Routes
+    Route::get('/projects/{project}/revenues-data', [App\Http\Controllers\RevenueController::class, 'index'])->name('revenues.index');
+    Route::post('/projects/{project}/revenues', [App\Http\Controllers\RevenueController::class, 'store'])->name('revenues.store');
+    Route::post('/projects/{project}/revenues/import', [App\Http\Controllers\RevenueController::class, 'import'])->name('revenues.import');
+    Route::put('/projects/{project}/revenues/{revenue}', [App\Http\Controllers\RevenueController::class, 'update'])->name('revenues.update');
+    Route::delete('/projects/{project}/revenues/{revenue}', [App\Http\Controllers\RevenueController::class, 'destroy'])->name('revenues.destroy');
+    
+    // Design Files Routes
+    Route::post('/projects/{project}/design/upload', [App\Http\Controllers\DesignFileController::class, 'upload'])->name('design.files.upload');
+    Route::get('/projects/{project}/design/{section}/files', [App\Http\Controllers\DesignFileController::class, 'getFiles'])->name('design.files.get');
+    Route::get('/projects/{project}/design/{section}/{filename}/download', [App\Http\Controllers\DesignFileController::class, 'download'])->name('design.files.download');
+    Route::get('/projects/{project}/design/{section}/{filename}/view', [App\Http\Controllers\DesignFileController::class, 'view'])->name('design.files.view');
+    Route::delete('/projects/{project}/design/{section}/{filename}', [App\Http\Controllers\DesignFileController::class, 'delete'])->name('design.files.delete');
+    
+    // Supplying Files Routes
+    Route::post('/projects/{project}/supplying/upload', [App\Http\Controllers\DesignFileController::class, 'uploadSupplying'])->name('supplying.files.upload');
+    Route::get('/projects/{project}/supplying/{section}/files', [App\Http\Controllers\DesignFileController::class, 'getSupplyingFiles'])->name('supplying.files.get');
+    Route::get('/projects/{project}/supplying/{section}/{filename}/download', [App\Http\Controllers\DesignFileController::class, 'downloadSupplying'])->name('supplying.files.download');
+    Route::get('/projects/{project}/supplying/{section}/{filename}/view', [App\Http\Controllers\DesignFileController::class, 'viewSupplying'])->name('supplying.files.view');
+    Route::delete('/projects/{project}/supplying/{section}/{filename}', [App\Http\Controllers\DesignFileController::class, 'deleteSupplying'])->name('supplying.files.delete');
+    
+    // Installation Files Routes
+    Route::post('/projects/{project}/installation/upload', [App\Http\Controllers\DesignFileController::class, 'uploadInstallation'])->name('installation.files.upload');
+    Route::get('/projects/{project}/installation/{section}/files', [App\Http\Controllers\DesignFileController::class, 'getInstallationFiles'])->name('installation.files.get');
+    Route::get('/projects/{project}/installation/{section}/{filename}/download', [App\Http\Controllers\DesignFileController::class, 'downloadInstallation'])->name('installation.files.download');
+    Route::get('/projects/{project}/installation/{section}/{filename}/view', [App\Http\Controllers\DesignFileController::class, 'viewInstallation'])->name('installation.files.view');
+    Route::delete('/projects/{project}/installation/{section}/{filename}', [App\Http\Controllers\DesignFileController::class, 'deleteInstallation'])->name('installation.files.delete');
+    
+    // Quality Files Routes
+    Route::post('/projects/{project}/quality/upload', [App\Http\Controllers\DesignFileController::class, 'uploadQuality'])->name('quality.files.upload');
+    Route::get('/projects/{project}/quality/{section}/files', [App\Http\Controllers\DesignFileController::class, 'getQualityFiles'])->name('quality.files.get');
+    Route::get('/projects/{project}/quality/{section}/{filename}/download', [App\Http\Controllers\DesignFileController::class, 'downloadQuality'])->name('quality.files.download');
+    Route::get('/projects/{project}/quality/{section}/{filename}/view', [App\Http\Controllers\DesignFileController::class, 'viewQuality'])->name('quality.files.view');
+    Route::delete('/projects/{project}/quality/{section}/{filename}', [App\Http\Controllers\DesignFileController::class, 'deleteQuality'])->name('quality.files.delete');
+    
+// Reports Files Routes
+Route::post('/projects/{project}/reports/upload', [App\Http\Controllers\DesignFileController::class, 'uploadReports'])->name('reports.files.upload');
+Route::get('/projects/{project}/reports/{section}/files', [App\Http\Controllers\DesignFileController::class, 'getReportsFiles'])->name('reports.files.get');
+Route::get('/projects/{project}/reports/{section}/{filename}/download', [App\Http\Controllers\DesignFileController::class, 'downloadReports'])->name('reports.files.download');
+Route::get('/projects/{project}/reports/{section}/{filename}/view', [App\Http\Controllers\DesignFileController::class, 'viewReports'])->name('reports.files.view');
+Route::delete('/projects/{project}/reports/{section}/{filename}', [App\Http\Controllers\DesignFileController::class, 'deleteReports'])->name('reports.files.delete');
+
 });

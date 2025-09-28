@@ -455,6 +455,7 @@
                             <i class="fas fa-clipboard-list me-2"></i>
                             جدول مقايسة المواد الكاملة
                             <span class="badge bg-light text-info ms-2">{{ $workOrderMaterials->count() }} مادة</span>
+                            <p class="text-white fs-10">ملحوظه : يتم اختيار الكمية المخططة اثناء الصرف من الكهرباء</p>
                         </h5>
                         <div class="d-flex gap-2">
                            
@@ -886,38 +887,7 @@
         </div>
     </div>
 
-    <!-- قسم ملاحظات المواد -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card shadow">
-                <div class="card-header bg-info text-white">
-                    <h5 class="mb-0">
-                        <i class="fas fa-sticky-note me-2"></i>
-                        ملاحظات المواد
-                        <small class="ms-2 opacity-75">(يتم الحفظ تلقائياً)</small>
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="form-group">
-                        <label for="materials_notes" class="form-label">الملاحظات:</label>
-                        <textarea 
-                            class="form-control" 
-                            id="materials_notes" 
-                            name="materials_notes" 
-                            rows="4" 
-                            placeholder="اكتب ملاحظاتك حول المواد هنا..."
-                            data-work-order-id="{{ $workOrder->id }}"
-                        >{{ $workOrder->materials_notes ?? '' }}</textarea>
-                        <div class="form-text">
-                            <i class="fas fa-info-circle me-1"></i>
-                            يتم حفظ الملاحظات تلقائياً عند التوقف عن الكتابة
-                            <span id="save-status" class="ms-3"></span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    
 
     <!-- فاصل بصري بين الأقسام -->
     <hr class="section-divider">
@@ -935,7 +905,7 @@
                     </div>
                     <div class="d-flex align-items-center gap-2">
                         <button type="button" class="btn btn-outline-dark btn-sm" data-bs-toggle="modal" data-bs-target="#addRemovalScrapModal">
-                            <i class="fas fa-plus"></i> إضافة مادة للإزالة
+                            <i class="fas fa-plus"></i> إضافة مادة اسكراب
                         </button>
                         <button type="button" class="btn btn-outline-info btn-sm" onclick="updateRemovalScrapTable()">
                             <i class="fas fa-sync"></i> عرض مواد الازالةوالسكراب المضافة
@@ -1072,7 +1042,7 @@
                 <div class="card-header bg-success text-white py-3">
                     <h5 class="m-0 font-weight-bold">
                         <i class="fas fa-file-upload me-2"></i>
-                        إدارة الملفات المستقلة
+                        أرفاق ملفات  
                         <span class="badge bg-light text-success ms-2">{{ isset($independentFiles) ? count($independentFiles) : 0 }} ملف</span>
                     </h5>
                 </div>
@@ -1090,7 +1060,7 @@
                                         </div>
                                         <div>
                                             <h5 class="alert-heading text-info mb-2">
-                                                رفع ملفات مستقلة
+                                                  أرفاق ملفات
                                             </h5>
                                         </div>
                                     </div>
@@ -1225,6 +1195,7 @@
                     @if(session('success'))
                     <div class="alert alert-success alert-dismissible fade show mt-4" role="alert">
                         <div class="d-flex align-items-center">
+                            
                             <i class="fas fa-check-circle fa-2x text-success me-3"></i>
                             <div>
                                 <h5 class="alert-heading mb-1">تم بنجاح!</h5>
@@ -1274,7 +1245,7 @@
                                     </div>
                                     <div>
                                       <h5 class="alert-heading text-success mb-2">
-                                                الملفات المستقلة المرفوعة
+                                                الملفات المرفوعة
                                             </h5>
                                     </div>
                                 </div>
@@ -1300,7 +1271,7 @@
                                         </thead>
                                         <tbody>
                                             @php
-                                                // استخدام الملفات المستقلة من الـ controller
+                                                // استخدام الملفات من الـ controller
                                                 $independentMaterials = $independentFiles ?? [];
                                             @endphp
                                             
@@ -1365,8 +1336,8 @@
                                                     <td colspan="3" class="text-center py-5">
                                                         <div class="empty-state">
                                                             <i class="fas fa-cloud-upload-alt fa-4x text-muted mb-3"></i>
-                                                            <h5 class="text-muted mb-2">لا توجد ملفات مستقلة مرفوعة</h5>
-                                                            <p class="text-muted small mb-3">لم يتم رفع أي ملفات مستقلة حتى الآن</p>
+                                                            <h5 class="text-muted mb-2">لا توجد ملفات مرفوعة</h5>
+                                                            <p class="text-muted small mb-3">لم يتم رفع أي ملفات حتى الآن</p>
                                                             <div class="text-muted small">
                                                             </div>
                                                         </div>
@@ -1379,6 +1350,38 @@
                             </div>
                         </div>
                     </div>
+                    <!-- قسم ملاحظات المواد -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-sticky-note me-2"></i>
+                        ملاحظات المواد
+                        <small class="ms-2 opacity-75">(يتم الحفظ تلقائياً)</small>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label for="materials_notes" class="form-label">الملاحظات:</label>
+                        <textarea 
+                            class="form-control" 
+                            id="materials_notes" 
+                            name="materials_notes" 
+                            rows="4" 
+                            placeholder="اكتب ملاحظاتك حول المواد هنا..."
+                            data-work-order-id="{{ $workOrder->id }}"
+                        >{{ $workOrder->materials_notes ?? '' }}</textarea>
+                        <div class="form-text">
+                            <i class="fas fa-info-circle me-1"></i>
+                            يتم حفظ الملاحظات تلقائياً عند التوقف عن الكتابة
+                            <span id="save-status" class="ms-3"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
                 </div>
             </div>
         </div>

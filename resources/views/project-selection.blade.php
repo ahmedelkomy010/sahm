@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="py-12 bg-gray-50 project-selection-container">
+<!-- <div class="py-12 bg-gray-50 project-selection-container">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         <!-- Dashboard Link -->
         <div class="absolute right-4 top-0">
@@ -62,8 +62,8 @@
             </div>
         </div>
     </div>
-</div>
-@endsection
+<!-- </div> --> -->
+<!-- @endsection
 
 @push('styles')
 <style>
@@ -72,4 +72,4 @@
         min-height: calc(100vh - 120px);
     }
 </style>
-@endpush 
+@endpush  -->

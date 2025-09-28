@@ -637,7 +637,7 @@
                                         <div class="col-md-6">
                                             <label for="completion_files_upload" class="form-label fw-bold">
                                                 <i class="fas fa-paperclip me-2 text-success"></i>
-                                                ملفات بعد الانتهاء
+                                                  مرفقات
                                                 <small class="text-muted">(يمكن رفع أكثر من 50 ملف)</small>
                                             </label>
                                             <div class="input-group">

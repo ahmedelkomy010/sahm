@@ -97,9 +97,13 @@ class ProjectController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'contract_number' => 'required|string|max:255|unique:projects',
-            'project_type' => 'required|in:civil,electrical,mixed',
+            'project_type' => 'required|in:OH33KV,UA33LW,SLS33KV,UG132KV',
             'location' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'srgn_date' => 'nullable|date',
+            'tcc_date' => 'nullable|date',
+            'pac_date' => 'nullable|date',
+            'fat_date' => 'nullable|date',
         ]);
 
         $project = Project::create($validated);
@@ -150,5 +154,85 @@ class ProjectController extends Controller
 
         return redirect()->route('projects.index')
             ->with('success', 'تم حذف المشروع بنجاح');
+    }
+
+    /**
+     * صفحة التصميم
+     */
+    public function design(Project $project)
+    {
+        return view('projects.sections.design', compact('project'));
+    }
+
+    /**
+     * صفحة التوريد
+     */
+    public function supplying(Project $project)
+    {
+        return view('projects.sections.supplying', compact('project'));
+    }
+
+    /**
+     * صفحة التركيب
+     */
+    public function installation(Project $project)
+    {
+        return view('projects.sections.installation', compact('project'));
+    }
+
+    /**
+     * صفحة الاختبارات
+     */
+    public function testing(Project $project)
+    {
+        return view('projects.sections.testing', compact('project'));
+    }
+
+    /**
+     * صفحة ضمان الجودة
+     */
+    public function quality(Project $project)
+    {
+        return view('projects.sections.quality', compact('project'));
+    }
+
+    /**
+     * صفحة السلامة
+     */
+    public function safety(Project $project)
+    {
+        return view('projects.sections.safety', compact('project'));
+    }
+
+    /**
+     * صفحة حزمة العطاء
+     */
+    public function bidPackage(Project $project)
+    {
+        return view('projects.sections.bid-package', compact('project'));
+    }
+
+    /**
+     * صفحة التقارير
+     */
+    public function reports(Project $project)
+    {
+        return view('projects.sections.reports', compact('project'));
+    }
+
+    /**
+     * صفحة الوثائق
+     */
+    public function documents(Project $project)
+    {
+        return view('projects.sections.documents', compact('project'));
+    }
+
+    /**
+     * صفحة الإيرادات
+     */
+    public function revenues(Project $project)
+    {
+        return view('projects.sections.revenues', compact('project'));
     }
 } 

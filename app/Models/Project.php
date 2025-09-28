@@ -19,6 +19,10 @@ class Project extends Model
         'location',
         'description',
         'status',
+        'srgn_date',
+        'tcc_date',
+        'pac_date',
+        'fat_date',
     ];
 
     /**
@@ -34,10 +38,14 @@ class Project extends Model
     public static $rules = [
         'name' => 'required|string|max:255',
         'contract_number' => 'required|string|max:255|unique:projects',
-        'project_type' => 'required|in:civil,electrical,mixed',
+        'project_type' => 'required|in:OH33KV,UA33LW,SLS33KV,UG132KV',
         'location' => 'required|string|max:255',
         'description' => 'nullable|string',
         'status' => 'required|in:active,completed,on_hold',
+        'srgn_date' => 'nullable|date',
+        'tcc_date' => 'nullable|date',
+        'pac_date' => 'nullable|date',
+        'fat_date' => 'nullable|date',
     ];
 
     /**
@@ -74,11 +82,35 @@ class Project extends Model
     public function getProjectTypeTextAttribute()
     {
         return [
-            'civil' => 'أعمال مدنية',
-            'electrical' => 'أعمال كهربائية',
-            'mixed' => 'أعمال مختلطة',
+            'OH33KV' => 'OH 33KV',
+            'UA33LW' => 'UA 33LW',
+            'SLS33KV' => 'SLS 33KV',
+            'UG132KV' => 'UG 132 KV',
         ][$this->project_type] ?? $this->project_type;
     }
+
+    /**
+     * الحصول على نص نوع المشروع (method)
+     */
+    public function getProjectTypeText()
+    {
+        return [
+            'OH33KV' => 'OH 33KV',
+            'UA33LW' => 'UA 33LW',
+            'SLS33KV' => 'SLS 33KV',
+            'UG132KV' => 'UG 132 KV',
+        ][$this->project_type] ?? $this->project_type;
+    }
+
+    /**
+     * إضافة cast للتواريخ
+     */
+    protected $casts = [
+        'srgn_date' => 'date',
+        'tcc_date' => 'date',
+        'pac_date' => 'date',
+        'fat_date' => 'date',
+    ];
 
     /**
      * الحصول على لون حالة المشروع
