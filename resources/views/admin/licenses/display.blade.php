@@ -93,9 +93,40 @@
             @endif
         </div>
         
-        <form action="{{ route('admin.licenses.display') }}" method="GET" class="flex flex-wrap gap-4 items-end">
+        <form action="{{ route('admin.licenses.display') }}" method="GET" class="flex flex-wrap gap-4 items-end" id="filterForm">
             <!-- حفظ project parameter -->
             <input type="hidden" name="project" value="{{ $project ?? 'riyadh' }}">
+            
+            <!-- فترات زمنية سريعة -->
+            <div class="w-full mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    <i class="fas fa-clock me-1 text-blue-600"></i>
+                    فترات زمنية سريعة
+                </label>
+                <div class="flex flex-wrap gap-2">
+                    <button type="button" class="px-3 py-1 text-xs font-medium text-blue-600 bg-blue-100 rounded-full hover:bg-blue-200 transition-colors quick-date-btn" data-period="today">
+                        <i class="fas fa-calendar-day me-1"></i>اليوم
+                    </button>
+                    <button type="button" class="px-3 py-1 text-xs font-medium text-gray-600 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors quick-date-btn" data-period="yesterday">
+                        <i class="fas fa-calendar-minus me-1"></i>أمس
+                    </button>
+                    <button type="button" class="px-3 py-1 text-xs font-medium text-green-600 bg-green-100 rounded-full hover:bg-green-200 transition-colors quick-date-btn" data-period="week">
+                        <i class="fas fa-calendar-week me-1"></i>الأسبوع
+                    </button>
+                    <button type="button" class="px-3 py-1 text-xs font-medium text-indigo-600 bg-indigo-100 rounded-full hover:bg-indigo-200 transition-colors quick-date-btn" data-period="month">
+                        <i class="fas fa-calendar-alt me-1"></i>الشهر
+                    </button>
+                    <button type="button" class="px-3 py-1 text-xs font-medium text-purple-600 bg-purple-100 rounded-full hover:bg-purple-200 transition-colors quick-date-btn" data-period="half-year">
+                        <i class="fas fa-calendar me-1"></i>نصف سنوي
+                    </button>
+                    <button type="button" class="px-3 py-1 text-xs font-medium text-red-600 bg-red-100 rounded-full hover:bg-red-200 transition-colors quick-date-btn" data-period="year">
+                        <i class="fas fa-calendar-check me-1"></i>سنوي
+                    </button>
+                    <button type="button" class="px-3 py-1 text-xs font-medium text-gray-600 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors" id="clearDates">
+                        <i class="fas fa-times me-1"></i>مسح التواريخ
+                    </button>
+                </div>
+            </div>
             
             <div class="flex-1 min-w-[200px]">
                 <label for="start_date" class="block text-sm font-medium text-gray-700 mb-1">تاريخ البداية</label>
@@ -130,10 +161,10 @@
                 <label for="per_page" class="block text-sm font-medium text-gray-700 mb-1">عدد العناصر في الصفحة</label>
                 <select id="per_page" name="per_page" 
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                    <option value="50" {{ request('per_page') == '50' ? 'selected' : '' }}>50 عنصر</option>
-                    <option value="100" {{ request('per_page') == '100' ? 'selected' : '' }}>100 عنصر</option>
-                    <option value="400" {{ request('per_page') == '400' ? 'selected' : '' }}>400 عنصر</option>
-                    <option value="700" {{ request('per_page') == '700' ? 'selected' : '' }}>700 عنصر</option>
+                    <option value="50" {{ request('per_page') == '50' ? 'selected' : '' }}>50 </option>
+                    <option value="100" {{ request('per_page') == '100' ? 'selected' : '' }}>100 </option>
+                    <option value="400" {{ request('per_page') == '400' ? 'selected' : '' }}>400 </option>
+                    <option value="700" {{ request('per_page') == '700' ? 'selected' : '' }}>700 </option>
                 </select>
             </div>
             <div>
@@ -272,19 +303,7 @@
                     </div>
                 </div>
 
-                <!-- الرخص الممددة -->
-                <div class="stats-card bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg shadow-md p-4 border border-blue-200">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm text-blue-600 mb-1 font-medium">الرخص الممددة</p>
-                            <h3 class="text-2xl font-bold text-blue-700">{{ $extendedCount ?? 0 }}</h3>
-                            <p class="text-xs text-blue-500 mt-1">رخصة ممددة</p>
-                        </div>
-                        <div class="w-12 h-12 bg-blue-200 rounded-full flex items-center justify-center">
-                            <i class="fas fa-clock text-xl text-blue-600"></i>
-                        </div>
-                    </div>
-                </div>
+               
 
                 <!-- الرخص المنتهية -->
                 <div class="stats-card bg-gradient-to-br from-red-50 to-red-100 rounded-lg shadow-md p-4 border border-red-200">
@@ -318,7 +337,7 @@
                 <div class="bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-lg shadow-md p-4 border border-yellow-200">
                     <div class="flex items-center justify-between">
                         <div>
-                            <p class="text-sm text-yellow-600 mb-1 font-medium">إجمالي التمديدات</p>
+                            <p class="text-sm text-yellow-600 mb-1 font-medium">إجمالي الممددة</p>
                             <h3 class="text-2xl font-bold text-yellow-700">{{ $extensionsCount ?? 0 }}</h3>
                             <p class="text-xs text-yellow-500 mt-1">تمديد مطلوب</p>
                         </div>
@@ -496,4 +515,113 @@
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const dateFromInput = document.getElementById('start_date');
+    const dateToInput = document.getElementById('end_date');
+    const quickDateBtns = document.querySelectorAll('.quick-date-btn');
+    const clearDatesBtn = document.getElementById('clearDates');
+    const filterForm = document.getElementById('filterForm');
+
+    // دالة لتنسيق التاريخ بصيغة YYYY-MM-DD
+    function formatDate(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+
+    // دالة لحساب التواريخ حسب الفترة
+    function calculateDateRange(period) {
+        const today = new Date();
+        let fromDate, toDate;
+
+        switch(period) {
+            case 'today':
+                fromDate = new Date(today);
+                toDate = new Date(today);
+                break;
+            
+            case 'yesterday':
+                fromDate = new Date(today);
+                fromDate.setDate(today.getDate() - 1);
+                toDate = new Date(fromDate);
+                break;
+            
+            case 'week':
+                // من بداية الأسبوع (الأحد) إلى نهاية الأسبوع (السبت)
+                const dayOfWeek = today.getDay();
+                fromDate = new Date(today);
+                fromDate.setDate(today.getDate() - dayOfWeek);
+                toDate = new Date(fromDate);
+                toDate.setDate(fromDate.getDate() + 6);
+                break;
+            
+            case 'month':
+                // من بداية الشهر إلى نهاية الشهر
+                fromDate = new Date(today.getFullYear(), today.getMonth(), 1);
+                toDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+                break;
+            
+            case 'half-year':
+                // آخر 6 شهور
+                fromDate = new Date(today);
+                fromDate.setMonth(today.getMonth() - 6);
+                toDate = new Date(today);
+                break;
+            
+            case 'year':
+                // من بداية السنة إلى نهاية السنة
+                fromDate = new Date(today.getFullYear(), 0, 1);
+                toDate = new Date(today.getFullYear(), 11, 31);
+                break;
+        }
+
+        return {
+            from: formatDate(fromDate),
+            to: formatDate(toDate)
+        };
+    }
+
+    // معالج أحداث الأزرار السريعة
+    quickDateBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const period = this.getAttribute('data-period');
+            const dateRange = calculateDateRange(period);
+            
+            if (dateRange) {
+                dateFromInput.value = dateRange.from;
+                dateToInput.value = dateRange.to;
+                
+                // إزالة الفئة النشطة من جميع الأزرار
+                quickDateBtns.forEach(b => {
+                    b.classList.remove('ring-2', 'ring-blue-500', 'ring-offset-2');
+                });
+                
+                // إضافة الفئة النشطة للزر المضغوط
+                this.classList.add('ring-2', 'ring-blue-500', 'ring-offset-2');
+                
+                // إرسال النموذج تلقائياً
+                filterForm.submit();
+            }
+        });
+    });
+
+    // معالج زر مسح التواريخ
+    clearDatesBtn.addEventListener('click', function() {
+        dateFromInput.value = '';
+        dateToInput.value = '';
+        
+        // إزالة الفئة النشطة من جميع الأزرار
+        quickDateBtns.forEach(btn => {
+            btn.classList.remove('ring-2', 'ring-blue-500', 'ring-offset-2');
+        });
+        
+        // إرسال النموذج
+        filterForm.submit();
+    });
+});
+</script>
+
 @endsection 

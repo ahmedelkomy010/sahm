@@ -6,6 +6,11 @@
 <meta name="work-order-id" content="{{ $workOrder->id }}">
 <style>
     /* تنسيق عام */
+    .container-fluid {
+        max-width: 100vw !important;
+        padding-left: 5px !important;
+        padding-right: 5px !important;
+    }
     .card {
         border: none;
         box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
@@ -42,11 +47,13 @@
           border-radius: 10px;
           overflow-x: auto;
           overflow-y: visible;
+          width: 100%;
+          max-width: none;
           max-width: 100%;
       }
       .table {
           margin-bottom: 0;
-          min-width: 1600px; /* عرض أدنى للجدول */
+          min-width: 1800px; /* عرض أدنى للجدول */
       }
       
       /* تحسين حقول الملاحظات */
@@ -148,7 +155,7 @@
         font-weight: 600;
         background: #f8f9fa;
         display: inline-block;
-        min-width: 60px;
+        min-width: 90px;
         text-align: center;
     }
     .quantity-badge.planned {
@@ -215,7 +222,7 @@
 @endpush
 
 @section('content')
-<div class="container-fluid">
+<div class="container-fluid" style="max-width: 100%; padding: 0 10px;">
     <!-- Header -->
     <div class="row mb-4">
         <div class="col-12">
@@ -250,25 +257,12 @@
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <div class="row">
-                            <div class="col-md-8">
-                                <div class="mb-3">
-                                    <label for="code" class="form-label required">
-                                        <i class="fas fa-barcode me-1"></i>
-                                        كود المادة
-                                    </label>
-                                    <input type="text" class="form-control" id="code" name="code" required>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label for="line" class="form-label">
-                                        <i class="fas fa-hashtag me-1"></i>
-                                        السطر
-                                    </label>
-                                    <input type="text" class="form-control" id="line" name="line">
-                                </div>
-                            </div>
+                        <div class="mb-3">
+                            <label for="code" class="form-label required">
+                                <i class="fas fa-barcode me-1"></i>
+                                كود المادة
+                            </label>
+                            <input type="text" class="form-control" id="code" name="code" required>
                         </div>
                         <div class="mb-3">
                             <label for="description" class="form-label">
@@ -612,7 +606,7 @@
                                         <th class="text-center" width="5%">
                                             <!-- عمود فارغ للترقيم -->
                                         </th>
-                                        <th class="text-center fw-bold" colspan="8" style="background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%); border: 2px solid #fff;">
+                                        <th class="text-center fw-bold" colspan="7" style="background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%); border: 2px solid #fff;">
                                             <i class="fas fa-building me-2"></i>
                                             الشركة السعودية للكهرباء
                                             <i class="fas fa-bolt ms-2"></i>
@@ -628,15 +622,11 @@
                                             <i class="fas fa-list-ol text-muted me-1"></i>
                                             #
                                         </th>
-                                        <th class="text-center" width="5%">
-                                            <i class="fas fa-hashtag text-muted me-1"></i>
-                                            السطر
-                                        </th>
                                         <th width="12%">
                                             <i class="fas fa-barcode text-secondary me-1"></i>
                                             الكود
                                         </th>
-                                        <th width="20%">
+                                        <th width="15%">
                                             <i class="fas fa-align-left text-primary me-1"></i>
                                             الوصف
                                         </th>
@@ -696,9 +686,6 @@
                                             <td class="text-center">
                                                 <span class="badge bg-light text-dark border">{{ $loop->iteration }}</span>
                                             </td>
-                                            <td class="text-center">
-                                                <span class="badge bg-light text-dark border">{{ $material->line ?: '-' }}</span>
-                                            </td>
                                             <td>
                                                 @php
                                                     $workOrderMaterial = $workOrderMaterials->where('material.code', $material->code)->first();
@@ -710,7 +697,7 @@
                                                 </div>
                                             </td>
                                             <td>
-                                                <div class="text-wrap" style="max-width: 300px;">
+                                                <div class="text-wrap" style="max-width: 200px; font-size: 0.75rem; line-height: 1.2;">
                                                     {{ $workOrderMaterial ? ($workOrderMaterial->material->description ?? $workOrderMaterial->material->name) : $material->description }}
                                                 </div>
                                             </td>
@@ -734,7 +721,7 @@
                                                            data-planned-quantity="{{ $material->planned_quantity }}"
                                                            step="0.01"
                                                            min="0"
-                                                           style="width: 60px; text-align: center; padding: 2px 5px; font-size: 0.9rem;">
+                                                           style="width: 90px; text-align: center; padding: 2px 5px; font-size: 0.9rem;">
                                                 </div>
                                             </td>
                                             <td class="text-center">
@@ -774,7 +761,7 @@
                                                            data-spent-quantity="{{ $material->spent_quantity }}"
                                                            step="0.01"
                                                            min="0"
-                                                           style="width: 60px; text-align: center; padding: 2px 5px; font-size: 0.9rem;">
+                                                           style="width: 90px; text-align: center; padding: 2px 5px; font-size: 0.9rem;">
                                                 </div>
                                             </td>
                                             <td class="text-center">
@@ -814,7 +801,7 @@
                                                            step="0.01"
                                                            min="0"
                                                            placeholder="0.00"
-                                                           style="width: 60px; text-align: center; padding: 2px 5px; font-size: 0.85rem;">
+                                                           style="width: 90px; text-align: center; padding: 2px 5px; font-size: 0.85rem;">
                                                 </div>
                                             </td>
                                             <td class="text-center">
@@ -827,7 +814,7 @@
                                                            step="0.01"
                                                            min="0"
                                                            placeholder="0.00"
-                                                           style="width: 60px; text-align: center; padding: 2px 5px; font-size: 0.85rem;">
+                                                           style="width: 90px; text-align: center; padding: 2px 5px; font-size: 0.85rem;">
                                                 </div>
                                             </td>
                                             <td class="text-center">
@@ -2043,7 +2030,7 @@ td.editing {
 
 /* تحسين حقول الإدخال */
 .quantity-input {
-    width: 60px !important;
+    width: 90px !important;
     text-align: center;
     padding: 2px 5px;
     font-size: 0.9rem;

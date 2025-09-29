@@ -128,6 +128,10 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::get('work-orders/{workOrder}/actions-execution', [WorkOrderController::class, 'actionsExecution'])->name('work-orders.actions-execution');
     Route::post('work-orders/{workOrder}/upload-post-execution-file', [WorkOrderController::class, 'uploadPostExecutionFile'])->name('work-orders.upload-post-execution-file');
     Route::get('work-orders/{workOrder}/get-files', [WorkOrderController::class, 'getFiles'])->name('work-orders.get-files');
+    
+    // Daily execution management routes
+    Route::put('work-orders/daily-executions/{dailyExecution}', [WorkOrderController::class, 'updateDailyExecution'])->name('work-orders.daily-executions.update');
+    Route::delete('work-orders/daily-executions/{dailyExecution}', [WorkOrderController::class, 'deleteDailyExecution'])->name('work-orders.daily-executions.delete');
     Route::put('work-orders/{workOrder}/materials/{material}', [MaterialsController::class, 'update'])->name('work-orders.materials.update');
     Route::delete('work-orders/{workOrder}/materials/{material}', [MaterialsController::class, 'destroy'])->name('work-orders.materials.destroy');
     Route::delete('work-orders/materials/work-order-material/{workOrderMaterial}', [MaterialsController::class, 'destroyWorkOrderMaterial'])->name('work-orders.materials.destroy-work-order-material');

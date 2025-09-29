@@ -934,16 +934,23 @@ function importExcel(input) {
         
         if (result.success) {
             let message = result.message;
-            if (result.processed_count) {
-                message += '\n\nعدد الصفوف المعالجة: ' + result.processed_count;
+            if (result.imported_count) {
+                message += '\n\nعدد السجلات المستوردة: ' + result.imported_count;
             }
-            if (result.errors && result.errors.length > 0) {
-                message += '\n\nأخطاء: ' + result.errors.join('\n');
+            if (result.errors_count && result.errors_count > 0) {
+                message += '\n\nعدد الأخطاء: ' + result.errors_count;
+                if (result.errors && result.errors.length > 0) {
+                    message += '\n\nتفاصيل الأخطاء: ' + result.errors.slice(0, 3).join('\n');
+                    if (result.errors.length > 3) {
+                        message += '\n... و ' + (result.errors.length - 3) + ' أخطاء أخرى';
+                    }
+                }
             }
             alert(message);
             
-            // لا نعيد تحميل الصفحة لأن البيانات لم يتم حفظها محلياً
-            console.log('تم معالجة الملف بنجاح، البيانات متاحة في اللوج');
+            // إعادة تحميل الصفحة لعرض البيانات المستوردة
+            console.log('تم استيراد البيانات بنجاح، جاري إعادة تحميل الصفحة...');
+            window.location.reload();
         } else {
             alert('خطأ في الاستيراد: ' + result.message);
         }

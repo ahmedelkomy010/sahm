@@ -89,7 +89,7 @@
                                     <div class="row">
                                         <div class="col-md-6">
                                             <div class="input-group">
-                                                <input id="approval_date" type="date" class="form-control @error('approval_date') is-invalid @enderror" name="approval_date" value="{{ old('approval_date', $workOrder->approval_date ? $workOrder->approval_date->format('Y-m-d') : '') }}" onchange="updateCountdown()">
+                                                <input id="approval_date" type="date" class="form-control @error('approval_date') is-invalid @enderror" name="approval_date" value="{{ old('approval_date', $workOrder->approval_date ? $workOrder->approval_date->format('Y-m-d') : '') }}" onchange="updateCountdown()" oninput="updateCountdown()">
                                                 <span class="input-group-text bg-light">
                                                     <i class="fas fa-clock me-1"></i>
                                                     <span id="countdown" class="text-muted">-</span>
@@ -99,7 +99,7 @@
                                         <div class="col-md-6">
                                             <div class="input-group">
                                                 <span class="input-group-text bg-light">المتبقي</span>
-                                                <input type="number" id="manual_days" name="manual_days" class="form-control @error('manual_days') is-invalid @enderror" min="0" value="{{ old('manual_days', $workOrder->manual_days) }}" placeholder="أدخل عدد الأيام المتبقية" onchange="updateManualDays(this.value)">
+                                                <input type="number" id="manual_days" name="manual_days" class="form-control @error('manual_days') is-invalid @enderror" min="0" max="365" step="1" value="{{ old('manual_days', $workOrder->manual_days ?? 20) }}" placeholder="أدخل عدد الأيام المتبقية" onchange="updateManualDays(this.value)" oninput="updateManualDays(this.value)">
                                                 <span class="input-group-text bg-light">يوم</span>
                                             </div>
                                         </div>
@@ -633,11 +633,14 @@ function updateCountdown() {
     const manualDaysInput = document.getElementById('manual_days');
     
     // إذا كان هناك قيمة في حقل الأيام اليدوية، نستخدمها
-    if (manualDaysInput.value) {
+    if (manualDaysInput.value && manualDaysInput.value !== '0') {
         const days = parseInt(manualDaysInput.value);
         if (days > 0) {
             countdownElement.textContent = days + ' يوم متبقي';
             countdownElement.className = 'text-success';
+        } else if (days === 0) {
+            countdownElement.textContent = 'منتهي اليوم';
+            countdownElement.className = 'text-warning';
         } else {
             countdownElement.textContent = 'منتهي';
             countdownElement.className = 'text-danger';
@@ -658,56 +661,78 @@ function updateCountdown() {
     approvalDate.setHours(0, 0, 0, 0);
     now.setHours(0, 0, 0, 0);
     
-    // حساب الفرق بالأيام
-    const diffTime = approvalDate - now;
+    // حساب الفرق بالأيام (20 يوم من تاريخ الاعتماد)
+    const targetDate = new Date(approvalDate);
+    targetDate.setDate(targetDate.getDate() + 20); // إضافة 20 يوم
+    
+    const diffTime = targetDate - now;
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     
     // تحديث العرض
     if (diffDays > 0) {
         countdownElement.textContent = diffDays + ' يوم متبقي';
         countdownElement.className = 'text-success';
-        // تحديث حقل الأيام اليدوية
-        manualDaysInput.value = diffDays;
+        // تحديث حقل الأيام اليدوية فقط إذا كان فارغ
+        if (!manualDaysInput.value) {
+            manualDaysInput.value = diffDays;
+        }
     } else if (diffDays < 0) {
         countdownElement.textContent = Math.abs(diffDays) + ' يوم متأخر';
         countdownElement.className = 'text-danger';
-        // تحديث حقل الأيام اليدوية
-        manualDaysInput.value = 0;
-        // إظهار تنبيه
-        Swal.fire({
-            title: 'تنبيه!',
-            text: 'تاريخ الاعتماد متأخر بـ ' + Math.abs(diffDays) + ' يوم',
-            icon: 'warning',
-            confirmButtonText: 'حسناً',
-            customClass: {
-                confirmButton: 'btn btn-primary'
+        // تحديث حقل الأيام اليدوية فقط إذا كان فارغ
+        if (!manualDaysInput.value) {
+            manualDaysInput.value = 0;
+        }
+        // إظهار تنبيه مرة واحدة فقط
+        if (!countdownElement.dataset.alertShown) {
+            countdownElement.dataset.alertShown = 'true';
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    title: 'تنبيه!',
+                    text: 'أمر العمل متأخر بـ ' + Math.abs(diffDays) + ' يوم عن الموعد المحدد',
+                    icon: 'warning',
+                    confirmButtonText: 'حسناً',
+                    customClass: {
+                        confirmButton: 'btn btn-primary'
+                    }
+                });
             }
-        });
+        }
     } else {
-        countdownElement.textContent = 'اليوم';
-        countdownElement.className = 'text-primary';
-        // تحديث حقل الأيام اليدوية
-        manualDaysInput.value = 0;
+        countdownElement.textContent = 'ينتهي اليوم';
+        countdownElement.className = 'text-warning';
+        // تحديث حقل الأيام اليدوية فقط إذا كان فارغ
+        if (!manualDaysInput.value) {
+            manualDaysInput.value = 0;
+        }
     }
 }
 
 // تحديث الأيام المتبقية يدوياً
 function updateManualDays(days) {
     const countdownElement = document.getElementById('countdown');
+    const manualDaysInput = document.getElementById('manual_days');
     days = parseInt(days);
     
-    if (days && days > 0) {
+    if (isNaN(days) || days < 0) {
+        // إعادة تعيين القيمة إلى 0 إذا كانت غير صحيحة
+        manualDaysInput.value = 0;
+        days = 0;
+    }
+    
+    if (days > 0) {
         countdownElement.textContent = days + ' يوم متبقي';
         countdownElement.className = 'text-success';
     } else if (days === 0) {
+        countdownElement.textContent = 'منتهي اليوم';
+        countdownElement.className = 'text-warning';
+    } else {
         countdownElement.textContent = 'منتهي';
         countdownElement.className = 'text-danger';
-    } else {
-        countdownElement.textContent = '-';
-        countdownElement.className = 'text-muted';
-        // إعادة تعيين القيمة إلى 0 إذا كانت سالبة
-        document.getElementById('manual_days').value = 0;
     }
+    
+    // إزالة علامة التنبيه المعروض لإعادة تعيينها
+    countdownElement.dataset.alertShown = '';
 }
 
 // تحديث العداد عند تحميل الصفحة وكل دقيقة

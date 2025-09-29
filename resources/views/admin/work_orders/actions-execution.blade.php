@@ -107,128 +107,233 @@
         </div>
     @endif
 
-    {{-- جدول بنود العمل --}}
-    @if($hasWorkItems && $workOrder->workOrderItems->count() > 0)
+    {{-- جدول سجل التنفيذ اليومي وتواريخ تنفيذ بنود العمل --}}
+    @if($dailyExecutions->count() > 0 || $dailyNotes->count() > 0)
     <div class="card mb-4 shadow-sm">
-        <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
-            <span><i class="fas fa-list me-2"></i>بنود العمل</span>
-            <span class="badge bg-light text-dark">{{ $workOrder->workOrderItems->count() }} بند</span>
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0">
+                <i class="fas fa-calendar-check me-2"></i>
+                سجل التنفيذ اليومي وتواريخ تنفيذ بنود العمل
+            </h5>
         </div>
         <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-bordered table-striped align-middle mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th class="text-center" style="width: 4%;">#</th>
-                            <th class="text-center" style="width: 8%;">كود البند</th>
-                            <th style="width: 25%;">اسم البند</th>
-                            <th class="text-center" style="width: 8%;">الوحدة</th>
-                            <th class="text-center" style="width: 10%;">الكمية المخططة</th>
-                            <th class="text-center" style="width: 10%;">الكمية المنفذة</th>
-                            <th class="text-center" style="width: 10%;">سعر الوحدة</th>
-                            <th class="text-center" style="width: 12%;">القيمة المخططة</th>
-                            <th class="text-center" style="width: 13%;">القيمة المنفذة</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @php
-                            $totalPlannedValue = 0;
-                            $totalExecutedValue = 0;
-                        @endphp
-                        @foreach($workOrder->workOrderItems as $index => $item)
-                            @php
-                                $plannedValue = $item->quantity * $item->unit_price;
-                                $executedValue = ($item->executed_quantity ?? 0) * $item->unit_price;
-                                $totalPlannedValue += $plannedValue;
-                                $totalExecutedValue += $executedValue;
-                            @endphp
-                            <tr>
-                                <td class="text-center fw-bold">{{ $index + 1 }}</td>
-                                <td class="text-center">
-                                    <span class="badge bg-secondary">{{ $item->workItem->code ?? 'N/A' }}</span>
-                                </td>
-                                <td>
-                                    <div class="fw-bold text-primary">{{ $item->workItem->name ?? 'غير محدد' }}</div>
-                                    @if($item->workItem->description)
-                                        <small class="text-muted d-block">{{ $item->workItem->description }}</small>
-                                    @endif
-                                    @if($item->notes)
-                                        <small class="text-info d-block"><i class="fas fa-sticky-note me-1"></i>{{ $item->notes }}</small>
-                                    @endif
-                                </td>
-                                <td class="text-center">{{ $item->unit ?? $item->workItem->unit ?? '-' }}</td>
-                                <td class="text-center">
-                                    <span class="badge bg-primary">{{ number_format($item->quantity, 2) }}</span>
-                                </td>
-                                <td class="text-center">
-                                    <div class="executed-quantity-container" data-item-id="{{ $item->id }}">
-                                        <span class="executed-quantity-display" onclick="editExecutedQuantity({{ $item->id }})">
-                                            @if($item->executed_quantity)
-                                                <span class="badge bg-success" style="cursor: pointer;" title="انقر للتعديل">
-                                                    {{ number_format($item->executed_quantity, 2) }}
-                                                    <i class="fas fa-edit ms-1" style="font-size: 0.8em;"></i>
+            <!-- التبويبات -->
+            <ul class="nav nav-tabs mb-3" id="executionTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="daily-executions-tab" data-bs-toggle="tab" data-bs-target="#daily-executions" type="button" role="tab">
+                        <i class="fas fa-tasks me-1"></i>
+                        سجل تنفيذ بنود العمل
+                        @if($dailyExecutions->count() > 0)
+                            <span class="badge bg-primary ms-1">{{ $dailyExecutions->count() }}</span>
+                        @endif
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="daily-notes-tab" data-bs-toggle="tab" data-bs-target="#daily-notes" type="button" role="tab">
+                        <i class="fas fa-sticky-note me-1"></i>
+                        ملاحظات التنفيذ اليومي
+                        @if($dailyNotes->count() > 0)
+                            <span class="badge bg-success ms-1">{{ $dailyNotes->count() }}</span>
+                        @endif
+                    </button>
+                </li>
+            </ul>
+
+            <!-- محتوى التبويبات -->
+            <div class="tab-content" id="executionTabsContent">
+                <!-- تبويب سجل التنفيذ -->
+                <div class="tab-pane fade show active" id="daily-executions" role="tabpanel">
+                    @if($dailyExecutions->count() > 0)
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>#</th>
+                                        <th>تاريخ التنفيذ</th>
+                                        <th>كود البند</th>
+                                        <th>وصف البند</th>
+                                        <th>الكمية المنفذة</th>
+                                        <th>الوحدة</th>
+                                        <th>منفذ بواسطة</th>
+                                        <th>تاريخ الإدخال</th>
+                                        <th>إجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($dailyExecutions as $execution)
+                                    <tr>
+                                        <td>{{ $loop->iteration }}</td>
+                                        <td>
+                                            <span class="badge bg-primary">
+                                                {{ $execution->work_date->format('Y-m-d') }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <code class="bg-light text-dark p-1 rounded">
+                                                {{ $execution->workOrderItem->workItem->code ?? 'غير محدد' }}
+                                            </code>
+                                        </td>
+                                        <td>
+                                            <small class="text-muted">
+                                                {{ Str::limit($execution->workOrderItem->workItem->description ?? 'غير محدد', 50) }}
+                                            </small>
+                                        </td>
+                                        <td>
+                                            <div class="executed-quantity-container" data-execution-id="{{ $execution->id }}">
+                                                <span class="executed-quantity-display" onclick="editExecutedQuantity({{ $execution->id }})">
+                                                    <strong class="text-success" style="cursor: pointer;" title="انقر للتعديل">
+                                                        {{ number_format($execution->executed_quantity, 2) }}
+                                                        <i class="fas fa-edit ms-1" style="font-size: 0.8em;"></i>
+                                                    </strong>
                                                 </span>
-                                            @else
-                                                <span class="badge bg-secondary" style="cursor: pointer;" title="انقر للتعديل">
-                                                    لم يتم التنفيذ
-                                                    <i class="fas fa-edit ms-1" style="font-size: 0.8em;"></i>
-                                                </span>
-                                            @endif
-                                        </span>
-                                        <div class="executed-quantity-edit d-none">
-                                            <div class="input-group input-group-sm">
-                                                <input type="number" 
-                                                       class="form-control form-control-sm" 
-                                                       step="0.01" 
-                                                       min="0"
-                                                       value="{{ $item->executed_quantity ?? 0 }}"
-                                                       id="executed_quantity_{{ $item->id }}">
-                                                <button class="btn btn-success btn-sm" 
-                                                        onclick="saveExecutedQuantity({{ $item->id }})"
-                                                        title="حفظ">
-                                                    <i class="fas fa-check"></i>
-                                                </button>
-                                                <button class="btn btn-secondary btn-sm" 
-                                                        onclick="cancelEditExecutedQuantity({{ $item->id }})"
-                                                        title="إلغاء">
-                                                    <i class="fas fa-times"></i>
-                                                </button>
+                                                <div class="executed-quantity-edit d-none">
+                                                    <div class="input-group input-group-sm">
+                                                        <input type="number" 
+                                                               class="form-control form-control-sm" 
+                                                               step="0.01" 
+                                                               min="0"
+                                                               value="{{ $execution->executed_quantity }}"
+                                                               id="executed_quantity_{{ $execution->id }}">
+                                                        <button class="btn btn-success btn-sm" 
+                                                                onclick="saveExecutedQuantity({{ $execution->id }})"
+                                                                title="حفظ">
+                                                            <i class="fas fa-check"></i>
+                                                        </button>
+                                                        <button class="btn btn-secondary btn-sm" 
+                                                                onclick="cancelEditExecutedQuantity({{ $execution->id }})"
+                                                                title="إلغاء">
+                                                            <i class="fas fa-times"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
                                             </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-secondary">
+                                                {{ $execution->workOrderItem->workItem->unit ?? 'غير محدد' }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <i class="fas fa-user-circle text-muted me-1"></i>
+                                                <small>{{ $execution->createdBy->name ?? 'غير محدد' }}</small>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <small class="text-muted">
+                                                {{ $execution->created_at->format('Y-m-d H:i') }}
+                                            </small>
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-danger btn-sm" 
+                                                    onclick="deleteExecution({{ $execution->id }})"
+                                                    title="حذف سجل التنفيذ">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- إحصائيات سريعة -->
+                        <div class="row mt-3">
+                            <div class="col-md-3">
+                                <div class="bg-light p-3 rounded text-center">
+                                    <i class="fas fa-calendar-day text-primary fs-4"></i>
+                                    <h6 class="mt-2 mb-1">إجمالي أيام التنفيذ</h6>
+                                    <strong class="text-primary">{{ $dailyExecutions->unique('work_date')->count() }}</strong>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="bg-light p-3 rounded text-center">
+                                    <i class="fas fa-tasks text-success fs-4"></i>
+                                    <h6 class="mt-2 mb-1">عدد البنود المنفذة</h6>
+                                    <strong class="text-success">{{ $dailyExecutions->unique('work_order_item_id')->count() }}</strong>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="bg-light p-3 rounded text-center">
+                                    <i class="fas fa-calendar-alt text-info fs-4"></i>
+                                    <h6 class="mt-2 mb-1">أول تاريخ تنفيذ</h6>
+                                    <strong class="text-info">{{ $dailyExecutions->min('work_date') }}</strong>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="bg-light p-3 rounded text-center">
+                                    <i class="fas fa-calendar-check text-warning fs-4"></i>
+                                    <h6 class="mt-2 mb-1">آخر تاريخ تنفيذ</h6>
+                                    <strong class="text-warning">{{ $dailyExecutions->max('work_date') }}</strong>
+                                </div>
+                            </div>
+                        </div>
+                    @else
+                        <div class="text-center py-4">
+                            <i class="fas fa-calendar-times text-muted fa-3x mb-3"></i>
+                            <h5 class="text-muted">لا توجد سجلات تنفيذ يومي</h5>
+                            <p class="text-muted">لم يتم تسجيل أي تنفيذ يومي لبنود العمل بعد.</p>
+                        </div>
+                    @endif
+                </div>
+
+                <!-- تبويب ملاحظات التنفيذ -->
+                <div class="tab-pane fade" id="daily-notes" role="tabpanel">
+                    @if($dailyNotes->count() > 0)
+                        <div class="row">
+                            @foreach($dailyNotes as $note)
+                            <div class="col-md-6 mb-3">
+                                <div class="card border-start border-4 border-info">
+                                    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <i class="fas fa-calendar-day text-info me-1"></i>
+                                            <strong>{{ $note->execution_date->format('Y-m-d') }}</strong>
                                         </div>
+                                        <small class="text-muted">
+                                            <i class="fas fa-user me-1"></i>
+                                            {{ $note->createdBy->name ?? 'غير محدد' }}
+                                        </small>
                                     </div>
-                                </td>
-                                <td class="text-center">
-                                    <span class="fw-bold text-success">{{ number_format($item->unit_price, 2) }} ر.س</span>
-                                </td>
-                                <td class="text-center">
-                                    <div class="fw-bold text-primary">{{ number_format($plannedValue, 2) }} ر.س</div>
-                                </td>
-                                <td class="text-center">
-                                    @if($item->executed_quantity)
-                                        <div class="fw-bold text-success">{{ number_format($executedValue, 2) }} ر.س</div>
-                                    @else
-                                        <span class="text-muted">-</span>
-                                    @endif
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                    <tfoot class="table-dark">
-                        <tr>
-                            <th colspan="7" class="text-end">إجمالي القيمة المخططة:</th>
-                            <th class="text-center">{{ number_format($totalPlannedValue, 2) }} ر.س</th>
-                            <th class="text-center">-</th>
-                        </tr>
-                        <tr>
-                            <th colspan="7" class="text-end">إجمالي القيمة المنفذة:</th>
-                            <th class="text-center">-</th>
-                            <th class="text-center">{{ number_format($totalExecutedValue, 2) }} ر.س</th>
-                        </tr>
-                    </tfoot>
-                </table>
+                                    <div class="card-body">
+                                        <p class="mb-0">{{ $note->notes }}</p>
+                                        <small class="text-muted d-block mt-2">
+                                            <i class="fas fa-clock me-1"></i>
+                                            {{ $note->created_at->format('Y-m-d H:i') }}
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <div class="text-center py-4">
+                            <i class="fas fa-sticky-note text-muted fa-3x mb-3"></i>
+                            <h5 class="text-muted">لا توجد ملاحظات تنفيذ</h5>
+                            <p class="text-muted">لم يتم إضافة أي ملاحظات تنفيذ يومي بعد.</p>
+                        </div>
+                    @endif
+                </div>
             </div>
         </div>
     </div>
+    @else
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    لا توجد سجلات تنفيذ
+                </h5>
+            </div>
+            <div class="card-body text-center py-5">
+                <i class="fas fa-calendar-times text-muted fa-4x mb-3"></i>
+                <h4 class="text-muted mb-2">لا توجد سجلات تنفيذ يومي</h4>
+                <p class="text-muted mb-4">لم يتم تسجيل أي تنفيذ يومي لبنود العمل أو إضافة ملاحظات تنفيذ بعد.</p>
+                <a href="{{ route('admin.work-orders.execution', $workOrder) }}" class="btn btn-primary">
+                    <i class="fas fa-tools me-1"></i>
+                    انتقل إلى صفحة التنفيذ
+                </a>
+            </div>
+        </div>
     @endif
 
 
@@ -886,11 +991,7 @@
                     <p class="text-muted mb-3">
                         لم يتم رفع أي صور للتصاريح بعد. يمكنك إضافة صور التصاريح من صفحة السلامة.
                     </p>
-                    <a href="{{ route('admin.work-orders.safety', $workOrder) }}" 
-                       class="btn btn-warning">
-                        <i class="fas fa-shield-alt me-1"></i>
-                        انتقال إلى صفحة السلامة
-                    </a>
+                   
                 </div>
             @endif
         </div>
@@ -1504,6 +1605,7 @@
         </div>
     </div>
 
+
 </div>
 
 @push('scripts')
@@ -1514,6 +1616,185 @@ function showImageModal(imageSrc, imageName) {
     var imageModal = new bootstrap.Modal(document.getElementById('imageModal'));
     imageModal.show();
 }
+
+// تعديل الكمية المنفذة
+function editExecutedQuantity(executionId) {
+    const container = document.querySelector(`[data-execution-id="${executionId}"]`);
+    const display = container.querySelector('.executed-quantity-display');
+    const edit = container.querySelector('.executed-quantity-edit');
+    
+    display.classList.add('d-none');
+    edit.classList.remove('d-none');
+    
+    const input = edit.querySelector('input');
+    input.focus();
+    input.select();
+}
+
+// إلغاء تعديل الكمية المنفذة
+function cancelEditExecutedQuantity(executionId) {
+    const container = document.querySelector(`[data-execution-id="${executionId}"]`);
+    const display = container.querySelector('.executed-quantity-display');
+    const edit = container.querySelector('.executed-quantity-edit');
+    
+    edit.classList.add('d-none');
+    display.classList.remove('d-none');
+}
+
+// حفظ الكمية المنفذة المعدلة
+function saveExecutedQuantity(executionId) {
+    const container = document.querySelector(`[data-execution-id="${executionId}"]`);
+    const input = container.querySelector('input');
+    const newQuantity = parseFloat(input.value);
+    
+    if (isNaN(newQuantity) || newQuantity < 0) {
+        alert('يرجى إدخال كمية صحيحة');
+        return;
+    }
+    
+    // إرسال طلب AJAX لتحديث الكمية
+    fetch(`{{ route('admin.work-orders.daily-executions.update', ':id') }}`.replace(':id', executionId), {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+            executed_quantity: newQuantity
+        })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(result => {
+        if (result.success) {
+            // تحديث العرض
+            const display = container.querySelector('.executed-quantity-display strong');
+            display.innerHTML = `${parseFloat(newQuantity).toFixed(2)} <i class="fas fa-edit ms-1" style="font-size: 0.8em;"></i>`;
+            
+            cancelEditExecutedQuantity(executionId);
+            
+            // إظهار رسالة نجاح
+            showSuccessMessage('تم تحديث الكمية المنفذة بنجاح');
+        } else {
+            alert('خطأ في تحديث الكمية: ' + result.message);
+        }
+    })
+    .catch(error => {
+        console.error('خطأ في الشبكة:', error);
+        alert('حدث خطأ في الاتصال بالخادم: ' + error.message);
+    });
+}
+
+// حذف سجل التنفيذ
+function deleteExecution(executionId) {
+    if (!confirm('هل أنت متأكد من حذف سجل التنفيذ هذا؟\nسيؤثر هذا على إجمالي الكمية المنفذة للبند.')) {
+        return;
+    }
+    
+    fetch(`{{ route('admin.work-orders.daily-executions.delete', ':id') }}`.replace(':id', executionId), {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'Accept': 'application/json'
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(result => {
+        if (result.success) {
+            // إزالة الصف من الجدول
+            const row = document.querySelector(`[data-execution-id="${executionId}"]`).closest('tr');
+            row.remove();
+            
+            // إعادة ترقيم الصفوف
+            reorderTableRows();
+            
+            // إظهار رسالة نجاح
+            showSuccessMessage('تم حذف سجل التنفيذ بنجاح');
+            
+            // تحديث الإحصائيات
+            updateStatistics();
+        } else {
+            alert('خطأ في حذف سجل التنفيذ: ' + result.message);
+        }
+    })
+    .catch(error => {
+        console.error('خطأ في الشبكة:', error);
+        alert('حدث خطأ في الاتصال بالخادم: ' + error.message);
+    });
+}
+
+// إعادة ترقيم صفوف الجدول
+function reorderTableRows() {
+    const tbody = document.querySelector('#daily-executions tbody');
+    const rows = tbody.querySelectorAll('tr');
+    
+    rows.forEach((row, index) => {
+        const firstCell = row.querySelector('td:first-child');
+        if (firstCell) {
+            firstCell.textContent = index + 1;
+        }
+    });
+}
+
+// تحديث الإحصائيات
+function updateStatistics() {
+    // يمكن تحسين هذا لاحقاً لتحديث الإحصائيات ديناميكياً
+    // أو إعادة تحميل الصفحة إذا لزم الأمر
+}
+
+// إظهار رسالة نجاح
+function showSuccessMessage(message) {
+    // إنشاء alert bootstrap
+    const alertDiv = document.createElement('div');
+    alertDiv.className = 'alert alert-success alert-dismissible fade show';
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    // إضافة الرسالة في بداية الصفحة
+    const container = document.querySelector('.container');
+    container.insertBefore(alertDiv, container.firstChild);
+    
+    // إزالة الرسالة تلقائياً بعد 3 ثوانٍ
+    setTimeout(() => {
+        if (alertDiv) {
+            alertDiv.remove();
+        }
+    }, 3000);
+}
+
+// إضافة event listeners للضغط على Enter في حقول الإدخال
+document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            const target = e.target;
+            if (target.matches('[id^="executed_quantity_"]')) {
+                const executionId = target.id.replace('executed_quantity_', '');
+                saveExecutedQuantity(executionId);
+            }
+        }
+        
+        if (e.key === 'Escape') {
+            const target = e.target;
+            if (target.matches('[id^="executed_quantity_"]')) {
+                const executionId = target.id.replace('executed_quantity_', '');
+                cancelEditExecutedQuantity(executionId);
+            }
+        }
+    });
+});
 </script>
 @endpush
 

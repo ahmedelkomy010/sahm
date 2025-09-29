@@ -250,7 +250,7 @@
 
     <!-- إحصائيات سريعة -->
     <div class="row mb-4">
-        <div class="col-md-3">
+        <div class="col-md-4">
             <div class="stats-card text-center">
                 <div class="stat-icon">
                     <i class="fas fa-file-alt"></i>
@@ -259,7 +259,7 @@
                 <p class="mb-0 opacity-90">أمر عمل منفذ</p>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-4">
             <div class="stats-card text-center">
                 <div class="stat-icon">
                     <i class="fas fa-calendar-day"></i>
@@ -268,25 +268,13 @@
                 <p class="mb-0 opacity-90">سجل تنفيذ يومي</p>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-4">
             <div class="stats-card text-center">
                 <div class="stat-icon">
                     <i class="fas fa-coins"></i>
                 </div>
                 <h3 class="fw-bold mb-1">{{ number_format($totalExecutedValue ?? 0, 2) }} ر.س</h3>
                 <p class="mb-0 opacity-90">إجمالي القيمة المنفذة</p>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="stats-card text-center">
-                <div class="stat-icon">
-                    <i class="fas fa-chart-line"></i>
-                </div>
-                @php
-                    $avgDailyValue = $totalDailyExecutions > 0 ? $totalExecutedValue / $totalDailyExecutions : 0;
-                @endphp
-                <h3 class="fw-bold mb-1">{{ number_format($avgDailyValue, 2) }} ر.س</h3>
-                <p class="mb-0 opacity-90">متوسط القيمة اليومية</p>
             </div>
         </div>
     </div>
@@ -299,14 +287,22 @@
             <!-- أزرار الفترات الزمنية السريعة -->
             <div class="row mb-4">
                 <div class="col-12">
-                    <label class="form-label fw-semibold mb-3">
+                    <label class="form-label fw-semibold mb-2">
                         <i class="fas fa-clock me-1 text-primary"></i>
                         فترات زمنية سريعة
                     </label>
+                    <p class="text-muted small mb-3">
+                        <i class="fas fa-info-circle me-1"></i>
+                        الفلترة تتم حسب تاريخ التنفيذ اليومي الفعلي للبنود
+                    </p>
                     <div class="d-flex flex-wrap gap-2">
                         <button type="button" class="btn btn-outline-primary btn-sm quick-date-btn" data-period="today">
                             <i class="fas fa-calendar-day me-1"></i>
                             اليوم
+                        </button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm quick-date-btn" data-period="yesterday">
+                            <i class="fas fa-calendar-minus me-1"></i>
+                            أمس
                         </button>
                         <button type="button" class="btn btn-outline-success btn-sm quick-date-btn" data-period="week">
                             <i class="fas fa-calendar-week me-1"></i>
@@ -336,7 +332,7 @@
                 <div class="col-md-3">
                     <label for="date_from" class="form-label fw-semibold">
                         <i class="fas fa-calendar-alt me-1 text-primary"></i>
-                        من تاريخ التنفيذ
+                        من تاريخ التنفيذ اليومي
                     </label>
                     <input type="date" class="form-control" id="date_from" name="date_from" value="{{ request('date_from') }}" placeholder="تاريخ التنفيذ من">
                 </div>
@@ -344,7 +340,7 @@
                 <div class="col-md-3">
                     <label for="date_to" class="form-label fw-semibold">
                         <i class="fas fa-calendar-alt me-1 text-primary"></i>
-                        إلى تاريخ التنفيذ
+                        إلى تاريخ التنفيذ اليومي
                     </label>
                     <input type="date" class="form-control" id="date_to" name="date_to" value="{{ request('date_to') }}" placeholder="تاريخ التنفيذ إلى">
                 </div>
@@ -372,31 +368,19 @@
                 <div class="col-md-4">
                     <label for="executed_by" class="form-label fw-semibold">
                         <i class="fas fa-user me-1 text-primary"></i>
-                        المنفذ بواسطة
+                        المنفذ\المدخل بواسطة
                     </label>
                     <input type="text" class="form-control" id="executed_by" name="executed_by" 
                            value="{{ request('executed_by') }}" placeholder="اسم المستخدم المنفذ...">
                 </div>
-                <div class="col-md-4">
-                    <label for="per_page" class="form-label fw-semibold">
-                        <i class="fas fa-list-ol me-1 text-primary"></i>
-                        عدد العناصر المعروضة
-                    </label>
-                    <select class="form-select" id="per_page" name="per_page">
-                        <option value="20" {{ request('per_page', 20) == 20 ? 'selected' : '' }}>20 عنصر</option>
-                        <option value="70" {{ request('per_page', 20) == 70 ? 'selected' : '' }}>70 عنصر</option>
-                        <option value="200" {{ request('per_page', 20) == 200 ? 'selected' : '' }}>200 عنصر</option>
-                        <option value="300" {{ request('per_page', 20) == 300 ? 'selected' : '' }}>300 عنصر</option>
-                        <option value="700" {{ request('per_page', 20) == 700 ? 'selected' : '' }}>700 عنصر</option>
-                    </select>
-                </div>
+                
             </div>
             
             <div class="row mt-3">
                 <div class="col-12 text-center">
                     <button type="submit" class="btn btn-filter me-2">
                         <i class="fas fa-search me-2"></i>
-                        بحث وفلترة
+                        بحث 
                     </button>
                     <a href="{{ route('admin.work-orders.execution-productivity', ['project' => $project]) }}" class="btn btn-outline-secondary">
                         <i class="fas fa-undo me-2"></i>
@@ -419,14 +403,25 @@
                 </span>
             </div>
         </div>
+        
         <div class="col-md-6 text-end">
             <div class="d-flex align-items-center justify-content-end">
                 <i class="fas fa-list-ol text-success me-2"></i>
-                <span class="badge bg-success fs-6">
-                    {{ request('per_page', 20) }} عنصر في الصفحة
+                <span class="badge bg-success fs-6" id="items-display-counter">
+                    عدد العناصر المعروضة: {{ request('per_page', 20) }}
                 </span>
             </div>
         </div>
+        <div class="col-md-1">
+                    
+                    <select class="form-select" id="per_page" name="per_page">
+                        <option value="20" {{ request('per_page', 20) == 20 ? 'selected' : '' }}>20 </option>
+                        <option value="70" {{ request('per_page', 20) == 70 ? 'selected' : '' }}>70 </option>
+                        <option value="200" {{ request('per_page', 20) == 200 ? 'selected' : '' }}>200 </option>
+                        <option value="300" {{ request('per_page', 20) == 300 ? 'selected' : '' }}>300 </option>
+                        <option value="700" {{ request('per_page', 20) == 700 ? 'selected' : '' }}>700 </option>
+                    </select>
+                </div>
     </div>
     @endif
 
@@ -565,11 +560,37 @@
                                 @endif
                             </td>
                             <td class="text-center">
-                                @if($execution->notes)
-                                    <span class="badge bg-secondary" title="{{ $execution->notes }}">
-                                        <i class="fas fa-sticky-note"></i>
-                                        {{ Str::limit($execution->notes, 20) }}
-                                    </span>
+                                @php
+                                    $workOrderNotes = $dailyNotes->get($execution->work_order_id, collect());
+                                    $executionNotes = $execution->notes;
+                                @endphp
+                                
+                                @if($executionNotes || $workOrderNotes->count() > 0)
+                                    <div class="d-flex flex-column gap-1">
+                                        {{-- ملاحظات التنفيذ الخاصة بهذا السجل --}}
+                                        @if($executionNotes)
+                                            <span class="badge bg-primary" title="ملاحظة التنفيذ: {{ $executionNotes }}">
+                                                <i class="fas fa-sticky-note me-1"></i>
+                                                {{ Str::limit($executionNotes, 15) }}
+                                            </span>
+                                        @endif
+                                        
+                                        {{-- ملاحظات التنفيذ اليومي لنفس أمر العمل --}}
+                                        @if($workOrderNotes->count() > 0)
+                                            @foreach($workOrderNotes->take(2) as $note)
+                                                <span class="badge bg-info" title="ملاحظة يومية ({{ $note->execution_date->format('Y-m-d') }}): {{ $note->notes }}">
+                                                    <i class="fas fa-calendar-day me-1"></i>
+                                                    {{ Str::limit($note->notes, 12) }}
+                                                </span>
+                                            @endforeach
+                                            
+                                            @if($workOrderNotes->count() > 2)
+                                                <span class="badge bg-secondary" title="يوجد {{ $workOrderNotes->count() - 2 }} ملاحظات إضافية">
+                                                    +{{ $workOrderNotes->count() - 2 }}
+                                                </span>
+                                            @endif
+                                        @endif
+                                    </div>
                                 @else
                                     <span class="text-muted">-</span>
                                 @endif
@@ -630,13 +651,13 @@
                 </div>
                 <div class="card-body">
                     <div class="row text-center">
-                        <div class="col-md-3">
+                        <div class="col-md-4">
                             <div class="border-end">
                                 <h4 class="text-primary mb-1">{{ $dailyExecutions->count() }}</h4>
                                 <small class="text-muted">سجل في هذه الصفحة</small>
                             </div>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-4">
                             <div class="border-end">
                                 @php
                                     $currentPageTotal = $dailyExecutions->sum(function($execution) {
@@ -653,16 +674,7 @@
                                 <small class="text-muted">قيمة هذه الصفحة</small>
                             </div>
                         </div>
-                        <div class="col-md-3">
-                            <div class="border-end">
-                                @php
-                                    $avgQuantity = $dailyExecutions->avg('executed_quantity');
-                                @endphp
-                                <h4 class="text-info mb-1">{{ number_format($avgQuantity, 2) }}</h4>
-                                <small class="text-muted">متوسط الكمية المنفذة</small>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
+                        <div class="col-md-4">
                             @php
                                 $uniqueUsers = $dailyExecutions->whereNotNull('created_by')->groupBy('created_by')->count();
                             @endphp
@@ -737,6 +749,12 @@
                 case 'today':
                     fromDate = new Date(today);
                     toDate = new Date(today);
+                    break;
+                
+                case 'yesterday':
+                    fromDate = new Date(today);
+                    fromDate.setDate(today.getDate() - 1);
+                    toDate = new Date(fromDate);
                     break;
                 
                 case 'week':
@@ -822,8 +840,30 @@
 
     // تحديث الصفحة تلقائياً عند تغيير عدد العناصر المعروضة
     document.getElementById('per_page').addEventListener('change', function() {
+        // تحديث العداد فوراً
+        const counter = document.getElementById('items-display-counter');
+        if (counter) {
+            counter.innerHTML = 'عدد العناصر المعروضة: ' + this.value;
+            counter.className = 'badge bg-info fs-6';
+            
+            // إضافة مؤشر التحميل
+            setTimeout(() => {
+                counter.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>جاري التحديث...';
+                counter.className = 'badge bg-warning fs-6';
+            }, 100);
+        }
+        
         const form = document.getElementById('filterForm');
         form.submit();
+    });
+
+    // تحديث العداد عند الضغط على زر البحث والفلترة
+    document.getElementById('filterForm').addEventListener('submit', function() {
+        const counter = document.getElementById('items-display-counter');
+        if (counter) {
+            counter.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>جاري البحث...';
+            counter.className = 'badge bg-warning fs-6';
+        }
     });
 
     // تحسين تأثيرات الجدول

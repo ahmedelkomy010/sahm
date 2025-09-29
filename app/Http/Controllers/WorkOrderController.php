@@ -22,6 +22,8 @@ use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
+use App\Models\DailyWorkExecution;
+use App\Models\DailyExecutionNote;
 
 class WorkOrderController extends Controller
 {
@@ -920,6 +922,7 @@ class WorkOrderController extends Controller
             'order_value_with_consultant' => 'required|numeric|min:0',
             'order_value_without_consultant' => 'required|numeric|min:0',
             'execution_status' => 'required|in:1,2,3,4,5,6,7,8,9,10',
+            'manual_days' => 'required|integer|min:0',
             'municipality' => 'nullable|string|max:255',
             'office' => 'nullable|string|max:255',
             'station_number' => 'nullable|string|max:255',
@@ -1118,6 +1121,19 @@ class WorkOrderController extends Controller
         
         $grandTotal = $totalWorkItemsValue + $totalMaterialsValue;
         
+        // جلب سجل التنفيذ اليومي
+        $dailyExecutions = DailyWorkExecution::where('work_order_id', $workOrder->id)
+            ->with(['workOrderItem.workItem', 'createdBy'])
+            ->orderBy('work_date', 'desc')
+            ->orderBy('created_at', 'desc')
+            ->get();
+        
+        // جلب ملاحظات التنفيذ اليومي
+        $dailyNotes = DailyExecutionNote::where('work_order_id', $workOrder->id)
+            ->with('createdBy')
+            ->orderBy('execution_date', 'desc')
+            ->get();
+        
         return view('admin.work_orders.actions-execution', compact(
             'workOrder', 
             'hasWorkItems', 
@@ -1125,7 +1141,9 @@ class WorkOrderController extends Controller
             'totalWorkItemsValue', 
             'totalMaterialsValue', 
             'grandTotal',
-            'executionImages'
+            'executionImages',
+            'dailyExecutions',
+            'dailyNotes'
         ));
     }
 
@@ -4690,10 +4708,14 @@ class WorkOrderController extends Controller
             Log::info('Excel import completed successfully');
             $errors = $import->getErrors();
 
+            $importedCount = count($import->getImportedRevenues());
+            $errorCount = count($errors);
+            
             return response()->json([
                 'success' => true,
-                'message' => 'تم معالجة ملف الإيرادات بنجاح لـ ' . ($project === 'madinah' ? 'مشروع المدينة المنورة' : 'مشروع الرياض') . ' (البيانات لم يتم حفظها محلياً)',
-                'processed_count' => count($import->getImportedRevenues()),
+                'message' => 'تم استيراد ' . $importedCount . ' سجل بنجاح لـ ' . ($project === 'madinah' ? 'مشروع المدينة المنورة' : 'مشروع الرياض') . ($errorCount > 0 ? ' مع ' . $errorCount . ' أخطاء' : ''),
+                'imported_count' => $importedCount,
+                'errors_count' => $errorCount,
                 'errors' => $errors
             ]);
 
@@ -4779,6 +4801,13 @@ class WorkOrderController extends Controller
         ->orderBy('created_at', 'desc')
         ->paginate($request->get('per_page', 20));
         
+        // جلب ملاحظات التنفيذ اليومي لكل work_order_id في النتائج الحالية
+        $workOrderIds = $dailyExecutions->pluck('work_order_id')->unique();
+        $dailyNotes = \App\Models\DailyExecutionNote::whereIn('work_order_id', $workOrderIds)
+            ->with('createdBy')
+            ->get()
+            ->groupBy('work_order_id');
+        
         \Log::info("Execution Productivity: Found " . $dailyExecutions->count() . " daily executions");
         
         // إذا لم توجد بيانات في daily_work_executions، استخدم work_order_items كبديل
@@ -4836,7 +4865,94 @@ class WorkOrderController extends Controller
         return view('admin.work_orders.execution-productivity', compact(
             'dailyExecutions', 'project', 'projectName', 'city',
             'totalWorkOrders', 'totalValue', 'totalDailyExecutions', 'totalExecutedValue',
-            'uniqueWorkOrdersWithExecution', 'usingFallbackData'
+            'uniqueWorkOrdersWithExecution', 'usingFallbackData', 'dailyNotes'
         ));
+    }
+    
+    /**
+     * تحديث سجل التنفيذ اليومي
+     */
+    public function updateDailyExecution(Request $request, DailyWorkExecution $dailyExecution)
+    {
+        try {
+            $request->validate([
+                'executed_quantity' => 'required|numeric|min:0'
+            ]);
+
+            $oldQuantity = $dailyExecution->executed_quantity;
+            $newQuantity = $request->executed_quantity;
+
+            // تحديث سجل التنفيذ اليومي
+            $dailyExecution->update([
+                'executed_quantity' => $newQuantity,
+                'updated_by' => auth()->id()
+            ]);
+
+            // تحديث إجمالي الكمية المنفذة في WorkOrderItem
+            $workOrderItem = $dailyExecution->workOrderItem;
+            if ($workOrderItem) {
+                // حساب إجمالي الكمية المنفذة من جميع سجلات التنفيذ اليومي
+                $totalExecuted = DailyWorkExecution::where('work_order_item_id', $workOrderItem->id)
+                    ->sum('executed_quantity');
+                
+                $workOrderItem->update([
+                    'executed_quantity' => $totalExecuted
+                ]);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'تم تحديث الكمية المنفذة بنجاح',
+                'old_quantity' => $oldQuantity,
+                'new_quantity' => $newQuantity
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('خطأ في تحديث سجل التنفيذ اليومي: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء تحديث الكمية المنفذة'
+            ], 500);
+        }
+    }
+
+    /**
+     * حذف سجل التنفيذ اليومي
+     */
+    public function deleteDailyExecution(DailyWorkExecution $dailyExecution)
+    {
+        try {
+            $workOrderItem = $dailyExecution->workOrderItem;
+            $deletedQuantity = $dailyExecution->executed_quantity;
+
+            // حذف سجل التنفيذ اليومي
+            $dailyExecution->delete();
+
+            // تحديث إجمالي الكمية المنفذة في WorkOrderItem
+            if ($workOrderItem) {
+                // إعادة حساب إجمالي الكمية المنفذة من سجلات التنفيذ المتبقية
+                $totalExecuted = DailyWorkExecution::where('work_order_item_id', $workOrderItem->id)
+                    ->sum('executed_quantity');
+                
+                $workOrderItem->update([
+                    'executed_quantity' => $totalExecuted
+                ]);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'تم حذف سجل التنفيذ بنجاح',
+                'deleted_quantity' => $deletedQuantity
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('خطأ في حذف سجل التنفيذ اليومي: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء حذف سجل التنفيذ'
+            ], 500);
+        }
     }
 } 
