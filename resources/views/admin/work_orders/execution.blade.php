@@ -965,13 +965,8 @@
                     <div class="col-md-4">
                         <div class="mb-3">
                             <label for="quantity" class="form-label">الكمية المخططة</label>
-                            @if(auth()->user()->is_admin)
-                                <input type="number" step="0.01" class="form-control" id="quantity" name="quantity" min="0">
-                                <small class="text-muted">يمكن لمشرف النظام تعديل الكمية المخططة</small>
-                            @else
-                                <input type="number" step="0.01" class="form-control" id="quantity" name="quantity" readonly style="background-color: #f8f9fa; cursor: not-allowed;">
-                                <small class="text-muted">سيتم تحديد الكمية من خلال الجدول</small>
-                            @endif
+                            <input type="number" step="0.01" class="form-control" id="quantity" name="quantity" min="0">
+                            <small class="text-muted">يمكن تعديل الكمية المخططة لجميع المستخدمين</small>
                         </div>
                     </div>
                     <div class="col-md-4">

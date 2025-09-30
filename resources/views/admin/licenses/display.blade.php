@@ -3,57 +3,7 @@
 @section('title', 'لوحة تحكم الجودة والرخص')
 
 @section('styles')
-<style>
-    .stats-card {
-        transition: all 0.3s ease;
-        cursor: pointer;
-    }
-    
-    .stats-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-    }
-    
-    .stats-section h4 {
-        position: relative;
-        padding-bottom: 8px;
-    }
-    
-    .stats-section h4::after {
-        content: '';
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        width: 40px;
-        height: 3px;
-        background: linear-gradient(90deg, #3B82F6, #10B981);
-        border-radius: 2px;
-    }
-    
-    .financial-stats .stats-card {
-        border-left: 4px solid transparent;
-    }
-    
-    .financial-stats .stats-card:nth-child(1) { border-left-color: #3B82F6; }
-    .financial-stats .stats-card:nth-child(2) { border-left-color: #6366F1; }
-    .financial-stats .stats-card:nth-child(3) { border-left-color: #EF4444; }
-    .financial-stats .stats-card:nth-child(4) { border-left-color: #059669; }
-    .financial-stats .stats-card:nth-child(5) { border-left-color: #EC4899; }
-    .financial-stats .stats-card:nth-child(6) { border-left-color: #8B5CF6; }
-    
-    .count-stats .stats-card {
-        border-left: 4px solid transparent;
-    }
-    
-    .count-stats .stats-card:nth-child(1) { border-left-color: #10B981; }
-    .count-stats .stats-card:nth-child(2) { border-left-color: #3B82F6; }
-    .count-stats .stats-card:nth-child(3) { border-left-color: #EF4444; }
-    .count-stats .stats-card:nth-child(4) { border-left-color: #F59E0B; }
-    .count-stats .stats-card:nth-child(5) { border-left-color: #EAB308; }
-    .count-stats .stats-card:nth-child(6) { border-left-color: #059669; }
-    .count-stats .stats-card:nth-child(7) { border-left-color: #EC4899; }
-    .count-stats .stats-card:nth-child(8) { border-left-color: #8B5CF6; }
-</style>
+<link rel="stylesheet" href="{{ asset('css/licenses-display.css') }}">
 @endsection
 
 @section('content')

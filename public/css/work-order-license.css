@@ -1,0 +1,1341 @@
+/* رخص أوامر العمل - Work Order License Styles */
+
+/* Header Styles */
+.license-header {
+    background: linear-gradient(135deg,rgb(38, 42, 61) 0%,rgb(116, 78, 165) 100%);
+    border-radius: 15px;
+    color: white;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+/* ضمان ظهور إجمالي الإخلاء */
+#evacuationDataTable tfoot {
+    display: table-footer-group !important;
+    background-color: #d1ecf1 !important;
+}
+
+#total-evacuation-amount {
+    display: table-cell !important;
+    visibility: visible !important;
+    background-color: #b8daff !important;
+    color: #004085 !important;
+    font-weight: bold !important;
+    font-size: 1.1em !important;
+}
+
+.section-card {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    border: 1px solid #e9ecef;
+    overflow: hidden;
+    margin-bottom: 2rem;
+}
+
+.section-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 1.5rem;
+    border-bottom: none;
+}
+
+.section-body {
+    padding: 2rem;
+}
+
+.nav-tab-btn {
+    border: 2px solid transparent;
+    border-radius: 10px;
+    padding: 12px 20px;
+    margin: 5px;
+    transition: all 0.3s ease;
+    background: #f8f9fa;
+    color: #495057;
+    font-weight: 500;
+}
+
+.nav-tab-btn.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-color: #667eea;
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+}
+
+.btn-primary-custom {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-primary-custom:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+    color: white;
+}
+
+/* أنماط النظام التفاعلي للمختبر */
+.test-card {
+    transition: all 0.3s ease;
+    border: 2px solid #e9ecef;
+}
+
+.test-card:hover {
+    border-color: #007bff;
+    box-shadow: 0 4px 8px rgba(0,123,255,0.1);
+}
+
+.test-calculation {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 8px;
+    padding: 15px;
+    margin-top: 10px;
+    border: 1px solid #dee2e6;
+}
+
+.form-control-sm:focus, .form-select-sm:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.25);
+}
+
+.bg-light {
+    background-color: #f8f9fa !important;
+}
+
+.text-primary {
+    color: #007bff !important;
+}
+
+.badge {
+    font-size: 0.875em;
+}
+
+.fs-2 {
+    font-size: 1.5rem !important;
+}
+
+.fs-4 {
+    font-size: 1.25rem !important;
+}
+
+.fs-6 {
+    font-size: 1rem !important;
+}
+
+.bg-opacity-10 {
+    background-color: rgba(var(--bs-success-rgb), 0.1) !important;
+}
+
+.bg-danger.bg-opacity-10 {
+    background-color: rgba(var(--bs-danger-rgb), 0.1) !important;
+}
+
+.bg-warning.bg-opacity-10 {
+    background-color: rgba(var(--bs-warning-rgb), 0.1) !important;
+}
+
+.border-info {
+    border-color: #0dcaf0 !important;
+}
+
+.card-header.bg-info {
+    background-color: #0dcaf0 !important;
+}
+
+.test-calculation .row {
+    align-items: end;
+}
+
+.form-check-input:checked {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+.test-card .card-body {
+    padding: 1.25rem;
+}
+
+.small {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #6c757d;
+}
+
+/* أنماط النظام الجديد مع التكرار */
+.test-row {
+    background: rgba(255, 255, 255, 0.9);
+    transition: all 0.3s ease;
+    position: relative;
+    border: 1px solid #e9ecef !important;
+}
+
+.test-row:hover {
+    background: rgba(255, 255, 255, 1);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,123,255,0.15);
+    border-color: #007bff !important;
+}
+
+.test-row .badge {
+    animation: pulse 2s infinite;
+    font-weight: 600;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); opacity: 0.8; }
+    50% { transform: scale(1.05); opacity: 1; }
+    100% { transform: scale(1); opacity: 0.8; }
+}
+
+.btn-primary {
+    background: linear-gradient(45deg, #007bff, #0056b3);
+    border: none;
+    transition: all 0.3s ease;
+    font-weight: 600;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(45deg, #0056b3, #004085);
+    transform: translateY(-2px);
+}
+
+/* تحسينات جدول التفاصيل الفنية للمختبر */
+.bg-gradient-success {
+    background: linear-gradient(45deg, #198754, #25a865);
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(0,0,0,.075);
+    transition: background-color 0.15s ease-in-out;
+}
+
+.form-control-sm, .form-select-sm {
+    font-size: 0.85rem;
+}
+
+.card {
+    border: none;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.btn-group .btn {
+    transition: all 0.2s ease;
+}
+
+.btn-group .btn:hover {
+    transform: translateY(-1px);
+}
+
+.table th {
+    background-color: #495057;
+    color: white;
+    font-weight: 600;
+    border: 1px solid #495057;
+}
+
+/* تحسين مظهر رقم شهادة التنسيق */
+.text-info[title="رقم شهادة التنسيق"] {
+    background: linear-gradient(135deg, #17a2b8 0%, #0056b3 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    padding: 2px 4px;
+    border-radius: 4px;
+    border: 1px solid rgba(23, 162, 184, 0.2);
+    display: inline-block;
+}
+
+.text-info[title="رقم شهادة التنسيق"] i {
+    color: #17a2b8;
+    -webkit-text-fill-color: initial;
+}
+
+.text-info[title="رقم شهادة التنسيق"]:hover {
+    background: linear-gradient(135deg, #0056b3 0%, #17a2b8 100%);
+    -webkit-background-clip: text;
+    border-color: rgba(23, 162, 184, 0.4);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(23, 162, 184, 0.1);
+}
+
+.btn-danger {
+    background: linear-gradient(45deg, #dc3545, #c82333);
+    border: none;
+    transition: all 0.3s ease;
+    font-weight: 600;
+}
+
+.btn-danger:hover {
+    background: linear-gradient(45deg, #c82333, #bd2130);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(220,53,69,0.4);
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.25);
+    transform: scale(1.02);
+    transition: all 0.3s ease;
+}
+
+.form-check-input:checked {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+.form-check-label {
+    font-weight: 600;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.form-check-label:hover {
+    transform: scale(1.1);
+}
+
+.text-success {
+    color: #28a745 !important;
+}
+
+.text-danger {
+    color: #dc3545 !important;
+}
+
+.bg-light {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
+}
+
+.test-row .col-md-3 {
+    padding: 0.25rem;
+}
+
+.test-row .form-label {
+    margin-bottom: 0.25rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #495057;
+}
+
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    border-radius: 0.375rem;
+}
+
+.btn-outline-secondary {
+    color: #6c757d;
+    border-color: #6c757d;
+    transition: all 0.3s ease;
+}
+
+.btn-outline-secondary:hover {
+    color: #fff;
+    background-color: #6c757d;
+    border-color: #6c757d;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(108, 117, 125, 0.3);
+}
+
+.test-row .d-flex.gap-2 {
+    flex-wrap: nowrap;
+}
+
+.btn-outline-warning {
+    color: #ffc107;
+    border-color: #ffc107;
+    transition: all 0.3s ease;
+}
+
+.btn-outline-warning:hover {
+    color: #212529;
+    background-color: #ffc107;
+    border-color: #ffc107;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(255, 193, 7, 0.3);
+}
+
+/* تحسينات جدول رخص الحفر */
+#licenses-total-row {
+    background: linear-gradient(45deg, #f8f9fa, #e9ecef) !important;
+    border-top: 3px solid #28a745 !important;
+}
+
+#licenses-total-row td {
+    font-weight: bold !important;
+    font-size: 1.1rem !important;
+    padding: 15px 8px !important;
+}
+
+/* تحسينات العد التنازلي */
+.badge {
+    font-size: 0.85em;
+    padding: 0.5em 0.75em;
+    border-radius: 0.5rem;
+}
+
+.badge.bg-danger {
+    animation: pulse-danger 2s infinite;
+}
+
+.badge.bg-warning {
+    animation: pulse-warning 2s infinite;
+}
+
+@keyframes pulse-danger {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
+}
+
+@keyframes pulse-warning {
+    0% { opacity: 1; }
+    50% { opacity: 0.8; }
+    100% { opacity: 1; }
+}
+
+/* تحسين مظهر الجدول */
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(0,0,0,.02);
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(0,123,255,.1);
+    transition: background-color 0.3s ease;
+}
+
+/* تنسيق التاريخ الميلادي */
+.table td small {
+    color: #6c757d;
+    font-weight: 500;
+}
+
+/* تحسينات قسم التمديدات */
+#extension-form-card {
+    border: 2px solid #007bff !important;
+    box-shadow: 0 4px 12px rgba(0,123,255,0.15);
+    transition: all 0.3s ease;
+}
+
+#extension-form-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,123,255,0.2);
+}
+
+#add-extension-btn:disabled {
+    background-color: #6c757d !important;
+    border-color: #6c757d !important;
+    cursor: not-allowed;
+}
+
+#add-extension-btn:not(:disabled) {
+    background: linear-gradient(45deg, #28a745, #20c997);
+    border: none;
+    transform: scale(1);
+    transition: all 0.3s ease;
+}
+
+#add-extension-btn:not(:disabled):hover {
+    background: linear-gradient(45deg, #20c997, #17a2b8);
+    transform: scale(1.05);
+    box-shadow: 0 4px 15px rgba(40,167,69,0.3);
+}
+
+.card.border-warning {
+    border-width: 2px !important;
+}
+
+.card.border-warning:hover {
+    box-shadow: 0 4px 12px rgba(255,193,7,0.15);
+    transition: box-shadow 0.3s ease;
+}
+
+/* تحسين مظهر الجدول للتمديدات */
+#extensionsTable {
+    font-size: 0.9rem;
+}
+
+#extensionsTable .table-warning {
+    background: linear-gradient(45deg, #fff3cd, #ffeaa7);
+}
+
+#extensionsTable th {
+    vertical-align: middle;
+    font-weight: 600;
+    border-bottom: 2px solid #dee2e6;
+}
+
+#extensionsTable td {
+    vertical-align: middle;
+    padding: 0.5rem 0.3rem;
+}
+
+/* تأثيرات المرور على صفوف التمديدات */
+#extensions-table-body tr:hover {
+    background: linear-gradient(45deg, rgba(255,193,7,0.1), rgba(255,235,59,0.1));
+    transform: scale(1.005);
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* تحسين عرض الأزرار في الجدول */
+#extensionsTable .btn-group-sm .btn {
+    padding: 0.25rem 0.4rem;
+    font-size: 0.8rem;
+}
+
+/* تحسين عرض التواريخ */
+#extensionsTable small {
+    font-size: 0.85rem;
+    color: #495057;
+}
+
+/* تحسين عرض البادج */
+#extensionsTable .badge {
+    font-size: 0.75rem;
+    padding: 0.35em 0.5em;
+}
+
+/* تحسين مظهر badges عدد الأيام */
+.badge.bg-warning {
+    background: linear-gradient(45deg, #ffc107, #ffdd54) !important;
+    color: #212529 !important;
+    font-weight: bold;
+    padding: 0.6em 1em;
+    border-radius: 1rem;
+    box-shadow: 0 2px 8px rgba(255,193,7,0.3);
+    animation: pulse-warning 3s infinite;
+}
+
+@keyframes pulse-warning {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.05); opacity: 0.9; }
+}
+
+@keyframes pulse-success {
+    0%, 100% { transform: scale(1); box-shadow: 0 2px 8px rgba(40,167,69,0.3); }
+    50% { transform: scale(1.05); box-shadow: 0 4px 16px rgba(40,167,69,0.6); }
+}
+
+/* تحسين مظهر إجمالي التمديدات */
+#extensions-total-badge {
+    transition: all 0.3s ease;
+    border-radius: 12px !important;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+}
+
+#extensions-total-english {
+    font-family: 'Arial', sans-serif;
+    letter-spacing: 0.5px;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+}
+
+/* تحسين modal التمديدات */
+#extensionModal .modal-content {
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+#extensionModal .card {
+    border-radius: 10px;
+    transition: transform 0.3s ease;
+}
+
+#extensionModal .card:hover {
+    transform: translateY(-5px);
+}
+
+/* تحسين أزرار الإجراءات في جدول التمديدات */
+#extensions-table-body .btn-group .btn {
+    border-radius: 50%;
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 2px;
+    transition: all 0.3s ease;
+}
+
+#extensions-table-body .btn-outline-info:hover {
+    background: linear-gradient(45deg, #17a2b8, #20c997);
+    border-color: transparent;
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(23,162,184,0.4);
+}
+
+#extensions-table-body .btn-outline-danger:hover {
+    background: linear-gradient(45deg, #dc3545, #e74c3c);
+    border-color: transparent;
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(220,53,69,0.4);
+}
+
+/* تنسيق قسم المرفقات */
+.min-height-100 {
+    min-height: 100px;
+}
+
+#evacuation-attachments-list .card {
+    transition: all 0.3s ease;
+    cursor: default;
+}
+
+#evacuation-attachments-list .card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+#evacuation-attachments-list .btn-group-sm .btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+}
+
+/* تحسين مظهر حقل رفع الملفات */
+#evacuation-attachments {
+    border: 2px dashed #17a2b8;
+    background: rgba(23, 162, 184, 0.05);
+    transition: all 0.3s ease;
+}
+
+#evacuation-attachments:hover {
+    border-color: #138496;
+    background: rgba(23, 162, 184, 0.1);
+}
+
+#evacuation-attachments:focus {
+    border-color: #0c5460;
+    box-shadow: 0 0 0 0.2rem rgba(23, 162, 184, 0.25);
+}
+
+/* تنسيقات الـ dropdown المحسن */
+.license-option {
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: none !important;
+    padding: 12px 16px;
+}
+
+.license-option:hover {
+    background-color: #f8f9fa !important;
+    transform: translateX(5px);
+}
+
+.license-option:active {
+    background-color: #e9ecef !important;
+}
+
+.dropdown-menu {
+    border: 1px solid #dee2e6;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    border-radius: 0.5rem;
+}
+
+.license-options-container {
+    border-radius: 0.375rem;
+}
+
+.license-options-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.license-options-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.license-options-container::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.license-options-container::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+.dropdown-toggle::after {
+    margin-left: auto;
+}
+
+#selected-license-text {
+    flex-grow: 1;
+}
+
+.dropdown-item.license-option .badge {
+    font-size: 0.7rem;
+}
+
+/* تأثيرات الانتقال للنموذج */
+#extension-form-card {
+    transition: all 0.5s ease;
+}
+
+#extension-form-card.fade-in {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* تحسينات إضافية للواجهة */
+.dropdown-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.license-update-indicator {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.02);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Vue.js License Items */
+.license-item {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.license-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}
+
+/* تحسينات validation للمخالفات */
+.form-label .text-danger {
+    font-weight: bold;
+    margin-left: 2px;
+}
+
+.is-invalid {
+    border-color: #dc3545 !important;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+}
+
+.invalid-feedback {
+    display: block !important;
+    width: 100%;
+    margin-top: 0.25rem;
+    font-size: 0.875em;
+    color: #dc3545;
+    font-weight: 500;
+}
+
+.is-invalid ~ .invalid-feedback {
+    display: block !important;
+}
+
+/* تحسين مظهر الحقول المطلوبة */
+.form-control:focus {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.form-control.is-invalid:focus {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
+.is-valid {
+    border-color: #198754 !important;
+    box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.25) !important;
+}
+
+.form-control.is-valid:focus {
+    border-color: #198754;
+    box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.25);
+}
+
+/* تحسين مظهر رسائل Toastr */
+.toast-error {
+    white-space: pre-line !important;
+}
+
+/* تحسينات أزرار الإجراءات في جدول المخالفات */
+.btn-group-sm .btn {
+    margin: 0 1px;
+    min-width: 32px;
+}
+
+.btn-outline-primary:hover {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+    color: white;
+}
+
+.btn-outline-danger:hover {
+    background-color: #dc3545;
+    border-color: #dc3545;
+    color: white;
+}
+
+/* تحسين مظهر زر الإلغاء */
+#cancel-edit-btn {
+    transition: all 0.3s ease;
+}
+
+#cancel-edit-btn:hover {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    color: white;
+}
+
+/* تحسينات Vue.js Dig License Manager */
+.dig-license-manager .card {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border: none;
+    margin-bottom: 1.5rem;
+}
+
+.dig-license-manager .card-header {
+    border-bottom: 2px solid rgba(255,255,255,0.2);
+}
+
+.dig-license-manager .form-control:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+.dig-license-manager .input-group-text {
+    background-color: #f8f9fa;
+    border-color: #dee2e6;
+    color: #6c757d;
+}
+
+.dig-license-manager .btn-outline-secondary:hover {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    color: white;
+}
+
+.dig-license-manager .table th {
+    background-color: #e3f2fd;
+    border-bottom: 2px solid #bbdefb;
+    font-weight: 600;
+    color: #1976d2;
+}
+
+.dig-license-manager .table td {
+    vertical-align: middle;
+}
+
+.dig-license-manager .badge {
+    font-size: 0.8em;
+    padding: 0.4em 0.6em;
+}
+
+.dig-license-manager .btn-group-sm .btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    border-radius: 0.2rem;
+}
+
+.dig-license-manager .btn-outline-primary:hover {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(13, 110, 253, 0.3);
+}
+
+.dig-license-manager .btn-outline-danger:hover {
+    background-color: #dc3545;
+    border-color: #dc3545;
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(220, 53, 69, 0.3);
+}
+
+/* تحسين مظهر النموذج */
+.dig-license-manager .form-label {
+    margin-bottom: 0.5rem;
+    color: #495057;
+}
+
+.dig-license-manager .text-danger {
+    color: #dc3545 !important;
+    font-weight: bold;
+}
+
+.dig-license-manager .invalid-feedback {
+    display: block !important;
+    width: 100%;
+    margin-top: 0.25rem;
+    font-size: 0.875em;
+    color: #dc3545;
+}
+
+.dig-license-manager .is-invalid {
+    border-color: #dc3545 !important;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+}
+
+/* تحسين الأيقونات */
+.dig-license-manager .input-group-text i {
+    width: 14px;
+    text-align: center;
+}
+
+/* تحسين الأزرار */
+.dig-license-manager .btn {
+    transition: all 0.3s ease;
+}
+
+.dig-license-manager .btn:hover {
+    transform: translateY(-1px);
+}
+
+/* تحسين الجدول */
+.dig-license-manager .table-responsive {
+    border-radius: 0.5rem;
+    overflow: hidden;
+}
+
+.dig-license-manager .table-striped > tbody > tr:nth-of-type(odd) > td {
+    background-color: rgba(0,0,0,.02);
+}
+
+.dig-license-manager .table-hover tbody tr:hover {
+    background-color: rgba(13, 110, 253, 0.1);
+}
+
+/* تحسينات حقول رفع المرفقات */
+.dig-license-manager input[type="file"] {
+    border: 2px dashed #dee2e6;
+    padding: 0.75rem;
+    background-color: #f8f9fa;
+    transition: all 0.3s ease;
+    border-radius: 0.5rem;
+}
+
+.dig-license-manager input[type="file"]:hover {
+    border-color: #0d6efd;
+    background-color: #e7f3ff;
+}
+
+.dig-license-manager input[type="file"]:focus {
+    border-color: #0d6efd;
+    background-color: #e7f3ff;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+.dig-license-manager .form-text {
+    font-size: 0.8em;
+    margin-top: 0.5rem;
+    color: #6c757d;
+}
+
+.dig-license-manager .text-success small {
+    font-weight: 500;
+}
+
+.dig-license-manager .list-unstyled li {
+    padding: 0.25rem 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.dig-license-manager .list-unstyled li:last-child {
+    border-bottom: none;
+}
+
+/* تحسين مظهر قسم المرفقات */
+.dig-license-manager h6.text-primary {
+    border-bottom: 2px solid #e3f2fd;
+    padding-bottom: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.dig-license-manager .fas.fa-paperclip {
+    color: #0d6efd;
+}
+
+.dig-license-manager .fas.fa-info-circle {
+    color: #6c757d;
+}
+
+.dig-license-manager .fas.fa-check {
+    color: #198754;
+}
+
+.dig-license-manager .fas.fa-file {
+    color: #6c757d;
+}
+
+/* تحسينات عمود المرفقات */
+.dig-license-manager .d-flex.gap-1 {
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 0.25rem !important;
+}
+
+.dig-license-manager .d-flex.gap-1 .badge {
+    font-size: 0.7em;
+    padding: 0.3em 0.5em;
+    cursor: help;
+}
+
+.dig-license-manager .badge.bg-success {
+    background-color: #198754 !important;
+}
+
+.dig-license-manager .badge.bg-warning {
+    background-color: #ffc107 !important;
+    color: #000;
+}
+
+.dig-license-manager .badge.bg-info {
+    background-color: #0dcaf0 !important;
+    color: #000;
+}
+
+.dig-license-manager .fas.fa-file-pdf {
+    margin-right: 0;
+}
+
+.dig-license-manager .fas.fa-file-invoice {
+    margin-right: 2px;
+}
+
+.dig-license-manager .fas.fa-certificate {
+    margin-right: 0;
+}
+
+/* تحسينات عمود الأبعاد */
+.dig-license-manager .badge.bg-light {
+    color: #495057 !important;
+    border: 1px solid #dee2e6;
+    font-size: 0.7em;
+    padding: 0.3em 0.5em;
+}
+
+.dig-license-manager .fas.fa-arrows-alt-h,
+.dig-license-manager .fas.fa-arrows-alt-v,
+.dig-license-manager .fas.fa-arrow-down {
+    font-size: 0.8em;
+}
+
+/* تحسينات العداد التنازلي */
+.dig-license-manager .countdown-display .progress {
+    border-radius: 10px;
+    background-color: #e9ecef;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.dig-license-manager .countdown-display .progress-bar {
+    border-radius: 10px;
+    transition: width 0.5s ease-in-out;
+    position: relative;
+    overflow: hidden;
+}
+
+.dig-license-manager .countdown-display .progress-bar::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background-image: linear-gradient(45deg, rgba(255,255,255,.15) 25%, transparent 25%, transparent 50%, rgba(255,255,255,.15) 50%, rgba(255,255,255,.15) 75%, transparent 75%, transparent);
+    background-size: 1rem 1rem;
+    animation: progress-bar-stripes 1s linear infinite;
+}
+
+@keyframes progress-bar-stripes {
+    0% { background-position: 1rem 0; }
+    100% { background-position: 0 0; }
+}
+
+.dig-license-manager .countdown-display .badge {
+    font-size: 0.85rem !important;
+    padding: 0.5em 0.75em;
+    font-weight: 600;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+}
+
+.dig-license-manager .countdown-display .badge.bg-danger {
+    animation: pulse-danger 2s infinite;
+}
+
+@keyframes pulse-danger {
+    0% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(220, 53, 69, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
+}
+
+.dig-license-manager .countdown-display .badge.bg-warning {
+    animation: pulse-warning 3s infinite;
+}
+
+@keyframes pulse-warning {
+    0% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.7); }
+    70% { box-shadow: 0 0 0 8px rgba(255, 193, 7, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0); }
+}
+
+/* تحسين أزرار الإجراءات في الجدول */
+.dig-license-manager .btn-group .btn {
+    min-width: 32px;
+    padding: 0.25rem 0.4rem;
+    font-size: 0.8rem;
+    border-radius: 4px;
+    margin: 0 1px;
+    transition: all 0.3s ease;
+}
+
+.dig-license-manager .btn-group .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.dig-license-manager .btn-outline-info {
+    border-color: #0dcaf0;
+    color: #0dcaf0;
+}
+
+.dig-license-manager .btn-outline-info:hover {
+    background-color: #0dcaf0;
+    border-color: #0dcaf0;
+    color: #fff;
+}
+
+.dig-license-manager .btn-outline-info:focus {
+    box-shadow: 0 0 0 0.2rem rgba(13, 202, 240, 0.25);
+}
+
+/* تحسين عرض المرفقات */
+.dig-license-manager .fas.fa-file-slash {
+    color: #6c757d;
+    font-size: 1.2em;
+}
+
+/* تصغير قسم اختيار الرخصة للتمديد */
+.extension-manager .fs-7 {
+    font-size: 0.875rem;
+}
+
+.extension-manager .license-item {
+    border-width: 1px;
+    padding: 8px 12px;
+    margin-bottom: 4px;
+    font-size: 0.9rem;
+}
+
+.extension-manager .license-item:hover {
+    background-color: rgba(13, 110, 253, 0.05);
+    border-color: #0d6efd;
+    transform: translateX(-2px);
+}
+
+.extension-manager .license-item.border-primary {
+    background-color: rgba(13, 110, 253, 0.1);
+    border-color: #0d6efd !important;
+}
+
+.extension-manager .badge-sm {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.4rem;
+}
+
+.extension-manager .input-group-sm {
+    font-size: 0.875rem;
+}
+
+.extension-manager .card-body {
+    padding: 1rem;
+}
+
+.extension-manager .license-list {
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem;
+    padding: 0.5rem;
+    background-color: #f8f9fa;
+}
+
+.extension-manager .license-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.extension-manager .license-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.extension-manager .license-list::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.extension-manager .license-list::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* تحسين select dropdown */
+.dig-license-manager .form-select {
+    border-radius: 0 0.375rem 0.375rem 0;
+    border-left: none;
+}
+
+.dig-license-manager .form-select:focus {
+    border-color: #86b7fe;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+.dig-license-manager .form-select option {
+    padding: 0.5rem;
+}
+
+/* تحسين عرض المرفقات */
+.dig-license-manager .attachments-display .badge {
+    font-size: 1rem;
+    padding: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.dig-license-manager .attachments-display .badge:hover {
+    opacity: 0.8;
+    transform: translateY(-1px);
+}
+
+.dig-license-manager .attachments-display .badge[data-bs-toggle="dropdown"] {
+    position: relative;
+}
+
+.dig-license-manager .attachments-display .badge small {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: rgba(0,0,0,0.2);
+    border-radius: 50%;
+    padding: 2px 4px;
+    font-size: 0.7rem;
+}
+
+.dig-license-manager .attachments-display .dropdown-menu {
+    min-width: 180px;
+    padding: 0.5rem;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+}
+
+.dig-license-manager .attachments-display .dropdown-item {
+    font-size: 0.85rem;
+    padding: 0.4rem 0.8rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.dig-license-manager .attachments-display .dropdown-item:hover {
+    background-color: #f8f9fa;
+}
+
+.dig-license-manager .attachments-display .fas {
+    font-size: 1.1em;
+}
+
+/* تحسين responsive للجدول */
+@media (max-width: 992px) {
+    .dig-license-manager .table-responsive {
+        font-size: 0.9em;
+    }
+    
+    .dig-license-manager .badge {
+        font-size: 0.6em !important;
+        padding: 0.2em 0.4em !important;
+    }
+    
+    .dig-license-manager .btn-group-sm .btn {
+        padding: 0.2rem 0.4rem;
+        font-size: 0.8rem;
+    }
+    
+    .dig-license-manager .attachments-display .btn {
+        font-size: 0.7rem;
+        padding: 0.2rem 0.4rem;
+    }
+}
+
+/* تنسيقات مفتاح حالة الرخص */
+.toggle-switch {
+    padding: 12px 20px;
+    border-radius: 25px;
+    background: rgba(255, 107, 107, 0.2);
+    border: 2px solid rgba(255, 107, 107, 0.3);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    font-weight: 600;
+}
+
+.toggle-switch.has-licenses {
+    background: rgba(40, 167, 69, 0.2);
+    border-color: rgba(40, 167, 69, 0.3);
+}
+
+.toggle-switch:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.toggle-icon {
+    transition: all 0.3s ease;
+    font-size: 1.2em;
+}
+
+.toggle-text {
+    transition: all 0.3s ease;
+    font-weight: 600;
+}
+
+/* تحسين animation للمفتاح */
+.toggle-switch.changing {
+    animation: togglePulse 0.6s ease-in-out;
+}
+
+@keyframes togglePulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+/* تأثير النبض للمرفقات */
+@keyframes pulse {
+  0% { 
+    background-color: transparent; 
+    transform: scale(1);
+  }
+  25% { 
+    background-color: rgba(255, 193, 7, 0.3); 
+    transform: scale(1.02);
+  }
+  50% { 
+    background-color: rgba(255, 193, 7, 0.5); 
+    transform: scale(1.04);
+  }
+  75% { 
+    background-color: rgba(255, 193, 7, 0.3); 
+    transform: scale(1.02);
+  }
+  100% { 
+    background-color: transparent; 
+    transform: scale(1);
+  }
+}

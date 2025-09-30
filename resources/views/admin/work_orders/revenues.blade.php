@@ -191,6 +191,22 @@
         display: inline-block;
     }
 
+    /* تنسيق زر العودة */
+    .btn-outline-light {
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        transition: all 0.3s ease;
+    }
+
+    .btn-outline-light:hover {
+        background-color: rgba(255, 255, 255, 0.2);
+        border-color: rgba(255, 255, 255, 0.8);
+        transform: translateX(-2px);
+    }
+
+    .btn-outline-light:active {
+        transform: translateX(0);
+    }
+
     /* Serial number column */
     .serial-col {
         min-width: 40px !important;
@@ -291,6 +307,16 @@
             <div class="card shadow">
                 <div class="card-header d-flex justify-content-between align-items-center bg-primary text-white">
                     <div class="d-flex align-items-center">
+                        <!-- زر العودة إلى أوامر العمل -->
+                        @if(isset($project))
+                        <a href="{{ route('admin.work-orders.index', ['project' => $project]) }}" 
+                           class="btn btn-outline-light btn-sm me-3" 
+                           title="العودة إلى أوامر العمل">
+                            <i class="fas fa-arrow-right me-1"></i>
+                            عودة لأوامر العمل
+                        </a>
+                        @endif
+                        
                         <span class="fs-5">
                             <i class="fas fa-chart-line me-2"></i>
                             إدارة الإيرادات
