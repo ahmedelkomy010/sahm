@@ -4,28 +4,29 @@ namespace App\Imports;
 
 use App\Models\Revenue;
 use Maatwebsite\Excel\Concerns\ToModel;
-use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
 use Maatwebsite\Excel\Concerns\SkipsOnError;
 use Maatwebsite\Excel\Concerns\SkipsErrors;
+use Maatwebsite\Excel\Concerns\SkipsOnFailure;
+use Maatwebsite\Excel\Concerns\SkipsFailures;
 use Maatwebsite\Excel\Concerns\SkipsEmptyRows;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 
-class RevenuesImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnError, SkipsEmptyRows
+class RevenuesImport implements ToModel, WithValidation, SkipsOnError, SkipsOnFailure, SkipsEmptyRows
 {
-    use SkipsErrors;
+    use SkipsErrors, SkipsFailures;
 
     private $importedRevenues = [];
     private $rowCount = 0;
     private $project;
     private $city;
 
-    public function __construct($project = 'riyadh', $city = null)
+    public function __construct($project = "riyadh", $city = null)
     {
         $this->project = $project;
-        $this->city = $city ?: ($project === 'madinah' ? 'المدينة المنورة' : 'الرياض');
+        $this->city = $city ?: ($project === "madinah" ? "??????? ???????" : "??????");
     }
 
     public function model(array $row)
@@ -33,88 +34,92 @@ class RevenuesImport implements ToModel, WithHeadingRow, WithValidation, SkipsOn
         $this->rowCount++;
         
         try {
-            // استخراج البيانات الأساسية
-            $clientName = $this->getFieldValue($row, ['client_name', 'اسم العميل', 'الجهة المالكة', 'العميل']);
-            $contractNumber = $this->getFieldValue($row, ['contract_number', 'رقم العقد', 'عقد']);
-            $extractNumber = $this->getFieldValue($row, ['extract_number', 'رقم المستخلص', 'مستخلص']);
+            // ??????? ???????? ????????
+            $clientName = $this->getFieldValue($row, ["client_name", "??? ??????", "????? ???????", "??????"], 0);
+            $contractNumber = $this->getFieldValue($row, ["contract_number", "??? ?????", "???"], 2);
+            $extractNumber = $this->getFieldValue($row, ["extract_number", "??? ????????", "??????"], 3);
 
-            // التحقق من البيانات الأساسية
+            // ?????? ?? ???????? ????????
             if (empty($clientName) && empty($contractNumber) && empty($extractNumber)) {
-                Log::warning('Skipping row due to missing essential data', [
-                    'row_number' => $this->rowCount,
-                    'row' => $row
+                Log::warning("Skipping row due to missing essential data", [
+                    "row_number" => $this->rowCount,
+                    "row" => $row
                 ]);
-            return null;
-        }
+                return null;
+            }
 
-            // إعداد البيانات
+            // ????? ????????
             $data = [
-                'project' => $this->project,
-                'city' => $this->city,
-                'client_name' => $clientName,
-                'project_area' => $this->getFieldValue($row, ['project_area', 'المشروع', 'المنطقة']),
-                'contract_number' => $contractNumber,
-                'extract_number' => $extractNumber,
-                'office' => $this->getFieldValue($row, ['office', 'المكتب', 'مكتب']),
-                'extract_type' => $this->getFieldValue($row, ['extract_type', 'نوع المستخلص', 'نوع']),
-                'po_number' => $this->getFieldValue($row, ['po_number', 'رقم PO', 'PO']),
-                'invoice_number' => $this->getFieldValue($row, ['invoice_number', 'رقم الفاتورة', 'فاتورة']),
-                'extract_value' => $this->convertToNumeric($this->getFieldValue($row, ['extract_value', 'قيمة المستخلص', 'القيمة'])),
-                'tax_percentage' => $this->convertToNumeric($this->getFieldValue($row, ['tax_percentage', 'نسبة الضريبة', 'ضريبة %'])),
-                'tax_value' => $this->convertToNumeric($this->getFieldValue($row, ['tax_value', 'قيمة الضريبة', 'ضريبة'])),
-                'penalties' => $this->convertToNumeric($this->getFieldValue($row, ['penalties', 'الغرامات', 'غرامة'])),
-                'first_payment_tax' => $this->convertToNumeric($this->getFieldValue($row, ['first_payment_tax', 'ضريبة الدفعة الأولى'])),
-                'net_extract_value' => $this->convertToNumeric($this->getFieldValue($row, ['net_extract_value', 'صافي قيمة المستخلص', 'صافي القيمة'])),
-                'extract_date' => $this->convertDate($this->getFieldValue($row, ['extract_date', 'تاريخ إعداد المستخلص', 'تاريخ الإعداد'])),
-                'year' => $this->getFieldValue($row, ['year', 'العام', 'سنة']),
-                'payment_type' => $this->getFieldValue($row, ['payment_type', 'نوع الدفع', 'طريقة الدفع']),
-                'reference_number' => $this->getFieldValue($row, ['reference_number', 'الرقم المرجعي', 'مرجع']),
-                'payment_date' => $this->convertDate($this->getFieldValue($row, ['payment_date', 'تاريخ الصرف', 'تاريخ الدفع'])),
-                'payment_value' => $this->convertToNumeric($this->getFieldValue($row, ['payment_value', 'قيمة الصرف', 'قيمة الدفع'])),
-                'extract_status' => $this->getFieldValue($row, ['extract_status', 'حالة المستخلص', 'الحالة']),
+                "project" => $this->project,
+                "city" => $this->city,
+                "client_name" => $clientName,
+                "project_area" => $this->getFieldValue($row, ["project_area", "???????", "???????"], 1),
+                "contract_number" => $contractNumber,
+                "extract_number" => $extractNumber,
+                "office" => $this->getFieldValue($row, ["office", "??????", "????"], 4),
+                "extract_type" => $this->getFieldValue($row, ["extract_type", "??? ????????", "?????"], 5),
+                "po_number" => $this->getFieldValue($row, ["po_number", "??? PO", "PO"], 6),
+                "invoice_number" => $this->getFieldValue($row, ["invoice_number", "??? ????????", "??????"], 7),
+                "extract_value" => $this->convertToNumeric($this->getFieldValue($row, ["extract_value", "???? ????????", "??????"], 8)),
+                "tax_percentage" => $this->convertToNumeric($this->getFieldValue($row, ["tax_percentage", "???? ???????", "??????"], 9)),
+                "tax_value" => $this->convertToNumeric($this->getFieldValue($row, ["tax_value", "???? ???????", "?????"], 10)),
+                "penalties" => $this->convertToNumeric($this->getFieldValue($row, ["penalties", "????????", "?????"], 11)),
+                "first_payment_tax" => $this->convertToNumeric($this->getFieldValue($row, ["first_payment_tax", "????? ?????? ??????", "???? ????"], 12)),
+                "net_extract_value" => $this->convertToNumeric($this->getFieldValue($row, ["net_extract_value", "???? ???? ????????", "????"], 13)),
+                "extract_date" => $this->convertDate($this->getFieldValue($row, ["extract_date", "????? ????? ????????", "????? ???????"], 14)),
+                "year" => $this->getFieldValue($row, ["year", "?????", "???"], 15),
+                "payment_type" => $this->getFieldValue($row, ["payment_type", "??? ?????", "????? ?????"], 16),
+                "reference_number" => $this->getFieldValue($row, ["reference_number", "????? ???????", "????"], 17),
+                "payment_date" => $this->convertDate($this->getFieldValue($row, ["payment_date", "????? ?????", "????? ?????"], 18)),
+                "payment_value" => $this->convertToNumeric($this->getFieldValue($row, ["payment_value", "???? ?????", "???? ?????"], 19)),
+                "extract_status" => $this->getFieldValue($row, ["extract_status", "???? ????????", "??????"], 20),
             ];
 
-            // تنظيف البيانات الفارغة
+            // ????? ???????? ???????
             $cleanData = array_filter($data, function($value) {
-                return $value !== null && $value !== '';
+                return $value !== null && $value !== "";
             });
 
-            // إضافة القيم الافتراضية
-            $cleanData['project'] = $this->project;
-            $cleanData['city'] = $this->city;
+            // ????? ????? ??????????
+            $cleanData["project"] = $this->project;
+            $cleanData["city"] = $this->city;
 
-            // حفظ البيانات
+            // ??? ????????
             $revenue = Revenue::create($cleanData);
             $this->importedRevenues[] = $revenue;
 
-            Log::info('Revenue imported successfully', [
-                'row_number' => $this->rowCount,
-                'revenue_id' => $revenue->id
+            Log::info("Revenue imported successfully", [
+                "row_number" => $this->rowCount,
+                "revenue_id" => $revenue->id
             ]);
 
             return $revenue;
 
         } catch (\Exception $e) {
-            Log::error('Error importing revenue: ' . $e->getMessage(), [
-                'row_number' => $this->rowCount,
-                'row' => $row
+            Log::error("Error importing revenue: " . $e->getMessage(), [
+                "row_number" => $this->rowCount,
+                "row" => $row
             ]);
             return null;
         }
     }
 
     /**
-     * البحث عن قيمة الحقل من الصف
+     * ????? ?? ???? ????? ?? ????
      */
-    private function getFieldValue(array $row, array $possibleKeys)
+    protected function getFieldValue(array $row, array $possibleKeys, int $columnIndex = null)
     {
+        if ($columnIndex !== null) {
+            return isset($row[$columnIndex]) ? trim($row[$columnIndex]) : null;
+        }
+        
         foreach ($possibleKeys as $key) {
-            // البحث المباشر بالمفتاح الأصلي
+            // ????? ??????? ???????? ??????
             if (isset($row[$key]) && !empty(trim($row[$key]))) {
                 return trim($row[$key]);
             }
             
-            // البحث بالمفتاح المحول لأحرف صغيرة
+            // ????? ???????? ?????? ????? ?????
             $normalizedKey = strtolower(trim($key));
             if (isset($row[$normalizedKey]) && !empty(trim($row[$normalizedKey]))) {
                 return trim($row[$normalizedKey]);
@@ -125,16 +130,16 @@ class RevenuesImport implements ToModel, WithHeadingRow, WithValidation, SkipsOn
     }
 
     /**
-     * تحويل القيمة إلى رقم
+     * ????? ?????? ??? ???
      */
     private function convertToNumeric($value)
     {
-        if ($value === null || $value === '') {
+        if ($value === null || $value === "") {
             return null;
         }
 
-        // إزالة الفواصل والمسافات
-        $value = str_replace([',', ' '], '', $value);
+        // ????? ??????? ?????????
+        $value = str_replace([",", " "], "", $value);
         
         if (is_numeric($value)) {
             return (float) $value;
@@ -144,7 +149,7 @@ class RevenuesImport implements ToModel, WithHeadingRow, WithValidation, SkipsOn
     }
 
     /**
-     * تحويل التاريخ
+     * ????? ???????
      */
     private function convertDate($value)
     {
@@ -153,20 +158,20 @@ class RevenuesImport implements ToModel, WithHeadingRow, WithValidation, SkipsOn
         }
 
         try {
-            // إذا كان رقم Excel date
+            // ??? ??? ??? Excel date
             if (is_numeric($value)) {
-                return Carbon::instance(Date::excelToDateTimeObject($value))->format('Y-m-d');
+                return Carbon::instance(Date::excelToDateTimeObject($value))->format("Y-m-d");
             }
             
-            // إذا كان تاريخ نصي
+            // ??? ??? ????? ???
             if (is_string($value)) {
                 $date = Carbon::parse($value);
-                return $date->format('Y-m-d');
+                return $date->format("Y-m-d");
             }
             
             return null;
         } catch (\Exception $e) {
-            Log::warning('Failed to convert date: ' . $value . ' Error: ' . $e->getMessage());
+            Log::warning("Failed to convert date: " . $value . " Error: " . $e->getMessage());
             return null;
         }
     }
@@ -174,7 +179,7 @@ class RevenuesImport implements ToModel, WithHeadingRow, WithValidation, SkipsOn
     public function rules(): array
     {
         return [
-            // قواعد اختيارية للتحقق
+            // ????? ???????? ??????
         ];
     }
 
@@ -187,4 +192,4 @@ class RevenuesImport implements ToModel, WithHeadingRow, WithValidation, SkipsOn
     {
         return $this->failures();
     }
-} 
+}
