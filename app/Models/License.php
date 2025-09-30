@@ -241,6 +241,7 @@ class License extends Model
         'total_tests_amount',
         'successful_tests_amount',
         'failed_tests_amount',
+        'is_active',
     ];
 
     protected $casts = [
@@ -269,6 +270,7 @@ class License extends Model
         'total_tests_amount' => 'decimal:2',
         'successful_tests_amount' => 'decimal:2',
         'failed_tests_amount' => 'decimal:2',
+        'is_active' => 'boolean',
     ];
 
     public function getIsRestrictedAttribute(): bool

@@ -124,621 +124,8 @@ $(document).ready(function() {
 });
 </script>
 
-<!-- Custom Styles -->
-<style>
-    .license-header {
-        background: linear-gradient(135deg,rgb(38, 42, 61) 0%,rgb(116, 78, 165) 100%);
-        border-radius: 15px;
-        color: white;
-        padding: 2rem;
-        margin-bottom: 2rem;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-    }
-    
-    /* ضمان ظهور إجمالي الإخلاء */
-    #evacuationDataTable tfoot {
-        display: table-footer-group !important;
-        background-color: #d1ecf1 !important;
-    }
-    
-    #total-evacuation-amount {
-        display: table-cell !important;
-        visibility: visible !important;
-        background-color: #b8daff !important;
-        color: #004085 !important;
-        font-weight: bold !important;
-        font-size: 1.1em !important;
-    }
-    
-    .section-card {
-        background: white;
-        border-radius: 15px;
-        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-        border: 1px solid #e9ecef;
-        overflow: hidden;
-        margin-bottom: 2rem;
-    }
-    
-    .section-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 1.5rem;
-        border-bottom: none;
-    }
-    
-    .section-body {
-        padding: 2rem;
-    }
-    
-    .nav-tab-btn {
-        border: 2px solid transparent;
-        border-radius: 10px;
-        padding: 12px 20px;
-        margin: 5px;
-        transition: all 0.3s ease;
-        background: #f8f9fa;
-        color: #495057;
-        font-weight: 500;
-    }
-    
-    .nav-tab-btn.active {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border-color: #667eea;
-        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
-    }
-    
-    .btn-primary-custom {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border: none;
-        border-radius: 8px;
-        padding: 0.75rem 1.5rem;
-        font-weight: 500;
-        transition: all 0.3s ease;
-    }
-    
-    .btn-primary-custom:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
-        color: white;
-    }
-    
-    /* أنماط النظام التفاعلي للمختبر */
-    .test-card {
-        transition: all 0.3s ease;
-        border: 2px solid #e9ecef;
-    }
-
-    .test-card:hover {
-        border-color: #007bff;
-        box-shadow: 0 4px 8px rgba(0,123,255,0.1);
-    }
-
-    .test-calculation {
-        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-        border-radius: 8px;
-        padding: 15px;
-        margin-top: 10px;
-        border: 1px solid #dee2e6;
-    }
-
-    .form-control-sm:focus, .form-select-sm:focus {
-        border-color: #007bff;
-        box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.25);
-    }
-
-    .bg-light {
-        background-color: #f8f9fa !important;
-    }
-
-    .text-primary {
-        color: #007bff !important;
-    }
-
-    .badge {
-        font-size: 0.875em;
-    }
-
-    .fs-2 {
-        font-size: 1.5rem !important;
-    }
-
-    .fs-4 {
-        font-size: 1.25rem !important;
-    }
-
-    .fs-6 {
-        font-size: 1rem !important;
-    }
-
-    .bg-opacity-10 {
-        background-color: rgba(var(--bs-success-rgb), 0.1) !important;
-    }
-
-    .bg-danger.bg-opacity-10 {
-        background-color: rgba(var(--bs-danger-rgb), 0.1) !important;
-    }
-
-    .bg-warning.bg-opacity-10 {
-        background-color: rgba(var(--bs-warning-rgb), 0.1) !important;
-    }
-
-    .border-info {
-        border-color: #0dcaf0 !important;
-    }
-
-    .card-header.bg-info {
-        background-color: #0dcaf0 !important;
-    }
-
-    .test-calculation .row {
-        align-items: end;
-    }
-
-    .form-check-input:checked {
-        background-color: #007bff;
-        border-color: #007bff;
-    }
-
-    .test-card .card-body {
-        padding: 1.25rem;
-    }
-
-    .small {
-        font-size: 0.75rem;
-        font-weight: 600;
-        color: #6c757d;
-    }
-
-    /* أنماط النظام الجديد مع التكرار */
-    .test-row {
-        background: rgba(255, 255, 255, 0.9);
-        transition: all 0.3s ease;
-        position: relative;
-        border: 1px solid #e9ecef !important;
-    }
-    
-    .test-row:hover {
-        background: rgba(255, 255, 255, 1);
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0,123,255,0.15);
-        border-color: #007bff !important;
-    }
-    
-    .test-row .badge {
-        animation: pulse 2s infinite;
-        font-weight: 600;
-    }
-    
-    @keyframes pulse {
-        0% { transform: scale(1); opacity: 0.8; }
-        50% { transform: scale(1.05); opacity: 1; }
-        100% { transform: scale(1); opacity: 0.8; }
-    }
-    
-    .btn-primary {
-        background: linear-gradient(45deg, #007bff, #0056b3);
-        border: none;
-        transition: all 0.3s ease;
-        font-weight: 600;
-    }
-    
-    .btn-primary:hover {
-        background: linear-gradient(45deg, #0056b3, #004085);
-        transform: translateY(-2px);
-    }
-    
-    /* تحسينات جدول التفاصيل الفنية للمختبر */
-    .bg-gradient-success {
-        background: linear-gradient(45deg, #198754, #25a865);
-    }
-    
-    .table-hover tbody tr:hover {
-        background-color: rgba(0,0,0,.075);
-        transition: background-color 0.15s ease-in-out;
-    }
-    
-    .form-control-sm, .form-select-sm {
-        font-size: 0.85rem;
-    }
-    
-    .card {
-        border: none;
-        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-    }
-    
-    .btn-group .btn {
-        transition: all 0.2s ease;
-    }
-    
-    .btn-group .btn:hover {
-        transform: translateY(-1px);
-    }
-    
-    .table th {
-        background-color: #495057;
-        color: white;
-        font-weight: 600;
-        border: 1px solid #495057;
-    }
-    
-    /* تحسين مظهر رقم شهادة التنسيق */
-    .text-info[title="رقم شهادة التنسيق"] {
-        background: linear-gradient(135deg, #17a2b8 0%, #0056b3 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        padding: 2px 4px;
-        border-radius: 4px;
-        border: 1px solid rgba(23, 162, 184, 0.2);
-        display: inline-block;
-    }
-    
-    .text-info[title="رقم شهادة التنسيق"] i {
-        color: #17a2b8;
-        -webkit-text-fill-color: initial;
-    }
-    
-    .text-info[title="رقم شهادة التنسيق"]:hover {
-        background: linear-gradient(135deg, #0056b3 0%, #17a2b8 100%);
-        -webkit-background-clip: text;
-        border-color: rgba(23, 162, 184, 0.4);
-        transform: translateY(-1px);
-        box-shadow: 0 2px 4px rgba(23, 162, 184, 0.1);
-    }
-        box-shadow: 0 6px 16px rgba(0,123,255,0.4);
-    }
-    
-    .btn-danger {
-        background: linear-gradient(45deg, #dc3545, #c82333);
-        border: none;
-        transition: all 0.3s ease;
-        font-weight: 600;
-    }
-    
-    .btn-danger:hover {
-        background: linear-gradient(45deg, #c82333, #bd2130);
-        transform: translateY(-2px);
-        box-shadow: 0 6px 16px rgba(220,53,69,0.4);
-    }
-    
-    .form-control:focus, .form-select:focus {
-        border-color: #007bff;
-        box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.25);
-        transform: scale(1.02);
-        transition: all 0.3s ease;
-    }
-    
-    .form-check-input:checked {
-        background-color: #007bff;
-        border-color: #007bff;
-    }
-    
-    .form-check-label {
-        font-weight: 600;
-        transition: all 0.2s ease;
-        cursor: pointer;
-    }
-    
-    .form-check-label:hover {
-        transform: scale(1.1);
-    }
-    
-    .text-success {
-        color: #28a745 !important;
-    }
-    
-    .text-danger {
-        color: #dc3545 !important;
-    }
-    
-    .bg-light {
-        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
-    }
-    
-    .test-row .col-md-3 {
-        padding: 0.25rem;
-    }
-    
-    .test-row .form-label {
-        margin-bottom: 0.25rem;
-        font-size: 0.8rem;
-        font-weight: 600;
-        color: #495057;
-    }
-    
-    .btn-sm {
-        padding: 0.25rem 0.5rem;
-        font-size: 0.875rem;
-        border-radius: 0.375rem;
-    }
-    
-    .btn-outline-secondary {
-        color: #6c757d;
-        border-color: #6c757d;
-        transition: all 0.3s ease;
-    }
-    
-    .btn-outline-secondary:hover {
-        color: #fff;
-        background-color: #6c757d;
-        border-color: #6c757d;
-        transform: translateY(-1px);
-        box-shadow: 0 4px 8px rgba(108, 117, 125, 0.3);
-    }
-    
-    .test-row .d-flex.gap-2 {
-        flex-wrap: nowrap;
-    }
-    
-    .btn-outline-warning {
-        color: #ffc107;
-        border-color: #ffc107;
-        transition: all 0.3s ease;
-    }
-    
-    .btn-outline-warning:hover {
-        color: #212529;
-        background-color: #ffc107;
-        border-color: #ffc107;
-        transform: translateY(-1px);
-        box-shadow: 0 4px 8px rgba(255, 193, 7, 0.3);
-    }
-
-    /* تحسينات جدول رخص الحفر */
-    #licenses-total-row {
-        background: linear-gradient(45deg, #f8f9fa, #e9ecef) !important;
-        border-top: 3px solid #28a745 !important;
-    }
-
-    #licenses-total-row td {
-        font-weight: bold !important;
-        font-size: 1.1rem !important;
-        padding: 15px 8px !important;
-    }
-
-    /* تحسينات العد التنازلي */
-    .badge {
-        font-size: 0.85em;
-        padding: 0.5em 0.75em;
-        border-radius: 0.5rem;
-    }
-
-    .badge.bg-danger {
-        animation: pulse-danger 2s infinite;
-    }
-
-    .badge.bg-warning {
-        animation: pulse-warning 2s infinite;
-    }
-
-    @keyframes pulse-danger {
-        0% { opacity: 1; }
-        50% { opacity: 0.7; }
-        100% { opacity: 1; }
-    }
-
-    @keyframes pulse-warning {
-        0% { opacity: 1; }
-        50% { opacity: 0.8; }
-        100% { opacity: 1; }
-    }
-
-    /* تحسين مظهر الجدول */
-    .table-striped tbody tr:nth-of-type(odd) {
-        background-color: rgba(0,0,0,.02);
-    }
-
-    .table-hover tbody tr:hover {
-        background-color: rgba(0,123,255,.1);
-        transition: background-color 0.3s ease;
-    }
-
-    /* تنسيق التاريخ الميلادي */
-    .table td small {
-        color: #6c757d;
-        font-weight: 500;
-    }
-
-    /* تحسينات قسم التمديدات */
-    #extension-form-card {
-        border: 2px solid #007bff !important;
-        box-shadow: 0 4px 12px rgba(0,123,255,0.15);
-        transition: all 0.3s ease;
-    }
-
-    #extension-form-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(0,123,255,0.2);
-    }
-
-    #add-extension-btn:disabled {
-        background-color: #6c757d !important;
-        border-color: #6c757d !important;
-        cursor: not-allowed;
-    }
-
-    #add-extension-btn:not(:disabled) {
-        background: linear-gradient(45deg, #28a745, #20c997);
-        border: none;
-        transform: scale(1);
-        transition: all 0.3s ease;
-    }
-
-    #add-extension-btn:not(:disabled):hover {
-        background: linear-gradient(45deg, #20c997, #17a2b8);
-        transform: scale(1.05);
-        box-shadow: 0 4px 15px rgba(40,167,69,0.3);
-    }
-
-    .card.border-warning {
-        border-width: 2px !important;
-    }
-
-    .card.border-warning:hover {
-        box-shadow: 0 4px 12px rgba(255,193,7,0.15);
-        transition: box-shadow 0.3s ease;
-    }
-
-    /* تحسين مظهر الجدول للتمديدات */
-    #extensionsTable {
-        font-size: 0.9rem;
-    }
-    
-    #extensionsTable .table-warning {
-        background: linear-gradient(45deg, #fff3cd, #ffeaa7);
-    }
-    
-    #extensionsTable th {
-        vertical-align: middle;
-        font-weight: 600;
-        border-bottom: 2px solid #dee2e6;
-    }
-    
-    #extensionsTable td {
-        vertical-align: middle;
-        padding: 0.5rem 0.3rem;
-    }
-
-    /* تأثيرات المرور على صفوف التمديدات */
-    #extensions-table-body tr:hover {
-        background: linear-gradient(45deg, rgba(255,193,7,0.1), rgba(255,235,59,0.1));
-        transform: scale(1.005);
-        transition: all 0.2s ease;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-    
-    /* تحسين عرض الأزرار في الجدول */
-    #extensionsTable .btn-group-sm .btn {
-        padding: 0.25rem 0.4rem;
-        font-size: 0.8rem;
-    }
-    
-    /* تحسين عرض التواريخ */
-    #extensionsTable small {
-        font-size: 0.85rem;
-        color: #495057;
-    }
-    
-    /* تحسين عرض البادج */
-    #extensionsTable .badge {
-        font-size: 0.75rem;
-        padding: 0.35em 0.5em;
-    }
-
-    /* تحسين مظهر badges عدد الأيام */
-    .badge.bg-warning {
-        background: linear-gradient(45deg, #ffc107, #ffdd54) !important;
-        color: #212529 !important;
-        font-weight: bold;
-        padding: 0.6em 1em;
-        border-radius: 1rem;
-        box-shadow: 0 2px 8px rgba(255,193,7,0.3);
-        animation: pulse-warning 3s infinite;
-    }
-
-    @keyframes pulse-warning {
-        0%, 100% { transform: scale(1); opacity: 1; }
-        50% { transform: scale(1.05); opacity: 0.9; }
-    }
-
-    @keyframes pulse-success {
-        0%, 100% { transform: scale(1); box-shadow: 0 2px 8px rgba(40,167,69,0.3); }
-        50% { transform: scale(1.05); box-shadow: 0 4px 16px rgba(40,167,69,0.6); }
-    }
-
-    /* تحسين مظهر إجمالي التمديدات */
-    #extensions-total-badge {
-        transition: all 0.3s ease;
-        border-radius: 12px !important;
-        font-weight: bold;
-        text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
-    }
-
-    #extensions-total-english {
-        font-family: 'Arial', sans-serif;
-        letter-spacing: 0.5px;
-        text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
-    }
-
-    /* تحسين modal التمديدات */
-    #extensionModal .modal-content {
-        border-radius: 15px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-    }
-
-    #extensionModal .card {
-        border-radius: 10px;
-        transition: transform 0.3s ease;
-    }
-
-    #extensionModal .card:hover {
-        transform: translateY(-5px);
-    }
-
-    /* تحسين أزرار الإجراءات في جدول التمديدات */
-    #extensions-table-body .btn-group .btn {
-        border-radius: 50%;
-        width: 35px;
-        height: 35px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 2px;
-        transition: all 0.3s ease;
-    }
-
-    #extensions-table-body .btn-outline-info:hover {
-        background: linear-gradient(45deg, #17a2b8, #20c997);
-        border-color: transparent;
-        transform: scale(1.1);
-        box-shadow: 0 4px 12px rgba(23,162,184,0.4);
-    }
-
-    #extensions-table-body .btn-outline-danger:hover {
-        background: linear-gradient(45deg, #dc3545, #e74c3c);
-        border-color: transparent;
-        transform: scale(1.1);
-        box-shadow: 0 4px 12px rgba(220,53,69,0.4);
-    }
-
-    /* تنسيق قسم المرفقات */
-    .min-height-100 {
-        min-height: 100px;
-    }
-    
-    #evacuation-attachments-list .card {
-        transition: all 0.3s ease;
-        cursor: default;
-    }
-    
-    #evacuation-attachments-list .card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    }
-    
-    #evacuation-attachments-list .btn-group-sm .btn {
-        padding: 0.25rem 0.5rem;
-        font-size: 0.8rem;
-    }
-    
-    /* تحسين مظهر حقل رفع الملفات */
-    #evacuation-attachments {
-        border: 2px dashed #17a2b8;
-        background: rgba(23, 162, 184, 0.05);
-        transition: all 0.3s ease;
-    }
-    
-    #evacuation-attachments:hover {
-        border-color: #138496;
-        background: rgba(23, 162, 184, 0.1);
-    }
-    
-    #evacuation-attachments:focus {
-        border-color: #0c5460;
-        box-shadow: 0 0 0 0.2rem rgba(23, 162, 184, 0.25);
-    }
-</style>
+<!-- تضمين ملف CSS منفصل -->
+<link rel="stylesheet" href="{{ asset('css/work-order-license.css') }}">
 
 <script>
 
@@ -801,6 +188,12 @@ $(document).ready(function() {
 
         // Load violations on page load
         loadViolations();
+        
+        // تحميل الحالة المحفوظة للمفتاح
+        const savedState = localStorage.getItem('license_toggle_state_{{ $workOrder->id }}');
+        if (savedState === 'open') {
+            updateLicenseToggle(true);
+        }
         
         // تحميل رخص الحفر عند تحميل الصفحة
         loadDigLicenses();
@@ -888,6 +281,9 @@ $(document).ready(function() {
                     "showMethod": "fadeIn",
                     "hideMethod": "fadeOut"
                 });
+                
+                // تحديث فوري للمفتاح بعد الحفظ - يوجد رخصة الآن
+                updateLicenseToggle(true);
                 
                 // تحديث جدول رخص الحفر فوراً
                 setTimeout(() => {
@@ -1022,42 +418,6 @@ $(document).ready(function() {
                             <td><small>${period}</small></td>
                             <td data-end-date="${license.license_end_date || ''}" data-start-date="${license.license_start_date || ''}" data-execution-status="${license.work_order_execution_status || ''}">${countdown}</td>
                             <td>
-                                <div class="btn-group btn-group-sm" role="group">
-                                    ${license.license_file_url ? 
-                                        `<a href="${license.license_file_url}" target="_blank" class="btn btn-outline-primary" title="ملف الرخصة">
-                                            <i class="fas fa-file-pdf me-1"></i>رخصة
-                                        </a>` : 
-                                        `<span class="btn btn-outline-secondary disabled" title="لا يوجد ملف رخصة">
-                                            <i class="fas fa-file-pdf me-1"></i>رخصة
-                                        </span>`
-                                    }
-                                    ${license.payment_proof_url ? 
-                                        `<a href="${license.payment_proof_url}" target="_blank" class="btn btn-outline-success" title="إثبات السداد">
-                                            <i class="fas fa-receipt me-1"></i>إثبات
-                                        </a>` : 
-                                        license.payment_proof_urls && license.payment_proof_urls.length > 0 ?
-                                        `<button class="btn btn-outline-success" onclick="showPaymentProofs(${license.id})" title="إثباتات السداد (${license.payment_proof_urls.length})">
-                                            <i class="fas fa-receipt me-1"></i>${license.payment_proof_urls.length}
-                                        </button>` : ''
-                                    }
-                                    ${license.payment_invoices_urls && license.payment_invoices_urls.length > 0 ? 
-                                        `<button class="btn btn-outline-info" onclick="showPaymentInvoices(${license.id})" title="فواتير السداد (${license.payment_invoices_urls.length})">
-                                            <i class="fas fa-file-invoice me-1"></i>${license.payment_invoices_urls.length}
-                                        </button>` : ''
-                                    }
-                                    ${license.license_activation_urls && license.license_activation_urls.length > 0 ? 
-                                        `<button class="btn btn-outline-warning" onclick="showActivationFiles(${license.id})" title="ملفات اضافية (${license.license_activation_urls.length})">
-                                            <i class="fas fa-power-off me-1"></i>${license.license_activation_urls.length}
-                                        </button>` : ''
-                                    }
-                                </div>
-                                <div class="mt-1">
-                                    <small class="text-muted">
-                                        ${getAttachmentsCount(license)} مرفق
-                                    </small>
-                                </div>
-                            </td>
-                            <td>
                                 <div class="btn-group btn-group-sm">
                                     <button class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#addLicenseModal" title="إضافة رخصة">
                                         <i class="fas fa-plus"></i>
@@ -1110,11 +470,18 @@ $(document).ready(function() {
                 // تحديث قوائم الرخص في التبويبات الأخرى
                 loadLicensesForSelectors();
                 
-                // بدء تحديث العد التنازلي كل دقيقة
+                // بدء تحديث مدة الرخص
                 startCountdownUpdates();
                 
-                // تحديث مفتاح حالة الرخص
-                updateLicenseToggle(response.licenses && response.licenses.length > 0);
+                // تحديث مفتاح حالة الرخص - الاحتفاظ بالحالة المحفوظة
+                const savedState = localStorage.getItem('license_toggle_state_{{ $workOrder->id }}');
+                const currentToggleText = document.getElementById('toggleText')?.textContent || '';
+                const isCurrentlyOpen = currentToggleText.includes('مفتوح');
+                const hasLicenses = response.licenses && response.licenses.length > 0;
+                
+                // أولوية للحالة المحفوظة، ثم الحالة الحالية، ثم وجود الرخص الفعلية
+                const shouldBeOpen = (savedState === 'open') || isCurrentlyOpen || hasLicenses;
+                updateLicenseToggle(shouldBeOpen);
             },
             error: function(xhr) {
                 console.error('Error loading dig licenses:', xhr);
@@ -1139,6 +506,9 @@ $(document).ready(function() {
             toggleText.textContent = 'مفتوح - يوجد رخص';
             toggleText.style.color = '#28a745';
             toggleContainer.style.background = 'rgba(40, 167, 69, 0.2)';
+            
+            // حفظ الحالة في localStorage
+            localStorage.setItem('license_toggle_state_{{ $workOrder->id }}', 'open');
         } else {
             // لا توجد رخص - مقفل
             toggleIcon.className = 'fas fa-lock toggle-icon me-2 fs-5';
@@ -1146,51 +516,58 @@ $(document).ready(function() {
             toggleText.textContent = 'مقفل - لا توجد رخص';
             toggleText.style.color = '#ff6b6b';
             toggleContainer.style.background = 'rgba(255, 107, 107, 0.2)';
+            
+            // حفظ الحالة في localStorage
+            localStorage.setItem('license_toggle_state_{{ $workOrder->id }}', 'closed');
         }
     }
 
-    // دالة حساب العد التنازلي والمدة الكاملة للرخصة
+    // دالة حساب المدة الكاملة للرخصة (الفرق بين تاريخ البداية والنهاية)
     function calculateCountdown(endDate, executionStatus, startDate = null) {
-        // التحقق من حالة التنفيذ - إذا كانت "تم تسليم 155" (حالة 2)، توقف العد التنازلي
+        // التحقق من حالة التنفيذ - إذا كانت "تم تسليم 155" (حالة 2)، عرض حالة التسليم
         if (executionStatus && parseInt(executionStatus) >= 2) {
             return '<span class="badge bg-info"><i class="fas fa-check me-1"></i>تم التسليم</span>';
         }
         
-        if (!endDate) return '<span class="badge bg-secondary">غير محدد</span>';
-        
-        const now = new Date();
-        const end = new Date(endDate);
-        const diffTime = end.getTime() - now.getTime();
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        const diffHours = Math.ceil(diffTime / (1000 * 60 * 60));
-        
-        // حساب المدة الكاملة للرخصة إذا كان تاريخ البداية متوفر
-        let totalDaysText = '';
-        if (startDate) {
-            const start = new Date(startDate);
-            const totalTime = end.getTime() - start.getTime();
-            const totalDays = Math.ceil(totalTime / (1000 * 60 * 60 * 24));
-            if (totalDays > 0) {
-                totalDaysText = ` من ${totalDays}`;
-            }
+        // التحقق من وجود تاريخ البداية والنهاية
+        if (!startDate || !endDate) {
+            return '<span class="badge bg-secondary"><i class="fas fa-question me-1"></i>غير محدد</span>';
         }
         
-        if (diffDays < 0) {
-            return `<span class="badge bg-danger"><i class="fas fa-exclamation-triangle me-1"></i>منتهية منذ ${Math.abs(diffDays)} يوم${totalDaysText}</span>`;
-        } else if (diffDays === 0) {
-            if (diffHours > 0) {
-                return `<span class="badge bg-warning text-dark"><i class="fas fa-clock me-1"></i>تنتهي خلال ${diffHours} ساعة${totalDaysText}</span>`;
-            } else {
-                return `<span class="badge bg-danger"><i class="fas fa-exclamation-triangle me-1"></i>منتهية${totalDaysText}</span>`;
+        // حساب الفرق بين تاريخ البداية والنهاية
+            const start = new Date(startDate);
+        const end = new Date(endDate);
+            const totalTime = end.getTime() - start.getTime();
+            const totalDays = Math.ceil(totalTime / (1000 * 60 * 60 * 24));
+        
+        // التحقق من صحة التواريخ
+        if (totalDays <= 0) {
+            return '<span class="badge bg-danger"><i class="fas fa-exclamation-triangle me-1"></i>تواريخ غير صحيحة</span>';
+        }
+        
+        // عرض المدة حسب الفترة
+        if (totalDays === 1) {
+            return `<span class="badge bg-primary"><i class="fas fa-calendar-day me-1"></i>يوم واحد</span>`;
+        } else if (totalDays <= 7) {
+            return `<span class="badge bg-success"><i class="fas fa-calendar-week me-1"></i>${totalDays} أيام</span>`;
+        } else if (totalDays <= 30) {
+            return `<span class="badge bg-info"><i class="fas fa-calendar-alt me-1"></i>${totalDays} يوم</span>`;
+        } else if (totalDays <= 90) {
+            const weeks = Math.floor(totalDays / 7);
+            const remainingDays = totalDays % 7;
+            let weekText = `${weeks} أسبوع`;
+            if (remainingDays > 0) {
+                weekText += ` و ${remainingDays} يوم`;
             }
-        } else if (diffDays === 1) {
-            return `<span class="badge bg-warning text-dark"><i class="fas fa-hourglass-half me-1"></i>تنتهي غداً${totalDaysText}</span>`;
-        } else if (diffDays <= 7) {
-            return `<span class="badge bg-warning text-dark"><i class="fas fa-hourglass-half me-1"></i>باقي ${diffDays} أيام${totalDaysText}</span>`;
-        } else if (diffDays <= 30) {
-            return `<span class="badge bg-info"><i class="fas fa-calendar-check me-1"></i>باقي ${diffDays} يوم${totalDaysText}</span>`;
+            return `<span class="badge bg-warning text-dark"><i class="fas fa-calendar me-1"></i>${weekText}</span>`;
         } else {
-            return `<span class="badge bg-success"><i class="fas fa-check-circle me-1"></i>باقي ${diffDays} يوم${totalDaysText}</span>`;
+            const months = Math.floor(totalDays / 30);
+            const remainingDays = totalDays % 30;
+            let monthText = `${months} شهر`;
+            if (remainingDays > 0) {
+                monthText += ` و ${remainingDays} يوم`;
+            }
+            return `<span class="badge bg-secondary"><i class="fas fa-calendar-check me-1"></i>${monthText}</span>`;
         }
     }
 
@@ -1408,9 +785,9 @@ $(document).ready(function() {
         }
     }
 
-    // تشغيل العد التنازلي عند تحميل الصفحة
+    // تشغيل عرض مدة الرخص عند تحميل الصفحة
     document.addEventListener('DOMContentLoaded', function() {
-        // تحميل رخص الحفر مع العد التنازلي
+        // تحميل رخص الحفر مع عرض المدة
         loadDigLicenses();
         
         // إضافة مستمعي الأحداث لحساب أيام الرخصة
@@ -1507,6 +884,9 @@ $(document).ready(function() {
                     toastr.success(response.message);
                     // إعادة تحميل قائمة الرخص
                     loadDigLicenses();
+                    
+                    // تحديث فوري للمفتاح بعد الحفظ - يوجد رخصة الآن
+                    updateLicenseToggle(true);
                 } else {
                     toastr.error(response.message || 'حدث خطأ أثناء تحديث حالة الرخصة');
                 }
@@ -4408,7 +3788,7 @@ function deleteExtension(extensionId) {
             </div>
         </div>
 
-        <!-- قسم رخصة الحفر مع Vue.js -->
+        قسم رخصة الحفر مع Vue.js
         <div id="dig-license-section" class="tab-section" style="display: none;">
             <div class="section-card">
                 <div class="section-header">
@@ -4448,21 +3828,20 @@ function deleteExtension(extensionId) {
                                             <th>قيمة الرخصة</th>
                                             <th>أبعاد الحفر</th>
                                             <th>فترة الرخصة</th>
-                                            <th>العد التنازلي للرخصة</th>
-                                            <th>المرفقات</th>
+                                            <th>مدة الرخصة</th>
                                             <th>الإجراءات</th>
                                         </tr>
                                     </thead>
                                     <tbody id="dig-licenses-table-body">
                                         <tr>
-                                            <td colspan="11" class="text-center">لا توجد رخص حفر</td>
+                                            <td colspan="10" class="text-center">لا توجد رخص حفر</td>
                                         </tr>
                                     </tbody>
                                     <tfoot>
                                         <tr id="licenses-total-row" class="border-top border-3" style="display: none;">
                                             <td colspan="4" class="text-end fw-bold bg-light">إجمالي قيمة الرخص:</td>
                                             <td class="fw-bold bg-light">-</td>
-                                            <td colspan="5" class="bg-light"></td>
+                                            <td colspan="4" class="bg-light"></td>
                                         </tr>
                                     </tfoot>
                                 </table>
@@ -5573,6 +4952,9 @@ function saveDigLicenseSection() {
                     field.style.boxShadow = '';
                 });
             }, 3000);
+            
+            // تحديث فوري للمفتاح بعد الحفظ - يوجد رخصة الآن
+            updateLicenseToggle(true);
             
             // تحديث جدول رخص الحفر
             loadDigLicenses();
@@ -7885,7 +7267,7 @@ selectEvacuationLicense = function() {
 </script>
 
 <!-- Modal إضافة رخصة حفر جديدة -->
-<div class="modal fade" id="addLicenseModal" tabindex="-1" aria-labelledby="addLicenseModalLabel" aria-hidden="true">
+<!-- <div class="modal fade" id="addLicenseModal" tabindex="-1" aria-labelledby="addLicenseModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl">
         <div class="modal-content">
             <div class="modal-header bg-primary text-white">
@@ -7901,7 +7283,7 @@ selectEvacuationLicense = function() {
                     <input type="hidden" name="work_order_id" value="{{ $workOrder->id }}">
                     
                     <!-- معلومات الرخصة الأساسية -->
-                    <div class="row g-3 mb-4">
+                    <!-- <div class="row g-3 mb-4">
                         <div class="col-md-3">
                             <label class="form-label fw-bold">رقم الرخصة</label>
                             <div class="input-group">
@@ -7939,7 +7321,7 @@ selectEvacuationLicense = function() {
                     </div>
 
                     <!-- أبعاد الحفر -->
-                    <div class="row g-3 mb-4">
+                    <!-- <div class="row g-3 mb-4">
                         <div class="col-md-4">
                             <label class="form-label fw-bold">طول الحفر (متر)</label>
                             <div class="input-group">
@@ -7961,10 +7343,10 @@ selectEvacuationLicense = function() {
                                 <input type="number" step="0.01" class="form-control" name="excavation_depth" required>
                             </div>
                         </div>
-                    </div>
+                    </div> -->
 
                     <!-- تواريخ الرخصة -->
-                    <div class="row g-3 mb-4">
+                    <!-- <div class="row g-3 mb-4">
                         <div class="col-md-4">
                             <label class="form-label fw-bold">تاريخ تفعيل الرخصة</label>
                             <div class="input-group">
@@ -7986,9 +7368,9 @@ selectEvacuationLicense = function() {
                                 <input type="number" class="form-control bg-light" name="license_alert_days" id="modal_license_days" readonly>
                             </div>
                         </div>
-                    </div>
+                    </div> -->
 
-                    <!-- المرفقات -->
+                    <!-- المرفقات
                     <div class="row g-3 mb-4">
                         <div class="col-md-3">
                             <label class="form-label fw-bold">ملف الرخصة</label>
@@ -7996,16 +7378,16 @@ selectEvacuationLicense = function() {
                             <div class="form-text">
                                 <i class="fas fa-info-circle me-1"></i>
                                 ملف PDF أو صورة للرخصة
-                            </div>
-                        </div>
+                            </div> -->
+                        <!-- </div>
                         <div class="col-md-3">
                             <label class="form-label fw-bold">إثبات سداد البنك</label>
                             <input type="file" class="form-control" name="payment_proof[]" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" multiple>
                             <div class="form-text">
                                 <i class="fas fa-info-circle me-1"></i>
                                 يمكن رفع ملفات متعددة
-                            </div>
-                        </div>
+                            </div> -->
+                        <!-- </div>
                         <div class="col-md-3">
                             <label class="form-label fw-bold">فواتير السداد</label>
                             <input type="file" class="form-control" name="payment_invoices[]" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" multiple>
@@ -8038,673 +7420,10 @@ selectEvacuationLicense = function() {
             </div>
         </div>
     </div>
-</div>
+</div> --> --> -->
 
 @endsection
 
-@push('styles')
-<style>
-/* تنسيقات الـ dropdown المحسن */
-.license-option {
-    cursor: pointer;
-    transition: all 0.3s ease;
-    border: none !important;
-    padding: 12px 16px;
-}
-
-.license-option:hover {
-    background-color: #f8f9fa !important;
-    transform: translateX(5px);
-}
-
-.license-option:active {
-    background-color: #e9ecef !important;
-}
-
-.dropdown-menu {
-    border: 1px solid #dee2e6;
-    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-    border-radius: 0.5rem;
-}
-
-.license-options-container {
-    border-radius: 0.375rem;
-}
-
-.license-options-container::-webkit-scrollbar {
-    width: 6px;
-}
-
-.license-options-container::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 3px;
-}
-
-.license-options-container::-webkit-scrollbar-thumb {
-    background: #c1c1c1;
-    border-radius: 3px;
-}
-
-.license-options-container::-webkit-scrollbar-thumb:hover {
-    background: #a8a8a8;
-}
-
-.dropdown-toggle::after {
-    margin-left: auto;
-}
-
-#selected-license-text {
-    flex-grow: 1;
-}
-
-.dropdown-item.license-option .badge {
-    font-size: 0.7rem;
-}
-
-/* تأثيرات الانتقال للنموذج */
-#extension-form-card {
-    transition: all 0.5s ease;
-}
-
-#extension-form-card.fade-in {
-    opacity: 1;
-    transform: translateY(0);
-}
-
-/* تحسينات إضافية للواجهة */
-.dropdown-toggle {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.license-update-indicator {
-    animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-    0% {
-        transform: scale(1);
-    }
-    50% {
-        transform: scale(1.02);
-    }
-    100% {
-        transform: scale(1);
-    }
-}
-
-/* Vue.js License Items */
-.license-item {
-    transition: all 0.3s ease;
-    cursor: pointer;
-}
-
-.license-item:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.cursor-pointer {
-    cursor: pointer;
-}
-
-/* تحسينات validation للمخالفات */
-.form-label .text-danger {
-    font-weight: bold;
-    margin-left: 2px;
-}
-
-.is-invalid {
-    border-color: #dc3545 !important;
-    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
-}
-
-.invalid-feedback {
-    display: block !important;
-    width: 100%;
-    margin-top: 0.25rem;
-    font-size: 0.875em;
-    color: #dc3545;
-    font-weight: 500;
-}
-
-.is-invalid ~ .invalid-feedback {
-    display: block !important;
-}
-
-/* تحسين مظهر الحقول المطلوبة */
-.form-control:focus {
-    border-color: #80bdff;
-    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
-}
-
-.form-control.is-invalid:focus {
-    border-color: #dc3545;
-    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
-}
-
-.is-valid {
-    border-color: #198754 !important;
-    box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.25) !important;
-}
-
-.form-control.is-valid:focus {
-    border-color: #198754;
-    box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.25);
-}
-
-/* تحسين مظهر رسائل Toastr */
-.toast-error {
-    white-space: pre-line !important;
-}
-
-/* تحسينات أزرار الإجراءات في جدول المخالفات */
-.btn-group-sm .btn {
-    margin: 0 1px;
-    min-width: 32px;
-}
-
-.btn-outline-primary:hover {
-    background-color: #0d6efd;
-    border-color: #0d6efd;
-    color: white;
-}
-
-.btn-outline-danger:hover {
-    background-color: #dc3545;
-    border-color: #dc3545;
-    color: white;
-}
-
-/* تحسين مظهر زر الإلغاء */
-#cancel-edit-btn {
-    transition: all 0.3s ease;
-}
-
-#cancel-edit-btn:hover {
-    background-color: #6c757d;
-    border-color: #6c757d;
-    color: white;
-}
-
-/* تحسينات Vue.js Dig License Manager */
-.dig-license-manager .card {
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    border: none;
-    margin-bottom: 1.5rem;
-}
-
-.dig-license-manager .card-header {
-    border-bottom: 2px solid rgba(255,255,255,0.2);
-}
-
-.dig-license-manager .form-control:focus {
-    border-color: #0d6efd;
-    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
-}
-
-.dig-license-manager .input-group-text {
-    background-color: #f8f9fa;
-    border-color: #dee2e6;
-    color: #6c757d;
-}
-
-.dig-license-manager .btn-outline-secondary:hover {
-    background-color: #6c757d;
-    border-color: #6c757d;
-    color: white;
-}
-
-.dig-license-manager .table th {
-    background-color: #e3f2fd;
-    border-bottom: 2px solid #bbdefb;
-    font-weight: 600;
-    color: #1976d2;
-}
-
-.dig-license-manager .table td {
-    vertical-align: middle;
-}
-
-.dig-license-manager .badge {
-    font-size: 0.8em;
-    padding: 0.4em 0.6em;
-}
-
-.dig-license-manager .btn-group-sm .btn {
-    padding: 0.25rem 0.5rem;
-    font-size: 0.875rem;
-    border-radius: 0.2rem;
-}
-
-.dig-license-manager .btn-outline-primary:hover {
-    background-color: #0d6efd;
-    border-color: #0d6efd;
-    color: white;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(13, 110, 253, 0.3);
-}
-
-.dig-license-manager .btn-outline-danger:hover {
-    background-color: #dc3545;
-    border-color: #dc3545;
-    color: white;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(220, 53, 69, 0.3);
-}
-
-/* تحسين مظهر النموذج */
-.dig-license-manager .form-label {
-    margin-bottom: 0.5rem;
-    color: #495057;
-}
-
-.dig-license-manager .text-danger {
-    color: #dc3545 !important;
-    font-weight: bold;
-}
-
-.dig-license-manager .invalid-feedback {
-    display: block !important;
-    width: 100%;
-    margin-top: 0.25rem;
-    font-size: 0.875em;
-    color: #dc3545;
-}
-
-.dig-license-manager .is-invalid {
-    border-color: #dc3545 !important;
-    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
-}
-
-/* تحسين الأيقونات */
-.dig-license-manager .input-group-text i {
-    width: 14px;
-    text-align: center;
-}
-
-/* تحسين الأزرار */
-.dig-license-manager .btn {
-    transition: all 0.3s ease;
-}
-
-.dig-license-manager .btn:hover {
-    transform: translateY(-1px);
-}
-
-/* تحسين الجدول */
-.dig-license-manager .table-responsive {
-    border-radius: 0.5rem;
-    overflow: hidden;
-}
-
-.dig-license-manager .table-striped > tbody > tr:nth-of-type(odd) > td {
-    background-color: rgba(0,0,0,.02);
-}
-
-.dig-license-manager .table-hover tbody tr:hover {
-    background-color: rgba(13, 110, 253, 0.1);
-}
-
-/* تحسينات حقول رفع المرفقات */
-.dig-license-manager input[type="file"] {
-    border: 2px dashed #dee2e6;
-    padding: 0.75rem;
-    background-color: #f8f9fa;
-    transition: all 0.3s ease;
-    border-radius: 0.5rem;
-}
-
-.dig-license-manager input[type="file"]:hover {
-    border-color: #0d6efd;
-    background-color: #e7f3ff;
-}
-
-.dig-license-manager input[type="file"]:focus {
-    border-color: #0d6efd;
-    background-color: #e7f3ff;
-    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
-}
-
-.dig-license-manager .form-text {
-    font-size: 0.8em;
-    margin-top: 0.5rem;
-    color: #6c757d;
-}
-
-.dig-license-manager .text-success small {
-    font-weight: 500;
-}
-
-.dig-license-manager .list-unstyled li {
-    padding: 0.25rem 0;
-    border-bottom: 1px solid #f0f0f0;
-}
-
-.dig-license-manager .list-unstyled li:last-child {
-    border-bottom: none;
-}
-
-/* تحسين مظهر قسم المرفقات */
-.dig-license-manager h6.text-primary {
-    border-bottom: 2px solid #e3f2fd;
-    padding-bottom: 0.5rem;
-    margin-bottom: 1rem;
-}
-
-.dig-license-manager .fas.fa-paperclip {
-    color: #0d6efd;
-}
-
-.dig-license-manager .fas.fa-info-circle {
-    color: #6c757d;
-}
-
-.dig-license-manager .fas.fa-check {
-    color: #198754;
-}
-
-.dig-license-manager .fas.fa-file {
-    color: #6c757d;
-}
-
-/* تحسينات عمود المرفقات */
-.dig-license-manager .d-flex.gap-1 {
-    flex-wrap: wrap;
-    justify-content: center;
-    align-items: center;
-    gap: 0.25rem !important;
-}
-
-.dig-license-manager .d-flex.gap-1 .badge {
-    font-size: 0.7em;
-    padding: 0.3em 0.5em;
-    cursor: help;
-}
-
-.dig-license-manager .badge.bg-success {
-    background-color: #198754 !important;
-}
-
-.dig-license-manager .badge.bg-warning {
-    background-color: #ffc107 !important;
-    color: #000;
-}
-
-.dig-license-manager .badge.bg-info {
-    background-color: #0dcaf0 !important;
-    color: #000;
-}
-
-.dig-license-manager .fas.fa-file-pdf {
-    margin-right: 0;
-}
-
-.dig-license-manager .fas.fa-file-invoice {
-    margin-right: 2px;
-}
-
-.dig-license-manager .fas.fa-certificate {
-    margin-right: 0;
-}
-
-/* تحسينات عمود الأبعاد */
-.dig-license-manager .badge.bg-light {
-    color: #495057 !important;
-    border: 1px solid #dee2e6;
-    font-size: 0.7em;
-    padding: 0.3em 0.5em;
-}
-
-.dig-license-manager .fas.fa-arrows-alt-h,
-.dig-license-manager .fas.fa-arrows-alt-v,
-.dig-license-manager .fas.fa-arrow-down {
-    font-size: 0.8em;
-}
-
-/* تحسينات العداد التنازلي */
-.dig-license-manager .countdown-display .progress {
-    border-radius: 10px;
-    background-color: #e9ecef;
-    box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
-}
-
-.dig-license-manager .countdown-display .progress-bar {
-    border-radius: 10px;
-    transition: width 0.5s ease-in-out;
-    position: relative;
-    overflow: hidden;
-}
-
-.dig-license-manager .countdown-display .progress-bar::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    right: 0;
-    background-image: linear-gradient(45deg, rgba(255,255,255,.15) 25%, transparent 25%, transparent 50%, rgba(255,255,255,.15) 50%, rgba(255,255,255,.15) 75%, transparent 75%, transparent);
-    background-size: 1rem 1rem;
-    animation: progress-bar-stripes 1s linear infinite;
-}
-
-@keyframes progress-bar-stripes {
-    0% { background-position: 1rem 0; }
-    100% { background-position: 0 0; }
-}
-
-.dig-license-manager .countdown-display .badge {
-    font-size: 0.85rem !important;
-    padding: 0.5em 0.75em;
-    font-weight: 600;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.1);
-    border: 1px solid rgba(255,255,255,0.2);
-}
-
-.dig-license-manager .countdown-display .badge.bg-danger {
-    animation: pulse-danger 2s infinite;
-}
-
-@keyframes pulse-danger {
-    0% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7); }
-    70% { box-shadow: 0 0 0 10px rgba(220, 53, 69, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
-}
-
-.dig-license-manager .countdown-display .badge.bg-warning {
-    animation: pulse-warning 3s infinite;
-}
-
-@keyframes pulse-warning {
-    0% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.7); }
-    70% { box-shadow: 0 0 0 8px rgba(255, 193, 7, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0); }
-}
-
-/* تحسين أزرار الإجراءات في الجدول */
-.dig-license-manager .btn-group .btn {
-    min-width: 32px;
-    padding: 0.25rem 0.4rem;
-    font-size: 0.8rem;
-    border-radius: 4px;
-    margin: 0 1px;
-    transition: all 0.3s ease;
-}
-
-.dig-license-manager .btn-group .btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-}
-
-.dig-license-manager .btn-outline-info {
-    border-color: #0dcaf0;
-    color: #0dcaf0;
-}
-
-.dig-license-manager .btn-outline-info:hover {
-    background-color: #0dcaf0;
-    border-color: #0dcaf0;
-    color: #fff;
-}
-
-.dig-license-manager .btn-outline-info:focus {
-    box-shadow: 0 0 0 0.2rem rgba(13, 202, 240, 0.25);
-}
-
-/* تحسين عرض المرفقات */
-.dig-license-manager .fas.fa-file-slash {
-    color: #6c757d;
-    font-size: 1.2em;
-}
-
-/* تصغير قسم اختيار الرخصة للتمديد */
-.extension-manager .fs-7 {
-    font-size: 0.875rem;
-}
-
-.extension-manager .license-item {
-    border-width: 1px;
-    padding: 8px 12px;
-    margin-bottom: 4px;
-    font-size: 0.9rem;
-}
-
-.extension-manager .license-item:hover {
-    background-color: rgba(13, 110, 253, 0.05);
-    border-color: #0d6efd;
-    transform: translateX(-2px);
-}
-
-.extension-manager .license-item.border-primary {
-    background-color: rgba(13, 110, 253, 0.1);
-    border-color: #0d6efd !important;
-}
-
-.extension-manager .badge-sm {
-    font-size: 0.7rem;
-    padding: 0.2rem 0.4rem;
-}
-
-.extension-manager .input-group-sm {
-    font-size: 0.875rem;
-}
-
-.extension-manager .card-body {
-    padding: 1rem;
-}
-
-.extension-manager .license-list {
-    border: 1px solid #dee2e6;
-    border-radius: 0.375rem;
-    padding: 0.5rem;
-    background-color: #f8f9fa;
-}
-
-.extension-manager .license-list::-webkit-scrollbar {
-    width: 6px;
-}
-
-.extension-manager .license-list::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 3px;
-}
-
-.extension-manager .license-list::-webkit-scrollbar-thumb {
-    background: #c1c1c1;
-    border-radius: 3px;
-}
-
-.extension-manager .license-list::-webkit-scrollbar-thumb:hover {
-    background: #a8a8a8;
-}
-
-/* تحسين select dropdown */
-.dig-license-manager .form-select {
-    border-radius: 0 0.375rem 0.375rem 0;
-    border-left: none;
-}
-
-.dig-license-manager .form-select:focus {
-    border-color: #86b7fe;
-    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
-}
-
-.dig-license-manager .form-select option {
-    padding: 0.5rem;
-}
-
-/* تحسين عرض المرفقات */
-.dig-license-manager .attachments-display .badge {
-    font-size: 1rem;
-    padding: 0.5rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.dig-license-manager .attachments-display .badge:hover {
-    opacity: 0.8;
-    transform: translateY(-1px);
-}
-
-.dig-license-manager .attachments-display .badge[data-bs-toggle="dropdown"] {
-    position: relative;
-}
-
-.dig-license-manager .attachments-display .badge small {
-    position: absolute;
-    top: -5px;
-    right: -5px;
-    background: rgba(0,0,0,0.2);
-    border-radius: 50%;
-    padding: 2px 4px;
-    font-size: 0.7rem;
-}
-
-.dig-license-manager .attachments-display .dropdown-menu {
-    min-width: 180px;
-    padding: 0.5rem;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.15);
-}
-
-.dig-license-manager .attachments-display .dropdown-item {
-    font-size: 0.85rem;
-    padding: 0.4rem 0.8rem;
-    border-radius: 4px;
-    transition: all 0.2s ease;
-}
-
-.dig-license-manager .attachments-display .dropdown-item:hover {
-    background-color: #f8f9fa;
-}
-
-.dig-license-manager .attachments-display .fas {
-    font-size: 1.1em;
-}
-
-/* تحسين responsive للجدول */
-@media (max-width: 992px) {
-    .dig-license-manager .table-responsive {
-        font-size: 0.9em;
-    }
-    
-    .dig-license-manager .badge {
-        font-size: 0.6em !important;
-        padding: 0.2em 0.4em !important;
-    }
-    
-    .dig-license-manager .btn-group-sm .btn {
-        padding: 0.2rem 0.4rem;
-        font-size: 0.8rem;
-    }
-    
-    .dig-license-manager .attachments-display .btn {
-        font-size: 0.7rem;
-        padding: 0.2rem 0.4rem;
-    }
-}
-</style>
-@endpush
 
 @push('scripts')
 <!-- Vue.js و Axios -->
@@ -9440,7 +8159,8 @@ const DigLicenseApp = createApp({
               payment_proof_files_type: typeof license.payment_proof_files,
               payment_proof_files_length: license.payment_proof_files ? license.payment_proof_files.length : 'null',
               coordination_certificate_file: license.coordination_certificate_file,
-              coordination_certificate_file_type: typeof license.coordination_certificate_file
+              coordination_certificate_file_type: typeof license.coordination_certificate_file,
+              hasAttachments: this.hasAttachments(license)
             });
           });
         } else {
@@ -9593,12 +8313,15 @@ const DigLicenseApp = createApp({
           license_number: this.licenseForm.license_number,
           license_date: this.licenseForm.license_date,
           license_type: this.licenseForm.license_type,
-          license_value: this.licenseForm.license_value
+          license_value: this.licenseForm.license_value,
+          license_start_date: this.licenseForm.license_start_date,
+          license_end_date: this.licenseForm.license_end_date,
+          payment_proof_files_count: this.licenseForm.payment_proof_files ? this.licenseForm.payment_proof_files.length : 0
         });
         
         // إضافة بيانات النموذج
         Object.keys(this.licenseForm).forEach(key => {
-          if (key === 'payment_proof_files') {
+          if (key === 'payment_proof_files' && Array.isArray(this.licenseForm[key])) {
             // معالجة ملفات متعددة
             this.licenseForm[key].forEach((file, index) => {
               formData.append(`payment_proof_files[${index}]`, file);
@@ -9606,13 +8329,37 @@ const DigLicenseApp = createApp({
           } else if (this.licenseForm[key] instanceof File) {
             formData.append(key, this.licenseForm[key]);
           } else if (this.licenseForm[key] !== null && this.licenseForm[key] !== '') {
+            // تنسيق التواريخ إلى Y-m-d format
+            if (key.includes('_date') && this.licenseForm[key]) {
+              const dateValue = this.licenseForm[key];
+              // التأكد من أن التاريخ في التنسيق الصحيح Y-m-d
+              if (dateValue.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                formData.append(key, dateValue);
+              } else {
+                // تحويل التاريخ إلى التنسيق المطلوب
+                const date = new Date(dateValue);
+                if (!isNaN(date.getTime())) {
+                  const formattedDate = date.getFullYear() + '-' + 
+                    String(date.getMonth() + 1).padStart(2, '0') + '-' + 
+                    String(date.getDate()).padStart(2, '0');
+                  formData.append(key, formattedDate);
+                }
+              }
+            } else {
             formData.append(key, this.licenseForm[key]);
+            }
           }
         });
         
         // إضافة عدد الأيام المحسوب
         formData.append('license_days', this.licenseDays);
         formData.append('extension_days', this.extensionDays);
+        
+        // Debug: طباعة محتويات FormData
+        console.log('FormData contents:');
+        for (let pair of formData.entries()) {
+          console.log(pair[0] + ': ', pair[1]);
+        }
         
         let url = '/admin/licenses/save-section';
         let method = 'POST';
@@ -9737,6 +8484,153 @@ const DigLicenseApp = createApp({
         notes: ''
       };
       this.errors = {};
+    },
+    
+    // التحقق من وجود مرفقات
+    hasAttachments(license) {
+      if (!license) return false;
+      
+      const hasLicenseFile = license.license_file && license.license_file !== '' && license.license_file !== null;
+      const hasPaymentProofs = license.payment_proof_files && Array.isArray(license.payment_proof_files) && license.payment_proof_files.length > 0;
+      const hasCoordinationFile = license.coordination_certificate_file && license.coordination_certificate_file !== '' && license.coordination_certificate_file !== null;
+      
+      return hasLicenseFile || hasPaymentProofs || hasCoordinationFile;
+    },
+    
+    // حساب عدد المرفقات
+    getAttachmentsCount(license) {
+      let count = 0;
+      
+      // ملف الرخصة
+      if (license.license_file && license.license_file !== '' && license.license_file !== null) {
+        count++;
+      }
+      
+      // فواتير السداد
+      if (license.payment_proof_files && Array.isArray(license.payment_proof_files)) {
+        count += license.payment_proof_files.length;
+      }
+      
+      // ملف شهادة التنسيق
+      if (license.coordination_certificate_file && license.coordination_certificate_file !== '' && license.coordination_certificate_file !== null) {
+        count++;
+      }
+      
+      return count;
+    },
+    
+    // عرض نافذة المرفقات
+    showAttachmentsModal(license) {
+      // إنشاء محتوى النافذة
+      let modalContent = `
+        <div class="modal fade" id="attachmentsModal" tabindex="-1">
+          <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+              <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                  <i class="fas fa-paperclip me-2"></i>
+                  مرفقات الرخصة: ${license.license_number}
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+              </div>
+              <div class="modal-body">
+                <div class="row">
+      `;
+      
+      // ملف الرخصة
+      if (license.license_file && license.license_file !== '' && license.license_file !== null) {
+        modalContent += `
+          <div class="col-md-6 mb-3">
+            <div class="card border-success">
+              <div class="card-header bg-success text-white">
+                <i class="fas fa-file-pdf me-1"></i> ملف الرخصة
+              </div>
+              <div class="card-body text-center">
+                <button class="btn btn-outline-success" onclick="window.open('/storage/${license.license_file}', '_blank')">
+                  <i class="fas fa-eye me-1"></i> عرض الملف
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+      
+      // فواتير السداد
+      if (license.payment_proof_files && Array.isArray(license.payment_proof_files) && license.payment_proof_files.length > 0) {
+        modalContent += `
+          <div class="col-md-6 mb-3">
+            <div class="card border-warning">
+              <div class="card-header bg-warning text-dark">
+                <i class="fas fa-file-invoice me-1"></i> فواتير السداد (${license.payment_proof_files.length})
+              </div>
+              <div class="card-body">
+        `;
+        
+        license.payment_proof_files.forEach((file, index) => {
+          modalContent += `
+            <div class="d-grid gap-2 mb-2">
+              <button class="btn btn-outline-warning btn-sm" onclick="window.open('/storage/${file}', '_blank')">
+                <i class="fas fa-file me-1"></i> فاتورة ${index + 1}
+              </button>
+            </div>
+          `;
+        });
+        
+        modalContent += `
+              </div>
+            </div>
+          </div>
+        `;
+      }
+      
+      // ملف شهادة التنسيق
+      if (license.coordination_certificate_file && license.coordination_certificate_file !== '' && license.coordination_certificate_file !== null) {
+        modalContent += `
+          <div class="col-md-6 mb-3">
+            <div class="card border-info">
+              <div class="card-header bg-info text-white">
+                <i class="fas fa-certificate me-1"></i> اثبات سداد البنك (فاتورة)
+              </div>
+              <div class="card-body text-center">
+                <button class="btn btn-outline-info" onclick="window.open('/storage/${license.coordination_certificate_file}', '_blank')">
+                  <i class="fas fa-eye me-1"></i> عرض الملف
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+      
+      modalContent += `
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                  <i class="fas fa-times me-1"></i> إغلاق
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      // إزالة النافذة السابقة إن وجدت
+      const existingModal = document.getElementById('attachmentsModal');
+      if (existingModal) {
+        existingModal.remove();
+      }
+      
+      // إضافة النافذة الجديدة
+      document.body.insertAdjacentHTML('beforeend', modalContent);
+      
+      // عرض النافذة
+      const modal = new bootstrap.Modal(document.getElementById('attachmentsModal'));
+      modal.show();
+      
+      // إزالة النافذة بعد الإغلاق
+      document.getElementById('attachmentsModal').addEventListener('hidden.bs.modal', function () {
+        this.remove();
+      });
     },
     
     handleFileUpload(event, fieldName) {
@@ -9996,6 +8890,176 @@ const DigLicenseApp = createApp({
       window.open(url, '_blank');
       
       console.log('Opening license details page for license:', license.license_number);
+    },
+    
+    // عرض المرفق في نافذة جديدة
+    viewAttachment(filePath) {
+      if (filePath) {
+        const fullUrl = `/storage/${filePath}`;
+        window.open(fullUrl, '_blank');
+      } else {
+        console.error('مسار الملف غير صحيح');
+      }
+    },
+    
+    // حفظ المرفقات والوثائق
+    saveAttachments(license) {
+      // تعيين الرخصة المحددة للتعديل
+      this.selectedLicense = license;
+      this.editMode = true;
+      this.editingLicenseId = license.id;
+      
+      // ملء النموذج ببيانات الرخصة
+      this.licenseForm = {
+        license_number: license.license_number || '',
+        license_date: license.license_date || '',
+        license_type: license.license_type || '',
+        license_value: license.license_value || '',
+        excavation_length: license.excavation_length || '',
+        excavation_width: license.excavation_width || '',
+        excavation_depth: license.excavation_depth || '',
+        license_start_date: license.license_start_date || '',
+        license_end_date: license.license_end_date || '',
+        extension_value: license.extension_value || '',
+        extension_start_date: license.extension_start_date || '',
+        extension_end_date: license.extension_end_date || '',
+        license_file: license.license_file || null,
+        payment_proof_files: license.payment_proof_files || [],
+        coordination_certificate_file: license.coordination_certificate_file || null,
+        notes: license.notes || ''
+      };
+      
+      // إظهار النموذج
+      this.showForm = true;
+      
+      // التمرير إلى قسم المرفقات
+      this.$nextTick(() => {
+        // البحث عن قسم المرفقات والوثائق
+        const attachmentHeaders = document.querySelectorAll('h6');
+        let attachmentsSection = null;
+        
+        attachmentHeaders.forEach(header => {
+          if (header.textContent.includes('المرفقات والوثائق')) {
+            attachmentsSection = header;
+          }
+        });
+        
+        if (attachmentsSection) {
+          attachmentsSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          // إضافة تأثير بصري للقسم
+          attachmentsSection.style.animation = 'pulse 2s';
+          setTimeout(() => {
+            attachmentsSection.style.animation = '';
+          }, 2000);
+        }
+      });
+      
+      // إظهار رسالة توضيحية
+      if (typeof toastr !== 'undefined') {
+        toastr.info('يمكنك الآن تحديث المرفقات والوثائق للرخصة المحددة', 'تحديث المرفقات');
+      }
+    },
+    
+    // تغيير حالة الرخصة
+    async toggleLicenseStatus(license) {
+      try {
+        const response = await axios.post(`/admin/licenses/${license.id}/toggle-status`, {}, {
+          headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+          }
+        });
+        
+        if (response.data.success) {
+          // تحديث حالة الرخصة في المصفوفة المحلية
+          const licenseIndex = this.licenses.findIndex(l => l.id === license.id);
+          if (licenseIndex !== -1) {
+            this.licenses[licenseIndex].is_active = response.data.is_active;
+          }
+          
+          // إظهار رسالة نجاح
+          if (typeof toastr !== 'undefined') {
+            toastr.success(response.data.message);
+          } else {
+            showSuccessMessage(response.data.message);
+          }
+        } else {
+          throw new Error(response.data.message || 'حدث خطأ غير معروف');
+        }
+      } catch (error) {
+        console.error('خطأ في تغيير حالة الرخصة:', error);
+        const errorMessage = error.response?.data?.message || 'حدث خطأ أثناء تغيير حالة الرخصة';
+        
+        if (typeof toastr !== 'undefined') {
+          toastr.error(errorMessage);
+        } else {
+          showErrorMessage(errorMessage);
+        }
+      }
+    },
+    
+    // الحصول على كلاس زر الحالة
+    getLicenseStatusButtonClass(license) {
+      const isActive = license.is_active !== false; // افتراضي true إذا لم يكن محدد
+      return isActive 
+        ? 'btn btn-outline-success btn-sm' 
+        : 'btn btn-outline-danger btn-sm';
+    },
+    
+    // الحصول على أيقونة الحالة
+    getLicenseStatusIcon(license) {
+      const isActive = license.is_active !== false; // افتراضي true إذا لم يكن محدد
+      return isActive 
+        ? 'fas fa-check-circle' 
+        : 'fas fa-times-circle';
+    },
+    
+    // الحصول على نص الحالة
+    getLicenseStatusText(license) {
+      const isActive = license.is_active !== false; // افتراضي true إذا لم يكن محدد
+      return isActive ? 'متاحة' : 'ملغاة';
+    },
+    
+    // الحصول على عنوان الزر
+    getLicenseStatusTitle(license) {
+      const isActive = license.is_active !== false; // افتراضي true إذا لم يكن محدد
+      const currentStatus = isActive ? 'متاحة' : 'ملغاة';
+      const newStatus = isActive ? 'ملغاة' : 'متاحة';
+      return `الحالة الحالية: ${currentStatus} - اضغط لتغيير إلى: ${newStatus}`;
+    },
+    
+    // التحقق من وجود مرفقات
+    hasAttachments(license) {
+      if (!license) return false;
+      
+      const hasLicenseFile = license.license_file && license.license_file !== '' && license.license_file !== null;
+      const hasPaymentProofs = license.payment_proof_files && Array.isArray(license.payment_proof_files) && license.payment_proof_files.length > 0;
+      const hasCoordinationFile = license.coordination_certificate_file && license.coordination_certificate_file !== '' && license.coordination_certificate_file !== null;
+      
+      return hasLicenseFile || hasPaymentProofs || hasCoordinationFile;
+    },
+    
+    // حساب عدد المرفقات
+    getAttachmentsCount(license) {
+      if (!license) return 0;
+      
+      let count = 0;
+      
+      // ملف الرخصة
+      if (license.license_file && license.license_file !== '' && license.license_file !== null) {
+        count++;
+      }
+      
+      // فواتير السداد
+      if (license.payment_proof_files && Array.isArray(license.payment_proof_files)) {
+        count += license.payment_proof_files.length;
+      }
+      
+      // ملف اثبات سداد البنك
+      if (license.coordination_certificate_file && license.coordination_certificate_file !== '' && license.coordination_certificate_file !== null) {
+        count++;
+      }
+      
+      return count;
     }
   },
   
@@ -10335,10 +9399,7 @@ const DigLicenseApp = createApp({
                   @change="handleFileUpload($event, 'coordination_certificate_file')"
                   :class="{ 'is-invalid': errors.coordination_certificate_file }"
                 >
-                <small class="form-text text-muted">
-                  <i class="fas fa-info-circle me-1"></i>
-                  شهادة التنسيق مع الجهات المختصة
-                </small>
+                
                 <div v-if="errors.coordination_certificate_file" class="invalid-feedback" v-text="errors.coordination_certificate_file[0]"></div>
                 <!-- عرض اسم الملف المختار أو الموجود -->
                 <div v-if="licenseForm.coordination_certificate_file" class="mt-2">
@@ -10354,6 +9415,98 @@ const DigLicenseApp = createApp({
                     <button type="button" class="btn btn-link btn-sm p-0" @click="viewAttachment(licenseForm.coordination_certificate_file)">
                       عرض الملف
                     </button>
+                  </small>
+                </div>
+              </div>
+            </div>
+            
+            <!-- عرض المرفقات المحفوظة (في وضع التعديل فقط) -->
+            <div v-if="editMode && selectedLicense && hasAttachments(selectedLicense)" class="row g-3 mb-4">
+              <div class="col-12">
+                <h6 class="fw-bold text-success mb-3">
+                  <i class="fas fa-check-circle me-2"></i>
+                  المرفقات المحفوظة (<span v-text="selectedLicense ? getAttachmentsCount(selectedLicense) : 0"></span> مرفق)
+                </h6>
+              </div>
+              
+              <!-- ملف الرخصة المحفوظ -->
+              <div v-if="selectedLicense.license_file && selectedLicense.license_file !== '' && selectedLicense.license_file !== null" class="col-md-4">
+                <div class="card border-success h-100">
+                  <div class="card-header bg-success text-white py-2">
+                    <i class="fas fa-file-pdf me-2"></i>
+                    <small class="fw-bold">ملف الرخصة</small>
+                  </div>
+                  <div class="card-body text-center py-3">
+                    <div class="mb-2">
+                      <i class="fas fa-file-pdf fa-2x text-success mb-2"></i>
+                    </div>
+                    <button 
+                      type="button" 
+                      class="btn btn-outline-success btn-sm"
+                      @click="viewAttachment(selectedLicense.license_file)"
+                    >
+                      <i class="fas fa-eye me-1"></i>
+                      عرض الملف
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <!-- فواتير السداد المحفوظة -->
+              <div v-if="selectedLicense.payment_proof_files && Array.isArray(selectedLicense.payment_proof_files) && selectedLicense.payment_proof_files.length > 0" class="col-md-4">
+                <div class="card border-warning h-100">
+                  <div class="card-header bg-warning text-dark py-2">
+                    <i class="fas fa-file-invoice me-2"></i>
+                    <small class="fw-bold">فواتير السداد (<span v-text="selectedLicense.payment_proof_files.length"></span>)</small>
+                  </div>
+                  <div class="card-body py-3">
+                    <div class="mb-2 text-center">
+                      <i class="fas fa-file-invoice fa-2x text-warning mb-2"></i>
+                    </div>
+                    <div class="d-grid gap-1">
+                      <button 
+                        v-for="(file, fileIndex) in selectedLicense.payment_proof_files" 
+                        :key="fileIndex"
+                        type="button" 
+                        class="btn btn-outline-warning btn-sm"
+                        @click="viewAttachment(file)"
+                      >
+                        <i class="fas fa-file me-1"></i>
+                        فاتورة <span v-text="fileIndex + 1"></span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- اثبات سداد البنك المحفوظ -->
+              <div v-if="selectedLicense.coordination_certificate_file && selectedLicense.coordination_certificate_file !== '' && selectedLicense.coordination_certificate_file !== null" class="col-md-4">
+                <div class="card border-info h-100">
+                  <div class="card-header bg-info text-white py-2">
+                    <i class="fas fa-receipt me-2"></i>
+                    <small class="fw-bold">اثبات سداد البنك</small>
+                  </div>
+                  <div class="card-body text-center py-3">
+                    <div class="mb-2">
+                      <i class="fas fa-receipt fa-2x text-info mb-2"></i>
+                    </div>
+                    <button 
+                      type="button" 
+                      class="btn btn-outline-info btn-sm"
+                      @click="viewAttachment(selectedLicense.coordination_certificate_file)"
+                    >
+                      <i class="fas fa-eye me-1"></i>
+                      عرض الملف
+                    </button>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- رسالة توضيحية -->
+              <div class="col-12">
+                <div class="alert alert-info py-2">
+                  <i class="fas fa-info-circle me-2"></i>
+                  <small>
+                    <strong>ملاحظة:</strong> لتحديث أي من المرفقات أعلاه، قم برفع ملف جديد في القسم المقابل له في "المرفقات والوثائق".
                   </small>
                 </div>
               </div>
@@ -10422,8 +9575,7 @@ const DigLicenseApp = createApp({
                   <th>أبعاد الحفر</th>
                   <th>تاريخ البداية</th>
                   <th>تاريخ الانتهاء</th>
-                  <th>العد التنازلي</th>
-                  <th>المرفقات</th>
+                  <th>مدة الرخصة</th>
                   <th>الإجراءات</th>
                 </tr>
               </thead>
@@ -10488,57 +9640,6 @@ const DigLicenseApp = createApp({
                     </div>
                   </td>
                   <td>
-                    <div class="attachments-display text-center">
-                      <div class="d-flex gap-1 justify-content-center flex-wrap">
-                        <!-- ملف الرخصة -->
-                        <span v-if="license.license_file && license.license_file !== '' && license.license_file !== null" 
-                              class="badge bg-success" 
-                              title="ملف الرخصة" 
-                              role="button" 
-                              @click="viewAttachment(license.license_file)">
-                          <i class="fas fa-file-pdf"></i>
-                        </span>
-
-                        <!-- فواتير السداد -->
-                        <div v-if="license.payment_proof_files && Array.isArray(license.payment_proof_files) && license.payment_proof_files.length > 0" class="dropdown">
-                          <span class="badge bg-warning" 
-                                role="button"
-                                :title="'فواتير السداد: ' + license.payment_proof_files.length + ' ملف'"
-                                data-bs-toggle="dropdown">
-                            <i class="fas fa-file-invoice"></i>
-                            <small v-text="license.payment_proof_files.length"></small>
-                          </span>
-                          <ul class="dropdown-menu">
-                            <li v-for="(file, fileIndex) in license.payment_proof_files" :key="fileIndex">
-                              <a class="dropdown-item" href="#" @click.prevent="viewAttachment(file)">
-                                <i class="fas fa-file me-1"></i>
-                                فاتورة <span v-text="fileIndex + 1"></span>
-                              </a>
-                            </li>
-                          </ul>
-                        </div>
-
-                        <!-- اثبات سداد البنك -->
-                        <span v-if="license.coordination_certificate_file && license.coordination_certificate_file !== '' && license.coordination_certificate_file !== null" 
-                              class="badge bg-info" 
-                              role="button"
-                              title="اثبات سداد البنك"
-                              @click="viewAttachment(license.coordination_certificate_file)">
-                          <i class="fas fa-receipt"></i>
-                        </span>
-
-                        <!-- لا توجد مرفقات -->
-                        <span v-if="(!license.license_file || license.license_file === '' || license.license_file === null) && 
-                                    (!license.payment_proof_files || !Array.isArray(license.payment_proof_files) || license.payment_proof_files.length === 0) && 
-                                    (!license.coordination_certificate_file || license.coordination_certificate_file === '' || license.coordination_certificate_file === null)" 
-                              class="badge bg-secondary"
-                              title="لا توجد مرفقات">
-                          <i class="fas fa-file-slash"></i>
-                        </span>
-                      </div>
-                    </div>
-                  </td>
-                  <td>
                     <div class="btn-group btn-group-sm">
                       <button 
                         class="btn btn-outline-info" 
@@ -10553,6 +9654,26 @@ const DigLicenseApp = createApp({
                         title="تعديل"
                       >
                         <i class="fas fa-edit"></i>
+                      </button>
+                      
+                     
+                      <!-- زر تغيير حالة الرخصة -->
+                      <button 
+                        :class="getLicenseStatusButtonClass(license)"
+                        @click="toggleLicenseStatus(license)"
+                        :title="getLicenseStatusTitle(license)"
+                      >
+                        <i :class="getLicenseStatusIcon(license)"></i>
+                        <small v-text="getLicenseStatusText(license)"></small>
+                      </button>
+                      <!-- زر عرض المرفقات - مؤقت لكل الرخص للتشخيص -->
+                      <button 
+                        class="btn btn-outline-success" 
+                        @click="showAttachmentsModal(license)"
+                        :title="'عرض المرفقات (' + getAttachmentsCount(license) + ')'"
+                      >
+                        <i class="fas fa-paperclip"></i>
+                        <small v-text="getAttachmentsCount(license)"></small>
                       </button>
                       <button 
                         class="btn btn-outline-danger" 

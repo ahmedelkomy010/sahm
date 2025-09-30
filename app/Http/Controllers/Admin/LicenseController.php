@@ -362,6 +362,28 @@ class LicenseController extends Controller
 
             // تحديث البيانات
             $license->update($validated);
+            
+            // معالجة الملفات إذا كانت موجودة
+            \Log::info('Files in update request:', [
+                'license_file' => $request->hasFile('license_file'),
+                'payment_proof_files' => $request->hasFile('payment_proof_files'),
+                'coordination_certificate_file' => $request->hasFile('coordination_certificate_file'),
+                'all_files' => array_keys($request->allFiles())
+            ]);
+            
+            $this->handleDigLicenseFiles($request, $license);
+            
+            // حفظ التغييرات على الملفات
+            $license->save();
+
+            // إذا كان الطلب AJAX، إرجاع JSON response
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'تم تحديث الرخصة بنجاح',
+                    'license' => $license->fresh()
+                ]);
+            }
 
             return redirect()->route('admin.licenses.show', $license)
                 ->with('success', 'تم تحديث الرخصة بنجاح');
@@ -1311,6 +1333,13 @@ class LicenseController extends Controller
             \Log::info('License saved with ID: ' . $license->id);
             
             // معالجة الملفات
+            \Log::info('Files in request:', [
+                'license_file' => $request->hasFile('license_file'),
+                'payment_proof_files' => $request->hasFile('payment_proof_files'),
+                'coordination_certificate_file' => $request->hasFile('coordination_certificate_file'),
+                'all_files' => array_keys($request->allFiles())
+            ]);
+            
             $this->handleDigLicenseFiles($request, $license);
             
             \Log::info('=== saveDigLicenseSection completed ===');
@@ -1754,8 +1783,8 @@ class LicenseController extends Controller
             \Log::info('Payment invoices uploaded', ['count' => count($filePaths)]);
         }
         
-        // معالجة إثباتات الدفع
-        if ($request->hasFile('payment_proof')) {
+        // معالجة إثباتات الدفع (فواتير السداد)
+        if ($request->hasFile('payment_proof_files')) {
             // حذف الملفات القديمة
             if ($license->payment_proof_path) {
                 $oldFiles = json_decode($license->payment_proof_path, true);
@@ -1768,7 +1797,7 @@ class LicenseController extends Controller
                 }
             }
             
-            $files = $request->file('payment_proof');
+            $files = $request->file('payment_proof_files');
             $filePaths = [];
             
             foreach ($files as $file) {
@@ -1778,7 +1807,22 @@ class LicenseController extends Controller
             }
             
             $license->payment_proof_path = json_encode($filePaths);
-            \Log::info('Payment proofs uploaded', ['count' => count($filePaths)]);
+            \Log::info('Payment proof files uploaded', ['count' => count($filePaths)]);
+        }
+        
+        // معالجة شهادة التنسيق
+        if ($request->hasFile('coordination_certificate_file')) {
+            // حذف الملف القديم
+            if ($license->coordination_certificate_path && \Storage::disk('public')->exists($license->coordination_certificate_path)) {
+                \Storage::disk('public')->delete($license->coordination_certificate_path);
+            }
+            
+            $file = $request->file('coordination_certificate_file');
+            $filename = time() . '_coordination_' . $file->getClientOriginalName();
+            $path = $file->storeAs('licenses/coordination', $filename, 'public');
+            $license->coordination_certificate_path = $path;
+            
+            \Log::info('Coordination certificate file uploaded', ['path' => $path]);
         }
         
         // معالجة ملفات التفعيل
@@ -3069,18 +3113,17 @@ class LicenseController extends Controller
     public function toggleStatus(Request $request, License $license)
     {
         try {
-            $isCancelled = $request->input('is_cancelled', false);
+            // تبديل حالة الرخصة
+            $license->is_active = !$license->is_active;
+            $license->save();
             
-            $license->update([
-                'is_cancelled' => $isCancelled
-            ]);
-            
-            $status = $isCancelled ? 'ملغاة' : 'متاحة';
+            $statusText = $license->is_active ? 'متاحة' : 'ملغاة';
             
             return response()->json([
                 'success' => true,
-                'message' => "تم تحديث حالة الرخصة إلى: {$status}",
-                'is_cancelled' => $isCancelled
+                'message' => "تم تغيير حالة الرخصة إلى: {$statusText}",
+                'is_active' => $license->is_active,
+                'status_text' => $statusText
             ]);
             
         } catch (\Exception $e) {
@@ -3088,7 +3131,7 @@ class LicenseController extends Controller
             
             return response()->json([
                 'success' => false,
-                'message' => 'حدث خطأ أثناء تحديث حالة الرخصة'
+                'message' => 'حدث خطأ أثناء تغيير حالة الرخصة'
             ], 500);
         }
     }
