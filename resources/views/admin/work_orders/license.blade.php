@@ -2881,161 +2881,160 @@ function selectViolationLicense() {
     }
 }
 
-// ========== دوال إدارة التمديدات ==========
 
-// دالة إظهار نموذج التمديد
-function showExtensionForm() {
-    const formCard = document.getElementById('extension-form-card');
-    const licenseId = document.getElementById('extension-license-id').value;
+// // دالة إظهار نموذج التمديد
+// function showExtensionForm() {
+//     const formCard = document.getElementById('extension-form-card');
+//     const licenseId = document.getElementById('extension-license-id').value;
     
-    if (!licenseId) {
-        toastr.warning('يجب اختيار رخصة أولاً');
-        return;
-    }
+//     if (!licenseId) {
+//         toastr.warning('يجب اختيار رخصة أولاً');
+//         return;
+//     }
 
-    // تنظيف النموذج بالكامل قبل الإظهار
-    const form = document.getElementById('extensionForm');
-    if (form) {
-        form.reset();
+//     // تنظيف النموذج بالكامل قبل الإظهار
+//     const form = document.getElementById('extensionForm');
+//     if (form) {
+//         form.reset();
         
-        // تنظيف جميع الحقول يدوياً عدا work_order_id
-        const inputs = form.querySelectorAll('input, select, textarea');
-        inputs.forEach(input => {
-            if (input.name !== 'work_order_id') {
-                if (input.type === 'checkbox' || input.type === 'radio') {
-                    input.checked = false;
-                } else if (input.type === 'file') {
-                    input.value = '';
-                } else {
-                    input.value = '';
-                }
-            }
-        });
+//         // تنظيف جميع الحقول يدوياً عدا work_order_id
+//         const inputs = form.querySelectorAll('input, select, textarea');
+//         inputs.forEach(input => {
+//             if (input.name !== 'work_order_id') {
+//                 if (input.type === 'checkbox' || input.type === 'radio') {
+//                     input.checked = false;
+//                 } else if (input.type === 'file') {
+//                     input.value = '';
+//                 } else {
+//                     input.value = '';
+//                 }
+//             }
+//         });
         
-        // تنظيف عرض الأيام
-        const extensionDaysDisplay = document.getElementById('extension-days-display');
-        if (extensionDaysDisplay) {
-            extensionDaysDisplay.value = '';
-        }
+//         // تنظيف عرض الأيام
+//         const extensionDaysDisplay = document.getElementById('extension-days-display');
+//         if (extensionDaysDisplay) {
+//             extensionDaysDisplay.value = '';
+//         }
         
-        console.log('Extension form cleared before showing');
-    }
+//         console.log('Extension form cleared before showing');
+//     }
 
-    formCard.style.display = 'block';
-    formCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+//     formCard.style.display = 'block';
+//     formCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
     
-    // تعيين التاريخ الافتراضي (اليوم لتاريخ البداية)
-    const today = new Date().toISOString().split('T')[0];
-    const startDateInput = document.getElementById('extension-start-date');
-    if (startDateInput) {
-        startDateInput.value = today;
-    }
+//     // تعيين التاريخ الافتراضي (اليوم لتاريخ البداية)
+//     const today = new Date().toISOString().split('T')[0];
+//     const startDateInput = document.getElementById('extension-start-date');
+//     if (startDateInput) {
+//         startDateInput.value = today;
+//     }
     
-    // إضافة مستمعي الأحداث لحساب الأيام
-    const endDateInput = document.getElementById('extension-end-date');
+//     // إضافة مستمعي الأحداث لحساب الأيام
+//     const endDateInput = document.getElementById('extension-end-date');
     
-    if (startDateInput) {
-        startDateInput.removeEventListener('change', calculateExtensionDays);
-        startDateInput.addEventListener('change', calculateExtensionDays);
-    }
-    if (endDateInput) {
-        endDateInput.removeEventListener('change', calculateExtensionDays);
-        endDateInput.addEventListener('change', calculateExtensionDays);
-    }
-}
+//     if (startDateInput) {
+//         startDateInput.removeEventListener('change', calculateExtensionDays);
+//         startDateInput.addEventListener('change', calculateExtensionDays);
+//     }
+//     if (endDateInput) {
+//         endDateInput.removeEventListener('change', calculateExtensionDays);
+//         endDateInput.addEventListener('change', calculateExtensionDays);
+//     }
+// }
 
 // دالة إخفاء نموذج التمديد
-function hideExtensionForm() {
-    const formCard = document.getElementById('extension-form-card');
-    const form = document.getElementById('extensionForm');
+// function hideExtensionForm() {
+//     const formCard = document.getElementById('extension-form-card');
+//     const form = document.getElementById('extensionForm');
     
-    formCard.style.display = 'none';
+//     formCard.style.display = 'none';
     
-    // إعادة تعيين النموذج بالكامل
-    if (form) {
-        form.reset();
+//     // إعادة تعيين النموذج بالكامل
+//     if (form) {
+//         form.reset();
         
-        // تنظيف جميع الحقول يدوياً
-        const inputs = form.querySelectorAll('input, select, textarea');
-        inputs.forEach(input => {
-            if (input.type === 'checkbox' || input.type === 'radio') {
-                input.checked = false;
-            } else if (input.type === 'file') {
-                input.value = '';
-            } else {
-                input.value = '';
-            }
-        });
+//         // تنظيف جميع الحقول يدوياً
+//         const inputs = form.querySelectorAll('input, select, textarea');
+//         inputs.forEach(input => {
+//             if (input.type === 'checkbox' || input.type === 'radio') {
+//                 input.checked = false;
+//             } else if (input.type === 'file') {
+//                 input.value = '';
+//             } else {
+//                 input.value = '';
+//             }
+//         });
         
-        // تنظيف الحقول المخفية
-        const extensionLicenseId = document.getElementById('extension-license-id');
-        if (extensionLicenseId) {
-            extensionLicenseId.value = '';
-        }
+//         // تنظيف الحقول المخفية
+//         const extensionLicenseId = document.getElementById('extension-license-id');
+//         if (extensionLicenseId) {
+//             extensionLicenseId.value = '';
+//         }
         
-        // تنظيف عرض الأيام
-        const extensionDaysDisplay = document.getElementById('extension-days-display');
-        if (extensionDaysDisplay) {
-            extensionDaysDisplay.value = '';
-        }
+//         // تنظيف عرض الأيام
+//         const extensionDaysDisplay = document.getElementById('extension-days-display');
+//         if (extensionDaysDisplay) {
+//             extensionDaysDisplay.value = '';
+//         }
         
-        // إعادة تعيين اختيار الرخصة
-        const licenseSelector = document.getElementById('extension-license-selector');
-        if (licenseSelector) {
-            licenseSelector.value = '';
-        }
+//         // إعادة تعيين اختيار الرخصة
+//         const licenseSelector = document.getElementById('extension-license-selector');
+//         if (licenseSelector) {
+//             licenseSelector.value = '';
+//         }
         
-        // إخفاء معلومات الرخصة المختارة
-        const licenseInfo = document.getElementById('selected-extension-license-info');
-        if (licenseInfo) {
-            licenseInfo.style.display = 'none';
-        }
+//         // إخفاء معلومات الرخصة المختارة
+//         const licenseInfo = document.getElementById('selected-extension-license-info');
+//         if (licenseInfo) {
+//             licenseInfo.style.display = 'none';
+//         }
         
-        // مسح حقل البحث
-        const searchInput = document.getElementById('license-search-input');
-        if (searchInput) {
-            searchInput.value = '';
-        }
+//         // مسح حقل البحث
+//         const searchInput = document.getElementById('license-search-input');
+//         if (searchInput) {
+//             searchInput.value = '';
+//         }
         
-        // إظهار جميع خيارات الرخص
-        if (licenseSelector) {
-            Array.from(licenseSelector.options).forEach(option => {
-                option.style.display = '';
-            });
-        }
+//         // إظهار جميع خيارات الرخص
+//         if (licenseSelector) {
+//             Array.from(licenseSelector.options).forEach(option => {
+//                 option.style.display = '';
+//             });
+//         }
         
-        // تعطيل زر الإضافة
-        const addBtn = document.getElementById('add-extension-btn');
-        if (addBtn) {
-            addBtn.disabled = true;
-        }
+//         // تعطيل زر الإضافة
+//         const addBtn = document.getElementById('add-extension-btn');
+//         if (addBtn) {
+//             addBtn.disabled = true;
+//         }
         
-        console.log('Extension form has been completely reset');
-    }
-}
+//         console.log('Extension form has been completely reset');
+//     }
+// }
 
 // دالة حساب أيام التمديد
-function calculateExtensionDays() {
-    const startDate = document.getElementById('extension-start-date').value;
-    const endDate = document.getElementById('extension-end-date').value;
-    const daysDisplay = document.getElementById('extension-days-display');
+// function calculateExtensionDays() {
+//     const startDate = document.getElementById('extension-start-date').value;
+//     const endDate = document.getElementById('extension-end-date').value;
+//     const daysDisplay = document.getElementById('extension-days-display');
     
-    if (startDate && endDate) {
-        const start = new Date(startDate);
-        const end = new Date(endDate);
+//     if (startDate && endDate) {
+//         const start = new Date(startDate);
+//         const end = new Date(endDate);
         
-        if (end >= start) {
-            const diffTime = Math.abs(end - start);
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            daysDisplay.value = diffDays;
-        } else {
-            daysDisplay.value = '';
-            toastr.warning('تاريخ النهاية يجب أن يكون بعد تاريخ البداية');
-        }
-    } else {
-        daysDisplay.value = '';
-    }
-}
+//         if (end >= start) {
+//             const diffTime = Math.abs(end - start);
+//             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+//             daysDisplay.value = diffDays;
+//         } else {
+//             daysDisplay.value = '';
+//             toastr.warning('تاريخ النهاية يجب أن يكون بعد تاريخ البداية');
+//         }
+//     } else {
+//         daysDisplay.value = '';
+//     }
+// }
 
 // دالة حفظ التمديد
 function saveExtensionData() {
@@ -3788,7 +3787,7 @@ function deleteExtension(extensionId) {
             </div>
         </div>
 
-        قسم رخصة الحفر مع Vue.js
+       
         <div id="dig-license-section" class="tab-section" style="display: none;">
             <div class="section-card">
                 <div class="section-header">
@@ -3807,47 +3806,6 @@ function deleteExtension(extensionId) {
                         </div>
                     </div>
 
-                    <!-- جدول رخص الحفر
-                    <div class="card">
-                        <div class="card-header bg-info text-white">
-                            <h5 class="mb-0">
-                                <i class="fas fa-list me-2"></i>
-                                سجل رخص الحفر
-                            </h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="table-responsive">
-                                <table class="table table-striped table-hover">
-                                    <thead class="table-info">
-                                        <tr>
-                                            <th>#</th>
-                                            <th>رقم شهادة التنسيق</th>
-                                            <th>رقم الرخصة</th>
-                                            <th>تاريخ الإصدار</th>
-                                            <th>نوع الرخصة</th>
-                                            <th>قيمة الرخصة</th>
-                                            <th>أبعاد الحفر</th>
-                                            <th>فترة الرخصة</th>
-                                            <th>مدة الرخصة</th>
-                                            <th>الإجراءات</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="dig-licenses-table-body">
-                                        <tr>
-                                            <td colspan="10" class="text-center">لا توجد رخص حفر</td>
-                                        </tr>
-                                    </tbody>
-                                    <tfoot>
-                                        <tr id="licenses-total-row" class="border-top border-3" style="display: none;">
-                                            <td colspan="4" class="text-end fw-bold bg-light">إجمالي قيمة الرخص:</td>
-                                            <td class="fw-bold bg-light">-</td>
-                                            <td colspan="4" class="bg-light"></td>
-                                        </tr>
-                                    </tfoot>
-                                </table>
-                            </div>
-                        </div>
-                    </div> -->
 
                     <!-- قسم التمديدات مع Vue.js -->
                     <div id="extension-vue-app" class="card mt-4">
@@ -3879,9 +3837,6 @@ function deleteExtension(extensionId) {
                                     <p class="mt-2 text-muted">جاري تحميل مدير التمديدات...</p>
                                                 </div>
                                             </div>
-                                            
-                            <!-- تم حذف النموذج التقليدي - الآن نستخدم Vue.js component فقط -->
-
 
                             <!-- جدول التمديدات المحفوظة -->
                             <div class="card">
@@ -7266,162 +7221,6 @@ selectEvacuationLicense = function() {
 
 </script>
 
-<!-- Modal إضافة رخصة حفر جديدة -->
-<!-- <div class="modal fade" id="addLicenseModal" tabindex="-1" aria-labelledby="addLicenseModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-xl">
-        <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title" id="addLicenseModalLabel">
-                    <i class="fas fa-plus-circle me-2"></i>
-                    إضافة رخصة حفر جديدة
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form id="digLicenseForm" enctype="multipart/form-data">
-                    @csrf
-                    <input type="hidden" name="work_order_id" value="{{ $workOrder->id }}">
-                    
-                    <!-- معلومات الرخصة الأساسية -->
-                    <!-- <div class="row g-3 mb-4">
-                        <div class="col-md-3">
-                            <label class="form-label fw-bold">رقم الرخصة</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="fas fa-hashtag"></i></span>
-                                <input type="text" class="form-control" name="license_number" id="license_number_input" required>
-                                <button type="button" class="btn btn-outline-primary" id="search_license_btn" title="البحث عن بيانات الرخصة">
-                                    <i class="fas fa-search"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label fw-bold">تاريخ إصدار الرخصة</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="fas fa-calendar"></i></span>
-                                <input type="date" class="form-control" name="license_date">
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label fw-bold">نوع الرخصة</label>
-                            <select class="form-select" name="license_type" required>
-                                <option value="">اختر نوع الرخصة</option>
-                                <option value="طوارئ">طوارئ</option>
-                                <option value="مشروع">مشروع</option>
-                                <option value="عادي">عادي</option>
-                            </select>
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label fw-bold">قيمة الرخصة</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="fas fa-money-bill"></i></span>
-                                <input type="number" step="0.01" class="form-control" name="license_value" required>
-                                <span class="input-group-text">ريال</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- أبعاد الحفر -->
-                    <!-- <div class="row g-3 mb-4">
-                        <div class="col-md-4">
-                            <label class="form-label fw-bold">طول الحفر (متر)</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="fas fa-ruler-horizontal"></i></span>
-                                <input type="number" step="0.01" class="form-control" name="excavation_length" required>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label fw-bold">عرض الحفر (متر)</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="fas fa-arrows-alt-h"></i></span>
-                                <input type="number" step="0.01" class="form-control" name="excavation_width" required>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label fw-bold">عمق الحفر (متر)</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="fas fa-ruler-vertical"></i></span>
-                                <input type="number" step="0.01" class="form-control" name="excavation_depth" required>
-                            </div>
-                        </div>
-                    </div> -->
-
-                    <!-- تواريخ الرخصة -->
-                    <!-- <div class="row g-3 mb-4">
-                        <div class="col-md-4">
-                            <label class="form-label fw-bold">تاريخ تفعيل الرخصة</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="fas fa-play"></i></span>
-                                <input type="date" class="form-control" name="license_start_date" id="modal_license_start_date">
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label fw-bold">تاريخ نهاية الرخصة</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="fas fa-stop"></i></span>
-                                <input type="date" class="form-control" name="license_end_date" id="modal_license_end_date">
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label fw-bold">عدد أيام الرخصة</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="fas fa-clock"></i></span>
-                                <input type="number" class="form-control bg-light" name="license_alert_days" id="modal_license_days" readonly>
-                            </div>
-                        </div>
-                    </div> -->
-
-                    <!-- المرفقات
-                    <div class="row g-3 mb-4">
-                        <div class="col-md-3">
-                            <label class="form-label fw-bold">ملف الرخصة</label>
-                            <input type="file" class="form-control" name="license_file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
-                            <div class="form-text">
-                                <i class="fas fa-info-circle me-1"></i>
-                                ملف PDF أو صورة للرخصة
-                            </div> -->
-                        <!-- </div>
-                        <div class="col-md-3">
-                            <label class="form-label fw-bold">إثبات سداد البنك</label>
-                            <input type="file" class="form-control" name="payment_proof[]" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" multiple>
-                            <div class="form-text">
-                                <i class="fas fa-info-circle me-1"></i>
-                                يمكن رفع ملفات متعددة
-                            </div> -->
-                        <!-- </div>
-                        <div class="col-md-3">
-                            <label class="form-label fw-bold">فواتير السداد</label>
-                            <input type="file" class="form-control" name="payment_invoices[]" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" multiple>
-                            <div class="form-text">
-                                <i class="fas fa-info-circle me-1"></i>
-                                يمكن رفع ملفات متعددة
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label fw-bold">ملفات التفعيل</label>
-                            <input type="file" class="form-control" name="license_activation[]" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" multiple>
-                            <div class="form-text">
-                                <i class="fas fa-info-circle me-1"></i>
-                                ملفات تفعيل الرخصة (اختياري)
-                            </div>
-                        </div>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    <i class="fas fa-times me-2"></i>
-                    إلغاء
-                </button>
-                
-                <button type="button" class="btn btn-primary" onclick="saveDigLicenseSection()">
-                    <i class="fas fa-save me-2"></i>
-                    حفظ رخصة الحفر
-                </button>
-            </div>
-        </div>
-    </div>
-</div> --> --> -->
-
 @endsection
 
 
@@ -8061,7 +7860,6 @@ if (typeof Vue === 'undefined') {
   document.getElementById('dig-license-vue-app').innerHTML = `
     <div class="alert alert-danger">
       <h5><i class="fas fa-exclamation-triangle me-2"></i>خطأ في تحميل Vue.js</h5>
-      <p>لم يتم تحميل مكتبة Vue.js بشكل صحيح. يرجى التحقق من الاتصال بالإنترنت وإعادة تحميل الصفحة.</p>
     </div>
   `;
 }
@@ -9707,7 +9505,6 @@ try {
     element.innerHTML = `
       <div class="alert alert-danger">
         <h5><i class="fas fa-exclamation-triangle me-2"></i>خطأ في تحميل مدير رخص الحفر</h5>
-        <p>حدث خطأ أثناء تحميل واجهة Vue.js. يرجى إعادة تحميل الصفحة أو التواصل مع المطور.</p>
         <small>تفاصيل الخطأ: ${error.message}</small>
       </div>
     `;

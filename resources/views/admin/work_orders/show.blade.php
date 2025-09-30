@@ -275,49 +275,11 @@
                                                 <td>{{ $workOrder->work_description ?? 'غير متوفر' }}</td>
                                             </tr>
                                             <tr>
-                                                <th>تاريخ اجراء حالة تنفيذ امر العمل :</th>
+                                                <th>تاريخ اجراء تسليم 155 :</th>
                                                 <td>{{ $workOrder->procedure_155_delivery_date ? $workOrder->procedure_155_delivery_date->format('Y-m-d') : 'غير متوفر' }}</td>
                                             </tr>
                                             
-                                            <tr>
-                                                <th>حالة التنفيذ</th>
-                                                <td>
-                                                    @switch($workOrder->execution_status)
-                                                        @case('1')
-                                                            <span class="badge bg-info">جاري العمل بالموقع</span>
-                                                            @break
-                                                        @case('2')
-                                                            <span class="badge bg-warning">تم التنفيذ بالموقع وجاري تسليم 155</span>
-                                                            @break
-                                                        @case('3')
-                                                            <span class="badge bg-warning">تم تسليم 155 جاري اصدار شهادة الانجاز</span>
-                                                            @break
-                                                        @case('4')
-                                                            <span class="badge bg-primary">اعداد مستخلص الدفعة الجزئية الاولي وجاري الصرف</span>
-                                                            @break
-                                                        @case('5')
-                                                            <span class="badge bg-secondary">تم صرف مستخلص الدفعة الجزئية الاولي</span>
-                                                            @break
-                                                        @case('6')
-                                                            <span class="badge bg-success">اعداد مستخلص الدفعة الجزئية الثانية وجاري الصرف</span>
-                                                            @break
-                                                        @case('7')
-                                                            <span class="badge bg-dark">تم الصرف وتم الانتهاء</span>
-                                                            @break
-                                                        @case('8')
-                                                            <span class="badge bg-success">تم اصدار شهادة الانجاز</span>
-                                                            @break
-                                                        @case('9')
-                                                            <span class="badge bg-danger">تم الالغاء او تحويل امر العمل</span>
-                                                            @break
-                                                        @case('10')
-                                                            <span class="badge bg-info">تم اعداد المستخلص الكلي وجاري الصرف</span>
-                                                            @break
-                                                        @default
-                                                            <span class="badge bg-secondary">{{ $workOrder->execution_status }}</span>
-                                                    @endswitch
-                                                </td>
-                                            </tr>
+                                            
                                             <tr>
                                                 <th>تاريخ الاعتماد</th>
                                                 <td>
@@ -391,6 +353,45 @@
                                                             @endif
                                                         </small>
                                                     </div>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th>حالة التنفيذ</th>
+                                                <td>
+                                                    @switch($workOrder->execution_status)
+                                                        @case('1')
+                                                            <span class="badge bg-info">جاري العمل بالموقع</span>
+                                                            @break
+                                                        @case('2')
+                                                            <span class="badge bg-warning">تم التنفيذ بالموقع وجاري تسليم 155</span>
+                                                            @break
+                                                        @case('3')
+                                                            <span class="badge bg-warning">تم تسليم 155 جاري اصدار شهادة الانجاز</span>
+                                                            @break
+                                                        @case('4')
+                                                            <span class="badge bg-primary">اعداد مستخلص الدفعة الجزئية الاولي وجاري الصرف</span>
+                                                            @break
+                                                        @case('5')
+                                                            <span class="badge bg-secondary">تم صرف مستخلص الدفعة الجزئية الاولي</span>
+                                                            @break
+                                                        @case('6')
+                                                            <span class="badge bg-success">اعداد مستخلص الدفعة الجزئية الثانية وجاري الصرف</span>
+                                                            @break
+                                                        @case('7')
+                                                            <span class="badge bg-dark">تم الصرف وتم الانتهاء</span>
+                                                            @break
+                                                        @case('8')
+                                                            <span class="badge bg-success">تم اصدار شهادة الانجاز</span>
+                                                            @break
+                                                        @case('9')
+                                                            <span class="badge bg-danger">تم الالغاء او تحويل امر العمل</span>
+                                                            @break
+                                                        @case('10')
+                                                            <span class="badge bg-info">تم اعداد المستخلص الكلي وجاري الصرف</span>
+                                                            @break
+                                                        @default
+                                                            <span class="badge bg-secondary">{{ $workOrder->execution_status }}</span>
+                                                    @endswitch
                                                 </td>
                                             </tr>
                                             <tr>

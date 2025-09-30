@@ -135,8 +135,15 @@ class ProjectController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'contract_number' => 'required|string|max:255|unique:projects,contract_number,' . $project->id,
+            'project_type' => 'required|in:OH33KV,UA33LW,SLS33KV,UG132KV',
+            'location' => 'required|string|max:255',
             'description' => 'nullable|string',
             'status' => 'required|in:active,completed,on_hold',
+            'srgn_date' => 'nullable|date',
+            'tcc_date' => 'nullable|date',
+            'pac_date' => 'nullable|date',
+            'fat_date' => 'nullable|date',
         ]);
 
         $project->update($validated);

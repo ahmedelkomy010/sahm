@@ -2,6 +2,53 @@
 
 @push('styles')
 <style>
+    /* تنسيق LTR للصفحة */
+    .ltr-page {
+        direction: ltr;
+        text-align: left;
+    }
+    
+    .ltr-page * {
+        text-align: left;
+    }
+    
+    /* تعديل الـ margin والـ padding للتنسيق LTR */
+    .ltr-page .mr-2 { margin-right: 0.5rem; margin-left: 0; }
+    .ltr-page .mr-3 { margin-right: 0.75rem; margin-left: 0; }
+    .ltr-page .mr-1 { margin-right: 0.25rem; margin-left: 0; }
+    .ltr-page .ml-2 { margin-left: 0.5rem; margin-right: 0; }
+    .ltr-page .ml-3 { margin-left: 0.75rem; margin-right: 0; }
+    .ltr-page .ml-1 { margin-left: 0.25rem; margin-right: 0; }
+    
+    /* تعديل التوجه للعناصر */
+    .ltr-page .flex-row-reverse { flex-direction: row; }
+    .ltr-page .justify-end { justify-content: flex-start; }
+    .ltr-page .items-end { align-items: flex-start; }
+    .ltr-page .text-right { text-align: left; }
+    
+    /* تعديل مخصص للأزرار والعناصر */
+    .ltr-page .action-button {
+        justify-content: flex-start;
+    }
+    
+    /* تحسينات إضافية للتنسيق LTR */
+    .ltr-page .project-card {
+        text-align: left;
+    }
+    
+    .ltr-page .type-badge {
+        text-align: left;
+    }
+    
+    .ltr-page .primary-button,
+    .ltr-page .secondary-button {
+        text-align: left;
+    }
+    
+    /* تعديل أيقونات الأسهم للتنسيق LTR */
+    .ltr-page .back-arrow {
+        transform: scaleX(-1);
+    }
     .project-header {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         position: relative;
@@ -19,35 +66,6 @@
         opacity: 0.3;
     }
     
-    .stats-card {
-        background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
-        border: 1px solid #e2e8f0;
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        position: relative;
-        overflow: hidden;
-    }
-    
-    .stats-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 4px;
-        background: var(--card-color);
-        transform: scaleX(0);
-        transition: transform 0.4s ease;
-    }
-    
-    .stats-card:hover::before {
-        transform: scaleX(1);
-    }
-    
-    .stats-card:hover {
-        transform: translateY(-8px);
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
-        border-color: var(--card-color);
-    }
     
     .project-card {
         background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
@@ -159,7 +177,7 @@
 @endpush
 
 @section('content')
-<div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 py-12">
+<div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 py-12 ltr-page">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         <!-- Header -->
@@ -182,7 +200,7 @@
                     <div class="flex items-start">
                         <a href="{{ route('admin.dashboard') }}" 
                            class="inline-flex items-center px-6 py-3 bg-white/20 backdrop-blur-sm border border-white/30 text-white rounded-xl font-semibold transition-all duration-300 hover:bg-white/30 hover:transform hover:scale-105">
-                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-5 h-5 mr-2 back-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                             </svg>
                             Back to Dashboard
@@ -192,65 +210,6 @@
             </div>
         </div>
 
-        <!-- Project Statistics -->
-        <div class="stats-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-12">
-            
-            <!-- Total Projects -->
-            <div class="stats-card rounded-2xl p-6 text-left" style="--card-color: #667eea;">
-                <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mb-4">
-                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-                    </svg>
-                </div>
-                <div class="text-3xl font-bold text-gray-900 mb-1">{{ \App\Models\Project::count() }}</div>
-                <div class="text-sm font-medium text-gray-600">Total Projects</div>
-            </div>
-
-            <!-- OH 33KV Projects -->
-            <div class="stats-card rounded-2xl p-6 text-left" style="--card-color: #3b82f6;">
-                <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mb-4">
-                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                    </svg>
-                </div>
-                <div class="text-3xl font-bold text-blue-600 mb-1">{{ \App\Models\Project::where('project_type', 'OH33KV')->count() }}</div>
-                <div class="text-sm font-medium text-gray-600">OH 33KV</div>
-            </div>
-
-            <!-- UA 33LW Projects -->
-            <div class="stats-card rounded-2xl p-6 text-left" style="--card-color: #10b981;">
-                <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mb-4">
-                    <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                    </svg>
-                </div>
-                <div class="text-3xl font-bold text-green-600 mb-1">{{ \App\Models\Project::where('project_type', 'UA33LW')->count() }}</div>
-                <div class="text-sm font-medium text-gray-600">UG 33KV</div>
-            </div>
-
-            <!-- SLS 33KV Projects -->
-            <div class="stats-card rounded-2xl p-6 text-left" style="--card-color: #8b5cf6;">
-                <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mb-4">
-                    <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path>
-                    </svg>
-                </div>
-                <div class="text-3xl font-bold text-purple-600 mb-1">{{ \App\Models\Project::where('project_type', 'SLS33KV')->count() }}</div>
-                <div class="text-sm font-medium text-gray-600">SLS 33KV</div>
-            </div>
-
-            <!-- UG 132KV Projects -->
-            <div class="stats-card rounded-2xl p-6 text-left" style="--card-color: #f59e0b;">
-                <div class="w-12 h-12 bg-yellow-100 rounded-xl flex items-center justify-center mb-4">
-                    <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
-                    </svg>
-                </div>
-                <div class="text-3xl font-bold text-yellow-600 mb-1">{{ \App\Models\Project::where('project_type', 'UG132KV')->count() }}</div>
-                <div class="text-sm font-medium text-gray-600">UG 132 KV</div>
-            </div>
-
-        </div>
 
         <!-- Projects List -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

@@ -118,10 +118,140 @@
     
     /* تحسين عرض معلومات الصفحة */
     .pagination-info {
-        background: rgba(102, 126, 234, 0.1);
-        padding: 0.5rem 1rem;
-        border-radius: 20px;
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+        padding: 0.75rem 1.25rem;
+        border-radius: 25px;
         border: 1px solid rgba(102, 126, 234, 0.2);
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
+        transition: all 0.3s ease;
+    }
+
+    .pagination-info:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.15) 100%);
+    }
+
+    .pagination-info .badge {
+        font-size: 0.9rem !important;
+        padding: 0.5rem 0.8rem;
+        font-weight: 700;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        border: 2px solid rgba(255,255,255,0.3);
+        transition: all 0.3s ease;
+        letter-spacing: 0.5px;
+    }
+
+    .pagination-info .badge:hover {
+        transform: translateY(-1px) scale(1.05);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+
+    .pagination-info .badge.bg-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        border-color: rgba(255,255,255,0.4);
+    }
+
+    .pagination-info .badge.bg-success {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%) !important;
+        border-color: rgba(255,255,255,0.4);
+        animation: pulse-success 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse-success {
+        0%, 100% { 
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15), 0 0 0 0 rgba(40, 167, 69, 0.4);
+        }
+        50% { 
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15), 0 0 0 4px rgba(40, 167, 69, 0);
+        }
+    }
+
+    /* Responsive design للشاشات الصغيرة */
+    @media (max-width: 768px) {
+        .pagination-info {
+            padding: 0.5rem 0.75rem;
+            border-radius: 15px;
+        }
+        
+        .pagination-info .badge {
+            font-size: 0.8rem !important;
+            padding: 0.3rem 0.5rem;
+            margin: 0.1rem;
+        }
+        
+        .pagination-info i {
+            font-size: 1rem !important;
+        }
+        
+        .pagination-info > div {
+            flex-direction: column;
+            align-items: flex-start !important;
+        }
+        
+        .pagination-info span:not(.badge) {
+            font-size: 0.9rem;
+            margin: 0.1rem 0;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .pagination-info {
+            padding: 0.4rem 0.6rem;
+        }
+        
+        .pagination-info .badge {
+            font-size: 0.75rem !important;
+            padding: 0.25rem 0.4rem;
+        }
+    }
+
+    /* Responsive design للـ items selector */
+    @media (max-width: 992px) {
+        .items-per-page-selector {
+            padding: 0.75rem;
+        }
+        
+        .items-per-page-selector label {
+            font-size: 0.85rem;
+        }
+        
+        #per_page {
+            font-size: 0.8rem;
+            padding: 0.4rem 0.6rem;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .items-per-page-selector {
+            padding: 0.6rem;
+            text-align: center;
+        }
+        
+        .items-per-page-selector label {
+            font-size: 0.8rem;
+            text-align: center;
+            display: block;
+        }
+        
+        #per_page {
+            width: 100%;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .items-per-page-selector {
+            padding: 0.5rem;
+        }
+        
+        .items-per-page-selector label {
+            font-size: 0.75rem;
+        }
+        
+        #per_page {
+            font-size: 0.75rem;
+            padding: 0.35rem 0.5rem;
+        }
     }
     
     .pagination-links .pagination {
@@ -150,17 +280,80 @@
     }
     
     /* تحسين مظهر اختيار عدد العناصر */
+    .items-per-page-selector {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+        padding: 1rem;
+        border-radius: 15px;
+        border: 2px solid rgba(102, 126, 234, 0.1);
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.08);
+        height: 100%;
+    }
+
+    .items-per-page-selector:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.12);
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%);
+        border-color: rgba(102, 126, 234, 0.2);
+    }
+
+    .items-per-page-selector label {
+        color: #667eea !important;
+        font-size: 0.9rem;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        margin-bottom: 0.5rem;
+    }
+
     #per_page {
         background: linear-gradient(145deg, #ffffff, #f8f9ff);
         border: 2px solid #e2e8f0;
         font-weight: 600;
         color: #495057;
+        border-radius: 12px;
+        padding: 0.5rem 0.75rem;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
     
     #per_page:focus {
         border-color: #667eea;
-        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25), 0 2px 8px rgba(102, 126, 234, 0.15);
         background: white;
+        transform: translateY(-1px);
+    }
+
+    #per_page:hover {
+        border-color: #667eea;
+        background: linear-gradient(145deg, #f8f9ff, #ffffff);
+    }
+
+    #per_page option {
+        padding: 0.5rem;
+        font-weight: 600;
+    }
+
+    /* تأثيرات الانيميشن للتفاعل */
+    @keyframes pulse {
+        0% {
+            transform: scale(1);
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
+        }
+        50% {
+            transform: scale(1.05);
+            box-shadow: 0 4px 16px rgba(102, 126, 234, 0.25);
+        }
+        100% {
+            transform: scale(1);
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
+        }
+    }
+
+    /* تأثير التحديد المتقدم */
+    .items-per-page-selector.selecting {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+        border-color: rgba(102, 126, 234, 0.3);
+        box-shadow: 0 0 20px rgba(102, 126, 234, 0.2);
     }
     
     /* تحسين عرض معلومات العدد */
@@ -202,6 +395,34 @@
         background: linear-gradient(135deg, #28a745 0%, #20c997 100%) !important;
         border: 1px solid rgba(255, 255, 255, 0.2);
         box-shadow: 0 2px 4px rgba(40, 167, 69, 0.3);
+    }
+
+    /* تأثير الحذف */
+    @keyframes fadeOut {
+        0% {
+            opacity: 1;
+            transform: scale(1);
+        }
+        50% {
+            opacity: 0.5;
+            transform: scale(0.98);
+            background-color: #ffebee;
+        }
+        100% {
+            opacity: 0;
+            transform: scale(0.95);
+            background-color: #ffcdd2;
+        }
+    }
+
+    /* تحسين أزرار الإجراءات */
+    .btn-group-sm .btn {
+        transition: all 0.2s ease;
+    }
+
+    .btn-group-sm .btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.15);
     }
     
     .table .badge.bg-secondary.fs-6 {
@@ -388,23 +609,51 @@
                     </a>
                 </div>
             </div>
+            <!-- حقل عدد العناصر في الصفحة -->
+            <div class="col-md-3">
+                <div class="items-per-page-selector">
+                    <label for="per_page" class="form-label mb-2 fw-bold text-primary">
+                        <i class="fas fa-sort-amount-down me-1"></i>
+                        عرض في الصفحة:
+                    </label>
+                    <select class="form-select" id="per_page" name="per_page">
+                        <option value="10" {{ request('per_page', 20) == 10 ? 'selected' : '' }}>10 بنود</option>
+                        <option value="20" {{ request('per_page', 20) == 20 ? 'selected' : '' }}>20 بند</option>
+                        <option value="50" {{ request('per_page', 20) == 50 ? 'selected' : '' }}>50 بند</option>
+                        <option value="70" {{ request('per_page', 20) == 70 ? 'selected' : '' }}>70 بند</option>
+                        <option value="100" {{ request('per_page', 20) == 100 ? 'selected' : '' }}>100 بند</option>
+                        <option value="200" {{ request('per_page', 20) == 200 ? 'selected' : '' }}>200 بند</option>
+                        <option value="300" {{ request('per_page', 20) == 300 ? 'selected' : '' }}>300 بند</option>
+                        <option value="500" {{ request('per_page', 20) == 500 ? 'selected' : '' }}>500 بند</option>
+                        <option value="700" {{ request('per_page', 20) == 700 ? 'selected' : '' }}>700 بند</option>
+                        <option value="1000" {{ request('per_page', 20) == 1000 ? 'selected' : '' }}>1000 بند</option>
+                    </select>
+                </div>
+            </div>
         </form>
     </div>
 
     <!-- معلومات العرض -->
     @if($dailyExecutions->count() > 0)
     <div class="row mb-3">
-        <div class="col-md-6">
+        <div class="col-md-8">
             <div class="d-flex align-items-center">
-                <i class="fas fa-info-circle text-primary me-2"></i>
-                <span class="fw-semibold">
-                    عرض {{ $dailyExecutions->firstItem() }} - {{ $dailyExecutions->lastItem() }} 
-                    من أصل {{ number_format($dailyExecutions->total()) }} سجل تنفيذ
-                </span>
+                <div class="pagination-info d-flex align-items-center">
+                    <i class="fas fa-list-ol text-primary me-2 fs-5"></i>
+                    <div class="d-flex align-items-center flex-wrap">
+                        <span class="text-dark fw-semibold me-2">عرض</span>
+                        <span class="badge bg-primary rounded-pill mx-1 fs-6">{{ $dailyExecutions->firstItem() }}</span>
+                        <span class="text-muted mx-1">إلى</span>
+                        <span class="badge bg-primary rounded-pill mx-1 fs-6">{{ $dailyExecutions->lastItem() }}</span>
+                        <span class="text-muted mx-2">من إجمالي</span>
+                        <span class="badge bg-success rounded-pill mx-1 fs-6">{{ number_format($dailyExecutions->total()) }}</span>
+                        <span class="text-dark fw-semibold ms-2">سجل تنفيذ</span>
+                    </div>
+                </div>
             </div>
         </div>
         
-        <div class="col-md-6 text-end">
+        <div class="col-md-4 text-end">
             <div class="d-flex align-items-center justify-content-end">
                 <i class="fas fa-list-ol text-success me-2"></i>
                 <span class="badge bg-success fs-6" id="items-display-counter">
@@ -412,16 +661,6 @@
                 </span>
             </div>
         </div>
-        <div class="col-md-1">
-                    
-                    <select class="form-select" id="per_page" name="per_page">
-                        <option value="20" {{ request('per_page', 20) == 20 ? 'selected' : '' }}>20 </option>
-                        <option value="70" {{ request('per_page', 20) == 70 ? 'selected' : '' }}>70 </option>
-                        <option value="200" {{ request('per_page', 20) == 200 ? 'selected' : '' }}>200 </option>
-                        <option value="300" {{ request('per_page', 20) == 300 ? 'selected' : '' }}>300 </option>
-                        <option value="700" {{ request('per_page', 20) == 700 ? 'selected' : '' }}>700 </option>
-                    </select>
-                </div>
     </div>
     @endif
 
@@ -597,12 +836,18 @@
                             </td>
                             <td class="text-center">
                                 <div class="btn-group btn-group-sm">
-                                    <a href="{{ route('admin.work-orders.show', $execution->workOrder) }}" class="btn btn-outline-primary" title="عرض التفاصيل">
+                                    <a href="{{ route('admin.work-orders.show', $execution->workOrder) }}" class="btn btn-outline-primary" title="عرض تفاصيل أمر العمل">
                                         <i class="fas fa-eye"></i>
                                     </a>
                                     <a href="{{ route('admin.work-orders.execution', $execution->workOrder) }}" class="btn btn-outline-success" title="صفحة التنفيذ">
                                         <i class="fas fa-tasks"></i>
                                     </a>
+                                    <button type="button" 
+                                            class="btn btn-outline-danger" 
+                                            title="حذف سجل التنفيذ"
+                                            onclick="deleteExecution({{ $execution->id }}, '{{ $execution->workOrderItem->workItem->description ?? 'بند العمل' }}', '{{ $execution->work_date->format('Y-m-d') }}')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
                                 </div>
                             </td>
                         </tr>
@@ -840,17 +1085,46 @@
 
     // تحديث الصفحة تلقائياً عند تغيير عدد العناصر المعروضة
     document.getElementById('per_page').addEventListener('change', function() {
-        // تحديث العداد فوراً
+        // تحديث العداد فوراً مع النص المناسب
         const counter = document.getElementById('items-display-counter');
         if (counter) {
-            counter.innerHTML = 'عدد العناصر المعروضة: ' + this.value;
+            const selectedValue = this.value;
+            let itemText = 'عنصر';
+            
+            // تحديد النص المناسب حسب العدد
+            if (selectedValue == 1) {
+                itemText = 'عنصر واحد';
+            } else if (selectedValue == 2) {
+                itemText = 'عنصران';
+            } else if (selectedValue >= 3 && selectedValue <= 10) {
+                itemText = 'عناصر';
+            } else if (selectedValue >= 11 && selectedValue <= 99) {
+                itemText = 'عنصر';
+            } else {
+                itemText = 'عنصر';
+            }
+            
+            counter.innerHTML = `عدد العناصر المعروضة: ${selectedValue} ${itemText}`;
             counter.className = 'badge bg-info fs-6';
+            
+            // إضافة تأثير بصري للتغيير
+            counter.style.animation = 'pulse 0.6s ease-in-out';
             
             // إضافة مؤشر التحميل
             setTimeout(() => {
-                counter.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>جاري التحديث...';
+                counter.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>جاري تحديث العرض...';
                 counter.className = 'badge bg-warning fs-6';
+                counter.style.animation = '';
             }, 100);
+        }
+        
+        // إضافة تأثير بصري للـ selector
+        const selector = document.querySelector('.items-per-page-selector');
+        if (selector) {
+            selector.style.animation = 'pulse 0.3s ease-in-out';
+            setTimeout(() => {
+                selector.style.animation = '';
+            }, 300);
         }
         
         const form = document.getElementById('filterForm');
@@ -911,5 +1185,106 @@
             }
         });
     });
+
+    // دالة حذف سجل التنفيذ اليومي
+    function deleteExecution(executionId, workItemDescription, workDate) {
+        // تأكيد الحذف
+        const confirmMessage = `هل أنت متأكد من حذف سجل التنفيذ؟\n\nبند العمل: ${workItemDescription}\nتاريخ التنفيذ: ${workDate}\n\nهذا الإجراء لا يمكن التراجع عنه!`;
+        
+        if (!confirm(confirmMessage)) {
+            return;
+        }
+
+        // إظهار loading على الزر
+        const deleteBtn = event.target.closest('button');
+        const originalContent = deleteBtn.innerHTML;
+        deleteBtn.disabled = true;
+        deleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+        // إرسال طلب الحذف
+        fetch(`/admin/work-orders/daily-executions/${executionId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // إظهار رسالة نجاح
+                showSuccessMessage(data.message || 'تم حذف سجل التنفيذ بنجاح');
+                
+                // إزالة الصف من الجدول
+                const row = deleteBtn.closest('tr');
+                row.style.animation = 'fadeOut 0.5s ease-out';
+                setTimeout(() => {
+                    row.remove();
+                    // تحديث الإحصائيات إذا لزم الأمر
+                    updatePageStats();
+                }, 500);
+            } else {
+                throw new Error(data.message || 'حدث خطأ أثناء الحذف');
+            }
+        })
+        .catch(error => {
+            console.error('خطأ في حذف سجل التنفيذ:', error);
+            showErrorMessage(error.message || 'حدث خطأ أثناء حذف سجل التنفيذ');
+            
+            // إعادة الزر لحالته الأصلية
+            deleteBtn.disabled = false;
+            deleteBtn.innerHTML = originalContent;
+        });
+    }
+
+    // دالة إظهار رسالة نجاح
+    function showSuccessMessage(message) {
+        // إنشاء toast notification
+        const toast = document.createElement('div');
+        toast.className = 'alert alert-success alert-dismissible fade show position-fixed';
+        toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+        toast.innerHTML = `
+            <i class="fas fa-check-circle me-2"></i>
+            ${message}
+            <button type="button" class="btn-close" onclick="this.parentElement.remove()"></button>
+        `;
+        
+        document.body.appendChild(toast);
+        
+        // إزالة تلقائية بعد 5 ثوان
+        setTimeout(() => {
+            if (toast.parentElement) {
+                toast.remove();
+            }
+        }, 5000);
+    }
+
+    // دالة إظهار رسالة خطأ
+    function showErrorMessage(message) {
+        const toast = document.createElement('div');
+        toast.className = 'alert alert-danger alert-dismissible fade show position-fixed';
+        toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+        toast.innerHTML = `
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            ${message}
+            <button type="button" class="btn-close" onclick="this.parentElement.remove()"></button>
+        `;
+        
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            if (toast.parentElement) {
+                toast.remove();
+            }
+        }, 5000);
+    }
+
+    // دالة تحديث إحصائيات الصفحة (اختيارية)
+    function updatePageStats() {
+        // يمكن إضافة منطق لتحديث الإحصائيات هنا
+        // مثل إعادة حساب عدد السجلات المعروضة
+        console.log('تم تحديث الإحصائيات');
+    }
 </script>
 @endpush

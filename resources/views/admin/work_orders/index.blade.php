@@ -847,16 +847,6 @@ function resetCountdown(workOrderId) {
                                 </div>
                             </div>
                             
-                            <div class="col-md-3">
-                                <div class="form-group">
-                                    <label for="station_number" class="form-label fw-bold">
-                                        <i class="fas fa-broadcast-tower text-primary me-1"></i>
-                                        رقم المحطة
-                                    </label>
-                                    <input type="text" class="form-control" id="station_number" name="station_number" 
-                                        value="{{ request('station_number') }}" placeholder="ابحث برقم المحطة...">
-                                </div>
-                            </div>
                             
                             
                             
@@ -981,7 +971,7 @@ function resetCountdown(workOrderId) {
 
                                 <!-- عرض الفلاتر النشطة كـ badges -->
                                 <div class="mt-3 text-center" id="activeFilters">
-                                    @if(request()->hasAny(['order_number', 'work_type', 'subscriber_name', 'district', 'office', 'consultant_name', 'station_number', 'execution_status', 'approval_date_from', 'approval_date_to', 'min_value', 'max_value', 'sort_by_date']))
+                                    @if(request()->hasAny(['order_number', 'work_type', 'subscriber_name', 'district', 'office', 'consultant_name', 'execution_status', 'approval_date_from', 'approval_date_to', 'min_value', 'max_value', 'sort_by_date']))
                                         <small class="text-muted">الفلاتر النشطة:</small><br>
                                         @if(request('order_number'))
                                             <span class="filter-badge">
@@ -1017,12 +1007,6 @@ function resetCountdown(workOrderId) {
                                             <span class="filter-badge">
                                                 الاستشاري: {{ request('consultant_name') }}
                                                 <i class="fas fa-times clear-filter" onclick="clearFilter('consultant_name')"></i>
-                                            </span>
-                                        @endif
-                                        @if(request('station_number'))
-                                            <span class="filter-badge">
-                                                رقم المحطة: {{ request('station_number') }}
-                                                <i class="fas fa-times clear-filter" onclick="clearFilter('station_number')"></i>
                                             </span>
                                         @endif
                                         @if(request('execution_status'))
@@ -1095,12 +1079,12 @@ function resetCountdown(workOrderId) {
                         </div>
                         
                         <div class="d-flex align-items-center gap-3 flex-wrap">
-                            @if(request('order_number') || request('work_type') || request('execution_status') || request('subscriber_name') || request('district') || request('office') || request('consultant_name') || request('station_number') || request('approval_date_from') || request('approval_date_to') || request('min_value') || request('max_value') || request('sort_by_date'))
+                            @if(request('order_number') || request('work_type') || request('execution_status') || request('subscriber_name') || request('district') || request('office') || request('consultant_name') || request('approval_date_from') || request('approval_date_to') || request('min_value') || request('max_value') || request('sort_by_date'))
                                 <div class="text-muted">
                                     <i class="fas fa-filter me-1"></i>
                                     تم تطبيق الفلتر
                                     <small class="text-primary ms-2">
-                                        ({{ collect([request('order_number'), request('work_type'), request('execution_status'), request('subscriber_name'), request('district'), request('office'), request('consultant_name'), request('station_number'), request('approval_date_from'), request('approval_date_to'), request('min_value'), request('max_value'), request('sort_by_date')])->filter()->count() }} فلتر نشط)
+                                        ({{ collect([request('order_number'), request('work_type'), request('execution_status'), request('subscriber_name'), request('district'), request('office'), request('consultant_name'), request('approval_date_from'), request('approval_date_to'), request('min_value'), request('max_value'), request('sort_by_date')])->filter()->count() }} فلتر نشط)
                                     </small>
                                 </div>
                             @endif
@@ -1166,10 +1150,6 @@ function resetCountdown(workOrderId) {
                                     <th class="text-center" style="width: 10%;">
                                         <i class="fas fa-user-tie me-1"></i>
                                         اسم الاستشاري
-                                    </th>
-                                    <th class="text-center" style="width: 8%;">
-                                        <i class="fas fa-broadcast-tower me-1"></i>
-                                        رقم المحطة
                                     </th>
                                     <th class="text-center" style="width: 10%;">
                                         <i class="fas fa-calendar-check me-1"></i>
@@ -1317,7 +1297,6 @@ function resetCountdown(workOrderId) {
                                             @endswitch
                                         </td>
                                         <td>{{ $workOrder->consultant_name }}</td>
-                                        <td>{{ $workOrder->station_number }}</td>
                                         <td>
                                             <div class="approval-date-container">
                                                 <div class="date-section mb-1">
@@ -1924,10 +1903,9 @@ function storeWorkOrders() {
         district: row.cells[5].textContent.trim(),
         office: row.cells[6].textContent.trim(),
         consultantName: row.cells[7].textContent.trim(),
-        stationNumber: row.cells[8].textContent.trim(),
-        approvalDate: row.cells[9].querySelector('[data-approval-date]')?.getAttribute('data-approval-date') || row.cells[9].querySelector('.date-value')?.textContent.trim(),
+        approvalDate: row.cells[8].querySelector('[data-approval-date]')?.getAttribute('data-approval-date') || row.cells[8].querySelector('.date-value')?.textContent.trim(),
         executionStatus: row.dataset.executionStatus,
-        orderValue: row.cells[11].textContent.trim()
+        orderValue: row.cells[10].textContent.trim()
     }));
 }
 
@@ -1940,7 +1918,6 @@ function liveSearch() {
         district: document.getElementById('district').value.toLowerCase(),
         office: document.getElementById('office').value,
         consultantName: document.getElementById('consultant_name').value.toLowerCase(),
-        stationNumber: document.getElementById('station_number').value.toLowerCase(),
         executionStatus: document.getElementById('execution_status').value,
         approvalDateFrom: document.getElementById('approval_date_from').value,
         approvalDateTo: document.getElementById('approval_date_to').value,
@@ -1997,10 +1974,6 @@ function performSearch(filters) {
             isVisible = false;
         }
         
-        // فلتر رقم المحطة
-        if (filters.stationNumber && !workOrder.stationNumber.toLowerCase().includes(filters.stationNumber)) {
-            isVisible = false;
-        }
         
                     // فلتر حالة التنفيذ
                         if (filters.executionStatus) {
@@ -2136,7 +2109,7 @@ function clearAllFilters() {
 
 // فحص إذا كان هناك فلاتر نشطة
 function hasActiveFilters() {
-    const inputs = document.querySelectorAll('#order_number, #work_type, #subscriber_name, #district, #office, #consultant_name, #station_number, #execution_status, #approval_date_from, #approval_date_to, #min_value, #max_value, #sort_by_date');
+    const inputs = document.querySelectorAll('#order_number, #work_type, #subscriber_name, #district, #office, #consultant_name, #execution_status, #approval_date_from, #approval_date_to, #min_value, #max_value, #sort_by_date');
     
     return Array.from(inputs).some(input => {
         return input.value && input.value.trim() !== '';
@@ -2155,7 +2128,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // إضافة أحداث البحث المباشر لجميع حقول الفلتر
-    const searchInputs = document.querySelectorAll('#order_number, #work_type, #subscriber_name, #district, #office, #consultant_name, #station_number, #execution_status, #approval_date_from, #approval_date_to, #min_value, #max_value, #sort_by_date');
+    const searchInputs = document.querySelectorAll('#order_number, #work_type, #subscriber_name, #district, #office, #consultant_name, #execution_status, #approval_date_from, #approval_date_to, #min_value, #max_value, #sort_by_date');
     searchInputs.forEach(input => {
         input.addEventListener('input', liveSearch);
         input.addEventListener('change', liveSearch);

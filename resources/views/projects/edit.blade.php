@@ -2,6 +2,45 @@
 
 @push('styles')
 <style>
+    /* تنسيق LTR للصفحة */
+    .ltr-page {
+        direction: ltr;
+        text-align: left;
+    }
+    
+    .ltr-page * {
+        text-align: left;
+    }
+    
+    /* تعديل الـ margin والـ padding للتنسيق LTR */
+    .ltr-page .mr-2 { margin-right: 0.5rem; margin-left: 0; }
+    .ltr-page .mr-3 { margin-right: 0.75rem; margin-left: 0; }
+    .ltr-page .mr-1 { margin-right: 0.25rem; margin-left: 0; }
+    .ltr-page .ml-2 { margin-left: 0.5rem; margin-right: 0; }
+    .ltr-page .ml-3 { margin-left: 0.75rem; margin-right: 0; }
+    .ltr-page .ml-1 { margin-left: 0.25rem; margin-right: 0; }
+    
+    /* تعديل التوجه للعناصر */
+    .ltr-page .flex-row-reverse { flex-direction: row; }
+    .ltr-page .justify-end { justify-content: flex-start; }
+    .ltr-page .items-end { align-items: flex-start; }
+    .ltr-page .text-right { text-align: left; }
+    
+    /* تعديل مخصص للنماذج */
+    .ltr-page .form-input,
+    .ltr-page .form-select,
+    .ltr-page .form-textarea {
+        text-align: left;
+    }
+    
+    .ltr-page .form-label {
+        text-align: left;
+    }
+    
+    /* تعديل أيقونات الأسهم للتنسيق LTR */
+    .ltr-page .back-arrow {
+        transform: scaleX(-1);
+    }
     .form-container {
         background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
         border: 1px solid #e2e8f0;
@@ -221,7 +260,7 @@
 @endpush
 
 @section('content')
-<div class="page-background">
+<div class="page-background ltr-page">
     <div class="container mx-auto px-4 py-12 relative z-10">
         <div class="max-w-4xl mx-auto">
             
@@ -229,7 +268,7 @@
             <div class="mb-8">
                 <a href="{{ route('project.type-selection') }}" 
                    class="back-button">
-                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-4 h-4 mr-2 back-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                     </svg>
                     Back to Projects
@@ -380,6 +419,30 @@
                                     @enderror
                                 </div>
                                 
+                                <!-- Status -->
+                                <div class="form-field">
+                                    <label for="status" class="form-label">
+                                        <div class="flex items-center">
+                                            <svg class="w-5 h-5 text-orange-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                            Project Status *
+                                        </div>
+                                    </label>
+                                    <select name="status" 
+                                            id="status" 
+                                            class="form-select"
+                                            required>
+                                        <option value="">Select project status</option>
+                                        <option value="active" {{ old('status', $project->status) == 'active' ? 'selected' : '' }}>Active</option>
+                                        <option value="completed" {{ old('status', $project->status) == 'completed' ? 'selected' : '' }}>Completed</option>
+                                        <option value="on_hold" {{ old('status', $project->status) == 'on_hold' ? 'selected' : '' }}>On Hold</option>
+                                    </select>
+                                    @error('status')
+                                        <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                    @enderror
+                                </div>
+                                
                             </div>
                         </div>
                         
@@ -394,7 +457,7 @@
                             
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 
-                                <!-- SRGN Date -->
+                                <!-- SIGN Date -->
                                 <div class="date-card" style="--card-color: #3b82f6;">
                                     <div class="form-field">
                                         <label for="srgn_date" class="form-label">
@@ -402,7 +465,7 @@
                                                 <svg class="w-5 h-5 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                                                 </svg>
-                                                SRGN Date
+                                                SIGN Date
                                             </div>
                                         </label>
                                         <input type="date" 
@@ -424,7 +487,7 @@
                                                 <svg class="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                                                 </svg>
-                                                TCC Date
+                                                PAC Date
                                             </div>
                                         </label>
                                         <input type="date" 
@@ -549,7 +612,7 @@ function toggleSubmitButton() {
 
 // Form validation
 document.getElementById('editProjectForm').addEventListener('submit', function(e) {
-    const requiredFields = ['name', 'contract_number', 'project_type', 'location'];
+    const requiredFields = ['name', 'contract_number', 'project_type', 'location', 'status'];
     let isValid = true;
     
     requiredFields.forEach(function(fieldName) {

@@ -501,8 +501,10 @@
                 @enderror
             </div>
                 <div class="col-md-4 col-12 mb-2">
-                    <label class="form-label">تاريخ اجراء حالة تنفيذ امر العمل :</label>
-                    <input type="date" name="procedure_155_delivery_date" class="form-control" value="{{ old('procedure_155_delivery_date', $workOrder->procedure_155_delivery_date ? $workOrder->procedure_155_delivery_date->format('Y-m-d') : '') }}"required>
+                    <label class="form-label" id="date_label">تاريخ اجراء تسليم 155 :</label>
+                    <input type="date" name="procedure_155_delivery_date" id="procedure_155_delivery_date" class="form-control" value="{{ old('procedure_155_delivery_date', $workOrder->procedure_155_delivery_date ? $workOrder->procedure_155_delivery_date->format('Y-m-d') : '') }}" required>
+                    <small class="text-muted" id="date_help_text" style="display: none;">
+                    </small>
                 </div>
                 <div class="col-md-4 col-12 mb-2">
                     <label class="form-label">قيمة اختبارات ما قبل التشغيل:</label>
@@ -1794,6 +1796,45 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
+
+    // التحكم في required attribute للتاريخ حسب حالة التنفيذ
+    const executionStatusSelect = document.getElementById('execution_status');
+    const dateInput = document.getElementById('procedure_155_delivery_date');
+    const dateLabel = document.getElementById('date_label');
+    const dateHelpText = document.getElementById('date_help_text');
+
+    function updateDateRequirement() {
+        const selectedValue = executionStatusSelect.value;
+        
+        // الحالة "تم التنفيذ بالموقع وجاري تسليم 155" لها value="2"
+        if (selectedValue === '2') {
+            // إزالة required وإظهار رسالة توضيحية
+            dateInput.removeAttribute('required');
+            dateLabel.innerHTML = ' في انتظار تسليم 155 : <span class="text-muted"></span>';
+            dateHelpText.style.display = 'block';
+            
+            // إضافة تأثير بصري
+            dateInput.style.borderColor = '#28a745';
+            dateInput.style.backgroundColor = '#f8fff9';
+        } else {
+            // إضافة required وإخفاء رسالة توضيحية
+            dateInput.setAttribute('required', 'required');
+            dateLabel.innerHTML = 'تاريخ اجراء حالة تنفيذ امر العمل : <span class="text-danger">*</span>';
+            dateHelpText.style.display = 'none';
+            
+            // إزالة التأثير البصري
+            dateInput.style.borderColor = '';
+            dateInput.style.backgroundColor = '';
+        }
+    }
+
+    // تطبيق التحديث عند تحميل الصفحة
+    if (executionStatusSelect && dateInput) {
+        updateDateRequirement();
+        
+        // تطبيق التحديث عند تغيير الحالة
+        executionStatusSelect.addEventListener('change', updateDateRequirement);
+    }
 });
 </script>
 @endpush

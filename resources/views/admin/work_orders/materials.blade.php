@@ -155,7 +155,7 @@
         font-weight: 600;
         background: #f8f9fa;
         display: inline-block;
-        min-width: 90px;
+        min-width: 110px;
         text-align: center;
     }
     .quantity-badge.planned {
@@ -715,13 +715,13 @@
                                                 <div class="quantity-badge">
                                                     <input type="number" 
                                                            class="quantity-input spent-quantity" 
-                                                           value="{{ number_format($material->spent_quantity, 2) }}"
+                                                           value="{{ $material->spent_quantity }}"
                                                            data-material-id="{{ $material->id }}"
                                                            data-original-value="{{ $material->spent_quantity }}"
                                                            data-planned-quantity="{{ $material->planned_quantity }}"
                                                            step="0.01"
                                                            min="0"
-                                                           style="width: 90px; text-align: center; padding: 2px 5px; font-size: 0.9rem;">
+                                                           style="width: 110px; min-width: 110px; max-width: 150px; text-align: center; padding: 3px 6px; font-size: 0.9rem;">
                                                 </div>
                                             </td>
                                             <td class="text-center">
@@ -755,13 +755,13 @@
                                                 <div class="quantity-badge">
                                                     <input type="number" 
                                                            class="quantity-input executed-quantity" 
-                                                           value="{{ number_format($material->executed_quantity ?? 0, 2) }}"
+                                                           value="{{ $material->executed_quantity ?? 0 }}"
                                                            data-material-id="{{ $material->id }}"
                                                            data-original-value="{{ $material->executed_quantity }}"
                                                            data-spent-quantity="{{ $material->spent_quantity }}"
                                                            step="0.01"
                                                            min="0"
-                                                           style="width: 90px; text-align: center; padding: 2px 5px; font-size: 0.9rem;">
+                                                           style="width: 110px; min-width: 110px; max-width: 150px; text-align: center; padding: 3px 6px; font-size: 0.9rem;">
                                                 </div>
                                             </td>
                                             <td class="text-center">
@@ -795,26 +795,26 @@
                                                 <div class="quantity-badge">
                                                     <input type="number" 
                                                            class="quantity-input completion-quantity" 
-                                                           value="{{ number_format($material->completion_quantity ?? 0, 2) }}"
+                                                           value="{{ $material->completion_quantity ?? 0 }}"
                                                            data-material-id="{{ $material->id }}"
                                                            data-original-value="{{ $material->completion_quantity }}"
                                                            step="0.01"
                                                            min="0"
                                                            placeholder="0.00"
-                                                           style="width: 90px; text-align: center; padding: 2px 5px; font-size: 0.85rem;">
+                                                           style="width: 110px; min-width: 110px; max-width: 150px; text-align: center; padding: 3px 6px; font-size: 0.85rem;">
                                                 </div>
                                             </td>
                                             <td class="text-center">
                                                 <div class="quantity-badge">
                                                     <input type="number" 
                                                            class="quantity-input recovery-quantity" 
-                                                           value="{{ number_format($material->recovery_quantity ?? 0, 2) }}"
+                                                           value="{{ $material->recovery_quantity ?? 0 }}"
                                                            data-material-id="{{ $material->id }}"
                                                            data-original-value="{{ $material->recovery_quantity }}"
                                                            step="0.01"
                                                            min="0"
                                                            placeholder="0.00"
-                                                           style="width: 90px; text-align: center; padding: 2px 5px; font-size: 0.85rem;">
+                                                           style="width: 110px; min-width: 110px; max-width: 150px; text-align: center; padding: 3px 6px; font-size: 0.85rem;">
                                                 </div>
                                             </td>
                                             <td class="text-center">
@@ -1832,24 +1832,49 @@
     }
 }
 
-/* تنسيق حقول الإدخال */
+/* تنسيق حقول الإدخال - محدث */
 .quantity-input {
-    background: transparent;
-    border: 1px solid rgba(0,0,0,0.1);
+    background: #fff;
+    border: 1px solid #dee2e6;
     border-radius: 4px;
-    padding: 4px;
-    color: inherit;
-    font-weight: inherit;
+    padding: 3px 6px;
+    color: #495057;
+    font-weight: 600;
     transition: all 0.3s ease;
-    width: 80px;
+    width: 110px !important;
+    min-width: 110px !important;
+    max-width: 160px !important;
     text-align: center;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 0.5px;
+    font-size: 0.9rem;
 }
 
 .quantity-input:focus {
     outline: none;
     border-color: #4e73df;
-    box-shadow: 0 0 0 2px rgba(78,115,223,0.25);
-    background-color: rgba(78,115,223,0.05);
+    box-shadow: 0 0 0 2px rgba(78, 115, 223, 0.25);
+    background-color: #f8f9ff;
+}
+
+/* إزالة أسهم الـ number input */
+.quantity-input[type="number"] {
+    -moz-appearance: textfield;
+}
+
+.quantity-input::-webkit-outer-spin-button,
+.quantity-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* تحسين container للـ quantity badge */
+.quantity-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 110px;
+    overflow: visible;
 }
 
 .quantity-input:hover {
@@ -2030,12 +2055,17 @@ td.editing {
 
 /* تحسين حقول الإدخال */
 .quantity-input {
-    width: 90px !important;
+    width: 110px !important;
+    min-width: 110px;
+    max-width: 150px;
     text-align: center;
-    padding: 2px 5px;
+    padding: 3px 6px;
     font-size: 0.9rem;
     border: 1px solid #dee2e6;
     border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 0.5px;
+    overflow: visible;
     background-color: #fff;
     transition: all 0.2s ease;
 }
