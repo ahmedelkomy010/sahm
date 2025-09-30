@@ -240,6 +240,39 @@ class ProjectController extends Controller
      */
     public function revenues(Project $project)
     {
-        return view('projects.sections.revenues', compact('project'));
+        // جلب الإيرادات المرتبطة بهذا المشروع
+        // إذا لم توجد إيرادات مرتبطة بالمشروع، سنعرض جميع الإيرادات مؤقتاً للاختبار
+        $revenues = \App\Models\Revenue::where('project', $project->name)
+                                      ->orWhere('project_area', $project->name)
+                                      ->orWhere('project', 'like', '%' . $project->name . '%')
+                                      ->orderBy('created_at', 'desc')
+                                      ->get();
+        
+        // إذا لم توجد إيرادات، سنجلب جميع الإيرادات مؤقتاً
+        if ($revenues->isEmpty()) {
+            $revenues = \App\Models\Revenue::orderBy('created_at', 'desc')->get();
+        }
+        
+        // إحصائيات سريعة
+        $totalRevenues = $revenues->count();
+        $totalValue = $revenues->sum('extract_value') ?: 0;
+        $paidValue = $revenues->sum('payment_value') ?: 0;
+        $pendingValue = $totalValue - $paidValue;
+        
+        \Log::info('Revenues loaded for project', [
+            'project_id' => $project->id,
+            'project_name' => $project->name,
+            'revenues_count' => $totalRevenues,
+            'total_value' => $totalValue
+        ]);
+        
+        return view('projects.sections.revenues', compact(
+            'project', 
+            'revenues', 
+            'totalRevenues', 
+            'totalValue', 
+            'paidValue', 
+            'pendingValue'
+        ));
     }
 } 

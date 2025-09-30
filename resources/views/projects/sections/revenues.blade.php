@@ -1,5 +1,9 @@
 @extends('layouts.app')
 
+@section('head')
+<meta name="csrf-token" content="{{ csrf_token() }}">
+@endsection
+
 @push('scripts')
 <!-- SheetJS for Excel support -->
 <script src="https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -228,12 +232,58 @@
         transform: translateY(-4px);
         box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
     }
+
+    /* Container Improvements */
+    .revenues-main-container {
+        width: 100vw;
+        max-width: none;
+        margin-left: calc(50% - 50vw);
+        margin-right: calc(50% - 50vw);
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    .revenues-table-wrapper {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .revenues-table {
+        min-width: 1800px;
+        width: 100%;
+        table-layout: fixed;
+    }
+
+    /* Column Widths */
+    .col-index { width: 50px; }
+    .col-client { width: 140px; }
+    .col-project { width: 140px; }
+    .col-contract { width: 100px; }
+    .col-extract { width: 100px; }
+    .col-office { width: 120px; }
+    .col-type { width: 80px; }
+    .col-po { width: 80px; }
+    .col-invoice { width: 80px; }
+    .col-value { width: 120px; }
+    .col-tax-pct { width: 70px; }
+    .col-tax-val { width: 100px; }
+    .col-penalties { width: 100px; }
+    .col-first-tax { width: 100px; }
+    .col-net { width: 120px; }
+    .col-date { width: 100px; }
+    .col-year { width: 60px; }
+    .col-ref { width: 100px; }
+    .col-pay-date { width: 100px; }
+    .col-pay-val { width: 120px; }
+    .col-status { width: 100px; }
+    .col-actions { width: 140px; }
 </style>
 @endpush
 
 @section('content')
 <div class="min-h-screen bg-gradient-to-br from-slate-50 via-green-50 to-emerald-100 py-12">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="w-full max-w-none mx-auto px-2 sm:px-4 lg:px-6">
         
         <!-- Back Button -->
         <div class="mb-8 flex justify-start">
@@ -273,7 +323,7 @@
                         </svg>
                     </div>
                     <div class="text-right">
-                        <div class="text-2xl font-bold text-green-600">125,000 ريال</div>
+                        <div class="text-2xl font-bold text-green-600">{{ number_format($totalValue ?? 0, 0) }} ريال</div>
                         <div class="text-sm text-gray-600">قيمة العقد</div>
                     </div>
                 </div>
@@ -288,7 +338,7 @@
                         </svg>
                     </div>
                     <div class="text-right">
-                        <div class="text-2xl font-bold text-blue-600">87,500 ريال</div>
+                        <div class="text-2xl font-bold text-blue-600">{{ number_format($totalValue ?? 0, 0) }} ريال</div>
                         <div class="text-sm text-gray-600">المفوتر</div>
                     </div>
                 </div>
@@ -303,7 +353,7 @@
                         </svg>
                     </div>
                     <div class="text-right">
-                        <div class="text-2xl font-bold text-emerald-600">62,500 ريال</div>
+                        <div class="text-2xl font-bold text-emerald-600">{{ number_format($paidValue ?? 0, 0) }} ريال</div>
                         <div class="text-sm text-gray-600">المحصل</div>
                     </div>
                 </div>
@@ -318,7 +368,7 @@
                         </svg>
                     </div>
                     <div class="text-right">
-                        <div class="text-2xl font-bold text-yellow-600">25,000 ريال</div>
+                        <div class="text-2xl font-bold text-yellow-600">{{ number_format($pendingValue ?? 0, 0) }} ريال</div>
                         <div class="text-sm text-gray-600">المتبقي</div>
                     </div>
                 </div>
@@ -329,7 +379,7 @@
         <!-- Action Buttons -->
         <div class="flex justify-between items-center mb-8">
             <div class="text-gray-600 text-sm">
-                عدد السجلات: <span class="font-semibold text-gray-900">3</span>
+                عدد السجلات: <span class="font-semibold text-gray-900">{{ $totalRevenues ?? 0 }}</span>
             </div>
             <div class="flex space-x-4">
                 <button id="import-btn" class="btn-secondary" onclick="importExcelSimple()" title="استيراد ملف CSV">
@@ -354,141 +404,106 @@
         </div>
 
         <!-- Revenue Management Table -->
-        <div class="table-container">
-            <div class="table-header">
-                <div class="p-6">
+        <div class="w-full max-w-none">
+            <div class="bg-white rounded-lg shadow-lg border border-gray-200 mb-6">
+                <div class="p-6 border-b border-gray-200">
                     <h2 class="text-xl font-bold text-gray-900 text-right">إدارة الإيرادات</h2>
                 </div>
             </div>
             
-            <div class="overflow-x-auto">
-                <table class="w-full">
-                    <thead class="bg-gray-50">
+            <div class="overflow-x-auto bg-white rounded-lg shadow-lg border border-gray-200" style="width: 100%; max-width: none;">
+                <table class="w-full divide-y divide-gray-200" style="min-width: 1600px; table-layout: fixed;">
+                    <thead class="bg-gradient-to-r from-blue-50 to-indigo-50">
                         <tr>
-                            <th class="px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
-                            <th class="px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">اسم العميل/الجهة المالكة</th>
-                            <th class="px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">المشروع/المنطقة</th>
-                            <th class="px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">رقم العقد</th>
-                            <th class="px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">رقم المستخلص</th>
-                            <th class="px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">المكتب</th>
-                            <th class="px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">نوع المستخلص</th>
-                            <th class="px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">رقم PO</th>
-                            <th class="px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">رقم الفاتورة</th>
-                            <th class="px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">قيمة المستخلص</th>
-                            <th class="px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">نسبة الضريبة</th>
-                            <th class="px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">قيمة الضريبة</th>
-                            <th class="px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الغرامات</th>
-                            <th class="px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">ضريبة الدفعة الأولى</th>
-                            <th class="px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">صافي قيمة المستخلص</th>
-                            <th class="px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">تاريخ إعداد المستخلص</th>
-                            <th class="px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">العام</th>
-                            <th class="px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">نوع الدفع</th>
-                            <th class="px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الرقم المرجعي</th>
-                            <th class="px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">تاريخ الصرف</th>
-                            <th class="px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">قيمة الصرف</th>
-                            <th class="px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">حالة المستخلص</th>
-                            <th class="px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الإجراءات</th>
+                            <th class="col-index px-2 py-4 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">#</th>
+                            <th class="col-client px-2 py-4 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">العميل</th>
+                            <th class="col-project px-2 py-4 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">المشروع</th>
+                            <th class="col-contract px-2 py-4 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">رقم العقد</th>
+                            <th class="col-extract px-2 py-4 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">رقم المستخلص</th>
+                            <th class="col-office px-2 py-4 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">المكتب</th>
+                            <th class="col-type px-2 py-4 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">النوع</th>
+                            <th class="col-po px-2 py-4 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">PO</th>
+                            <th class="col-invoice px-2 py-4 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">الفاتورة</th>
+                            <th class="col-value px-2 py-4 text-right text-xs font-semibold text-green-700 uppercase tracking-wider">قيمة المستخلص</th>
+                            <th class="col-tax-pct px-2 py-4 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">الضريبة%</th>
+                            <th class="col-tax-val px-2 py-4 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">قيمة الضريبة</th>
+                            <th class="col-penalties px-2 py-4 text-right text-xs font-semibold text-red-700 uppercase tracking-wider">الغرامات</th>
+                            <th class="col-first-tax px-2 py-4 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">ضريبة أولى</th>
+                            <th class="col-net px-2 py-4 text-right text-xs font-semibold text-blue-700 uppercase tracking-wider">صافي القيمة</th>
+                            <th class="col-date px-2 py-4 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">تاريخ الإعداد</th>
+                            <th class="col-year px-2 py-4 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">السنة</th>
+                            <th class="col-ref px-2 py-4 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">المرجع</th>
+                            <th class="col-pay-date px-2 py-4 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">تاريخ الصرف</th>
+                            <th class="col-pay-val px-2 py-4 text-right text-xs font-semibold text-green-700 uppercase tracking-wider">قيمة الصرف</th>
+                            <th class="col-status px-2 py-4 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">الحالة</th>
+                            <th class="col-actions px-2 py-4 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">الإجراءات</th>
                         </tr>
                     </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        <!-- Sample Row 1 -->
-                        <tr class="table-row">
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 text-right">1</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">شركة الكهرباء السعودية</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">مشروع الرياض الشمالي</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-mono">2121-001</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-mono">EXT-001</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">المكتب الرئيسي</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">مرحلي</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-mono">PO-2025-001</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-mono">INV-001</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-green-600 text-right">125,000.00</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">15%</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">18,750.00</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-red-600 text-right">2,500.00</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">6,250.00</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-blue-600 text-right">97,500.00</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">2025/01/15</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">2025</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">حوالة بنكية</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-mono">REF-001</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">2025/01/20</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-green-600 text-right">97,500.00</td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="status-badge status-paid">مدفوع</span>
+                    <tbody class="bg-white divide-y divide-gray-200" id="revenueTableBody">
+                        @forelse($revenues as $index => $revenue)
+                        <tr class="table-row hover:bg-gray-50 transition-colors duration-150" data-revenue-id="{{ $revenue->id }}">
+                            <td class="col-index px-2 py-3 text-sm font-medium text-gray-900 text-right">{{ $index + 1 }}</td>
+                            <td class="col-client px-2 py-3 text-sm text-gray-900 text-right truncate" title="{{ $revenue->client_name }}">{{ $revenue->client_name }}</td>
+                            <td class="col-project px-2 py-3 text-sm text-gray-900 text-right truncate" title="{{ $revenue->project_area }}">{{ $revenue->project_area }}</td>
+                            <td class="col-contract px-2 py-3 text-sm text-gray-900 text-right font-mono">{{ $revenue->contract_number }}</td>
+                            <td class="col-extract px-2 py-3 text-sm text-gray-900 text-right font-mono">{{ $revenue->extract_number }}</td>
+                            <td class="col-office px-2 py-3 text-sm text-gray-900 text-right truncate" title="{{ $revenue->office }}">{{ $revenue->office }}</td>
+                            <td class="col-type px-2 py-3 text-sm text-gray-900 text-right truncate" title="{{ $revenue->extract_type }}">{{ $revenue->extract_type }}</td>
+                            <td class="col-po px-2 py-3 text-sm text-gray-900 text-right font-mono">{{ $revenue->po_number ?: '-' }}</td>
+                            <td class="col-invoice px-2 py-3 text-sm text-gray-900 text-right font-mono">{{ $revenue->invoice_number ?: '-' }}</td>
+                            <td class="col-value px-2 py-3 text-sm font-semibold text-green-600 text-right">{{ number_format($revenue->extract_value, 0) }}</td>
+                            <td class="col-tax-pct px-2 py-3 text-sm text-gray-900 text-right">{{ $revenue->tax_percentage }}%</td>
+                            <td class="col-tax-val px-2 py-3 text-sm text-gray-900 text-right">{{ number_format($revenue->tax_value, 0) }}</td>
+                            <td class="col-penalties px-2 py-3 text-sm text-red-600 text-right">{{ number_format($revenue->penalties, 0) }}</td>
+                            <td class="col-first-tax px-2 py-3 text-sm text-gray-900 text-right">{{ number_format($revenue->first_payment_tax, 0) }}</td>
+                            <td class="col-net px-2 py-3 text-sm font-semibold text-blue-600 text-right">{{ number_format($revenue->net_extract_value, 0) }}</td>
+                            <td class="col-date px-2 py-3 text-sm text-gray-900 text-right">{{ $revenue->extract_date ? $revenue->extract_date->format('Y/m/d') : '-' }}</td>
+                            <td class="col-year px-2 py-3 text-sm text-gray-900 text-right">{{ $revenue->year }}</td>
+                            <td class="col-ref px-2 py-3 text-sm text-gray-900 text-right font-mono">{{ $revenue->reference_number ?: '-' }}</td>
+                            <td class="col-pay-date px-2 py-3 text-sm text-gray-900 text-right">{{ $revenue->payment_date ? $revenue->payment_date->format('Y/m/d') : '-' }}</td>
+                            <td class="col-pay-val px-2 py-3 text-sm font-semibold text-green-600 text-right">{{ $revenue->payment_value ? number_format($revenue->payment_value, 0) : '-' }}</td>
+                            <td class="col-status px-2 py-3 text-sm text-gray-900 text-right">
+                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full 
+                                    {{ $revenue->extract_status == 'مكتمل' ? 'bg-green-100 text-green-800' : 
+                                       ($revenue->extract_status == 'معلق' ? 'bg-yellow-100 text-yellow-800' : 'bg-blue-100 text-blue-800') }}">
+                                    {{ $revenue->extract_status }}
+                                </span>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <button class="action-btn btn-view" onclick="viewRevenue(1)">عرض</button>
-                                <button class="action-btn btn-edit" onclick="editRevenue(1)">تعديل</button>
-                                <button class="action-btn btn-delete" onclick="deleteRevenue(1)">حذف</button>
-                            </td>
-                        </tr>
-                        
-                        <!-- Sample Row 2 -->
-                        <tr class="table-row">
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 text-right">2</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">شركة أرامكو السعودية</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">مشروع جدة الغربي</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-mono">2121-002</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-mono">EXT-002</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">مكتب جدة</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">جزئي</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-mono">PO-2025-002</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-mono">INV-002</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-green-600 text-right">85,000.00</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">15%</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">12,750.00</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-red-600 text-right">1,000.00</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">4,250.00</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-blue-600 text-right">67,000.00</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">2025/02/01</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">2025</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">شيك</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-mono">REF-002</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">2025/02/10</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-green-600 text-right">40,000.00</td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="status-badge status-partial">جزئي</span>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <button class="action-btn btn-view" onclick="viewRevenue(2)">عرض</button>
-                                <button class="action-btn btn-edit" onclick="editRevenue(2)">تعديل</button>
-                                <button class="action-btn btn-delete" onclick="deleteRevenue(2)">حذف</button>
+                            <td class="col-actions px-2 py-3 text-sm font-medium">
+                                <div class="flex space-x-2">
+                                    <button class="text-blue-600 hover:text-blue-900 transition-colors" onclick="viewRevenue({{ $revenue->id }})" title="عرض">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                        </svg>
+                                    </button>
+                                    <button class="text-yellow-600 hover:text-yellow-900 transition-colors" onclick="editRevenue({{ $revenue->id }})" title="تعديل">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                        </svg>
+                                    </button>
+                                    <button class="text-red-600 hover:text-red-900 transition-colors" onclick="deleteRevenue({{ $revenue->id }})" title="حذف">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                        </svg>
+                                    </button>
+                                </div>
                             </td>
                         </tr>
-                        
-                        <!-- Sample Row 3 -->
-                        <tr class="table-row">
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 text-right">3</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">شركة سابك</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">مشروع الدمام الشرقي</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-mono">2121-003</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-mono">EXT-003</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">مكتب الدمام</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">نهائي</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-mono">PO-2025-003</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-mono">INV-003</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-green-600 text-right">200,000.00</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">15%</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">30,000.00</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-red-600 text-right">5,000.00</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">10,000.00</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-blue-600 text-right">155,000.00</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">2025/03/01</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">2025</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">حوالة بنكية</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-mono">REF-003</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">-</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">-</td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="status-badge status-pending">معلق</span>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <button class="action-btn btn-view" onclick="viewRevenue(3)">عرض</button>
-                                <button class="action-btn btn-edit" onclick="editRevenue(3)">تعديل</button>
-                                <button class="action-btn btn-delete" onclick="deleteRevenue(3)">حذف</button>
+                        @empty
+                        <tr>
+                            <td colspan="22" class="px-6 py-12 text-center text-gray-500">
+                                <div class="flex flex-col items-center">
+                                    <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                    </svg>
+                                    <p class="text-lg font-medium text-gray-900 mb-2">لا توجد إيرادات مسجلة</p>
+                                    <p class="text-gray-600 mb-4">ابدأ بإضافة أول سجل إيرادات لهذا المشروع</p>
+                                    
+                                </div>
                             </td>
                         </tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>
@@ -590,7 +605,7 @@
                 let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
                 
                 // Add header
-                csvContent += '"#","اسم العميل","المشروع","رقم العقد","رقم المستخلص","المكتب","نوع المستخلص","رقم PO","رقم الفاتورة","قيمة المستخلص","نسبة الضريبة","قيمة الضريبة","الغرامات","ضريبة الدفعة الأولى","صافي قيمة المستخلص","تاريخ إعداد المستخلص","العام","نوع الدفع","الرقم المرجعي","تاريخ الصرف","قيمة الصرف","حالة المستخلص"\n';
+                csvContent += '"#","اسم العميل","المشروع","رقم العقد","رقم المستخلص","المكتب","نوع المستخلص","رقم PO","رقم الفاتورة","قيمة المستخلص","نسبة الضريبة","قيمة الضريبة","الغرامات","ضريبة الدفعة الأولى","صافي قيمة المستخلص","تاريخ إعداد المستخلص","العام","الرقم المرجعي","تاريخ الصرف","قيمة الصرف","نوع المستخلص"\n';
                 
                 // Add data rows
                 rows.forEach(row => {
@@ -706,7 +721,7 @@
                     
                     // Process dates if they come from Excel
                     let preparationDate = row[15] || '';
-                    let paymentDate = row[19] || '';
+                    let paymentDate = row[18] || '';
                     
                     if (typeof row[15] === 'number') {
                         const date = new Date((row[15] - 25569) * 86400 * 1000);
@@ -721,7 +736,7 @@
                     // Prepare revenue data
                     const revenueData = {
                         client_name: row[1] || '',
-                        project_name: row[2] || '',
+                        project_area: row[2] || '',
                         contract_number: row[3] || '',
                         extract_number: row[4] || '',
                         office: row[5] || 'المكتب الرئيسي',
@@ -733,14 +748,13 @@
                         tax_value: parseFloat(row[11]) || 0,
                         penalties: parseFloat(row[12]) || 0,
                         first_payment_tax: parseFloat(row[13]) || 0,
-                        net_value: parseFloat(row[14]) || 0,
-                        preparation_date: preparationDate,
+                        net_extract_value: parseFloat(row[14]) || 0,
+                        extract_date: preparationDate,
                         year: row[16] || new Date().getFullYear(),
-                        payment_type: row[17] || 'حوالة بنكية',
-                        reference_number: row[18] || null,
+                        reference_number: row[17] || null,
                         payment_date: paymentDate,
-                        payment_value: parseFloat(row[20]) || 0,
-                        status: row[21] || 'معلق'
+                        payment_value: parseFloat(row[19]) || 0,
+                        extract_status: row[20] || 'معلق'
                     };
                     
                     revenues.push(revenueData);
@@ -763,7 +777,7 @@
             // Get project ID from URL or page
             const projectId = getProjectId();
             
-            fetch(`/projects/${projectId}/revenues/import`, {
+            fetch(`{{ route('revenues.import', $project) }}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -862,18 +876,13 @@
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-blue-600 text-right">${parseFloat(revenue.net_extract_value || 0).toLocaleString('ar-SA', {minimumFractionDigits: 2})}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">${revenue.extract_date || ''}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">${revenue.year || ''}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">${revenue.payment_type || ''}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-mono">${revenue.reference_number || ''}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">${revenue.payment_date || ''}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-green-600 text-right">${parseFloat(revenue.payment_value || 0).toLocaleString('ar-SA', {minimumFractionDigits: 2})}</td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="status-badge ${getStatusClass(revenue.extract_status)}">${revenue.extract_status || 'معلق'}</span>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
+                        ${revenue.extract_type || 'مرحلي'}
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <button class="action-btn btn-view" onclick="viewRevenue(${revenue.id})">عرض</button>
-                        <button class="action-btn btn-edit" onclick="editRevenue(${revenue.id})">تعديل</button>
-                        <button class="action-btn btn-delete" onclick="deleteRevenue(${revenue.id})">حذف</button>
-                    </td>
+                    
                 </tr>
                 `;
                 tbody.appendChild(row);
@@ -928,11 +937,10 @@
                 'صافي قيمة المستخلص',
                 'تاريخ إعداد المستخلص',
                 'العام',
-                'نوع الدفع',
                 'الرقم المرجعي',
                 'تاريخ الصرف',
                 'قيمة الصرف',
-                'حالة المستخلص'
+                'نوع المستخلص'
             ];
             tableData.push(headers);
             
@@ -986,11 +994,10 @@
                     { wch: 18 },  // صافي قيمة المستخلص
                     { wch: 18 },  // تاريخ إعداد المستخلص
                     { wch: 8 },   // العام
-                    { wch: 12 },  // نوع الدفع
                     { wch: 15 },  // الرقم المرجعي
                     { wch: 15 },  // تاريخ الصرف
                     { wch: 15 },  // قيمة الصرف
-                    { wch: 15 }   // حالة المستخلص
+                    { wch: 15 }   // نوع المستخلص
                 ];
                 ws['!cols'] = colWidths;
                 
@@ -1110,7 +1117,7 @@
                                 
                                 // Process dates if they come from Excel
                                 let preparationDate = row[15] || '';
-                                let paymentDate = row[19] || '';
+                                let paymentDate = row[18] || '';
                                 
                                 if (typeof row[15] === 'number') {
                                     // Excel date serial number
@@ -1246,9 +1253,6 @@
                     <input type="number" id="year" class="w-full px-2 py-1 border border-gray-300 rounded text-right text-sm" placeholder="2025" min="2020" max="2030">
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
-                    <input type="text" id="payment_type" class="w-full px-2 py-1 border border-gray-300 rounded text-right text-sm" placeholder="نوع الدفع">
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
                     <input type="text" id="reference_number" class="w-full px-2 py-1 border border-gray-300 rounded text-right text-sm font-mono" placeholder="REF-004">
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
@@ -1258,7 +1262,11 @@
                     <input type="number" id="payment_value" class="w-full px-2 py-1 border border-gray-300 rounded text-right text-sm" placeholder="0.00" step="0.01">
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
-                    <input type="text" id="status" class="w-full px-2 py-1 border border-gray-300 rounded text-right text-sm" placeholder="حالة المستخلص">
+                    <select id="extract_type" class="w-full px-2 py-1 border border-gray-300 rounded text-right text-sm">
+                        <option value="مرحلي">مرحلي</option>
+                        <option value="نهائي">نهائي</option>
+                        <option value="ابتدائي">ابتدائي</option>
+                    </select>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <button class="action-btn btn-view mr-1" onclick="saveNewRow()" title="حفظ">
@@ -1308,11 +1316,10 @@ function viewRevenue(id) {
         net_value: cells[14].textContent.trim(),
         preparation_date: cells[15].textContent.trim(),
         year: cells[16].textContent.trim(),
-        payment_type: cells[17].textContent.trim(),
-        reference_number: cells[18].textContent.trim(),
-        payment_date: cells[19].textContent.trim(),
-        payment_value: cells[20].textContent.trim(),
-        status: cells[21].querySelector('.status-badge').textContent.trim()
+        reference_number: cells[17].textContent.trim(),
+        payment_date: cells[18].textContent.trim(),
+        payment_value: cells[19].textContent.trim(),
+        extract_type: cells[20].textContent.trim()
     };
     
     showViewModal(data);
@@ -1385,19 +1392,20 @@ function editRevenue(id) {
             <input type="number" id="edit_year" class="w-full px-2 py-1 border border-gray-300 rounded text-right text-sm" value="${cells[16].textContent.trim()}" min="2020" max="2030">
         </td>
         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
-            <input type="text" id="edit_payment_type" class="w-full px-2 py-1 border border-gray-300 rounded text-right text-sm" value="${cells[17].textContent.trim()}">
+            <input type="text" id="edit_reference_number" class="w-full px-2 py-1 border border-gray-300 rounded text-right text-sm font-mono" value="${cells[17].textContent.trim()}">
         </td>
         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
-            <input type="text" id="edit_reference_number" class="w-full px-2 py-1 border border-gray-300 rounded text-right text-sm font-mono" value="${cells[18].textContent.trim()}">
+            <input type="date" id="edit_payment_date" class="w-full px-2 py-1 border border-gray-300 rounded text-right text-sm" value="${convertDateToInput(cells[18].textContent.trim())}">
         </td>
         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
-            <input type="date" id="edit_payment_date" class="w-full px-2 py-1 border border-gray-300 rounded text-right text-sm" value="${convertDateToInput(cells[19].textContent.trim())}">
+            <input type="number" id="edit_payment_value" class="w-full px-2 py-1 border border-gray-300 rounded text-right text-sm" value="${cells[19].textContent.trim() !== '-' ? parseFloat(cells[19].textContent.trim()) : ''}" step="0.01">
         </td>
         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
-            <input type="number" id="edit_payment_value" class="w-full px-2 py-1 border border-gray-300 rounded text-right text-sm" value="${cells[20].textContent.trim() !== '-' ? parseFloat(cells[20].textContent.trim()) : ''}" step="0.01">
-        </td>
-        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
-            <input type="text" id="edit_status" class="w-full px-2 py-1 border border-gray-300 rounded text-right text-sm" value="${cells[21].querySelector('.status-badge').textContent.trim()}">
+            <select id="edit_extract_type" class="w-full px-2 py-1 border border-gray-300 rounded text-right text-sm">
+                <option value="مرحلي" ${cells[20].textContent.trim() === 'مرحلي' ? 'selected' : ''}>مرحلي</option>
+                <option value="نهائي" ${cells[20].textContent.trim() === 'نهائي' ? 'selected' : ''}>نهائي</option>
+                <option value="ابتدائي" ${cells[20].textContent.trim() === 'ابتدائي' ? 'selected' : ''}>ابتدائي</option>
+            </select>
         </td>
         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
             <button class="action-btn btn-view mr-1" onclick="saveEditRow(${id})" title="حفظ">
@@ -1420,7 +1428,7 @@ function editRevenue(id) {
 }
 
 function deleteRevenue(id) {
-    const row = document.querySelector(`tbody tr:nth-child(${id})`);
+    const row = document.querySelector(`tbody tr[data-revenue-id="${id}"]`);
     if (!row) return;
     
     const clientName = row.querySelector('td:nth-child(2)').textContent.trim();
@@ -1431,19 +1439,37 @@ function deleteRevenue(id) {
         row.style.opacity = '0.5';
         row.style.pointerEvents = 'none';
         
-        // Simulate delete operation
-        setTimeout(() => {
-            row.style.transition = 'all 0.3s ease';
-            row.style.transform = 'translateX(100%)';
-            row.style.opacity = '0';
+        // Delete via API
+        fetch(`{{ route('revenues.destroy', ['project' => $project, 'revenue' => '__ID__']) }}`.replace('__ID__', id), {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Animate removal
+                row.style.transition = 'all 0.3s ease';
+                row.style.transform = 'translateX(100%)';
+                row.style.opacity = '0';
+                
+                setTimeout(() => {
+                    window.location.reload();
+                }, 300);
+            } else {
+                throw new Error(data.message || 'حدث خطأ في الحذف');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('حدث خطأ في حذف البيانات: ' + error.message, 'error');
             
-            setTimeout(() => {
-                row.remove();
-                updateRecordCountAfterDelete();
-                renumberRows();
-                showNotification('تم حذف المستخلص بنجاح.', 'success');
-            }, 300);
-        }, 500);
+            // Reset row state
+            row.style.opacity = '1';
+            row.style.pointerEvents = 'auto';
+        });
     }
 }
 
@@ -1465,7 +1491,7 @@ function calculateTotals() {
 function saveNewRow() {
     const formData = {
         client_name: document.getElementById('client_name').value,
-        project_name: document.getElementById('project_name').value,
+        project_area: document.getElementById('project_name').value,
         contract_number: document.getElementById('contract_number').value,
         extract_number: document.getElementById('extract_number').value,
         office: document.getElementById('office').value,
@@ -1477,14 +1503,13 @@ function saveNewRow() {
         tax_value: document.getElementById('tax_value').value,
         penalties: document.getElementById('penalties').value,
         first_payment_tax: document.getElementById('first_payment_tax').value,
-        net_value: document.getElementById('net_value').value,
-        preparation_date: document.getElementById('preparation_date').value,
+        net_extract_value: document.getElementById('net_value').value,
+        extract_date: document.getElementById('preparation_date').value,
         year: document.getElementById('year').value,
-        payment_type: document.getElementById('payment_type').value,
         reference_number: document.getElementById('reference_number').value,
         payment_date: document.getElementById('payment_date').value,
         payment_value: document.getElementById('payment_value').value,
-        status: document.getElementById('status').value
+        extract_status: document.getElementById('extract_type').value
     };
     
     // Validate required fields
@@ -1503,13 +1528,36 @@ function saveNewRow() {
     saveBtn.innerHTML = '<svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
     saveBtn.disabled = true;
     
-    // Simulate save (replace with actual AJAX call)
-    setTimeout(() => {
-        convertNewRowToDisplay(formData);
-        updateRecordCount();
-        showNotification('تم حفظ البيانات بنجاح!', 'success');
-        isAddingNewRow = false;
-    }, 1000);
+    // Save to database via API
+    fetch(`{{ route('revenues.store', $project) }}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Reload the page to show updated data
+            showNotification('تم حفظ البيانات بنجاح!', 'success');
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        } else {
+            throw new Error(data.message || 'حدث خطأ في الحفظ');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('حدث خطأ في حفظ البيانات: ' + error.message, 'error');
+        
+        // Reset button
+        saveBtn.innerHTML = originalContent;
+        saveBtn.disabled = false;
+    });
 }
 
 function convertNewRowToDisplay(data) {
@@ -1540,7 +1588,6 @@ function convertNewRowToDisplay(data) {
         <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-blue-600 text-right">${parseFloat(data.net_value).toFixed(2)}</td>
         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">${formatDate(data.preparation_date)}</td>
         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">${data.year}</td>
-        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">${data.payment_type}</td>
         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-mono">${data.reference_number}</td>
         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">${data.payment_date ? formatDate(data.payment_date) : '-'}</td>
         <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-green-600 text-right">${data.payment_value ? parseFloat(data.payment_value).toFixed(2) : '-'}</td>
@@ -1719,10 +1766,6 @@ function showViewModal(data) {
                         <div class="text-lg text-gray-900 text-right">${data.year}</div>
                     </div>
                     
-                    <div class="bg-gray-50 p-4 rounded-xl">
-                        <label class="block text-sm font-medium text-gray-600 mb-1 text-right">نوع الدفع</label>
-                        <div class="text-lg text-gray-900 text-right">${data.payment_type}</div>
-                    </div>
                     
                     <div class="bg-gray-50 p-4 rounded-xl">
                         <label class="block text-sm font-medium text-gray-600 mb-1 text-right">الرقم المرجعي</label>
@@ -1740,8 +1783,8 @@ function showViewModal(data) {
                     </div>
                     
                     <div class="bg-gray-50 p-4 rounded-xl">
-                        <label class="block text-sm font-medium text-gray-600 mb-1 text-right">حالة المستخلص</label>
-                        <div class="text-right">${getStatusBadge(data.status)}</div>
+                        <label class="block text-sm font-medium text-gray-600 mb-1 text-right">نوع المستخلص</label>
+                        <div class="text-lg text-gray-900 text-right">${data.extract_type}</div>
                     </div>
                 </div>
                 
@@ -1799,11 +1842,10 @@ function saveEditRow(id) {
         net_value: document.getElementById('edit_net_value').value,
         preparation_date: document.getElementById('edit_preparation_date').value,
         year: document.getElementById('edit_year').value,
-        payment_type: document.getElementById('edit_payment_type').value,
         reference_number: document.getElementById('edit_reference_number').value,
         payment_date: document.getElementById('edit_payment_date').value,
         payment_value: document.getElementById('edit_payment_value').value,
-        status: document.getElementById('edit_status').value
+        extract_type: document.getElementById('edit_extract_type').value
     };
     
     // Validate required fields
@@ -1854,7 +1896,6 @@ function convertEditRowToDisplay(id, data) {
         <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-blue-600 text-right">${parseFloat(data.net_value).toFixed(2)}</td>
         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">${formatDate(data.preparation_date)}</td>
         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">${data.year}</td>
-        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">${data.payment_type}</td>
         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-mono">${data.reference_number}</td>
         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">${data.payment_date ? formatDate(data.payment_date) : '-'}</td>
         <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-green-600 text-right">${data.payment_value ? parseFloat(data.payment_value).toFixed(2) : '-'}</td>
@@ -1989,7 +2030,6 @@ function addImportedRow(data) {
         <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-blue-600 text-right">${parseFloat(data.net_value).toFixed(2)}</td>
         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">${formatDate(data.preparation_date)}</td>
         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">${data.year}</td>
-        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">${data.payment_type}</td>
         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-mono">${data.reference_number}</td>
         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">${data.payment_date ? formatDate(data.payment_date) : '-'}</td>
         <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-green-600 text-right">${data.payment_value ? parseFloat(data.payment_value).toFixed(2) : '-'}</td>

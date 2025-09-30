@@ -2,6 +2,48 @@
 
 @push('styles')
 <style>
+    /* تنسيق LTR للصفحة */
+    .ltr-page {
+        direction: ltr;
+        text-align: left;
+    }
+    
+    .ltr-page * {
+        text-align: left;
+    }
+    
+    /* تعديل الـ margin والـ padding للتنسيق LTR */
+    .ltr-page .mr-2 { margin-right: 0.5rem; margin-left: 0; }
+    .ltr-page .mr-3 { margin-right: 0.75rem; margin-left: 0; }
+    .ltr-page .mr-1 { margin-right: 0.25rem; margin-left: 0; }
+    .ltr-page .ml-2 { margin-left: 0.5rem; margin-right: 0; }
+    .ltr-page .ml-3 { margin-left: 0.75rem; margin-right: 0; }
+    .ltr-page .ml-1 { margin-left: 0.25rem; margin-right: 0; }
+    
+    /* تعديل التوجه للعناصر */
+    .ltr-page .flex-row-reverse { flex-direction: row; }
+    .ltr-page .justify-end { justify-content: flex-start; }
+    .ltr-page .items-end { align-items: flex-start; }
+    .ltr-page .text-right { text-align: left; }
+    
+    /* تعديل مخصص للبطاقات */
+    .ltr-page .project-card {
+        text-align: left;
+    }
+    
+    .ltr-page .card-link {
+        text-align: left;
+    }
+    
+    /* تعديل أيقونات الأسهم للتنسيق LTR */
+    .ltr-page .back-arrow {
+        transform: scaleX(-1);
+    }
+    
+    /* تعديل أسهم "View Details" */
+    .ltr-page .view-details-arrow {
+        transform: scaleX(-1);
+    }
     .project-card {
         background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
         border: 1px solid #e2e8f0;
@@ -116,14 +158,14 @@
 @endpush
 
 @section('content')
-<div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 py-12">
+<div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 py-12 ltr-page">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         <!-- Back to Projects Button -->
-        <div class="mb-8 flex justify-end">
+        <div class="mb-8 flex justify-start">
             <a href="{{ route('project.type-selection') }}" 
                class="inline-flex items-center px-6 py-3 bg-white/80 backdrop-blur-sm border border-gray-200 text-gray-700 rounded-xl font-semibold shadow-lg hover:bg-white hover:shadow-xl transition-all duration-300 hover:transform hover:scale-105">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-5 h-5 mr-2 back-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                 </svg>
                 Back to Projects
@@ -185,7 +227,7 @@
                 <div class="text-left">
                     <a href="{{ route('projects.supplying', $project) }}" class="card-link inline-flex items-center font-semibold">
                         <span>View Details</span>
-                        <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-5 h-5 mr-2 view-details-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                         </svg>
                     </a>
@@ -217,7 +259,7 @@
                 <div class="text-left">
                     <a href="{{ route('projects.design', $project) }}" class="card-link inline-flex items-center font-semibold">
                         <span>View Details</span>
-                        <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-5 h-5 mr-2 view-details-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                         </svg>
                     </a>
@@ -249,7 +291,7 @@
                 <div class="text-left">
                     <a href="{{ route('projects.bid-package', $project) }}" class="card-link inline-flex items-center font-semibold">
                         <span>View Details</span>
-                        <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-5 h-5 mr-2 view-details-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                         </svg>
                     </a>
@@ -281,7 +323,7 @@
                 <div class="text-left">
                     <a href="{{ route('projects.quality', $project) }}" class="card-link inline-flex items-center font-semibold">
                         <span>View Details</span>
-                        <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-5 h-5 mr-2 view-details-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                         </svg>
                     </a>
@@ -314,7 +356,7 @@
                 <div class="text-left">
                     <a href="{{ route('projects.testing', $project) }}" class="card-link inline-flex items-center font-semibold">
                         <span>View Details</span>
-                        <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-5 h-5 mr-2 view-details-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                         </svg>
                     </a>
@@ -348,7 +390,7 @@
                 <div class="text-left">
                     <a href="{{ route('projects.installation', $project) }}" class="card-link inline-flex items-center font-semibold">
                         <span>View Details</span>
-                        <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-5 h-5 mr-2 view-details-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                         </svg>
                     </a>
@@ -385,7 +427,7 @@
                 <div class="text-left">
                     <a href="{{ route('projects.documents', $project) }}" class="card-link inline-flex items-center font-semibold">
                         <span>View Details</span>
-                        <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-5 h-5 mr-2 view-details-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                         </svg>
                     </a>
@@ -417,7 +459,7 @@
                 <div class="text-left">
                     <a href="{{ route('projects.reports', $project) }}" class="card-link inline-flex items-center font-semibold">
                         <span>View Details</span>
-                        <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-5 h-5 mr-2 view-details-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                         </svg>
                     </a>
@@ -448,7 +490,7 @@
                 <div class="text-left">
                     <a href="{{ route('projects.safety', $project) }}" class="card-link inline-flex items-center font-semibold">
                         <span>View Details</span>
-                        <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-5 h-5 mr-2 view-details-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                         </svg>
                     </a>
@@ -481,7 +523,7 @@
                 <div class="text-left">
                     <a href="{{ route('projects.revenues', $project) }}" class="card-link inline-flex items-center font-semibold">
                         <span>View Details</span>
-                        <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-5 h-5 mr-2 view-details-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                         </svg>
                     </a>
