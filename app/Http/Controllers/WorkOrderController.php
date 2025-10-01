@@ -135,6 +135,14 @@ class WorkOrderController extends Controller
     {
         // التحقق من وجود المشروع
         $project = $request->get('project');
+
+        // التحقق من الصلاحيات
+        $user = auth()->user();
+        $createPermission = $project . '_create_work_order';
+        
+        if (!$user->hasPermission($createPermission) && !$user->isAdmin()) {
+            return redirect()->back()->with('error', 'ليس لديك صلاحية لإنشاء أمر عمل جديد');
+        }
         
         if (!$project || !in_array($project, ['riyadh', 'madinah'])) {
             return redirect()->route('project.selection');
@@ -872,10 +880,18 @@ class WorkOrderController extends Controller
      */
     public function edit(WorkOrder $workOrder)
     {
-        $workOrder->load('files');
-        
         // تحديد المشروع بناءً على المدينة
         $project = $workOrder->city === 'المدينة المنورة' ? 'madinah' : 'riyadh';
+        
+        // التحقق من الصلاحيات
+        $user = auth()->user();
+        $editPermission = $project . '_edit_work_order';
+        
+        if (!$user->hasPermission($editPermission) && !$user->isAdmin()) {
+            return redirect()->back()->with('error', 'ليس لديك صلاحية لتعديل أمر العمل');
+        }
+
+        $workOrder->load('files');
         
         return view('admin.work_orders.edit', compact('workOrder', 'project'));
     }
@@ -883,6 +899,17 @@ class WorkOrderController extends Controller
     // تحديث أمر عمل
     public function update(Request $request, WorkOrder $workOrder)
     {
+        // تحديد المشروع بناءً على المدينة
+        $project = $workOrder->city === 'المدينة المنورة' ? 'madinah' : 'riyadh';
+        
+        // التحقق من الصلاحيات
+        $user = auth()->user();
+        $editPermission = $project . '_edit_work_order';
+        
+        if (!$user->hasPermission($editPermission) && !$user->isAdmin()) {
+            return redirect()->back()->with('error', 'ليس لديك صلاحية لتعديل أمر العمل');
+        }
+
         // دعم التحديث الجزئي لحقول رقم أمر الشراء وصحيفة الإدخال ورقم المستخلص والحقول الجديدة
         if ($request->input('_section') === 'extract_number_group') {
             $updateData = $request->only([
@@ -4510,9 +4537,26 @@ class WorkOrderController extends Controller
         try {
             // التحقق من وجود المشروع
             $project = $request->get('project');
+
+            // التحقق من الصلاحيات
+            $user = auth()->user();
+            $revenuesPermission = $project . '_manage_revenues';
+            
+            if (!$user->hasPermission($revenuesPermission) && !$user->isAdmin()) {
+                return redirect()->back()->with('error', 'ليس لديك صلاحية للوصول إلى إدارة الإيرادات');
+            }
             
             if (!$project || !in_array($project, ['riyadh', 'madinah'])) {
                 return redirect()->route('project.selection');
+            }
+
+            // التحقق من الصلاحيات حسب المدينة
+            $user = auth()->user();
+            $requiredPermission = $project . '_manage_revenues';
+            $viewPermission = $project . '_view_revenues';
+
+            if (!$user->hasAnyPermission([$requiredPermission, $viewPermission]) && !$user->isAdmin()) {
+                return redirect()->back()->with('error', 'ليس لديك صلاحية للوصول إلى إدارة الإيرادات');
             }
             
             // تحديد المدينة بناءً على المشروع
@@ -4524,30 +4568,45 @@ class WorkOrderController extends Controller
                                           ->orderBy('created_at', 'desc')
                                           ->get();
             
-            // إحصائيات سريعة
-            $totalRevenues = $revenues->count();
-            $totalValue = $revenues->sum('extract_value');
+            // إحصائيات سريعة شاملة
+            $statistics = [
+                'totalRevenues' => $revenues->count(),
+                'totalExtractValue' => $revenues->sum('extract_value') ?: 0,
+                'totalTaxValue' => $revenues->sum('tax_value') ?: 0,
+                'totalPenalties' => $revenues->sum('penalties') ?: 0,
+                'totalFirstPaymentTax' => $revenues->sum('first_payment_tax') ?: 0,
+                'totalNetExtractValue' => $revenues->sum('net_extract_value') ?: 0,
+                'totalPaymentValue' => $revenues->sum('payment_value') ?: 0,
+                'remainingAmount' => ($revenues->sum('net_extract_value') ?: 0) - ($revenues->sum('payment_value') ?: 0),
+            ];
             
             \Log::info('Revenues page loaded', [
                 'project' => $project,
                 'city' => $city,
-                'total_revenues' => $totalRevenues,
-                'total_value' => $totalValue
+                'statistics' => $statistics
             ]);
             
-            return view('admin.work_orders.revenues', compact('revenues', 'totalRevenues', 'totalValue', 'project', 'projectName'));
+            return view('admin.work_orders.revenues', compact('revenues', 'statistics', 'project', 'projectName'));
             
         } catch (\Exception $e) {
             \Log::error('Error loading revenues page: ' . $e->getMessage());
             
             // في حالة الخطأ، إرجاع مجموعة فارغة
             $revenues = collect();
-            $totalRevenues = 0;
-            $totalValue = 0;
+            $statistics = [
+                'totalRevenues' => 0,
+                'totalExtractValue' => 0,
+                'totalTaxValue' => 0,
+                'totalPenalties' => 0,
+                'totalFirstPaymentTax' => 0,
+                'totalNetExtractValue' => 0,
+                'totalPaymentValue' => 0,
+                'remainingAmount' => 0,
+            ];
             $project = $request->get('project', 'riyadh');
             $projectName = $project === 'madinah' ? 'مشروع المدينة المنورة' : 'مشروع الرياض';
             
-            return view('admin.work_orders.revenues', compact('revenues', 'totalRevenues', 'totalValue', 'project', 'projectName'))
+            return view('admin.work_orders.revenues', compact('revenues', 'statistics', 'project', 'projectName'))
                 ->with('error', 'حدث خطأ في تحميل البيانات: ' . $e->getMessage());
         }
     }

@@ -112,6 +112,17 @@ class WorkOrderController extends Controller
     {
         try {
             $project = $request->get('project', 'riyadh');
+            
+            // التحقق من الصلاحيات
+            $user = auth()->user();
+            $exportPermission = $project . '_export_excel';
+            
+            if (!$user->hasPermission($exportPermission) && !$user->isAdmin()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'ليس لديك صلاحية لتصدير البيانات'
+                ], 403);
+            }
             $city = $project === 'madinah' ? 'المدينة المنورة' : 'الرياض';
             
             // بناء الاستعلام مع نفس الفلاتر
@@ -270,6 +281,17 @@ class WorkOrderController extends Controller
     {
         try {
             $project = $request->get('project', 'riyadh');
+            
+            // التحقق من الصلاحيات
+            $user = auth()->user();
+            $exportPermission = $project . '_export_excel';
+            
+            if (!$user->hasPermission($exportPermission) && !$user->isAdmin()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'ليس لديك صلاحية لتصدير البيانات'
+                ], 403);
+            }
             $city = $project === 'madinah' ? 'المدينة المنورة' : 'الرياض';
             
             // بناء الاستعلام مع نفس الفلاتر
@@ -395,6 +417,17 @@ class WorkOrderController extends Controller
     {
         try {
             $project = $request->get('project', 'riyadh');
+            
+            // التحقق من الصلاحيات
+            $user = auth()->user();
+            $exportPermission = $project . '_export_excel';
+            
+            if (!$user->hasPermission($exportPermission) && !$user->isAdmin()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'ليس لديك صلاحية لتصدير البيانات'
+                ], 403);
+            }
             $city = $project === 'madinah' ? 'المدينة المنورة' : 'الرياض';
             
             // بناء الاستعلام مع نفس الفلاتر
@@ -536,6 +569,17 @@ class WorkOrderController extends Controller
     {
         try {
             $project = $request->get('project', 'riyadh');
+            
+            // التحقق من الصلاحيات
+            $user = auth()->user();
+            $exportPermission = $project . '_export_excel';
+            
+            if (!$user->hasPermission($exportPermission) && !$user->isAdmin()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'ليس لديك صلاحية لتصدير البيانات'
+                ], 403);
+            }
             $city = $project === 'madinah' ? 'المدينة المنورة' : 'الرياض';
             
             // بناء الاستعلام مع نفس الفلاتر
@@ -656,6 +700,17 @@ class WorkOrderController extends Controller
     {
         try {
             $project = $request->get('project', 'riyadh');
+            
+            // التحقق من الصلاحيات
+            $user = auth()->user();
+            $exportPermission = $project . '_export_excel';
+            
+            if (!$user->hasPermission($exportPermission) && !$user->isAdmin()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'ليس لديك صلاحية لتصدير البيانات'
+                ], 403);
+            }
             $city = $project === 'madinah' ? 'المدينة المنورة' : 'الرياض';
             
             // بناء الاستعلام مع نفس الفلاتر

@@ -5,6 +5,11 @@
 @push('styles')
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <style>
+    /* Custom column width for statistics cards */
+    .col-md-1-5 {
+        width: 12.5%;
+    }
+
     /* Custom styles for revenues page */
     .card {
         border: none;
@@ -306,39 +311,183 @@
         <div class="col-12">
             <div class="card shadow">
                 <div class="card-header d-flex justify-content-between align-items-center bg-primary text-white">
-                    <div class="d-flex align-items-center">
+                    <div class="d-flex align-items-center justify-content-between w-100">
+                        <div class="d-flex align-items-center">
+                            <span class="fs-5">
+                                <i class="fas fa-chart-line me-2"></i>
+                                إدارة الإيرادات
+                            </span>
+                            
+                            @if(isset($projectName))
+                            <span class="badge bg-info text-white ms-2">
+                                <i class="fas fa-map-marker-alt me-1"></i>
+                                {{ $projectName }}
+                            </span>
+                            @endif
+                        </div>
+                        
                         <!-- زر العودة إلى أوامر العمل -->
                         @if(isset($project))
                         <a href="{{ route('admin.work-orders.index', ['project' => $project]) }}" 
-                           class="btn btn-outline-light btn-sm me-3" 
+                           class="btn btn-outline-light btn-sm" 
                            title="العودة إلى أوامر العمل">
                             <i class="fas fa-arrow-right me-1"></i>
                             عودة لأوامر العمل
                         </a>
                         @endif
-                        
-                        <span class="fs-5">
-                            <i class="fas fa-chart-line me-2"></i>
-                            إدارة الإيرادات
-                        </span>
-                        <span class="badge bg-light text-dark ms-2">
-                            <i class="fas fa-database me-1"></i>
-                            قاعدة البيانات
-                        </span>
-                        @if(isset($projectName))
-                        <span class="badge bg-info text-white ms-2">
-                            <i class="fas fa-map-marker-alt me-1"></i>
-                            {{ $projectName }}
-                        </span>
-                        @endif
                     </div>
-                    <div class="auto-save-status">
-                        <i class="fas fa-save me-1"></i>
-                        حفظ تلقائي مُفعل
-                    </div>
+                    
                 </div>
 
                 <div class="card-body p-0">
+                    <!-- Statistics Cards Section -->
+                    <div class="py-2 px-3 bg-light">
+                        <div class="row g-2">
+                            <!-- إجمالي عدد المستخلصات -->
+                            <div class="col-md-1-5">
+                                <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);">
+                                    <div class="card-body p-2 text-white">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h6 class="mb-1 opacity-75" style="font-size: 0.7rem;">عدد المستخلصات</h6>
+                                                <h5 class="mb-0 fw-bold">{{ $statistics['totalRevenues'] }}</h5>
+                                            </div>
+                                            <div class="bg-white bg-opacity-25 p-2 rounded-circle">
+                                                <i class="fas fa-file-invoice"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- إجمالي قيمة المستخلصات -->
+                            <div class="col-md-1-5">
+                                <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #2a5298 0%, #1e3c72 100%);">
+                                    <div class="card-body p-1 text-white">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h6 class="mb-1 opacity-75" style="font-size: 0.65rem;">إجمالي قيمة المستخلصات</h6>
+                                                <h6 class="mb-0 fw-bold" style="font-size: 0.75rem;">{{ number_format($statistics['totalExtractValue'], 2) }}</h6>
+                                                <small class="opacity-75" style="font-size: 0.6rem;">ريال سعودي</small>
+                                            </div>
+                                            <div class="bg-white bg-opacity-25 p-1 rounded-circle">
+                                                <i class="fas fa-money-bill-wave fa-sm"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- إجمالي الضرائب -->
+                            <div class="col-md-1-5">
+                                <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);">
+                                    <div class="card-body p-1 text-white">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h6 class="mb-1 opacity-75" style="font-size: 0.65rem;">إجمالي الضرائب</h6>
+                                                <h6 class="mb-0 fw-bold" style="font-size: 0.75rem;">{{ number_format($statistics['totalTaxValue'], 2) }}</h6>
+                                                <small class="opacity-75" style="font-size: 0.6rem;">ريال سعودي</small>
+                                            </div>
+                                            <div class="bg-white bg-opacity-25 p-1 rounded-circle">
+                                                <i class="fas fa-percentage fa-sm"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- إجمالي الغرامات -->
+                            <div class="col-md-1-5">
+                                <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #2a5298 0%, #1e3c72 100%);">
+                                    <div class="card-body p-1 text-white">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h6 class="mb-1 opacity-75" style="font-size: 0.65rem;">إجمالي الغرامات</h6>
+                                                <h6 class="mb-0 fw-bold" style="font-size: 0.75rem;">{{ number_format($statistics['totalPenalties'], 2) }}</h6>
+                                                <small class="opacity-75" style="font-size: 0.6rem;">ريال سعودي</small>
+                                            </div>
+                                            <div class="bg-white bg-opacity-25 p-1 rounded-circle">
+                                                <i class="fas fa-exclamation-triangle fa-sm"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- صافي قيمة المستخلصات -->
+                            <div class="col-md-1-5">
+                                <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);">
+                                    <div class="card-body p-1 text-white">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h6 class="mb-1 opacity-75" style="font-size: 0.65rem;">صافي قيمة المستخلصات</h6>
+                                                <h6 class="mb-0 fw-bold" style="font-size: 0.75rem;">{{ number_format($statistics['totalNetExtractValue'], 2) }}</h6>
+                                                <small class="opacity-75" style="font-size: 0.6rem;">ريال سعودي</small>
+                                            </div>
+                                            <div class="bg-white bg-opacity-25 p-1 rounded-circle">
+                                                <i class="fas fa-calculator fa-sm"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- إجمالي المدفوعات -->
+                            <div class="col-md-1-5">
+                                <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #2a5298 0%, #1e3c72 100%);">
+                                    <div class="card-body p-1 text-white">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h6 class="mb-1 opacity-75" style="font-size: 0.65rem;">إجمالي المدفوعات</h6>
+                                                <h6 class="mb-0 fw-bold" style="font-size: 0.75rem;">{{ number_format($statistics['totalPaymentValue'], 2) }}</h6>
+                                                <small class="opacity-75" style="font-size: 0.6rem;">ريال سعودي</small>
+                                            </div>
+                                            <div class="bg-white bg-opacity-25 p-1 rounded-circle">
+                                                <i class="fas fa-hand-holding-usd fa-sm"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- المبلغ المتبقي -->
+                            <div class="col-md-1-5">
+                                <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);">
+                                    <div class="card-body p-1 text-white">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h6 class="mb-1 opacity-75" style="font-size: 0.65rem;">المبلغ المتبقي</h6>
+                                                <h6 class="mb-0 fw-bold" style="font-size: 0.75rem;">{{ number_format($statistics['remainingAmount'], 2) }}</h6>
+                                                <small class="opacity-75" style="font-size: 0.6rem;">ريال سعودي</small>
+                                            </div>
+                                            <div class="bg-white bg-opacity-25 p-1 rounded-circle">
+                                                <i class="fas fa-hourglass-half fa-sm"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ضريبة الدفعة الأولى -->
+                            <div class="col-md-1-5">
+                                <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #2a5298 0%, #1e3c72 100%);">
+                                    <div class="card-body p-1 text-white">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h6 class="mb-1 opacity-75" style="font-size: 0.65rem;">ضريبة الدفعة الأولى</h6>
+                                                <h6 class="mb-0 fw-bold" style="font-size: 0.75rem;">{{ number_format($statistics['totalFirstPaymentTax'], 2) }}</h6>
+                                                <small class="opacity-75" style="font-size: 0.6rem;">ريال سعودي</small>
+                                            </div>
+                                            <div class="bg-white bg-opacity-25 p-1 rounded-circle">
+                                                <i class="fas fa-file-invoice-dollar fa-sm"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- عدد النتائج وعناصر التحكم -->
                     <div class="d-flex justify-content-between align-items-center p-3 bg-light border-bottom">
                         <div class="text-muted">
@@ -347,6 +496,7 @@
                         </div>
                         
                         <div class="d-flex gap-2">
+                            @if(auth()->user()->hasPermission($project . '_manage_revenues') || auth()->user()->isAdmin())
                             <!-- زر استيراد Excel -->
                             <div class="position-relative">
                                 <input type="file" id="excelImport" accept=".xlsx,.xls" style="display: none;" onchange="importExcel(this)">
@@ -367,6 +517,7 @@
                                 <i class="fas fa-plus me-1"></i>
                                 إضافة صف جديد
                             </button>
+                            @endif
                         </div>
                     </div>
 

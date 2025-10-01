@@ -698,9 +698,7 @@ function resetCountdown(workOrderId) {
                             </a>
                             @endif
                             
-                            @if(($isRiyadh && auth()->user()->hasPermission('riyadh_revenues')) || 
-                                ($isMadinah && auth()->user()->hasPermission('madinah_revenues')) ||
-                                auth()->user()->hasPermission('view_revenues'))
+                            @if(auth()->user()->hasPermission($project . '_manage_revenues') || auth()->user()->isAdmin())
                             <a href="{{ route('admin.work-orders.revenues', ['project' => $project ?? 'riyadh']) }}" class="btn btn-success btn-responsive" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); border: none; color: white;">
                                 <i class="fas fa-chart-line me-1"></i>
                                 <span class="btn-text">الإيرادات</span>
@@ -712,14 +710,18 @@ function resetCountdown(workOrderId) {
                         <!-- أزرار التصدير والإنشاء على اليمين -->
                         <div class="col-12 col-lg-4">
                             <div class="d-flex flex-wrap gap-2 justify-content-center justify-content-lg-end align-items-center">
+                                @if(auth()->user()->hasPermission($project . '_export_excel') || auth()->user()->isAdmin())
                                 <a href="{{ route('admin.work-orders.export.excel', ['project' => $project]) }}" class="btn btn-success btn-responsive">
                                     <i class="fas fa-file-excel me-1"></i>
                                     <span class="btn-text">تصدير إكسل</span>
                                 </a>
+                                @endif
+                                @if(auth()->user()->hasPermission($project . '_create_work_order') || auth()->user()->isAdmin())
                                 <a href="{{ route('admin.work-orders.create', ['project' => $project]) }}" class="btn btn-primary btn-responsive">
                                     <i class="fas fa-plus me-1"></i>
                                     <span class="btn-text">إنشاء أمر عمل جديد</span>
                                 </a>
+                                @endif
                             </div>
                         </div>
                     </div>
@@ -1378,7 +1380,9 @@ function resetCountdown(workOrderId) {
                                         <td>
                                             <div class="btn-group" role="group">
                                                 <a href="{{ route('admin.work-orders.show', $workOrder) }}" class="btn btn-sm btn-info">عرض</a>
+                                                @if(auth()->user()->hasPermission($project . '_edit_work_order') || auth()->user()->isAdmin())
                                                 <a href="{{ route('admin.work-orders.edit', $workOrder) }}" class="btn btn-sm btn-primary">تعديل</a>
+                                                @endif
                                                 
                                                 @if(auth()->user()->is_admin)
                                                     <form action="{{ route('admin.work-orders.destroy', $workOrder) }}" method="POST" class="d-inline" onsubmit="return confirm('هل أنت متأكد من حذف هذا العنصر؟');">
