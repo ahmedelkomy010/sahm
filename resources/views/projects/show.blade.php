@@ -200,32 +200,30 @@
         </div>
         <div class="card-grid">
             
-
-        
-                        <!-- Supplying Card -->
-            <div class="project-card rounded-2xl p-8" style="--card-color: #10B981; --card-bg: #D1FAE5;">
+            <!-- Bid Package Card -->
+            <div class="project-card rounded-2xl p-8" style="--card-color: #F97316; --card-bg: #FED7AA;">
                 <div class="flex items-center mb-6">
                     <div class="icon-wrapper w-16 h-16 rounded-2xl flex items-center justify-center mr-4">
-                        <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                        <svg class="w-8 h-8 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
                         </svg>
                     </div>
                     <div class="text-left">
-                        <h3 class="text-xl font-bold text-gray-900 mb-1 text-left">Supplying</h3>
-                        <p class="text-gray-600 text-sm text-left">Materials & equipment management</p>
+                        <h3 class="text-xl font-bold text-gray-900 mb-1 text-left">Bid Package</h3>
+                        <p class="text-gray-600 text-sm text-left">Tender documents & specifications</p>
                     </div>
                 </div>
                 <div class="mb-6">
                     <div class="flex justify-between items-center mb-2">
                         <span class="text-sm text-gray-500">Completion</span>
-                        <span class="text-sm font-semibold text-green-600">0%</span>
+                        <span class="text-sm font-semibold text-orange-600">0%</span>
                     </div>
                     <div class="w-full bg-gray-200 rounded-full h-2">
-                        <div class="bg-green-600 h-2 rounded-full" style="width: 0%"></div>
+                        <div class="bg-orange-600 h-2 rounded-full" style="width: 0%"></div>
                     </div>
                 </div>
                 <div class="text-left">
-                    <a href="{{ route('projects.supplying', $project) }}" class="card-link inline-flex items-center font-semibold">
+                    <a href="{{ route('projects.bid-package', $project) }}" class="card-link inline-flex items-center font-semibold">
                         <span>View Details</span>
                         <svg class="w-5 h-5 mr-2 view-details-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
@@ -233,7 +231,71 @@
                     </a>
                 </div>
             </div>
-            
+
+            <!-- Study Card -->
+            <div class="project-card rounded-2xl p-8" style="--card-color: #7C3AED; --card-bg: #EDE9FE;">
+                <div class="flex items-center mb-6">
+                    <div class="icon-wrapper w-16 h-16 rounded-2xl flex items-center justify-center mr-4">
+                        <svg class="w-8 h-8 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                        </svg>
+                    </div>
+                    <div class="text-left">
+                        <h3 class="text-xl font-bold text-gray-900 mb-1 text-left">Study</h3>
+                        <p class="text-gray-600 text-sm text-left">Feasibility & analysis</p>
+                    </div>
+                </div>
+                <div class="mb-6">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-sm text-gray-500">Completion</span>
+                        <span class="text-sm font-semibold text-violet-600">0%</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div class="bg-violet-600 h-2 rounded-full" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div class="text-left">
+                    <a href="{{ route('projects.study', $project) }}" class="card-link inline-flex items-center font-semibold">
+                        <span>View Details</span>
+                        <svg class="w-5 h-5 mr-2 view-details-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Clarification Card -->
+            <div class="project-card rounded-2xl p-8" style="--card-color: #EC4899; --card-bg: #FCE7F3;">
+                <div class="flex items-center mb-6">
+                    <div class="icon-wrapper w-16 h-16 rounded-2xl flex items-center justify-center mr-4">
+                        <svg class="w-8 h-8 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
+                        </svg>
+                    </div>
+                    <div class="text-left">
+                        <h3 class="text-xl font-bold text-gray-900 mb-1 text-left">Clarification</h3>
+                        <p class="text-gray-600 text-sm text-left">Queries & clarifications</p>
+                    </div>
+                </div>
+                <div class="mb-6">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-sm text-gray-500">Resolved</span>
+                        <span class="text-sm font-semibold text-pink-600">0%</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div class="bg-pink-600 h-2 rounded-full" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div class="text-left">
+                    <a href="{{ route('projects.clarification', $project) }}" class="card-link inline-flex items-center font-semibold">
+                        <span>View Details</span>
+                        <svg class="w-5 h-5 mr-2 view-details-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+
             <!-- Design Card -->
             <div class="project-card rounded-2xl p-8" style="--card-color: #3B82F6; --card-bg: #DBEAFE;">
                 <div class="flex items-center mb-6">
@@ -265,39 +327,103 @@
                     </a>
                 </div>
             </div>
-
-            <!-- Bid Package Card -->
-        <div class="project-card rounded-2xl p-8" style="--card-color: #F97316; --card-bg: #FED7AA;">
+        
+                        <!-- Supplying Card -->
+            <div class="project-card rounded-2xl p-8" style="--card-color: #10B981; --card-bg: #D1FAE5;">
                 <div class="flex items-center mb-6">
                     <div class="icon-wrapper w-16 h-16 rounded-2xl flex items-center justify-center mr-4">
-                        <svg class="w-8 h-8 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                        <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
                         </svg>
                     </div>
                     <div class="text-left">
-                        <h3 class="text-xl font-bold text-gray-900 mb-1 text-left">Bid Package</h3>
-                        <p class="text-gray-600 text-sm text-left">Tender documents & specifications</p>
+                        <h3 class="text-xl font-bold text-gray-900 mb-1 text-left">Supply Chain</h3>
+                        <p class="text-gray-600 text-sm text-left">Materials & equipment management</p>
                     </div>
                 </div>
                 <div class="mb-6">
                     <div class="flex justify-between items-center mb-2">
                         <span class="text-sm text-gray-500">Completion</span>
-                        <span class="text-sm font-semibold text-orange-600">0%</span>
+                        <span class="text-sm font-semibold text-green-600">0%</span>
                     </div>
                     <div class="w-full bg-gray-200 rounded-full h-2">
-                        <div class="bg-orange-600 h-2 rounded-full" style="width: 0%"></div>
+                        <div class="bg-green-600 h-2 rounded-full" style="width: 0%"></div>
                     </div>
                 </div>
                 <div class="text-left">
-                    <a href="{{ route('projects.bid-package', $project) }}" class="card-link inline-flex items-center font-semibold">
+                    <a href="{{ route('projects.supplying', $project) }}" class="card-link inline-flex items-center font-semibold">
                         <span>View Details</span>
                         <svg class="w-5 h-5 mr-2 view-details-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                         </svg>
                     </a>
                 </div>
-                        </div>
-                        
+            </div>
+
+            <!-- Testing Card -->
+            <div class="project-card rounded-2xl p-8" style="--card-color: #F59E0B; --card-bg: #FEF3C7;">
+                <div class="flex items-center mb-6">
+                    <div class="icon-wrapper w-16 h-16 rounded-2xl flex items-center justify-center mr-4">
+                        <svg class="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <div class="text-left">
+                        <h3 class="text-xl font-bold text-gray-900 mb-1 text-left">Testing</h3>
+                        <p class="text-gray-600 text-sm text-left">Quality testing & inspections</p>
+                    </div>
+                </div>
+                <div class="mb-6">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-sm text-gray-500">Completion</span>
+                        <span class="text-sm font-semibold text-yellow-600">0%</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div class="bg-yellow-600 h-2 rounded-full" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div class="text-left">
+                    <a href="{{ route('projects.testing', $project) }}" class="card-link inline-flex items-center font-semibold">
+                        <span>View Details</span>
+                        <svg class="w-5 h-5 mr-2 view-details-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Reports Card -->
+            <div class="project-card rounded-2xl p-8" style="--card-color: #14B8A6; --card-bg: #CCFBF1;">
+                <div class="flex items-center mb-6">
+                    <div class="icon-wrapper w-16 h-16 rounded-2xl flex items-center justify-center mr-4">
+                        <svg class="w-8 h-8 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                    </div>
+                    <div class="text-left">
+                        <h3 class="text-xl font-bold text-gray-900 mb-1 text-left">Reports</h3>
+                        <p class="text-gray-600 text-sm text-left">Progress reports & analytics</p>
+                    </div>
+                </div>
+                <div class="mb-6">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-sm text-gray-500">Generated</span>
+                        <span class="text-sm font-semibold text-teal-600">0</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div class="bg-teal-600 h-2 rounded-full" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div class="text-left">
+                    <a href="{{ route('projects.reports', $project) }}" class="card-link inline-flex items-center font-semibold">
+                        <span>View Details</span>
+                        <svg class="w-5 h-5 mr-2 view-details-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+
             <!-- Quality Card -->
             <div class="project-card rounded-2xl p-8" style="--card-color: #6366F1; --card-bg: #E0E7FF;">
                 <div class="flex items-center mb-6">
@@ -330,142 +456,7 @@
                 </div>
             </div>
 
-
-            <!-- Testing Card -->
-            <div class="project-card rounded-2xl p-8" style="--card-color: #F59E0B; --card-bg: #FEF3C7;">
-                <div class="flex items-center mb-6">
-                    <div class="icon-wrapper w-16 h-16 rounded-2xl flex items-center justify-center mr-4">
-                        <svg class="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                        </div>
-                        <div class="text-left">
-                        <h3 class="text-xl font-bold text-gray-900 mb-1 text-left">Testing</h3>
-                        <p class="text-gray-600 text-sm text-left">Quality testing & inspections</p>
-                    </div>
-                </div>
-                <div class="mb-6">
-                    <div class="flex justify-between items-center mb-2">
-                        <span class="text-sm text-gray-500">Completion</span>
-                        <span class="text-sm font-semibold text-yellow-600">0%</span>
-                        </div>
-                    <div class="w-full bg-gray-200 rounded-full h-2">
-                        <div class="bg-yellow-600 h-2 rounded-full" style="width: 0%"></div>
-                    </div>
-                </div>
-                <div class="text-left">
-                    <a href="{{ route('projects.testing', $project) }}" class="card-link inline-flex items-center font-semibold">
-                        <span>View Details</span>
-                        <svg class="w-5 h-5 mr-2 view-details-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                        </svg>
-                    </a>
-                    </div>
-                </div>
-
-           
-            
-            <!-- Installation Card -->
-            <div class="project-card rounded-2xl p-8" style="--card-color: #8B5CF6; --card-bg: #EDE9FE;">
-                <div class="flex items-center mb-6">
-                    <div class="icon-wrapper w-16 h-16 rounded-2xl flex items-center justify-center mr-4">
-                        <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
-                        </svg>
-                    </div>
-                        <div class="text-left">
-                        <h3 class="text-xl font-bold text-gray-900 mb-1 text-left">Installation</h3>
-                        <p class="text-gray-600 text-sm text-left">Construction & implementation</p>
-                    </div>
-                </div>
-                <div class="mb-6">
-                    <div class="flex justify-between items-center mb-2">
-                        <span class="text-sm text-gray-500">Completion</span>
-                        <span class="text-sm font-semibold text-purple-600">0%</span>
-                    </div>
-                    <div class="w-full bg-gray-200 rounded-full h-2">
-                        <div class="bg-purple-600 h-2 rounded-full" style="width: 0%"></div>
-                    </div>
-                </div>
-                <div class="text-left">
-                    <a href="{{ route('projects.installation', $project) }}" class="card-link inline-flex items-center font-semibold">
-                        <span>View Details</span>
-                        <svg class="w-5 h-5 mr-2 view-details-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                        </svg>
-                    </a>
-                </div>
-            </div>
-            
-
-            
-            
-            
-
-                 <!-- Documents Card -->
-             <div class="project-card rounded-2xl p-8" style="--card-color: #6B7280; --card-bg: #F3F4F6;">
-                <div class="flex items-center mb-6">
-                    <div class="icon-wrapper w-16 h-16 rounded-2xl flex items-center justify-center mr-4">
-                        <svg class="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                        </svg>
-                    </div>
-                    <div class="text-left">
-                        <h3 class="text-xl font-bold text-gray-900 mb-1 text-left">Documents</h3>
-                        <p class="text-gray-600 text-sm text-left">Project documentation & files</p>
-                    </div>
-                </div>
-                <div class="mb-6">
-                    <div class="flex justify-between items-center mb-2">
-                        <span class="text-sm text-gray-500">Files</span>
-                        <span class="text-sm font-semibold text-gray-600">0</span>
-                    </div>
-                    <div class="w-full bg-gray-200 rounded-full h-2">
-                        <div class="bg-gray-600 h-2 rounded-full" style="width: 0%"></div>
-                    </div>
-                </div>
-                <div class="text-left">
-                    <a href="{{ route('projects.documents', $project) }}" class="card-link inline-flex items-center font-semibold">
-                        <span>View Details</span>
-                        <svg class="w-5 h-5 mr-2 view-details-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                        </svg>
-                    </a>
-                </div>
-            </div>
-
-            <!-- Reports Card -->
-            <div class="project-card rounded-2xl p-8" style="--card-color: #14B8A6; --card-bg: #CCFBF1;">
-                <div class="flex items-center mb-6">
-                    <div class="icon-wrapper w-16 h-16 rounded-2xl flex items-center justify-center mr-4">
-                        <svg class="w-8 h-8 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                        </svg>
-                    </div>
-                    <div class="text-left">
-                        <h3 class="text-xl font-bold text-gray-900 mb-1 text-left">Reports</h3>
-                        <p class="text-gray-600 text-sm text-left">Progress reports & analytics</p>
-                    </div>
-                </div>
-                <div class="mb-6">
-                    <div class="flex justify-between items-center mb-2">
-                        <span class="text-sm text-gray-500">Generated</span>
-                        <span class="text-sm font-semibold text-teal-600">0</span>
-                    </div>
-                    <div class="w-full bg-gray-200 rounded-full h-2">
-                        <div class="bg-teal-600 h-2 rounded-full" style="width: 0%"></div>
-                        </div>
-                </div>
-                <div class="text-left">
-                    <a href="{{ route('projects.reports', $project) }}" class="card-link inline-flex items-center font-semibold">
-                        <span>View Details</span>
-                        <svg class="w-5 h-5 mr-2 view-details-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                        </svg>
-                    </a>
-                </div>
-                </div>
-            <!-- Safety Card -->
+            <!-- H.S.E Card -->
             <div class="project-card rounded-2xl p-8" style="--card-color: #EF4444; --card-bg: #FEE2E2;">
                 <div class="flex items-center mb-6">
                     <div class="icon-wrapper w-16 h-16 rounded-2xl flex items-center justify-center mr-4">
@@ -497,7 +488,40 @@
                 </div>
             </div>
 
-                <!-- Revenues Card -->
+
+            <!-- Documents Card -->
+            <div class="project-card rounded-2xl p-8" style="--card-color: #6B7280; --card-bg: #F3F4F6;">
+                <div class="flex items-center mb-6">
+                    <div class="icon-wrapper w-16 h-16 rounded-2xl flex items-center justify-center mr-4">
+                        <svg class="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                    </div>
+                    <div class="text-left">
+                        <h3 class="text-xl font-bold text-gray-900 mb-1 text-left">Documents</h3>
+                        <p class="text-gray-600 text-sm text-left">Project documentation & files</p>
+                    </div>
+                </div>
+                <div class="mb-6">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-sm text-gray-500">Files</span>
+                        <span class="text-sm font-semibold text-gray-600">0</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div class="bg-gray-600 h-2 rounded-full" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div class="text-left">
+                    <a href="{{ route('projects.documents', $project) }}" class="card-link inline-flex items-center font-semibold">
+                        <span>View Details</span>
+                        <svg class="w-5 h-5 mr-2 view-details-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Revenues Card -->
             <div class="project-card rounded-2xl p-8" style="--card-color: #059669; --card-bg: #D1FAE5;">
                 <div class="flex items-center mb-6">
                     <div class="icon-wrapper w-16 h-16 rounded-2xl flex items-center justify-center mr-4">
@@ -514,12 +538,11 @@
                     <div class="flex justify-between items-center mb-2">
                         <span class="text-sm text-gray-500">Collection Rate</span>
                         <span class="text-sm font-semibold text-emerald-600">0%</span>
-                        </div>
+                    </div>
                     <div class="w-full bg-gray-200 rounded-full h-2">
                         <div class="bg-emerald-600 h-2 rounded-full" style="width: 0%"></div>
                     </div>
                 </div>
-
                 <div class="text-left">
                     <a href="{{ route('projects.revenues', $project) }}" class="card-link inline-flex items-center font-semibold">
                         <span>View Details</span>
@@ -529,7 +552,6 @@
                     </a>
                 </div>
             </div>
-            
 
         </div>
     </div>

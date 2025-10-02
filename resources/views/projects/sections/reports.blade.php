@@ -212,8 +212,8 @@
             <div class="reports-card rounded-2xl p-8" style="--card-color: #ef4444;">
                 <div class="flex items-center mb-6 justify-end">
                     <div class="text-right mr-4">
-                        <h3 class="text-xl font-bold text-gray-900 mb-1">General Design Files</h3>
-                        <p class="text-gray-600 text-sm">General design documents & specifications</p>
+                        <h3 class="text-xl font-bold text-gray-900 mb-1">General  Files</h3>
+                        <p class="text-gray-600 text-sm">General  documents</p>
                     </div>
                     <div class="w-16 h-16 bg-red-100 rounded-2xl flex items-center justify-center">
                         <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">

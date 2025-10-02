@@ -190,8 +190,8 @@
                         </svg>
                     </div>
                     <div>
-                        <h3 class="text-xl font-bold text-gray-900 mb-1">General Design Files</h3>
-                        <p class="text-gray-600 text-sm">General installation design & planning documents</p>
+                        <h3 class="text-xl font-bold text-gray-900 mb-1">General Files</h3>
+                        <p class="text-gray-600 text-sm">General installation & planning documents</p>
                     </div>
                 </div>
                 

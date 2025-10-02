@@ -328,10 +328,7 @@
                 <i class="fas fa-calendar-times text-muted fa-4x mb-3"></i>
                 <h4 class="text-muted mb-2">لا توجد سجلات تنفيذ يومي</h4>
                 <p class="text-muted mb-4">لم يتم تسجيل أي تنفيذ يومي لبنود العمل أو إضافة ملاحظات تنفيذ بعد.</p>
-                <a href="{{ route('admin.work-orders.execution', $workOrder) }}" class="btn btn-primary">
-                    <i class="fas fa-tools me-1"></i>
-                    انتقل إلى صفحة التنفيذ
-                </a>
+               
             </div>
         </div>
     @endif

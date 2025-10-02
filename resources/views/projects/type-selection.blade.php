@@ -281,6 +281,16 @@
                         <span class="text-sm font-medium">{{ $project->location }}</span>
                     </div>
                     
+                    <!-- Project Amount -->
+                    <div class="flex items-center text-gray-600 mb-2">
+                        <svg class="w-4 h-4 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <span class="text-sm font-medium">
+                            {{ $project->amount ? number_format($project->amount, 2) . ' ريال سعودي' : 'لم يتم تحديد المبلغ' }}
+                        </span>
+                    </div>
+
                     @if($project->description)
                     <div class="flex items-start text-gray-600">
                         <svg class="w-4 h-4 mr-3 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -301,11 +311,17 @@
                         Project Timeline
                     </h4>
                     
-                    <div class="grid grid-cols-2 gap-3 text-xs text-left">
+                    <div class="grid grid-cols-5 gap-2 text-xs text-left">
                         <div class="flex flex-col items-start">
                             <span class="text-gray-500 uppercase tracking-wide">SIGN Date</span>
                             <span class="font-medium text-gray-700">
                                 {{ $project->srgn_date ? $project->srgn_date->format('M d, Y') : 'Not Set' }}
+                            </span>
+                        </div>
+                        <div class="flex flex-col items-start">
+                            <span class="text-gray-500 uppercase tracking-wide text-[0.65rem]">KICK OFF MEETING Date</span>
+                            <span class="font-medium text-gray-700">
+                                {{ $project->kick_off_date ? $project->kick_off_date->format('M d, Y') : 'Not Set' }}
                             </span>
                         </div>
                         <div class="flex flex-col items-start">

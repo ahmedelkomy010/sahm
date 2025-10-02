@@ -864,9 +864,7 @@
                         <div class="text-center py-4">
                             <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
                             <h5 class="text-muted">لا توجد مواد مضافة لهذا أمر العمل</h5>
-                            <a href="{{ route('admin.work-orders.materials.create', $workOrder) }}" class="btn btn-primary">
-                                <i class="fas fa-plus"></i> إضافة أول مادة
-                            </a>
+                           
                         </div>
                     @endif
                 </div>

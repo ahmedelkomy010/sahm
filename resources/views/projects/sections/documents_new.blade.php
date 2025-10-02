@@ -3,7 +3,7 @@
 @push('styles')
 <style>
     .header-gradient {
-        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
         position: relative;
         overflow: hidden;
     }
@@ -42,26 +42,26 @@
                 <div class="mb-6">
                     <div class="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mx-auto mb-6">
                         <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                         </svg>
                     </div>
-                    <h1 class="text-4xl font-bold mb-3">Supply Chain</h1>
-                    <p class="text-green-100 text-lg">{{ $project->name }}</p>
-                    <p class="text-green-100 text-sm mt-2">Contract: {{ $project->contract_number }}</p>
+                    <h1 class="text-4xl font-bold mb-3">Documents</h1>
+                    <p class="text-gray-100 text-lg">{{ $project->name }}</p>
+                    <p class="text-gray-100 text-sm mt-2">Contract: {{ $project->contract_number }}</p>
                 </div>
-
+                
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto">
                     <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4">
-                        <p class="text-green-100 text-sm mb-1">Project Type</p>
+                        <p class="text-gray-100 text-sm mb-1">Project Type</p>
                         <p class="font-semibold text-lg">{{ $project->getProjectTypeText() }}</p>
                     </div>
                     <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4">
-                        <p class="text-green-100 text-sm mb-1">Location</p>
+                        <p class="text-gray-100 text-sm mb-1">Location</p>
                         <p class="font-semibold text-lg">{{ $project->location }}</p>
                     </div>
                 </div>
+                </div>
             </div>
-        </div>
 
         <!-- Success/Error Messages -->
         @if(session('success'))
@@ -69,7 +69,7 @@
             <div class="flex items-center">
                 <svg class="w-6 h-6 text-green-500 ml-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
+                        </svg>
                 <p class="text-green-700 font-medium">{{ session('success') }}</p>
             </div>
         </div>
@@ -80,7 +80,7 @@
             <div class="flex items-center">
                 <svg class="w-6 h-6 text-red-500 ml-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
+                        </svg>
                 <p class="text-red-700 font-medium">{{ session('error') }}</p>
             </div>
         </div>
@@ -93,17 +93,17 @@
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                     <!-- Create Folder -->
-                    <div class="bg-gradient-to-br from-green-50 to-white rounded-xl p-6 border-2 border-green-100">
+                    <div class="bg-gradient-to-br from-orange-50 to-white rounded-xl p-6 border-2 border-orange-100">
                         <div class="flex items-center mb-4">
-                            <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center ml-3">
-                                <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center ml-3">
+                                <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"></path>
                                 </svg>
                             </div>
                             <h3 class="text-lg font-semibold text-gray-900">إنشاء مجلد جديد</h3>
                         </div>
                         
-                        <form action="{{ route('projects.supplying.create-folder', $project) }}" method="POST" class="space-y-4">
+                        <form action="{{ route('projects.bid-package.create-folder', $project) }}" method="POST" class="space-y-4">
                             @csrf
                             <div>
                                 <label for="folder_name" class="block text-sm font-medium text-gray-700 mb-2 text-right">اسم المجلد</label>
@@ -111,8 +111,8 @@
                                        id="folder_name" 
                                        name="folder_name" 
                                        required
-                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-right"
-                                       placeholder="مثال: أوامر الشراء">
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-right"
+                                       placeholder="مثال: المواصفات الفنية">
                                 @error('folder_name')
                                     <p class="mt-1 text-sm text-red-600 text-right">{{ $message }}</p>
                                 @enderror
@@ -123,12 +123,12 @@
                                 <textarea id="folder_description" 
                                           name="folder_description" 
                                           rows="2"
-                                          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-right"
+                                          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-right"
                                           placeholder="وصف المجلد..."></textarea>
                             </div>
                             
                             <button type="submit" 
-                                    class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg shadow-sm transition duration-150 ease-in-out flex items-center justify-center">
+                                    class="w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold py-3 px-6 rounded-lg shadow-sm transition duration-150 ease-in-out flex items-center justify-center">
                                 <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                                 </svg>
@@ -148,7 +148,7 @@
                             <h3 class="text-lg font-semibold text-gray-900">رفع مرفقات متعددة</h3>
                         </div>
                         
-                        <form action="{{ route('projects.supplying.upload-files', $project) }}" method="POST" enctype="multipart/form-data" class="space-y-4">
+                        <form action="{{ route('projects.bid-package.upload-files', $project) }}" method="POST" enctype="multipart/form-data" class="space-y-4">
                             @csrf
                             <div>
                                 <label for="folder_id" class="block text-sm font-medium text-gray-700 mb-2 text-right">اختر المجلد</label>
@@ -185,12 +185,12 @@
                                             <p class="text-xs text-gray-500 mt-1">أو اسحب الملفات هنا</p>
                                         </div>
                                     </label>
-                                </div>
+                    </div>
                                 <div id="file-list" class="mt-3 space-y-2"></div>
                                 @error('files')
                                     <p class="mt-1 text-sm text-red-600 text-right">{{ $message }}</p>
                                 @enderror
-                            </div>
+                    </div>
                             
                             <button type="submit" 
                                     class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg shadow-sm transition duration-150 ease-in-out flex items-center justify-center">
@@ -221,10 +221,10 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         <!-- المجلدات -->
                         @foreach($folders as $folder)
-                        <div class="bg-gradient-to-br from-green-50 to-white border-2 border-green-100 rounded-xl p-4 hover:shadow-lg transition-all duration-300 hover:scale-105 cursor-pointer">
+                        <div class="bg-gradient-to-br from-orange-50 to-white border-2 border-orange-100 rounded-xl p-4 hover:shadow-lg transition-all duration-300 hover:scale-105 cursor-pointer">
                             <div class="flex items-start mb-3">
-                                <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center ml-3 flex-shrink-0">
-                                    <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center ml-3 flex-shrink-0">
+                                    <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path>
                                     </svg>
                                 </div>
@@ -236,13 +236,13 @@
                                 </div>
                             </div>
                             
-                            <div class="flex items-center justify-between text-sm pt-3 border-t border-green-100">
+                            <div class="flex items-center justify-between text-sm pt-3 border-t border-orange-100">
                                 <span class="text-gray-500">{{ $folder['file_count'] }} ملف</span>
                                 <span class="text-gray-400 text-xs">{{ $folder['created_at'] }}</span>
                             </div>
                             
                             <div class="flex items-center gap-2 mt-3">
-                                <a href="{{ route('projects.supplying.folder', ['project' => $project, 'folderName' => $folder['name']]) }}" class="flex-1 px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm transition-colors text-center">
+                                <a href="{{ route('projects.bid-package.folder', ['project' => $project, 'folderName' => $folder['name']]) }}" class="flex-1 px-3 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-sm transition-colors text-center">
                                     <svg class="w-4 h-4 inline ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path>
                                     </svg>

@@ -276,8 +276,8 @@
             <div class="quality-card rounded-2xl p-8" style="--card-color: #6366f1;">
                 <div class="flex items-center mb-6 justify-end">
                     <div class="text-right mr-4">
-                        <h3 class="text-xl font-bold text-gray-900 mb-1">General Design Files</h3>
-                        <p class="text-gray-600 text-sm">General design & quality specifications</p>
+                        <h3 class="text-xl font-bold text-gray-900 mb-1">General Files</h3>
+                        <p class="text-gray-600 text-sm">General  & quality</p>
                     </div>
                     <div class="w-16 h-16 bg-indigo-100 rounded-2xl flex items-center justify-center">
                         <svg class="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">

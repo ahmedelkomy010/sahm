@@ -289,6 +289,24 @@
                         @enderror
                         </div>
 
+                    <!-- Amount -->
+                        <div class="form-field">
+                            <label for="amount" class="form-label">
+                                Amount (SAR)
+                        </label>
+                        <input type="number" 
+                               name="amount" 
+                               id="amount"
+                               value="{{ old('amount') }}"
+                                   class="form-input"
+                                   placeholder="Enter project amount"
+                               step="0.01"
+                               min="0">
+                        @error('amount')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                        </div>
+
                     </div>
 
                     <!-- Project Description -->
@@ -329,6 +347,28 @@
                                            value="{{ old('srgn_date') }}"
                                            class="form-input">
                                     @error('srgn_date')
+                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                    @enderror
+                                </div>
+                            </div>
+
+                            <!-- KICK OFF MEETING Date -->
+                            <div class="date-card" style="--card-color: #8b5cf6;">
+                                <div class="form-field">
+                                    <label for="kick_off_date" class="form-label">
+                                        <div class="flex items-center">
+                                            <svg class="w-5 h-5 text-purple-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                            </svg>
+                                            KICK OFF MEETING Date
+                                        </div>
+                                    </label>
+                                    <input type="date" 
+                                           name="kick_off_date" 
+                                           id="kick_off_date"
+                                           value="{{ old('kick_off_date') }}"
+                                           class="form-input">
+                                    @error('kick_off_date')
                                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                     @enderror
                                 </div>
