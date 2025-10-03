@@ -27,12 +27,12 @@
         
         <!-- Back Button -->
         <div class="mb-8 flex justify-end">
-            <a href="{{ route('projects.bid-package', $project) }}" 
+            <a href="{{ route('projects.study.documents', $project) }}" 
                class="inline-flex items-center px-6 py-3 bg-white/80 backdrop-blur-sm border border-gray-200 text-gray-700 rounded-xl font-semibold shadow-lg hover:bg-white hover:shadow-xl transition-all duration-300 hover:transform hover:scale-105">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                 </svg>
-                Back to Bid Package
+                Back to Documents
             </a>
         </div>
         
@@ -140,7 +140,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
                             </svg>
                         </div>
-                        <h3 class="text-lg font-semibold text-gray-900 mb-2">No Folders or Files
+                        <h3 class="text-lg font-semibold text-gray-900 mb-2"> No Folders or Files
 
                         <p class="text-gray-600">Start by creating a new folder or uploading files
                     </div>

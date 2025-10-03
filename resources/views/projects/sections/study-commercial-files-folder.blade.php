@@ -27,12 +27,12 @@
         
         <!-- Back Button -->
         <div class="mb-8 flex justify-end">
-            <a href="{{ route('projects.bid-package', $project) }}" 
-               class="inline-flex items-center px-6 py-3 bg-white/80 backdrop-blur-sm border border-gray-200 text-gray-700 rounded-xl font-semibold shadow-lg hover:bg-white hover:shadow-xl transition-all duration-300 hover:transform hover:scale-105">
+            <a href="{{ route('projects.study.commercial-files', $project) }}" 
+               class="inline-flex items-center px-6 py-3 bg-white/80 backdrop-blur-sm border border-yellow-200 text-yellow-700 rounded-xl font-semibold shadow-lg hover:bg-white hover:shadow-xl transition-all duration-300 hover:transform hover:scale-105">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                 </svg>
-                Back to Bid Package
+                Back to Commercial Files
             </a>
         </div>
         

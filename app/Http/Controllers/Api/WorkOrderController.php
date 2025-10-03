@@ -35,7 +35,8 @@ class WorkOrderController extends Controller
             
             // بناء الاستعلام الأساسي - جلب أوامر العمل المستلمة فقط
             $query = WorkOrder::where('city', $city)
-                ->whereNotNull('order_number'); // أوامر العمل المستلمة لها رقم أمر عمل
+                ->whereNotNull('order_number') // أوامر العمل المستلمة لها رقم أمر عمل
+                ->where('execution_status', '1'); // جاري العمل بالموقع فقط
             
             // تطبيق الفلاتر المبسطة
             if ($request->filled('order_number')) {
@@ -44,6 +45,16 @@ class WorkOrderController extends Controller
             
             if ($request->filled('office')) {
                 $query->where('office', $request->office);
+            }
+            
+            // فلتر تاريخ البداية
+            if ($request->filled('start_date')) {
+                $query->whereDate('received_at', '>=', $request->start_date);
+            }
+            
+            // فلتر تاريخ النهاية
+            if ($request->filled('end_date')) {
+                $query->whereDate('received_at', '<=', $request->end_date);
             }
             
             // حساب الإحصائيات
@@ -71,6 +82,8 @@ class WorkOrderController extends Controller
                     'subscriber_name' => $workOrder->subscriber_name,
                     'district' => $workOrder->district,
                     'office' => $workOrder->office,
+                    'status' => $workOrder->execution_status,
+                    'execution_status_date' => $workOrder->execution_status_date ? $workOrder->execution_status_date->format('Y-m-d') : null,
                     'order_value_without_consultant' => $workOrder->order_value_without_consultant,
                     'received_at' => $workOrder->received_at ? $workOrder->received_at->format('Y-m-d') : null,
                     'created_at' => $workOrder->created_at ? $workOrder->created_at->format('Y-m-d') : null,
@@ -174,9 +187,8 @@ class WorkOrderController extends Controller
             
             // بناء الاستعلام الأساسي - فلترة أوامر العمل المنفذة (حالات التنفيذ المختلفة)
             $query = WorkOrder::where('city', $city)
-                ->whereIn('execution_status', [2, 3, 4, 7]) // حالات التنفيذ المختلفة
-                ->whereNotNull('actual_execution_value_without_consultant')
-                ->where('actual_execution_value_without_consultant', '>', 0);
+                ->whereIn('execution_status', [1, 2, 3, 4]) // جاري العمل، تم التنفيذ، تسليم 155، اعداد المستخلص
+                ->whereNotNull('order_number'); // أوامر العمل التي لها رقم
             
             // تطبيق الفلاتر المبسطة
             if ($request->filled('order_number')) {
@@ -192,10 +204,27 @@ class WorkOrderController extends Controller
             $totalExecutedValue = $query->sum('actual_execution_value_without_consultant');
             $totalInitialValue = $query->sum('order_value_without_consultant');
             
+            // حساب عدد كل حالة تنفيذ
+            $baseQuery = WorkOrder::where('city', $city);
+            if ($request->filled('order_number')) {
+                $baseQuery->where('order_number', 'like', '%' . $request->order_number . '%');
+            }
+            if ($request->filled('office')) {
+                $baseQuery->where('office', $request->office);
+            }
+            
+            $statusCounts = [
+                'status_1' => (clone $baseQuery)->where('execution_status', '1')->count(), // جاري العمل بالموقع
+                'status_2' => (clone $baseQuery)->where('execution_status', '2')->count(), // تم التنفيذ وجاري تسليم 155
+                'status_3' => (clone $baseQuery)->where('execution_status', '3')->count(), // تم تسليم 155 جاري اصدار شهادة
+                'status_4' => (clone $baseQuery)->where('execution_status', '4')->count(), // اعداد مستخلص الدفعة الجزئية الاولي
+            ];
+            
             \Log::info('Execution stats', [
                 'totalExecutedOrders' => $totalExecutedOrders,
                 'totalExecutedValue' => $totalExecutedValue,
-                'totalInitialValue' => $totalInitialValue
+                'totalInitialValue' => $totalInitialValue,
+                'statusCounts' => $statusCounts
             ]);
             
             // حساب النسبة من إجمالي الأوامر
@@ -237,9 +266,10 @@ class WorkOrderController extends Controller
                 return [
                     'id' => $workOrder->id,
                     'order_number' => $workOrder->order_number,
+                    'subscriber_name' => $workOrder->subscriber_name,
                     'office' => $workOrder->office,
                     'initial_value' => $workOrder->order_value_without_consultant,
-                    'executed_value' => $workOrder->actual_execution_value_without_consultant,
+                    'executed_value' => $workOrder->actual_execution_value_without_consultant ?? 0,
                     'execution_status' => $workOrder->execution_status,
                     'execution_status_text' => $this->getExecutionStatusText($workOrder->execution_status),
                     'work_items' => $workItems,
@@ -254,6 +284,7 @@ class WorkOrderController extends Controller
                     'total_executed_value' => $totalExecutedValue,
                     'execution_percentage' => $executionPercentage,
                     'average_executed_value' => $averageExecutedValue,
+                    'status_counts' => $statusCounts,
                 ],
                 'pagination' => [
                     'current_page' => $workOrders->currentPage(),

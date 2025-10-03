@@ -1816,7 +1816,7 @@ document.addEventListener('DOMContentLoaded', function() {
         } else {
             // إضافة required وإخفاء رسالة توضيحية
             dateInput.setAttribute('required', 'required');
-            dateLabel.innerHTML = 'تاريخ اجراء حالة تنفيذ امر العمل : <span class="text-danger">*</span>';
+            dateLabel.innerHTML = 'تاريخ اجراء تسليم 155:';
             dateHelpText.style.display = 'none';
             
             // إزالة التأثير البصري

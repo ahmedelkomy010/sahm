@@ -67,105 +67,146 @@
         @if(session('success'))
         <div class="bg-green-50 border-l-4 border-green-500 p-4 mb-6 rounded-lg">
             <div class="flex items-center">
-                <svg class="w-6 h-6 text-green-500 ml-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-6 h-6 text-green-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
+                        </svg>
                 <p class="text-green-700 font-medium">{{ session('success') }}</p>
-            </div>
-        </div>
+                    </div>
+                </div>
         @endif
 
         @if(session('error'))
         <div class="bg-red-50 border-l-4 border-red-500 p-4 mb-6 rounded-lg">
             <div class="flex items-center">
-                <svg class="w-6 h-6 text-red-500 ml-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-6 h-6 text-red-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
+                        </svg>
                 <p class="text-red-700 font-medium">{{ session('error') }}</p>
             </div>
-        </div>
+                </div>
         @endif
 
+        <!-- Supply Chain Sections -->
+        <div class="bg-white rounded-2xl shadow-xl overflow-hidden mb-8">
+            <div class="p-8">
+                <h2 class="text-xl font-bold text-gray-900 mb-6 text-left">Supply Chain Sections</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6" dir="ltr">
+                    
+                    <!-- Supplying -->
+                    <a href="{{ route('projects.supplying.supplying', $project) }}" class="block bg-gradient-to-br from-green-50 to-white border-2 border-green-100 rounded-xl p-6 hover:shadow-lg transition-all duration-300 hover:scale-105">
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+                                <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-900">Supplying</h3>
+                            </div>
+                        </div>
+                        <p class="text-sm text-gray-600 text-left">Supply and procurement</p>
+                    </a>
+
+                    <!-- Installation -->
+                    <a href="{{ route('projects.supplying.installation', $project) }}" class="block bg-gradient-to-br from-blue-50 to-white border-2 border-blue-100 rounded-xl p-6 hover:shadow-lg transition-all duration-300 hover:scale-105">
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-900">Installation</h3>
+                            </div>
+                        </div>
+                        <p class="text-sm text-gray-600 text-left">Installation and setup</p>
+                    </a>
+
+                </div>
+                    </div>
+                </div>
+                
         <!-- Create Folder & Upload Documents -->
         <div class="bg-white rounded-2xl shadow-xl overflow-hidden mb-8">
             <div class="p-8">
-                <h2 class="text-xl font-bold text-gray-900 mb-6 text-right">إدارة المجلدات والمرفقات</h2>
+                <h2 class="text-xl font-bold text-gray-900 mb-6 text-left">Folders & Files Management</h2>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                     <!-- Create Folder -->
                     <div class="bg-gradient-to-br from-green-50 to-white rounded-xl p-6 border-2 border-green-100">
                         <div class="flex items-center mb-4">
-                            <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center ml-3">
+                            <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3">
                                 <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"></path>
                                 </svg>
                             </div>
-                            <h3 class="text-lg font-semibold text-gray-900">إنشاء مجلد جديد</h3>
+                            <h3 class="text-lg font-semibold text-gray-900">Create New Folder</h3>
                         </div>
                         
                         <form action="{{ route('projects.supplying.create-folder', $project) }}" method="POST" class="space-y-4">
                             @csrf
                             <div>
-                                <label for="folder_name" class="block text-sm font-medium text-gray-700 mb-2 text-right">اسم المجلد</label>
+                                <label for="folder_name" class="block text-sm font-medium text-gray-700 mb-2 text-left">Folder Name</label>
                                 <input type="text" 
                                        id="folder_name" 
                                        name="folder_name" 
                                        required
-                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-right"
-                                       placeholder="مثال: أوامر الشراء">
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-left"
+                                       placeholder="Example: Purchase Orders">
                                 @error('folder_name')
-                                    <p class="mt-1 text-sm text-red-600 text-right">{{ $message }}</p>
+                                    <p class="mt-1 text-sm text-red-600 text-left">{{ $message }}</p>
                                 @enderror
                             </div>
                             
                             <div>
-                                <label for="folder_description" class="block text-sm font-medium text-gray-700 mb-2 text-right">الوصف (اختياري)</label>
+                                <label for="folder_description" class="block text-sm font-medium text-gray-700 mb-2 text-left">Description (Optional)</label>
                                 <textarea id="folder_description" 
                                           name="folder_description" 
                                           rows="2"
-                                          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-right"
-                                          placeholder="وصف المجلد..."></textarea>
-                            </div>
+                                          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-left"
+                                          placeholder="Folder description..."></textarea>
+                        </div>
                             
                             <button type="submit" 
                                     class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg shadow-sm transition duration-150 ease-in-out flex items-center justify-center">
-                                <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                                 </svg>
-                                إنشاء المجلد
+                                Create Folder
                             </button>
                         </form>
-                    </div>
-                    
+            </div>
+            
                     <!-- Upload Multiple Files -->
                     <div class="bg-gradient-to-br from-blue-50 to-white rounded-xl p-6 border-2 border-blue-100">
                         <div class="flex items-center mb-4">
-                            <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center ml-3">
+                            <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
                                 <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
                                 </svg>
                             </div>
-                            <h3 class="text-lg font-semibold text-gray-900">رفع مرفقات متعددة</h3>
+                            <h3 class="text-lg font-semibold text-gray-900">Upload Multiple Files</h3>
                         </div>
                         
                         <form action="{{ route('projects.supplying.upload-files', $project) }}" method="POST" enctype="multipart/form-data" class="space-y-4">
                             @csrf
                             <div>
-                                <label for="folder_id" class="block text-sm font-medium text-gray-700 mb-2 text-right">اختر المجلد</label>
+                                <label for="folder_id" class="block text-sm font-medium text-gray-700 mb-2 text-left">Select Folder</label>
                                 <select id="folder_id" 
                                         name="folder_id" 
-                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-right">
-                                    <option value="">المجلد الرئيسي</option>
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-left">
+                                    <option value="">Main Folder</option>
                                     @foreach($folders as $folder)
-                                    <option value="{{ $folder['name'] }}">{{ $folder['name'] }} ({{ $folder['file_count'] }} ملف)</option>
+                                    <option value="{{ $folder['name'] }}">{{ $folder['name'] }} ({{ $folder['file_count'] }} Files)</option>
                                     @endforeach
                                 </select>
                             </div>
                             
                             <div>
-                                <label for="files" class="block text-sm font-medium text-gray-700 mb-2 text-right">
-                                    اختر الملفات
-                                    <span class="text-xs text-gray-500">(يمكنك اختيار ملفات متعددة)</span>
+                                <label for="files" class="block text-sm font-medium text-gray-700 mb-2 text-left">
+                                    Choose Files
+                                    <span class="text-xs text-gray-500">(You can select multiple files)</span>
                                 </label>
                                 <div class="relative">
                                     <input type="file" 
@@ -181,96 +222,96 @@
                                             <svg class="w-10 h-10 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
                                             </svg>
-                                            <p class="text-sm text-gray-600">انقر لاختيار الملفات</p>
-                                            <p class="text-xs text-gray-500 mt-1">أو اسحب الملفات هنا</p>
+                                            <p class="text-sm text-gray-600">Click to select files</p>
+                                            <p class="text-xs text-gray-500 mt-1">Or drag and drop files here</p>
                                         </div>
                                     </label>
                                 </div>
                                 <div id="file-list" class="mt-3 space-y-2"></div>
                                 @error('files')
-                                    <p class="mt-1 text-sm text-red-600 text-right">{{ $message }}</p>
+                                    <p class="mt-1 text-sm text-red-600 text-left">{{ $message }}</p>
                                 @enderror
-                            </div>
+                        </div>
                             
                             <button type="submit" 
                                     class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg shadow-sm transition duration-150 ease-in-out flex items-center justify-center">
-                                <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
                                 </svg>
-                                رفع الملفات
+                                Upload Files
                             </button>
                         </form>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-
+            
         <!-- Folders and Files List -->
         <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
             <div class="p-8">
                 <div class="flex items-center justify-between mb-6">
-                    <h2 class="text-xl font-bold text-gray-900">المجلدات والملفات</h2>
+                    <h2 class="text-xl font-bold text-gray-900">Folders & Files</h2>
                     <div class="flex items-center space-x-2 space-x-reverse">
                         <span class="text-sm text-gray-500">
-                            {{ count($folders) }} مجلد | {{ count($files) }} ملف
+                            {{ count($folders) }} Folders | {{ count($files) }} Files
                         </span>
                     </div>
                 </div>
                 
                 @if(count($folders) > 0 || count($files) > 0)
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <!-- المجلدات -->
+                        <!-- Folders -->
                         @foreach($folders as $folder)
                         <div class="bg-gradient-to-br from-green-50 to-white border-2 border-green-100 rounded-xl p-4 hover:shadow-lg transition-all duration-300 hover:scale-105 cursor-pointer">
                             <div class="flex items-start mb-3">
-                                <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center ml-3 flex-shrink-0">
+                                <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
                                     <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path>
-                                    </svg>
+                        </svg>
                                 </div>
                                 <div class="flex-1 min-w-0">
-                                    <h3 class="text-lg font-semibold text-gray-900 mb-1 truncate text-right">{{ $folder['name'] }}</h3>
+                                    <h3 class="text-lg font-semibold text-gray-900 mb-1 truncate text-left">{{ $folder['name'] }}</h3>
                                     @if($folder['description'])
-                                    <p class="text-xs text-gray-500 line-clamp-2 text-right">{{ $folder['description'] }}</p>
+                                    <p class="text-xs text-gray-500 line-clamp-2 text-left">{{ $folder['description'] }}</p>
                                     @endif
                                 </div>
-                            </div>
-                            
+                </div>
+                
                             <div class="flex items-center justify-between text-sm pt-3 border-t border-green-100">
-                                <span class="text-gray-500">{{ $folder['file_count'] }} ملف</span>
+                                <span class="text-gray-500">{{ $folder['file_count'] }} Files</span>
                                 <span class="text-gray-400 text-xs">{{ $folder['created_at'] }}</span>
                             </div>
                             
                             <div class="flex items-center gap-2 mt-3">
                                 <a href="{{ route('projects.supplying.folder', ['project' => $project, 'folderName' => $folder['name']]) }}" class="flex-1 px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm transition-colors text-center">
-                                    <svg class="w-4 h-4 inline ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path>
                                     </svg>
-                                    فتح المجلد
+                                    Open Folder
                                 </a>
                             </div>
                         </div>
                         @endforeach
                         
-                        <!-- الملفات في المجلد الرئيسي -->
+                        <!-- الملفات في Main Folder -->
                         @foreach($files as $file)
                         <div class="bg-gradient-to-br from-blue-50 to-white border-2 border-blue-100 rounded-xl p-4 hover:shadow-lg transition-all duration-300 hover:scale-105">
                             <div class="flex items-start mb-3">
-                                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center ml-3 flex-shrink-0">
+                                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
                                     <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                    </svg>
-                                </div>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                    </div>
                                 <div class="flex-1 min-w-0">
-                                    <h3 class="text-sm font-semibold text-gray-900 mb-1 truncate text-right">{{ $file['name'] }}</h3>
+                                    <h3 class="text-sm font-semibold text-gray-900 mb-1 truncate text-left">{{ $file['name'] }}</h3>
                                     <p class="text-xs text-gray-500">{{ number_format($file['size'] / 1024, 2) }} KB</p>
-                                </div>
-                            </div>
-                            
+                    </div>
+                </div>
+                
                             <div class="flex items-center justify-between text-xs pt-3 border-t border-blue-100">
                                 <span class="text-gray-400">{{ $file['created_at'] }}</span>
-                            </div>
-                        </div>
+                    </div>
+                </div>
                         @endforeach
                     </div>
                 @else
@@ -278,10 +319,10 @@
                         <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                             <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"></path>
-                            </svg>
-                        </div>
-                        <h3 class="text-lg font-semibold text-gray-900 mb-2">لا توجد مجلدات أو ملفات</h3>
-                        <p class="text-gray-600">ابدأ بإنشاء مجلد جديد أو رفع ملفات</p>
+                        </svg>
+                    </div>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-2">لا توجد مجلدات أو Filesات</h3>
+                        <p class="text-gray-600">ابدأ بCreate New Folder أو رفع Filesات</p>
                     </div>
                 @endif
             </div>
@@ -302,12 +343,12 @@ function updateFileList(input) {
             fileItem.className = 'flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200';
             fileItem.innerHTML = `
                 <div class="flex items-center flex-1">
-                    <svg class="w-5 h-5 text-blue-500 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-5 h-5 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                     </svg>
                     <div class="flex-1">
-                        <p class="text-sm font-medium text-gray-900 text-right">${file.name}</p>
-                        <p class="text-xs text-gray-500 text-right">${formatFileSize(file.size)}</p>
+                        <p class="text-sm font-medium text-gray-900 text-left">${file.name}</p>
+                        <p class="text-xs text-gray-500 text-left">${formatFileSize(file.size)}</p>
                     </div>
                 </div>
                 <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -321,7 +362,7 @@ function updateFileList(input) {
         const summary = document.createElement('div');
         summary.className = 'mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200';
         summary.innerHTML = `
-            <p class="text-sm text-blue-700 font-medium text-right">
+            <p class="text-sm text-blue-700 font-medium text-left">
                 تم اختيار ${input.files.length} ${input.files.length === 1 ? 'ملف' : 'ملفات'}
             </p>
         `;

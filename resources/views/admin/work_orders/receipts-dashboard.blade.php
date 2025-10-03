@@ -95,28 +95,24 @@
                             </div>
                             
                             <div class="col-md-4">
-                                <label for="office" class="form-label">المكتب</label>
-                                <select class="form-select" id="office" name="office">
-                                    <option value="">جميع المكاتب</option>
-                                    @if(isset($project) && $project == 'riyadh')
-                                        <option value="خريص">خريص</option>
-                                        <option value="الشرق">الشرق</option>
-                                        <option value="الشمال">الشمال</option>
-                                        <option value="الجنوب">الجنوب</option>
-                                        <option value="الدرعية">الدرعية</option>
-                                    @elseif(isset($project) && $project == 'madinah')
-                                        <option value="المدينة المنورة">المدينة المنورة</option>
-                                        <option value="ينبع">ينبع</option>
-                                        <option value="خيبر">خيبر</option>
-                                        <option value="مهد الذهب">مهد الذهب</option>
-                                        <option value="بدر">بدر</option>
-                                        <option value="الحناكية">الحناكية</option>
-                                        <option value="العلا">العلا</option>
-                                    @endif
-                                </select>
+                                <label for="start_date" class="form-label">تاريخ البداية</label>
+                                <div class="btn-group mb-2 w-100" role="group">
+                                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="setDateRange('today')">اليوم</button>
+                                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="setDateRange('week')">أسبوع</button>
+                                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="setDateRange('month')">شهر</button>
+                                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="setDateRange('3months')">3 أشهر</button>
+                                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="setDateRange('year')">سنة</button>
+                                </div>
+                                <input type="date" class="form-control" id="start_date" name="start_date">
                             </div>
                             
                             <div class="col-md-4">
+                                <label for="end_date" class="form-label">تاريخ النهاية</label>
+                                <div class="mb-2" style="height: 31px;"></div>
+                                <input type="date" class="form-control" id="end_date" name="end_date">
+                            </div>
+                            
+                            <div class="col-md-12">
                                 <label class="form-label">إجراءات</label>
                                 <div class="d-flex gap-2">
                                     <button type="submit" class="btn btn-success">
@@ -189,6 +185,7 @@
                                     <th>#</th>
                                     <th>رقم أمر العمل</th>
                                     <th>المكتب</th>
+                                    <th>حالة التنفيذ</th>
                                     <th>القيمة المبدئية (بدون استشاري)</th>
                                     <th>تاريخ الاستلام</th>
                                     <th>الإجراءات</th>
@@ -217,6 +214,9 @@
                         <option value="25" selected>25 نتيجة</option>
                         <option value="50">50 نتيجة</option>
                         <option value="100">100 نتيجة</option>
+                        <option value="200">200 نتيجة</option>
+                        <option value="500">500 نتيجة</option>
+                        <option value="700">700 نتيجة</option>
                     </select>
                 </div>
                 <nav id="paginationNav">
@@ -393,6 +393,9 @@ function displayTableResults(data) {
                 <span class="badge bg-secondary">${order.office || 'غير محدد'}</span>
             </td>
             <td>
+                ${getStatusBadge(order.status, order.execution_status_date)}
+            </td>
+            <td>
                 <strong class="text-info">${formatCurrency(order.order_value_without_consultant)}</strong>
             </td>
             <td>
@@ -427,7 +430,12 @@ function displayCardResults(data) {
                         <span class="badge bg-secondary">${order.office || 'غير محدد'}</span>
                     </div>
                 </div>
-                <div class="card-body">                    
+                <div class="card-body">
+                    <div class="mb-3">
+                        <small class="text-muted">حالة التنفيذ:</small>
+                        <div>${getStatusBadge(order.status, order.execution_status_date)}</div>
+                    </div>
+                    
                     <div class="mb-3">
                         <small class="text-muted">القيمة المبدئية (بدون استشاري):</small>
                         <div><strong class="text-info fs-5">${formatCurrency(order.order_value_without_consultant)}</strong></div>
@@ -529,6 +537,45 @@ function changePerPage(perPage) {
     loadReceivedOrders(1); // Reset to first page
 }
 
+function setDateRange(range) {
+    const today = new Date();
+    const startDate = new Date();
+    const endDate = new Date();
+    
+    switch(range) {
+        case 'today':
+            startDate.setDate(today.getDate());
+            endDate.setDate(today.getDate());
+            break;
+        case 'week':
+            startDate.setDate(today.getDate() - 7);
+            break;
+        case 'month':
+            startDate.setMonth(today.getMonth() - 1);
+            break;
+        case '3months':
+            startDate.setMonth(today.getMonth() - 3);
+            break;
+        case 'year':
+            startDate.setFullYear(today.getFullYear() - 1);
+            break;
+    }
+    
+    // Format dates to YYYY-MM-DD
+    const formatDate = (date) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
+    
+    document.getElementById('start_date').value = formatDate(startDate);
+    document.getElementById('end_date').value = formatDate(endDate);
+    
+    // Auto-submit the form
+    loadReceivedOrders(1);
+}
+
 function clearFilters() {
     document.getElementById('receiptsFilterForm').reset();
     loadReceivedOrders(1);
@@ -575,6 +622,31 @@ function formatDate(dateString) {
         month: '2-digit',
         day: '2-digit'
     });
+}
+
+// Get status badge - نفس الحالات الموجودة في صفحة أوامر العمل
+function getStatusBadge(status, statusDate = null) {
+    const statusMap = {
+        '1': { label: 'جاري العمل بالموقع', color: 'rgb(228, 196, 14)' },
+        '2': { label: 'تم التنفيذ بالموقع وجاري تسليم 155', color: 'rgb(112, 68, 2)' },
+        '3': { label: 'تم تسليم 155 جاري اصدار شهادة الانجاز', color: 'rgb(165, 0, 52)' },
+        '4': { label: 'تم اصدار شهادة الانجاز', color: 'rgb(0, 149, 54)' },
+        '5': { label: 'تم تسليم الشهادة للعميل', color: 'rgb(0, 56, 101)' },
+        '6': { label: 'استكمال نواقص تنفيذ', color: 'rgb(222, 42, 42)' },
+        '7': { label: 'معلق تعديل استشاري', color: 'rgb(250, 114, 7)' },
+        '8': { label: 'متوقف لسبب خارجي', color: 'rgb(195, 195, 195)' },
+        '9': { label: 'الغاء او تحويل امر العمل', color: 'rgb(0, 0, 0)' }
+    };
+    
+    const statusInfo = statusMap[status];
+    if (statusInfo) {
+        let html = `<span class="badge" style="background-color: ${statusInfo.color}">${statusInfo.label}</span>`;
+        if (statusDate) {
+            html += `<br><small class="text-muted" style="font-size: 0.75rem;">${formatDate(statusDate)}</small>`;
+        }
+        return html;
+    }
+    return `<span class="badge bg-secondary">${status || 'غير محدد'}</span>`;
 }
 </script>
 @endpush

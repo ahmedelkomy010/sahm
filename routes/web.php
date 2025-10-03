@@ -610,11 +610,53 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/projects/{project}/bid-package/create-folder', [ProjectController::class, 'createBidPackageFolder'])->name('projects.bid-package.create-folder');
     Route::post('/projects/{project}/bid-package/upload-files', [ProjectController::class, 'uploadBidPackageFiles'])->name('projects.bid-package.upload-files');
     
+    // Bid Package Sub-sections Routes
+    Route::get('/projects/{project}/bid-package/vol1', [ProjectController::class, 'bidPackageVol1'])->name('projects.bid-package.vol1');
+    Route::post('/projects/{project}/bid-package/vol1/create-folder', [ProjectController::class, 'createBidPackageVol1Folder'])->name('projects.bid-package.vol1.create-folder');
+    Route::post('/projects/{project}/bid-package/vol1/upload-files', [ProjectController::class, 'uploadBidPackageVol1Files'])->name('projects.bid-package.vol1.upload-files');
+    Route::get('/projects/{project}/bid-package/vol1/folder/{folderName}', [ProjectController::class, 'viewBidPackageVol1Folder'])->name('projects.bid-package.vol1.folder');
+    
+    Route::get('/projects/{project}/bid-package/vol2', [ProjectController::class, 'bidPackageVol2'])->name('projects.bid-package.vol2');
+    Route::post('/projects/{project}/bid-package/vol2/create-folder', [ProjectController::class, 'createBidPackageVol2Folder'])->name('projects.bid-package.vol2.create-folder');
+    Route::post('/projects/{project}/bid-package/vol2/upload-files', [ProjectController::class, 'uploadBidPackageVol2Files'])->name('projects.bid-package.vol2.upload-files');
+    Route::get('/projects/{project}/bid-package/vol2/folder/{folderName}', [ProjectController::class, 'viewBidPackageVol2Folder'])->name('projects.bid-package.vol2.folder');
+    
+    Route::get('/projects/{project}/bid-package/documents', [ProjectController::class, 'bidPackageDocuments'])->name('projects.bid-package.documents');
+    Route::post('/projects/{project}/bid-package/documents/create-folder', [ProjectController::class, 'createBidPackageDocumentsFolder'])->name('projects.bid-package.documents.create-folder');
+    Route::post('/projects/{project}/bid-package/documents/upload-files', [ProjectController::class, 'uploadBidPackageDocumentsFiles'])->name('projects.bid-package.documents.upload-files');
+    Route::get('/projects/{project}/bid-package/documents/folder/{folderName}', [ProjectController::class, 'viewBidPackageDocumentsFolder'])->name('projects.bid-package.documents.folder');
+    
     // Study Routes
     Route::get('/projects/{project}/study', [ProjectController::class, 'study'])->name('projects.study');
     Route::get('/projects/{project}/study/folder/{folderName}', [ProjectController::class, 'viewStudyFolder'])->name('projects.study.folder');
     Route::post('/projects/{project}/study/create-folder', [ProjectController::class, 'createStudyFolder'])->name('projects.study.create-folder');
     Route::post('/projects/{project}/study/upload-files', [ProjectController::class, 'uploadStudyFiles'])->name('projects.study.upload-files');
+    
+    // Study Sub-sections Routes
+    Route::get('/projects/{project}/study/site-visit', [ProjectController::class, 'studySiteVisit'])->name('projects.study.site-visit');
+    Route::post('/projects/{project}/study/site-visit/create-folder', [ProjectController::class, 'createStudySiteVisitFolder'])->name('projects.study.site-visit.create-folder');
+    Route::post('/projects/{project}/study/site-visit/upload-files', [ProjectController::class, 'uploadStudySiteVisitFiles'])->name('projects.study.site-visit.upload-files');
+    Route::get('/projects/{project}/study/site-visit/folder/{folderName}', [ProjectController::class, 'viewStudySiteVisitFolder'])->name('projects.study.site-visit.folder');
+    
+    Route::get('/projects/{project}/study/tech-files', [ProjectController::class, 'studyTechFiles'])->name('projects.study.tech-files');
+    Route::post('/projects/{project}/study/tech-files/create-folder', [ProjectController::class, 'createStudyTechFilesFolder'])->name('projects.study.tech-files.create-folder');
+    Route::post('/projects/{project}/study/tech-files/upload-files', [ProjectController::class, 'uploadStudyTechFilesFiles'])->name('projects.study.tech-files.upload-files');
+    Route::get('/projects/{project}/study/tech-files/folder/{folderName}', [ProjectController::class, 'viewStudyTechFilesFolder'])->name('projects.study.tech-files.folder');
+    
+    Route::get('/projects/{project}/study/commercial-files', [ProjectController::class, 'studyCommercialFiles'])->name('projects.study.commercial-files');
+    Route::post('/projects/{project}/study/commercial-files/create-folder', [ProjectController::class, 'createStudyCommercialFilesFolder'])->name('projects.study.commercial-files.create-folder');
+    Route::post('/projects/{project}/study/commercial-files/upload-files', [ProjectController::class, 'uploadStudyCommercialFilesFiles'])->name('projects.study.commercial-files.upload-files');
+    Route::get('/projects/{project}/study/commercial-files/folder/{folderName}', [ProjectController::class, 'viewStudyCommercialFilesFolder'])->name('projects.study.commercial-files.folder');
+    
+    Route::get('/projects/{project}/study/sch-c', [ProjectController::class, 'studySchC'])->name('projects.study.sch-c');
+    Route::post('/projects/{project}/study/sch-c/create-folder', [ProjectController::class, 'createStudySchCFolder'])->name('projects.study.sch-c.create-folder');
+    Route::post('/projects/{project}/study/sch-c/upload-files', [ProjectController::class, 'uploadStudySchCFiles'])->name('projects.study.sch-c.upload-files');
+    Route::get('/projects/{project}/study/sch-c/folder/{folderName}', [ProjectController::class, 'viewStudySchCFolder'])->name('projects.study.sch-c.folder');
+    
+    Route::get('/projects/{project}/study/documents', [ProjectController::class, 'studyDocuments'])->name('projects.study.documents');
+    Route::post('/projects/{project}/study/documents/create-folder', [ProjectController::class, 'createStudyDocumentsFolder'])->name('projects.study.documents.create-folder');
+    Route::post('/projects/{project}/study/documents/upload-files', [ProjectController::class, 'uploadStudyDocumentsFiles'])->name('projects.study.documents.upload-files');
+    Route::get('/projects/{project}/study/documents/folder/{folderName}', [ProjectController::class, 'viewStudyDocumentsFolder'])->name('projects.study.documents.folder');
     
     // Clarification Routes
     Route::get('/projects/{project}/clarification', [ProjectController::class, 'clarification'])->name('projects.clarification');
@@ -627,6 +669,17 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/projects/{project}/supplying/create-folder', [ProjectController::class, 'createSupplyingFolder'])->name('projects.supplying.create-folder');
     Route::post('/projects/{project}/supplying/upload-files', [ProjectController::class, 'uploadSupplyingFiles'])->name('projects.supplying.upload-files');
     
+    // Supplying Sub-sections Routes
+    Route::get('/projects/{project}/supplying/supplying', [ProjectController::class, 'supplyingSupplying'])->name('projects.supplying.supplying');
+    Route::post('/projects/{project}/supplying/supplying/create-folder', [ProjectController::class, 'createSupplyingSupplyingFolder'])->name('projects.supplying.supplying.create-folder');
+    Route::post('/projects/{project}/supplying/supplying/upload-files', [ProjectController::class, 'uploadSupplyingSupplyingFiles'])->name('projects.supplying.supplying.upload-files');
+    Route::get('/projects/{project}/supplying/supplying/folder/{folderName}', [ProjectController::class, 'viewSupplyingSupplyingFolder'])->name('projects.supplying.supplying.folder');
+    
+    Route::get('/projects/{project}/supplying/installation', [ProjectController::class, 'supplyingInstallation'])->name('projects.supplying.installation');
+    Route::post('/projects/{project}/supplying/installation/create-folder', [ProjectController::class, 'createSupplyingInstallationFolder'])->name('projects.supplying.installation.create-folder');
+    Route::post('/projects/{project}/supplying/installation/upload-files', [ProjectController::class, 'uploadSupplyingInstallationFiles'])->name('projects.supplying.installation.upload-files');
+    Route::get('/projects/{project}/supplying/installation/folder/{folderName}', [ProjectController::class, 'viewSupplyingInstallationFolder'])->name('projects.supplying.installation.folder');
+    
     Route::get('/projects/{project}/reports', [ProjectController::class, 'reports'])->name('projects.reports');
     
     Route::get('/projects/{project}/documents', [ProjectController::class, 'documents'])->name('projects.documents');
@@ -635,6 +688,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/projects/{project}/documents/upload-files', [ProjectController::class, 'uploadDocumentsFiles'])->name('projects.documents.upload-files');
     
     Route::get('/projects/{project}/revenues', [ProjectController::class, 'revenues'])->name('projects.revenues');
+    Route::get('/projects/{project}/revenues/folder/{folderName}', [ProjectController::class, 'viewRevenuesFolder'])->name('projects.revenues.folder');
+    Route::post('/projects/{project}/revenues/create-folder', [ProjectController::class, 'createRevenuesFolder'])->name('projects.revenues.create-folder');
+    Route::post('/projects/{project}/revenues/upload-files', [ProjectController::class, 'uploadRevenuesFiles'])->name('projects.revenues.upload-files');
     
     // Revenue API Routes
     Route::get('/projects/{project}/revenues-data', [App\Http\Controllers\RevenueController::class, 'index'])->name('revenues.index');

@@ -74,6 +74,46 @@
                     </div>
                 </div>
             </div>
+            
+            <!-- حالات التنفيذ -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card border-0" style="background-color: rgb(228, 196, 14, 0.1);">
+                        <div class="card-body text-center">
+                            <i class="fas fa-tools fs-2 mb-2" style="color: rgb(228, 196, 14);"></i>
+                            <h4 class="mb-1" style="color: rgb(228, 196, 14);" id="status1Count">0</h4>
+                            <small class="text-muted">جاري العمل بالموقع</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card border-0" style="background-color: rgb(112, 68, 2, 0.1);">
+                        <div class="card-body text-center">
+                            <i class="fas fa-clipboard-check fs-2 mb-2" style="color: rgb(112, 68, 2);"></i>
+                            <h4 class="mb-1" style="color: rgb(112, 68, 2);" id="status2Count">0</h4>
+                            <small class="text-muted">تم التنفيذ بالموقع وجاري تسليم 155</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card border-0" style="background-color: rgb(165, 0, 52, 0.1);">
+                        <div class="card-body text-center">
+                            <i class="fas fa-file-certificate fs-2 mb-2" style="color: rgb(165, 0, 52);"></i>
+                            <h4 class="mb-1" style="color: rgb(165, 0, 52);" id="status3Count">0</h4>
+                            <small class="text-muted">تم تسليم 155 جاري اصدار شهادة الانجاز</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card border-0" style="background-color: rgb(0, 149, 54, 0.1);">
+                        <div class="card-body text-center">
+                            <i class="fas fa-file-invoice-dollar fs-2 mb-2" style="color: rgb(0, 149, 54);"></i>
+                            <h4 class="mb-1" style="color: rgb(0, 149, 54);" id="status4Count">0</h4>
+                            <small class="text-muted">تم اعداد المستخلص الدفعة الجزئية الاولي</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             <!-- Filters Section -->
             <div class="card shadow-sm border-0 mb-4">
@@ -310,6 +350,7 @@ function loadExecutedOrders(page = 1) {
     params.append('per_page', document.getElementById('perPage').value);
     
     // Make API call
+    console.log('Making API call to:', `/api/work-orders/execution?${params.toString()}`);
     fetch(`/api/work-orders/execution?${params.toString()}`, {
         headers: {
             'X-Requested-With': 'XMLHttpRequest',
@@ -319,12 +360,14 @@ function loadExecutedOrders(page = 1) {
     })
         .then(response => response.json())
         .then(data => {
+            console.log('API Response:', data);
             hideLoading();
-            if (data.success) {
+            if (data.success && data.data && data.data.length > 0) {
                 displayResults(data.data);
                 updateSummaryCards(data.summary);
                 updatePagination(data.pagination);
             } else {
+                console.log('No data or unsuccessful response');
                 showNoData();
             }
         })
@@ -539,6 +582,14 @@ function updateSummaryCards(summary) {
     document.getElementById('executionPercentage').textContent = (summary.execution_percentage || 0) + '%';
     document.getElementById('averageExecutedValue').textContent = formatCurrency(summary.average_executed_value || 0);
     document.getElementById('totalCount').textContent = summary.total_orders || 0;
+    
+    // Update status counts
+    if (summary.status_counts) {
+        document.getElementById('status1Count').textContent = summary.status_counts.status_1 || 0;
+        document.getElementById('status2Count').textContent = summary.status_counts.status_2 || 0;
+        document.getElementById('status3Count').textContent = summary.status_counts.status_3 || 0;
+        document.getElementById('status4Count').textContent = summary.status_counts.status_4 || 0;
+    }
 }
 
 // Update pagination

@@ -27,12 +27,12 @@
         
         <!-- Back Button -->
         <div class="mb-8 flex justify-end">
-            <a href="{{ route('projects.bid-package', $project) }}" 
-               class="inline-flex items-center px-6 py-3 bg-white/80 backdrop-blur-sm border border-gray-200 text-gray-700 rounded-xl font-semibold shadow-lg hover:bg-white hover:shadow-xl transition-all duration-300 hover:transform hover:scale-105">
+            <a href="{{ route('projects.revenues', $project) }}" 
+               class="inline-flex items-center px-6 py-3 bg-white/80 backdrop-blur-sm border border-green-200 text-green-700 rounded-xl font-semibold shadow-lg hover:bg-white hover:shadow-xl transition-all duration-300 hover:transform hover:scale-105">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                 </svg>
-                Back to Bid Package
+                Back to Turnkey Revenues
             </a>
         </div>
         
@@ -47,14 +47,14 @@
                     </div>
                     <h1 class="text-4xl font-bold mb-3">{{ $folderName }}</h1>
                     @if($description)
-                    <p class="text-orange-100 text-lg mt-3">{{ $description }}</p>
+                    <p class="text-green-100 text-lg mt-3">{{ $description }}</p>
                     @endif
-                    <p class="text-orange-100 text-sm mt-2">{{ $project->name }} - Bid Package</p>
+                    <p class="text-green-100 text-sm mt-2">{{ $project->name }} - Turnkey Revenues</p>
                 </div>
 
                 <div class="max-w-md mx-auto">
                     <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4">
-                        <p class="text-orange-100 text-sm mb-1">Files in this folder</p>
+                        <p class="text-green-100 text-sm mb-1">Files in this folder</p>
                         <p class="font-semibold text-2xl">{{ count($files) }} Files</p>
                     </div>
                 </div>
@@ -87,7 +87,7 @@
         <!-- Files List -->
         <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
             <div class="p-8">
-                <h2 class="text-xl font-bold text-gray-900 mb-6 text-right">الملفات</h2>
+                <h2 class="text-xl font-bold text-green-900 mb-6 text-right">الملفات</h2>
                 
                 @if(count($files) > 0)
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -110,9 +110,9 @@
                                     @endif
                                 </div>
                                 <div class="flex-1 min-w-0">
-                                    <h3 class="text-sm font-semibold text-gray-900 mb-1 truncate text-right" title="{{ $file['name'] }}">{{ $file['name'] }}</h3>
-                                    <p class="text-xs text-gray-500">{{ number_format($file['size'] / 1024, 2) }} KB</p>
-                                    <p class="text-xs text-gray-400 mt-1">{{ $file['created_at'] }}</p>
+                                    <h3 class="text-sm font-semibold text-green-900 mb-1 truncate text-right" title="{{ $file['name'] }}">{{ $file['name'] }}</h3>
+                                    <p class="text-xs text-green-500">{{ number_format($file['size'] / 1024, 2) }} KB</p>
+                                    <p class="text-xs text-green-400 mt-1">{{ $file['created_at'] }}</p>
                                 </div>
                             </div>
                             
@@ -135,14 +135,13 @@
                     </div>
                 @else
                     <div class="text-center py-12">
-                        <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
                             </svg>
                         </div>
-                        <h3 class="text-lg font-semibold text-gray-900 mb-2">No Folders or Files
-
-                        <p class="text-gray-600">Start by creating a new folder or uploading files
+                        <h3 class="text-lg font-semibold text-green-900 mb-2">لا توجد ملفات</h3>
+                        <p class="text-green-600">المجلد فارغ حالياً</p>
                     </div>
                 @endif
             </div>

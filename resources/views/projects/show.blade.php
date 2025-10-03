@@ -530,8 +530,8 @@
                         </svg>
                     </div>
                     <div class="text-left">
-                        <h3 class="text-xl font-bold text-gray-900 mb-1 text-left">Revenues</h3>
-                        <p class="text-gray-600 text-sm text-left">Financial tracking & invoicing</p>
+                        <h3 class="text-xl font-bold text-gray-900 mb-1 text-left">Turnkey Revenues</h3>
+                        <p class="text-gray-600 text-sm text-left">إيرادات تسليم مفتاح</p>
                     </div>
                 </div>
                 <div class="mb-6">
