@@ -26,10 +26,17 @@
                             </p>
                         </div>
                         <div class="text-end">
-                            <a href="/admin/work-orders/productivity/riyadh" class="btn btn-light">
-                                <i class="fas fa-arrow-right me-2"></i>
-                                العودة للداشبورد الرئيسي
-                            </a>
+                            @if(isset($project) && $project == 'madinah')
+                                <a href="{{ route('admin.work-orders.productivity.madinah') }}" class="btn btn-light">
+                                    <i class="fas fa-arrow-right me-2"></i>
+                                    العودة للوحة تحكم المدينة المنورة
+                                </a>
+                            @else
+                                <a href="{{ route('admin.work-orders.productivity.riyadh') }}" class="btn btn-light">
+                                    <i class="fas fa-arrow-right me-2"></i>
+                                    العودة للوحة تحكم الرياض
+                                </a>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -37,7 +44,7 @@
 
             <!-- Summary Cards -->
             <div class="row mb-4">
-                <div class="col-md-3">
+                <div class="col-md-4">
                     <div class="card border-0 bg-info bg-opacity-10">
                         <div class="card-body text-center">
                             <i class="fas fa-play-circle text-info fs-2 mb-2"></i>
@@ -46,7 +53,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-4">
                     <div class="card border-0 bg-success bg-opacity-10">
                         <div class="card-body text-center">
                             <i class="fas fa-money-bill-wave text-success fs-2 mb-2"></i>
@@ -55,21 +62,12 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-4">
                     <div class="card border-0 bg-warning bg-opacity-10">
                         <div class="card-body text-center">
                             <i class="fas fa-percentage text-warning fs-2 mb-2"></i>
                             <h4 class="mb-1 text-warning" id="inProgressPercentage">0%</h4>
                             <small class="text-muted">نسبة من إجمالي الأوامر</small>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card border-0 bg-primary bg-opacity-10">
-                        <div class="card-body text-center">
-                            <i class="fas fa-calculator text-primary fs-2 mb-2"></i>
-                            <h4 class="mb-1 text-primary" id="averageOrderValue">0</h4>
-                            <small class="text-muted">متوسط قيمة الأمر</small>
                         </div>
                     </div>
                 </div>
@@ -447,7 +445,6 @@ function updateSummaryCards(summary) {
     document.getElementById('totalInProgressOrders').textContent = summary.total_orders || 0;
     document.getElementById('totalInProgressValue').textContent = formatCurrency(summary.total_value || 0);
     document.getElementById('inProgressPercentage').textContent = (summary.percentage || 0) + '%';
-    document.getElementById('averageOrderValue').textContent = formatCurrency(summary.average_value || 0);
     document.getElementById('totalCount').textContent = summary.total_orders || 0;
 }
 
@@ -548,8 +545,9 @@ function exportResults() {
         }
     }
     
-    params.append('export', 'excel');
-    window.open(`/api/work-orders/inprogress/export?${params.toString()}`, '_blank');
+    const url = `/api/work-orders/inprogress/export?${params.toString()}`;
+    console.log('Export URL:', url);
+    window.location.href = url;
 }
 
 function formatCurrency(amount) {

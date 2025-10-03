@@ -6,7 +6,7 @@
         <div class="col-12">
             <!-- Header Section -->
             <div class="card shadow-lg border-0 mb-4">
-                <div class="card-header bg-gradient-primary text-white py-4">
+                <div class="card-header bg-primary text-white py-4">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h2 class="mb-1 fs-3">
@@ -51,13 +51,80 @@
                     </div>
                 </div>
 
+            <!-- Date Filter Section -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-body">
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-3">
+                            <label for="filter_start_date" class="form-label">
+                                <i class="fas fa-calendar-alt me-1"></i>
+                                تاريخ البداية
+                            </label>
+                            <input type="date" class="form-control" id="filter_start_date" name="start_date">
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <label for="filter_end_date" class="form-label">
+                                <i class="fas fa-calendar-alt me-1"></i>
+                                تاريخ النهاية
+                            </label>
+                            <input type="date" class="form-control" id="filter_end_date" name="end_date">
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <label class="form-label">
+                                <i class="fas fa-clock me-1"></i>
+                                فترات زمنية سريعة
+                            </label>
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <button type="button" class="btn btn-outline-primary btn-sm w-100" onclick="setQuickDateRange('day')">
+                                        <i class="fas fa-calendar-day me-1"></i>
+                                        يوم
+                                    </button>
+                                </div>
+                                <div class="col-6">
+                                    <button type="button" class="btn btn-outline-primary btn-sm w-100" onclick="setQuickDateRange('quarter')">
+                                        <i class="fas fa-calendar-alt me-1"></i>
+                                        ربع سنة
+                                    </button>
+                                </div>
+                                <div class="col-6">
+                                    <button type="button" class="btn btn-outline-primary btn-sm w-100" onclick="setQuickDateRange('half')">
+                                        <i class="fas fa-calendar me-1"></i>
+                                        نصف سنة
+                                    </button>
+                                </div>
+                                <div class="col-6">
+                                    <button type="button" class="btn btn-outline-primary btn-sm w-100" onclick="setQuickDateRange('year')">
+                                        <i class="fas fa-calendar-check me-1"></i>
+                                        سنة
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-2">
+                            <button type="button" class="btn btn-primary w-100 mb-2" onclick="applyDateFilter()">
+                                <i class="fas fa-filter me-1"></i>
+                                تطبيق
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary w-100" onclick="clearDateFilter()">
+                                <i class="fas fa-times me-1"></i>
+                                مسح
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- BI Dashboard Sections -->
-            <div class="row g-4">
+            <div class="row g-3 mb-3">
                 
                 <!-- القسم الأول: الاستلامات -->
-                <div class="col-lg-6 col-xl-4">
+                <div class="col-lg-4">
                     <div class="card h-100 shadow-sm border-0 dashboard-card receipts-card">
-                        <div class="card-header bg-gradient-success text-white text-center py-4">
+                        <div class="card-header bg-success text-white text-center py-4">
                             <div class="dashboard-icon mb-3">
                                 <i class="fas fa-inbox fa-3x"></i>
                                                         </div>
@@ -108,9 +175,9 @@
                                 </div>
 
                 <!-- القسم الثاني: التنفيذ والإنجاز -->
-                <div class="col-lg-6 col-xl-4">
+                <div class="col-lg-4">
                     <div class="card h-100 shadow-sm border-0 dashboard-card execution-card">
-                        <div class="card-header bg-gradient-warning text-white text-center py-4">
+                        <div class="card-header bg-warning text-white text-center py-4">
                             <div class="dashboard-icon mb-3">
                                 <i class="fas fa-tasks fa-3x"></i>
                             </div>
@@ -135,6 +202,39 @@
                                                 </div>
                                             </div>
                                                     </div>
+                                
+                                <!-- حالات التنفيذ -->
+                                <div class="execution-status-list mb-3" id="executionStatusList">
+                                    <div class="status-item-small" style="background-color: rgba(112, 68, 2, 0.1); border-right: 3px solid rgb(112, 68, 2);">
+                                        <span class="status-count" id="status2Count">0</span>
+                                        <small class="text-muted">تم التنفيذ بالموقع</small>
+                                    </div>
+                                    <div class="status-item-small" style="background-color: rgba(165, 0, 52, 0.1); border-right: 3px solid rgb(165, 0, 52);">
+                                        <span class="status-count" id="status3Count">0</span>
+                                        <small class="text-muted">تم تسليم 155</small>
+                                    </div>
+                                    <div class="status-item-small" style="background-color: rgba(0, 149, 54, 0.1); border-right: 3px solid rgb(0, 149, 54);">
+                                        <span class="status-count" id="status4Count">0</span>
+                                        <small class="text-muted">مستخلص دفعة أولى</small>
+                                    </div>
+                                    <div class="status-item-small" style="background-color: rgba(41, 128, 185, 0.1); border-right: 3px solid rgb(41, 128, 185);">
+                                        <span class="status-count" id="status5Count">0</span>
+                                        <small class="text-muted">صرف دفعة أولى</small>
+                                    </div>
+                                    <div class="status-item-small" style="background-color: rgba(155, 89, 182, 0.1); border-right: 3px solid rgb(155, 89, 182);">
+                                        <span class="status-count" id="status6Count">0</span>
+                                        <small class="text-muted">مستخلص دفعة ثانية</small>
+                                    </div>
+                                    <div class="status-item-small" style="background-color: rgba(0, 149, 54, 0.1); border-right: 3px solid rgb(0, 149, 54);">
+                                        <span class="status-count" id="status8Count">0</span>
+                                        <small class="text-muted">تم اصدار شهادة الانجاز</small>
+                                    </div>
+                                    <div class="status-item-small" style="background-color: rgba(52, 152, 219, 0.1); border-right: 3px solid rgb(52, 152, 219);">
+                                        <span class="status-count" id="status10Count">0</span>
+                                        <small class="text-muted">مستخلص كلي</small>
+                                    </div>
+                                </div>
+                                
                                 <div class="progress mb-2" style="height: 8px;">
                                     <div class="progress-bar bg-warning" id="executionProgressBar" style="width: 0%"></div>
                                                 </div>
@@ -149,9 +249,9 @@
                     </div>
 
                 <!-- القسم الثالث: جاري العمل -->
-                <div class="col-lg-6 col-xl-4">
+                <div class="col-lg-4">
                     <div class="card h-100 shadow-sm border-0 dashboard-card inprogress-card">
-                        <div class="card-header bg-gradient-info text-white text-center py-4">
+                        <div class="card-header bg-info text-white text-center py-4">
                             <div class="dashboard-icon mb-3">
                                 <i class="fas fa-cogs fa-3x"></i>
                                                 </div>
@@ -189,10 +289,13 @@
                                             </div>
                                         </div>
 
+            </div>
+            
+            <div class="row g-3">
                 <!-- القسم الرابع: المستخلص -->
-                <div class="col-lg-6 col-xl-4">
+                <div class="col-lg-6">
                     <div class="card h-100 shadow-sm border-0 dashboard-card extract-card">
-                        <div class="card-header bg-gradient-danger text-white text-center py-4">
+                        <div class="card-header bg-danger text-white text-center py-4">
                             <div class="dashboard-icon mb-3">
                                 <i class="fas fa-file-invoice-dollar fa-3x"></i>
                                     </div>
@@ -231,9 +334,9 @@
                     </div>
 
                 <!-- القسم الخامس: منتهي تم الصرف -->
-                <div class="col-lg-6 col-xl-4">
+                <div class="col-lg-6">
                     <div class="card h-100 shadow-sm border-0 dashboard-card completed-card">
-                        <div class="card-header bg-gradient-secondary text-white text-center py-4">
+                        <div class="card-header bg-secondary text-white text-center py-4">
                             <div class="dashboard-icon mb-3">
                                 <i class="fas fa-check-circle fa-3x"></i>
                                     </div>
@@ -277,45 +380,45 @@
                         <div class="card-header bg-light">
                                 <h5 class="mb-0">
                                 <i class="fas fa-chart-bar me-2 text-primary"></i>
-                                نظرة عامة سريعة
+                                نظرة عامة سريعة - اختصارات تحليلية
                                 </h5>
                             </div>
                             <div class="card-body">
                             <div class="row g-4">
                                 <div class="col-md-3">
                                     <div class="text-center">
-                                        <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 60px; height: 60px;">
-                                            <i class="fas fa-users text-primary fs-4"></i>
+                                        <div class="bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 60px; height: 60px;">
+                                            <i class="fas fa-inbox text-success fs-4"></i>
                                 </div>
-                                        <h4 class="mb-1">0</h4>
-                                        <small class="text-muted">إجمالي المستخدمين</small>
+                                        <h4 class="mb-1" id="quickReceiptsCount">0</h4>
+                                        <small class="text-muted">أوامر مستلمة</small>
                             </div>
                         </div>
                                 <div class="col-md-3">
                                     <div class="text-center">
-                                        <div class="bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 60px; height: 60px;">
-                                            <i class="fas fa-check-circle text-success fs-4"></i>
+                                        <div class="bg-warning bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 60px; height: 60px;">
+                                            <i class="fas fa-tasks text-warning fs-4"></i>
                     </div>
-                                        <h4 class="mb-1">0</h4>
-                                        <small class="text-muted">مهام مكتملة</small>
+                                        <h4 class="mb-1" id="quickExecutionCount">0</h4>
+                                        <small class="text-muted">أوامر منفذة</small>
                     </div>
                         </div>
                                 <div class="col-md-3">
                                     <div class="text-center">
-                                        <div class="bg-warning bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 60px; height: 60px;">
-                                            <i class="fas fa-hourglass-half text-warning fs-4"></i>
+                                        <div class="bg-info bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 60px; height: 60px;">
+                                            <i class="fas fa-cogs text-info fs-4"></i>
                     </div>
-                                        <h4 class="mb-1">0</h4>
-                                        <small class="text-muted">قيد التنفيذ</small>
+                                        <h4 class="mb-1" id="quickInProgressCount">0</h4>
+                                        <small class="text-muted">جاري العمل</small>
                 </div>
             </div>
                                 <div class="col-md-3">
                                     <div class="text-center">
-                                        <div class="bg-danger bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 60px; height: 60px;">
-                                            <i class="fas fa-exclamation-triangle text-danger fs-4"></i>
+                                        <div class="bg-secondary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 60px; height: 60px;">
+                                            <i class="fas fa-check-circle text-secondary fs-4"></i>
                                         </div>
-                                        <h4 class="mb-1">0</h4>
-                                        <small class="text-muted">تحتاج متابعة</small>
+                                        <h4 class="mb-1" id="quickCompletedCount">0</h4>
+                                        <small class="text-muted">منتهي تم الصرف</small>
                                     </div>
                                 </div>
                             </div>
@@ -357,13 +460,22 @@
     .dashboard-card {
         transition: all 0.3s ease;
         cursor: pointer;
-        border-radius: 15px;
+        border-radius: 12px;
         overflow: hidden;
+        height: 100%;
     }
     
     .dashboard-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 25px rgba(0,0,0,0.15) !important;
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.12) !important;
+    }
+    
+    .dashboard-card .card-header {
+        padding: 1.5rem 1rem;
+    }
+    
+    .dashboard-card .card-body {
+        padding: 1.25rem;
     }
     
     .dashboard-icon {
@@ -371,26 +483,33 @@
     }
     
     .stat-item {
-        padding: 10px;
+        padding: 8px;
     }
     
     .stat-number {
-        font-size: 1.5rem;
+        font-size: 1.4rem;
         font-weight: bold;
         margin-bottom: 0;
     }
     
+    .stat-item small {
+        font-size: 0.8rem;
+        line-height: 1.3;
+    }
+    
     .dashboard-btn {
-        border-radius: 10px;
+        border-radius: 8px;
         font-weight: 600;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
+        letter-spacing: 0.3px;
         transition: all 0.3s ease;
+        padding: 0.65rem 1rem;
+        font-size: 0.9rem;
     }
     
     .dashboard-btn:hover {
         transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     }
     
     .text-purple {
@@ -440,6 +559,42 @@
         background: rgba(255, 255, 255, 0.2);
         color: white;
         border-color: rgba(255, 255, 255, 0.5);
+    }
+
+    /* Execution Status List */
+    .execution-status-list {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        max-height: 280px;
+        overflow-y: auto;
+    }
+    
+    .status-item-small {
+        padding: 5px 8px;
+        border-radius: 4px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: all 0.2s ease;
+    }
+    
+    .status-item-small:hover {
+        transform: translateX(-3px);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .status-item-small .status-count {
+        font-weight: bold;
+        font-size: 0.95rem;
+        min-width: 25px;
+    }
+    
+    .status-item-small small {
+        font-size: 0.7rem;
+        flex: 1;
+        text-align: right;
+        margin-right: 6px;
     }
 
     /* RTL Support */
@@ -512,6 +667,7 @@ document.addEventListener('DOMContentLoaded', function() {
         updateInProgressStats();
         updateExtractStats();
         updateCompletedStats();
+        updateQuickStats();
     }, 2000);
     
     // Update stats every 10 seconds to keep data fresh
@@ -521,8 +677,99 @@ document.addEventListener('DOMContentLoaded', function() {
         updateInProgressStats();
         updateExtractStats();
         updateCompletedStats();
+        updateQuickStats();
     }, 10000);
 });
+
+// Update quick stats overview
+function updateQuickStats() {
+    const quickReceiptsElement = document.getElementById('quickReceiptsCount');
+    const quickExecutionElement = document.getElementById('quickExecutionCount');
+    const quickInProgressElement = document.getElementById('quickInProgressCount');
+    const quickCompletedElement = document.getElementById('quickCompletedCount');
+    
+    // Get values from main cards
+    const receiptsCount = document.getElementById('workOrdersCount')?.textContent || '0';
+    const executionCount = document.getElementById('executedOrdersCount')?.textContent || '0';
+    const inProgressCount = document.getElementById('inProgressOrdersCount')?.textContent || '0';
+    const completedCount = document.getElementById('completedOrdersCount')?.textContent || '0';
+    
+    if (quickReceiptsElement) quickReceiptsElement.textContent = receiptsCount;
+    if (quickExecutionElement) quickExecutionElement.textContent = executionCount;
+    if (quickInProgressElement) quickInProgressElement.textContent = inProgressCount;
+    if (quickCompletedElement) quickCompletedElement.textContent = completedCount;
+}
+
+// Set quick date range
+function setQuickDateRange(period) {
+    const today = new Date();
+    const endDate = today.toISOString().split('T')[0];
+    let startDate;
+    
+    switch(period) {
+        case 'day':
+            // آخر يوم (24 ساعة)
+            const dayAgo = new Date(today);
+            dayAgo.setDate(today.getDate() - 1);
+            startDate = dayAgo.toISOString().split('T')[0];
+            break;
+        case 'quarter':
+            // ربع سنة (3 أشهر)
+            const quarterAgo = new Date(today);
+            quarterAgo.setMonth(today.getMonth() - 3);
+            startDate = quarterAgo.toISOString().split('T')[0];
+            break;
+        case 'half':
+            // نصف سنة (6 أشهر)
+            const halfYearAgo = new Date(today);
+            halfYearAgo.setMonth(today.getMonth() - 6);
+            startDate = halfYearAgo.toISOString().split('T')[0];
+            break;
+        case 'year':
+            // سنة كاملة (12 شهر)
+            const yearAgo = new Date(today);
+            yearAgo.setFullYear(today.getFullYear() - 1);
+            startDate = yearAgo.toISOString().split('T')[0];
+            break;
+    }
+    
+    document.getElementById('filter_start_date').value = startDate;
+    document.getElementById('filter_end_date').value = endDate;
+}
+
+// Clear date filter
+function clearDateFilter() {
+    document.getElementById('filter_start_date').value = '';
+    document.getElementById('filter_end_date').value = '';
+}
+
+// Apply date filter - reload all stats with date filters
+function applyDateFilter() {
+    const startDate = document.getElementById('filter_start_date').value;
+    const endDate = document.getElementById('filter_end_date').value;
+    
+    console.log('Applying date filter:', startDate, 'to', endDate);
+    
+    // Show loading indicator
+    const btn = event.target;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>جاري التحميل...';
+    btn.disabled = true;
+    
+    // Update all stats with date filters
+    setTimeout(() => {
+        updateWorkOrdersStats();
+        updateExecutionStats();
+        updateInProgressStats();
+        updateExtractStats();
+        updateCompletedStats();
+        updateQuickStats();
+        
+        // Restore button
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }, 100);
+}
 
 // Function to update work orders statistics from the API
 function updateWorkOrdersStats() {
@@ -531,8 +778,19 @@ function updateWorkOrdersStats() {
     // Get project from URL or default to 'riyadh'
     const project = window.location.pathname.includes('madinah') ? 'madinah' : 'riyadh';
     
+    // Get date filters
+    const startDate = document.getElementById('filter_start_date')?.value || '';
+    const endDate = document.getElementById('filter_end_date')?.value || '';
+    
+    // Build URL with parameters
+    let url = `/api/work-orders/receipts?project=${project}`;
+    if (startDate) url += `&start_date=${startDate}`;
+    if (endDate) url += `&end_date=${endDate}`;
+    
+    console.log('Receipts API URL:', url);
+    
     // Call the receipts API
-    fetch(`/api/work-orders/receipts?project=${project}`, {
+    fetch(url, {
         headers: {
             'X-Requested-With': 'XMLHttpRequest',
             'Accept': 'application/json',
@@ -850,36 +1108,94 @@ function calculateExecutionStats() {
 
 // Update execution statistics display
 function updateExecutionStats() {
-    calculateExecutionStats().then(stats => {
-        const countElement = document.getElementById('executedOrdersCount');
-        const valueElement = document.getElementById('totalExecutedValue');
-        const progressBar = document.getElementById('executionProgressBar');
-        const progressText = document.getElementById('executionProgressText');
-        
-        if (countElement) {
-            countElement.textContent = stats.executedCount.toLocaleString('en-US');
+    console.log('Fetching execution stats with status counts from API...');
+    
+    // Get project from URL or default to 'riyadh'
+    const project = window.location.pathname.includes('madinah') ? 'madinah' : 'riyadh';
+    
+    // Get date filters
+    const startDate = document.getElementById('filter_start_date')?.value || '';
+    const endDate = document.getElementById('filter_end_date')?.value || '';
+    
+    // Build URL with parameters
+    let url = `/api/work-orders/execution?project=${project}`;
+    if (startDate) url += `&start_date=${startDate}`;
+    if (endDate) url += `&end_date=${endDate}`;
+    
+    console.log('Execution API URL:', url);
+    
+    // Call the execution API to get full data including status counts
+    fetch(url, {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
         }
-        
-        if (valueElement) {
-            if (stats.totalExecutedValue >= 1000000) {
-                valueElement.textContent = (stats.totalExecutedValue / 1000000).toFixed(1) + 'M';
-            } else if (stats.totalExecutedValue >= 1000) {
-                valueElement.textContent = (stats.totalExecutedValue / 1000).toFixed(1) + 'K';
-            } else {
-                valueElement.textContent = stats.totalExecutedValue.toLocaleString('en-US', {
-                    minimumFractionDigits: 0,
-                    maximumFractionDigits: 0
-                });
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success && data.summary) {
+            console.log('Received execution stats with status counts:', data.summary);
+            const stats = data.summary;
+            
+            // Update main stats
+            const countElement = document.getElementById('executedOrdersCount');
+            const valueElement = document.getElementById('totalExecutedValue');
+            const progressBar = document.getElementById('executionProgressBar');
+            const progressText = document.getElementById('executionProgressText');
+            
+            if (countElement) {
+                countElement.textContent = (stats.total_orders || 0).toLocaleString('en-US');
             }
+            
+            if (valueElement) {
+                const value = stats.total_executed_value || 0;
+                if (value >= 1000000) {
+                    valueElement.textContent = (value / 1000000).toFixed(1) + 'M';
+                } else if (value >= 1000) {
+                    valueElement.textContent = (value / 1000).toFixed(1) + 'K';
+                } else {
+                    valueElement.textContent = value.toLocaleString('en-US', {
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: 0
+                    });
+                }
+            }
+            
+            if (progressBar) {
+                progressBar.style.width = (stats.execution_percentage || 0) + '%';
+            }
+            
+            if (progressText) {
+                progressText.textContent = `معدل الإنجاز ${stats.execution_percentage || 0}%`;
+            }
+            
+            // Update status counts
+            if (stats.status_counts) {
+                const statusCounts = stats.status_counts;
+                
+                const status2Element = document.getElementById('status2Count');
+                const status3Element = document.getElementById('status3Count');
+                const status4Element = document.getElementById('status4Count');
+                const status5Element = document.getElementById('status5Count');
+                const status6Element = document.getElementById('status6Count');
+                const status8Element = document.getElementById('status8Count');
+                const status10Element = document.getElementById('status10Count');
+                
+                if (status2Element) status2Element.textContent = statusCounts.status_2 || 0;
+                if (status3Element) status3Element.textContent = statusCounts.status_3 || 0;
+                if (status4Element) status4Element.textContent = statusCounts.status_4 || 0;
+                if (status5Element) status5Element.textContent = statusCounts.status_5 || 0;
+                if (status6Element) status6Element.textContent = statusCounts.status_6 || 0;
+                if (status8Element) status8Element.textContent = statusCounts.status_8 || 0;
+                if (status10Element) status10Element.textContent = statusCounts.status_10 || 0;
+            }
+        } else {
+            console.error('Failed to fetch execution data:', data.message);
         }
-        
-        if (progressBar) {
-            progressBar.style.width = stats.executionRate + '%';
-        }
-        
-        if (progressText) {
-            progressText.textContent = `معدل الإنجاز ${stats.executionRate}%`;
-        }
+    })
+    .catch(error => {
+        console.error('Error fetching execution data:', error);
     });
 }
 
@@ -890,8 +1206,19 @@ function calculateInProgressStats() {
     // Get project from URL or default to 'riyadh'
     const project = window.location.pathname.includes('madinah') ? 'madinah' : 'riyadh';
     
+    // Get date filters
+    const startDate = document.getElementById('filter_start_date')?.value || '';
+    const endDate = document.getElementById('filter_end_date')?.value || '';
+    
+    // Build URL with parameters
+    let url = `/api/work-orders/inprogress?project=${project}`;
+    if (startDate) url += `&start_date=${startDate}`;
+    if (endDate) url += `&end_date=${endDate}`;
+    
+    console.log('InProgress API URL:', url);
+    
     // Call the in-progress API
-    return fetch(`/api/work-orders/inprogress?project=${project}`, {
+    return fetch(url, {
         headers: {
             'X-Requested-With': 'XMLHttpRequest',
             'Accept': 'application/json',
@@ -936,8 +1263,19 @@ function calculateExtractStats() {
     // Get project from URL or default to 'riyadh'
     const project = window.location.pathname.includes('madinah') ? 'madinah' : 'riyadh';
     
+    // Get date filters
+    const startDate = document.getElementById('filter_start_date')?.value || '';
+    const endDate = document.getElementById('filter_end_date')?.value || '';
+    
+    // Build URL with parameters
+    let url = `/api/work-orders/extracts?project=${project}`;
+    if (startDate) url += `&start_date=${startDate}`;
+    if (endDate) url += `&end_date=${endDate}`;
+    
+    console.log('Extracts API URL:', url);
+    
     // Call the extracts API
-    return fetch(`/api/work-orders/extracts?project=${project}`, {
+    return fetch(url, {
         headers: {
             'X-Requested-With': 'XMLHttpRequest',
             'Accept': 'application/json',
@@ -979,8 +1317,19 @@ function calculateCompletedStats() {
     // Get project from URL or default to 'riyadh'
     const project = window.location.pathname.includes('madinah') ? 'madinah' : 'riyadh';
     
+    // Get date filters
+    const startDate = document.getElementById('filter_start_date')?.value || '';
+    const endDate = document.getElementById('filter_end_date')?.value || '';
+    
+    // Build URL with parameters
+    let url = `/api/work-orders/completed?project=${project}`;
+    if (startDate) url += `&start_date=${startDate}`;
+    if (endDate) url += `&end_date=${endDate}`;
+    
+    console.log('Completed API URL:', url);
+    
     // Call the completed orders API
-    return fetch(`/api/work-orders/completed?project=${project}`, {
+    return fetch(url, {
         headers: {
             'X-Requested-With': 'XMLHttpRequest',
             'Accept': 'application/json',
@@ -1062,18 +1411,19 @@ function updateExtractStats() {
         const progressText = document.getElementById('extractProgressText');
         
         if (extractsValueElement) {
-            // Format the currency value
-            const formattedValue = new Intl.NumberFormat('ar-SA', {
-                style: 'currency',
-                currency: 'SAR',
-                minimumFractionDigits: 0,
-                maximumFractionDigits: 0
-            }).format(stats.extractsValue);
-            extractsValueElement.textContent = formattedValue;
+            // Format the value with K/M notation
+            const value = stats.extractsValue;
+            if (value >= 1000000) {
+                extractsValueElement.textContent = (value / 1000000).toFixed(1) + 'M';
+            } else if (value >= 1000) {
+                extractsValueElement.textContent = (value / 1000).toFixed(1) + 'K';
+            } else {
+                extractsValueElement.textContent = value.toLocaleString('en-US');
+            }
         }
         
         if (extractOrdersCountElement) {
-            extractOrdersCountElement.textContent = stats.extractOrdersCount.toLocaleString('ar-SA');
+            extractOrdersCountElement.textContent = stats.extractOrdersCount.toLocaleString('en-US');
         }
         
         if (progressBar) {
@@ -1108,18 +1458,19 @@ function updateCompletedStats() {
         const progressText = document.getElementById('completedProgressText');
         
         if (completedCountElement) {
-            completedCountElement.textContent = stats.completedCount.toLocaleString('ar-SA');
+            completedCountElement.textContent = stats.completedCount.toLocaleString('en-US');
         }
         
         if (completedValueElement) {
-            // Format the currency value
-            const formattedValue = new Intl.NumberFormat('ar-SA', {
-                style: 'currency',
-                currency: 'SAR',
-                minimumFractionDigits: 0,
-                maximumFractionDigits: 0
-            }).format(stats.completedTotalValue);
-            completedValueElement.textContent = formattedValue;
+            // Format the value with K/M notation
+            const value = stats.completedTotalValue;
+            if (value >= 1000000) {
+                completedValueElement.textContent = (value / 1000000).toFixed(1) + 'M';
+            } else if (value >= 1000) {
+                completedValueElement.textContent = (value / 1000).toFixed(1) + 'K';
+            } else {
+                completedValueElement.textContent = value.toLocaleString('en-US');
+            }
         }
         
         if (progressBar) {

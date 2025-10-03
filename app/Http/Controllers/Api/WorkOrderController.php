@@ -10,6 +10,7 @@ use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\WorkOrdersInProgressExport;
 use App\Exports\WorkOrdersReceiptsExport;
 use App\Exports\WorkOrdersCompletedExport;
+use App\Exports\WorkOrdersExecutionExport;
 
 class WorkOrderController extends Controller
 {
@@ -33,10 +34,9 @@ class WorkOrderController extends Controller
                 'page' => $page
             ]);
             
-            // بناء الاستعلام الأساسي - جلب أوامر العمل المستلمة فقط
+            // بناء الاستعلام الأساسي - جلب كل أوامر العمل
             $query = WorkOrder::where('city', $city)
-                ->whereNotNull('order_number') // أوامر العمل المستلمة لها رقم أمر عمل
-                ->where('execution_status', '1'); // جاري العمل بالموقع فقط
+                ->whereNotNull('order_number'); // أوامر العمل المستلمة لها رقم أمر عمل
             
             // تطبيق الفلاتر المبسطة
             if ($request->filled('order_number')) {
@@ -45,6 +45,11 @@ class WorkOrderController extends Controller
             
             if ($request->filled('office')) {
                 $query->where('office', $request->office);
+            }
+            
+            // فلتر حالة التنفيذ
+            if ($request->filled('execution_status')) {
+                $query->where('execution_status', $request->execution_status);
             }
             
             // فلتر تاريخ البداية
@@ -185,9 +190,9 @@ class WorkOrderController extends Controller
                 'page' => $page
             ]);
             
-            // بناء الاستعلام الأساسي - فلترة أوامر العمل المنفذة (حالات التنفيذ المختلفة)
+            // بناء الاستعلام الأساسي - عرض كل أوامر العمل ماعدا جاري العمل بالموقع (1) ومنتهي تم الصرف (7)
             $query = WorkOrder::where('city', $city)
-                ->whereIn('execution_status', [1, 2, 3, 4]) // جاري العمل، تم التنفيذ، تسليم 155، اعداد المستخلص
+                ->whereNotIn('execution_status', [1, 7]) // استبعاد جاري العمل بالموقع ومنتهي تم الصرف
                 ->whereNotNull('order_number'); // أوامر العمل التي لها رقم
             
             // تطبيق الفلاتر المبسطة
@@ -197,6 +202,16 @@ class WorkOrderController extends Controller
             
             if ($request->filled('office')) {
                 $query->where('office', $request->office);
+            }
+            
+            // فلتر تاريخ البداية
+            if ($request->filled('start_date')) {
+                $query->whereDate('created_at', '>=', $request->start_date);
+            }
+            
+            // فلتر تاريخ النهاية
+            if ($request->filled('end_date')) {
+                $query->whereDate('created_at', '<=', $request->end_date);
             }
             
             // حساب الإحصائيات
@@ -212,12 +227,21 @@ class WorkOrderController extends Controller
             if ($request->filled('office')) {
                 $baseQuery->where('office', $request->office);
             }
+            if ($request->filled('start_date')) {
+                $baseQuery->whereDate('created_at', '>=', $request->start_date);
+            }
+            if ($request->filled('end_date')) {
+                $baseQuery->whereDate('created_at', '<=', $request->end_date);
+            }
             
             $statusCounts = [
-                'status_1' => (clone $baseQuery)->where('execution_status', '1')->count(), // جاري العمل بالموقع
                 'status_2' => (clone $baseQuery)->where('execution_status', '2')->count(), // تم التنفيذ وجاري تسليم 155
                 'status_3' => (clone $baseQuery)->where('execution_status', '3')->count(), // تم تسليم 155 جاري اصدار شهادة
                 'status_4' => (clone $baseQuery)->where('execution_status', '4')->count(), // اعداد مستخلص الدفعة الجزئية الاولي
+                'status_5' => (clone $baseQuery)->where('execution_status', '5')->count(), // تم صرف مستخلص الدفعة الجزئية الاولي
+                'status_6' => (clone $baseQuery)->where('execution_status', '6')->count(), // اعداد المستخلص الدفعة الجزئية الثانية وجاري الصرف
+                'status_8' => (clone $baseQuery)->where('execution_status', '8')->count(), // تم اصدار شهادة الانجاز
+                'status_10' => (clone $baseQuery)->where('execution_status', '10')->count(), // تم اعداد المستخلص الكلي وجاري الصرف
             ];
             
             \Log::info('Execution stats', [
@@ -312,22 +336,12 @@ class WorkOrderController extends Controller
     {
         try {
             $project = $request->get('project', 'riyadh');
-            
-            // التحقق من الصلاحيات
-            $user = auth()->user();
-            $exportPermission = $project . '_export_excel';
-            
-            if (!$user->hasPermission($exportPermission) && !$user->isAdmin()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'ليس لديك صلاحية لتصدير البيانات'
-                ], 403);
-            }
             $city = $project === 'madinah' ? 'المدينة المنورة' : 'الرياض';
             
-            // بناء الاستعلام مع نفس الفلاتر
+            // بناء الاستعلام مع نفس الفلاتر - عرض كل أوامر العمل ماعدا جاري العمل بالموقع (1) ومنتهي تم الصرف (7)
             $query = WorkOrder::where('city', $city)
-                ->whereIn('execution_status', [2, 3, 4]); // حالات التنفيذ المختلفة
+                ->whereNotIn('execution_status', [1, 7]) // استبعاد جاري العمل بالموقع ومنتهي تم الصرف
+                ->whereNotNull('order_number');
             
             // تطبيق نفس الفلاتر المبسطة
             if ($request->filled('order_number')) {
@@ -338,6 +352,16 @@ class WorkOrderController extends Controller
                 $query->where('office', $request->office);
             }
             
+            // فلتر تاريخ البداية
+            if ($request->filled('start_date')) {
+                $query->whereDate('created_at', '>=', $request->start_date);
+            }
+            
+            // فلتر تاريخ النهاية
+            if ($request->filled('end_date')) {
+                $query->whereDate('created_at', '<=', $request->end_date);
+            }
+            
             $workOrders = $query->orderBy('created_at', 'desc')->get();
             
             $fileName = 'work_orders_execution_' . $project . '_' . date('Y-m-d') . '.xlsx';
@@ -345,6 +369,7 @@ class WorkOrderController extends Controller
             return Excel::download(new WorkOrdersExecutionExport($workOrders), $fileName);
             
         } catch (\Exception $e) {
+            \Log::error('Export Execution Error: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'حدث خطأ أثناء تصدير البيانات',
@@ -730,23 +755,17 @@ class WorkOrderController extends Controller
     public function exportInProgress(Request $request)
     {
         try {
+            \Log::info('Export InProgress called', $request->all());
+            
             $project = $request->get('project', 'riyadh');
-            
-            // التحقق من الصلاحيات
-            $user = auth()->user();
-            $exportPermission = $project . '_export_excel';
-            
-            if (!$user->hasPermission($exportPermission) && !$user->isAdmin()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'ليس لديك صلاحية لتصدير البيانات'
-                ], 403);
-            }
             $city = $project === 'madinah' ? 'المدينة المنورة' : 'الرياض';
+            
+            \Log::info('Export InProgress project and city', ['project' => $project, 'city' => $city]);
             
             // بناء الاستعلام مع نفس الفلاتر
             $query = WorkOrder::where('city', $city)
-                ->where('execution_status', 1); // 1 = جاري العمل
+                ->where('execution_status', 1) // 1 = جاري العمل بالموقع
+                ->whereNotNull('order_number'); // أوامر العمل التي لها رقم
             
             // تطبيق نفس الفلاتر المبسطة
             if ($request->filled('order_number')) {
@@ -759,11 +778,16 @@ class WorkOrderController extends Controller
             
             $workOrders = $query->orderBy('created_at', 'desc')->get();
             
+            \Log::info('Export InProgress work orders count', ['count' => $workOrders->count()]);
+            
             $fileName = 'work_orders_inprogress_' . $project . '_' . date('Y-m-d') . '.xlsx';
+            
+            \Log::info('Export InProgress starting download', ['fileName' => $fileName]);
             
             return Excel::download(new WorkOrdersInProgressExport($workOrders), $fileName);
             
         } catch (\Exception $e) {
+            \Log::error('Export InProgress Error: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'حدث خطأ أثناء تصدير البيانات',

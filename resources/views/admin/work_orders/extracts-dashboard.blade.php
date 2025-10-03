@@ -26,10 +26,17 @@
                             </p>
                         </div>
                         <div class="text-end">
-                        <a href="/admin/work-orders/productivity/riyadh" class="btn btn-light">
-                                <i class="fas fa-arrow-right me-2"></i>
-                                العودة للداشبورد الرئيسي
-                            </a>
+                            @if(isset($project) && $project == 'madinah')
+                                <a href="{{ route('admin.work-orders.productivity.madinah') }}" class="btn btn-light">
+                                    <i class="fas fa-arrow-right me-2"></i>
+                                    العودة للوحة تحكم المدينة المنورة
+                                </a>
+                            @else
+                                <a href="{{ route('admin.work-orders.productivity.riyadh') }}" class="btn btn-light">
+                                    <i class="fas fa-arrow-right me-2"></i>
+                                    العودة للوحة تحكم الرياض
+                                </a>
+                            @endif
                         </div>
                     </div>
                 </div>

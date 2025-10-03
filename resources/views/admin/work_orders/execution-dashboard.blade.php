@@ -26,10 +26,17 @@
                             </p>
                         </div>
                         <div class="text-end">
-                        <a href="{{ isset($project) && $project == 'madinah' ? '/admin/work-orders/productivity/madinah' : '/admin/work-orders/productivity/riyadh' }}" class="btn btn-light">
+                            @if(isset($project) && $project == 'madinah')
+                                <a href="{{ route('admin.work-orders.productivity.madinah') }}" class="btn btn-light">
+                                    <i class="fas fa-arrow-right me-2"></i>
+                                    العودة للوحة تحكم المدينة المنورة
+                                </a>
+                            @else
+                                <a href="{{ route('admin.work-orders.productivity.riyadh') }}" class="btn btn-light">
                                 <i class="fas fa-arrow-right me-2"></i>
-                                العودة للداشبورد الرئيسي
+                                    العودة للوحة تحكم الرياض
                             </a>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -37,7 +44,7 @@
 
             <!-- Summary Cards -->
             <div class="row mb-4">
-                <div class="col-md-3">
+                <div class="col-md-4">
                     <div class="card border-0 bg-warning bg-opacity-10">
                         <div class="card-body text-center">
                             <i class="fas fa-clipboard-check text-warning fs-2 mb-2"></i>
@@ -46,7 +53,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-4">
                     <div class="card border-0 bg-success bg-opacity-10">
                         <div class="card-body text-center">
                             <i class="fas fa-money-check-alt text-success fs-2 mb-2"></i>
@@ -55,7 +62,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-4">
                     <div class="card border-0 bg-info bg-opacity-10">
                         <div class="card-body text-center">
                             <i class="fas fa-percentage text-info fs-2 mb-2"></i>
@@ -64,28 +71,10 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3">
-                    <div class="card border-0 bg-primary bg-opacity-10">
-                        <div class="card-body text-center">
-                            <i class="fas fa-calculator text-primary fs-2 mb-2"></i>
-                            <h4 class="mb-1 text-primary" id="averageExecutedValue">0</h4>
-                            <small class="text-muted">متوسط القيمة المنفذة</small>
-                        </div>
-                    </div>
-                </div>
             </div>
             
             <!-- حالات التنفيذ -->
             <div class="row mb-4">
-                <div class="col-md-3">
-                    <div class="card border-0" style="background-color: rgb(228, 196, 14, 0.1);">
-                        <div class="card-body text-center">
-                            <i class="fas fa-tools fs-2 mb-2" style="color: rgb(228, 196, 14);"></i>
-                            <h4 class="mb-1" style="color: rgb(228, 196, 14);" id="status1Count">0</h4>
-                            <small class="text-muted">جاري العمل بالموقع</small>
-                        </div>
-                    </div>
-                </div>
                 <div class="col-md-3">
                     <div class="card border-0" style="background-color: rgb(112, 68, 2, 0.1);">
                         <div class="card-body text-center">
@@ -109,7 +98,37 @@
                         <div class="card-body text-center">
                             <i class="fas fa-file-invoice-dollar fs-2 mb-2" style="color: rgb(0, 149, 54);"></i>
                             <h4 class="mb-1" style="color: rgb(0, 149, 54);" id="status4Count">0</h4>
-                            <small class="text-muted">تم اعداد المستخلص الدفعة الجزئية الاولي</small>
+                            <small class="text-muted">اعداد المستخلص الدفعة الجزئية الاولي</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card border-0" style="background-color: rgb(41, 128, 185, 0.1);">
+                        <div class="card-body text-center">
+                            <i class="fas fa-check-circle fs-2 mb-2" style="color: rgb(41, 128, 185);"></i>
+                            <h4 class="mb-1" style="color: rgb(41, 128, 185);" id="status5Count">0</h4>
+                            <small class="text-muted">تم صرف المستخلص الدفعة الجزئية الاولي</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="card border-0" style="background-color: rgb(155, 89, 182, 0.1);">
+                        <div class="card-body text-center">
+                            <i class="fas fa-file-invoice fs-2 mb-2" style="color: rgb(155, 89, 182);"></i>
+                            <h4 class="mb-1" style="color: rgb(155, 89, 182);" id="status6Count">0</h4>
+                            <small class="text-muted">اعداد المستخلص الدفعة الجزئية الثانية وجاري الصرف</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card border-0" style="background-color: rgb(52, 152, 219, 0.1);">
+                        <div class="card-body text-center">
+                            <i class="fas fa-file-contract fs-2 mb-2" style="color: rgb(52, 152, 219);"></i>
+                            <h4 class="mb-1" style="color: rgb(52, 152, 219);" id="status10Count">0</h4>
+                            <small class="text-muted">تم اعداد المستخلص الكلي وجاري الصرف</small>
                         </div>
                     </div>
                 </div>
@@ -129,12 +148,12 @@
                         <input type="hidden" name="project" value="{{ $project ?? '' }}">
                         
                         <div class="row g-3">
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <label for="order_number" class="form-label">رقم أمر العمل</label>
                                 <input type="text" class="form-control" id="order_number" name="order_number" placeholder="ابحث برقم الأمر">
                             </div>
                             
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <label for="office" class="form-label">المكتب</label>
                                 <select class="form-select" id="office" name="office">
                                     <option value="">جميع المكاتب</option>
@@ -156,12 +175,31 @@
                                 </select>
                             </div>
                             
+                            <div class="col-md-3">
+                                <label for="start_date" class="form-label">تاريخ البداية</label>
+                                <input type="date" class="form-control" id="start_date" name="start_date">
+                            </div>
+                            
+                            <div class="col-md-3">
+                                <label for="end_date" class="form-label">تاريخ النهاية</label>
+                                <input type="date" class="form-control" id="end_date" name="end_date">
+                            </div>
+                            
                             <div class="col-md-4">
+                                <label class="form-label">فلاتر سريعة</label>
+                                <div class="btn-group w-100" role="group">
+                                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="setDateRange('week')">أسبوع</button>
+                                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="setDateRange('month')">شهر</button>
+                                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="setDateRange('3months')">3 أشهر</button>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-8">
                                 <label class="form-label">إجراءات</label>
                                 <div class="d-flex gap-2">
                                     <button type="submit" class="btn btn-warning">
                                         <i class="fas fa-search me-1"></i>
-                                        بحث 
+                                        بحث وتصفية
                                     </button>
                                     <button type="button" class="btn btn-secondary" onclick="clearFilters()">
                                         <i class="fas fa-times me-1"></i>
@@ -169,11 +207,11 @@
                                     </button>
                                     <button type="button" class="btn btn-success" onclick="exportResults()">
                                         <i class="fas fa-download me-1"></i>
-                                        تصدير النتائج
+                                        تصدير Excel
                                     </button>
                                     <button type="button" class="btn btn-info" onclick="refreshData()">
                                         <i class="fas fa-sync me-1"></i>
-                                        تحديث البيانات
+                                        تحديث
                                     </button>
                                 </div>
                             </div>
@@ -404,137 +442,57 @@ function displayTableResults(data) {
     const container = document.getElementById('workOrdersList');
     container.innerHTML = '';
     
-    data.forEach((order, orderIndex) => {
-        const executionPercentage = calculateExecutionPercentage(parseFloat(order.executed_value), parseFloat(order.initial_value));
-        
-        // إنشاء كارت لكل أمر عمل
-        const orderCard = document.createElement('div');
-        orderCard.className = 'card mb-4 border-0 shadow-sm';
-        
-        let workItemsHtml = '';
-        if (order.work_items && order.work_items.length > 0) {
-            let totalPlannedAmount = 0;
-            let totalExecutedAmount = 0;
-            
-            const itemsRows = order.work_items.map((item, itemIndex) => {
-                totalPlannedAmount += parseFloat(item.planned_amount || 0);
-                totalExecutedAmount += parseFloat(item.executed_amount || 0);
-                const difference = parseFloat(item.difference || 0);
-                
-                let diffBadge = '';
-                if (difference > 0) {
-                    diffBadge = `<span class="badge bg-danger">-${difference.toFixed(2)}</span>`;
-                } else if (difference < 0) {
-                    diffBadge = `<span class="badge bg-success">+${Math.abs(difference).toFixed(2)}</span>`;
-                } else {
-                    diffBadge = `<span class="badge bg-secondary">0.00</span>`;
-                }
-                
-                return `
-                    <tr>
-                        <td class="text-center">${itemIndex + 1}</td>
-                        <td class="text-center"><span class="badge bg-primary">${item.code}</span></td>
-                        <td class="text-start">${item.description}</td>
-                        <td class="text-center"><span class="badge bg-info">${item.unit}</span></td>
-                        <td class="text-center"><span class="text-success fw-bold">${formatCurrency(item.unit_price)}</span></td>
-                        <td class="text-center">${parseFloat(item.planned_quantity || 0).toFixed(2)}</td>
-                        <td class="text-center"><span class="text-primary fw-bold">${formatCurrency(item.planned_amount)}</span></td>
-                        <td class="text-center">${parseFloat(item.executed_quantity || 0).toFixed(2)}</td>
-                        <td class="text-center"><span class="text-success fw-bold">${formatCurrency(item.executed_amount)}</span></td>
-                        <td class="text-center">${diffBadge}</td>
-                    </tr>
-                `;
-            }).join('');
-            
-            workItemsHtml = `
-                <div class="table-responsive">
-                    <table class="table table-hover mb-0" style="font-size: 0.9rem;">
-                        <thead class="table-dark">
-                            <tr>
-                                <th class="text-center" style="width: 5%">#</th>
-                                <th class="text-center" style="width: 10%">رقم البند</th>
-                                <th style="width: 25%">وصف البند</th>
-                                <th class="text-center" style="width: 8%">الوحدة</th>
-                                <th class="text-center" style="width: 10%">سعر الوحدة</th>
-                                <th class="text-center" style="width: 10%">الكمية المخططة</th>
-                                <th class="text-center" style="width: 10%">السعر الإجمالي المخطط</th>
-                                <th class="text-center" style="width: 10%">الكمية المنفذة</th>
-                                <th class="text-center" style="width: 10%">السعر الإجمالي المنفذ</th>
-                                <th class="text-center" style="width: 8%">فرق المنفذة - المخططة</th>
+    // إنشاء جدول لأوامر العمل
+    const table = document.createElement('table');
+    table.className = 'table table-hover mb-0';
+    
+    // إنشاء header الجدول
+    table.innerHTML = `
+        <thead class="table-light">
+            <tr>
+                <th>#</th>
+                <th>رقم أمر العمل</th>
+                <th>اسم المشترك</th>
+                <th>المكتب</th>
+                <th>حالة التنفيذ</th>
+                <th>القيمة المبدئية</th>
+                <th>القيمة المنفذة</th>
+                <th>الإجراءات</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            ${itemsRows}
-                        </tbody>
-                        <tfoot class="table-light">
-                            <tr class="fw-bold">
-                                <td colspan="6" class="text-end">الإجمالي:</td>
-                                <td class="text-center text-primary">${formatCurrency(totalPlannedAmount)}</td>
-                                <td class="text-center text-success">-</td>
-                                <td class="text-center text-success">${formatCurrency(totalExecutedAmount)}</td>
-                                <td class="text-center">
-                                    ${totalPlannedAmount > totalExecutedAmount ? 
-                                        `<span class="text-danger">-${formatCurrency(totalPlannedAmount - totalExecutedAmount)}</span>` :
-                                        totalPlannedAmount < totalExecutedAmount ?
-                                        `<span class="text-success">+${formatCurrency(totalExecutedAmount - totalPlannedAmount)}</span>` :
-                                        `<span class="text-secondary">${formatCurrency(0)}</span>`
-                                    }
-                                </td>
-                            </tr>
-                        </tfoot>
-                    </table>
-                </div>
-            `;
-        } else {
-            workItemsHtml = `
-                <div class="text-center py-4">
-                    <i class="fas fa-clipboard-list fa-2x text-muted mb-2"></i>
-                    <p class="text-muted">لا توجد بنود عمل مضافة لهذا الأمر</p>
-                </div>
-            `;
-        }
-        
-        orderCard.innerHTML = `
-            <div class="card-header bg-warning text-white py-3">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h5 class="mb-1">
-                            <i class="fas fa-list-alt me-2"></i>
-                            بنود العمل - أمر العمل رقم ${order.order_number}
-                        </h5>
-                        <div class="d-flex align-items-center gap-3">
-                            <small>
-                                <i class="fas fa-user me-1"></i>
-                                ${order.subscriber_name || 'غير محدد'}
-                            </small>
-                            <small>
-                                <i class="fas fa-building me-1"></i>
-                                ${order.office || 'غير محدد'}
-                            </small>
-                            <small>
-                                <i class="fas fa-money-check-alt me-1"></i>
-                                القيمة المنفذة: ${formatCurrency(order.executed_value)}
-                            </small>
-                        </div>
-                    </div>
-                    <div class="text-end">
-                        <div class="d-flex align-items-center gap-2">
-                            <span class="badge bg-light text-dark">
-                                ${order.work_items ? order.work_items.length : 0} بند
-                            </span>
-                            <a href="/admin/work-orders/${order.id}" class="btn btn-light btn-sm">
-                                <i class="fas fa-eye me-1"></i> عرض التفاصيل
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="card-body p-0">
-                ${workItemsHtml}
-            </div>
+        <tbody id="tableBody"></tbody>
+    `;
+    
+    container.appendChild(table);
+    const tbody = document.getElementById('tableBody');
+    
+    data.forEach((order, index) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${((currentPage - 1) * parseInt(document.getElementById('perPage').value)) + index + 1}</td>
+            <td>
+                <strong class="text-warning">${order.order_number}</strong>
+            </td>
+            <td>${order.subscriber_name || 'غير محدد'}</td>
+            <td>
+                <span class="badge bg-secondary">${order.office || 'غير محدد'}</span>
+            </td>
+            <td>
+                ${getStatusBadge(order.execution_status, order.execution_status_text)}
+            </td>
+            <td>
+                <strong class="text-info">${formatCurrency(order.initial_value)}</strong>
+            </td>
+            <td>
+                <strong class="text-success">${formatCurrency(order.executed_value)}</strong>
+            </td>
+            <td>
+                <a href="/admin/work-orders/${order.id}" class="btn btn-outline-warning btn-sm" title="عرض التفاصيل">
+                    <i class="fas fa-eye"></i>
+                </a>
+            </td>
         `;
-        
-        container.appendChild(orderCard);
+        tbody.appendChild(row);
     });
 }
 
@@ -580,15 +538,16 @@ function updateSummaryCards(summary) {
     document.getElementById('totalExecutedOrders').textContent = summary.total_orders || 0;
     document.getElementById('totalExecutedValue').textContent = formatCurrency(summary.total_executed_value || 0);
     document.getElementById('executionPercentage').textContent = (summary.execution_percentage || 0) + '%';
-    document.getElementById('averageExecutedValue').textContent = formatCurrency(summary.average_executed_value || 0);
     document.getElementById('totalCount').textContent = summary.total_orders || 0;
     
     // Update status counts
     if (summary.status_counts) {
-        document.getElementById('status1Count').textContent = summary.status_counts.status_1 || 0;
         document.getElementById('status2Count').textContent = summary.status_counts.status_2 || 0;
         document.getElementById('status3Count').textContent = summary.status_counts.status_3 || 0;
         document.getElementById('status4Count').textContent = summary.status_counts.status_4 || 0;
+        document.getElementById('status5Count').textContent = summary.status_counts.status_5 || 0;
+        document.getElementById('status6Count').textContent = summary.status_counts.status_6 || 0;
+        document.getElementById('status10Count').textContent = summary.status_counts.status_10 || 0;
     }
 }
 
@@ -663,6 +622,38 @@ function changePerPage(perPage) {
     loadExecutedOrders(1); // Reset to first page
 }
 
+function setDateRange(range) {
+    const today = new Date();
+    const startDate = new Date();
+    const endDate = new Date();
+    
+    switch(range) {
+        case 'week':
+            startDate.setDate(today.getDate() - 7);
+            break;
+        case 'month':
+            startDate.setMonth(today.getMonth() - 1);
+            break;
+        case '3months':
+            startDate.setMonth(today.getMonth() - 3);
+            break;
+    }
+    
+    // Format dates to YYYY-MM-DD
+    const formatDate = (date) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
+    
+    document.getElementById('start_date').value = formatDate(startDate);
+    document.getElementById('end_date').value = formatDate(endDate);
+    
+    // Auto-submit the form
+    loadExecutedOrders(1);
+}
+
 function clearFilters() {
     document.getElementById('executionFilterForm').reset();
     loadExecutedOrders(1);
@@ -704,6 +695,32 @@ function formatCurrency(amount) {
 function calculateExecutionPercentage(executed, initial) {
     if (!executed || !initial || initial === 0) return 0;
     return Math.round((executed / initial) * 100);
+}
+
+// Get status badge
+function getStatusBadge(status, statusText = null) {
+    const statusMap = {
+        '2': { label: 'تم التنفيذ بالموقع وجاري تسليم 155', color: 'rgb(112, 68, 2)' },
+        '3': { label: 'تم تسليم 155 جاري اصدار شهادة الانجاز', color: 'rgb(165, 0, 52)' },
+        '4': { label: 'تم اصدار مستخلص الدفعه الجزئية الاولي وجاري الصرف', color: 'rgb(0, 56, 101)' },
+        '5': { label: 'تم صرف مستخلص الدفعة الجزئية الاولي ', color: 'rgb(195, 195, 195)' },
+        '6': { label: 'اعداد المستخلص الدفعة الجزئية الثانية وجاري الصرف', color: 'rgb(155, 89, 182)' },
+        '8': { label: 'تم اصدار شهادة الانجاز', color: 'rgb(0, 149, 54)' },
+        '9': { label: 'الغاء او تحويل امر العمل', color: 'rgb(0, 0, 0)' },
+        '10': { label: 'تم اعداد المستخلص الكلي وجاري الصرف', color: 'rgb(52, 152, 219)' }
+    };
+    
+    const statusInfo = statusMap[status];
+    if (statusInfo) {
+        return `<span class="badge" style="background-color: ${statusInfo.color}">${statusInfo.label}</span>`;
+    }
+    
+    // إذا كان عندنا نص الحالة من الـ API
+    if (statusText) {
+        return `<span class="badge bg-secondary">${statusText}</span>`;
+    }
+    
+    return `<span class="badge bg-secondary">${status || 'غير محدد'}</span>`;
 }
 </script>
 @endpush

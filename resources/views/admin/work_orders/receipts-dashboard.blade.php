@@ -26,10 +26,17 @@
                             </p>
                         </div>
                         <div class="text-end">
-                        <a href="{{ isset($project) && $project == 'madinah' ? '/admin/work-orders/productivity/madinah' : '/admin/work-orders/productivity/riyadh' }}" class="btn btn-light">
-                                <i class="fas fa-arrow-right me-2"></i>
-                                العودة للداشبورد الرئيسي
-                            </a>
+                            @if(isset($project) && $project == 'madinah')
+                                <a href="{{ route('admin.work-orders.productivity.madinah') }}" class="btn btn-light">
+                                    <i class="fas fa-arrow-right me-2"></i>
+                                    العودة للوحة تحكم المدينة المنورة
+                                </a>
+                            @else
+                                <a href="{{ route('admin.work-orders.productivity.riyadh') }}" class="btn btn-light">
+                                    <i class="fas fa-arrow-right me-2"></i>
+                                    العودة للوحة تحكم الرياض
+                                </a>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -37,7 +44,7 @@
 
             <!-- Summary Cards -->
             <div class="row mb-4">
-                <div class="col-md-3">
+                <div class="col-md-4">
                     <div class="card border-0 bg-success bg-opacity-10">
                         <div class="card-body text-center">
                             <i class="fas fa-clipboard-check text-success fs-2 mb-2"></i>
@@ -46,7 +53,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-4">
                     <div class="card border-0 bg-info bg-opacity-10">
                         <div class="card-body text-center">
                             <i class="fas fa-money-bill-wave text-info fs-2 mb-2"></i>
@@ -55,21 +62,12 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-4">
                     <div class="card border-0 bg-warning bg-opacity-10">
                         <div class="card-body text-center">
                             <i class="fas fa-percentage text-warning fs-2 mb-2"></i>
                             <h4 class="mb-1 text-warning" id="receivedPercentage">0%</h4>
                             <small class="text-muted">نسبة من إجمالي الأوامر</small>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card border-0 bg-primary bg-opacity-10">
-                        <div class="card-body text-center">
-                            <i class="fas fa-calculator text-primary fs-2 mb-2"></i>
-                            <h4 class="mb-1 text-primary" id="averageOrderValue">0</h4>
-                            <small class="text-muted">متوسط قيمة الأمر</small>
                         </div>
                     </div>
                 </div>
@@ -96,20 +94,21 @@
                             
                             <div class="col-md-4">
                                 <label for="start_date" class="form-label">تاريخ البداية</label>
-                                <div class="btn-group mb-2 w-100" role="group">
-                                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="setDateRange('today')">اليوم</button>
-                                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="setDateRange('week')">أسبوع</button>
-                                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="setDateRange('month')">شهر</button>
-                                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="setDateRange('3months')">3 أشهر</button>
-                                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="setDateRange('year')">سنة</button>
-                                </div>
                                 <input type="date" class="form-control" id="start_date" name="start_date">
                             </div>
                             
                             <div class="col-md-4">
                                 <label for="end_date" class="form-label">تاريخ النهاية</label>
-                                <div class="mb-2" style="height: 31px;"></div>
                                 <input type="date" class="form-control" id="end_date" name="end_date">
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <label class="form-label">فلاتر سريعة</label>
+                                <div class="btn-group w-100" role="group">
+                                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="setDateRange('week')">أسبوع</button>
+                                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="setDateRange('month')">شهر</button>
+                                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="setDateRange('3months')">3 أشهر</button>
+                                </div>
                             </div>
                             
                             <div class="col-md-12">
@@ -462,7 +461,6 @@ function updateSummaryCards(summary) {
     document.getElementById('totalReceivedOrders').textContent = summary.total_orders || 0;
     document.getElementById('totalInitialValue').textContent = formatCurrency(summary.total_value || 0);
     document.getElementById('receivedPercentage').textContent = (summary.percentage || 0) + '%';
-    document.getElementById('averageOrderValue').textContent = formatCurrency(summary.average_value || 0);
     document.getElementById('totalCount').textContent = summary.total_orders || 0;
 }
 
@@ -629,13 +627,13 @@ function getStatusBadge(status, statusDate = null) {
     const statusMap = {
         '1': { label: 'جاري العمل بالموقع', color: 'rgb(228, 196, 14)' },
         '2': { label: 'تم التنفيذ بالموقع وجاري تسليم 155', color: 'rgb(112, 68, 2)' },
-        '3': { label: 'تم تسليم 155 جاري اصدار شهادة الانجاز', color: 'rgb(165, 0, 52)' },
-        '4': { label: 'تم اصدار شهادة الانجاز', color: 'rgb(0, 149, 54)' },
-        '5': { label: 'تم تسليم الشهادة للعميل', color: 'rgb(0, 56, 101)' },
-        '6': { label: 'استكمال نواقص تنفيذ', color: 'rgb(222, 42, 42)' },
-        '7': { label: 'معلق تعديل استشاري', color: 'rgb(250, 114, 7)' },
-        '8': { label: 'متوقف لسبب خارجي', color: 'rgb(195, 195, 195)' },
-        '9': { label: 'الغاء او تحويل امر العمل', color: 'rgb(0, 0, 0)' }
+       '3': { label: 'تم تسليم 155 جاري اصدار شهادة الانجاز', color: 'rgb(165, 0, 52)' },
+        '4': { label: 'تم اصدار مستخلص الدفعه الجزئية الاولي وجاري الصرف', color: 'rgb(0, 56, 101)' },
+        '5': { label: 'تم صرف مستخلص الدفعة الجزئية الاولي ', color: 'rgb(195, 195, 195)' },
+        '6': { label: 'اعداد المستخلص الدفعة الجزئية الثانية وجاري الصرف', color: 'rgb(155, 89, 182)' },
+        '8': { label: 'تم اصدار شهادة الانجاز', color: 'rgb(0, 149, 54)' },
+        '9': { label: 'الغاء او تحويل امر العمل', color: 'rgb(0, 0, 0)' },
+        '10': { label: 'تم اعداد المستخلص الكلي وجاري الصرف', color: 'rgb(52, 152, 219)' }
     };
     
     const statusInfo = statusMap[status];
