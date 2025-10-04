@@ -517,6 +517,12 @@
                                 <i class="fas fa-plus me-1"></i>
                                 إضافة صف جديد
                             </button>
+                            
+                            <!-- زر مسح جميع الصفوف -->
+                            <button type="button" class="btn btn-danger btn-sm" onclick="deleteAllRows()">
+                                <i class="fas fa-trash-alt me-1"></i>
+                                مسح جميع الصفوف
+                            </button>
                             @endif
                         </div>
                     </div>
@@ -931,6 +937,106 @@ function showErrorIndicator(row, message = 'خطأ في الحفظ') {
             indicator.remove();
         }
     }, 3000);
+}
+
+// حذف جميع الصفوف
+function deleteAllRows() {
+    const tbody = document.getElementById('revenuesTableBody');
+    const dataRows = tbody.querySelectorAll('tr:not(#emptyRow)');
+    
+    if (dataRows.length === 0) {
+        alert('لا توجد صفوف لحذفها');
+        return;
+    }
+    
+    if (!confirm(`هل أنت متأكد من حذف جميع الصفوف (${dataRows.length} صف)؟\n\nهذا الإجراء لا يمكن التراجع عنه!`)) {
+        return;
+    }
+    
+    // تأكيد إضافي للأمان
+    if (!confirm('تأكيد نهائي: هل تريد فعلاً حذف جميع البيانات؟')) {
+        return;
+    }
+    
+    const csrfToken = document.querySelector('meta[name="csrf-token"]');
+    if (!csrfToken) {
+        console.error('CSRF token not found');
+        alert('خطأ في إعدادات الأمان');
+        return;
+    }
+    
+    // إظهار loading
+    const deleteBtn = event.target.closest('button');
+    const originalText = deleteBtn.innerHTML;
+    deleteBtn.disabled = true;
+    deleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>جاري الحذف...';
+    
+    // جمع IDs للصفوف المحفوظة في قاعدة البيانات
+    const rowsToDelete = [];
+    dataRows.forEach(row => {
+        const revenueId = row.dataset.revenueId;
+        if (revenueId && revenueId !== 'null') {
+            rowsToDelete.push(revenueId);
+        }
+    });
+    
+    // إذا كان هناك صفوف محفوظة، احذفها من قاعدة البيانات
+    if (rowsToDelete.length > 0) {
+        // حذف كل صف على حدة
+        let deletedCount = 0;
+        let failedCount = 0;
+        
+        const deletePromises = rowsToDelete.map(revenueId => {
+            return fetch(`{{ route("admin.work-orders.revenues.delete", ":id") }}`.replace(':id', revenueId), {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken.getAttribute('content'),
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    deletedCount++;
+                } else {
+                    failedCount++;
+                }
+            })
+            .catch(error => {
+                console.error('Error deleting row:', error);
+                failedCount++;
+            });
+        });
+        
+        Promise.all(deletePromises).then(() => {
+            // حذف جميع الصفوف من الجدول
+            dataRows.forEach(row => row.remove());
+            
+            // إظهار رسالة "لا توجد بيانات"
+            checkEmptyTable();
+            
+            // إعادة تعيين الزر
+            deleteBtn.disabled = false;
+            deleteBtn.innerHTML = originalText;
+            
+            // إظهار رسالة النجاح
+            if (failedCount === 0) {
+                alert(`تم حذف جميع الصفوف بنجاح (${deletedCount} صف)`);
+            } else {
+                alert(`تم حذف ${deletedCount} صف بنجاح\nفشل حذف ${failedCount} صف`);
+            }
+        });
+    } else {
+        // لا توجد صفوف محفوظة، فقط احذفها من الجدول
+        dataRows.forEach(row => row.remove());
+        checkEmptyTable();
+        
+        deleteBtn.disabled = false;
+        deleteBtn.innerHTML = originalText;
+        
+        alert(`تم حذف جميع الصفوف (${dataRows.length} صف)`);
+    }
 }
 
 // حذف صف
