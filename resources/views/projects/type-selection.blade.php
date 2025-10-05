@@ -213,7 +213,7 @@
 
         <!-- Projects List -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            @forelse(\App\Models\Project::latest()->get() as $project)
+            @forelse(\App\Models\Project::whereIn('project_type', ['OH33KV', 'UA33LW', 'SLS33KV', 'UG132KV'])->latest()->get() as $project)
             <div class="project-card rounded-2xl overflow-hidden p-6" 
                  style="--project-color: {{ 
                     $project->project_type === 'OH33KV' ? '#3b82f6' : (

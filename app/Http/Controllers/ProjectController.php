@@ -47,6 +47,9 @@ class ProjectController extends Controller
     {
         $query = Project::query();
 
+        // استبعاد المشاريع الخاصة (تظهر فقط في صفحتها الخاصة)
+        $query->where('project_type', '!=', 'special');
+
         // البحث حسب الاسم
         if ($request->filled('search')) {
             $query->where('name', 'like', '%' . $request->search . '%')
@@ -127,6 +130,12 @@ class ProjectController extends Controller
      */
     public function edit(Project $project)
     {
+        // إذا كان المشروع خاص، تحويل للصفحة الخاصة
+        if ($project->project_type === 'special') {
+            return redirect()->route('admin.special-projects.edit', $project)
+                ->with('info', 'يتم تعديل المشاريع الخاصة من صفحتها المخصصة');
+        }
+        
         return view('projects.edit', compact('project'));
     }
 
@@ -135,6 +144,12 @@ class ProjectController extends Controller
      */
     public function update(Request $request, Project $project)
     {
+        // منع تحديث المشاريع الخاصة من هنا
+        if ($project->project_type === 'special') {
+            return redirect()->route('admin.special-projects.edit', $project)
+                ->with('error', 'لا يمكن تحديث المشاريع الخاصة من هذه الصفحة');
+        }
+        
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'contract_number' => 'required|string|max:255|unique:projects,contract_number,' . $project->id,
@@ -161,6 +176,12 @@ class ProjectController extends Controller
      */
     public function destroy(Project $project)
     {
+        // منع حذف المشاريع الخاصة من هنا
+        if ($project->project_type === 'special') {
+            return redirect()->route('admin.special-projects.index')
+                ->with('error', 'لا يمكن حذف المشاريع الخاصة من هذه الصفحة');
+        }
+        
         $project->delete();
 
         return redirect()->route('projects.index')

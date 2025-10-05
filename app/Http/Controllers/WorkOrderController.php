@@ -4629,7 +4629,7 @@ class WorkOrderController extends Controller
                 'po_number' => 'nullable|string|max:255',
                 'invoice_number' => 'nullable|string|max:255',
                 'extract_value' => 'nullable|numeric',
-                'tax_percentage' => 'nullable|numeric',
+                'tax_percentage' => 'nullable|string|max:255',
                 'tax_value' => 'nullable|numeric',
                 'penalties' => 'nullable|numeric',
                 'first_payment_tax' => 'nullable|numeric',
@@ -5070,6 +5070,147 @@ class WorkOrderController extends Controller
                 'success' => false,
                 'message' => 'حدث خطأ أثناء حذف سجل التنفيذ'
             ], 500);
+        }
+    }
+
+    /**
+     * عرض صفحة إيرادات المشاريع الموحدة (مشرف النظام فقط)
+     */
+    public function allProjectsRevenues()
+    {
+        try {
+            // التحقق من صلاحيات مشرف النظام
+            if (!auth()->user()->is_admin) {
+                abort(403, 'غير مصرح لك بالوصول إلى هذه الصفحة');
+            }
+            
+            // جمع إحصائيات من جميع المصادر
+            
+            // 1. إيرادات مشاريع الرياض والمدينة (من جدول revenues)
+            $workOrdersRevenues = \App\Models\Revenue::all();
+            
+            $workOrdersStats = [
+                'riyadh' => [
+                    'count' => $workOrdersRevenues->where('project', 'riyadh')->count(),
+                    'total_value' => $workOrdersRevenues->where('project', 'riyadh')->sum('extract_value'),
+                    'total_tax' => $workOrdersRevenues->where('project', 'riyadh')->sum('tax_value'),
+                    'total_penalties' => $workOrdersRevenues->where('project', 'riyadh')->sum('penalties'),
+                    'total_payments' => $workOrdersRevenues->where('project', 'riyadh')->sum('payment_value'),
+                    'first_payment_tax' => $workOrdersRevenues->where('project', 'riyadh')->sum('first_payment_tax'),
+                ],
+                'madinah' => [
+                    'count' => $workOrdersRevenues->where('project', 'madinah')->count(),
+                    'total_value' => $workOrdersRevenues->where('project', 'madinah')->sum('extract_value'),
+                    'total_tax' => $workOrdersRevenues->where('project', 'madinah')->sum('tax_value'),
+                    'total_penalties' => $workOrdersRevenues->where('project', 'madinah')->sum('penalties'),
+                    'total_payments' => $workOrdersRevenues->where('project', 'madinah')->sum('payment_value'),
+                    'first_payment_tax' => $workOrdersRevenues->where('project', 'madinah')->sum('first_payment_tax'),
+                ]
+            ];
+            
+            // 2. إيرادات مشاريع تسليم المفتاح (من جدول turnkey_revenues)
+            $turnkeyRevenues = \App\Models\TurnkeyRevenue::all();
+            
+            // جمع إحصائيات إجمالية لمشاريع تسليم المفتاح
+            $turnkeyStats = [
+                'count' => $turnkeyRevenues->count(),
+                'total_value' => $turnkeyRevenues->sum('extract_value'),
+                'total_tax' => $turnkeyRevenues->sum('tax_value'),
+                'total_penalties' => $turnkeyRevenues->sum('penalties'),
+                'total_net_value' => $turnkeyRevenues->sum('net_extract_value'),
+                'total_payments' => $turnkeyRevenues->sum('payment_value'),
+                'first_payment_tax' => $turnkeyRevenues->sum('first_payment_tax'),
+            ];
+            
+            // جمع إحصائيات لكل مشروع تسليم مفتاح على حدة
+            $turnkeyProjects = \App\Models\Project::where('project_type', '!=', 'special')
+                ->whereIn('project_type', ['OH33KV', 'UA33LW', 'SLS33KV', 'UG132KV'])
+                ->get();
+            
+            $turnkeyProjectsStats = [];
+            foreach ($turnkeyProjects as $project) {
+                // البحث باستخدام contract_number بدلاً من project name
+                $projectRevenues = $turnkeyRevenues->where('contract_number', $project->contract_number);
+                
+                $turnkeyProjectsStats[] = [
+                    'project_name' => $project->name,
+                    'project_type' => $project->project_type,
+                    'contract_number' => $project->contract_number,
+                    'count' => $projectRevenues->count(),
+                    'total_value' => $projectRevenues->sum('extract_value'),
+                    'total_tax' => $projectRevenues->sum('tax_value'),
+                    'total_penalties' => $projectRevenues->sum('penalties'),
+                    'total_net_value' => $projectRevenues->sum('net_extract_value'),
+                    'total_payments' => $projectRevenues->sum('payment_value'),
+                    'first_payment_tax' => $projectRevenues->sum('first_payment_tax'),
+                ];
+            }
+            
+            // 3. إيرادات المشاريع الخاصة (من جدول special_project_revenues)
+            $specialRevenues = \App\Models\SpecialProjectRevenue::all();
+            
+            // جمع إحصائيات إجمالية للمشاريع الخاصة
+            $specialStats = [
+                'count' => $specialRevenues->count(),
+                'total_value' => $specialRevenues->sum('total_value'),
+                'total_tax' => $specialRevenues->sum('tax_value'),
+                'total_penalties' => $specialRevenues->sum('penalties'),
+                'total_net_value' => $specialRevenues->sum('net_value'),
+                'total_payments' => $specialRevenues->sum('payment_amount'),
+                'first_payment_tax' => $specialRevenues->sum('advance_payment_tax'),
+            ];
+            
+            // جمع إحصائيات لكل مشروع خاص على حدة
+            $specialProjects = \App\Models\Project::where('project_type', 'special')->get();
+            
+            $specialProjectsStats = [];
+            foreach ($specialProjects as $project) {
+                $projectRevenues = $specialRevenues->where('project_id', $project->id);
+                
+                $specialProjectsStats[] = [
+                    'project_name' => $project->name,
+                    'contract_number' => $project->contract_number,
+                    'location' => $project->location,
+                    'count' => $projectRevenues->count(),
+                    'total_value' => $projectRevenues->sum('total_value'),
+                    'total_tax' => $projectRevenues->sum('tax_value'),
+                    'total_penalties' => $projectRevenues->sum('penalties'),
+                    'total_net_value' => $projectRevenues->sum('net_value'),
+                    'total_payments' => $projectRevenues->sum('payment_amount'),
+                    'first_payment_tax' => $projectRevenues->sum('advance_payment_tax'),
+                ];
+            }
+            
+            // 4. إجمالي عام لكل المشاريع
+            $grandTotal = [
+                'count' => $workOrdersStats['riyadh']['count'] + $workOrdersStats['madinah']['count'] + 
+                           $turnkeyStats['count'] + $specialStats['count'],
+                'total_value' => $workOrdersStats['riyadh']['total_value'] + $workOrdersStats['madinah']['total_value'] + 
+                                 $turnkeyStats['total_value'] + $specialStats['total_value'],
+                'total_tax' => $workOrdersStats['riyadh']['total_tax'] + $workOrdersStats['madinah']['total_tax'] + 
+                               $turnkeyStats['total_tax'] + $specialStats['total_tax'],
+                'total_penalties' => $workOrdersStats['riyadh']['total_penalties'] + $workOrdersStats['madinah']['total_penalties'] + 
+                                     $turnkeyStats['total_penalties'] + $specialStats['total_penalties'],
+                'total_payments' => $workOrdersStats['riyadh']['total_payments'] + $workOrdersStats['madinah']['total_payments'] + 
+                                    $turnkeyStats['total_payments'] + $specialStats['total_payments'],
+                'first_payment_tax' => $workOrdersStats['riyadh']['first_payment_tax'] + $workOrdersStats['madinah']['first_payment_tax'] + 
+                                       $turnkeyStats['first_payment_tax'] + $specialStats['first_payment_tax'],
+            ];
+            
+            return view('admin.work_orders.all-projects-revenues', compact(
+                'workOrdersStats',
+                'turnkeyStats',
+                'turnkeyProjectsStats',
+                'specialStats',
+                'specialProjectsStats',
+                'grandTotal'
+            ));
+            
+        } catch (\Exception $e) {
+            \Log::error('Error in allProjectsRevenues: ' . $e->getMessage());
+            
+            return back()
+                ->with('error', 'حدث خطأ أثناء جلب البيانات: ' . $e->getMessage());
         }
     }
 } 

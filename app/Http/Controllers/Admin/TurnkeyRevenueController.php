@@ -134,4 +134,54 @@ class TurnkeyRevenueController extends Controller
             ], 500);
         }
     }
+    
+    /**
+     * Upload attachment for turnkey revenue
+     */
+    public function uploadAttachment(Request $request)
+    {
+        try {
+            $request->validate([
+                'attachment' => 'required|file|max:10240', // 10MB max
+                'revenue_id' => 'required|exists:turnkey_revenues,id'
+            ]);
+            
+            $revenue = TurnkeyRevenue::findOrFail($request->revenue_id);
+            
+            if ($request->hasFile('attachment')) {
+                $file = $request->file('attachment');
+                $fileName = time() . '_' . $file->getClientOriginalName();
+                $path = $file->storeAs('turnkey_revenues_attachments', $fileName, 'public');
+                
+                // Update revenue with attachment path
+                $revenue->attachment_path = '/storage/' . $path;
+                $revenue->updated_by = auth()->id();
+                $revenue->save();
+                
+                Log::info('Turnkey revenue attachment uploaded', [
+                    'revenue_id' => $revenue->id,
+                    'attachment_path' => $revenue->attachment_path,
+                    'user' => auth()->user()->name,
+                ]);
+                
+                return response()->json([
+                    'success' => true,
+                    'message' => 'تم رفع المرفق بنجاح',
+                    'attachment_path' => $revenue->attachment_path
+                ]);
+            }
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'لم يتم اختيار ملف'
+            ], 400);
+            
+        } catch (\Exception $e) {
+            Log::error('Error uploading turnkey revenue attachment: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء رفع المرفق: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

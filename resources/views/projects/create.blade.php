@@ -255,7 +255,7 @@
                     <!-- Project Type -->
                         <div class="form-field">
                             <label for="project_type" class="form-label">
-                                Project Type <span class="required">*</span>
+                                Project Type <span class=""></span>
                         </label>
                         <select name="project_type" 
                                 id="project_type" 
@@ -264,7 +264,7 @@
                                 <option value="">Select project type</option>
                                 <option value="OH33KV" {{ old('project_type') == 'OH33KV' ? 'selected' : '' }}>OH 33KV</option>
                                 <option value="UG33KV" {{ old('project_type') == 'UG33KV' ? 'selected' : '' }}>UG 33KV</option>
-                                <option value="S|S33KV" {{ old('project_type') == 'S|S33KV' ? 'selected' : '' }}>S|S 33KV</option>
+                                <option value="S/S33KV" {{ old('project_type') == 'S/S33KV' ? 'selected' : '' }}>S/S 33KV</option>
                                 <option value="UG132KV" {{ old('project_type') == 'UG132KV' ? 'selected' : '' }}>UG 132 KV</option>
                         </select>
                         @error('project_type')

@@ -24,6 +24,15 @@
 
                     @auth
                         @if(auth()->user()->is_admin)
+                        <!-- إيرادات المشاريع (مشرف النظام فقط) -->
+                        <a href="{{ route('admin.all-projects-revenues') }}" 
+                           class="nav-item nav-link px-3 py-2 rounded {{ request()->routeIs('admin.all-projects-revenues') ? 'active' : '' }}">
+                            <i class="fas fa-coins me-1"></i>
+                            إيرادات المشاريع
+                        </a>
+                        @endif
+
+                        @if(auth()->user()->is_admin)
                         <div class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle px-3 py-2 rounded text-white {{ request()->is('admin/users*') || request()->is('admin/settings*') || request()->is('admin/reports*') ? 'active' : '' }}" href="#" role="button" data-bs-toggle="dropdown">
                                 <i class="fas fa-cog me-1"></i>

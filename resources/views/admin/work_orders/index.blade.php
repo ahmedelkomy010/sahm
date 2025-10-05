@@ -2206,8 +2206,13 @@ function openNoteModal(workOrderId, orderNumber) {
     document.getElementById('workOrderId').value = workOrderId;
     document.getElementById('orderNumber').value = orderNumber;
     document.getElementById('noteContent').value = '';
-    document.getElementById('userId').value = '';
-    document.getElementById('sendEmail').checked = true;
+    
+    // إعادة تعيين جميع checkboxes المستخدمين
+    document.querySelectorAll('.user-checkbox').forEach(cb => cb.checked = false);
+    document.getElementById('selectAllUsers').checked = false;
+    
+    // مسح حقل البحث وإظهار جميع المستخدمين
+    clearUserSearch();
     
     const modal = new bootstrap.Modal(document.getElementById('noteModal'));
     modal.show();
@@ -2217,52 +2222,122 @@ function openNoteModal(workOrderId, orderNumber) {
 function sendNote() {
     const form = document.getElementById('noteForm');
     
-    if (!form.checkValidity()) {
-        form.reportValidity();
+    // جمع المستخدمين المحددين
+    const selectedUsers = Array.from(document.querySelectorAll('.user-checkbox:checked')).map(cb => cb.value);
+    
+    if (selectedUsers.length === 0) {
+        alert('يرجى اختيار مستخدم واحد على الأقل');
         return;
     }
     
     const workOrderId = document.getElementById('workOrderId').value;
-    const userId = document.getElementById('userId').value;
     const note = document.getElementById('noteContent').value;
-    const sendEmail = document.getElementById('sendEmail').checked;
+    
+    if (!note.trim()) {
+        alert('يرجى كتابة الملاحظة');
+        return;
+    }
     
     const button = event.target;
     const originalText = button.innerHTML;
     button.disabled = true;
     button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>جاري الإرسال...';
     
-    fetch(`/admin/work-orders/${workOrderId}/send-note`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || form.querySelector('[name="_token"]').value,
-            'Accept': 'application/json'
-        },
-        body: JSON.stringify({
-            user_id: userId,
-            note: note,
-            send_email: sendEmail
+    // إرسال الملاحظة لكل مستخدم محدد
+    let successCount = 0;
+    let errorCount = 0;
+    let totalRequests = selectedUsers.length;
+    
+    selectedUsers.forEach((userId, index) => {
+        fetch(`/admin/work-orders/${workOrderId}/send-note`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || form.querySelector('[name="_token"]').value,
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                user_id: userId,
+                note: note
+            })
         })
-    })
-    .then(response => response.json())
-    .then(data => {
-        button.disabled = false;
-        button.innerHTML = originalText;
-        
-        if (data.success) {
-            alert('تم إرسال الملاحظة بنجاح!');
-            bootstrap.Modal.getInstance(document.getElementById('noteModal')).hide();
-        } else {
-            alert('حدث خطأ: ' + (data.message || 'فشل إرسال الملاحظة'));
-        }
-    })
-    .catch(error => {
-        button.disabled = false;
-        button.innerHTML = originalText;
-        console.error('Error:', error);
-        alert('حدث خطأ في الإرسال. يرجى المحاولة مرة أخرى.');
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                successCount++;
+            } else {
+                errorCount++;
+            }
+            
+            // عند الانتهاء من جميع الطلبات
+            if (successCount + errorCount === totalRequests) {
+                button.disabled = false;
+                button.innerHTML = originalText;
+                
+                if (successCount > 0) {
+                    alert(`تم إرسال الملاحظة بنجاح إلى ${successCount} مستخدم(ين)${errorCount > 0 ? ` وفشل الإرسال إلى ${errorCount}` : ''}`);
+                    bootstrap.Modal.getInstance(document.getElementById('noteModal')).hide();
+                    form.reset();
+                    document.querySelectorAll('.user-checkbox').forEach(cb => cb.checked = false);
+                    document.getElementById('selectAllUsers').checked = false;
+                    clearUserSearch();
+                } else {
+                    alert('فشل إرسال الملاحظة. يرجى المحاولة مرة أخرى.');
+                }
+            }
+        })
+        .catch(error => {
+            errorCount++;
+            console.error('Error:', error);
+            
+            if (successCount + errorCount === totalRequests) {
+                button.disabled = false;
+                button.innerHTML = originalText;
+                alert(`حدث خطأ في الإرسال. تم الإرسال بنجاح إلى ${successCount} وفشل ${errorCount}`);
+            }
+        });
     });
+}
+
+// وظيفة تحديد/إلغاء تحديد جميع المستخدمين
+function toggleAllUsers(checkbox) {
+    const userCheckboxes = document.querySelectorAll('.user-checkbox:not([style*="display: none"])');
+    userCheckboxes.forEach(cb => {
+        cb.checked = checkbox.checked;
+    });
+}
+
+// وظيفة البحث عن المستخدمين
+function searchUsers(searchTerm) {
+    searchTerm = searchTerm.toLowerCase().trim();
+    const userItems = document.querySelectorAll('.user-item');
+    const noUsersFound = document.getElementById('noUsersFound');
+    let visibleCount = 0;
+    
+    userItems.forEach(item => {
+        const userName = item.getAttribute('data-user-name');
+        const userEmail = item.getAttribute('data-user-email');
+        
+        if (userName.includes(searchTerm) || userEmail.includes(searchTerm)) {
+            item.style.display = '';
+            visibleCount++;
+        } else {
+            item.style.display = 'none';
+        }
+    });
+    
+    // عرض رسالة "لا توجد نتائج" إذا لم يتم العثور على مستخدمين
+    if (visibleCount === 0 && searchTerm !== '') {
+        noUsersFound.style.display = 'block';
+    } else {
+        noUsersFound.style.display = 'none';
+    }
+}
+
+// مسح البحث
+function clearUserSearch() {
+    document.getElementById('userSearch').value = '';
+    searchUsers('');
 }
 </script>
 
@@ -2291,16 +2366,60 @@ function sendNote() {
                     </div>
                     
                     <div class="mb-3">
-                        <label for="userId" class="form-label fw-bold">
-                            <i class="fas fa-user me-1"></i>
-                            إرسال إلى المستخدم <span class="text-danger">*</span>
+                        <label class="form-label fw-bold">
+                            <i class="fas fa-users me-1"></i>
+                            إرسال إلى المستخدمين <span class="text-danger">*</span>
                         </label>
-                        <select class="form-select" id="userId" name="user_id" required>
-                            <option value="">-- اختر المستخدم --</option>
-                            @foreach(\App\Models\User::orderBy('name')->get() as $user)
-                                <option value="{{ $user->id }}">{{ $user->name }} ({{ $user->email }})</option>
-                            @endforeach
-                        </select>
+                        
+                        <!-- حقل البحث -->
+                        <div class="mb-2">
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text bg-white">
+                                    <i class="fas fa-search text-primary"></i>
+                                </span>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="userSearch" 
+                                       placeholder="ابحث عن مستخدم بالاسم أو البريد الإلكتروني..."
+                                       onkeyup="searchUsers(this.value)">
+                                <button class="btn btn-outline-secondary" type="button" onclick="clearUserSearch()">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="border rounded p-3" style="max-height: 250px; overflow-y: auto; background-color: #f8f9fa;" id="usersListContainer">
+                            <div class="mb-2">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="selectAllUsers" onclick="toggleAllUsers(this)">
+                                    <label class="form-check-label fw-bold text-primary" for="selectAllUsers">
+                                        <i class="fas fa-check-double me-1"></i>
+                                        تحديد الكل
+                                    </label>
+                                </div>
+                                <hr class="my-2">
+                            </div>
+                            <div id="usersListItems">
+                                @foreach(\App\Models\User::orderBy('name')->get() as $user)
+                                    <div class="form-check mb-2 user-item" data-user-name="{{ strtolower($user->name) }}" data-user-email="{{ strtolower($user->email) }}">
+                                        <input class="form-check-input user-checkbox" type="checkbox" name="user_ids[]" value="{{ $user->id }}" id="user{{ $user->id }}">
+                                        <label class="form-check-label" for="user{{ $user->id }}">
+                                            <i class="fas fa-user me-1 text-secondary"></i>
+                                            <strong>{{ $user->name }}</strong>
+                                            <small class="text-muted">({{ $user->email }})</small>
+                                        </label>
+                                    </div>
+                                @endforeach
+                            </div>
+                            <div id="noUsersFound" class="text-center text-muted py-3" style="display: none;">
+                                <i class="fas fa-user-slash me-1"></i>
+                                لا توجد نتائج
+                            </div>
+                        </div>
+                        <small class="text-muted mt-1 d-block">
+                            <i class="fas fa-info-circle me-1"></i>
+                            يمكنك اختيار أكثر من مستخدم
+                        </small>
                     </div>
                     
                     <div class="mb-3">
@@ -2315,14 +2434,6 @@ function sendNote() {
                                   required 
                                   placeholder="اكتب الملاحظة هنا..."></textarea>
                         <small class="text-muted">الحد الأقصى 500 حرف</small>
-                    </div>
-                    
-                    <div class="form-check mb-3">
-                        <input class="form-check-input" type="checkbox" id="sendEmail" name="send_email" checked>
-                        <label class="form-check-label" for="sendEmail">
-                            <i class="fas fa-envelope me-1"></i>
-                            إرسال إشعار بالبريد الإلكتروني
-                        </label>
                     </div>
                 </form>
             </div>

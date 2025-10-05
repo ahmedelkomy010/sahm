@@ -65,6 +65,97 @@
                 </div>
             </div>
 
+        <!-- Statistics Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-8 gap-3 mb-8">
+            <!-- عدد المستخلصات -->
+            <div class="bg-white rounded-xl shadow-lg p-4 border-t-4 border-purple-500 hover:shadow-xl transition-all duration-300">
+                <div class="flex items-center justify-between mb-2">
+                    <svg class="w-8 h-8 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                    </svg>
+                </div>
+                <p class="text-gray-600 text-xs mb-1">عدد المستخلصات</p>
+                <p class="text-2xl font-bold text-gray-800" id="stat_total_count">0</p>
+            </div>
+
+            <!-- إجمالي قيمة المستخلصات غير شامله الضريبه -->
+            <div class="bg-white rounded-xl shadow-lg p-4 border-t-4 border-blue-500 hover:shadow-xl transition-all duration-300">
+                <div class="flex items-center justify-between mb-2">
+                    <svg class="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <p class="text-gray-600 text-xs mb-1">إجمالي قيمة المستخلصات<br>غير شامله الضريبه</p>
+                <p class="text-2xl font-bold text-gray-800" id="stat_total_extract_value">0.00</p>
+            </div>
+
+            <!-- إجمالي الضريبة -->
+            <div class="bg-white rounded-xl shadow-lg p-4 border-t-4 border-green-500 hover:shadow-xl transition-all duration-300">
+                <div class="flex items-center justify-between mb-2">
+                    <svg class="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z"></path>
+                    </svg>
+                </div>
+                <p class="text-gray-600 text-xs mb-1">إجمالي الضريبة</p>
+                <p class="text-2xl font-bold text-gray-800" id="stat_total_tax">0.00</p>
+            </div>
+
+            <!-- إجمالي الغرامات -->
+            <div class="bg-white rounded-xl shadow-lg p-4 border-t-4 border-red-500 hover:shadow-xl transition-all duration-300">
+                <div class="flex items-center justify-between mb-2">
+                    <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                    </svg>
+                </div>
+                <p class="text-gray-600 text-xs mb-1">إجمالي الغرامات</p>
+                <p class="text-2xl font-bold text-gray-800" id="stat_total_penalties">0.00</p>
+            </div>
+
+            <!-- صافي قيمة المستخلصات غير شامل الضريبة -->
+            <div class="bg-white rounded-xl shadow-lg p-4 border-t-4 border-indigo-500 hover:shadow-xl transition-all duration-300">
+                <div class="flex items-center justify-between mb-2">
+                    <svg class="w-8 h-8 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                    </svg>
+                </div>
+                <p class="text-gray-600 text-xs mb-1">صافي قيمة المستخلصات<br>غير شامل الضريبة</p>
+                <p class="text-2xl font-bold text-gray-800" id="stat_net_value">0.00</p>
+            </div>
+
+            <!-- إجمالي المدفوعات -->
+            <div class="bg-white rounded-xl shadow-lg p-4 border-t-4 border-teal-500 hover:shadow-xl transition-all duration-300">
+                <div class="flex items-center justify-between mb-2">
+                    <svg class="w-8 h-8 text-teal-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                    </svg>
+                </div>
+                <p class="text-gray-600 text-xs mb-1">إجمالي المدفوعات</p>
+                <p class="text-2xl font-bold text-gray-800" id="stat_total_payments">0.00</p>
+            </div>
+
+            <!-- المبلغ المتبقي عند العميل -->
+            <div class="bg-white rounded-xl shadow-lg p-4 border-t-4 border-orange-500 hover:shadow-xl transition-all duration-300">
+                <div class="flex items-center justify-between mb-2">
+                    <svg class="w-8 h-8 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                    </svg>
+                </div>
+                <p class="text-gray-600 text-xs mb-1">المبلغ المتبقي<br>عند العميل</p>
+                <p class="text-2xl font-bold text-gray-800" id="stat_remaining_amount">0.00</p>
+            </div>
+
+            <!-- ضريبة الدفعة الأولى -->
+            <div class="bg-white rounded-xl shadow-lg p-4 border-t-4 border-pink-500 hover:shadow-xl transition-all duration-300">
+                <div class="flex items-center justify-between mb-2">
+                    <svg class="w-8 h-8 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <p class="text-gray-600 text-xs mb-1">ضريبة الدفعة الأولى</p>
+                <p class="text-2xl font-bold text-gray-800" id="stat_first_payment_tax">0.00</p>
+                </div>
+            </div>
+
         <!-- Success/Error Messages -->
         @if(session('success'))
         <div class="bg-green-50 border-l-4 border-green-500 p-4 mb-6 rounded-lg">
@@ -108,19 +199,30 @@
                         <thead class="bg-gradient-to-r from-green-600 to-green-700 text-white">
                             <tr>
                                 <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap">#</th>
-                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[150px]">Contract Number</th>
-                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[120px]">Location</th>
-                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[120px]">Project Type</th>
-                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[140px]">Extract Value</th>
-                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[120px]">Tax Value</th>
-                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[120px]">Penalties</th>
-                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[160px]">Net Extract Value</th>
-                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[140px]">Payment Value</th>
-                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[160px]">Remaining Amount</th>
-                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[160px]">First Payment Tax</th>
-                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[140px]">Extract Date</th>
-                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[140px]">Payment Date</th>
-                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[200px]">Notes</th>
+                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[150px]">اسم العميل</th>
+                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[120px]">المشروع</th>
+                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[150px]">رقم العقد</th>
+                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[150px]">رقم المستخلص</th>
+                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[120px]">المكتب</th>
+                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[130px]">نوع المستخلص</th>
+                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[120px]">رقم PO</th>
+                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[120px]">رقم الفاتورة</th>
+                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[120px]">الموقع</th>
+                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[120px]">نوع المشروع</th>
+                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[180px]">إجمالي قيمة المستخلصات<br>غير شامله الضريبه</th>
+                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[150px]">جهة المستخلص</th>
+                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[120px]">قيمة الضريبة</th>
+                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[120px]">الغرامات</th>
+                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[160px]">ضريبة الدفعة الأولى</th>
+                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[160px]">صافي قيمة المستخلص</th>
+                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[160px]">تاريخ إعداد المستخلص</th>
+                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[100px]">العام</th>
+                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[180px]">موقف المستخلص<br>عند ...</th>
+                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[150px]">الرقم المرجعي</th>
+                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[140px]">تاريخ الصرف</th>
+                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[140px]">قيمة الصرف</th>
+                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[120px]">حالة الصرف</th>
+                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[200px]">الإجراءات</th>
                                 <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap">Actions</th>
                             </tr>
                         </thead>
@@ -128,30 +230,97 @@
                             @forelse($turnkeyRevenues ?? [] as $revenue)
                             <tr class="border-b hover:bg-green-50 transition-colors" data-id="{{ $revenue->id }}">
                                 <td class="px-3 py-3 text-center font-medium text-gray-600">{{ $loop->iteration }}</td>
+                                <!-- اسم العميل -->
                                 <td class="px-3 py-3 border-x border-gray-200">
+                                    <input type="text" 
+                                           class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" 
+                                           value="{{ $revenue->client_name }}" 
+                                           data-field="client_name" 
+                                           onchange="autoSaveTurnkey(this)"
+                                           placeholder="اسم العميل">
+                                </td>
+                                <!-- المشروع -->
+                                <td class="px-3 py-3 border-r border-gray-200">
+                                    <input type="text" 
+                                           class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" 
+                                           value="{{ $revenue->project }}" 
+                                           data-field="project" 
+                                           onchange="autoSaveTurnkey(this)"
+                                           placeholder="المشروع">
+                                </td>
+                                <!-- رقم العقد -->
+                                <td class="px-3 py-3 border-r border-gray-200">
                                     <input type="text" 
                                            class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" 
                                            value="{{ $revenue->contract_number }}" 
                                            data-field="contract_number" 
                                            onchange="autoSaveTurnkey(this)"
-                                           placeholder="Contract #">
+                                           placeholder="رقم العقد">
                                 </td>
+                                <!-- رقم المستخلص -->
+                                <td class="px-3 py-3 border-r border-gray-200">
+                                    <input type="text" 
+                                           class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" 
+                                           value="{{ $revenue->extract_number }}" 
+                                           data-field="extract_number" 
+                                           onchange="autoSaveTurnkey(this)"
+                                           placeholder="رقم المستخلص">
+                                </td>
+                                <!-- المكتب -->
+                                <td class="px-3 py-3 border-r border-gray-200">
+                                    <input type="text" 
+                                           class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" 
+                                           value="{{ $revenue->office }}" 
+                                           data-field="office" 
+                                           onchange="autoSaveTurnkey(this)"
+                                           placeholder="المكتب">
+                                </td>
+                                <!-- نوع المستخلص -->
+                                <td class="px-3 py-3 border-r border-gray-200">
+                                    <input type="text" 
+                                           class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" 
+                                           value="{{ $revenue->extract_type }}" 
+                                           data-field="extract_type" 
+                                           onchange="autoSaveTurnkey(this)"
+                                           placeholder="نوع المستخلص">
+                                </td>
+                                <!-- رقم PO -->
+                                <td class="px-3 py-3 border-r border-gray-200">
+                                    <input type="text" 
+                                           class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" 
+                                           value="{{ $revenue->po_number }}" 
+                                           data-field="po_number" 
+                                           onchange="autoSaveTurnkey(this)"
+                                           placeholder="رقم PO">
+                                </td>
+                                <!-- رقم الفاتورة -->
+                                <td class="px-3 py-3 border-r border-gray-200">
+                                    <input type="text" 
+                                           class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" 
+                                           value="{{ $revenue->invoice_number }}" 
+                                           data-field="invoice_number" 
+                                           onchange="autoSaveTurnkey(this)"
+                                           placeholder="رقم الفاتورة">
+                                </td>
+                                <!-- الموقع -->
                                 <td class="px-3 py-3 border-r border-gray-200">
                                     <input type="text" 
                                            class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" 
                                            value="{{ $revenue->location }}" 
                                            data-field="location" 
                                            onchange="autoSaveTurnkey(this)"
-                                           placeholder="Location">
+                                           placeholder="الموقع">
                                 </td>
+                                <!-- نوع المشروع -->
                                 <td class="px-3 py-3 border-r border-gray-200">
                                     <input type="text" 
                                            class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" 
                                            value="{{ $revenue->project_type }}" 
                                            data-field="project_type" 
                                            onchange="autoSaveTurnkey(this)"
-                                           placeholder="Project Type">
+                                           placeholder="نوع المشروع">
                                 </td>
+                                <!-- إجمالي قيمة المستخلصات غير شامله الضريبه -->
                                 <td class="px-3 py-3 border-r border-gray-200">
                                     <input type="number" 
                                            step="0.01" 
@@ -161,15 +330,29 @@
                                            onchange="autoSaveTurnkey(this)"
                                            placeholder="0.00">
                                 </td>
+                                <!-- جهة المستخلص -->
+                                <td class="px-3 py-3 border-r border-gray-200">
+                                    <select class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" 
+                                            data-field="extract_entity" 
+                                            onchange="autoSaveTurnkey(this)">
+                                        <option value="">اختر...</option>
+                                        <option value="SAP" {{ $revenue->extract_entity === 'SAP' ? 'selected' : '' }}>SAP</option>
+                                        <option value="UDS" {{ $revenue->extract_entity === 'UDS' ? 'selected' : '' }}>UDS</option>
+                                    </select>
+                                </td>
+                                <!-- قيمة الضريبة -->
                                 <td class="px-3 py-3 border-r border-gray-200">
                                     <input type="number" 
                                            step="0.01" 
-                                           class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all text-right" 
+                                           class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all text-right bg-yellow-50" 
                                            value="{{ $revenue->tax_value }}" 
                                            data-field="tax_value" 
                                            onchange="autoSaveTurnkey(this)"
-                                           placeholder="0.00">
+                                           placeholder="0.00"
+                                           readonly
+                                           title="محسوب تلقائياً: قيمة المستخلصات × 15%">
                                 </td>
+                                <!-- الغرامات -->
                                 <td class="px-3 py-3 border-r border-gray-200">
                                     <input type="number" 
                                            step="0.01" 
@@ -179,33 +362,7 @@
                                            onchange="autoSaveTurnkey(this)"
                                            placeholder="0.00">
                                 </td>
-                                <td class="px-3 py-3 border-r border-gray-200">
-                                    <input type="number" 
-                                           step="0.01" 
-                                           class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all text-right" 
-                                           value="{{ $revenue->net_extract_value }}" 
-                                           data-field="net_extract_value" 
-                                           onchange="autoSaveTurnkey(this)"
-                                           placeholder="0.00">
-                                </td>
-                                <td class="px-3 py-3 border-r border-gray-200">
-                                    <input type="number" 
-                                           step="0.01" 
-                                           class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all text-right" 
-                                           value="{{ $revenue->payment_value }}" 
-                                           data-field="payment_value" 
-                                           onchange="autoSaveTurnkey(this)"
-                                           placeholder="0.00">
-                                </td>
-                                <td class="px-3 py-3 border-r border-gray-200">
-                                    <input type="number" 
-                                           step="0.01" 
-                                           class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all text-right" 
-                                           value="{{ $revenue->remaining_amount }}" 
-                                           data-field="remaining_amount" 
-                                           onchange="autoSaveTurnkey(this)"
-                                           placeholder="0.00">
-                                </td>
+                                <!-- ضريبة الدفعة الأولى -->
                                 <td class="px-3 py-3 border-r border-gray-200">
                                     <input type="number" 
                                            step="0.01" 
@@ -215,6 +372,19 @@
                                            onchange="autoSaveTurnkey(this)"
                                            placeholder="0.00">
                                 </td>
+                                <!-- صافي قيمة المستخلص -->
+                                <td class="px-3 py-3 border-r border-gray-200">
+                                    <input type="number" 
+                                           step="0.01" 
+                                           class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all text-right bg-yellow-50" 
+                                           value="{{ $revenue->net_extract_value }}" 
+                                           data-field="net_extract_value" 
+                                           onchange="autoSaveTurnkey(this)"
+                                           placeholder="0.00"
+                                           readonly
+                                           title="محسوب تلقائياً: قيمة المستخلص + قيمة الضريبة - الغرامات">
+                                </td>
+                                <!-- تاريخ إعداد المستخلص -->
                                 <td class="px-3 py-3 border-r border-gray-200">
                                     <input type="date" 
                                            class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" 
@@ -222,6 +392,37 @@
                                            data-field="extract_date" 
                                            onchange="autoSaveTurnkey(this)">
                                 </td>
+                                <!-- العام -->
+                                <td class="px-3 py-3 border-r border-gray-200">
+                                    <input type="number" 
+                                           class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all text-right" 
+                                           value="{{ $revenue->year }}" 
+                                           data-field="year" 
+                                           onchange="autoSaveTurnkey(this)"
+                                           placeholder="{{ date('Y') }}">
+                                </td>
+                                <!-- موقف المستخلص عند ... -->
+                                <td class="px-3 py-3 border-r border-gray-200">
+                                    <select class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" 
+                                            data-field="extract_status" 
+                                            onchange="autoSaveTurnkey(this)">
+                                        <option value="">اختر...</option>
+                                        <option value="المقاول" {{ $revenue->extract_status === 'المقاول' ? 'selected' : '' }}>المقاول</option>
+                                        <option value="ادارة الكهرباء" {{ $revenue->extract_status === 'ادارة الكهرباء' ? 'selected' : '' }}>ادارة الكهرباء</option>
+                                        <option value="المالية" {{ $revenue->extract_status === 'المالية' ? 'selected' : '' }}>المالية</option>
+                                        <option value="الخزينة" {{ $revenue->extract_status === 'الخزينة' ? 'selected' : '' }}>الخزينة</option>
+                                    </select>
+                                </td>
+                                <!-- الرقم المرجعي -->
+                                <td class="px-3 py-3 border-r border-gray-200">
+                                    <input type="text" 
+                                           class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" 
+                                           value="{{ $revenue->reference_number }}" 
+                                           data-field="reference_number" 
+                                           onchange="autoSaveTurnkey(this)"
+                                           placeholder="الرقم المرجعي">
+                                </td>
+                                <!-- تاريخ الصرف -->
                                 <td class="px-3 py-3 border-r border-gray-200">
                                     <input type="date" 
                                            class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" 
@@ -229,32 +430,80 @@
                                            data-field="payment_date" 
                                            onchange="autoSaveTurnkey(this)">
                                 </td>
+                                <!-- قيمة الصرف -->
+                                <td class="px-3 py-3 border-r border-gray-200">
+                                    <input type="number" 
+                                           step="0.01" 
+                                           class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all text-right" 
+                                           value="{{ $revenue->payment_value }}" 
+                                           data-field="payment_value" 
+                                           onchange="autoSaveTurnkey(this)"
+                                           placeholder="0.00">
+                                </td>
+                                <!-- حالة الصرف -->
+                                <td class="px-3 py-3 border-r border-gray-200">
+                                    <select class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" 
+                                            data-field="payment_status" 
+                                            onchange="autoSaveTurnkey(this)">
+                                        <option value="">اختر...</option>
+                                        <option value="مدفوع" {{ $revenue->payment_status === 'مدفوع' || $revenue->payment_status === 'paid' ? 'selected' : '' }}>مدفوع</option>
+                                        <option value="غير مدفوع" {{ $revenue->payment_status === 'غير مدفوع' || $revenue->payment_status === 'unpaid' || $revenue->payment_status === 'pending' ? 'selected' : '' }}>غير مدفوع</option>
+                                    </select>
+                                </td>
+                                <!-- الإجراءات (Notes) -->
                                 <td class="px-3 py-3 border-r border-gray-200">
                                     <input type="text" 
                                            class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" 
                                            value="{{ $revenue->notes }}" 
                                            data-field="notes" 
                                            onchange="autoSaveTurnkey(this)"
-                                           placeholder="Notes...">
+                                           placeholder="الإجراءات">
                                 </td>
                                 <td class="px-3 py-3 text-center">
-                                    <button type="button" 
-                                            class="text-red-600 hover:text-red-800 hover:bg-red-50 p-2 rounded transition-colors" 
-                                            onclick="deleteTurnkeyRow({{ $revenue->id }})"
-                                            title="Delete">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                        </svg>
-                                    </button>
+                                    <div style="display: flex; gap: 0.25rem; justify-content: center; align-items: center;">
+                                        <!-- زر رفع مرفق -->
+                                        <button type="button" 
+                                                class="text-blue-600 hover:text-blue-800 hover:bg-blue-50 p-2 rounded transition-colors" 
+                                                onclick="triggerTurnkeyFileUpload({{ $revenue->id }})"
+                                                title="رفع مرفق">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                                            </svg>
+                                        </button>
+                                        <input type="file" id="turnkeyFileInput_{{ $revenue->id }}" style="display: none;" onchange="uploadTurnkeyAttachment({{ $revenue->id }}, this)">
+                                        
+                                        <!-- زر عرض المرفق (يظهر فقط إذا كان هناك مرفق) -->
+                                        @if($revenue->attachment_path)
+                                        <a href="{{ $revenue->attachment_path }}" 
+                                           target="_blank" 
+                                           class="text-green-600 hover:text-green-800 hover:bg-green-50 p-2 rounded transition-colors" 
+                                           title="عرض المرفق">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                            </svg>
+                                        </a>
+                                        @endif
+                                        
+                                        <!-- زر الحذف -->
+                                        <button type="button" 
+                                                class="text-red-600 hover:text-red-800 hover:bg-red-50 p-2 rounded transition-colors" 
+                                                onclick="deleteTurnkeyRow({{ $revenue->id }})"
+                                                title="حذف">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                             @empty
                             <tr id="emptyTurnkeyRow">
-                                <td colspan="15" class="text-center py-8 text-gray-500">
+                                <td colspan="26" class="text-center py-8 text-gray-500">
                                     <svg class="w-16 h-16 mx-auto mb-2 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                                     </svg>
-                                    <p>No revenues yet. Click "Add New Row" to start.</p>
+                                    <p>لا توجد إيرادات بعد. اضغط "Add New Row" للبدء.</p>
                                 </td>
                             </tr>
                             @endforelse
@@ -392,8 +641,8 @@
                         <span class="text-sm text-green-500">
                             {{ count($folders) }} Folders | {{ count($files) }} Files
                         </span>
-                    </div>
-                </div>
+                            </div>
+                        </div>
 
                 @if(count($folders) > 0 || count($files) > 0)
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -515,6 +764,46 @@ function formatFileSize(bytes) {
     return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
 }
 
+// Turnkey Revenues - Calculate tax value automatically (15%)
+function calculateTaxValue(tr) {
+    const extractValueInput = tr.querySelector('input[data-field="extract_value"]');
+    const taxValueInput = tr.querySelector('input[data-field="tax_value"]');
+    
+    if (extractValueInput && taxValueInput) {
+        const extractValue = parseFloat(extractValueInput.value) || 0;
+        
+        // Formula: tax_value = extract_value * 0.15
+        const taxValue = extractValue * 0.15;
+        
+        taxValueInput.value = taxValue.toFixed(2);
+        
+        // Add visual indicator for calculated value
+        taxValueInput.style.backgroundColor = '#fef3c7';
+    }
+}
+
+// Turnkey Revenues - Calculate net extract value automatically
+function calculateNetExtractValue(tr) {
+    const extractValueInput = tr.querySelector('input[data-field="extract_value"]');
+    const taxValueInput = tr.querySelector('input[data-field="tax_value"]');
+    const penaltiesInput = tr.querySelector('input[data-field="penalties"]');
+    const netExtractValueInput = tr.querySelector('input[data-field="net_extract_value"]');
+    
+    if (extractValueInput && taxValueInput && penaltiesInput && netExtractValueInput) {
+        const extractValue = parseFloat(extractValueInput.value) || 0;
+        const taxValue = parseFloat(taxValueInput.value) || 0;
+        const penalties = parseFloat(penaltiesInput.value) || 0;
+        
+        // Formula: extract_value + tax_value - penalties
+        const netValue = extractValue + taxValue - penalties;
+        
+        netExtractValueInput.value = netValue.toFixed(2);
+        
+        // Add visual indicator for calculated value
+        netExtractValueInput.style.backgroundColor = '#fef3c7';
+    }
+}
+
 // Drag and drop support
 document.addEventListener('DOMContentLoaded', function() {
     const dropZone = document.querySelector('label[for="files"]');
@@ -555,6 +844,18 @@ document.addEventListener('DOMContentLoaded', function() {
             updateFileList(fileInput);
         }
     }
+    
+    // Calculate tax and net extract values for existing rows on page load
+    const turnkeyRows = document.querySelectorAll('#turnkeyRevenuesTable tbody tr[data-id]');
+    turnkeyRows.forEach(row => {
+        if (row.dataset.id && row.dataset.id !== 'new') {
+            calculateTaxValue(row);
+            calculateNetExtractValue(row);
+        }
+    });
+    
+    // Update statistics on page load
+    updateTurnkeyStatistics();
 });
 
 // Turnkey Revenues Auto-Save Functions
@@ -563,6 +864,16 @@ function autoSaveTurnkey(element) {
     const id = tr.dataset.id;
     const field = element.dataset.field;
     const value = element.value;
+    
+    // Calculate tax value (15%) when extract_value changes
+    if (field === 'extract_value') {
+        calculateTaxValue(tr);
+        calculateNetExtractValue(tr);
+    }
+    // Calculate net extract value if tax or penalties changed
+    else if (field === 'tax_value' || field === 'penalties') {
+        calculateNetExtractValue(tr);
+    }
     
     // Visual indicator
     element.classList.add('bg-yellow-50');
@@ -574,7 +885,7 @@ function autoSaveTurnkey(element) {
     
     // إذا كان صف جديد، اجمع كل البيانات من الصف
     if (!id || id === 'new') {
-        const inputs = tr.querySelectorAll('input[data-field]');
+        const inputs = tr.querySelectorAll('input[data-field], select[data-field]');
         inputs.forEach(input => {
             const fieldName = input.dataset.field;
             const fieldValue = input.value;
@@ -619,6 +930,9 @@ function autoSaveTurnkey(element) {
                 tr.dataset.id = result.data.id;
                 console.log('Row saved with ID:', result.data.id);
             }
+            
+            // Update statistics
+            updateTurnkeyStatistics();
         } else {
             element.classList.remove('bg-yellow-50');
             element.classList.add('bg-red-50');
@@ -649,21 +963,52 @@ function addNewTurnkeyRow() {
     
     newRow.innerHTML = `
         <td class="px-3 py-3 text-center font-medium text-gray-600">${rowCount}</td>
-        <td class="px-3 py-3 border-x border-gray-200"><input type="text" class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" data-field="contract_number" onchange="autoSaveTurnkey(this)" placeholder="Contract #"></td>
-        <td class="px-3 py-3 border-r border-gray-200"><input type="text" class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" data-field="location" onchange="autoSaveTurnkey(this)" placeholder="Location"></td>
-        <td class="px-3 py-3 border-r border-gray-200"><input type="text" class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" data-field="project_type" onchange="autoSaveTurnkey(this)" placeholder="Project Type"></td>
+        <td class="px-3 py-3 border-x border-gray-200"><input type="text" class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" data-field="client_name" onchange="autoSaveTurnkey(this)" placeholder="اسم العميل"></td>
+        <td class="px-3 py-3 border-r border-gray-200"><input type="text" class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" data-field="project" onchange="autoSaveTurnkey(this)" placeholder="المشروع"></td>
+        <td class="px-3 py-3 border-r border-gray-200"><input type="text" class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" data-field="contract_number" onchange="autoSaveTurnkey(this)" placeholder="رقم العقد"></td>
+        <td class="px-3 py-3 border-r border-gray-200"><input type="text" class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" data-field="extract_number" onchange="autoSaveTurnkey(this)" placeholder="رقم المستخلص"></td>
+        <td class="px-3 py-3 border-r border-gray-200"><input type="text" class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" data-field="office" onchange="autoSaveTurnkey(this)" placeholder="المكتب"></td>
+        <td class="px-3 py-3 border-r border-gray-200"><input type="text" class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" data-field="extract_type" onchange="autoSaveTurnkey(this)" placeholder="نوع المستخلص"></td>
+        <td class="px-3 py-3 border-r border-gray-200"><input type="text" class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" data-field="po_number" onchange="autoSaveTurnkey(this)" placeholder="رقم PO"></td>
+        <td class="px-3 py-3 border-r border-gray-200"><input type="text" class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" data-field="invoice_number" onchange="autoSaveTurnkey(this)" placeholder="رقم الفاتورة"></td>
+        <td class="px-3 py-3 border-r border-gray-200"><input type="text" class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" data-field="location" onchange="autoSaveTurnkey(this)" placeholder="الموقع"></td>
+        <td class="px-3 py-3 border-r border-gray-200"><input type="text" class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" data-field="project_type" onchange="autoSaveTurnkey(this)" placeholder="نوع المشروع"></td>
         <td class="px-3 py-3 border-r border-gray-200"><input type="number" step="0.01" class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all text-right" data-field="extract_value" onchange="autoSaveTurnkey(this)" placeholder="0.00"></td>
-        <td class="px-3 py-3 border-r border-gray-200"><input type="number" step="0.01" class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all text-right" data-field="tax_value" onchange="autoSaveTurnkey(this)" placeholder="0.00"></td>
+        <td class="px-3 py-3 border-r border-gray-200">
+            <select class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" data-field="extract_entity" onchange="autoSaveTurnkey(this)">
+                <option value="">اختر...</option>
+                <option value="SAP">SAP</option>
+                <option value="UDS">UDS</option>
+            </select>
+        </td>
+        <td class="px-3 py-3 border-r border-gray-200"><input type="number" step="0.01" class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all text-right bg-yellow-50" data-field="tax_value" onchange="autoSaveTurnkey(this)" placeholder="0.00" readonly title="محسوب تلقائياً: قيمة المستخلصات × 15%"></td>
         <td class="px-3 py-3 border-r border-gray-200"><input type="number" step="0.01" class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all text-right" data-field="penalties" onchange="autoSaveTurnkey(this)" placeholder="0.00"></td>
-        <td class="px-3 py-3 border-r border-gray-200"><input type="number" step="0.01" class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all text-right" data-field="net_extract_value" onchange="autoSaveTurnkey(this)" placeholder="0.00"></td>
-        <td class="px-3 py-3 border-r border-gray-200"><input type="number" step="0.01" class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all text-right" data-field="payment_value" onchange="autoSaveTurnkey(this)" placeholder="0.00"></td>
-        <td class="px-3 py-3 border-r border-gray-200"><input type="number" step="0.01" class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all text-right" data-field="remaining_amount" onchange="autoSaveTurnkey(this)" placeholder="0.00"></td>
         <td class="px-3 py-3 border-r border-gray-200"><input type="number" step="0.01" class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all text-right" data-field="first_payment_tax" onchange="autoSaveTurnkey(this)" placeholder="0.00"></td>
+        <td class="px-3 py-3 border-r border-gray-200"><input type="number" step="0.01" class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all text-right bg-yellow-50" data-field="net_extract_value" onchange="autoSaveTurnkey(this)" placeholder="0.00" readonly title="محسوب تلقائياً: قيمة المستخلص + قيمة الضريبة - الغرامات"></td>
         <td class="px-3 py-3 border-r border-gray-200"><input type="date" class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" data-field="extract_date" onchange="autoSaveTurnkey(this)"></td>
+        <td class="px-3 py-3 border-r border-gray-200"><input type="number" class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all text-right" data-field="year" onchange="autoSaveTurnkey(this)" placeholder="${new Date().getFullYear()}"></td>
+        <td class="px-3 py-3 border-r border-gray-200">
+            <select class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" data-field="extract_status" onchange="autoSaveTurnkey(this)">
+                <option value="">اختر...</option>
+                <option value="المقاول">المقاول</option>
+                <option value="ادارة الكهرباء">ادارة الكهرباء</option>
+                <option value="المالية">المالية</option>
+                <option value="الخزينة">الخزينة</option>
+            </select>
+        </td>
+        <td class="px-3 py-3 border-r border-gray-200"><input type="text" class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" data-field="reference_number" onchange="autoSaveTurnkey(this)" placeholder="الرقم المرجعي"></td>
         <td class="px-3 py-3 border-r border-gray-200"><input type="date" class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" data-field="payment_date" onchange="autoSaveTurnkey(this)"></td>
-        <td class="px-3 py-3 border-r border-gray-200"><input type="text" class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" data-field="notes" onchange="autoSaveTurnkey(this)" placeholder="Notes..."></td>
+        <td class="px-3 py-3 border-r border-gray-200"><input type="number" step="0.01" class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all text-right" data-field="payment_value" onchange="autoSaveTurnkey(this)" placeholder="0.00"></td>
+        <td class="px-3 py-3 border-r border-gray-200">
+            <select class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" data-field="payment_status" onchange="autoSaveTurnkey(this)">
+                <option value="">اختر...</option>
+                <option value="مدفوع">مدفوع</option>
+                <option value="غير مدفوع">غير مدفوع</option>
+            </select>
+        </td>
+        <td class="px-3 py-3 border-r border-gray-200"><input type="text" class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" data-field="notes" onchange="autoSaveTurnkey(this)" placeholder="الإجراءات"></td>
         <td class="px-3 py-3 text-center">
-            <button type="button" class="text-red-600 hover:text-red-800 hover:bg-red-50 p-2 rounded transition-colors" onclick="deleteTurnkeyRow('new')" title="Delete">
+            <button type="button" class="text-red-600 hover:text-red-800 hover:bg-red-50 p-2 rounded transition-colors" onclick="deleteTurnkeyRow('new')" title="حذف">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                 </svg>
@@ -674,6 +1019,48 @@ function addNewTurnkeyRow() {
     tbody.appendChild(newRow);
 }
 
+// Trigger file upload for Turnkey Revenue
+function triggerTurnkeyFileUpload(id) {
+    document.getElementById(`turnkeyFileInput_${id}`).click();
+}
+
+// Upload attachment for Turnkey Revenue
+async function uploadTurnkeyAttachment(id, fileInput) {
+    const file = fileInput.files[0];
+    
+    if (!file) return;
+    
+    const formData = new FormData();
+    formData.append('attachment', file);
+    formData.append('revenue_id', id);
+    
+    try {
+        const response = await fetch('/admin/turnkey-revenues/upload-attachment', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            alert('تم رفع المرفق بنجاح');
+            // Reload the page to show the new attachment
+            location.reload();
+        } else {
+            alert('حدث خطأ أثناء رفع المرفق: ' + data.message);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('حدث خطأ أثناء رفع المرفق');
+    }
+    
+    // Clear the input
+    fileInput.value = '';
+}
+
 function deleteTurnkeyRow(id) {
     if (!confirm('Are you sure you want to delete this row?')) {
         return;
@@ -682,6 +1069,9 @@ function deleteTurnkeyRow(id) {
     if (id === 'new') {
         const row = document.querySelector(`tr[data-id="new"]`);
         row.remove();
+        
+        // Update statistics
+        updateTurnkeyStatistics();
         return;
     }
     
@@ -704,15 +1094,18 @@ function deleteTurnkeyRow(id) {
             if (tbody.querySelectorAll('tr').length === 0) {
                 tbody.innerHTML = `
                     <tr id="emptyTurnkeyRow">
-                        <td colspan="15" class="text-center py-8 text-gray-500">
+                        <td colspan="26" class="text-center py-8 text-gray-500">
                             <svg class="w-16 h-16 mx-auto mb-2 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                             </svg>
-                            <p>No revenues yet. Click "Add New Row" to start.</p>
+                            <p>لا توجد إيرادات بعد. اضغط "Add New Row" للبدء.</p>
                         </td>
                     </tr>
                 `;
             }
+            
+            // Update statistics
+            updateTurnkeyStatistics();
         } else {
             alert('Error deleting row: ' + result.message);
         }
@@ -721,6 +1114,62 @@ function deleteTurnkeyRow(id) {
         console.error('Error:', error);
         alert('Error deleting row');
     });
+}
+
+// Calculate and update statistics
+function updateTurnkeyStatistics() {
+    const rows = document.querySelectorAll('#turnkeyRevenuesTableBody tr[data-id]');
+    
+    let stats = {
+        count: 0,
+        totalExtractValue: 0,
+        totalTax: 0,
+        totalPenalties: 0,
+        totalNetValue: 0,
+        totalPayments: 0,
+        totalFirstPaymentTax: 0
+    };
+    
+    rows.forEach(row => {
+        const id = row.dataset.id;
+        if (id && id !== 'new') {
+            stats.count++;
+            
+            // Get values from inputs
+            const extractValue = parseFloat(row.querySelector('input[data-field="extract_value"]')?.value) || 0;
+            const taxValue = parseFloat(row.querySelector('input[data-field="tax_value"]')?.value) || 0;
+            const penalties = parseFloat(row.querySelector('input[data-field="penalties"]')?.value) || 0;
+            const netValue = parseFloat(row.querySelector('input[data-field="net_extract_value"]')?.value) || 0;
+            const paymentValue = parseFloat(row.querySelector('input[data-field="payment_value"]')?.value) || 0;
+            const firstPaymentTax = parseFloat(row.querySelector('input[data-field="first_payment_tax"]')?.value) || 0;
+            
+            stats.totalExtractValue += extractValue;
+            stats.totalTax += taxValue;
+            stats.totalPenalties += penalties;
+            stats.totalNetValue += netValue;
+            stats.totalPayments += paymentValue;
+            stats.totalFirstPaymentTax += firstPaymentTax;
+        }
+    });
+    
+    // Calculate remaining amount (net value - payments)
+    const remainingAmount = stats.totalNetValue - stats.totalPayments;
+    
+    // Format numbers with commas
+    const formatter = new Intl.NumberFormat('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+    
+    // Update statistics in DOM
+    document.getElementById('stat_total_count').textContent = stats.count;
+    document.getElementById('stat_total_extract_value').textContent = formatter.format(stats.totalExtractValue);
+    document.getElementById('stat_total_tax').textContent = formatter.format(stats.totalTax);
+    document.getElementById('stat_total_penalties').textContent = formatter.format(stats.totalPenalties);
+    document.getElementById('stat_net_value').textContent = formatter.format(stats.totalNetValue);
+    document.getElementById('stat_total_payments').textContent = formatter.format(stats.totalPayments);
+    document.getElementById('stat_remaining_amount').textContent = formatter.format(remainingAmount);
+    document.getElementById('stat_first_payment_tax').textContent = formatter.format(stats.totalFirstPaymentTax);
 }
 </script>
 @endpush

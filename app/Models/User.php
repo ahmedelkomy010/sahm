@@ -85,7 +85,7 @@ class User extends Authenticatable
         'special_projects' => [
             'name' => 'مشاريع خاصة',
             'permission' => 'access_special_projects',
-            'route' => '#',
+            'route' => 'admin.special-projects.index',
             'icon' => 'briefcase',
             'color' => 'purple'
         ]

@@ -361,14 +361,14 @@
                                 </div>
                             </div>
 
-                            <!-- إجمالي قيمة المستخلصات شامل الضريبه -->
+                            <!-- إجمالي قيمة المستخلصات غير شامله الضريبه -->
                             <div class="col-md-1-5">
                                 <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #2a5298 0%, #1e3c72 100%);">
                                     <div class="card-body p-1 text-white">
                                         <div class="d-flex justify-content-between align-items-center">
                                             <div>
-                                                <h6 class="mb-1 opacity-75" style="font-size: 0.6rem;">إجمالي قيمة المستخلصات شامل الضريبه</h6>
-                                                <h6 class="mb-0 fw-bold" style="font-size: 0.75rem;">{{ number_format($statistics['totalExtractValue'] + $statistics['totalTaxValue'], 2) }}</h6>
+                                                <h6 class="mb-1 opacity-75" style="font-size: 0.6rem;">إجمالي قيمة المستخلصات غير شامله الضريبه</h6>
+                                                <h6 class="mb-0 fw-bold" style="font-size: 0.75rem;">{{ number_format($statistics['totalExtractValue'], 2) }}</h6>
                                                 <small class="opacity-75" style="font-size: 0.6rem;">ريال سعودي</small>
                                             </div>
                                             <div class="bg-white bg-opacity-25 p-1 rounded-circle">
@@ -685,7 +685,7 @@
                                     <th>نوع المستخلص</th>
                                     <th>رقم PO</th>
                                     <th>رقم الفاتورة</th>
-                                    <th>قيمة المستخلص<br>شامل الضريبة</th>
+                                    <th>إجمالي قيمة المستخلصات<br>غير شامله الضريبه</th>
                                     <th>جهة المستخلص</th>
                                     <th>قيمة الضريبة</th>
                                     <th>الغرامات</th>
@@ -733,13 +733,17 @@
                                             <div class="editable-field" contenteditable="true" data-field="invoice_number" placeholder="رقم الفاتورة">{{ $revenue->invoice_number }}</div>
                                         </td>
                                         <td>
-                                            <input type="number" step="0.01" class="form-control form-control-sm" data-field="extract_value" placeholder="قيمة المستخلص شامل الضريبة" value="{{ $revenue->extract_value }}" style="font-size: 0.75rem; padding: 4px; min-width: 100px;">
+                                            <input type="number" step="0.01" class="form-control form-control-sm" data-field="extract_value" placeholder="إجمالي قيمة المستخلصات غير شامله الضريبه" value="{{ $revenue->extract_value }}" style="font-size: 0.75rem; padding: 4px; min-width: 100px;">
                                         </td>
                                         <td>
-                                            <div class="editable-field" contenteditable="true" data-field="tax_percentage" placeholder="جهة المستخلص">{{ $revenue->tax_percentage }}</div>
+                                            <select class="form-select form-select-sm" data-field="tax_percentage" style="font-size: 0.75rem; padding: 4px;">
+                                                <option value="">اختر...</option>
+                                                <option value="SAP" {{ $revenue->tax_percentage === 'SAP' ? 'selected' : '' }}>SAP</option>
+                                                <option value="UDS" {{ $revenue->tax_percentage === 'UDS' ? 'selected' : '' }}>UDS</option>
+                                            </select>
                                         </td>
                                         <td>
-                                            <div class="editable-field" contenteditable="true" data-field="tax_value" placeholder="قيمة الضريبة">{{ $revenue->tax_value }}</div>
+                                            <div class="editable-field" contenteditable="false" data-field="tax_value" placeholder="قيمة الضريبة" style="background-color: #fef3c7; font-weight: bold; cursor: not-allowed;" title="محسوب تلقائياً: قيمة المستخلص × 15%">{{ $revenue->tax_value }}</div>
                                         </td>
                                         <td>
                                             <div class="editable-field" contenteditable="true" data-field="penalties" placeholder="الغرامات">{{ $revenue->penalties }}</div>
@@ -748,7 +752,7 @@
                                             <div class="editable-field" contenteditable="true" data-field="first_payment_tax" placeholder="ضريبة الدفعة الأولى">{{ $revenue->first_payment_tax }}</div>
                                         </td>
                                         <td>
-                                            <div class="editable-field" contenteditable="true" data-field="net_extract_value" placeholder="صافي قيمة المستخلص">{{ $revenue->net_extract_value }}</div>
+                                            <div class="editable-field" contenteditable="false" data-field="net_extract_value" placeholder="صافي قيمة المستخلص" style="background-color: #fef3c7; font-weight: bold; cursor: not-allowed;" title="محسوب تلقائياً: قيمة المستخلص + الضريبة - الغرامات">{{ $revenue->net_extract_value }}</div>
                                         </td>
                                         <td class="date-col">
                                             <input type="date" class="date-input" data-field="extract_date" value="{{ $revenue->extract_date ? $revenue->extract_date->format('Y-m-d') : '' }}" placeholder="تاريخ الإعداد">
@@ -829,6 +833,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const existingRows = document.querySelectorAll('tr[data-row-id]');
     existingRows.forEach(row => {
         addEditableFieldListeners(row);
+        // حساب صافي قيمة المستخلص للصفوف الموجودة
+        calculateNetExtractValue(row);
     });
     
     // تحديث عداد الصفوف
@@ -885,12 +891,18 @@ function addNewRow() {
         <td><div class="editable-field" contenteditable="true" data-field="extract_type" placeholder="نوع المستخلص"></div></td>
         <td><div class="editable-field" contenteditable="true" data-field="po_number" placeholder="رقم PO"></div></td>
         <td><div class="editable-field" contenteditable="true" data-field="invoice_number" placeholder="رقم الفاتورة"></div></td>
-        <td><input type="number" step="0.01" class="form-control form-control-sm" data-field="extract_value" placeholder="قيمة المستخلص شامل الضريبة" style="font-size: 0.75rem; padding: 4px; min-width: 100px;"></td>
-        <td><div class="editable-field" contenteditable="true" data-field="tax_percentage" placeholder="جهة المستخلص"></div></td>
-        <td><div class="editable-field" contenteditable="true" data-field="tax_value" placeholder="قيمة الضريبة"></div></td>
+        <td><input type="number" step="0.01" class="form-control form-control-sm" data-field="extract_value" placeholder="إجمالي قيمة المستخلصات غير شامله الضريبه" style="font-size: 0.75rem; padding: 4px; min-width: 100px;"></td>
+        <td>
+            <select class="form-select form-select-sm" data-field="tax_percentage" style="font-size: 0.75rem; padding: 4px;">
+                <option value="">اختر...</option>
+                <option value="SAP">SAP</option>
+                <option value="UDS">UDS</option>
+            </select>
+        </td>
+        <td><div class="editable-field" contenteditable="false" data-field="tax_value" placeholder="قيمة الضريبة" style="background-color: #fef3c7; font-weight: bold; cursor: not-allowed;" title="محسوب تلقائياً: قيمة المستخلص × 15%"></div></td>
         <td><div class="editable-field" contenteditable="true" data-field="penalties" placeholder="الغرامات"></div></td>
         <td><div class="editable-field" contenteditable="true" data-field="first_payment_tax" placeholder="ضريبة الدفعة الأولى"></div></td>
-        <td><div class="editable-field" contenteditable="true" data-field="net_extract_value" placeholder="صافي قيمة المستخلص"></div></td>
+        <td><div class="editable-field" contenteditable="false" data-field="net_extract_value" placeholder="صافي قيمة المستخلص" style="background-color: #fef3c7; font-weight: bold; cursor: not-allowed;" title="محسوب تلقائياً: قيمة المستخلص + الضريبة - الغرامات"></div></td>
         <td class="date-col"><input type="date" class="date-input" data-field="extract_date" placeholder="تاريخ الإعداد"></td>
         <td><div class="editable-field" contenteditable="true" data-field="year" placeholder="العام"></div></td>
         <td>
@@ -943,6 +955,9 @@ function addEditableFieldListeners(row) {
     const selectFields = row.querySelectorAll('select[data-field]');
     const numberInputs = row.querySelectorAll('input[type="number"][data-field]');
     
+    // إضافة listeners لحساب صافي قيمة المستخلص
+    addCalculationListeners(row);
+    
     // للحقول النصية القابلة للتحرير
     editableFields.forEach(field => {
         // حفظ تلقائي عند تغيير المحتوى
@@ -969,10 +984,11 @@ function addEditableFieldListeners(row) {
         });
     });
     
-    // لحقول Select (مثل حالة الصرف)
+    // لحقول Select (مثل حالة الصرف وجهة المستخلص)
     selectFields.forEach(selectField => {
         // حفظ تلقائي عند تغيير القيمة
         selectField.addEventListener('change', function() {
+            console.log('Select field changed:', selectField.dataset.field, 'Value:', selectField.value);
             autoSaveRow(row);
         });
     });
@@ -1022,7 +1038,7 @@ function autoSaveRow(row) {
         po_number: row.querySelector('[data-field="po_number"]').textContent.trim(),
         invoice_number: row.querySelector('[data-field="invoice_number"]').textContent.trim(),
         extract_value: row.querySelector('[data-field="extract_value"]').value || '',
-        tax_percentage: row.querySelector('[data-field="tax_percentage"]').textContent.trim(),
+        tax_percentage: row.querySelector('[data-field="tax_percentage"]').value || '',
         tax_value: row.querySelector('[data-field="tax_value"]').textContent.trim(),
         penalties: row.querySelector('[data-field="penalties"]').textContent.trim(),
         first_payment_tax: row.querySelector('[data-field="first_payment_tax"]').textContent.trim(),
@@ -1042,6 +1058,9 @@ function autoSaveRow(row) {
 
     // إضافة row_id للتحديث
     data.row_id = row.dataset.revenueId || null;
+
+    console.log('Saving revenue data:', data);
+    console.log('Tax Percentage (جهة المستخلص):', data.tax_percentage);
 
     // إظهار مؤشر الحفظ
     showSavingIndicator(row);
@@ -1776,6 +1795,96 @@ function clearFilters() {
     
     // إعادة عدد السجلات للقيمة الأصلية
     document.getElementById('recordCount').textContent = rows.length;
+}
+
+// حساب قيمة الضريبة تلقائياً (15%)
+// المعادلة: إجمالي قيمة المستخلصات × 0.15
+function calculateTaxValue(row) {
+    const extractValueInput = row.querySelector('input[data-field="extract_value"]');
+    const taxValueField = row.querySelector('[data-field="tax_value"]');
+    
+    if (!extractValueInput || !taxValueField) {
+        return;
+    }
+    
+    // الحصول على قيمة المستخلص
+    const extractValue = parseFloat(extractValueInput.value) || 0;
+    
+    // حساب قيمة الضريبة (15%)
+    const taxValue = extractValue * 0.15;
+    
+    // تحديث الحقل فقط إذا تغيرت القيمة
+    const currentValue = parseFloat(taxValueField.textContent.trim()) || 0;
+    if (Math.abs(currentValue - taxValue) > 0.01) {
+        taxValueField.textContent = taxValue.toFixed(2);
+        
+        // إضافة تأثير بصري للدلالة على أنه محسوب تلقائياً
+        taxValueField.style.backgroundColor = '#fef3c7';
+        taxValueField.style.fontWeight = 'bold';
+        
+        console.log('Tax value calculated (15%):', taxValue.toFixed(2));
+    }
+}
+
+// حساب صافي قيمة المستخلص تلقائياً
+// المعادلة: إجمالي قيمة المستخلصات + قيمة الضريبة - الغرامات
+function calculateNetExtractValue(row) {
+    const extractValueInput = row.querySelector('input[data-field="extract_value"]');
+    const taxValueField = row.querySelector('[data-field="tax_value"]');
+    const penaltiesField = row.querySelector('[data-field="penalties"]');
+    const netExtractValueField = row.querySelector('[data-field="net_extract_value"]');
+    
+    if (!extractValueInput || !taxValueField || !penaltiesField || !netExtractValueField) {
+        return;
+    }
+    
+    // الحصول على القيم
+    const extractValue = parseFloat(extractValueInput.value) || 0;
+    const taxValue = parseFloat(taxValueField.textContent.trim()) || 0;
+    const penalties = parseFloat(penaltiesField.textContent.trim()) || 0;
+    
+    // حساب صافي قيمة المستخلص
+    const netValue = extractValue + taxValue - penalties;
+    
+    // تحديث الحقل فقط إذا تغيرت القيمة
+    const currentValue = parseFloat(netExtractValueField.textContent.trim()) || 0;
+    if (Math.abs(currentValue - netValue) > 0.01) {
+        netExtractValueField.textContent = netValue.toFixed(2);
+        
+        // إضافة تأثير بصري للدلالة على أنه محسوب تلقائياً
+        netExtractValueField.style.backgroundColor = '#fef3c7';
+        netExtractValueField.style.fontWeight = 'bold';
+        
+        console.log('Net extract value calculated:', netValue.toFixed(2));
+    }
+}
+
+// إضافة event listeners للحقول التي تؤثر في الحساب
+function addCalculationListeners(row) {
+    const extractValueInput = row.querySelector('input[data-field="extract_value"]');
+    const taxValueField = row.querySelector('[data-field="tax_value"]');
+    const penaltiesField = row.querySelector('[data-field="penalties"]');
+    
+    if (extractValueInput) {
+        extractValueInput.addEventListener('input', function() {
+            // حساب الضريبة أولاً (15%)
+            calculateTaxValue(row);
+            // ثم حساب صافي القيمة
+            debounce(() => calculateNetExtractValue(row), 500)();
+        });
+    }
+    
+    if (taxValueField) {
+        taxValueField.addEventListener('input', function() {
+            debounce(() => calculateNetExtractValue(row), 500)();
+        });
+    }
+    
+    if (penaltiesField) {
+        penaltiesField.addEventListener('input', function() {
+            debounce(() => calculateNetExtractValue(row), 500)();
+        });
+    }
 }
 </script>
 

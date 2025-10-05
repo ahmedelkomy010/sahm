@@ -10,11 +10,18 @@ class TurnkeyRevenue extends Model
     use HasFactory;
 
     protected $fillable = [
+        'client_name',
         'project',
         'contract_number',
+        'extract_number',
+        'office',
+        'extract_type',
+        'po_number',
+        'invoice_number',
         'location',
         'project_type',
         'extract_value',
+        'extract_entity',
         'tax_value',
         'penalties',
         'net_extract_value',
@@ -22,8 +29,13 @@ class TurnkeyRevenue extends Model
         'remaining_amount',
         'first_payment_tax',
         'extract_date',
+        'year',
+        'extract_status',
+        'reference_number',
         'payment_date',
+        'payment_status',
         'notes',
+        'attachment_path',
         'created_by',
         'updated_by',
     ];

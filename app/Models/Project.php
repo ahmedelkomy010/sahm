@@ -40,7 +40,7 @@ class Project extends Model
     public static $rules = [
         'name' => 'required|string|max:255',
         'contract_number' => 'required|string|max:255|unique:projects',
-        'project_type' => 'required|in:OH33KV,UA33LW,SLS33KV,UG132KV',
+        'project_type' => 'required|in:OH33KV,UA33LW,SLS33KV,UG132KV,special',
         'location' => 'required|string|max:255',
         'amount' => 'nullable|numeric|min:0',
         'description' => 'nullable|string',
@@ -90,6 +90,7 @@ class Project extends Model
             'UA33LW' => 'UA 33LW',
             'SLS33KV' => 'SLS 33KV',
             'UG132KV' => 'UG 132 KV',
+            'special' => 'مشروع خاص',
         ][$this->project_type] ?? $this->project_type;
     }
 
@@ -103,6 +104,7 @@ class Project extends Model
             'UA33LW' => 'UA 33LW',
             'SLS33KV' => 'SLS 33KV',
             'UG132KV' => 'UG 132 KV',
+            'special' => 'مشروع خاص',
         ][$this->project_type] ?? $this->project_type;
     }
 

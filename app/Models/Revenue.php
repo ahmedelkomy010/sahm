@@ -38,7 +38,6 @@ class Revenue extends Model
 
     protected $casts = [
         'extract_value' => 'decimal:2',
-        'tax_percentage' => 'decimal:2',
         'tax_value' => 'decimal:2',
         'penalties' => 'decimal:2',
         'first_payment_tax' => 'decimal:2',

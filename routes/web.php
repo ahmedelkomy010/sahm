@@ -72,6 +72,22 @@ Route::get('/make-me-admin', function () {
 // Admin Routes
 Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
+    
+    // Special Projects Routes
+    Route::get('/special-projects', [App\Http\Controllers\Admin\SpecialProjectController::class, 'index'])->name('special-projects.index');
+    Route::get('/special-projects/create', [App\Http\Controllers\Admin\SpecialProjectController::class, 'create'])->name('special-projects.create');
+    Route::post('/special-projects', [App\Http\Controllers\Admin\SpecialProjectController::class, 'store'])->name('special-projects.store');
+    Route::get('/special-projects/{project}', [App\Http\Controllers\Admin\SpecialProjectController::class, 'show'])->name('special-projects.show');
+    Route::get('/special-projects/{project}/revenues/export', [App\Http\Controllers\Admin\SpecialProjectController::class, 'exportRevenues'])->name('special-projects.revenues.export');
+    Route::get('/special-projects/{project}/revenues', [App\Http\Controllers\Admin\SpecialProjectController::class, 'revenues'])->name('special-projects.revenues');
+    Route::post('/special-projects/{project}/revenues', [App\Http\Controllers\Admin\SpecialProjectController::class, 'storeRevenue'])->name('special-projects.revenues.store');
+    Route::put('/special-projects/{project}/revenues/{revenue}', [App\Http\Controllers\Admin\SpecialProjectController::class, 'updateRevenue'])->name('special-projects.revenues.update');
+    Route::delete('/special-projects/{project}/revenues/{revenue}', [App\Http\Controllers\Admin\SpecialProjectController::class, 'destroyRevenue'])->name('special-projects.revenues.destroy');
+    Route::post('/special-projects/{project}/revenues/{revenue}/attachment', [App\Http\Controllers\Admin\SpecialProjectController::class, 'uploadRevenueAttachment'])->name('special-projects.revenues.upload-attachment');
+    Route::get('/special-projects/{project}/edit', [App\Http\Controllers\Admin\SpecialProjectController::class, 'edit'])->name('special-projects.edit');
+    Route::put('/special-projects/{project}', [App\Http\Controllers\Admin\SpecialProjectController::class, 'update'])->name('special-projects.update');
+    Route::delete('/special-projects/{project}', [App\Http\Controllers\Admin\SpecialProjectController::class, 'destroy'])->name('special-projects.destroy');
+    
     Route::delete('work-orders/{workOrder}', [App\Http\Controllers\Admin\WorkOrderDeleteController::class, '__invoke'])->name('work-orders.destroy');
     Route::post('work-orders/{workOrder}/send-note', [App\Http\Controllers\Admin\WorkOrderController::class, 'sendNote'])->name('work-orders.send-note');
     
@@ -84,6 +100,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::post('turnkey-revenues/store', [App\Http\Controllers\Admin\TurnkeyRevenueController::class, 'store'])->name('turnkey-revenues.store');
     Route::post('turnkey-revenues/{id}/update', [App\Http\Controllers\Admin\TurnkeyRevenueController::class, 'update'])->name('turnkey-revenues.update');
     Route::delete('turnkey-revenues/{id}/delete', [App\Http\Controllers\Admin\TurnkeyRevenueController::class, 'destroy'])->name('turnkey-revenues.delete');
+    Route::post('turnkey-revenues/upload-attachment', [App\Http\Controllers\Admin\TurnkeyRevenueController::class, 'uploadAttachment'])->name('turnkey-revenues.upload-attachment');
     Route::post('work-orders/{workOrder}/save-materials-notes', [MaterialsController::class, 'saveMaterialsNotes'])->name('work-orders.save-materials-notes');
     
     // التقارير العامة
@@ -93,6 +110,11 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::get('work-orders', [App\Http\Controllers\WorkOrderController::class, 'index'])->name('work-orders.index');
     Route::get('work-orders/create', [App\Http\Controllers\WorkOrderController::class, 'create'])->name('work-orders.create');
     Route::get('work-orders/execution-productivity', [App\Http\Controllers\WorkOrderController::class, 'executionProductivity'])->name('work-orders.execution-productivity');
+    
+    // صفحة إيرادات المشاريع الموحدة (مشرف النظام فقط)
+    Route::get('all-projects-revenues', [App\Http\Controllers\WorkOrderController::class, 'allProjectsRevenues'])
+        ->name('all-projects-revenues');
+    
     Route::get('work-orders/revenues', [App\Http\Controllers\WorkOrderController::class, 'revenues'])->name('work-orders.revenues');
     Route::post('work-orders/revenues/save', [App\Http\Controllers\WorkOrderController::class, 'saveRevenue'])->name('work-orders.revenues.save');
     Route::post('work-orders/revenues/import', [App\Http\Controllers\WorkOrderController::class, 'importRevenues'])->name('work-orders.revenues.import');
