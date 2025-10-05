@@ -663,10 +663,10 @@
                             
                             @if(auth()->user()->isAdmin())
                             <!-- زر مسح جميع الصفوف -->
-                            <button type="button" class="btn btn-danger btn-sm" onclick="deleteAllRows()">
+                            <!-- <button type="button" class="btn btn-danger btn-sm" onclick="deleteAllRows()">
                                 <i class="fas fa-trash-alt me-1"></i>
                                 مسح جميع الصفوف
-                            </button>
+                            </button> -->
                             @endif
                         </div>
                     </div>
