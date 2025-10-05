@@ -23,16 +23,16 @@
 
 @section('content')
 <div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 py-12">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="container-fluid mx-auto px-4 sm:px-6 lg:px-8" style="max-width: 95%;">
         
         <!-- Back Button -->
         <div class="mb-8 flex justify-end">
-            <a href="{{ route('projects.show', $project) }}" 
-               class="inline-flex items-center px-6 py-3 bg-white/80 backdrop-blur-sm border border-gray-200 text-gray-700 rounded-xl font-semibold shadow-lg hover:bg-white hover:shadow-xl transition-all duration-300 hover:transform hover:scale-105">
+            <a href="{{ route('projects.clarification', $project) }}" 
+               class="inline-flex items-center px-6 py-3 bg-white/80 backdrop-blur-sm border border-pink-200 text-pink-700 rounded-xl font-semibold shadow-lg hover:bg-white hover:shadow-xl transition-all duration-300 hover:transform hover:scale-105">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                 </svg>
-                Back to Project
+                Back to Clarification
             </a>
         </div>
         
@@ -45,7 +45,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
                         </svg>
                     </div>
-                    <h1 class="text-4xl font-bold mb-3">Clarification</h1>
+                    <h1 class="text-4xl font-bold mb-3">CLA1</h1>
                     <p class="text-pink-100 text-lg">{{ $project->name }}</p>
                     <p class="text-pink-100 text-sm mt-2">Contract: {{ $project->contract_number }}</p>
                 </div>
@@ -67,7 +67,7 @@
         @if(session('success'))
         <div class="bg-green-50 border-l-4 border-green-500 p-4 mb-6 rounded-lg">
             <div class="flex items-center">
-                <svg class="w-6 h-6 text-green-500 ml-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-6 h-6 text-green-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
                 <p class="text-green-700 font-medium">{{ session('success') }}</p>
@@ -78,7 +78,7 @@
         @if(session('error'))
         <div class="bg-red-50 border-l-4 border-red-500 p-4 mb-6 rounded-lg">
             <div class="flex items-center">
-                <svg class="w-6 h-6 text-red-500 ml-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-6 h-6 text-red-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
                 <p class="text-red-700 font-medium">{{ session('error') }}</p>
@@ -86,82 +86,10 @@
         </div>
         @endif
 
-        <!-- Clarification Sub-sections -->
+        <!-- Folders and Attachments Management -->
         <div class="bg-white rounded-2xl shadow-xl overflow-hidden mb-8">
             <div class="p-8">
-                <h2 class="text-xl font-bold text-gray-900 mb-6 text-left">Clarification Sections</h2>
-                
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <!-- CLA1 Card -->
-                    <a href="{{ route('projects.clarification.cla1', $project) }}" class="group block">
-                        <div class="bg-gradient-to-br from-pink-50 to-pink-100 rounded-xl p-6 border-2 border-pink-200 hover:shadow-xl transition-all duration-300 hover:scale-105 hover:border-pink-400">
-                            <div class="flex items-center justify-center mb-4">
-                                <div class="w-16 h-16 bg-pink-600 rounded-2xl flex items-center justify-center">
-                                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                    </svg>
-                                </div>
-                            </div>
-                            <h3 class="text-2xl font-bold text-pink-900 text-center mb-2">CLA1</h3>
-                            <p class="text-sm text-pink-700 text-center">First clarification section</p>
-                            <div class="mt-4 flex items-center justify-center text-pink-600 group-hover:text-pink-700">
-                                <span class="text-sm font-semibold">View Section</span>
-                                <svg class="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                                </svg>
-                            </div>
-                        </div>
-                    </a>
-
-                    <!-- CLA2 Card -->
-                    <a href="{{ route('projects.clarification.cla2', $project) }}" class="group block">
-                        <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6 border-2 border-blue-200 hover:shadow-xl transition-all duration-300 hover:scale-105 hover:border-blue-400">
-                            <div class="flex items-center justify-center mb-4">
-                                <div class="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center">
-                                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                    </svg>
-                                </div>
-                            </div>
-                            <h3 class="text-2xl font-bold text-blue-900 text-center mb-2">CLA2</h3>
-                            <p class="text-sm text-blue-700 text-center">Second clarification section</p>
-                            <div class="mt-4 flex items-center justify-center text-blue-600 group-hover:text-blue-700">
-                                <span class="text-sm font-semibold">View Section</span>
-                                <svg class="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                                </svg>
-                            </div>
-                        </div>
-                    </a>
-
-                    <!-- CLA3 Card -->
-                    <a href="{{ route('projects.clarification.cla3', $project) }}" class="group block">
-                        <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-6 border-2 border-green-200 hover:shadow-xl transition-all duration-300 hover:scale-105 hover:border-green-400">
-                            <div class="flex items-center justify-center mb-4">
-                                <div class="w-16 h-16 bg-green-600 rounded-2xl flex items-center justify-center">
-                                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                    </svg>
-                                </div>
-                            </div>
-                            <h3 class="text-2xl font-bold text-green-900 text-center mb-2">CLA3</h3>
-                            <p class="text-sm text-green-700 text-center">Third clarification section</p>
-                            <div class="mt-4 flex items-center justify-center text-green-600 group-hover:text-green-700">
-                                <span class="text-sm font-semibold">View Section</span>
-                                <svg class="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                                </svg>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-            </div>
-        </div>
-
-        <!-- Create Folder & Upload Documents -->
-        <div class="bg-white rounded-2xl shadow-xl overflow-hidden mb-8">
-            <div class="p-8">
-                <h2 class="text-xl font-bold text-gray-900 mb-6 text-left">Folders and Attachments Management</h2>
+                <h2 class="text-xl font-bold text-pink-900 mb-6 text-left">Folders and Attachments Management</h2>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                     <!-- Create Folder -->
@@ -172,18 +100,18 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"></path>
                                 </svg>
                             </div>
-                            <h3 class="text-lg font-semibold text-gray-900">Create New Folder</h3>
+                            <h3 class="text-lg font-semibold text-pink-900">Create New Folder</h3>
                         </div>
                         
-                        <form action="{{ route('projects.clarification.create-folder', $project) }}" method="POST" class="space-y-4">
+                        <form action="{{ route('projects.clarification.cla1.create-folder', $project) }}" method="POST" class="space-y-4">
                             @csrf
                             <div>
-                                <label for="folder_name" class="block text-sm font-medium text-gray-700 mb-2 text-left">Folder Name</label>
+                                <label for="folder_name" class="block text-sm font-medium text-pink-700 mb-2 text-left">Folder Name</label>
                                 <input type="text" 
                                        id="folder_name" 
                                        name="folder_name" 
                                        required
-                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 text-left"
+                                       class="w-full px-4 py-3 border border-pink-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 text-left"
                                        placeholder="Example: Project Queries">
                                 @error('folder_name')
                                     <p class="mt-1 text-sm text-red-600 text-left">{{ $message }}</p>
@@ -191,11 +119,11 @@
                             </div>
                             
                             <div>
-                                <label for="folder_description" class="block text-sm font-medium text-gray-700 mb-2 text-left">Description (Optional)</label>
+                                <label for="folder_description" class="block text-sm font-medium text-pink-700 mb-2 text-left">Description (Optional)</label>
                                 <textarea id="folder_description" 
                                           name="folder_description" 
                                           rows="2"
-                                          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 text-left"
+                                          class="w-full px-4 py-3 border border-pink-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 text-left"
                                           placeholder="Folder description..."></textarea>
                             </div>
                             
@@ -217,16 +145,16 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
                                 </svg>
                             </div>
-                            <h3 class="text-lg font-semibold text-gray-900">Upload Multiple Attachments</h3>
+                            <h3 class="text-lg font-semibold text-pink-900">Upload Multiple Attachments</h3>
                         </div>
                         
-                        <form action="{{ route('projects.clarification.upload-files', $project) }}" method="POST" enctype="multipart/form-data" class="space-y-4">
+                        <form action="{{ route('projects.clarification.cla1.upload-files', $project) }}" method="POST" enctype="multipart/form-data" class="space-y-4">
                             @csrf
                             <div>
-                                <label for="folder_id" class="block text-sm font-medium text-gray-700 mb-2 text-left">Select Folder</label>
+                                <label for="folder_id" class="block text-sm font-medium text-pink-700 mb-2 text-left">Select Folder</label>
                                 <select id="folder_id" 
                                         name="folder_id" 
-                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-left">
+                                        class="w-full px-4 py-3 border border-pink-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-left">
                                     <option value="">Main Folder</option>
                                     @foreach($folders as $folder)
                                     <option value="{{ $folder['name'] }}">{{ $folder['name'] }} ({{ $folder['file_count'] }} files)</option>
@@ -235,9 +163,9 @@
                             </div>
                             
                             <div>
-                                <label for="files" class="block text-sm font-medium text-gray-700 mb-2 text-left">
+                                <label for="files" class="block text-sm font-medium text-pink-700 mb-2 text-left">
                                     Select Files
-                                    <span class="text-xs text-gray-500">(You can select multiple files)</span>
+                                    <span class="text-xs text-pink-500">(You can select multiple files)</span>
                                 </label>
                                 <div class="relative">
                                     <input type="file" 
@@ -248,13 +176,13 @@
                                            class="hidden"
                                            onchange="updateFileList(this)">
                                     <label for="files" 
-                                           class="flex items-center justify-center w-full px-4 py-8 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-all">
+                                           class="flex items-center justify-center w-full px-4 py-8 border-2 border-dashed border-pink-300 rounded-lg cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-all">
                                         <div class="text-center">
-                                            <svg class="w-10 h-10 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <svg class="w-10 h-10 text-pink-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
                                             </svg>
-                                            <p class="text-sm text-gray-600">Click to select files</p>
-                                            <p class="text-xs text-gray-500 mt-1">or drag and drop files here</p>
+                                            <p class="text-sm text-pink-600">Click to select files</p>
+                                            <p class="text-xs text-pink-500 mt-1">or drag and drop files here</p>
                                         </div>
                                     </label>
                                 </div>
@@ -281,9 +209,9 @@
         <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
             <div class="p-8">
                 <div class="flex items-center justify-between mb-6">
-                    <h2 class="text-xl font-bold text-gray-900 text-left">Folders and Files</h2>
+                    <h2 class="text-xl font-bold text-pink-900 text-left">Folders and Files</h2>
                     <div class="flex items-center space-x-2">
-                        <span class="text-sm text-gray-500">
+                        <span class="text-sm text-pink-500">
                             {{ count($folders) }} Folders | {{ count($files) }} Files
                         </span>
                     </div>
@@ -301,20 +229,20 @@
                                     </svg>
                                 </div>
                                 <div class="flex-1 min-w-0">
-                                    <h3 class="text-lg font-semibold text-gray-900 mb-1 truncate text-left">{{ $folder['name'] }}</h3>
+                                    <h3 class="text-lg font-semibold text-pink-900 mb-1 truncate text-left">{{ $folder['name'] }}</h3>
                                     @if($folder['description'])
-                                    <p class="text-xs text-gray-500 line-clamp-2 text-left">{{ $folder['description'] }}</p>
+                                    <p class="text-xs text-pink-500 line-clamp-2 text-left">{{ $folder['description'] }}</p>
                                     @endif
                                 </div>
                             </div>
                             
                             <div class="flex items-center justify-between text-sm pt-3 border-t border-pink-100">
-                                <span class="text-gray-500">{{ $folder['file_count'] }} Files</span>
-                                <span class="text-gray-400 text-xs">{{ $folder['created_at'] }}</span>
+                                <span class="text-pink-500">{{ $folder['file_count'] }} Files</span>
+                                <span class="text-pink-400 text-xs">{{ $folder['created_at'] }}</span>
                             </div>
                             
                             <div class="flex items-center gap-2 mt-3">
-                                <a href="{{ route('projects.clarification.folder', ['project' => $project, 'folderName' => $folder['name']]) }}" class="flex-1 px-3 py-2 bg-pink-600 hover:bg-pink-700 text-white rounded-lg text-sm transition-colors text-center">
+                                <a href="{{ route('projects.clarification.cla1.folder', ['project' => $project, 'folderName' => $folder['name']]) }}" class="flex-1 px-3 py-2 bg-pink-600 hover:bg-pink-700 text-white rounded-lg text-sm transition-colors text-center">
                                     <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path>
                                     </svg>
@@ -334,26 +262,26 @@
                                     </svg>
                                 </div>
                                 <div class="flex-1 min-w-0">
-                                    <h3 class="text-sm font-semibold text-gray-900 mb-1 truncate text-left">{{ $file['name'] }}</h3>
-                                    <p class="text-xs text-gray-500 text-left">{{ number_format($file['size'] / 1024, 2) }} KB</p>
+                                    <h3 class="text-sm font-semibold text-pink-900 mb-1 truncate text-left">{{ $file['name'] }}</h3>
+                                    <p class="text-xs text-pink-500 text-left">{{ number_format($file['size'] / 1024, 2) }} KB</p>
                                 </div>
                             </div>
                             
                             <div class="flex items-center justify-between text-xs pt-3 border-t border-blue-100">
-                                <span class="text-gray-400">{{ $file['created_at'] }}</span>
+                                <span class="text-pink-400">{{ $file['created_at'] }}</span>
                             </div>
                         </div>
                         @endforeach
                     </div>
                 @else
                     <div class="text-center py-12">
-                        <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div class="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-8 h-8 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"></path>
                             </svg>
                         </div>
-                        <h3 class="text-lg font-semibold text-gray-900 mb-2">No Folders or Files</h3>
-                        <p class="text-gray-600">Start by creating a new folder or uploading files</p>
+                        <h3 class="text-lg font-semibold text-pink-900 mb-2">No Folders or Files</h3>
+                        <p class="text-pink-600">Start by creating a new folder or uploading files</p>
                     </div>
                 @endif
             </div>
@@ -371,15 +299,15 @@ function updateFileList(input) {
     if (input.files.length > 0) {
         Array.from(input.files).forEach((file, index) => {
             const fileItem = document.createElement('div');
-            fileItem.className = 'flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200';
+            fileItem.className = 'flex items-center justify-between p-3 bg-pink-50 rounded-lg border border-pink-200';
             fileItem.innerHTML = `
                 <div class="flex items-center flex-1">
-                    <svg class="w-5 h-5 text-blue-500 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-5 h-5 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                     </svg>
                     <div class="flex-1">
-                        <p class="text-sm font-medium text-gray-900 text-left">${file.name}</p>
-                        <p class="text-xs text-gray-500 text-left">${formatFileSize(file.size)}</p>
+                        <p class="text-sm font-medium text-pink-900 text-left">${file.name}</p>
+                        <p class="text-xs text-pink-500 text-left">${formatFileSize(file.size)}</p>
                     </div>
                 </div>
                 <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -452,3 +380,4 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 @endpush
 @endsection
+

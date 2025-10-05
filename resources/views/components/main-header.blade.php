@@ -57,20 +57,41 @@
             @auth
             <div class="d-flex align-items-center">
                 <!-- Notifications -->
-                <div class="dropdown me-3">
-                    <button class="btn btn-link text-white position-relative" type="button" data-bs-toggle="dropdown">
+                <div class="dropdown me-3" id="notificationsDropdown">
+                    <button class="btn btn-link text-white position-relative" 
+                            type="button" 
+                            data-bs-toggle="dropdown" 
+                            id="notificationsButton"
+                            onclick="loadNotifications()">
                         <i class="fas fa-bell fs-5"></i>
-                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                            3
+                        <span id="notificationBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display: none;">
+                            0
                             <span class="visually-hidden">إشعارات غير مقروءة</span>
                         </span>
                     </button>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        <li><h6 class="dropdown-header">الإشعارات</h6></li>
-                        <li><a class="dropdown-item" href="#">إشعار جديد 1</a></li>
-                        <li><a class="dropdown-item" href="#">إشعار جديد 2</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item text-center" href="#">عرض جميع الإشعارات</a></li>
+                    <ul class="dropdown-menu dropdown-menu-end notification-dropdown" style="min-width: 350px; max-height: 500px; overflow-y: auto;">
+                        <li>
+                            <div class="d-flex justify-content-between align-items-center px-3 py-2 bg-light border-bottom">
+                                <h6 class="mb-0 fw-bold">
+                                    <i class="fas fa-bell me-2 text-primary"></i>
+                                    الإشعارات
+                                </h6>
+                                <button class="btn btn-sm btn-outline-primary" onclick="markAllAsRead()" title="تعليم الكل كمقروء">
+                                    <i class="fas fa-check-double"></i>
+                                </button>
+                            </div>
+                        </li>
+                        <li id="notificationsLoader" class="text-center py-4">
+                            <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                <span class="visually-hidden">جاري التحميل...</span>
+                            </div>
+                            <p class="text-muted small mt-2 mb-0">جاري تحميل الإشعارات...</p>
+                        </li>
+                        <li id="notificationsEmpty" style="display: none;" class="text-center py-4 text-muted">
+                            <i class="fas fa-bell-slash fa-2x mb-2 text-muted"></i>
+                            <p class="mb-0">لا توجد إشعارات</p>
+                        </li>
+                        <div id="notificationsList"></div>
                     </ul>
                 </div>
 
@@ -354,4 +375,220 @@
     background-color: #f8f9fa;
     border-bottom: 1px solid #dee2e6;
 }
-</style> 
+
+/* تنسيق الإشعارات */
+.notification-dropdown {
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+}
+
+.notification-item {
+    padding: 12px 16px;
+    border-bottom: 1px solid #e9ecef;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.notification-item:hover {
+    background-color: #f8f9fa;
+}
+
+.notification-item.unread {
+    background-color: #e3f2fd;
+    border-right: 3px solid #2196f3;
+}
+
+.notification-item.unread:hover {
+    background-color: #bbdefb;
+}
+
+.notification-title {
+    font-weight: 600;
+    color: #1e3a8a;
+    font-size: 0.9rem;
+    margin-bottom: 4px;
+}
+
+.notification-message {
+    color: #6b7280;
+    font-size: 0.85rem;
+    margin-bottom: 4px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.notification-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 4px;
+}
+
+.notification-time {
+    color: #9ca3af;
+    font-size: 0.75rem;
+}
+
+.notification-from {
+    color: #6366f1;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+#notificationBadge {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+}
+</style>
+
+<script>
+let notificationsLoaded = false;
+
+// تحميل الإشعارات عند فتح القائمة
+function loadNotifications() {
+    if (notificationsLoaded) return;
+    
+    fetch('/admin/notifications')
+        .then(response => response.json())
+        .then(data => {
+            notificationsLoaded = true;
+            updateNotificationUI(data);
+        })
+        .catch(error => {
+            console.error('Error loading notifications:', error);
+            document.getElementById('notificationsLoader').style.display = 'none';
+            document.getElementById('notificationsEmpty').style.display = 'block';
+        });
+}
+
+// تحديث واجهة الإشعارات
+function updateNotificationUI(data) {
+    const loader = document.getElementById('notificationsLoader');
+    const empty = document.getElementById('notificationsEmpty');
+    const list = document.getElementById('notificationsList');
+    const badge = document.getElementById('notificationBadge');
+    
+    loader.style.display = 'none';
+    
+    if (data.notifications && data.notifications.length > 0) {
+        list.innerHTML = data.notifications.map(notification => `
+            <li class="notification-item ${notification.is_read ? '' : 'unread'}" 
+                onclick="viewNotification(${notification.id}, ${notification.work_order ? notification.work_order.id : 'null'})">
+                <div class="notification-title">
+                    <i class="fas fa-comment-dots me-2 text-primary"></i>
+                    ${notification.title}
+                </div>
+                <div class="notification-message">
+                    ${notification.message}
+                </div>
+                <div class="notification-footer">
+                    <span class="notification-from">
+                        <i class="fas fa-user me-1"></i>
+                        ${notification.from_user}
+                    </span>
+                    <span class="notification-time">
+                        <i class="fas fa-clock me-1"></i>
+                        ${notification.created_at}
+                    </span>
+                </div>
+            </li>
+        `).join('');
+        
+        // تحديث الـ badge
+        if (data.unread_count > 0) {
+            badge.textContent = data.unread_count;
+            badge.style.display = 'block';
+        } else {
+            badge.style.display = 'none';
+        }
+    } else {
+        empty.style.display = 'block';
+        badge.style.display = 'none';
+    }
+}
+
+// عرض الإشعار والانتقال لأمر العمل
+function viewNotification(notificationId, workOrderId) {
+    // تعليم الإشعار كمقروء
+    fetch(`/admin/notifications/${notificationId}/mark-read`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // تحديث العداد
+            notificationsLoaded = false;
+            loadNotifications();
+            
+            // الانتقال لصفحة أمر العمل
+            if (workOrderId) {
+                window.location.href = `/admin/work-orders/${workOrderId}`;
+            }
+        }
+    })
+    .catch(error => console.error('Error marking notification as read:', error));
+}
+
+// تعليم جميع الإشعارات كمقروءة
+function markAllAsRead() {
+    fetch('/admin/notifications/mark-all-read', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            notificationsLoaded = false;
+            loadNotifications();
+        }
+    })
+    .catch(error => console.error('Error marking all as read:', error));
+}
+
+// تحديث عداد الإشعارات تلقائياً كل دقيقة
+setInterval(() => {
+    fetch('/admin/notifications?limit=1')
+        .then(response => response.json())
+        .then(data => {
+            const badge = document.getElementById('notificationBadge');
+            if (data.unread_count > 0) {
+                badge.textContent = data.unread_count;
+                badge.style.display = 'block';
+            } else {
+                badge.style.display = 'none';
+            }
+        })
+        .catch(error => console.error('Error updating notification count:', error));
+}, 60000); // كل دقيقة
+
+// تحميل عداد الإشعارات عند تحميل الصفحة
+document.addEventListener('DOMContentLoaded', () => {
+    fetch('/admin/notifications?limit=1')
+        .then(response => response.json())
+        .then(data => {
+            const badge = document.getElementById('notificationBadge');
+            if (data.unread_count > 0) {
+                badge.textContent = data.unread_count;
+                badge.style.display = 'block';
+            }
+        })
+        .catch(error => console.error('Error loading notification count:', error));
+});
+</script> 

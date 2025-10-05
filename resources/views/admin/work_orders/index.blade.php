@@ -1386,6 +1386,13 @@ function resetCountdown(workOrderId) {
                                                 @endif
                                                 
                                                 @if(auth()->user()->is_admin)
+                                                    <button type="button" 
+                                                            class="btn btn-sm btn-warning" 
+                                                            onclick="openNoteModal({{ $workOrder->id }}, '{{ $workOrder->order_number }}')"
+                                                            title="إرسال ملاحظة">
+                                                        <i class="fas fa-comment-dots"></i>
+                                                    </button>
+                                                    
                                                     <form action="{{ route('admin.work-orders.destroy', $workOrder) }}" method="POST" class="d-inline" onsubmit="return confirm('هل أنت متأكد من حذف هذا العنصر؟');">
                                                         @csrf
                                                         @method('DELETE')
@@ -2193,5 +2200,144 @@ $(document).ready(function() {
         });
     }
 });
+
+// فتح نافذة الملاحظة
+function openNoteModal(workOrderId, orderNumber) {
+    document.getElementById('workOrderId').value = workOrderId;
+    document.getElementById('orderNumber').value = orderNumber;
+    document.getElementById('noteContent').value = '';
+    document.getElementById('userId').value = '';
+    document.getElementById('sendEmail').checked = true;
+    
+    const modal = new bootstrap.Modal(document.getElementById('noteModal'));
+    modal.show();
+}
+
+// إرسال الملاحظة
+function sendNote() {
+    const form = document.getElementById('noteForm');
+    
+    if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+    }
+    
+    const workOrderId = document.getElementById('workOrderId').value;
+    const userId = document.getElementById('userId').value;
+    const note = document.getElementById('noteContent').value;
+    const sendEmail = document.getElementById('sendEmail').checked;
+    
+    const button = event.target;
+    const originalText = button.innerHTML;
+    button.disabled = true;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>جاري الإرسال...';
+    
+    fetch(`/admin/work-orders/${workOrderId}/send-note`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || form.querySelector('[name="_token"]').value,
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+            user_id: userId,
+            note: note,
+            send_email: sendEmail
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        button.disabled = false;
+        button.innerHTML = originalText;
+        
+        if (data.success) {
+            alert('تم إرسال الملاحظة بنجاح!');
+            bootstrap.Modal.getInstance(document.getElementById('noteModal')).hide();
+        } else {
+            alert('حدث خطأ: ' + (data.message || 'فشل إرسال الملاحظة'));
+        }
+    })
+    .catch(error => {
+        button.disabled = false;
+        button.innerHTML = originalText;
+        console.error('Error:', error);
+        alert('حدث خطأ في الإرسال. يرجى المحاولة مرة أخرى.');
+    });
+}
 </script>
+
+<!-- Modal لإرسال الملاحظات -->
+<div class="modal fade" id="noteModal" tabindex="-1" aria-labelledby="noteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="noteModalLabel">
+                    <i class="fas fa-comment-dots me-2"></i>
+                    إرسال ملاحظة
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="noteForm">
+                    @csrf
+                    <input type="hidden" id="workOrderId" name="work_order_id">
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">
+                            <i class="fas fa-file-alt me-1"></i>
+                            أمر العمل
+                        </label>
+                        <input type="text" class="form-control" id="orderNumber" readonly>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="userId" class="form-label fw-bold">
+                            <i class="fas fa-user me-1"></i>
+                            إرسال إلى المستخدم <span class="text-danger">*</span>
+                        </label>
+                        <select class="form-select" id="userId" name="user_id" required>
+                            <option value="">-- اختر المستخدم --</option>
+                            @foreach(\App\Models\User::orderBy('name')->get() as $user)
+                                <option value="{{ $user->id }}">{{ $user->name }} ({{ $user->email }})</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="noteContent" class="form-label fw-bold">
+                            <i class="fas fa-edit me-1"></i>
+                            الملاحظة <span class="text-danger">*</span>
+                        </label>
+                        <textarea class="form-control" 
+                                  id="noteContent" 
+                                  name="note" 
+                                  rows="5" 
+                                  required 
+                                  placeholder="اكتب الملاحظة هنا..."></textarea>
+                        <small class="text-muted">الحد الأقصى 500 حرف</small>
+                    </div>
+                    
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="sendEmail" name="send_email" checked>
+                        <label class="form-check-label" for="sendEmail">
+                            <i class="fas fa-envelope me-1"></i>
+                            إرسال إشعار بالبريد الإلكتروني
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>
+                    إلغاء
+                </button>
+                <button type="button" class="btn btn-primary" onclick="sendNote()">
+                    <i class="fas fa-paper-plane me-1"></i>
+                    إرسال الملاحظة
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @endsection 

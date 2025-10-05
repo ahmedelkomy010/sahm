@@ -4719,6 +4719,64 @@ class WorkOrderController extends Controller
         }
     }
 
+    public function uploadRevenueAttachment(\Illuminate\Http\Request $request)
+    {
+        try {
+            $request->validate([
+                'attachment' => 'required|file|max:10240', // Max 10MB
+                'revenue_id' => 'nullable|exists:revenues,id',
+                'row_id' => 'required'
+            ]);
+
+            $revenueId = $request->input('revenue_id');
+            $rowId = $request->input('row_id');
+            
+            if ($request->hasFile('attachment')) {
+                $file = $request->file('attachment');
+                $fileName = time() . '_' . $rowId . '_' . $file->getClientOriginalName();
+                
+                // حفظ الملف في مجلد revenues_attachments
+                $path = $file->storeAs('revenues_attachments', $fileName, 'public');
+                
+                // إذا كان هناك revenue_id، نحفظ المسار في قاعدة البيانات
+                if ($revenueId) {
+                    $revenue = \App\Models\Revenue::find($revenueId);
+                    if ($revenue) {
+                        $revenue->attachment_path = $path;
+                        $revenue->save();
+                    }
+                }
+                
+                \Log::info('تم رفع مرفق إيرادات بنجاح: ' . $fileName);
+                
+                return response()->json([
+                    'success' => true,
+                    'message' => 'تم رفع المرفق بنجاح',
+                    'file_path' => $path,
+                    'file_name' => $fileName
+                ]);
+            }
+
+            return response()->json([
+                'success' => false,
+                'message' => 'لم يتم اختيار ملف'
+            ], 400);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'خطأ في البيانات المرسلة: ' . $e->getMessage()
+            ], 422);
+        } catch (\Exception $e) {
+            \Log::error('خطأ في رفع مرفق الإيرادات: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء رفع المرفق: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
     /**
      * استيراد الإيرادات من ملف Excel
      */

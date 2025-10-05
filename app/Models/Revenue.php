@@ -32,7 +32,8 @@ class Revenue extends Model
         'reference_number',
         'payment_date',
         'payment_value',
-        'extract_status'
+        'extract_status',
+        'attachment_path'
     ];
 
     protected $casts = [

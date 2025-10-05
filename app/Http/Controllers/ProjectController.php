@@ -652,6 +652,11 @@ class ProjectController extends Controller
      */
     public function revenues(Project $project)
     {
+        // جلب إيرادات تسليم المفتاح
+        $turnkeyRevenues = \App\Models\TurnkeyRevenue::where('project', $project->id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+        
         // جلب المجلدات والملفات
         $basePath = storage_path('app/public/projects/' . $project->id . '/revenues');
         $folders = [];
@@ -692,7 +697,7 @@ class ProjectController extends Controller
             }
         }
         
-        return view('projects.sections.revenues', compact('project', 'folders', 'files'));
+        return view('projects.sections.revenues', compact('project', 'folders', 'files', 'turnkeyRevenues'));
     }
 
     /**
@@ -2577,4 +2582,481 @@ class ProjectController extends Controller
         }
         return view('projects.sections.supplying-installation-folder', compact('project', 'folderName', 'description', 'files'));
     }
-} 
+    
+    // ============================================
+    // CLA1 Methods
+    // ============================================
+    
+    public function clarificationCla1(Project $project)
+    {
+        $basePath = storage_path('app/public/projects/' . $project->id . '/clarification/cla1');
+        $folders = [];
+        $files = [];
+        
+        if (file_exists($basePath)) {
+            $items = scandir($basePath);
+            
+            foreach ($items as $item) {
+                if ($item === '.' || $item === '..') continue;
+                
+                $itemPath = $basePath . '/' . $item;
+                
+                if (is_dir($itemPath)) {
+                    $description = '';
+                    $descFile = $itemPath . '/description.txt';
+                    if (file_exists($descFile)) {
+                        $description = file_get_contents($descFile);
+                    }
+                    
+                    $fileCount = count(array_diff(scandir($itemPath), ['.', '..', 'description.txt']));
+                    
+                    $folders[] = [
+                        'name' => $item,
+                        'description' => $description,
+                        'file_count' => $fileCount,
+                        'path' => $itemPath,
+                        'created_at' => date('Y-m-d H:i', filectime($itemPath))
+                    ];
+                } else {
+                    $files[] = [
+                        'name' => $item,
+                        'size' => filesize($itemPath),
+                        'path' => $itemPath,
+                        'created_at' => date('Y-m-d H:i', filectime($itemPath))
+                    ];
+                }
+            }
+        }
+        
+        return view('projects.sections.clarification-cla1', compact('project', 'folders', 'files'));
+    }
+    
+    public function createClarificationCla1Folder(Request $request, Project $project)
+    {
+        $validated = $request->validate([
+            'folder_name' => 'required|string|max:255',
+            'folder_description' => 'nullable|string',
+        ]);
+        
+        try {
+            $folderName = preg_replace('/[^\p{Arabic}\p{L}\p{N}\s\-\_]/u', '', $validated['folder_name']);
+            $folderName = trim($folderName);
+            
+            if (empty($folderName)) {
+                return redirect()->back()->with('error', 'Invalid folder name');
+            }
+            
+            $basePath = storage_path('app/public/projects/' . $project->id . '/clarification/cla1');
+            if (!file_exists($basePath)) {
+                mkdir($basePath, 0777, true);
+                chmod($basePath, 0777);
+            }
+            
+            $folderPath = $basePath . '/' . $folderName;
+            
+            if (file_exists($folderPath)) {
+                return redirect()->back()->with('error', 'Folder already exists');
+            }
+            
+            mkdir($folderPath, 0777, true);
+            chmod($folderPath, 0777);
+            
+            if (!empty($validated['folder_description'])) {
+                file_put_contents($folderPath . '/description.txt', $validated['folder_description']);
+            }
+            
+            return redirect()->back()->with('success', 'Folder created successfully');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to create folder: ' . $e->getMessage());
+        }
+    }
+    
+    public function uploadClarificationCla1Files(Request $request, Project $project)
+    {
+        $request->validate([
+            'files.*' => 'required|file|max:51200',
+            'folder_id' => 'nullable|string'
+        ]);
+        
+        try {
+            $basePath = storage_path('app/public/projects/' . $project->id . '/clarification/cla1');
+            
+            if ($request->folder_id) {
+                $targetPath = $basePath . '/' . $request->folder_id;
+            } else {
+                $targetPath = $basePath;
+            }
+            
+            if (!file_exists($targetPath)) {
+                mkdir($targetPath, 0777, true);
+                chmod($targetPath, 0777);
+            }
+            
+            foreach ($request->file('files') as $file) {
+                $fileName = $file->getClientOriginalName();
+                $file->move($targetPath, $fileName);
+                chmod($targetPath . '/' . $fileName, 0644);
+            }
+            
+            return redirect()->back()->with('success', 'Files uploaded successfully');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to upload files: ' . $e->getMessage());
+        }
+    }
+    
+    public function viewClarificationCla1Folder(Project $project, $folderName)
+    {
+        $folderPath = storage_path('app/public/projects/' . $project->id . '/clarification/cla1/' . $folderName);
+        
+        if (!file_exists($folderPath) || !is_dir($folderPath)) {
+            return redirect()->route('projects.clarification.cla1', $project)->with('error', 'Folder not found');
+        }
+        
+        $description = '';
+        $descFile = $folderPath . '/description.txt';
+        if (file_exists($descFile)) {
+            $description = file_get_contents($descFile);
+        }
+        
+        $files = [];
+        $items = scandir($folderPath);
+        
+        foreach ($items as $item) {
+            if ($item === '.' || $item === '..' || $item === 'description.txt') continue;
+            
+            $itemPath = $folderPath . '/' . $item;
+            
+            if (!is_dir($itemPath)) {
+                $pathInfo = pathinfo($item);
+                $files[] = [
+                    'name' => $item,
+                    'size' => filesize($itemPath),
+                    'extension' => $pathInfo['extension'] ?? '',
+                    'path' => $itemPath,
+                    'url' => asset('storage/projects/' . $project->id . '/clarification/cla1/' . $folderName . '/' . $item),
+                    'created_at' => date('Y-m-d H:i', filectime($itemPath))
+                ];
+            }
+        }
+        
+        return view('projects.sections.clarification-cla1-folder', compact('project', 'folderName', 'description', 'files'));
+    }
+    
+    // ============================================
+    // CLA2 Methods
+    // ============================================
+    
+    public function clarificationCla2(Project $project)
+    {
+        $basePath = storage_path('app/public/projects/' . $project->id . '/clarification/cla2');
+        $folders = [];
+        $files = [];
+        
+        if (file_exists($basePath)) {
+            $items = scandir($basePath);
+            
+            foreach ($items as $item) {
+                if ($item === '.' || $item === '..') continue;
+                
+                $itemPath = $basePath . '/' . $item;
+                
+                if (is_dir($itemPath)) {
+                    $description = '';
+                    $descFile = $itemPath . '/description.txt';
+                    if (file_exists($descFile)) {
+                        $description = file_get_contents($descFile);
+                    }
+                    
+                    $fileCount = count(array_diff(scandir($itemPath), ['.', '..', 'description.txt']));
+                    
+                    $folders[] = [
+                        'name' => $item,
+                        'description' => $description,
+                        'file_count' => $fileCount,
+                        'path' => $itemPath,
+                        'created_at' => date('Y-m-d H:i', filectime($itemPath))
+                    ];
+                } else {
+                    $files[] = [
+                        'name' => $item,
+                        'size' => filesize($itemPath),
+                        'path' => $itemPath,
+                        'created_at' => date('Y-m-d H:i', filectime($itemPath))
+                    ];
+                }
+            }
+        }
+        
+        return view('projects.sections.clarification-cla2', compact('project', 'folders', 'files'));
+    }
+    
+    public function createClarificationCla2Folder(Request $request, Project $project)
+    {
+        $validated = $request->validate([
+            'folder_name' => 'required|string|max:255',
+            'folder_description' => 'nullable|string',
+        ]);
+        
+        try {
+            $folderName = preg_replace('/[^\p{Arabic}\p{L}\p{N}\s\-\_]/u', '', $validated['folder_name']);
+            $folderName = trim($folderName);
+            
+            if (empty($folderName)) {
+                return redirect()->back()->with('error', 'Invalid folder name');
+            }
+            
+            $basePath = storage_path('app/public/projects/' . $project->id . '/clarification/cla2');
+            if (!file_exists($basePath)) {
+                mkdir($basePath, 0777, true);
+                chmod($basePath, 0777);
+            }
+            
+            $folderPath = $basePath . '/' . $folderName;
+            
+            if (file_exists($folderPath)) {
+                return redirect()->back()->with('error', 'Folder already exists');
+            }
+            
+            mkdir($folderPath, 0777, true);
+            chmod($folderPath, 0777);
+            
+            if (!empty($validated['folder_description'])) {
+                file_put_contents($folderPath . '/description.txt', $validated['folder_description']);
+            }
+            
+            return redirect()->back()->with('success', 'Folder created successfully');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to create folder: ' . $e->getMessage());
+        }
+    }
+    
+    public function uploadClarificationCla2Files(Request $request, Project $project)
+    {
+        $request->validate([
+            'files.*' => 'required|file|max:51200',
+            'folder_id' => 'nullable|string'
+        ]);
+        
+        try {
+            $basePath = storage_path('app/public/projects/' . $project->id . '/clarification/cla2');
+            
+            if ($request->folder_id) {
+                $targetPath = $basePath . '/' . $request->folder_id;
+            } else {
+                $targetPath = $basePath;
+            }
+            
+            if (!file_exists($targetPath)) {
+                mkdir($targetPath, 0777, true);
+                chmod($targetPath, 0777);
+            }
+            
+            foreach ($request->file('files') as $file) {
+                $fileName = $file->getClientOriginalName();
+                $file->move($targetPath, $fileName);
+                chmod($targetPath . '/' . $fileName, 0644);
+            }
+            
+            return redirect()->back()->with('success', 'Files uploaded successfully');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to upload files: ' . $e->getMessage());
+        }
+    }
+    
+    public function viewClarificationCla2Folder(Project $project, $folderName)
+    {
+        $folderPath = storage_path('app/public/projects/' . $project->id . '/clarification/cla2/' . $folderName);
+        
+        if (!file_exists($folderPath) || !is_dir($folderPath)) {
+            return redirect()->route('projects.clarification.cla2', $project)->with('error', 'Folder not found');
+        }
+        
+        $description = '';
+        $descFile = $folderPath . '/description.txt';
+        if (file_exists($descFile)) {
+            $description = file_get_contents($descFile);
+        }
+        
+        $files = [];
+        $items = scandir($folderPath);
+        
+        foreach ($items as $item) {
+            if ($item === '.' || $item === '..' || $item === 'description.txt') continue;
+            
+            $itemPath = $folderPath . '/' . $item;
+            
+            if (!is_dir($itemPath)) {
+                $pathInfo = pathinfo($item);
+                $files[] = [
+                    'name' => $item,
+                    'size' => filesize($itemPath),
+                    'extension' => $pathInfo['extension'] ?? '',
+                    'path' => $itemPath,
+                    'url' => asset('storage/projects/' . $project->id . '/clarification/cla2/' . $folderName . '/' . $item),
+                    'created_at' => date('Y-m-d H:i', filectime($itemPath))
+                ];
+            }
+        }
+        
+        return view('projects.sections.clarification-cla2-folder', compact('project', 'folderName', 'description', 'files'));
+    }
+    
+    // ============================================
+    // CLA3 Methods
+    // ============================================
+    
+    public function clarificationCla3(Project $project)
+    {
+        $basePath = storage_path('app/public/projects/' . $project->id . '/clarification/cla3');
+        $folders = [];
+        $files = [];
+        
+        if (file_exists($basePath)) {
+            $items = scandir($basePath);
+            
+            foreach ($items as $item) {
+                if ($item === '.' || $item === '..') continue;
+                
+                $itemPath = $basePath . '/' . $item;
+                
+                if (is_dir($itemPath)) {
+                    $description = '';
+                    $descFile = $itemPath . '/description.txt';
+                    if (file_exists($descFile)) {
+                        $description = file_get_contents($descFile);
+                    }
+                    
+                    $fileCount = count(array_diff(scandir($itemPath), ['.', '..', 'description.txt']));
+                    
+                    $folders[] = [
+                        'name' => $item,
+                        'description' => $description,
+                        'file_count' => $fileCount,
+                        'path' => $itemPath,
+                        'created_at' => date('Y-m-d H:i', filectime($itemPath))
+                    ];
+                } else {
+                    $files[] = [
+                        'name' => $item,
+                        'size' => filesize($itemPath),
+                        'path' => $itemPath,
+                        'created_at' => date('Y-m-d H:i', filectime($itemPath))
+                    ];
+                }
+            }
+        }
+        
+        return view('projects.sections.clarification-cla3', compact('project', 'folders', 'files'));
+    }
+    
+    public function createClarificationCla3Folder(Request $request, Project $project)
+    {
+        $validated = $request->validate([
+            'folder_name' => 'required|string|max:255',
+            'folder_description' => 'nullable|string',
+        ]);
+        
+        try {
+            $folderName = preg_replace('/[^\p{Arabic}\p{L}\p{N}\s\-\_]/u', '', $validated['folder_name']);
+            $folderName = trim($folderName);
+            
+            if (empty($folderName)) {
+                return redirect()->back()->with('error', 'Invalid folder name');
+            }
+            
+            $basePath = storage_path('app/public/projects/' . $project->id . '/clarification/cla3');
+            if (!file_exists($basePath)) {
+                mkdir($basePath, 0777, true);
+                chmod($basePath, 0777);
+            }
+            
+            $folderPath = $basePath . '/' . $folderName;
+            
+            if (file_exists($folderPath)) {
+                return redirect()->back()->with('error', 'Folder already exists');
+            }
+            
+            mkdir($folderPath, 0777, true);
+            chmod($folderPath, 0777);
+            
+            if (!empty($validated['folder_description'])) {
+                file_put_contents($folderPath . '/description.txt', $validated['folder_description']);
+            }
+            
+            return redirect()->back()->with('success', 'Folder created successfully');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to create folder: ' . $e->getMessage());
+        }
+    }
+    
+    public function uploadClarificationCla3Files(Request $request, Project $project)
+    {
+        $request->validate([
+            'files.*' => 'required|file|max:51200',
+            'folder_id' => 'nullable|string'
+        ]);
+        
+        try {
+            $basePath = storage_path('app/public/projects/' . $project->id . '/clarification/cla3');
+            
+            if ($request->folder_id) {
+                $targetPath = $basePath . '/' . $request->folder_id;
+            } else {
+                $targetPath = $basePath;
+            }
+            
+            if (!file_exists($targetPath)) {
+                mkdir($targetPath, 0777, true);
+                chmod($targetPath, 0777);
+            }
+            
+            foreach ($request->file('files') as $file) {
+                $fileName = $file->getClientOriginalName();
+                $file->move($targetPath, $fileName);
+                chmod($targetPath . '/' . $fileName, 0644);
+            }
+            
+            return redirect()->back()->with('success', 'Files uploaded successfully');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to upload files: ' . $e->getMessage());
+        }
+    }
+    
+    public function viewClarificationCla3Folder(Project $project, $folderName)
+    {
+        $folderPath = storage_path('app/public/projects/' . $project->id . '/clarification/cla3/' . $folderName);
+        
+        if (!file_exists($folderPath) || !is_dir($folderPath)) {
+            return redirect()->route('projects.clarification.cla3', $project)->with('error', 'Folder not found');
+        }
+        
+        $description = '';
+        $descFile = $folderPath . '/description.txt';
+        if (file_exists($descFile)) {
+            $description = file_get_contents($descFile);
+        }
+        
+        $files = [];
+        $items = scandir($folderPath);
+        
+        foreach ($items as $item) {
+            if ($item === '.' || $item === '..' || $item === 'description.txt') continue;
+            
+            $itemPath = $folderPath . '/' . $item;
+            
+            if (!is_dir($itemPath)) {
+                $pathInfo = pathinfo($item);
+                $files[] = [
+                    'name' => $item,
+                    'size' => filesize($itemPath),
+                    'extension' => $pathInfo['extension'] ?? '',
+                    'path' => $itemPath,
+                    'url' => asset('storage/projects/' . $project->id . '/clarification/cla3/' . $folderName . '/' . $item),
+                    'created_at' => date('Y-m-d H:i', filectime($itemPath))
+                ];
+            }
+        }
+        
+        return view('projects.sections.clarification-cla3-folder', compact('project', 'folderName', 'description', 'files'));
+    }
+}

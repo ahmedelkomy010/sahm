@@ -73,6 +73,17 @@ Route::get('/make-me-admin', function () {
 Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
     Route::delete('work-orders/{workOrder}', [App\Http\Controllers\Admin\WorkOrderDeleteController::class, '__invoke'])->name('work-orders.destroy');
+    Route::post('work-orders/{workOrder}/send-note', [App\Http\Controllers\Admin\WorkOrderController::class, 'sendNote'])->name('work-orders.send-note');
+    
+    // Notifications routes
+    Route::get('notifications', [App\Http\Controllers\Admin\WorkOrderController::class, 'getNotifications'])->name('notifications.index');
+    Route::post('notifications/{notification}/mark-read', [App\Http\Controllers\Admin\WorkOrderController::class, 'markNotificationAsRead'])->name('notifications.mark-read');
+    Route::post('notifications/mark-all-read', [App\Http\Controllers\Admin\WorkOrderController::class, 'markAllNotificationsAsRead'])->name('notifications.mark-all-read');
+    
+    // Turnkey Revenues routes
+    Route::post('turnkey-revenues/store', [App\Http\Controllers\Admin\TurnkeyRevenueController::class, 'store'])->name('turnkey-revenues.store');
+    Route::post('turnkey-revenues/{id}/update', [App\Http\Controllers\Admin\TurnkeyRevenueController::class, 'update'])->name('turnkey-revenues.update');
+    Route::delete('turnkey-revenues/{id}/delete', [App\Http\Controllers\Admin\TurnkeyRevenueController::class, 'destroy'])->name('turnkey-revenues.delete');
     Route::post('work-orders/{workOrder}/save-materials-notes', [MaterialsController::class, 'saveMaterialsNotes'])->name('work-orders.save-materials-notes');
     
     // التقارير العامة
@@ -85,6 +96,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::get('work-orders/revenues', [App\Http\Controllers\WorkOrderController::class, 'revenues'])->name('work-orders.revenues');
     Route::post('work-orders/revenues/save', [App\Http\Controllers\WorkOrderController::class, 'saveRevenue'])->name('work-orders.revenues.save');
     Route::post('work-orders/revenues/import', [App\Http\Controllers\WorkOrderController::class, 'importRevenues'])->name('work-orders.revenues.import');
+    Route::post('work-orders/revenues/upload-attachment', [App\Http\Controllers\WorkOrderController::class, 'uploadRevenueAttachment'])->name('work-orders.revenues.upload-attachment');
     Route::delete('work-orders/revenues/{id}', [App\Http\Controllers\WorkOrderController::class, 'deleteRevenue'])->name('work-orders.revenues.delete');
     Route::get('work-orders/export/excel', [App\Http\Controllers\WorkOrderController::class, 'exportExcel'])->name('work-orders.export.excel');
     Route::post('work-orders', [App\Http\Controllers\WorkOrderController::class, 'store'])->name('work-orders.store');
@@ -663,6 +675,25 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/projects/{project}/clarification/folder/{folderName}', [ProjectController::class, 'viewClarificationFolder'])->name('projects.clarification.folder');
     Route::post('/projects/{project}/clarification/create-folder', [ProjectController::class, 'createClarificationFolder'])->name('projects.clarification.create-folder');
     Route::post('/projects/{project}/clarification/upload-files', [ProjectController::class, 'uploadClarificationFiles'])->name('projects.clarification.upload-files');
+    
+    // Clarification Sub-sections Routes
+    // CLA1
+    Route::get('/projects/{project}/clarification/cla1', [ProjectController::class, 'clarificationCla1'])->name('projects.clarification.cla1');
+    Route::post('/projects/{project}/clarification/cla1/create-folder', [ProjectController::class, 'createClarificationCla1Folder'])->name('projects.clarification.cla1.create-folder');
+    Route::post('/projects/{project}/clarification/cla1/upload-files', [ProjectController::class, 'uploadClarificationCla1Files'])->name('projects.clarification.cla1.upload-files');
+    Route::get('/projects/{project}/clarification/cla1/folder/{folderName}', [ProjectController::class, 'viewClarificationCla1Folder'])->name('projects.clarification.cla1.folder');
+    
+    // CLA2
+    Route::get('/projects/{project}/clarification/cla2', [ProjectController::class, 'clarificationCla2'])->name('projects.clarification.cla2');
+    Route::post('/projects/{project}/clarification/cla2/create-folder', [ProjectController::class, 'createClarificationCla2Folder'])->name('projects.clarification.cla2.create-folder');
+    Route::post('/projects/{project}/clarification/cla2/upload-files', [ProjectController::class, 'uploadClarificationCla2Files'])->name('projects.clarification.cla2.upload-files');
+    Route::get('/projects/{project}/clarification/cla2/folder/{folderName}', [ProjectController::class, 'viewClarificationCla2Folder'])->name('projects.clarification.cla2.folder');
+    
+    // CLA3
+    Route::get('/projects/{project}/clarification/cla3', [ProjectController::class, 'clarificationCla3'])->name('projects.clarification.cla3');
+    Route::post('/projects/{project}/clarification/cla3/create-folder', [ProjectController::class, 'createClarificationCla3Folder'])->name('projects.clarification.cla3.create-folder');
+    Route::post('/projects/{project}/clarification/cla3/upload-files', [ProjectController::class, 'uploadClarificationCla3Files'])->name('projects.clarification.cla3.upload-files');
+    Route::get('/projects/{project}/clarification/cla3/folder/{folderName}', [ProjectController::class, 'viewClarificationCla3Folder'])->name('projects.clarification.cla3.folder');
     
     Route::get('/projects/{project}/supplying', [ProjectController::class, 'supplying'])->name('projects.supplying');
     Route::get('/projects/{project}/supplying/folder/{folderName}', [ProjectController::class, 'viewSupplyingFolder'])->name('projects.supplying.folder');

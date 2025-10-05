@@ -25,13 +25,13 @@
     .table-responsive {
         border-radius: 10px;
         box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.05);
-        max-height: 70vh;
+        max-height: 50vh;
         overflow: auto;
     }
 
     .table {
         margin-bottom: 0;
-        font-size: 0.75rem;
+        font-size: 0.7rem;
         min-width: 1800px;
     }
 
@@ -40,27 +40,27 @@
         color: white;
         font-weight: 600;
         text-align: center;
-        padding: 8px 4px;
+        padding: 4px 2px;
         border: none;
         white-space: nowrap;
-        font-size: 0.7rem;
+        font-size: 0.65rem;
         text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
         position: sticky;
         top: 0;
         z-index: 10;
         vertical-align: middle;
-        line-height: 1.2;
+        line-height: 1.1;
     }
 
     .table tbody td {
-        padding: 3px;
+        padding: 2px;
         border: 1px solid #e9ecef;
         vertical-align: middle;
         text-align: center;
         transition: all 0.3s ease;
         position: relative;
-        min-width: 75px;
-        max-width: 130px;
+        min-width: 70px;
+        max-width: 120px;
     }
 
     .table tbody tr:nth-child(even) {
@@ -74,9 +74,9 @@
     }
 
     .editable-field {
-        min-height: 24px;
-        min-width: 65px;
-        padding: 4px;
+        min-height: 20px;
+        min-width: 60px;
+        padding: 2px;
         border: 1px solid transparent;
         border-radius: 3px;
         background: transparent;
@@ -84,8 +84,8 @@
         cursor: text;
         display: block;
         width: 100%;
-        font-size: 0.75rem;
-        line-height: 1.2;
+        font-size: 0.7rem;
+        line-height: 1.1;
     }
 
     .editable-field:hover {
@@ -310,16 +310,16 @@
     <div class="row justify-content-center">
         <div class="col-12">
             <div class="card shadow">
-                <div class="card-header d-flex justify-content-between align-items-center bg-primary text-white">
+                <div class="card-header d-flex justify-content-between align-items-center bg-primary text-white py-2">
                     <div class="d-flex align-items-center justify-content-between w-100">
                         <div class="d-flex align-items-center">
-                            <span class="fs-5">
+                            <span style="font-size: 0.95rem;">
                                 <i class="fas fa-chart-line me-2"></i>
                                 إدارة الإيرادات
                             </span>
                             
                             @if(isset($projectName))
-                            <span class="badge bg-info text-white ms-2">
+                            <span class="badge bg-info text-white ms-2" style="font-size: 0.75rem;">
                                 <i class="fas fa-map-marker-alt me-1"></i>
                                 {{ $projectName }}
                             </span>
@@ -330,6 +330,7 @@
                         @if(isset($project))
                         <a href="{{ route('admin.work-orders.index', ['project' => $project]) }}" 
                            class="btn btn-outline-light btn-sm" 
+                           style="font-size: 0.8rem; padding: 0.25rem 0.75rem;"
                            title="العودة إلى أوامر العمل">
                             <i class="fas fa-arrow-right me-1"></i>
                             عودة لأوامر العمل
@@ -341,33 +342,33 @@
 
                 <div class="card-body p-0">
                     <!-- Statistics Cards Section -->
-                    <div class="py-2 px-3 bg-light">
-                        <div class="row g-2">
+                    <div class="py-1 px-2 bg-light">
+                        <div class="row g-1">
                             <!-- إجمالي عدد المستخلصات -->
                             <div class="col-md-1-5">
                                 <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);">
-                                    <div class="card-body p-2 text-white">
+                                    <div class="card-body p-1 text-white">
                                         <div class="d-flex justify-content-between align-items-center">
                                             <div>
-                                                <h6 class="mb-1 opacity-75" style="font-size: 0.7rem;">عدد المستخلصات</h6>
-                                                <h5 class="mb-0 fw-bold">{{ $statistics['totalRevenues'] }}</h5>
+                                                <h6 class="mb-0 opacity-75" style="font-size: 0.65rem;">عدد المستخلصات</h6>
+                                                <h6 class="mb-0 fw-bold" style="font-size: 0.9rem;">{{ $statistics['totalRevenues'] }}</h6>
                                             </div>
-                                            <div class="bg-white bg-opacity-25 p-2 rounded-circle">
-                                                <i class="fas fa-file-invoice"></i>
+                                            <div class="bg-white bg-opacity-25 p-1 rounded-circle" style="width: 25px; height: 25px; display: flex; align-items: center; justify-content: center;">
+                                                <i class="fas fa-file-invoice" style="font-size: 0.7rem;"></i>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- إجمالي قيمة المستخلصات -->
+                            <!-- إجمالي قيمة المستخلصات شامل الضريبه -->
                             <div class="col-md-1-5">
                                 <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #2a5298 0%, #1e3c72 100%);">
                                     <div class="card-body p-1 text-white">
                                         <div class="d-flex justify-content-between align-items-center">
                                             <div>
-                                                <h6 class="mb-1 opacity-75" style="font-size: 0.65rem;">إجمالي قيمة المستخلصات</h6>
-                                                <h6 class="mb-0 fw-bold" style="font-size: 0.75rem;">{{ number_format($statistics['totalExtractValue'], 2) }}</h6>
+                                                <h6 class="mb-1 opacity-75" style="font-size: 0.6rem;">إجمالي قيمة المستخلصات شامل الضريبه</h6>
+                                                <h6 class="mb-0 fw-bold" style="font-size: 0.75rem;">{{ number_format($statistics['totalExtractValue'] + $statistics['totalTaxValue'], 2) }}</h6>
                                                 <small class="opacity-75" style="font-size: 0.6rem;">ريال سعودي</small>
                                             </div>
                                             <div class="bg-white bg-opacity-25 p-1 rounded-circle">
@@ -378,13 +379,13 @@
                                 </div>
                             </div>
 
-                            <!-- إجمالي الضرائب -->
+                            <!-- إجمالي الضريبة -->
                             <div class="col-md-1-5">
                                 <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);">
                                     <div class="card-body p-1 text-white">
                                         <div class="d-flex justify-content-between align-items-center">
                                             <div>
-                                                <h6 class="mb-1 opacity-75" style="font-size: 0.65rem;">إجمالي الضرائب</h6>
+                                                <h6 class="mb-1 opacity-75" style="font-size: 0.65rem;">إجمالي الضريبة</h6>
                                                 <h6 class="mb-0 fw-bold" style="font-size: 0.75rem;">{{ number_format($statistics['totalTaxValue'], 2) }}</h6>
                                                 <small class="opacity-75" style="font-size: 0.6rem;">ريال سعودي</small>
                                             </div>
@@ -414,13 +415,13 @@
                                 </div>
                             </div>
 
-                            <!-- صافي قيمة المستخلصات -->
+                            <!-- صافي قيمة المستخلصات غير شامل الضريبة -->
                             <div class="col-md-1-5">
                                 <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);">
                                     <div class="card-body p-1 text-white">
                                         <div class="d-flex justify-content-between align-items-center">
                                             <div>
-                                                <h6 class="mb-1 opacity-75" style="font-size: 0.65rem;">صافي قيمة المستخلصات</h6>
+                                                <h6 class="mb-1 opacity-75" style="font-size: 0.55rem;">صافي قيمة المستخلصات غير شامل الضريبة</h6>
                                                 <h6 class="mb-0 fw-bold" style="font-size: 0.75rem;">{{ number_format($statistics['totalNetExtractValue'], 2) }}</h6>
                                                 <small class="opacity-75" style="font-size: 0.6rem;">ريال سعودي</small>
                                             </div>
@@ -450,13 +451,13 @@
                                 </div>
                             </div>
 
-                            <!-- المبلغ المتبقي -->
+                            <!-- المبلغ المتبقي عند العميل -->
                             <div class="col-md-1-5">
                                 <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);">
                                     <div class="card-body p-1 text-white">
                                         <div class="d-flex justify-content-between align-items-center">
                                             <div>
-                                                <h6 class="mb-1 opacity-75" style="font-size: 0.65rem;">المبلغ المتبقي</h6>
+                                                <h6 class="mb-1 opacity-75" style="font-size: 0.6rem;">المبلغ المتبقي عند العميل</h6>
                                                 <h6 class="mb-0 fw-bold" style="font-size: 0.75rem;">{{ number_format($statistics['remainingAmount'], 2) }}</h6>
                                                 <small class="opacity-75" style="font-size: 0.6rem;">ريال سعودي</small>
                                             </div>
@@ -483,6 +484,147 @@
                                             </div>
                                         </div>
                                     </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- منطقة الفلاتر -->
+                    <div class="card mb-2 shadow-sm">
+                        <div class="card-body p-2">
+                            <!-- فترات زمنية سريعة -->
+                            <div class="row g-1 mb-2">
+                                <div class="col-12">
+                                    <label class="form-label mb-1" style="font-size: 0.75rem; font-weight: 600;">
+                                        <i class="fas fa-clock me-1 text-primary" style="font-size: 0.7rem;"></i>
+                                        فترات زمنية سريعة
+                                    </label>
+                                    <div class="d-flex gap-1 flex-wrap">
+                                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="setQuickDateRange('today')" style="font-size: 0.7rem; padding: 0.2rem 0.5rem;">
+                                            <i class="fas fa-calendar-day me-1" style="font-size: 0.65rem;"></i>
+                                            اليوم
+                                        </button>
+                                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="setQuickDateRange('week')" style="font-size: 0.7rem; padding: 0.2rem 0.5rem;">
+                                            <i class="fas fa-calendar-week me-1" style="font-size: 0.65rem;"></i>
+                                            أسبوع
+                                        </button>
+                                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="setQuickDateRange('month')" style="font-size: 0.7rem; padding: 0.2rem 0.5rem;">
+                                            <i class="fas fa-calendar-alt me-1" style="font-size: 0.65rem;"></i>
+                                            شهر
+                                        </button>
+                                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="setQuickDateRange('quarter')" style="font-size: 0.7rem; padding: 0.2rem 0.5rem;">
+                                            <i class="fas fa-calendar me-1" style="font-size: 0.65rem;"></i>
+                                            ربع سنة
+                                        </button>
+                                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="setQuickDateRange('half')" style="font-size: 0.7rem; padding: 0.2rem 0.5rem;">
+                                            <i class="fas fa-calendar-check me-1" style="font-size: 0.65rem;"></i>
+                                            نصف سنة
+                                        </button>
+                                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="setQuickDateRange('year')" style="font-size: 0.7rem; padding: 0.2rem 0.5rem;">
+                                            <i class="fas fa-calendar-plus me-1" style="font-size: 0.65rem;"></i>
+                                            سنة
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row g-2 align-items-end">
+                                <div class="col-md-1">
+                                    <label for="filter_start_date" class="form-label mb-0" style="font-size: 0.75rem;">
+                                        <i class="fas fa-calendar-alt me-1 text-primary" style="font-size: 0.7rem;"></i>
+                                        تاريخ البداية
+                                    </label>
+                                    <input type="date" class="form-control form-control-sm" id="filter_start_date" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;">
+                                </div>
+                                
+                                <div class="col-md-1">
+                                    <label for="filter_end_date" class="form-label mb-0" style="font-size: 0.75rem;">
+                                        <i class="fas fa-calendar-check me-1 text-primary" style="font-size: 0.7rem;"></i>
+                                        تاريخ النهاية
+                                    </label>
+                                    <input type="date" class="form-control form-control-sm" id="filter_end_date" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;">
+                                </div>
+                                
+                                <div class="col-md-1">
+                                    <label for="filter_office" class="form-label mb-0" style="font-size: 0.75rem;">
+                                        <i class="fas fa-building me-1 text-primary" style="font-size: 0.7rem;"></i>
+                                        المكتب
+                                    </label>
+                                    <select class="form-select form-select-sm" id="filter_office" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;">
+                                        <option value="">الكل</option>
+                                        @if(isset($project) && $project == 'madinah')
+                                            <option value="مكتب المدينة المنورة">مكتب المدينة المنورة</option>
+                                            <option value="ينبع">ينبع</option>
+                                            <option value="خيبر">خيبر</option>
+                                            <option value="مهد الذهب">مهد الذهب</option>
+                                            <option value="بدر">بدر</option>
+                                            <option value="الحناكية">الحناكية</option>
+                                            <option value="العلا">العلا</option>
+                                        @else
+                                            <option value="خريص">خريص</option>
+                                            <option value="الشرق">الشرق</option>
+                                            <option value="الشمال">الشمال</option>
+                                            <option value="الدرعية">الدرعية</option>
+                                            <option value="الجنوب">الجنوب</option>
+                                        @endif
+                                    </select>
+                                </div>
+                                
+                                <div class="col-md-1">
+                                    <label for="filter_payment_status" class="form-label mb-0" style="font-size: 0.75rem;">
+                                        <i class="fas fa-money-check-alt me-1 text-primary" style="font-size: 0.7rem;"></i>
+                                        حالة الصرف
+                                    </label>
+                                    <select class="form-select form-select-sm" id="filter_payment_status" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;">
+                                        <option value="">الكل</option>
+                                        <option value="مدفوع">مدفوع</option>
+                                        <option value="غير مدفوع">غير مدفوع</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="col-md-1">
+                                    <label for="filter_date_order" class="form-label mb-0" style="font-size: 0.75rem;">
+                                        <i class="fas fa-sort me-1 text-primary" style="font-size: 0.7rem;"></i>
+                                        ترتيب التاريخ
+                                    </label>
+                                    <select class="form-select form-select-sm" id="filter_date_order" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;">
+                                        <option value="">الافتراضي</option>
+                                        <option value="asc">من الأقدم للأحدث</option>
+                                        <option value="desc">من الأحدث للأقدم</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="col-md-2">
+                                    <label for="filter_extract_number" class="form-label mb-0" style="font-size: 0.75rem;">
+                                        <i class="fas fa-hashtag me-1 text-primary" style="font-size: 0.7rem;"></i>
+                                        رقم المستخلص
+                                    </label>
+                                    <input type="text" class="form-control form-control-sm" id="filter_extract_number" placeholder="رقم المستخلص" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;">
+                                </div>
+                                
+                                <div class="col-md-1">
+                                    <label for="filter_payment_type" class="form-label mb-0" style="font-size: 0.75rem;">
+                                        <i class="fas fa-map-marker-alt me-1 text-primary" style="font-size: 0.7rem;"></i>
+                                        موقف المستخلص
+                                    </label>
+                                    <select class="form-select form-select-sm" id="filter_payment_type" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;">
+                                        <option value="">الكل</option>
+                                        <option value="المقاول">المقاول</option>
+                                        <option value="ادارة الكهرباء">ادارة الكهرباء</option>
+                                        <option value="المالية">المالية</option>
+                                        <option value="الخزينة">الخزينة</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="col-md-2">
+                                    <button type="button" class="btn btn-primary btn-sm w-100" onclick="applyFilters()" style="font-size: 0.75rem; padding: 0.35rem 0.5rem; margin-bottom: 2px;">
+                                        <i class="fas fa-filter me-1" style="font-size: 0.7rem;"></i>
+                                        تطبيق الفلاتر
+                                    </button>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm w-100" onclick="clearFilters()" style="font-size: 0.75rem; padding: 0.35rem 0.5rem;">
+                                        <i class="fas fa-times me-1" style="font-size: 0.7rem;"></i>
+                                        مسح الفلاتر
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -517,7 +659,9 @@
                                 <i class="fas fa-plus me-1"></i>
                                 إضافة صف جديد
                             </button>
+                            @endif
                             
+                            @if(auth()->user()->isAdmin())
                             <!-- زر مسح جميع الصفوف -->
                             <button type="button" class="btn btn-danger btn-sm" onclick="deleteAllRows()">
                                 <i class="fas fa-trash-alt me-1"></i>
@@ -541,19 +685,19 @@
                                     <th>نوع المستخلص</th>
                                     <th>رقم PO</th>
                                     <th>رقم الفاتورة</th>
-                                    <th>قيمة المستخلص</th>
-                                    <th>نسبة الضريبة</th>
+                                    <th>قيمة المستخلص<br>شامل الضريبة</th>
+                                    <th>جهة المستخلص</th>
                                     <th>قيمة الضريبة</th>
                                     <th>الغرامات</th>
                                     <th>ضريبة الدفعة الأولى</th>
                                     <th>صافي قيمة المستخلص</th>
                                     <th class="date-col">تاريخ إعداد المستخلص</th>
                                     <th>العام</th>
-                                    <th>نوع الدفع</th>
+                                    <th>موقف المستخلص<br>عند ...</th>
                                     <th>الرقم المرجعي</th>
                                     <th class="date-col">تاريخ الصرف</th>
                                     <th>قيمة الصرف</th>
-                                    <th>حالة المستخلص</th>
+                                    <th>حالة الصرف</th>
                                     <th>الإجراءات</th>
                                 </tr>
                             </thead>
@@ -589,10 +733,10 @@
                                             <div class="editable-field" contenteditable="true" data-field="invoice_number" placeholder="رقم الفاتورة">{{ $revenue->invoice_number }}</div>
                                         </td>
                                         <td>
-                                            <div class="editable-field" contenteditable="true" data-field="extract_value" placeholder="قيمة المستخلص">{{ $revenue->extract_value }}</div>
+                                            <input type="number" step="0.01" class="form-control form-control-sm" data-field="extract_value" placeholder="قيمة المستخلص شامل الضريبة" value="{{ $revenue->extract_value }}" style="font-size: 0.75rem; padding: 4px; min-width: 100px;">
                                         </td>
                                         <td>
-                                            <div class="editable-field" contenteditable="true" data-field="tax_percentage" placeholder="نسبة الضريبة">{{ $revenue->tax_percentage }}</div>
+                                            <div class="editable-field" contenteditable="true" data-field="tax_percentage" placeholder="جهة المستخلص">{{ $revenue->tax_percentage }}</div>
                                         </td>
                                         <td>
                                             <div class="editable-field" contenteditable="true" data-field="tax_value" placeholder="قيمة الضريبة">{{ $revenue->tax_value }}</div>
@@ -613,7 +757,13 @@
                                             <div class="editable-field" contenteditable="true" data-field="year" placeholder="العام">{{ $revenue->year }}</div>
                                         </td>
                                         <td>
-                                            <div class="editable-field" contenteditable="true" data-field="payment_type" placeholder="نوع الدفع">{{ $revenue->payment_type }}</div>
+                                            <select class="form-select form-select-sm" data-field="payment_type" style="font-size: 0.75rem; padding: 4px;">
+                                                <option value="">اختر...</option>
+                                                <option value="المقاول" {{ $revenue->payment_type == 'المقاول' ? 'selected' : '' }}>المقاول</option>
+                                                <option value="ادارة الكهرباء" {{ $revenue->payment_type == 'ادارة الكهرباء' ? 'selected' : '' }}>ادارة الكهرباء</option>
+                                                <option value="المالية" {{ $revenue->payment_type == 'المالية' ? 'selected' : '' }}>المالية</option>
+                                                <option value="الخزينة" {{ $revenue->payment_type == 'الخزينة' ? 'selected' : '' }}>الخزينة</option>
+                                            </select>
                                         </td>
                                         <td>
                                             <div class="editable-field" contenteditable="true" data-field="reference_number" placeholder="الرقم المرجعي">{{ $revenue->reference_number }}</div>
@@ -625,13 +775,28 @@
                                             <div class="editable-field" contenteditable="true" data-field="payment_value" placeholder="قيمة الصرف">{{ $revenue->payment_value }}</div>
                                         </td>
                                         <td>
-                                            <div class="editable-field" contenteditable="true" data-field="extract_status" placeholder="حالة المستخلص">{{ $revenue->extract_status }}</div>
+                                            <select class="form-select form-select-sm" data-field="extract_status" style="font-size: 0.75rem; padding: 4px;">
+                                                <option value="">اختر...</option>
+                                                <option value="مدفوع" {{ $revenue->extract_status == 'مدفوع' ? 'selected' : '' }}>مدفوع</option>
+                                                <option value="غير مدفوع" {{ $revenue->extract_status == 'غير مدفوع' ? 'selected' : '' }}>غير مدفوع</option>
+                                            </select>
                                         </td>
                                         <td>
-                                            <div class="action-buttons">
-                                                <button type="button" class="btn btn-danger btn-sm" onclick="deleteRow({{ $loop->iteration }})" title="حذف">
-                                                    <i class="fas fa-trash"></i>
+                                            <div class="action-buttons d-flex gap-1">
+                                                @if($revenue->attachment_path)
+                                                <a href="{{ asset('storage/' . $revenue->attachment_path) }}" target="_blank" class="btn btn-info btn-sm" title="عرض المرفق" style="padding: 0.25rem 0.4rem;">
+                                                    <i class="fas fa-eye" style="font-size: 0.8rem;"></i>
+                                                </a>
+                                                @endif
+                                                <button type="button" class="btn btn-success btn-sm" onclick="triggerFileUpload({{ $loop->iteration }})" title="رفع مرفق" style="padding: 0.25rem 0.4rem;">
+                                                    <i class="fas fa-paperclip" style="font-size: 0.8rem;"></i>
                                                 </button>
+                                                <input type="file" id="fileInput{{ $loop->iteration }}" style="display: none;" onchange="uploadAttachment({{ $loop->iteration }}, {{ $revenue->id }})" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx">
+                                                @if(auth()->user()->isAdmin())
+                                                <button type="button" class="btn btn-danger btn-sm" onclick="deleteRow({{ $loop->iteration }})" title="حذف" style="padding: 0.25rem 0.4rem;">
+                                                    <i class="fas fa-trash" style="font-size: 0.8rem;"></i>
+                                                </button>
+                                                @endif
                                             </div>
                                         </td>
                                     </tr>
@@ -673,6 +838,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 let rowCounter = 0;
+const isAdmin = {{ auth()->user()->isAdmin() ? 'true' : 'false' }};
 
 // تحديث عداد الصفوف
 function updateRowCounter() {
@@ -719,24 +885,42 @@ function addNewRow() {
         <td><div class="editable-field" contenteditable="true" data-field="extract_type" placeholder="نوع المستخلص"></div></td>
         <td><div class="editable-field" contenteditable="true" data-field="po_number" placeholder="رقم PO"></div></td>
         <td><div class="editable-field" contenteditable="true" data-field="invoice_number" placeholder="رقم الفاتورة"></div></td>
-        <td><div class="editable-field" contenteditable="true" data-field="extract_value" placeholder="قيمة المستخلص"></div></td>
-        <td><div class="editable-field" contenteditable="true" data-field="tax_percentage" placeholder="نسبة الضريبة"></div></td>
+        <td><input type="number" step="0.01" class="form-control form-control-sm" data-field="extract_value" placeholder="قيمة المستخلص شامل الضريبة" style="font-size: 0.75rem; padding: 4px; min-width: 100px;"></td>
+        <td><div class="editable-field" contenteditable="true" data-field="tax_percentage" placeholder="جهة المستخلص"></div></td>
         <td><div class="editable-field" contenteditable="true" data-field="tax_value" placeholder="قيمة الضريبة"></div></td>
         <td><div class="editable-field" contenteditable="true" data-field="penalties" placeholder="الغرامات"></div></td>
         <td><div class="editable-field" contenteditable="true" data-field="first_payment_tax" placeholder="ضريبة الدفعة الأولى"></div></td>
         <td><div class="editable-field" contenteditable="true" data-field="net_extract_value" placeholder="صافي قيمة المستخلص"></div></td>
         <td class="date-col"><input type="date" class="date-input" data-field="extract_date" placeholder="تاريخ الإعداد"></td>
         <td><div class="editable-field" contenteditable="true" data-field="year" placeholder="العام"></div></td>
-        <td><div class="editable-field" contenteditable="true" data-field="payment_type" placeholder="نوع الدفع"></div></td>
+        <td>
+            <select class="form-select form-select-sm" data-field="payment_type" style="font-size: 0.75rem; padding: 4px;">
+                <option value="">اختر...</option>
+                <option value="المقاول">المقاول</option>
+                <option value="ادارة الكهرباء">ادارة الكهرباء</option>
+                <option value="المالية">المالية</option>
+                <option value="الخزينة">الخزينة</option>
+            </select>
+        </td>
         <td><div class="editable-field" contenteditable="true" data-field="reference_number" placeholder="الرقم المرجعي"></div></td>
         <td class="date-col"><input type="date" class="date-input" data-field="payment_date" placeholder="تاريخ الصرف"></td>
         <td><div class="editable-field" contenteditable="true" data-field="payment_value" placeholder="قيمة الصرف"></div></td>
-        <td><div class="editable-field" contenteditable="true" data-field="extract_status" placeholder="حالة المستخلص"></div></td>
         <td>
-            <div class="action-buttons">
-                <button type="button" class="btn btn-danger btn-sm" onclick="deleteRow(${rowCounter})" title="حذف">
-                    <i class="fas fa-trash"></i>
+            <select class="form-select form-select-sm" data-field="extract_status" style="font-size: 0.75rem; padding: 4px;">
+                <option value="">اختر...</option>
+                <option value="مدفوع">مدفوع</option>
+                <option value="غير مدفوع">غير مدفوع</option>
+            </select>
+        </td>
+        <td>
+            <div class="action-buttons d-flex gap-1">
+                <button type="button" class="btn btn-success btn-sm" onclick="triggerFileUpload(${rowCounter})" title="رفع مرفق" style="padding: 0.25rem 0.4rem;">
+                    <i class="fas fa-paperclip" style="font-size: 0.8rem;"></i>
                 </button>
+                <input type="file" id="fileInput${rowCounter}" style="display: none;" onchange="uploadAttachment(${rowCounter}, null)" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx">
+                ${isAdmin ? `<button type="button" class="btn btn-danger btn-sm" onclick="deleteRow(${rowCounter})" title="حذف" style="padding: 0.25rem 0.4rem;">
+                    <i class="fas fa-trash" style="font-size: 0.8rem;"></i>
+                </button>` : ''}
             </div>
         </td>
     `;
@@ -756,6 +940,8 @@ function addNewRow() {
 function addEditableFieldListeners(row) {
     const editableFields = row.querySelectorAll('.editable-field');
     const dateInputs = row.querySelectorAll('.date-input');
+    const selectFields = row.querySelectorAll('select[data-field]');
+    const numberInputs = row.querySelectorAll('input[type="number"][data-field]');
     
     // للحقول النصية القابلة للتحرير
     editableFields.forEach(field => {
@@ -779,6 +965,27 @@ function addEditableFieldListeners(row) {
         
         // حفظ عند فقدان التركيز
         dateInput.addEventListener('blur', function() {
+            autoSaveRow(row);
+        });
+    });
+    
+    // لحقول Select (مثل حالة الصرف)
+    selectFields.forEach(selectField => {
+        // حفظ تلقائي عند تغيير القيمة
+        selectField.addEventListener('change', function() {
+            autoSaveRow(row);
+        });
+    });
+    
+    // لحقول Number (مثل قيمة المستخلص)
+    numberInputs.forEach(numberInput => {
+        // حفظ تلقائي عند تغيير القيمة
+        numberInput.addEventListener('input', function() {
+            debounce(() => autoSaveRow(row), 1000)();
+        });
+        
+        // حفظ عند فقدان التركيز
+        numberInput.addEventListener('blur', function() {
             autoSaveRow(row);
         });
     });
@@ -814,7 +1021,7 @@ function autoSaveRow(row) {
         extract_type: row.querySelector('[data-field="extract_type"]').textContent.trim(),
         po_number: row.querySelector('[data-field="po_number"]').textContent.trim(),
         invoice_number: row.querySelector('[data-field="invoice_number"]').textContent.trim(),
-        extract_value: row.querySelector('[data-field="extract_value"]').textContent.trim(),
+        extract_value: row.querySelector('[data-field="extract_value"]').value || '',
         tax_percentage: row.querySelector('[data-field="tax_percentage"]').textContent.trim(),
         tax_value: row.querySelector('[data-field="tax_value"]').textContent.trim(),
         penalties: row.querySelector('[data-field="penalties"]').textContent.trim(),
@@ -822,11 +1029,11 @@ function autoSaveRow(row) {
         net_extract_value: row.querySelector('[data-field="net_extract_value"]').textContent.trim(),
         extract_date: row.querySelector('[data-field="extract_date"]').value || '',
         year: row.querySelector('[data-field="year"]').textContent.trim(),
-        payment_type: row.querySelector('[data-field="payment_type"]').textContent.trim(),
+        payment_type: row.querySelector('[data-field="payment_type"]').value || '',
         reference_number: row.querySelector('[data-field="reference_number"]').textContent.trim(),
         payment_date: row.querySelector('[data-field="payment_date"]').value || '',
         payment_value: row.querySelector('[data-field="payment_value"]').textContent.trim(),
-        extract_status: row.querySelector('[data-field="extract_status"]').textContent.trim()
+        extract_status: row.querySelector('[data-field="extract_status"]').value || row.querySelector('[data-field="extract_status"]').textContent.trim()
     };
 
     // التحقق من وجود بيانات قبل الحفظ
@@ -1040,6 +1247,126 @@ function deleteAllRows() {
 }
 
 // حذف صف
+// دالة لفتح نافذة اختيار الملف
+function triggerFileUpload(rowId) {
+    const fileInput = document.getElementById(`fileInput${rowId}`);
+    if (fileInput) {
+        fileInput.click();
+    }
+}
+
+// دالة لرفع المرفق
+function uploadAttachment(rowId, revenueId) {
+    const fileInput = document.getElementById(`fileInput${rowId}`);
+    const file = fileInput.files[0];
+    
+    if (!file) return;
+    
+    // التحقق من حجم الملف (أقل من 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+        alert('حجم الملف كبير جداً. الرجاء اختيار ملف أصغر من 10 ميجابايت.');
+        fileInput.value = '';
+        return;
+    }
+    
+    const formData = new FormData();
+    formData.append('attachment', file);
+    if (revenueId) {
+        formData.append('revenue_id', revenueId);
+    }
+    formData.append('row_id', rowId);
+    
+    const csrfToken = document.querySelector('meta[name="csrf-token"]');
+    if (!csrfToken) {
+        alert('خطأ في إعدادات الأمان');
+        return;
+    }
+    
+    // عرض مؤشر التحميل
+    const row = document.querySelector(`tr[data-row-id="${rowId}"]`);
+    if (row) {
+        const button = row.querySelector('.btn-success');
+        if (button) {
+            button.disabled = true;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin" style="font-size: 0.8rem;"></i>';
+        }
+    }
+    
+    // رفع الملف
+    fetch('/admin/work-orders/revenues/upload-attachment', {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': csrfToken.content,
+            'Accept': 'application/json'
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('تم رفع المرفق بنجاح');
+            
+            // إضافة زر عرض المرفق
+            if (row && data.file_path) {
+                const actionButtons = row.querySelector('.action-buttons');
+                if (actionButtons) {
+                    // التحقق إذا كان زر العرض موجود بالفعل
+                    let viewButton = actionButtons.querySelector('.btn-info');
+                    if (!viewButton) {
+                        // إنشاء زر جديد لعرض المرفق
+                        viewButton = document.createElement('a');
+                        viewButton.href = '/storage/' + data.file_path;
+                        viewButton.target = '_blank';
+                        viewButton.className = 'btn btn-info btn-sm';
+                        viewButton.title = 'عرض المرفق';
+                        viewButton.style.cssText = 'padding: 0.25rem 0.4rem;';
+                        viewButton.innerHTML = '<i class="fas fa-eye" style="font-size: 0.8rem;"></i>';
+                        
+                        // إضافة الزر في البداية
+                        actionButtons.insertBefore(viewButton, actionButtons.firstChild);
+                    } else {
+                        // تحديث رابط الزر الموجود
+                        viewButton.href = '/storage/' + data.file_path;
+                    }
+                }
+                
+                // إعادة الزر لحالته الطبيعية
+                const button = row.querySelector('.btn-success');
+                if (button) {
+                    button.disabled = false;
+                    button.innerHTML = '<i class="fas fa-paperclip" style="font-size: 0.8rem;"></i>';
+                    button.title = 'تحديث المرفق';
+                }
+            }
+        } else {
+            alert('حدث خطأ أثناء رفع المرفق: ' + (data.message || 'خطأ غير معروف'));
+            // إعادة الزر لحالته الطبيعية
+            if (row) {
+                const button = row.querySelector('.btn-success');
+                if (button) {
+                    button.disabled = false;
+                    button.innerHTML = '<i class="fas fa-paperclip" style="font-size: 0.8rem;"></i>';
+                }
+            }
+        }
+        // مسح input file
+        fileInput.value = '';
+    })
+    .catch(error => {
+        console.error('Error uploading attachment:', error);
+        alert('حدث خطأ أثناء رفع المرفق');
+        // إعادة الزر لحالته الطبيعية
+        if (row) {
+            const button = row.querySelector('.btn-success');
+            if (button) {
+                button.disabled = false;
+                button.innerHTML = '<i class="fas fa-paperclip" style="font-size: 0.8rem;"></i>';
+            }
+        }
+        fileInput.value = '';
+    });
+}
+
 function deleteRow(rowId) {
     if (confirm('هل أنت متأكد من حذف هذا الصف؟')) {
         const row = document.querySelector(`tr[data-row-id="${rowId}"]`);
@@ -1274,6 +1601,181 @@ function formatDateForInput(dateValue) {
     }
     
     return '';
+}
+
+// دوال الفلاتر
+function applyFilters() {
+    const startDate = document.getElementById('filter_start_date').value;
+    const endDate = document.getElementById('filter_end_date').value;
+    const office = document.getElementById('filter_office').value;
+    const paymentStatus = document.getElementById('filter_payment_status').value;
+    const dateOrder = document.getElementById('filter_date_order').value;
+    const extractNumber = document.getElementById('filter_extract_number').value;
+    const paymentType = document.getElementById('filter_payment_type').value;
+    
+    const table = document.querySelector('.table tbody');
+    let rows = Array.from(table.querySelectorAll('tr'));
+    let visibleRows = [];
+    
+    rows.forEach(row => {
+        let showRow = true;
+        
+        // فلتر المكتب
+        if (office) {
+            const officeCell = row.querySelector('[data-field="office"]');
+            if (officeCell && officeCell.textContent.trim() !== office) {
+                showRow = false;
+            }
+        }
+        
+        // فلتر حالة الصرف
+        if (paymentStatus) {
+            const statusCell = row.querySelector('[data-field="extract_status"]');
+            if (statusCell) {
+                const cellValue = statusCell.value || statusCell.textContent.trim();
+                if (cellValue !== paymentStatus) {
+                    showRow = false;
+                }
+            }
+        }
+        
+        // فلتر رقم المستخلص
+        if (extractNumber) {
+            const extractNumberCell = row.querySelector('[data-field="extract_number"]');
+            if (extractNumberCell) {
+                const cellValue = extractNumberCell.textContent.trim().toLowerCase();
+                if (!cellValue.includes(extractNumber.toLowerCase())) {
+                    showRow = false;
+                }
+            }
+        }
+        
+        // فلتر موقف المستخلص
+        if (paymentType) {
+            const paymentTypeCell = row.querySelector('[data-field="payment_type"]');
+            if (paymentTypeCell) {
+                const cellValue = paymentTypeCell.value || paymentTypeCell.textContent.trim();
+                if (cellValue !== paymentType) {
+                    showRow = false;
+                }
+            }
+        }
+        
+        // فلتر التاريخ (باستخدام تاريخ إعداد المستخلص)
+        if (startDate || endDate) {
+            const dateCell = row.querySelector('[data-field="extract_date"]');
+            if (dateCell) {
+                const rowDate = dateCell.value || dateCell.textContent.trim();
+                
+                if (startDate && rowDate && rowDate < startDate) {
+                    showRow = false;
+                }
+                if (endDate && rowDate && rowDate > endDate) {
+                    showRow = false;
+                }
+            }
+        }
+        
+        if (showRow) {
+            visibleRows.push(row);
+        } else {
+            row.style.display = 'none';
+        }
+    });
+    
+    // ترتيب التاريخ
+    if (dateOrder) {
+        visibleRows.sort((a, b) => {
+            const dateA = a.querySelector('[data-field="extract_date"]');
+            const dateB = b.querySelector('[data-field="extract_date"]');
+            const valueA = dateA ? (dateA.value || dateA.textContent.trim()) : '';
+            const valueB = dateB ? (dateB.value || dateB.textContent.trim()) : '';
+            
+            if (!valueA) return 1;
+            if (!valueB) return -1;
+            
+            if (dateOrder === 'asc') {
+                return valueA.localeCompare(valueB);
+            } else {
+                return valueB.localeCompare(valueA);
+            }
+        });
+        
+        // إعادة ترتيب الصفوف في DOM
+        visibleRows.forEach(row => {
+            table.appendChild(row);
+        });
+    }
+    
+    // إظهار الصفوف المفلترة
+    visibleRows.forEach(row => {
+        row.style.display = '';
+    });
+    
+    // تحديث عدد السجلات
+    document.getElementById('recordCount').textContent = visibleRows.length;
+}
+
+// دالة لضبط الفترات الزمنية السريعة
+function setQuickDateRange(period) {
+    const today = new Date();
+    const endDate = today.toISOString().split('T')[0];
+    let startDate;
+    
+    switch(period) {
+        case 'today':
+            startDate = endDate;
+            break;
+        case 'week':
+            const weekAgo = new Date(today);
+            weekAgo.setDate(today.getDate() - 7);
+            startDate = weekAgo.toISOString().split('T')[0];
+            break;
+        case 'month':
+            const monthAgo = new Date(today);
+            monthAgo.setMonth(today.getMonth() - 1);
+            startDate = monthAgo.toISOString().split('T')[0];
+            break;
+        case 'quarter':
+            const quarterAgo = new Date(today);
+            quarterAgo.setMonth(today.getMonth() - 3);
+            startDate = quarterAgo.toISOString().split('T')[0];
+            break;
+        case 'half':
+            const halfYearAgo = new Date(today);
+            halfYearAgo.setMonth(today.getMonth() - 6);
+            startDate = halfYearAgo.toISOString().split('T')[0];
+            break;
+        case 'year':
+            const yearAgo = new Date(today);
+            yearAgo.setFullYear(today.getFullYear() - 1);
+            startDate = yearAgo.toISOString().split('T')[0];
+            break;
+    }
+    
+    document.getElementById('filter_start_date').value = startDate;
+    document.getElementById('filter_end_date').value = endDate;
+}
+
+function clearFilters() {
+    // مسح قيم الفلاتر
+    document.getElementById('filter_start_date').value = '';
+    document.getElementById('filter_end_date').value = '';
+    document.getElementById('filter_office').value = '';
+    document.getElementById('filter_payment_status').value = '';
+    document.getElementById('filter_date_order').value = '';
+    document.getElementById('filter_extract_number').value = '';
+    document.getElementById('filter_payment_type').value = '';
+    
+    // إظهار جميع الصفوف
+    const table = document.querySelector('.table tbody');
+    const rows = table.querySelectorAll('tr');
+    rows.forEach(row => {
+        row.style.display = '';
+    });
+    
+    // إعادة عدد السجلات للقيمة الأصلية
+    document.getElementById('recordCount').textContent = rows.length;
 }
 </script>
 

@@ -731,4 +731,199 @@ class WorkOrderController extends Controller
             ], 500);
         }
     }
+    
+    /**
+     * إرسال ملاحظة لمستخدم عن أمر عمل
+     */
+    public function sendNote(Request $request, WorkOrder $workOrder)
+    {
+        try {
+            // التحقق من صلاحية المشرف
+            if (!auth()->user()->is_admin) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'غير مصرح لك بهذا الإجراء'
+                ], 403);
+            }
+            
+            // التحقق من البيانات المدخلة
+            $validated = $request->validate([
+                'user_id' => 'required|exists:users,id',
+                'note' => 'required|string|max:500',
+                'send_email' => 'boolean'
+            ]);
+            
+            // الحصول على المستخدم المستهدف
+            $targetUser = \App\Models\User::findOrFail($validated['user_id']);
+            
+            // حفظ الإشعار في قاعدة البيانات
+            $notification = \App\Models\Notification::create([
+                'user_id' => $targetUser->id,
+                'from_user_id' => auth()->id(),
+                'work_order_id' => $workOrder->id,
+                'type' => 'note',
+                'title' => "ملاحظة على أمر العمل رقم {$workOrder->order_number}",
+                'message' => $validated['note'],
+                'is_read' => false,
+            ]);
+            
+            // تسجيل في الـ Log
+            \Log::info('Note sent from admin', [
+                'admin_id' => auth()->id(),
+                'admin_name' => auth()->user()->name,
+                'target_user_id' => $targetUser->id,
+                'target_user_name' => $targetUser->name,
+                'work_order_id' => $workOrder->id,
+                'work_order_number' => $workOrder->order_number,
+                'note' => $validated['note'],
+                'notification_id' => $notification->id,
+                'send_email' => $validated['send_email'] ?? false,
+                'timestamp' => now()
+            ]);
+            
+            // إرسال إشعار بالبريد الإلكتروني (اختياري)
+            if ($validated['send_email'] ?? false) {
+                try {
+                    $adminName = auth()->user()->name;
+                    \Mail::raw(
+                        "السلام عليكم {$targetUser->name},\n\n" .
+                        "لديك ملاحظة جديدة من مشرف النظام ({$adminName}) بخصوص أمر العمل رقم: {$workOrder->order_number}\n\n" .
+                        "الملاحظة:\n{$validated['note']}\n\n" .
+                        "رابط أمر العمل: " . url("/admin/work-orders/{$workOrder->id}") . "\n\n" .
+                        "تحياتنا،\nفريق نظام سهم",
+                        function ($message) use ($targetUser, $workOrder) {
+                            $message->to($targetUser->email)
+                                    ->subject("ملاحظة جديدة - أمر العمل رقم {$workOrder->order_number}");
+                        }
+                    );
+                } catch (\Exception $e) {
+                    \Log::warning('Failed to send email notification: ' . $e->getMessage());
+                }
+            }
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'تم إرسال الملاحظة بنجاح'
+            ]);
+            
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'بيانات غير صحيحة',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            \Log::error('Error in sendNote: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء إرسال الملاحظة: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+    
+    /**
+     * جلب إشعارات المستخدم الحالي
+     */
+    public function getNotifications(Request $request)
+    {
+        try {
+            $limit = $request->get('limit', 10);
+            $unreadOnly = $request->get('unread_only', false);
+            
+            $query = \App\Models\Notification::where('user_id', auth()->id())
+                ->with(['fromUser', 'workOrder'])
+                ->orderBy('created_at', 'desc');
+            
+            if ($unreadOnly) {
+                $query->unread();
+            }
+            
+            $notifications = $query->limit($limit)->get();
+            
+            // عدد الإشعارات غير المقروءة
+            $unreadCount = \App\Models\Notification::where('user_id', auth()->id())
+                ->unread()
+                ->count();
+            
+            return response()->json([
+                'success' => true,
+                'notifications' => $notifications->map(function ($notification) {
+                    return [
+                        'id' => $notification->id,
+                        'title' => $notification->title,
+                        'message' => $notification->message,
+                        'type' => $notification->type,
+                        'is_read' => $notification->is_read,
+                        'created_at' => $notification->created_at->diffForHumans(),
+                        'from_user' => $notification->fromUser ? $notification->fromUser->name : 'النظام',
+                        'work_order' => $notification->workOrder ? [
+                            'id' => $notification->workOrder->id,
+                            'order_number' => $notification->workOrder->order_number
+                        ] : null
+                    ];
+                }),
+                'unread_count' => $unreadCount
+            ]);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error in getNotifications: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء جلب الإشعارات'
+            ], 500);
+        }
+    }
+    
+    /**
+     * تعليم إشعار كمقروء
+     */
+    public function markNotificationAsRead($notificationId)
+    {
+        try {
+            $notification = \App\Models\Notification::where('id', $notificationId)
+                ->where('user_id', auth()->id())
+                ->firstOrFail();
+            
+            $notification->markAsRead();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'تم تعليم الإشعار كمقروء'
+            ]);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error in markNotificationAsRead: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء تحديث الإشعار'
+            ], 500);
+        }
+    }
+    
+    /**
+     * تعليم جميع الإشعارات كمقروءة
+     */
+    public function markAllNotificationsAsRead()
+    {
+        try {
+            \App\Models\Notification::where('user_id', auth()->id())
+                ->unread()
+                ->update([
+                    'is_read' => true,
+                    'read_at' => now()
+                ]);
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'تم تعليم جميع الإشعارات كمقروءة'
+            ]);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error in markAllNotificationsAsRead: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء تحديث الإشعارات'
+            ], 500);
+        }
+    }
 } 
