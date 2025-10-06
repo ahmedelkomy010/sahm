@@ -125,53 +125,345 @@ class WorkOrderController extends Controller
     }
 
     /**
-     * عرض صفحة لوحة تحكم الاستلامات
+     * عرض أوامر العمل بحالة "جاري العمل بالموقع" - الرياض
      */
-    public function receiptsDashboard(Request $request)
+    public function statusInProgressRiyadh()
     {
-        $project = $request->get('project', 'riyadh');
+        // جلب أوامر العمل بحالة "جاري العمل بالموقع" (status = 1) - الرياض
+        $workOrders = WorkOrder::where('execution_status', 1)
+            ->where('city', 'الرياض')
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
         
-        return view('admin.work_orders.receipts-dashboard', compact('project'));
+        // حساب إجمالي القيمة المبدئية
+        $totalValue = WorkOrder::where('execution_status', 1)
+            ->where('city', 'الرياض')
+            ->sum('order_value_without_consultant');
+        
+        return view('admin.work_orders.status-inprogress-riyadh', compact('workOrders', 'totalValue'));
     }
 
     /**
-     * عرض صفحة لوحة تحكم التنفيذ والإنجاز
+     * عرض أوامر العمل بحالة "جاري العمل بالموقع" - المدينة المنورة
      */
-    public function executionDashboard(Request $request)
+    public function statusInProgressMadinah()
     {
-        $project = $request->get('project', 'riyadh');
+        // جلب أوامر العمل بحالة "جاري العمل بالموقع" (status = 1) - المدينة المنورة
+        $workOrders = WorkOrder::where('execution_status', 1)
+            ->where('city', 'المدينة المنورة')
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
         
-        return view('admin.work_orders.execution-dashboard', compact('project'));
+        // حساب إجمالي القيمة المبدئية
+        $totalValue = WorkOrder::where('execution_status', 1)
+            ->where('city', 'المدينة المنورة')
+            ->sum('order_value_without_consultant');
+        
+        return view('admin.work_orders.status-inprogress-madinah', compact('workOrders', 'totalValue'));
     }
 
     /**
-     * عرض صفحة لوحة تحكم المستخلص
+     * عرض أوامر العمل بحالة "تم التنفيذ بالموقع" - الرياض
      */
-    public function extractsDashboard(Request $request)
+    public function statusExecutedRiyadh()
     {
-        $project = $request->get('project', 'riyadh');
+        // جلب أوامر العمل بحالة "تم التنفيذ بالموقع" (status = 2) - الرياض
+        $workOrders = WorkOrder::where('execution_status', 2)
+            ->where('city', 'الرياض')
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
         
-        return view('admin.work_orders.extracts-dashboard', compact('project'));
+        // حساب إجمالي القيمة المبدئية
+        $totalValue = WorkOrder::where('execution_status', 2)
+            ->where('city', 'الرياض')
+            ->sum('order_value_without_consultant');
+        
+        return view('admin.work_orders.status-executed-riyadh', compact('workOrders', 'totalValue'));
     }
 
     /**
-     * عرض صفحة لوحة تحكم الأوامر المنتهية والمصروفة
+     * عرض أوامر العمل بحالة "تم التنفيذ بالموقع" - المدينة المنورة
      */
-    public function completedDashboard(Request $request)
+    public function statusExecutedMadinah()
     {
-        $project = $request->get('project', 'riyadh');
+        // جلب أوامر العمل بحالة "تم التنفيذ بالموقع" (status = 2) - المدينة المنورة
+        $workOrders = WorkOrder::where('execution_status', 2)
+            ->where('city', 'المدينة المنورة')
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
         
-        return view('admin.work_orders.completed-dashboard', compact('project'));
+        // حساب إجمالي القيمة المبدئية
+        $totalValue = WorkOrder::where('execution_status', 2)
+            ->where('city', 'المدينة المنورة')
+            ->sum('order_value_without_consultant');
+        
+        return view('admin.work_orders.status-executed-madinah', compact('workOrders', 'totalValue'));
     }
 
     /**
-     * عرض صفحة لوحة تحكم أوامر العمل جاري التنفيذ
+     * عرض أوامر العمل بحالة "تم تسليم 155 - جاري إصدار شهادة الإنجاز" - الرياض
      */
-    public function inProgressDashboard(Request $request)
+    public function statusDelivery155Riyadh()
     {
-        $project = $request->get('project', 'riyadh');
+        // جلب أوامر العمل بحالة "تم تسليم 155 - جاري إصدار شهادة الإنجاز" (status = 3) - الرياض
+        $workOrders = WorkOrder::where('execution_status', 3)
+            ->where('city', 'الرياض')
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
         
-        return view('admin.work_orders.inprogress-dashboard', compact('project'));
+        // حساب إجمالي القيمة المبدئية
+        $totalValue = WorkOrder::where('execution_status', 3)
+            ->where('city', 'الرياض')
+            ->sum('order_value_without_consultant');
+        
+        return view('admin.work_orders.status-delivery155-riyadh', compact('workOrders', 'totalValue'));
+    }
+
+    /**
+     * عرض أوامر العمل بحالة "تم تسليم 155 - جاري إصدار شهادة الإنجاز" - المدينة المنورة
+     */
+    public function statusDelivery155Madinah()
+    {
+        // جلب أوامر العمل بحالة "تم تسليم 155 - جاري إصدار شهادة الإنجاز" (status = 3) - المدينة المنورة
+        $workOrders = WorkOrder::where('execution_status', 3)
+            ->where('city', 'المدينة المنورة')
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
+        
+        // حساب إجمالي القيمة المبدئية
+        $totalValue = WorkOrder::where('execution_status', 3)
+            ->where('city', 'المدينة المنورة')
+            ->sum('order_value_without_consultant');
+        
+        return view('admin.work_orders.status-delivery155-madinah', compact('workOrders', 'totalValue'));
+    }
+
+    /**
+     * عرض أوامر العمل بحالة "إعداد مستخلص الدفعة الجزئية الأولى وجاري الصرف" - الرياض
+     */
+    public function statusFirstExtractRiyadh()
+    {
+        // جلب أوامر العمل بحالة "إعداد مستخلص الدفعة الجزئية الأولى وجاري الصرف" (status = 4) - الرياض
+        $workOrders = WorkOrder::where('execution_status', 4)
+            ->where('city', 'الرياض')
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
+        
+        // حساب إجمالي القيمة المبدئية
+        $totalValue = WorkOrder::where('execution_status', 4)
+            ->where('city', 'الرياض')
+            ->sum('order_value_without_consultant');
+        
+        return view('admin.work_orders.status-firstextract-riyadh', compact('workOrders', 'totalValue'));
+    }
+
+    /**
+     * عرض أوامر العمل بحالة "إعداد مستخلص الدفعة الجزئية الأولى وجاري الصرف" - المدينة المنورة
+     */
+    public function statusFirstExtractMadinah()
+    {
+        // جلب أوامر العمل بحالة "إعداد مستخلص الدفعة الجزئية الأولى وجاري الصرف" (status = 4) - المدينة المنورة
+        $workOrders = WorkOrder::where('execution_status', 4)
+            ->where('city', 'المدينة المنورة')
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
+        
+        // حساب إجمالي القيمة المبدئية
+        $totalValue = WorkOrder::where('execution_status', 4)
+            ->where('city', 'المدينة المنورة')
+            ->sum('order_value_without_consultant');
+        
+        return view('admin.work_orders.status-firstextract-madinah', compact('workOrders', 'totalValue'));
+    }
+
+    /**
+     * عرض أوامر العمل بحالة "تم صرف مستخلص الدفعة الجزئية الأولى" - الرياض
+     */
+    public function statusPaidFirstRiyadh()
+    {
+        // جلب أوامر العمل بحالة "تم صرف مستخلص الدفعة الجزئية الأولى" (status = 5) - الرياض
+        $workOrders = WorkOrder::where('execution_status', 5)
+            ->where('city', 'الرياض')
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
+        
+        // حساب إجمالي القيمة المبدئية
+        $totalValue = WorkOrder::where('execution_status', 5)
+            ->where('city', 'الرياض')
+            ->sum('order_value_without_consultant');
+        
+        return view('admin.work_orders.status-paidfirst-riyadh', compact('workOrders', 'totalValue'));
+    }
+
+    /**
+     * عرض أوامر العمل بحالة "تم صرف مستخلص الدفعة الجزئية الأولى" - المدينة المنورة
+     */
+    public function statusPaidFirstMadinah()
+    {
+        // جلب أوامر العمل بحالة "تم صرف مستخلص الدفعة الجزئية الأولى" (status = 5) - المدينة المنورة
+        $workOrders = WorkOrder::where('execution_status', 5)
+            ->where('city', 'المدينة المنورة')
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
+        
+        // حساب إجمالي القيمة المبدئية
+        $totalValue = WorkOrder::where('execution_status', 5)
+            ->where('city', 'المدينة المنورة')
+            ->sum('order_value_without_consultant');
+        
+        return view('admin.work_orders.status-paidfirst-madinah', compact('workOrders', 'totalValue'));
+    }
+
+    /**
+     * عرض أوامر العمل بحالة "تم إصدار شهادة الإنجاز" - الرياض
+     */
+    public function statusCertificateRiyadh()
+    {
+        // جلب أوامر العمل بحالة "تم إصدار شهادة الإنجاز" (status = 8) - الرياض
+        $workOrders = WorkOrder::where('execution_status', 8)
+            ->where('city', 'الرياض')
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
+        
+        // حساب إجمالي القيمة المبدئية
+        $totalValue = WorkOrder::where('execution_status', 8)
+            ->where('city', 'الرياض')
+            ->sum('order_value_without_consultant');
+        
+        return view('admin.work_orders.status-certificate-riyadh', compact('workOrders', 'totalValue'));
+    }
+
+    /**
+     * عرض أوامر العمل بحالة "تم إصدار شهادة الإنجاز" - المدينة المنورة
+     */
+    public function statusCertificateMadinah()
+    {
+        // جلب أوامر العمل بحالة "تم إصدار شهادة الإنجاز" (status = 8) - المدينة المنورة
+        $workOrders = WorkOrder::where('execution_status', 8)
+            ->where('city', 'المدينة المنورة')
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
+        
+        // حساب إجمالي القيمة المبدئية
+        $totalValue = WorkOrder::where('execution_status', 8)
+            ->where('city', 'المدينة المنورة')
+            ->sum('order_value_without_consultant');
+        
+        return view('admin.work_orders.status-certificate-madinah', compact('workOrders', 'totalValue'));
+    }
+
+    /**
+     * عرض أوامر العمل بحالة "إعداد مستخلص الدفعة الجزئية الثانية وجاري الصرف" - الرياض
+     */
+    public function statusSecondExtractRiyadh()
+    {
+        // جلب أوامر العمل بحالة "إعداد مستخلص الدفعة الجزئية الثانية وجاري الصرف" (status = 6) - الرياض
+        $workOrders = WorkOrder::where('execution_status', 6)
+            ->where('city', 'الرياض')
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
+        
+        // حساب إجمالي القيمة المبدئية
+        $totalValue = WorkOrder::where('execution_status', 6)
+            ->where('city', 'الرياض')
+            ->sum('order_value_without_consultant');
+        
+        return view('admin.work_orders.status-secondextract-riyadh', compact('workOrders', 'totalValue'));
+    }
+
+    /**
+     * عرض أوامر العمل بحالة "إعداد مستخلص الدفعة الجزئية الثانية وجاري الصرف" - المدينة المنورة
+     */
+    public function statusSecondExtractMadinah()
+    {
+        // جلب أوامر العمل بحالة "إعداد مستخلص الدفعة الجزئية الثانية وجاري الصرف" (status = 6) - المدينة المنورة
+        $workOrders = WorkOrder::where('execution_status', 6)
+            ->where('city', 'المدينة المنورة')
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
+        
+        // حساب إجمالي القيمة المبدئية
+        $totalValue = WorkOrder::where('execution_status', 6)
+            ->where('city', 'المدينة المنورة')
+            ->sum('order_value_without_consultant');
+        
+        return view('admin.work_orders.status-secondextract-madinah', compact('workOrders', 'totalValue'));
+    }
+
+    /**
+     * عرض أوامر العمل بحالة "تم إعداد المستخلص الكلي وجاري الصرف" - الرياض
+     */
+    public function statusTotalExtractRiyadh()
+    {
+        // جلب أوامر العمل بحالة "تم إعداد المستخلص الكلي وجاري الصرف" (status = 10) - الرياض
+        $workOrders = WorkOrder::where('execution_status', 10)
+            ->where('city', 'الرياض')
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
+        
+        // حساب إجمالي القيمة المبدئية
+        $totalValue = WorkOrder::where('execution_status', 10)
+            ->where('city', 'الرياض')
+            ->sum('order_value_without_consultant');
+        
+        return view('admin.work_orders.status-totalextract-riyadh', compact('workOrders', 'totalValue'));
+    }
+
+    /**
+     * عرض أوامر العمل بحالة "تم إعداد المستخلص الكلي وجاري الصرف" - المدينة المنورة
+     */
+    public function statusTotalExtractMadinah()
+    {
+        // جلب أوامر العمل بحالة "تم إعداد المستخلص الكلي وجاري الصرف" (status = 10) - المدينة المنورة
+        $workOrders = WorkOrder::where('execution_status', 10)
+            ->where('city', 'المدينة المنورة')
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
+        
+        // حساب إجمالي القيمة المبدئية
+        $totalValue = WorkOrder::where('execution_status', 10)
+            ->where('city', 'المدينة المنورة')
+            ->sum('order_value_without_consultant');
+        
+        return view('admin.work_orders.status-totalextract-madinah', compact('workOrders', 'totalValue'));
+    }
+
+    /**
+     * عرض أوامر العمل بحالة "منتهي تم الصرف" - الرياض
+     */
+    public function statusCompletedRiyadh()
+    {
+        // جلب أوامر العمل بحالة "منتهي تم الصرف" (status = 7) - الرياض
+        $workOrders = WorkOrder::where('execution_status', 7)
+            ->where('city', 'الرياض')
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
+        
+        // حساب إجمالي القيمة المبدئية
+        $totalValue = WorkOrder::where('execution_status', 7)
+            ->where('city', 'الرياض')
+            ->sum('order_value_without_consultant');
+        
+        return view('admin.work_orders.status-completed-riyadh', compact('workOrders', 'totalValue'));
+    }
+
+    /**
+     * عرض أوامر العمل بحالة "منتهي تم الصرف" - المدينة المنورة
+     */
+    public function statusCompletedMadinah()
+    {
+        // جلب أوامر العمل بحالة "منتهي تم الصرف" (status = 7) - المدينة المنورة
+        $workOrders = WorkOrder::where('execution_status', 7)
+            ->where('city', 'المدينة المنورة')
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
+        
+        // حساب إجمالي القيمة المبدئية
+        $totalValue = WorkOrder::where('execution_status', 7)
+            ->where('city', 'المدينة المنورة')
+            ->sum('order_value_without_consultant');
+        
+        return view('admin.work_orders.status-completed-madinah', compact('workOrders', 'totalValue'));
     }
 
     /**
@@ -583,58 +875,6 @@ class WorkOrderController extends Controller
     public function madinahProductivity()
     {
         return view('admin.work_orders.general-productivity', ['project' => 'madinah']);
-    }
-
-    // Riyadh-specific dashboard methods
-    public function riyadhReceiptsDashboard()
-    {
-        return view('admin.work_orders.receipts-dashboard', ['project' => 'riyadh']);
-    }
-
-    public function riyadhExecutionDashboard()
-    {
-        return view('admin.work_orders.execution-dashboard', ['project' => 'riyadh']);
-    }
-
-    public function riyadhInProgressDashboard()
-    {
-        return view('admin.work_orders.inprogress-dashboard', ['project' => 'riyadh']);
-    }
-
-    public function riyadhExtractsDashboard()
-    {
-        return view('admin.work_orders.extracts-dashboard', ['project' => 'riyadh']);
-    }
-
-    public function riyadhCompletedDashboard()
-    {
-        return view('admin.work_orders.completed-dashboard', ['project' => 'riyadh']);
-    }
-
-    // Madinah-specific dashboard methods
-    public function madinahReceiptsDashboard()
-    {
-        return view('admin.work_orders.receipts-dashboard', ['project' => 'madinah']);
-    }
-
-    public function madinahExecutionDashboard()
-    {
-        return view('admin.work_orders.execution-dashboard', ['project' => 'madinah']);
-    }
-
-    public function madinahInProgressDashboard()
-    {
-        return view('admin.work_orders.inprogress-dashboard', ['project' => 'madinah']);
-    }
-
-    public function madinahExtractsDashboard()
-    {
-        return view('admin.work_orders.extracts-dashboard', ['project' => 'madinah']);
-    }
-
-    public function madinahCompletedDashboard()
-    {
-        return view('admin.work_orders.completed-dashboard', ['project' => 'madinah']);
     }
 
     /**

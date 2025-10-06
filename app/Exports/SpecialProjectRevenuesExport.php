@@ -291,8 +291,8 @@ class SpecialProjectRevenuesExport implements FromCollection, WithHeadings, With
     }
 
     /**
-     * @return \Illuminate\Support\Collection
-     */
+    * @return \Illuminate\Support\Collection
+    */
     public function collection()
     {
         return SpecialProjectRevenue::where('project_id', $this->projectId)

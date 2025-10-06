@@ -332,27 +332,25 @@ Route::post('licenses/save-evacuation-data-simple', [\App\Http\Controllers\Admin
     Route::get('work-orders/general-productivity', [App\Http\Controllers\Admin\WorkOrderController::class, 'generalProductivity'])->name('work-orders.general-productivity');
     Route::get('work-orders/general-productivity-data', [App\Http\Controllers\Admin\WorkOrderController::class, 'getGeneralProductivityData'])->name('work-orders.general-productivity-data');
     
-    // BI Dashboard Routes - General (for backward compatibility)
-    Route::get('bi-dashboard/receipts', [App\Http\Controllers\Admin\WorkOrderController::class, 'receiptsDashboard'])->name('bi-dashboard.receipts');
-    Route::get('bi-dashboard/execution', [App\Http\Controllers\Admin\WorkOrderController::class, 'executionDashboard'])->name('bi-dashboard.execution');
-    Route::get('bi-dashboard/inprogress', [App\Http\Controllers\Admin\WorkOrderController::class, 'inProgressDashboard'])->name('bi-dashboard.inprogress');
-    Route::get('bi-dashboard/extracts', [App\Http\Controllers\Admin\WorkOrderController::class, 'extractsDashboard'])->name('bi-dashboard.extracts');
-    Route::get('bi-dashboard/completed', [App\Http\Controllers\Admin\WorkOrderController::class, 'completedDashboard'])->name('bi-dashboard.completed');
-    
-    // BI Dashboard Routes - Project Specific
-    // Riyadh Routes
-    Route::get('bi-dashboard/riyadh/receipts', [App\Http\Controllers\Admin\WorkOrderController::class, 'riyadhReceiptsDashboard'])->name('bi-dashboard.riyadh.receipts');
-    Route::get('bi-dashboard/riyadh/execution', [App\Http\Controllers\Admin\WorkOrderController::class, 'riyadhExecutionDashboard'])->name('bi-dashboard.riyadh.execution');
-    Route::get('bi-dashboard/riyadh/inprogress', [App\Http\Controllers\Admin\WorkOrderController::class, 'riyadhInProgressDashboard'])->name('bi-dashboard.riyadh.inprogress');
-    Route::get('bi-dashboard/riyadh/extracts', [App\Http\Controllers\Admin\WorkOrderController::class, 'riyadhExtractsDashboard'])->name('bi-dashboard.riyadh.extracts');
-    Route::get('bi-dashboard/riyadh/completed', [App\Http\Controllers\Admin\WorkOrderController::class, 'riyadhCompletedDashboard'])->name('bi-dashboard.riyadh.completed');
-    
-    // Madinah Routes
-    Route::get('bi-dashboard/madinah/receipts', [App\Http\Controllers\Admin\WorkOrderController::class, 'madinahReceiptsDashboard'])->name('bi-dashboard.madinah.receipts');
-    Route::get('bi-dashboard/madinah/execution', [App\Http\Controllers\Admin\WorkOrderController::class, 'madinahExecutionDashboard'])->name('bi-dashboard.madinah.execution');
-    Route::get('bi-dashboard/madinah/inprogress', [App\Http\Controllers\Admin\WorkOrderController::class, 'madinahInProgressDashboard'])->name('bi-dashboard.madinah.inprogress');
-    Route::get('bi-dashboard/madinah/extracts', [App\Http\Controllers\Admin\WorkOrderController::class, 'madinahExtractsDashboard'])->name('bi-dashboard.madinah.extracts');
-    Route::get('bi-dashboard/madinah/completed', [App\Http\Controllers\Admin\WorkOrderController::class, 'madinahCompletedDashboard'])->name('bi-dashboard.madinah.completed');
+    // عرض أوامر العمل حسب الحالة - منفصل لكل مدينة
+    Route::get('work-orders/status/inprogress/riyadh', [App\Http\Controllers\Admin\WorkOrderController::class, 'statusInProgressRiyadh'])->name('work-orders.status.inprogress.riyadh');
+    Route::get('work-orders/status/inprogress/madinah', [App\Http\Controllers\Admin\WorkOrderController::class, 'statusInProgressMadinah'])->name('work-orders.status.inprogress.madinah');
+    Route::get('work-orders/status/executed/riyadh', [App\Http\Controllers\Admin\WorkOrderController::class, 'statusExecutedRiyadh'])->name('work-orders.status.executed.riyadh');
+    Route::get('work-orders/status/executed/madinah', [App\Http\Controllers\Admin\WorkOrderController::class, 'statusExecutedMadinah'])->name('work-orders.status.executed.madinah');
+    Route::get('work-orders/status/delivery155/riyadh', [App\Http\Controllers\Admin\WorkOrderController::class, 'statusDelivery155Riyadh'])->name('work-orders.status.delivery155.riyadh');
+    Route::get('work-orders/status/delivery155/madinah', [App\Http\Controllers\Admin\WorkOrderController::class, 'statusDelivery155Madinah'])->name('work-orders.status.delivery155.madinah');
+    Route::get('work-orders/status/firstextract/riyadh', [App\Http\Controllers\Admin\WorkOrderController::class, 'statusFirstExtractRiyadh'])->name('work-orders.status.firstextract.riyadh');
+    Route::get('work-orders/status/firstextract/madinah', [App\Http\Controllers\Admin\WorkOrderController::class, 'statusFirstExtractMadinah'])->name('work-orders.status.firstextract.madinah');
+    Route::get('work-orders/status/paidfirst/riyadh', [App\Http\Controllers\Admin\WorkOrderController::class, 'statusPaidFirstRiyadh'])->name('work-orders.status.paidfirst.riyadh');
+    Route::get('work-orders/status/paidfirst/madinah', [App\Http\Controllers\Admin\WorkOrderController::class, 'statusPaidFirstMadinah'])->name('work-orders.status.paidfirst.madinah');
+    Route::get('work-orders/status/secondextract/riyadh', [App\Http\Controllers\Admin\WorkOrderController::class, 'statusSecondExtractRiyadh'])->name('work-orders.status.secondextract.riyadh');
+    Route::get('work-orders/status/secondextract/madinah', [App\Http\Controllers\Admin\WorkOrderController::class, 'statusSecondExtractMadinah'])->name('work-orders.status.secondextract.madinah');
+    Route::get('work-orders/status/totalextract/riyadh', [App\Http\Controllers\Admin\WorkOrderController::class, 'statusTotalExtractRiyadh'])->name('work-orders.status.totalextract.riyadh');
+    Route::get('work-orders/status/totalextract/madinah', [App\Http\Controllers\Admin\WorkOrderController::class, 'statusTotalExtractMadinah'])->name('work-orders.status.totalextract.madinah');
+    Route::get('work-orders/status/certificate/riyadh', [App\Http\Controllers\Admin\WorkOrderController::class, 'statusCertificateRiyadh'])->name('work-orders.status.certificate.riyadh');
+    Route::get('work-orders/status/certificate/madinah', [App\Http\Controllers\Admin\WorkOrderController::class, 'statusCertificateMadinah'])->name('work-orders.status.certificate.madinah');
+    Route::get('work-orders/status/completed/riyadh', [App\Http\Controllers\Admin\WorkOrderController::class, 'statusCompletedRiyadh'])->name('work-orders.status.completed.riyadh');
+    Route::get('work-orders/status/completed/madinah', [App\Http\Controllers\Admin\WorkOrderController::class, 'statusCompletedMadinah'])->name('work-orders.status.completed.madinah');
     
     // تقارير الإنتاجية حسب المدينة
     Route::get('work-orders/productivity/riyadh', [App\Http\Controllers\Admin\WorkOrderController::class, 'riyadhProductivity'])->name('work-orders.productivity.riyadh');

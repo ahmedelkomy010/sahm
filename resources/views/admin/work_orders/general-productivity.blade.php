@@ -69,7 +69,7 @@
                                 تاريخ النهاية
                             </label>
                             <input type="date" class="form-control" id="filter_end_date" name="end_date">
-                        </div>
+                                                        </div>
                         
                         <div class="col-md-4">
                             <label class="form-label">
@@ -77,32 +77,32 @@
                                 فترات زمنية سريعة
                             </label>
                             <div class="row g-2">
-                                <div class="col-6">
+                                    <div class="col-6">
                                     <button type="button" class="btn btn-outline-primary btn-sm w-100" onclick="setQuickDateRange('day')">
                                         <i class="fas fa-calendar-day me-1"></i>
                                         يوم
                                     </button>
-                                </div>
-                                <div class="col-6">
+                                                    </div>
+                                    <div class="col-6">
                                     <button type="button" class="btn btn-outline-primary btn-sm w-100" onclick="setQuickDateRange('quarter')">
                                         <i class="fas fa-calendar-alt me-1"></i>
                                         ربع سنة
                                     </button>
-                                </div>
-                                <div class="col-6">
+                                                </div>
+                                    <div class="col-6">
                                     <button type="button" class="btn btn-outline-primary btn-sm w-100" onclick="setQuickDateRange('half')">
                                         <i class="fas fa-calendar me-1"></i>
                                         نصف سنة
                                     </button>
-                                </div>
-                                <div class="col-6">
+                                                    </div>
+                                    <div class="col-6">
                                     <button type="button" class="btn btn-outline-primary btn-sm w-100" onclick="setQuickDateRange('year')">
                                         <i class="fas fa-calendar-check me-1"></i>
                                         سنة
                                     </button>
-                                </div>
-                            </div>
-                        </div>
+                                                </div>
+                                            </div>
+                                                    </div>
                         
                         <div class="col-md-2">
                             <button type="button" class="btn btn-primary w-100 mb-2" onclick="applyDateFilter()">
@@ -113,325 +113,289 @@
                                 <i class="fas fa-times me-1"></i>
                                 مسح
                             </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- BI Dashboard Sections -->
-            <div class="row g-3 mb-3">
-                
-                <!-- القسم الأول: الاستلامات -->
-                <div class="col-lg-4">
-                    <div class="card h-100 shadow-sm border-0 dashboard-card receipts-card">
-                        <div class="card-header bg-success text-white text-center py-4">
-                            <div class="dashboard-icon mb-3">
-                                <i class="fas fa-inbox fa-3x"></i>
-                                                        </div>
-                            <h4 class="mb-1">الاستلامات</h4>
-                            <p class="mb-0 small">
-                                @if(isset($project))
-                                    @if($project == 'riyadh')
-                                        أوامر العمل المستلمة - الرياض
-                                    @elseif($project == 'madinah')
-                                        أوامر العمل المستلمة - المدينة المنورة
-                                    @else
-                                        أوامر العمل المستلمة والقيم المبدئية
-                                    @endif
-                                @else
-                                    أوامر العمل المستلمة والقيم المبدئية
-                                @endif
-                            </p>
-                                                    </div>
-                        <div class="card-body d-flex flex-column">
-                            <div class="mb-3 flex-grow-1">
-                                <div class="row text-center mb-3">
-                                    <div class="col-6">
-                                        <div class="stat-item">
-                                            <i class="fas fa-clipboard-check text-success mb-2"></i>
-                                            <h6 class="stat-number" id="workOrdersCount">0</h6>
-                                            <small class="text-muted">أوامر مستلمة</small>
-                                                        </div>
-                                                    </div>
-                                    <div class="col-6">
-                                        <div class="stat-item">
-                                            <i class="fas fa-money-bill-wave text-info mb-2"></i>
-                                            <h6 class="stat-number" id="totalValue">0</h6>
-                                            <small class="text-muted">القيمة المبدئية (بدون استشاري)</small>
                                                 </div>
-                                            </div>
-                                                    </div>
-                                <div class="progress mb-2" style="height: 8px;">
-                                    <div class="progress-bar bg-success" id="receiptsProgressBar" style="width: 0%"></div>
-                                                </div>
-                                <small class="text-muted" id="receiptsProgressText">معدل الاستلام الشهري</small>
-                                            </div>
-                            <a href="#" class="btn btn-success btn-lg w-100 dashboard-btn" onclick="navigateToSection('receipts')">
-                                <i class="fas fa-arrow-left me-2"></i>
-                                دخول القسم
-                            </a>
-                                            </div>
-                                        </div>
-                                </div>
-
-                <!-- القسم الثاني: التنفيذ والإنجاز -->
-                <div class="col-lg-4">
-                    <div class="card h-100 shadow-sm border-0 dashboard-card execution-card">
-                        <div class="card-header bg-warning text-white text-center py-4">
-                            <div class="dashboard-icon mb-3">
-                                <i class="fas fa-tasks fa-3x"></i>
-                            </div>
-                            <h4 class="mb-1">التنفيذ والإنجاز</h4>
-                            <p class="mb-0 small">أوامر العمل المنفذة والسعر الإجمالي</p>
-                                                    </div>
-                        <div class="card-body d-flex flex-column">
-                            <div class="mb-3 flex-grow-1">
-                                <div class="row text-center mb-3">
-                                    <div class="col-6">
-                                        <div class="stat-item">
-                                            <i class="fas fa-clipboard-check text-warning mb-2"></i>
-                                            <h6 class="stat-number" id="executedOrdersCount">0</h6>
-                                            <small class="text-muted">أوامر منفذة</small>
-                                                        </div>
-                                                    </div>
-                                    <div class="col-6">
-                                        <div class="stat-item">
-                                            <i class="fas fa-money-check-alt text-success mb-2"></i>
-                                            <h6 class="stat-number" id="totalExecutedValue">0</h6>
-                                            <small class="text-muted">السعر الإجمالي المنفذ</small>
-                                                </div>
-                                            </div>
-                                                    </div>
-                                
-                                <!-- حالات التنفيذ -->
-                                <div class="execution-status-list mb-3" id="executionStatusList">
-                                    <div class="status-item-small" style="background-color: rgba(112, 68, 2, 0.1); border-right: 3px solid rgb(112, 68, 2);">
-                                        <span class="status-count" id="status2Count">0</span>
-                                        <small class="text-muted">تم التنفيذ بالموقع</small>
-                                    </div>
-                                    <div class="status-item-small" style="background-color: rgba(165, 0, 52, 0.1); border-right: 3px solid rgb(165, 0, 52);">
-                                        <span class="status-count" id="status3Count">0</span>
-                                        <small class="text-muted">تم تسليم 155</small>
-                                    </div>
-                                    <div class="status-item-small" style="background-color: rgba(0, 149, 54, 0.1); border-right: 3px solid rgb(0, 149, 54);">
-                                        <span class="status-count" id="status4Count">0</span>
-                                        <small class="text-muted">مستخلص دفعة أولى</small>
-                                    </div>
-                                    <div class="status-item-small" style="background-color: rgba(41, 128, 185, 0.1); border-right: 3px solid rgb(41, 128, 185);">
-                                        <span class="status-count" id="status5Count">0</span>
-                                        <small class="text-muted">صرف دفعة أولى</small>
-                                    </div>
-                                    <div class="status-item-small" style="background-color: rgba(155, 89, 182, 0.1); border-right: 3px solid rgb(155, 89, 182);">
-                                        <span class="status-count" id="status6Count">0</span>
-                                        <small class="text-muted">مستخلص دفعة ثانية</small>
-                                    </div>
-                                    <div class="status-item-small" style="background-color: rgba(0, 149, 54, 0.1); border-right: 3px solid rgb(0, 149, 54);">
-                                        <span class="status-count" id="status8Count">0</span>
-                                        <small class="text-muted">تم اصدار شهادة الانجاز</small>
-                                    </div>
-                                    <div class="status-item-small" style="background-color: rgba(52, 152, 219, 0.1); border-right: 3px solid rgb(52, 152, 219);">
-                                        <span class="status-count" id="status10Count">0</span>
-                                        <small class="text-muted">مستخلص كلي</small>
-                                    </div>
-                                </div>
-                                
-                                <div class="progress mb-2" style="height: 8px;">
-                                    <div class="progress-bar bg-warning" id="executionProgressBar" style="width: 0%"></div>
-                                                </div>
-                                <small class="text-muted" id="executionProgressText">معدل الإنجاز</small>
-                                            </div>
-                            <a href="#" class="btn btn-warning btn-lg w-100 dashboard-btn" onclick="navigateToSection('execution')">
-                                <i class="fas fa-arrow-left me-2"></i>
-                                دخول القسم
-                            </a>
                                             </div>
                         </div>
                     </div>
 
-                <!-- القسم الثالث: جاري العمل -->
-                <div class="col-lg-4">
-                    <div class="card h-100 shadow-sm border-0 dashboard-card inprogress-card">
-                        <div class="card-header bg-info text-white text-center py-4">
-                            <div class="dashboard-icon mb-3">
-                                <i class="fas fa-cogs fa-3x"></i>
-                                                </div>
-                            <h4 class="mb-1">جاري العمل</h4>
-                            <p class="mb-0 small">متابعة المشاريع وأوامر العمل</p>
-                                            </div>
-                        <div class="card-body d-flex flex-column">
-                            <div class="mb-3 flex-grow-1">
-                                <div class="row text-center mb-3">
-                                    <div class="col-6">
-                                        <div class="stat-item">
-                                            <i class="fas fa-play-circle text-info mb-2"></i>
-                                            <h6 class="stat-number" id="inProgressOrdersCount">0</h6>
-                                            <small class="text-muted">أوامر جاري العمل</small>
-                                        </div>
-                                                </div>
-                                    <div class="col-6">
-                                        <div class="stat-item">
-                                            <i class="fas fa-money-bill text-primary mb-2"></i>
-                                            <h6 class="stat-number" id="inProgressTotalValue">0</h6>
-                                            <small class="text-muted">القيمة المبدئية (بدون استشاري)</small>
-                                            </div>
-                                        </div>
-                                                </div>
-                                <div class="progress mb-2" style="height: 8px;">
-                                    <div class="progress-bar bg-info" id="inProgressProgressBar" style="width: 0%"></div>
-                                            </div>
-                                <small class="text-muted" id="inProgressProgressText">نسبة أوامر جاري العمل</small>
-                                        </div>
-                            <a href="#" class="btn btn-info btn-lg w-100 dashboard-btn" onclick="navigateToSection('inprogress')">
-                                <i class="fas fa-arrow-left me-2"></i>
-                                دخول القسم
-                            </a>
-                                                </div>
-                                            </div>
-                                        </div>
-
-            </div>
-            
-            <div class="row g-3">
-                <!-- القسم الرابع: المستخلص -->
-                <div class="col-lg-6">
-                    <div class="card h-100 shadow-sm border-0 dashboard-card extract-card">
-                        <div class="card-header bg-danger text-white text-center py-4">
-                            <div class="dashboard-icon mb-3">
-                                <i class="fas fa-file-invoice-dollar fa-3x"></i>
-                                    </div>
-                            <h4 class="mb-1">المستخلص</h4>
-                            <p class="mb-0 small">عدد المستخلص وأوامر العمل</p>
-                                                </div>
-                        <div class="card-body d-flex flex-column">
-                            <div class="mb-3 flex-grow-1">
-                                <div class="row text-center mb-3">
-                                    <div class="col-6">
-                                        <div class="stat-item">
-                                            <i class="fas fa-file-alt text-danger mb-2"></i>
-                                            <h6 class="stat-number" id="extractsValue">0</h6>
-                                            <small class="text-muted">إجمالي قيمة المستخلص</small>
-                                            </div>
-                                        </div>
-                                    <div class="col-6">
-                                        <div class="stat-item">
-                                            <i class="fas fa-list-ol text-warning mb-2"></i>
-                                            <h6 class="stat-number" id="extractOrdersCount">0</h6>
-                                            <small class="text-muted">أوامر العمل</small>
-                                                </div>
-                                            </div>
-                                        </div>
-                                <div class="progress mb-2" style="height: 8px;">
-                                    <div class="progress-bar bg-danger" id="extractProgressBar" style="width: 0%"></div>
-                                    </div>
-                                <small class="text-muted" id="extractProgressText">نسبة المستخلص</small>
-                                </div>
-                            <a href="#" class="btn btn-danger btn-lg w-100 dashboard-btn" onclick="navigateToSection('extracts')">
-                                <i class="fas fa-arrow-left me-2"></i>
-                                دخول القسم
-                            </a>
-                            </div>
-                        </div>
-                    </div>
-
-                <!-- القسم الخامس: منتهي تم الصرف -->
-                <div class="col-lg-6">
-                    <div class="card h-100 shadow-sm border-0 dashboard-card completed-card">
-                        <div class="card-header bg-secondary text-white text-center py-4">
-                            <div class="dashboard-icon mb-3">
-                                <i class="fas fa-check-circle fa-3x"></i>
-                                    </div>
-                            <h4 class="mb-1">منتهي تم الصرف</h4>
-                            <p class="mb-0 small">أوامر العمل المكتملة والمصروفة</p>
-                                                </div>
-                        <div class="card-body d-flex flex-column">
-                            <div class="mb-3 flex-grow-1">
-                                <div class="row text-center mb-3">
-                                    <div class="col-6">
-                                        <div class="stat-item">
-                                            <i class="fas fa-clipboard-check text-secondary mb-2"></i>
-                                            <h6 class="stat-number" id="completedOrdersCount">0</h6>
-                                            <small class="text-muted">أوامر مكتملة</small>
-                                            </div>
-                                        </div>
-                                    <div class="col-6">
-                                        <div class="stat-item">
-                                            <i class="fas fa-money-check-alt text-success mb-2"></i>
-                                            <h6 class="stat-number" id="completedTotalValue">0</h6>
-                                            <small class="text-muted">القيمة الكلية النهائية</small>
-                                                </div>
-                                            </div>
-                                        </div>
-                                <div class="progress mb-2" style="height: 8px;">
-                                    <div class="progress-bar bg-secondary" id="completedProgressBar" style="width: 0%"></div>
-                                    </div>
-                                <small class="text-muted" id="completedProgressText">نسبة الإنجاز الكامل</small>
-                                </div>
-                            <a href="#" class="btn btn-secondary btn-lg w-100 dashboard-btn" onclick="navigateToSection('completed')">
-                                <i class="fas fa-arrow-left me-2"></i>
-                                دخول القسم
-                            </a>
-                            </div>
-                        </div>
-                    </div>
-
-                <!-- Quick Stats Overview -->
+            <!-- Quick Stats Overview -->
                 <div class="col-12">
                     <div class="card shadow-sm border-0 mt-4">
                         <div class="card-header bg-light">
                                 <h5 class="mb-0">
-                                <i class="fas fa-chart-bar me-2 text-primary"></i>
-                                نظرة عامة سريعة - اختصارات تحليلية
+                                <i class="fas fa-th-large me-2 text-primary"></i>
+                                لوحة تحكم حالات أوامر العمل
                                 </h5>
-                            </div>
+                                                </div>
                             <div class="card-body">
-                            <div class="row g-4">
-                                <div class="col-md-3">
+                            <div class="row g-2 justify-content-center">
+                                <div class="col-6 col-md-4 col-lg" style="flex: 0 0 auto; width: 9.09%;">
                                     <div class="text-center">
-                                        <div class="bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 60px; height: 60px;">
-                                            <i class="fas fa-inbox text-success fs-4"></i>
-                                </div>
-                                        <h4 class="mb-1" id="quickReceiptsCount">0</h4>
-                                        <small class="text-muted">أوامر مستلمة</small>
-                            </div>
-                        </div>
-                                <div class="col-md-3">
-                                    <div class="text-center">
-                                        <div class="bg-warning bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 60px; height: 60px;">
-                                            <i class="fas fa-tasks text-warning fs-4"></i>
-                    </div>
-                                        <h4 class="mb-1" id="quickExecutionCount">0</h4>
-                                        <small class="text-muted">أوامر منفذة</small>
-                    </div>
-                        </div>
-                                <div class="col-md-3">
-                                    <div class="text-center">
-                                        <div class="bg-info bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 60px; height: 60px;">
-                                            <i class="fas fa-cogs text-info fs-4"></i>
-                    </div>
-                                        <h4 class="mb-1" id="quickInProgressCount">0</h4>
-                                        <small class="text-muted">جاري العمل</small>
-                </div>
-            </div>
-                                <div class="col-md-3">
-                                    <div class="text-center">
-                                        <div class="bg-secondary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 60px; height: 60px;">
-                                            <i class="fas fa-check-circle text-secondary fs-4"></i>
+                                        <div class="bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 45px; height: 45px;">
+                                            <i class="fas fa-inbox text-success fs-6"></i>
+                                            </div>
+                                        <h6 class="mb-1" id="quickReceiptsCount">0</h6>
+                                        <small class="text-muted" style="font-size: 0.7rem;">أوامر مستلمة</small>
                                         </div>
-                                        <h4 class="mb-1" id="quickCompletedCount">0</h4>
-                                        <small class="text-muted">منتهي تم الصرف</small>
+                                                </div>
+                                <div class="col-6 col-md-4 col-lg" style="flex: 0 0 auto; width: 9.09%;">
+                                    @php
+                                        $inProgressRoute = ($project ?? 'riyadh') === 'madinah' 
+                                            ? route('admin.work-orders.status.inprogress.madinah')
+                                            : route('admin.work-orders.status.inprogress.riyadh');
+                                    @endphp
+                                    <a href="{{ $inProgressRoute }}" 
+                                       class="text-decoration-none"
+                                       style="color: inherit; transition: all 0.3s ease;">
+                                        <div class="text-center p-2 rounded" style="cursor: pointer; transition: all 0.3s ease;" 
+                                             onmouseover="this.style.backgroundColor='rgba(23, 162, 184, 0.1)'" 
+                                             onmouseout="this.style.backgroundColor='transparent'">
+                                            <div class="bg-info bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 45px; height: 45px;">
+                                                <i class="fas fa-cogs text-info fs-6"></i>
+                                            </div>
+                                            <h6 class="mb-1" id="quickInProgressCount">0</h6>
+                                            <small class="text-muted" style="font-size: 0.65rem;">جاري العمل</small>
+                                            <div class="mt-1">
+                                                <small class="text-info" style="font-size: 0.6rem;">
+                                                    <i class="fas fa-external-link-alt"></i>
+                                                </small>
+                                        </div>
+                                                </div>
+                            </a>
+                                                </div>
+                                <div class="col-6 col-md-4 col-lg" style="flex: 0 0 auto; width: 9.09%;">
+                                    @php
+                                        $executedRoute = ($project ?? 'riyadh') === 'madinah' 
+                                            ? route('admin.work-orders.status.executed.madinah')
+                                            : route('admin.work-orders.status.executed.riyadh');
+                                    @endphp
+                                    <a href="{{ $executedRoute }}" 
+                                       class="text-decoration-none"
+                                       style="color: inherit; transition: all 0.3s ease;">
+                                        <div class="text-center p-2 rounded" style="cursor: pointer; transition: all 0.3s ease;" 
+                                             onmouseover="this.style.backgroundColor='rgba(112, 68, 2, 0.1)'" 
+                                             onmouseout="this.style.backgroundColor='transparent'">
+                                            <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 45px; height: 45px; background-color: rgba(112, 68, 2, 0.1);">
+                                                <i class="fas fa-hammer fs-6" style="color: #704402;"></i>
+                                            </div>
+                                            <h6 class="mb-1" id="quickExecutedCount">0</h6>
+                                            <small class="text-muted" style="font-size: 0.65rem;">تم التنفيذ</small>
+                                            <div class="mt-1">
+                                                <small style="color: #704402; font-size: 0.6rem;">
+                                                    <i class="fas fa-external-link-alt"></i>
+                                                </small>
+                                        </div>
+                                    </div>
+                                    </a>
+                                                </div>
+                                <div class="col-6 col-md-4 col-lg" style="flex: 0 0 auto; width: 9.09%;">
+                                    @php
+                                        $delivery155Route = ($project ?? 'riyadh') === 'madinah' 
+                                            ? route('admin.work-orders.status.delivery155.madinah')
+                                            : route('admin.work-orders.status.delivery155.riyadh');
+                                    @endphp
+                                    <a href="{{ $delivery155Route }}" 
+                                       class="text-decoration-none"
+                                       style="color: inherit; transition: all 0.3s ease;">
+                                        <div class="text-center p-2 rounded" style="cursor: pointer; transition: all 0.3s ease;" 
+                                             onmouseover="this.style.backgroundColor='rgba(111, 66, 193, 0.1)'" 
+                                             onmouseout="this.style.backgroundColor='transparent'">
+                                            <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 45px; height: 45px; background-color: rgba(111, 66, 193, 0.1);">
+                                                <i class="fas fa-file-signature fs-6" style="color: #6f42c1;"></i>
+                                            </div>
+                                            <h6 class="mb-1" id="quickDelivery155Count">0</h6>
+                                            <small class="text-muted" style="font-size: 0.65rem;">تسليم 155</small>
+                                            <div class="mt-1">
+                                                <small style="color: #6f42c1; font-size: 0.6rem;">
+                                                    <i class="fas fa-external-link-alt"></i>
+                                                </small>
+                                        </div>
+                                                </div>
+                                    </a>
+                                            </div>
+                                <div class="col-6 col-md-4 col-lg" style="flex: 0 0 auto; width: 9.09%;">
+                                    @php
+                                        $firstExtractRoute = ($project ?? 'riyadh') === 'madinah' 
+                                            ? route('admin.work-orders.status.firstextract.madinah')
+                                            : route('admin.work-orders.status.firstextract.riyadh');
+                                    @endphp
+                                    <a href="{{ $firstExtractRoute }}" 
+                                       class="text-decoration-none"
+                                       style="color: inherit; transition: all 0.3s ease;">
+                                        <div class="text-center p-2 rounded" style="cursor: pointer; transition: all 0.3s ease;" 
+                                             onmouseover="this.style.backgroundColor='rgba(233, 30, 99, 0.1)'" 
+                                             onmouseout="this.style.backgroundColor='transparent'">
+                                            <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 45px; height: 45px; background-color: rgba(233, 30, 99, 0.1);">
+                                                <i class="fas fa-file-invoice-dollar fs-6" style="color: #e91e63;"></i>
+                                        </div>
+                                            <h6 class="mb-1" id="quickFirstExtractCount">0</h6>
+                                            <small class="text-muted" style="font-size: 0.65rem;">إعداد مستخلص</small>
+                                            <div class="mt-1">
+                                                <small style="color: #e91e63; font-size: 0.6rem;">
+                                                    <i class="fas fa-external-link-alt"></i>
+                                                </small>
                                     </div>
                                 </div>
+                            </a>
                             </div>
+                                <div class="col-6 col-md-4 col-lg" style="flex: 0 0 auto; width: 9.09%;">
+                                    @php
+                                        $paidFirstRoute = ($project ?? 'riyadh') === 'madinah' 
+                                            ? route('admin.work-orders.status.paidfirst.madinah')
+                                            : route('admin.work-orders.status.paidfirst.riyadh');
+                                    @endphp
+                                    <a href="{{ $paidFirstRoute }}" 
+                                       class="text-decoration-none"
+                                       style="color: inherit; transition: all 0.3s ease;">
+                                        <div class="text-center p-2 rounded" style="cursor: pointer; transition: all 0.3s ease;" 
+                                             onmouseover="this.style.backgroundColor='rgba(255, 152, 0, 0.1)'" 
+                                             onmouseout="this.style.backgroundColor='transparent'">
+                                            <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 45px; height: 45px; background-color: rgba(255, 152, 0, 0.1);">
+                                                <i class="fas fa-money-check-alt fs-6" style="color: #ff9800;"></i>
+                        </div>
+                                            <h6 class="mb-1" id="quickPaidFirstCount">0</h6>
+                                            <small class="text-muted" style="font-size: 0.65rem;">تم صرف أولى</small>
+                                            <div class="mt-1">
+                                                <small style="color: #ff9800; font-size: 0.6rem;">
+                                                    <i class="fas fa-external-link-alt"></i>
+                                                </small>
+                    </div>
+                                    </div>
+                            </a>
+                            </div>
+                                <div class="col-6 col-md-4 col-lg" style="flex: 0 0 auto; width: 9.09%;">
+                                    @php
+                                        $secondExtractRoute = ($project ?? 'riyadh') === 'madinah'
+                                            ? route('admin.work-orders.status.secondextract.madinah')
+                                            : route('admin.work-orders.status.secondextract.riyadh');
+                                    @endphp
+                                    <a href="{{ $secondExtractRoute }}" 
+                                       class="text-decoration-none"
+                                       style="color: inherit; transition: all 0.3s ease;">
+                                        <div class="text-center p-2 rounded" style="cursor: pointer; transition: all 0.3s ease;" 
+                                             onmouseover="this.style.backgroundColor='rgba(156, 39, 176, 0.1)'" 
+                                             onmouseout="this.style.backgroundColor='transparent'">
+                                            <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 45px; height: 45px; background-color: rgba(156, 39, 176, 0.1);">
+                                                <i class="fas fa-file-invoice fs-6" style="color: #9c27b0;"></i>
+                                            </div>
+                                            <h6 class="mb-1" id="quickSecondExtractCount">0</h6>
+                                            <small class="text-muted" style="font-size: 0.65rem;">مستخلص ثانية</small>
+                                            <div class="mt-1">
+                                                <small style="color: #9c27b0; font-size: 0.6rem;">
+                                                    <i class="fas fa-external-link-alt"></i>
+                                                </small>
+                                        </div>
+                                                </div>
+                                    </a>
+                                </div>
+                                <div class="col-6 col-md-4 col-lg" style="flex: 0 0 auto; width: 9.09%;">
+                                    @php
+                                        $certificateRoute = ($project ?? 'riyadh') === 'madinah'
+                                            ? route('admin.work-orders.status.certificate.madinah')
+                                            : route('admin.work-orders.status.certificate.riyadh');
+                                    @endphp
+                                    <a href="{{ $certificateRoute }}" 
+                                       class="text-decoration-none"
+                                       style="color: inherit; transition: all 0.3s ease;">
+                                        <div class="text-center p-2 rounded" style="cursor: pointer; transition: all 0.3s ease;" 
+                                             onmouseover="this.style.backgroundColor='rgba(76, 175, 80, 0.1)'" 
+                                             onmouseout="this.style.backgroundColor='transparent'">
+                                            <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 45px; height: 45px; background-color: rgba(76, 175, 80, 0.1);">
+                                                <i class="fas fa-certificate fs-6" style="color: #4caf50;"></i>
+                                        </div>
+                                            <h6 class="mb-1" id="quickCertificateCount">0</h6>
+                                            <small class="text-muted" style="font-size: 0.65rem;">شهادة إنجاز</small>
+                                            <div class="mt-1">
+                                                <small style="color: #4caf50; font-size: 0.6rem;">
+                                                    <i class="fas fa-external-link-alt"></i>
+                                                </small>
+                                    </div>
+                                </div>
+                                    </a>
+                                </div>
+                                <div class="col-6 col-md-4 col-lg" style="flex: 0 0 auto; width: 9.09%;">
+                                    @php
+                                        $totalExtractRoute = ($project ?? 'riyadh') === 'madinah' 
+                                            ? route('admin.work-orders.status.totalextract.madinah')
+                                            : route('admin.work-orders.status.totalextract.riyadh');
+                                    @endphp
+                                    <a href="{{ $totalExtractRoute }}" 
+                                       class="text-decoration-none"
+                                       style="color: inherit; transition: all 0.3s ease;">
+                                        <div class="text-center p-2 rounded" style="cursor: pointer; transition: all 0.3s ease;" 
+                                             onmouseover="this.style.backgroundColor='rgba(0, 188, 212, 0.1)'" 
+                                             onmouseout="this.style.backgroundColor='transparent'">
+                                            <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 45px; height: 45px; background-color: rgba(0, 188, 212, 0.1);">
+                                                <i class="fas fa-file-contract fs-6" style="color: #00bcd4;"></i>
+                                            </div>
+                                            <h6 class="mb-1" id="quickTotalExtractCount">0</h6>
+                                            <small class="text-muted" style="font-size: 0.65rem;">مستخلص كلي</small>
+                                            <div class="mt-1">
+                                                <small style="color: #00bcd4; font-size: 0.6rem;">
+                                                    <i class="fas fa-external-link-alt"></i>
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </a>
+                                </div>
+                                <div class="col-6 col-md-4 col-lg" style="flex: 0 0 auto; width: 9.09%;">
+                                    @php
+                                        $completedRoute = ($project ?? 'riyadh') === 'madinah' 
+                                            ? route('admin.work-orders.status.completed.madinah')
+                                            : route('admin.work-orders.status.completed.riyadh');
+                                    @endphp
+                                    <a href="{{ $completedRoute }}" 
+                                       class="text-decoration-none"
+                                       style="color: inherit; transition: all 0.3s ease;">
+                                        <div class="text-center p-2 rounded" style="cursor: pointer; transition: all 0.3s ease;" 
+                                             onmouseover="this.style.backgroundColor='rgba(108, 117, 125, 0.1)'" 
+                                             onmouseout="this.style.backgroundColor='transparent'">
+                                            <div class="bg-secondary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 45px; height: 45px;">
+                                                <i class="fas fa-check-circle text-secondary fs-6"></i>
+                                            </div>
+                                            <h6 class="mb-1" id="quickCompletedCount">0</h6>
+                                            <small class="text-muted" style="font-size: 0.65rem;">منتهي صرف</small>
+                                            <div class="mt-1">
+                                                <small class="text-secondary" style="font-size: 0.6rem;">
+                                                    <i class="fas fa-external-link-alt"></i>
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </a>
+                        </div>
+                    </div>
+                    </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
     </div>
 </div>
 
 @push('styles')
 <style>
+    /* Responsive grid for 11 cards */
+    @media (max-width: 768px) {
+        .col-6.col-md-4.col-lg {
+            flex: 0 0 auto;
+            width: 50% !important; /* 2 cards per row on mobile */
+        }
+    }
+    
+    @media (min-width: 769px) and (max-width: 1199px) {
+        .col-6.col-md-4.col-lg {
+            flex: 0 0 auto;
+            width: 33.33% !important; /* 3 cards per row on tablet */
+        }
+    }
+    
+    @media (min-width: 1200px) {
+        .col-6.col-md-4.col-lg {
+            flex: 0 0 auto;
+            width: 9.09% !important; /* 11 cards per row on desktop */
+        }
+    }
+    
     /* BI Dashboard Styles */
     .bg-gradient-primary {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -686,6 +650,7 @@ function updateQuickStats() {
     const quickReceiptsElement = document.getElementById('quickReceiptsCount');
     const quickExecutionElement = document.getElementById('quickExecutionCount');
     const quickInProgressElement = document.getElementById('quickInProgressCount');
+    const quickExecutedElement = document.getElementById('quickExecutedCount');
     const quickCompletedElement = document.getElementById('quickCompletedCount');
     
     // Get values from main cards
@@ -698,6 +663,288 @@ function updateQuickStats() {
     if (quickExecutionElement) quickExecutionElement.textContent = executionCount;
     if (quickInProgressElement) quickInProgressElement.textContent = inProgressCount;
     if (quickCompletedElement) quickCompletedElement.textContent = completedCount;
+    
+    // Update all status counts from API
+    updateExecutedCount();
+    updateDelivery155Count();
+    updateFirstExtractCount();
+    updatePaidFirstCount();
+    updateSecondExtractCount();
+    updateTotalExtractCount();
+    updateCertificateCount();
+    updateCompletedCount();
+}
+
+// Update executed count from API
+function updateExecutedCount() {
+    const project = window.location.pathname.includes('madinah') ? 'madinah' : 'riyadh';
+    const city = project === 'madinah' ? 'المدينة المنورة' : 'الرياض';
+    const startDate = document.getElementById('filter_start_date')?.value || '';
+    const endDate = document.getElementById('filter_end_date')?.value || '';
+    
+    let url = `/api/work-orders/execution?project=${project}`;
+    if (startDate) url += `&start_date=${startDate}`;
+    if (endDate) url += `&end_date=${endDate}`;
+    
+    fetch(url, {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success && data.status_counts) {
+            // Get count for status 2 (تم التنفيذ بالموقع)
+            const executedCount = data.status_counts.status_2 || 0;
+            const quickExecutedElement = document.getElementById('quickExecutedCount');
+            if (quickExecutedElement) {
+                quickExecutedElement.textContent = executedCount.toLocaleString('en-US');
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error fetching executed count:', error);
+    });
+}
+
+// Update delivery155 count from API
+function updateDelivery155Count() {
+    const project = window.location.pathname.includes('madinah') ? 'madinah' : 'riyadh';
+    const city = project === 'madinah' ? 'المدينة المنورة' : 'الرياض';
+    const startDate = document.getElementById('filter_start_date')?.value || '';
+    const endDate = document.getElementById('filter_end_date')?.value || '';
+    
+    let url = `/api/work-orders/execution?project=${project}`;
+    if (startDate) url += `&start_date=${startDate}`;
+    if (endDate) url += `&end_date=${endDate}`;
+    
+    fetch(url, {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success && data.status_counts) {
+            // Get count for status 3 (تم تسليم 155 - جاري إصدار شهادة الإنجاز)
+            const delivery155Count = data.status_counts.status_3 || 0;
+            const quickDelivery155Element = document.getElementById('quickDelivery155Count');
+            if (quickDelivery155Element) {
+                quickDelivery155Element.textContent = delivery155Count.toLocaleString('en-US');
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error fetching delivery155 count:', error);
+    });
+}
+
+// Update first extract count from API
+function updateFirstExtractCount() {
+    const project = window.location.pathname.includes('madinah') ? 'madinah' : 'riyadh';
+    const city = project === 'madinah' ? 'المدينة المنورة' : 'الرياض';
+    const startDate = document.getElementById('filter_start_date')?.value || '';
+    const endDate = document.getElementById('filter_end_date')?.value || '';
+    
+    let url = `/api/work-orders/execution?project=${project}`;
+    if (startDate) url += `&start_date=${startDate}`;
+    if (endDate) url += `&end_date=${endDate}`;
+    
+    fetch(url, {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success && data.status_counts) {
+            // Get count for status 4 (إعداد مستخلص الدفعة الجزئية الأولى وجاري الصرف)
+            const firstExtractCount = data.status_counts.status_4 || 0;
+            const quickFirstExtractElement = document.getElementById('quickFirstExtractCount');
+            if (quickFirstExtractElement) {
+                quickFirstExtractElement.textContent = firstExtractCount.toLocaleString('en-US');
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error fetching first extract count:', error);
+    });
+}
+
+// Update paid first extract count from API
+function updatePaidFirstCount() {
+    const project = window.location.pathname.includes('madinah') ? 'madinah' : 'riyadh';
+    const city = project === 'madinah' ? 'المدينة المنورة' : 'الرياض';
+    const startDate = document.getElementById('filter_start_date')?.value || '';
+    const endDate = document.getElementById('filter_end_date')?.value || '';
+    
+    let url = `/api/work-orders/execution?project=${project}`;
+    if (startDate) url += `&start_date=${startDate}`;
+    if (endDate) url += `&end_date=${endDate}`;
+    
+    fetch(url, {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success && data.status_counts) {
+            // Get count for status 5 (تم صرف مستخلص الدفعة الجزئية الأولى)
+            const paidFirstCount = data.status_counts.status_5 || 0;
+            const quickPaidFirstElement = document.getElementById('quickPaidFirstCount');
+            if (quickPaidFirstElement) {
+                quickPaidFirstElement.textContent = paidFirstCount.toLocaleString('en-US');
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error fetching paid first count:', error);
+    });
+}
+
+// Update second extract count from API
+function updateSecondExtractCount() {
+    const project = window.location.pathname.includes('madinah') ? 'madinah' : 'riyadh';
+    const city = project === 'madinah' ? 'المدينة المنورة' : 'الرياض';
+    const startDate = document.getElementById('filter_start_date')?.value || '';
+    const endDate = document.getElementById('filter_end_date')?.value || '';
+    
+    let url = `/api/work-orders/execution?project=${project}`;
+    if (startDate) url += `&start_date=${startDate}`;
+    if (endDate) url += `&end_date=${endDate}`;
+    
+    fetch(url, {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success && data.status_counts) {
+            // Get count for status 6 (إعداد مستخلص الدفعة الجزئية الثانية وجاري الصرف)
+            const secondExtractCount = data.status_counts.status_6 || 0;
+            const quickSecondExtractElement = document.getElementById('quickSecondExtractCount');
+            if (quickSecondExtractElement) {
+                quickSecondExtractElement.textContent = secondExtractCount.toLocaleString('en-US');
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error fetching second extract count:', error);
+    });
+}
+
+// Update certificate count from API
+function updateCertificateCount() {
+    const project = window.location.pathname.includes('madinah') ? 'madinah' : 'riyadh';
+    const city = project === 'madinah' ? 'المدينة المنورة' : 'الرياض';
+    const startDate = document.getElementById('filter_start_date')?.value || '';
+    const endDate = document.getElementById('filter_end_date')?.value || '';
+    
+    let url = `/api/work-orders/execution?project=${project}`;
+    if (startDate) url += `&start_date=${startDate}`;
+    if (endDate) url += `&end_date=${endDate}`;
+    
+    fetch(url, {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success && data.status_counts) {
+            // Get count for status 8 (تم إصدار شهادة الإنجاز)
+            const certificateCount = data.status_counts.status_8 || 0;
+            const quickCertificateElement = document.getElementById('quickCertificateCount');
+            if (quickCertificateElement) {
+                quickCertificateElement.textContent = certificateCount.toLocaleString('en-US');
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error fetching certificate count:', error);
+    });
+}
+
+// Update total extract count from API
+function updateTotalExtractCount() {
+    const project = window.location.pathname.includes('madinah') ? 'madinah' : 'riyadh';
+    const city = project === 'madinah' ? 'المدينة المنورة' : 'الرياض';
+    const startDate = document.getElementById('filter_start_date')?.value || '';
+    const endDate = document.getElementById('filter_end_date')?.value || '';
+    
+    let url = `/api/work-orders/execution?project=${project}`;
+    if (startDate) url += `&start_date=${startDate}`;
+    if (endDate) url += `&end_date=${endDate}`;
+    
+    fetch(url, {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success && data.status_counts) {
+            // Get count for status 10 (تم إعداد المستخلص الكلي وجاري الصرف)
+            const totalExtractCount = data.status_counts.status_10 || 0;
+            const quickTotalExtractElement = document.getElementById('quickTotalExtractCount');
+            if (quickTotalExtractElement) {
+                quickTotalExtractElement.textContent = totalExtractCount.toLocaleString('en-US');
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error fetching total extract count:', error);
+    });
+}
+
+// Update completed count from API
+function updateCompletedCount() {
+    const project = window.location.pathname.includes('madinah') ? 'madinah' : 'riyadh';
+    const city = project === 'madinah' ? 'المدينة المنورة' : 'الرياض';
+    const startDate = document.getElementById('filter_start_date')?.value || '';
+    const endDate = document.getElementById('filter_end_date')?.value || '';
+    
+    let url = `/api/work-orders/execution?project=${project}`;
+    if (startDate) url += `&start_date=${startDate}`;
+    if (endDate) url += `&end_date=${endDate}`;
+    
+    fetch(url, {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success && data.status_counts) {
+            // Get count for status 7 (منتهي تم الصرف)
+            const completedCount = data.status_counts.status_7 || 0;
+            const quickCompletedElement = document.getElementById('quickCompletedCount');
+            if (quickCompletedElement) {
+                quickCompletedElement.textContent = completedCount.toLocaleString('en-US');
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error fetching completed count:', error);
+    });
 }
 
 // Set quick date range
@@ -1139,34 +1386,34 @@ function updateExecutionStats() {
             const stats = data.summary;
             
             // Update main stats
-            const countElement = document.getElementById('executedOrdersCount');
-            const valueElement = document.getElementById('totalExecutedValue');
-            const progressBar = document.getElementById('executionProgressBar');
-            const progressText = document.getElementById('executionProgressText');
-            
-            if (countElement) {
+        const countElement = document.getElementById('executedOrdersCount');
+        const valueElement = document.getElementById('totalExecutedValue');
+        const progressBar = document.getElementById('executionProgressBar');
+        const progressText = document.getElementById('executionProgressText');
+        
+        if (countElement) {
                 countElement.textContent = (stats.total_orders || 0).toLocaleString('en-US');
-            }
-            
-            if (valueElement) {
+        }
+        
+        if (valueElement) {
                 const value = stats.total_executed_value || 0;
                 if (value >= 1000000) {
                     valueElement.textContent = (value / 1000000).toFixed(1) + 'M';
                 } else if (value >= 1000) {
                     valueElement.textContent = (value / 1000).toFixed(1) + 'K';
-                } else {
+            } else {
                     valueElement.textContent = value.toLocaleString('en-US', {
-                        minimumFractionDigits: 0,
-                        maximumFractionDigits: 0
-                    });
-                }
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0
+                });
             }
-            
-            if (progressBar) {
+        }
+        
+        if (progressBar) {
                 progressBar.style.width = (stats.execution_percentage || 0) + '%';
-            }
-            
-            if (progressText) {
+        }
+        
+        if (progressText) {
                 progressText.textContent = `معدل الإنجاز ${stats.execution_percentage || 0}%`;
             }
             
@@ -1494,48 +1741,6 @@ function updateCompletedStats() {
             completedValueElement.textContent = '0 ر.س';
         }
     });
-}
-
-function navigateToSection(section) {
-    // Show loading state
-    const btn = event.target.closest('.dashboard-btn');
-    const originalText = btn.innerHTML;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>جاري التحميل...';
-    btn.disabled = true;
-    
-    // Get current project from URL or default
-    const project = window.location.pathname.includes('madinah') ? 'madinah' : 'riyadh';
-    
-    // Simulate navigation delay
-    setTimeout(() => {
-        switch(section) {
-            case 'receipts':
-                window.location.href = `/admin/bi-dashboard/${project}/receipts`;
-                break;
-            case 'execution':
-                window.location.href = `/admin/bi-dashboard/${project}/execution`;
-                break;
-            case 'inprogress':
-                window.location.href = `/admin/bi-dashboard/${project}/inprogress`;
-                break;
-            case 'extracts':
-                window.location.href = `/admin/bi-dashboard/${project}/extracts`;
-                break;
-            case 'completed':
-                window.location.href = `/admin/bi-dashboard/${project}/completed`;
-                break;
-            case 'analytics':
-                window.location.href = '/admin/bi-dashboard/analytics';
-                break;
-            case 'operations':
-                window.location.href = '/admin/bi-dashboard/operations';
-                break;
-            default:
-                console.log('Unknown section:', section);
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-        }
-    }, 1000);
 }
 
 // Add some animation to progress bars
