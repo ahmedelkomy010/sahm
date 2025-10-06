@@ -116,6 +116,7 @@ class WorkOrder extends Model
         'safety_general_images',
         'safety_tbt_images',
         'removal_scrap_materials',
+        'survey_date',
     ];
 
     protected $casts = [
@@ -125,6 +126,7 @@ class WorkOrder extends Model
         'procedure_155_delivery_date' => 'date',
         'procedure_211_date' => 'date',
         'extract_date' => 'date',
+        'survey_date' => 'date',
         'payment_date' => 'datetime',
         'partial_deletion' => 'boolean',
         'created_at' => 'datetime',

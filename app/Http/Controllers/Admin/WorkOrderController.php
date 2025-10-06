@@ -467,6 +467,44 @@ class WorkOrderController extends Controller
     }
 
     /**
+     * عرض نتائج المسح - الرياض (الأوامر التي تحتاج للمسح)
+     */
+    public function surveyResultsRiyadh()
+    {
+        // جلب أوامر العمل التي لم يتم مسحها - الرياض
+        $workOrders = WorkOrder::whereNull('survey_date')
+            ->where('city', 'الرياض')
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
+        
+        // حساب إجمالي القيمة المبدئية
+        $totalValue = WorkOrder::whereNull('survey_date')
+            ->where('city', 'الرياض')
+            ->sum('order_value_without_consultant');
+        
+        return view('admin.work_orders.survey-results-riyadh', compact('workOrders', 'totalValue'));
+    }
+
+    /**
+     * عرض نتائج المسح - المدينة المنورة (الأوامر التي تحتاج للمسح)
+     */
+    public function surveyResultsMadinah()
+    {
+        // جلب أوامر العمل التي لم يتم مسحها - المدينة المنورة
+        $workOrders = WorkOrder::whereNull('survey_date')
+            ->where('city', 'المدينة المنورة')
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
+        
+        // حساب إجمالي القيمة المبدئية
+        $totalValue = WorkOrder::whereNull('survey_date')
+            ->where('city', 'المدينة المنورة')
+            ->sum('order_value_without_consultant');
+        
+        return view('admin.work_orders.survey-results-madinah', compact('workOrders', 'totalValue'));
+    }
+
+    /**
      * جلب بيانات الإنتاجية العامة
      */
     public function getGeneralProductivityData(Request $request)

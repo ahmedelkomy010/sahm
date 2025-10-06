@@ -118,6 +118,35 @@
                         </div>
                     </div>
 
+            <!-- Survey Results Section -->
+                <div class="col-12">
+                    <div class="card shadow-sm border-0 mt-4">
+                        <div class="card-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                            <h5 class="mb-0 text-white">
+                                <i class="fas fa-clipboard-list me-2"></i>
+                                أوامر العمل التي تحتاج للمسح
+                            </h5>
+                        </div>
+                        <div class="card-body text-center py-4">
+                            @php
+                                $surveyRoute = ($project ?? 'riyadh') === 'madinah' 
+                                    ? route('admin.work-orders.survey.madinah')
+                                    : route('admin.work-orders.survey.riyadh');
+                            @endphp
+                            <a href="{{ $surveyRoute }}" 
+                               class="btn btn-lg shadow-sm"
+                               style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; min-width: 250px;">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                عرض الأوامر التي تحتاج للمسح
+                                <i class="fas fa-arrow-left ms-2"></i>
+                            </a>
+                            <p class="text-muted mt-3 mb-0">
+                                <small>عرض جميع أوامر العمل التي لم يتم مسحها بعد</small>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
             <!-- Quick Stats Overview -->
                 <div class="col-12">
                     <div class="card shadow-sm border-0 mt-4">

@@ -351,6 +351,9 @@ Route::post('licenses/save-evacuation-data-simple', [\App\Http\Controllers\Admin
     Route::get('work-orders/status/certificate/madinah', [App\Http\Controllers\Admin\WorkOrderController::class, 'statusCertificateMadinah'])->name('work-orders.status.certificate.madinah');
     Route::get('work-orders/status/completed/riyadh', [App\Http\Controllers\Admin\WorkOrderController::class, 'statusCompletedRiyadh'])->name('work-orders.status.completed.riyadh');
     Route::get('work-orders/status/completed/madinah', [App\Http\Controllers\Admin\WorkOrderController::class, 'statusCompletedMadinah'])->name('work-orders.status.completed.madinah');
+    Route::get('work-orders/survey-results/riyadh', [App\Http\Controllers\Admin\WorkOrderController::class, 'surveyResultsRiyadh'])->name('work-orders.survey.riyadh');
+    Route::get('work-orders/survey-results/madinah', [App\Http\Controllers\Admin\WorkOrderController::class, 'surveyResultsMadinah'])->name('work-orders.survey.madinah');
+    Route::post('work-orders/{id}/mark-surveyed', [App\Http\Controllers\Admin\WorkOrderController::class, 'markAsSurveyed'])->name('work-orders.mark-surveyed');
     
     // تقارير الإنتاجية حسب المدينة
     Route::get('work-orders/productivity/riyadh', [App\Http\Controllers\Admin\WorkOrderController::class, 'riyadhProductivity'])->name('work-orders.productivity.riyadh');
