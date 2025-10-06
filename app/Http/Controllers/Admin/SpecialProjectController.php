@@ -107,7 +107,7 @@ class SpecialProjectController extends Controller
             // Validation
             $validated = $request->validate([
                 'name' => 'required|string|max:255',
-                'contract_number' => 'required|string|max:255',
+                'contract_number' => 'required|string|max:255|unique:projects,contract_number,' . $project->id,
                 'location' => 'required|string|max:255',
                 'amount' => 'nullable|numeric|min:0',
                 'description' => 'nullable|string',

@@ -85,8 +85,8 @@
             <div class="relative z-10 p-8">
                 <div class="flex justify-between items-center">
                     <div class="text-right text-white">
-                        <h1 class="text-4xl font-bold mb-2">إنشاء مشروع خاص جديد</h1>
-                        <p class="text-purple-100 text-lg">أدخل تفاصيل المشروع الخاص</p>
+                        <h1 class="text-4xl font-bold mb-2">تعديل المشروع الخاص</h1>
+                        <p class="text-purple-100 text-lg">تحديث تفاصيل المشروع: {{ $project->name }}</p>
                     </div>
                     <div>
                         <a href="{{ route('admin.special-projects.index') }}" 
@@ -125,8 +125,9 @@
                 </div>
             @endif
 
-            <form action="{{ route('admin.special-projects.store') }}" method="POST" enctype="multipart/form-data">
+            <form action="{{ route('admin.special-projects.update', $project->id) }}" method="POST" enctype="multipart/form-data">
                 @csrf
+                @method('PUT')
                 
                 <!-- Hidden field for project type -->
                 <input type="hidden" name="project_type" value="special">
@@ -141,7 +142,7 @@
                            class="form-control" 
                            id="name" 
                            name="name" 
-                           value="{{ old('name') }}"
+                           value="{{ old('name', $project->name) }}"
                            placeholder="أدخل اسم المشروع"
                            required>
                 </div>
@@ -156,7 +157,7 @@
                            class="form-control" 
                            id="contract_number" 
                            name="contract_number" 
-                           value="{{ old('contract_number') }}"
+                           value="{{ old('contract_number', $project->contract_number) }}"
                            placeholder="أدخل رقم العقد"
                            required>
                 </div>
@@ -172,7 +173,7 @@
                                class="form-control" 
                                id="location" 
                                name="location" 
-                               value="{{ old('location') }}"
+                               value="{{ old('location', $project->location) }}"
                                placeholder="أدخل موقع المشروع"
                                required>
                     </div>
@@ -188,7 +189,7 @@
                                class="form-control" 
                                id="amount" 
                                name="amount" 
-                               value="{{ old('amount') }}"
+                               value="{{ old('amount', $project->amount) }}"
                                placeholder="0.00">
                     </div>
                 </div>
@@ -203,7 +204,7 @@
                               id="description" 
                               name="description" 
                               rows="4"
-                              placeholder="أدخل وصف تفصيلي للمشروع">{{ old('description') }}</textarea>
+                              placeholder="أدخل وصف تفصيلي للمشروع">{{ old('description', $project->description) }}</textarea>
                 </div>
 
                 <!-- Timeline Section -->
@@ -221,7 +222,7 @@
                                    class="form-control" 
                                    id="srgn_date" 
                                    name="srgn_date" 
-                                   value="{{ old('srgn_date') }}">
+                                   value="{{ old('srgn_date', $project->srgn_date ? $project->srgn_date->format('Y-m-d') : '') }}">
                         </div>
 
                         <!-- Kick Off Date -->
@@ -231,7 +232,7 @@
                                    class="form-control" 
                                    id="kick_off_date" 
                                    name="kick_off_date" 
-                                   value="{{ old('kick_off_date') }}">
+                                   value="{{ old('kick_off_date', $project->kick_off_date ? $project->kick_off_date->format('Y-m-d') : '') }}">
                         </div>
 
                         <!-- TCC Date -->
@@ -241,7 +242,7 @@
                                    class="form-control" 
                                    id="tcc_date" 
                                    name="tcc_date" 
-                                   value="{{ old('tcc_date') }}">
+                                   value="{{ old('tcc_date', $project->tcc_date ? $project->tcc_date->format('Y-m-d') : '') }}">
                         </div>
 
                         <!-- PAC Date -->
@@ -251,7 +252,7 @@
                                    class="form-control" 
                                    id="pac_date" 
                                    name="pac_date" 
-                                   value="{{ old('pac_date') }}">
+                                   value="{{ old('pac_date', $project->pac_date ? $project->pac_date->format('Y-m-d') : '') }}">
                         </div>
 
                         <!-- FAT Date -->
@@ -261,7 +262,7 @@
                                    class="form-control" 
                                    id="fat_date" 
                                    name="fat_date" 
-                                   value="{{ old('fat_date') }}">
+                                   value="{{ old('fat_date', $project->fat_date ? $project->fat_date->format('Y-m-d') : '') }}">
                         </div>
                     </div>
                 </div>
@@ -274,7 +275,7 @@
                     </a>
                     <button type="submit" class="submit-btn">
                         <i class="fas fa-save me-2"></i>
-                        انشاء المشروع
+                        حفظ التعديلات
                     </button>
                 </div>
             </form>

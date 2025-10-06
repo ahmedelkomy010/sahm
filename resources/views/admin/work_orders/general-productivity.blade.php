@@ -147,6 +147,143 @@
                     </div>
                 </div>
 
+            <!-- Completion Files Section -->
+                <div class="col-12">
+                    <div class="card shadow-sm border-0 mt-4">
+                        <div class="card-header" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                            <h5 class="mb-0 text-white">
+                                <i class="fas fa-exclamation-circle me-2"></i>
+                                أوامر تحتاج لرفع ملفات انتهاء العمل
+                            </h5>
+                        </div>
+                        <div class="card-body text-center py-4">
+                            @php
+                                $completionRoute = ($project ?? 'riyadh') === 'madinah' 
+                                    ? route('admin.work-orders.completion.madinah')
+                                    : route('admin.work-orders.completion.riyadh');
+                            @endphp
+                            <a href="{{ $completionRoute }}" 
+                               class="btn btn-lg shadow-sm"
+                               style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; min-width: 250px;">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                عرض الأوامر التي تحتاج لرفع ملفات
+                                <i class="fas fa-arrow-left ms-2"></i>
+                            </a>
+                            <p class="text-muted mt-3 mb-0">
+                                <small>عرض جميع أوامر العمل التي لم يتم رفع ملفات انتهاء العمل عليها</small>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+            <!-- Quality Reports Section -->
+            <div class="col-12">
+                <div class="card shadow-sm border-0 mt-4">
+                    <div class="card-header" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+                        <h5 class="mb-0 text-white text-center">
+                            <i class="fas fa-medal me-2"></i>
+                            تقارير الجودة
+                        </h5>
+                    </div>
+                    <div class="card-body py-4">
+                        <div class="row g-3">
+                            <!-- Violations Card -->
+                            <div class="col-md-4">
+                                <div class="card h-100 shadow-sm border-0">
+                                    <div class="card-header text-white" style="background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);">
+                                        <h6 class="mb-0 text-center">
+                                            <i class="fas fa-exclamation-triangle me-2"></i>
+                                            المخالفات
+                                        </h6>
+                                    </div>
+                                    <div class="card-body text-center">
+                                        @php
+                                            $violationsRoute = ($project ?? 'riyadh') === 'madinah' 
+                                                ? route('admin.quality.violations.madinah')
+                                                : route('admin.quality.violations.riyadh');
+                                        @endphp
+                                        <div class="mb-3">
+                                            <i class="fas fa-ban fa-3x" style="color: #eb3349;"></i>
+                                        </div>
+                                        <a href="{{ $violationsRoute }}" 
+                                           class="btn btn-sm shadow-sm"
+                                           style="background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%); color: white; min-width: 150px;">
+                                            <i class="fas fa-list me-1"></i>
+                                            عرض المخالفات
+                                        </a>
+                                        <p class="text-muted mt-3 mb-0" style="font-size: 0.85rem;">
+                                            عرض جميع مخالفات أوامر العمل
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Extensions Card -->
+                            <div class="col-md-4">
+                                <div class="card h-100 shadow-sm border-0">
+                                    <div class="card-header text-white" style="background: linear-gradient(135deg, #f2994a 0%, #f2c94c 100%);">
+                                        <h6 class="mb-0 text-center">
+                                            <i class="fas fa-calendar-plus me-2"></i>
+                                            التمديدات
+                                        </h6>
+                                    </div>
+                                    <div class="card-body text-center">
+                                        @php
+                                            $extensionsRoute = ($project ?? 'riyadh') === 'madinah' 
+                                                ? route('admin.quality.extensions.madinah')
+                                                : route('admin.quality.extensions.riyadh');
+                                        @endphp
+                                        <div class="mb-3">
+                                            <i class="fas fa-clock fa-3x" style="color: #f2994a;"></i>
+                                        </div>
+                                        <a href="{{ $extensionsRoute }}" 
+                                           class="btn btn-sm shadow-sm"
+                                           style="background: linear-gradient(135deg, #f2994a 0%, #f2c94c 100%); color: white; min-width: 150px;">
+                                            <i class="fas fa-list me-1"></i>
+                                            عرض التمديدات
+                                        </a>
+                                        <p class="text-muted mt-3 mb-0" style="font-size: 0.85rem;">
+                                            عرض جميع تمديدات أوامر العمل
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Inspections Card -->
+                            <div class="col-md-4">
+                                <div class="card h-100 shadow-sm border-0">
+                                    <div class="card-header text-white" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                                        <h6 class="mb-0 text-center">
+                                            <i class="fas fa-clipboard-check me-2"></i>
+                                            الاختبارات
+                                        </h6>
+                                    </div>
+                                    <div class="card-body text-center">
+                                        @php
+                                            $inspectionsRoute = ($project ?? 'riyadh') === 'madinah' 
+                                                ? route('admin.quality.inspections.madinah')
+                                                : route('admin.quality.inspections.riyadh');
+                                        @endphp
+                                        <div class="mb-3">
+                                            <i class="fas fa-tasks fa-3x" style="color: #4facfe;"></i>
+                                        </div>
+                                        <a href="{{ $inspectionsRoute }}" 
+                                           class="btn btn-sm shadow-sm"
+                                           style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; min-width: 150px;">
+                                            <i class="fas fa-list me-1"></i>
+                                            عرض الاختبارات
+                                        </a>
+                                        <p class="text-muted mt-3 mb-0" style="font-size: 0.85rem;">
+                                            عرض جميع اختبارات الجودة
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Quick Stats Overview -->
                 <div class="col-12">
                     <div class="card shadow-sm border-0 mt-4">

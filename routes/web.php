@@ -353,7 +353,26 @@ Route::post('licenses/save-evacuation-data-simple', [\App\Http\Controllers\Admin
     Route::get('work-orders/status/completed/madinah', [App\Http\Controllers\Admin\WorkOrderController::class, 'statusCompletedMadinah'])->name('work-orders.status.completed.madinah');
     Route::get('work-orders/survey-results/riyadh', [App\Http\Controllers\Admin\WorkOrderController::class, 'surveyResultsRiyadh'])->name('work-orders.survey.riyadh');
     Route::get('work-orders/survey-results/madinah', [App\Http\Controllers\Admin\WorkOrderController::class, 'surveyResultsMadinah'])->name('work-orders.survey.madinah');
+    Route::get('work-orders/survey-results/{city}/export', [App\Http\Controllers\Admin\WorkOrderController::class, 'exportSurveyNeeds'])->name('work-orders.survey.export');
+    Route::get('work-orders/completion-files/riyadh', [App\Http\Controllers\Admin\WorkOrderController::class, 'completionFilesRiyadh'])->name('work-orders.completion.riyadh');
+    Route::get('work-orders/completion-files/madinah', [App\Http\Controllers\Admin\WorkOrderController::class, 'completionFilesMadinah'])->name('work-orders.completion.madinah');
+    Route::get('work-orders/completion-files/{city}/export', [App\Http\Controllers\Admin\WorkOrderController::class, 'exportCompletionFiles'])->name('work-orders.completion.export');
+    Route::get('work-orders/{id}/completion-files', [App\Http\Controllers\Admin\WorkOrderController::class, 'getCompletionFiles'])->name('work-orders.completion.files');
     Route::post('work-orders/{id}/mark-surveyed', [App\Http\Controllers\Admin\WorkOrderController::class, 'markAsSurveyed'])->name('work-orders.mark-surveyed');
+    
+    // Quality Reports Routes
+    Route::get('quality/violations/riyadh', [App\Http\Controllers\Admin\WorkOrderController::class, 'violationsRiyadh'])->name('quality.violations.riyadh');
+    Route::get('quality/violations/madinah', [App\Http\Controllers\Admin\WorkOrderController::class, 'violationsMadinah'])->name('quality.violations.madinah');
+    Route::get('quality/violations/{city}/export', [App\Http\Controllers\Admin\WorkOrderController::class, 'exportViolations'])->name('quality.violations.export');
+    Route::get('quality/safety-violations/riyadh', [App\Http\Controllers\Admin\WorkOrderController::class, 'safetyViolationsRiyadh'])->name('quality.safety-violations.riyadh');
+    Route::get('quality/safety-violations/madinah', [App\Http\Controllers\Admin\WorkOrderController::class, 'safetyViolationsMadinah'])->name('quality.safety-violations.madinah');
+    Route::get('quality/safety-violations/{city}/export', [App\Http\Controllers\Admin\WorkOrderController::class, 'exportSafetyViolations'])->name('quality.safety-violations.export');
+Route::get('quality/extensions/riyadh', [App\Http\Controllers\Admin\WorkOrderController::class, 'extensionsRiyadh'])->name('quality.extensions.riyadh');
+Route::get('quality/extensions/madinah', [App\Http\Controllers\Admin\WorkOrderController::class, 'extensionsMadinah'])->name('quality.extensions.madinah');
+Route::get('quality/extensions/{city}/export', [App\Http\Controllers\Admin\WorkOrderController::class, 'exportExtensions'])->name('quality.extensions.export');
+    Route::get('quality/inspections/riyadh', [App\Http\Controllers\Admin\WorkOrderController::class, 'inspectionsRiyadh'])->name('quality.inspections.riyadh');
+    Route::get('quality/inspections/madinah', [App\Http\Controllers\Admin\WorkOrderController::class, 'inspectionsMadinah'])->name('quality.inspections.madinah');
+    Route::get('quality/inspections/{city}/export', [App\Http\Controllers\Admin\WorkOrderController::class, 'exportInspections'])->name('quality.inspections.export');
     
     // تقارير الإنتاجية حسب المدينة
     Route::get('work-orders/productivity/riyadh', [App\Http\Controllers\Admin\WorkOrderController::class, 'riyadhProductivity'])->name('work-orders.productivity.riyadh');

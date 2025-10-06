@@ -19,6 +19,11 @@
                             </p>
                         </div>
                         <div>
+                            <a href="{{ route('admin.work-orders.survey.export', ['city' => 'riyadh']) }}" 
+                               class="btn btn-success btn-lg shadow-sm me-2">
+                                <i class="fas fa-file-excel me-2"></i>
+                                تصدير Excel
+                            </a>
                             <a href="/admin/work-orders/productivity/riyadh" 
                                class="btn btn-light btn-lg shadow-sm">
                                 <i class="fas fa-arrow-right me-2"></i>
@@ -76,8 +81,9 @@
                                 <tr>
                                     <th class="text-center">#</th>
                                     <th>رقم أمر العمل</th>
-                                    <th class="text-center">حالة التنفيذ</th>
-                                    <th class="text-center">تاريخ الإنشاء</th>
+                                    <th>نوع أمر العمل</th>
+                                    <th class="text-center">تاريخ الاعتماد</th>
+                                    <th class="text-center">نتائج المسح</th>
                                     <th class="text-center">الإجراءات</th>
                                 </tr>
                             </thead>
@@ -88,14 +94,40 @@
                                     <td>
                                         <strong>{{ $order->work_order_number }}</strong>
                                     </td>
-                                    <td class="text-center">
-                                        <span class="badge bg-warning text-dark">
-                                            <i class="fas fa-exclamation-triangle me-1"></i>
-                                            تحتاج للمسح
-                                        </span>
+                                    <td>
+                                        <span class="text-muted small">{{ $order->work_type ?? '-' }}</span>
                                     </td>
                                     <td class="text-center">
-                                        {{ $order->created_at ? $order->created_at->format('Y-m-d') : '-' }}
+                                        {{ $order->approval_date ? $order->approval_date->format('Y-m-d') : '-' }}
+                                    </td>
+                                    <td class="text-center">
+                                        @php
+                                            $surveysCount = $order->surveys()->count();
+                                            $surveysWithFiles = $order->surveys()->has('files')->count();
+                                            $totalFiles = $order->surveys()->withCount('files')->get()->sum('files_count');
+                                        @endphp
+                                        @if($surveysCount > 0)
+                                            <span class="badge bg-info">
+                                                <i class="fas fa-clipboard-list me-1"></i>
+                                                {{ $surveysCount }} مسح
+                                            </span>
+                                            @if($totalFiles > 0)
+                                                <span class="badge bg-success ms-1">
+                                                    <i class="fas fa-file me-1"></i>
+                                                    {{ $totalFiles }} ملف
+                                                </span>
+                                            @else
+                                                <span class="badge bg-danger ms-1">
+                                                    <i class="fas fa-times me-1"></i>
+                                                    بدون ملفات
+                                                </span>
+                                            @endif
+                                        @else
+                                            <span class="badge bg-secondary">
+                                                <i class="fas fa-minus me-1"></i>
+                                                لا يوجد
+                                            </span>
+                                        @endif
                                     </td>
                                     <td class="text-center">
                                         <a href="{{ route('admin.work-orders.show', $order->id) }}" 
@@ -103,11 +135,6 @@
                                            title="عرض التفاصيل">
                                             <i class="fas fa-eye"></i>
                                         </a>
-                                        <button onclick="markAsSurveyed({{ $order->id }})" 
-                                                class="btn btn-sm btn-success" 
-                                                title="تم المسح">
-                                            <i class="fas fa-check"></i>
-                                        </button>
                                     </td>
                                 </tr>
                                 @endforeach
@@ -156,35 +183,7 @@
 
 @push('scripts')
 <script>
-function markAsSurveyed(workOrderId) {
-    if (!confirm('هل تريد تحديد هذا الأمر كـ "تم المسح"؟')) {
-        return;
-    }
-    
-    fetch(`/admin/work-orders/${workOrderId}/mark-surveyed`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-        },
-        body: JSON.stringify({
-            survey_date: new Date().toISOString().split('T')[0]
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert('✓ تم تحديث حالة المسح بنجاح');
-            location.reload();
-        } else {
-            alert('حدث خطأ: ' + data.message);
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('حدث خطأ في الاتصال');
-    });
-}
+// No additional scripts needed
 </script>
 @endpush
 @endsection

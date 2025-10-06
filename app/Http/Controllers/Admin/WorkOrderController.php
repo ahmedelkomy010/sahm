@@ -472,14 +472,26 @@ class WorkOrderController extends Controller
     public function surveyResultsRiyadh()
     {
         // جلب أوامر العمل التي لم يتم مسحها - الرياض
-        $workOrders = WorkOrder::whereNull('survey_date')
-            ->where('city', 'الرياض')
+        // فقط الأوامر التي ليس لديها surveys أو surveys بدون ملفات
+        $workOrders = WorkOrder::where('city', 'الرياض')
+            ->where(function($query) {
+                $query->whereDoesntHave('surveys')
+                      ->orWhereHas('surveys', function($q) {
+                          $q->whereDoesntHave('files');
+                      });
+            })
+            ->with(['surveys.files'])  // تحميل العلاقات مسبقاً لتحسين الأداء
             ->orderBy('created_at', 'desc')
             ->paginate(20);
         
         // حساب إجمالي القيمة المبدئية
-        $totalValue = WorkOrder::whereNull('survey_date')
-            ->where('city', 'الرياض')
+        $totalValue = WorkOrder::where('city', 'الرياض')
+            ->where(function($query) {
+                $query->whereDoesntHave('surveys')
+                      ->orWhereHas('surveys', function($q) {
+                          $q->whereDoesntHave('files');
+                      });
+            })
             ->sum('order_value_without_consultant');
         
         return view('admin.work_orders.survey-results-riyadh', compact('workOrders', 'totalValue'));
@@ -491,14 +503,26 @@ class WorkOrderController extends Controller
     public function surveyResultsMadinah()
     {
         // جلب أوامر العمل التي لم يتم مسحها - المدينة المنورة
-        $workOrders = WorkOrder::whereNull('survey_date')
-            ->where('city', 'المدينة المنورة')
+        // فقط الأوامر التي ليس لديها surveys أو surveys بدون ملفات
+        $workOrders = WorkOrder::where('city', 'المدينة المنورة')
+            ->where(function($query) {
+                $query->whereDoesntHave('surveys')
+                      ->orWhereHas('surveys', function($q) {
+                          $q->whereDoesntHave('files');
+                      });
+            })
+            ->with(['surveys.files'])  // تحميل العلاقات مسبقاً لتحسين الأداء
             ->orderBy('created_at', 'desc')
             ->paginate(20);
         
         // حساب إجمالي القيمة المبدئية
-        $totalValue = WorkOrder::whereNull('survey_date')
-            ->where('city', 'المدينة المنورة')
+        $totalValue = WorkOrder::where('city', 'المدينة المنورة')
+            ->where(function($query) {
+                $query->whereDoesntHave('surveys')
+                      ->orWhereHas('surveys', function($q) {
+                          $q->whereDoesntHave('files');
+                      });
+            })
             ->sum('order_value_without_consultant');
         
         return view('admin.work_orders.survey-results-madinah', compact('workOrders', 'totalValue'));
@@ -1202,6 +1226,512 @@ class WorkOrderController extends Controller
                 'success' => false,
                 'message' => 'حدث خطأ أثناء تحديث الإشعارات'
             ], 500);
+        }
+    }
+
+    /**
+     * عرض أوامر العمل التي لم يتم رفع ملفات انتهاء العمل - الرياض
+     */
+    public function completionFilesRiyadh()
+    {
+        // جلب أوامر العمل التي لا يوجد عليها completion files
+        $workOrders = WorkOrder::where('city', 'الرياض')
+            ->whereDoesntHave('files', function($q) {
+                $q->where('file_category', 'completion_files');
+            })
+            ->withCount(['files as completion_files_count' => function($q) {
+                $q->where('file_category', 'completion_files');
+            }])
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
+        
+        // حساب إجمالي القيمة المبدئية
+        $totalValue = WorkOrder::where('city', 'الرياض')
+            ->whereDoesntHave('files', function($q) {
+                $q->where('file_category', 'completion_files');
+            })
+            ->sum('order_value_without_consultant');
+        
+        return view('admin.work_orders.completion-files-riyadh', compact('workOrders', 'totalValue'));
+    }
+
+    /**
+     * عرض أوامر العمل التي لم يتم رفع ملفات انتهاء العمل - المدينة المنورة
+     */
+    public function completionFilesMadinah()
+    {
+        // جلب أوامر العمل التي لا يوجد عليها completion files
+        $workOrders = WorkOrder::where('city', 'المدينة المنورة')
+            ->whereDoesntHave('files', function($q) {
+                $q->where('file_category', 'completion_files');
+            })
+            ->withCount(['files as completion_files_count' => function($q) {
+                $q->where('file_category', 'completion_files');
+            }])
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
+        
+        // حساب إجمالي القيمة المبدئية
+        $totalValue = WorkOrder::where('city', 'المدينة المنورة')
+            ->whereDoesntHave('files', function($q) {
+                $q->where('file_category', 'completion_files');
+            })
+            ->sum('order_value_without_consultant');
+        
+        return view('admin.work_orders.completion-files-madinah', compact('workOrders', 'totalValue'));
+    }
+
+    /**
+     * تصدير أوامر العمل التي تحتاج لرفع ملفات إلى Excel
+     */
+    public function exportCompletionFiles($city)
+    {
+        try {
+            // زيادة الـ Memory Limit
+            ini_set('memory_limit', '2048M');
+            set_time_limit(600);
+            
+            // تحديد اسم المدينة بالعربي
+            $cityName = $city === 'riyadh' ? 'الرياض' : 'المدينة المنورة';
+            
+            // جلب أوامر العمل التي لا يوجد عليها completion files
+            $workOrders = \App\Models\WorkOrder::where('city', $cityName)
+                ->whereDoesntHave('files', function($q) {
+                    $q->where('file_category', 'completion_files');
+                })
+                ->withCount(['files as completion_files_count' => function($q) {
+                    $q->where('file_category', 'completion_files');
+                }])
+                ->orderBy('created_at', 'desc')
+                ->get();
+            
+            // إنشاء ملف Excel
+            $fileName = 'completion_files_needs_' . $city . '_' . date('Y-m-d_H-i-s') . '.xlsx';
+            
+            return \Maatwebsite\Excel\Facades\Excel::download(
+                new \App\Exports\CompletionFilesExport($workOrders, $cityName),
+                $fileName
+            );
+            
+        } catch (\Exception $e) {
+            \Log::error('Error in exportCompletionFiles: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'حدث خطأ أثناء تصدير البيانات: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * جلب ملفات انتهاء العمل لأمر معين (API)
+     */
+    public function getCompletionFiles($id)
+    {
+        try {
+            $workOrder = WorkOrder::findOrFail($id);
+            
+            $files = WorkOrderFile::where('work_order_id', $id)
+                ->where('file_category', 'completion_files')
+                ->orderBy('created_at', 'desc')
+                ->get();
+            
+            return response()->json([
+                'success' => true,
+                'files' => $files
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * تصدير أوامر العمل التي تحتاج للمسح إلى Excel
+     */
+    public function exportSurveyNeeds($city)
+    {
+        try {
+            // زيادة الـ Memory Limit
+            ini_set('memory_limit', '2048M');
+            set_time_limit(600); // 10 minutes
+            
+            // تحديد اسم المدينة بالعربي
+            $cityName = $city === 'riyadh' ? 'الرياض' : 'المدينة المنورة';
+            
+            \Log::info('Export Survey Needs started', ['city' => $city, 'cityName' => $cityName]);
+            
+            // جلب أوامر العمل التي تحتاج للمسح (بدون eager loading)
+            $workOrders = WorkOrder::where('city', $cityName)
+                ->where(function($query) {
+                    $query->whereDoesntHave('surveys')
+                          ->orWhereHas('surveys', function($q) {
+                              $q->whereDoesntHave('files');
+                          });
+                })
+                ->select('id', 'order_number', 'work_type', 'approval_date', 'city', 'created_at')
+                ->orderBy('created_at', 'desc')
+                ->get();
+            
+            // Load relations بشكل منفصل وأخف
+            $workOrders->load(['surveys:id,work_order_id', 'surveys.files:id,survey_id']);
+            
+            \Log::info('Work orders fetched', ['count' => $workOrders->count()]);
+            
+            // إنشاء ملف Excel
+            $fileName = 'survey_needs_' . $city . '_' . date('Y-m-d_H-i-s') . '.xlsx';
+            
+            \Log::info('Creating Excel export', ['fileName' => $fileName]);
+            
+            return \Maatwebsite\Excel\Facades\Excel::download(
+                new \App\Exports\SurveyNeedsExport($workOrders, $cityName),
+                $fileName
+            );
+            
+        } catch (\Exception $e) {
+            \Log::error('Error in exportSurveyNeeds: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'city' => $city ?? null
+            ]);
+            return redirect()->back()->with('error', 'حدث خطأ أثناء تصدير البيانات: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * عرض صفحة المخالفات للرياض
+     */
+    public function violationsRiyadh()
+    {
+        $violations = \App\Models\LicenseViolation::with('workOrder')
+            ->whereHas('workOrder', function($q) {
+                $q->where('city', 'الرياض');
+            })
+            ->orWhereHas('workOrder', function($q) {
+                $q->where('city', 'riyadh');
+            })
+            ->orderBy('violation_date', 'desc')
+            ->paginate(20);
+
+        $violationsCount = \App\Models\LicenseViolation::whereHas('workOrder', function($q) {
+            $q->where('city', 'الرياض')->orWhere('city', 'riyadh');
+        })->count();
+
+        $totalAmount = \App\Models\LicenseViolation::whereHas('workOrder', function($q) {
+            $q->where('city', 'الرياض')->orWhere('city', 'riyadh');
+        })->sum('violation_amount');
+
+        return view('admin.quality.violations-riyadh', compact('violations', 'violationsCount', 'totalAmount'));
+    }
+
+    /**
+     * عرض صفحة المخالفات للمدينة المنورة
+     */
+    public function violationsMadinah()
+    {
+        $violations = \App\Models\LicenseViolation::with('workOrder')
+            ->whereHas('workOrder', function($q) {
+                $q->where('city', 'المدينة المنورة');
+            })
+            ->orWhereHas('workOrder', function($q) {
+                $q->where('city', 'madinah');
+            })
+            ->orderBy('violation_date', 'desc')
+            ->paginate(20);
+
+        $violationsCount = \App\Models\LicenseViolation::whereHas('workOrder', function($q) {
+            $q->where('city', 'المدينة المنورة')->orWhere('city', 'madinah');
+        })->count();
+
+        $totalAmount = \App\Models\LicenseViolation::whereHas('workOrder', function($q) {
+            $q->where('city', 'المدينة المنورة')->orWhere('city', 'madinah');
+        })->sum('violation_amount');
+
+        return view('admin.quality.violations-madinah', compact('violations', 'violationsCount', 'totalAmount'));
+    }
+
+    /**
+     * عرض صفحة التمديدات للرياض
+     */
+    public function extensionsRiyadh()
+    {
+        $licenses = \App\Models\License::with(['workOrder', 'extensions'])
+            ->whereHas('workOrder', function($q) {
+                $q->where('city', 'الرياض')->orWhere('city', 'riyadh');
+            })
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
+
+        $licensesCount = \App\Models\License::whereHas('workOrder', function($q) {
+            $q->where('city', 'الرياض')->orWhere('city', 'riyadh');
+        })->count();
+
+        $extendedCount = \App\Models\License::whereHas('workOrder', function($q) {
+            $q->where('city', 'الرياض')->orWhere('city', 'riyadh');
+        })->has('extensions')->count();
+
+        return view('admin.quality.extensions-riyadh', compact('licenses', 'licensesCount', 'extendedCount'));
+    }
+
+    /**
+     * عرض صفحة التمديدات للمدينة المنورة
+     */
+    public function extensionsMadinah()
+    {
+        $licenses = \App\Models\License::with(['workOrder', 'extensions'])
+            ->whereHas('workOrder', function($q) {
+                $q->where('city', 'المدينة المنورة')->orWhere('city', 'madinah');
+            })
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
+
+        $licensesCount = \App\Models\License::whereHas('workOrder', function($q) {
+            $q->where('city', 'المدينة المنورة')->orWhere('city', 'madinah');
+        })->count();
+
+        $extendedCount = \App\Models\License::whereHas('workOrder', function($q) {
+            $q->where('city', 'المدينة المنورة')->orWhere('city', 'madinah');
+        })->has('extensions')->count();
+
+        return view('admin.quality.extensions-madinah', compact('licenses', 'licensesCount', 'extendedCount'));
+    }
+
+    /**
+     * تصدير التمديدات لمدينة محددة
+     */
+    public function exportExtensions($city)
+    {
+        try {
+            // زيادة الـ Memory Limit
+            ini_set('memory_limit', '2048M');
+            set_time_limit(600);
+            
+            // تحديد اسم المدينة بالعربي
+            $cityName = $city === 'riyadh' ? 'الرياض' : 'المدينة المنورة';
+            
+            // جلب رخص الحفر
+            $licenses = \App\Models\License::with(['workOrder', 'extensions'])
+                ->whereHas('workOrder', function($q) use ($cityName, $city) {
+                    $q->where('city', $cityName)->orWhere('city', $city);
+                })
+                ->orderBy('created_at', 'desc')
+                ->get();
+            
+            // إنشاء ملف Excel
+            $fileName = 'extensions_' . $city . '_' . date('Y-m-d_H-i-s') . '.xlsx';
+            
+            return \Maatwebsite\Excel\Facades\Excel::download(
+                new \App\Exports\ExtensionsExport($licenses, $cityName),
+                $fileName
+            );
+            
+        } catch (\Exception $e) {
+            \Log::error('Error in exportExtensions: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'حدث خطأ أثناء تصدير البيانات: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * عرض صفحة الاختبارات للرياض
+     */
+    public function inspectionsRiyadh()
+    {
+        $workOrders = WorkOrder::with(['licenses'])
+            ->where(function($q) {
+                $q->where('city', 'الرياض')->orWhere('city', 'riyadh');
+            })
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
+
+        $totalOrders = WorkOrder::where(function($q) {
+            $q->where('city', 'الرياض')->orWhere('city', 'riyadh');
+        })->count();
+
+        $ordersWithTests = WorkOrder::where(function($q) {
+            $q->where('city', 'الرياض')->orWhere('city', 'riyadh');
+        })->whereHas('licenses', function($q) {
+            $q->where(function($query) {
+                $query->where('total_tests_count', '>', 0)
+                      ->orWhereNotNull('lab_tests_data');
+            });
+        })->count();
+
+        return view('admin.quality.inspections-riyadh', compact('workOrders', 'totalOrders', 'ordersWithTests'));
+    }
+
+    /**
+     * عرض صفحة الاختبارات للمدينة المنورة
+     */
+    public function inspectionsMadinah()
+    {
+        $workOrders = WorkOrder::with(['licenses'])
+            ->where(function($q) {
+                $q->where('city', 'المدينة المنورة')->orWhere('city', 'madinah');
+            })
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
+
+        $totalOrders = WorkOrder::where(function($q) {
+            $q->where('city', 'المدينة المنورة')->orWhere('city', 'madinah');
+        })->count();
+
+        $ordersWithTests = WorkOrder::where(function($q) {
+            $q->where('city', 'المدينة المنورة')->orWhere('city', 'madinah');
+        })->whereHas('licenses', function($q) {
+            $q->where(function($query) {
+                $query->where('total_tests_count', '>', 0)
+                      ->orWhereNotNull('lab_tests_data');
+            });
+        })->count();
+
+        return view('admin.quality.inspections-madinah', compact('workOrders', 'totalOrders', 'ordersWithTests'));
+    }
+
+    /**
+     * تصدير الاختبارات لمدينة محددة
+     */
+    public function exportInspections($city)
+    {
+        try {
+            // زيادة الـ Memory Limit
+            ini_set('memory_limit', '2048M');
+            set_time_limit(600);
+            
+            // تحديد اسم المدينة بالعربي
+            $cityName = $city === 'riyadh' ? 'الرياض' : 'المدينة المنورة';
+            
+            // جلب أوامر العمل مع الاختبارات
+            $workOrders = WorkOrder::with(['licenses'])
+                ->where(function($q) use ($cityName, $city) {
+                    $q->where('city', $cityName)->orWhere('city', $city);
+                })
+                ->orderBy('created_at', 'desc')
+                ->get();
+            
+            // إنشاء ملف Excel
+            $fileName = 'inspections_' . $city . '_' . date('Y-m-d_H-i-s') . '.xlsx';
+            
+            return \Maatwebsite\Excel\Facades\Excel::download(
+                new \App\Exports\InspectionsExport($workOrders, $cityName),
+                $fileName
+            );
+            
+        } catch (\Exception $e) {
+            \Log::error('Error in exportInspections: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'حدث خطأ أثناء تصدير البيانات: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * عرض صفحة مخالفات السلامة للرياض
+     */
+    public function safetyViolationsRiyadh()
+    {
+        $violations = \App\Models\SafetyViolation::with('workOrder')
+            ->whereHas('workOrder', function($q) {
+                $q->where('city', 'الرياض')->orWhere('city', 'riyadh');
+            })
+            ->orderBy('violation_date', 'desc')
+            ->paginate(20);
+
+        $violationsCount = \App\Models\SafetyViolation::whereHas('workOrder', function($q) {
+            $q->where('city', 'الرياض')->orWhere('city', 'riyadh');
+        })->count();
+
+        $totalAmount = \App\Models\SafetyViolation::whereHas('workOrder', function($q) {
+            $q->where('city', 'الرياض')->orWhere('city', 'riyadh');
+        })->sum('violation_amount');
+
+        return view('admin.quality.safety-violations-riyadh', compact('violations', 'violationsCount', 'totalAmount'));
+    }
+
+    /**
+     * عرض صفحة مخالفات السلامة للمدينة المنورة
+     */
+    public function safetyViolationsMadinah()
+    {
+        $violations = \App\Models\SafetyViolation::with('workOrder')
+            ->whereHas('workOrder', function($q) {
+                $q->where('city', 'المدينة المنورة')->orWhere('city', 'madinah');
+            })
+            ->orderBy('violation_date', 'desc')
+            ->paginate(20);
+
+        $violationsCount = \App\Models\SafetyViolation::whereHas('workOrder', function($q) {
+            $q->where('city', 'المدينة المنورة')->orWhere('city', 'madinah');
+        })->count();
+
+        $totalAmount = \App\Models\SafetyViolation::whereHas('workOrder', function($q) {
+            $q->where('city', 'المدينة المنورة')->orWhere('city', 'madinah');
+        })->sum('violation_amount');
+
+        return view('admin.quality.safety-violations-madinah', compact('violations', 'violationsCount', 'totalAmount'));
+    }
+
+    /**
+     * تصدير مخالفات السلامة إلى Excel
+     */
+    public function exportSafetyViolations($city)
+    {
+        try {
+            // زيادة الـ Memory Limit
+            ini_set('memory_limit', '2048M');
+            set_time_limit(600);
+            
+            // تحديد اسم المدينة بالعربي
+            $cityName = $city === 'riyadh' ? 'الرياض' : 'المدينة المنورة';
+            
+            // جلب مخالفات السلامة
+            $violations = \App\Models\SafetyViolation::with('workOrder')
+                ->whereHas('workOrder', function($q) use ($cityName, $city) {
+                    $q->where('city', $cityName)->orWhere('city', $city);
+                })
+                ->orderBy('violation_date', 'desc')
+                ->get();
+            
+            // إنشاء ملف Excel
+            $fileName = 'safety_violations_' . $city . '_' . date('Y-m-d_H-i-s') . '.xlsx';
+            
+            return \Maatwebsite\Excel\Facades\Excel::download(
+                new \App\Exports\SafetyViolationsExport($violations, $cityName),
+                $fileName
+            );
+            
+        } catch (\Exception $e) {
+            \Log::error('Error in exportSafetyViolations: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'حدث خطأ أثناء تصدير البيانات: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * تصدير المخالفات العامة إلى Excel
+     */
+    public function exportViolations($city)
+    {
+        try {
+            // زيادة الـ Memory Limit
+            ini_set('memory_limit', '2048M');
+            set_time_limit(600);
+            
+            // تحديد اسم المدينة بالعربي
+            $cityName = $city === 'riyadh' ? 'الرياض' : 'المدينة المنورة';
+            
+            // جلب المخالفات العامة
+            $violations = \App\Models\LicenseViolation::with('workOrder')
+                ->whereHas('workOrder', function($q) use ($cityName, $city) {
+                    $q->where('city', $cityName)->orWhere('city', $city);
+                })
+                ->orderBy('violation_date', 'desc')
+                ->get();
+            
+            // إنشاء ملف Excel
+            $fileName = 'violations_' . $city . '_' . date('Y-m-d_H-i-s') . '.xlsx';
+            
+            return \Maatwebsite\Excel\Facades\Excel::download(
+                new \App\Exports\ViolationsExport($violations, $cityName),
+                $fileName
+            );
+            
+        } catch (\Exception $e) {
+            \Log::error('Error in exportViolations: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'حدث خطأ أثناء تصدير البيانات: ' . $e->getMessage());
         }
     }
 } 
