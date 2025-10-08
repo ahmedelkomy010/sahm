@@ -3996,12 +3996,12 @@ class WorkOrderController extends Controller
                 'safety_officer' => 'nullable|string|max:255',
                 'inspection_date' => 'nullable|date',
                 'non_compliance_reasons' => 'required_if:safety_status,غير مطابق|nullable|string',
-                'permits_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240',
-                'team_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240',
-                'equipment_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240',
-                'general_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240',
-                'tbt_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240',
-                'non_compliance_attachments.*' => 'nullable|file|mimes:jpeg,png,jpg,gif,pdf,doc,docx|max:10240',
+                'permits_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:51200',
+                'team_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:51200',
+                'equipment_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:51200',
+                'general_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:51200',
+                'tbt_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:51200',
+                'non_compliance_attachments.*' => 'nullable|file|mimes:jpeg,png,jpg,gif,pdf,doc,docx|max:51200',
             ]);
 
             // حفظ البيانات الحالية في سجل السلامة إذا تم تغيير أي منها

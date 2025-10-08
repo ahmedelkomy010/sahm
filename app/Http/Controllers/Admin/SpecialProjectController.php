@@ -341,7 +341,7 @@ class SpecialProjectController extends Controller
     {
         try {
             $request->validate([
-                'attachment' => 'required|file|max:10240', // 10MB max
+                'attachment' => 'required|file|max:51200', // 10MB max
             ]);
 
             $revenue = \App\Models\SpecialProjectRevenue::where('project_id', $project->id)

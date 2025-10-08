@@ -232,6 +232,112 @@
     <!-- Stack للسكريبتات -->
     @stack('scripts')
 
+    <!-- Bootstrap Dropdowns Initialization -->
+    <script>
+    (function() {
+        'use strict';
+        
+        // دالة لتفعيل الـ dropdowns
+        function initializeDropdowns() {
+            // تأكد من أن Bootstrap موجود
+            if (typeof bootstrap === 'undefined' || !bootstrap.Dropdown) {
+                console.warn('Bootstrap is not loaded yet, retrying...');
+                return false;
+            }
+            
+            console.log('Initializing Bootstrap dropdowns...');
+            
+            // تفعيل جميع الـ dropdowns
+            const dropdownElements = document.querySelectorAll('[data-bs-toggle="dropdown"]');
+            console.log(`Found ${dropdownElements.length} dropdown elements`);
+            
+            let successCount = 0;
+            dropdownElements.forEach(function(element) {
+                try {
+                    // شيل أي instance قديم
+                    const existingInstance = bootstrap.Dropdown.getInstance(element);
+                    if (existingInstance) {
+                        existingInstance.dispose();
+                    }
+                    // فعّل الـ dropdown
+                    new bootstrap.Dropdown(element, {
+                        autoClose: true,
+                        boundary: 'viewport'
+                    });
+                    successCount++;
+                } catch(e) {
+                    console.error('Error initializing dropdown:', e);
+                }
+            });
+            
+            console.log(`Successfully initialized ${successCount}/${dropdownElements.length} dropdowns`);
+            return true;
+        }
+        
+        // حاول تفعيل الـ dropdowns عند DOMContentLoaded
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() {
+                setTimeout(initializeDropdowns, 100);
+            });
+        } else {
+            setTimeout(initializeDropdowns, 100);
+        }
+        
+        // حاول تاني بعد تحميل الصفحة بالكامل
+        window.addEventListener('load', function() {
+            setTimeout(initializeDropdowns, 200);
+        });
+        
+        // Fallback: حاول كل شوية لحد ما ينجح
+        let retryCount = 0;
+        const maxRetries = 10;
+        const retryInterval = setInterval(function() {
+            if (initializeDropdowns() || retryCount >= maxRetries) {
+                clearInterval(retryInterval);
+            }
+            retryCount++;
+        }, 300);
+    })();
+    </script>
+
+    <!-- تحميل عداد الإشعارات -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        function updateAllBadges(unreadCount) {
+            const badges = ['notificationBadge', 'notificationBadgeNav'];
+            badges.forEach(badgeId => {
+                const badge = document.getElementById(badgeId);
+                if (badge) {
+                    if (unreadCount > 0) {
+                        badge.textContent = unreadCount;
+                        badge.style.display = 'block';
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                }
+            });
+        }
+        
+        // تحميل أول مرة
+        fetch('/admin/notifications?limit=1')
+            .then(response => response.json())
+            .then(data => {
+                updateAllBadges(data.unread_count);
+            })
+            .catch(error => console.error('Error loading notification count:', error));
+        
+        // تحديث تلقائي كل دقيقة
+        setInterval(function() {
+            fetch('/admin/notifications?limit=1')
+                .then(response => response.json())
+                .then(data => {
+                    updateAllBadges(data.unread_count);
+                })
+                .catch(error => console.error('Error updating notification count:', error));
+        }, 60000); // كل دقيقة
+    });
+    </script>
+
     <script>
     // معالجة الأخطاء العامة
     window.addEventListener('error', function(e) {

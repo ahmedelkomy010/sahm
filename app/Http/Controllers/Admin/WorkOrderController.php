@@ -646,7 +646,7 @@ class WorkOrderController extends Controller
             Log::info('Starting image upload for work order: ' . $workOrder->id);
             
             $request->validate([
-                'images.*' => 'required|file|mimes:jpeg,png,jpg,pdf|max:10240', // 10MB max
+                'images.*' => 'required|file|mimes:jpeg,png,jpg,pdf|max:51200', // 10MB max
             ]);
 
             if (!$request->hasFile('images')) {

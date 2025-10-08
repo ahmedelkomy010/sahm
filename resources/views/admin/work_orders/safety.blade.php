@@ -94,7 +94,7 @@
                                    accept="image/*"
                                    multiple>
                         </div>
-                        <div class="form-text">يمكن رفع عدة صور (JPG, PNG, GIF) - الحد الأقصى 10 ميجابايت لكل صورة</div>
+                        <div class="form-text">يمكن رفع عدة صور (JPG, PNG, GIF) - الحد الأقصى 50 ميجابايت لكل صورة</div>
                         @error('tbt_images.*')
                             <span class="invalid-feedback" role="alert">
                                 <strong>{{ $message }}</strong>
@@ -114,7 +114,7 @@
                                    accept="image/*"
                                    multiple>
                         </div>
-                        <div class="form-text">يمكن رفع عدة صور (JPG, PNG, GIF) - الحد الأقصى 10 ميجابايت لكل صورة</div>
+                        <div class="form-text">يمكن رفع عدة صور (JPG, PNG, GIF) - الحد الأقصى 50 ميجابايت لكل صورة</div>
                         @error('permits_images.*')
                             <span class="invalid-feedback" role="alert">
                                 <strong>{{ $message }}</strong>
@@ -135,7 +135,7 @@
                                    accept="image/*"
                                    multiple>
                         </div>
-                        <div class="form-text">يمكن رفع عدة صور (JPG, PNG, GIF) - الحد الأقصى 10 ميجابايت لكل صورة</div>
+                        <div class="form-text">يمكن رفع عدة صور (JPG, PNG, GIF) - الحد الأقصى 50 ميجابايت لكل صورة</div>
                         @error('team_images.*')
                             <span class="invalid-feedback" role="alert">
                                 <strong>{{ $message }}</strong>
@@ -158,7 +158,7 @@
                                    accept="image/*"
                                    multiple>
                         </div>
-                        <div class="form-text">يمكن رفع عدة صور (JPG, PNG, GIF) - الحد الأقصى 10 ميجابايت لكل صورة</div>
+                        <div class="form-text">يمكن رفع عدة صور (JPG, PNG, GIF) - الحد الأقصى 50 ميجابايت لكل صورة</div>
                         @error('equipment_images.*')
                             <span class="invalid-feedback" role="alert">
                                 <strong>{{ $message }}</strong>
@@ -179,7 +179,7 @@
                                    accept="image/*"
                                    multiple>
                         </div>
-                        <div class="form-text">يمكن رفع عدة صور (JPG, PNG, GIF) - الحد الأقصى 10 ميجابايت لكل صورة</div>
+                        <div class="form-text">يمكن رفع عدة صور (JPG, PNG, GIF) - الحد الأقصى 50 ميجابايت لكل صورة</div>
                         @error('general_images.*')
                             <span class="invalid-feedback" role="alert">
                                 <strong>{{ $message }}</strong>
@@ -421,7 +421,7 @@
                                     id="non_compliance_attachments"
                                     accept="image/*,.pdf,.doc,.docx"
                                     multiple>
-                                <div class="form-text">يمكن رفع عدة ملفات (صور، PDF، Word) - الحد الأقصى 10 ميجابايت لكل ملف</div>
+                                <div class="form-text">يمكن رفع عدة ملفات (صور، PDF، Word) - الحد الأقصى 50 ميجابايت لكل ملف</div>
                                 @error('non_compliance_attachments.*')
                                     <span class="invalid-feedback" role="alert">
                                         <strong>{{ $message }}</strong>

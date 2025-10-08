@@ -24,43 +24,65 @@
 
                     @auth
                         @if(auth()->user()->is_admin)
-                        <!-- إيرادات المشاريع (مشرف النظام فقط) -->
+                        <!-- إيرادات المشاريع -->
                         <a href="{{ route('admin.all-projects-revenues') }}" 
                            class="nav-item nav-link px-3 py-2 rounded {{ request()->routeIs('admin.all-projects-revenues') ? 'active' : '' }}">
                             <i class="fas fa-coins me-1"></i>
                             إيرادات المشاريع
                         </a>
-                        @endif
 
-                        @if(auth()->user()->is_admin)
-                        <div class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle px-3 py-2 rounded text-white {{ request()->is('admin/users*') || request()->is('admin/settings*') || request()->is('admin/reports*') ? 'active' : '' }}" 
-                               href="#" 
-                               id="settingsDropdown"
-                               role="button" 
+                        <!-- التقارير -->
+                        <a href="{{ route('admin.reports.unified') }}" 
+                           class="nav-item nav-link px-3 py-2 rounded {{ request()->routeIs('admin.reports.unified') ? 'active' : '' }}">
+                            <i class="fas fa-file-alt me-1"></i>
+                            التقارير
+                        </a>
+
+                        <!-- إدارة أعضاء فريق العمل -->
+                        <a href="{{ route('admin.users.index') }}" 
+                           class="nav-item nav-link px-3 py-2 rounded {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
+                            <i class="fas fa-users-cog me-1"></i>
+                            إدارة أعضاء فريق العمل
+                        </a>
+
+                        <!-- الإشعارات -->
+                        <div class="dropdown" style="display: inline-block;">
+                            <a class="nav-item nav-link px-3 py-2 rounded position-relative" 
+                               href="javascript:void(0);"
                                data-bs-toggle="dropdown"
+                               id="notificationsNavButton"
+                               role="button"
                                aria-expanded="false">
-                                <i class="fas fa-cog me-1"></i>
-                                الإعدادات
+                                <i class="fas fa-bell me-1"></i>
+                                الإشعارات
+                                <span id="notificationBadgeNav" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display: none; font-size: 0.6rem;">
+                                    0
+                                </span>
                             </a>
-                            <ul class="dropdown-menu" aria-labelledby="settingsDropdown">
-                                <li>
-                                    <a class="dropdown-item" href="{{ route('admin.users.index') }}">
-                                        <i class="fas fa-users-cog me-2"></i>
-                                        إدارة المستخدمين
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" href="{{ route('admin.reports.unified') }}">
-                                        <i class="fas fa-file-alt me-2"></i>
-                                        التقارير العامة للعقد الموحد
-                                    </a>
-                                </li>
-                                <li><a class="dropdown-item" href="#"><i class="fas fa-sliders-h me-2"></i>إعدادات النظام</a></li>
-                                <li><a class="dropdown-item" href="#"><i class="fas fa-database me-2"></i>النسخ الاحتياطي</a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="#"><i class="fas fa-chart-bar me-2"></i>التقارير</a></li>
-                            </ul>
+                        <ul class="dropdown-menu dropdown-menu-end notification-dropdown" aria-labelledby="notificationsNavButton" style="min-width: 350px; max-height: 500px; overflow-y: auto;">
+                            <li>
+                                <div class="d-flex justify-content-between align-items-center px-3 py-2 bg-light border-bottom">
+                                    <h6 class="mb-0 fw-bold">
+                                        <i class="fas fa-bell me-2 text-primary"></i>
+                                        الإشعارات
+                                    </h6>
+                                    <button class="btn btn-sm btn-outline-primary" onclick="markAllAsRead()" title="تعليم الكل كمقروء">
+                                        <i class="fas fa-check-double"></i>
+                                    </button>
+                                </div>
+                            </li>
+                            <li id="notificationsLoaderNav" class="text-center py-4">
+                                <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                    <span class="visually-hidden">جاري التحميل...</span>
+                                </div>
+                                <p class="text-muted small mt-2 mb-0">جاري تحميل الإشعارات...</p>
+                            </li>
+                            <li id="notificationsEmptyNav" style="display: none;" class="text-center py-4 text-muted">
+                                <i class="fas fa-bell-slash fa-2x mb-2 text-muted"></i>
+                                <p class="mb-0">لا توجد إشعارات</p>
+                            </li>
+                            <div id="notificationsListNav"></div>
+                        </ul>
                         </div>
                         @endif
                     @endauth
@@ -70,46 +92,6 @@
             <!-- User Menu -->
             @auth
             <div class="d-flex align-items-center">
-                <!-- Notifications -->
-                <div class="dropdown me-3" id="notificationsDropdown">
-                    <button class="btn btn-link text-white position-relative" 
-                            type="button" 
-                            data-bs-toggle="dropdown" 
-                            id="notificationsButton"
-                            aria-expanded="false"
-                            onclick="loadNotifications()">
-                        <i class="fas fa-bell fs-5"></i>
-                        <span id="notificationBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display: none;">
-                            0
-                            <span class="visually-hidden">إشعارات غير مقروءة</span>
-                        </span>
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end notification-dropdown" aria-labelledby="notificationsButton" style="min-width: 350px; max-height: 500px; overflow-y: auto;">
-                        <li>
-                            <div class="d-flex justify-content-between align-items-center px-3 py-2 bg-light border-bottom">
-                                <h6 class="mb-0 fw-bold">
-                                    <i class="fas fa-bell me-2 text-primary"></i>
-                                    الإشعارات
-                                </h6>
-                                <button class="btn btn-sm btn-outline-primary" onclick="markAllAsRead()" title="تعليم الكل كمقروء">
-                                    <i class="fas fa-check-double"></i>
-                                </button>
-                            </div>
-                        </li>
-                        <li id="notificationsLoader" class="text-center py-4">
-                            <div class="spinner-border spinner-border-sm text-primary" role="status">
-                                <span class="visually-hidden">جاري التحميل...</span>
-                            </div>
-                            <p class="text-muted small mt-2 mb-0">جاري تحميل الإشعارات...</p>
-                        </li>
-                        <li id="notificationsEmpty" style="display: none;" class="text-center py-4 text-muted">
-                            <i class="fas fa-bell-slash fa-2x mb-2 text-muted"></i>
-                            <p class="mb-0">لا توجد إشعارات</p>
-                        </li>
-                        <div id="notificationsList"></div>
-                    </ul>
-                </div>
-
                 <!-- User Profile Dropdown -->
                 <div class="dropdown">
                     <button class="btn btn-link text-white d-flex align-items-center text-decoration-none dropdown-toggle" 
@@ -193,49 +175,27 @@
             </a>
 
             @auth
+                @if(auth()->user()->is_admin)
+                <a href="{{ route('admin.all-projects-revenues') }}" class="nav-link text-dark">
+                    <i class="fas fa-coins me-2"></i>
+                    إيرادات المشاريع
+                </a>
+
+                <a href="{{ route('admin.reports.unified') }}" class="nav-link text-dark">
+                    <i class="fas fa-file-alt me-2"></i>
+                    التقارير
+                </a>
+
+                <a href="{{ route('admin.users.index') }}" class="nav-link text-dark">
+                    <i class="fas fa-users-cog me-2"></i>
+                    إدارة أعضاء فريق العمل
+                </a>
+                @endif
+
                 <a href="{{ route('profile.edit') }}" class="nav-link text-dark">
                     <i class="fas fa-user-edit me-2"></i>
                     حسابي الشخصي
                 </a>
-
-                @if(auth()->user()->is_admin)
-                <!-- Settings Dropdown for Mobile -->
-                <div class="accordion" id="settingsAccordion">
-                    <div class="accordion-item border-0">
-                        <h2 class="accordion-header">
-                            <button class="accordion-button collapsed nav-link text-dark {{ request()->is('admin/users*') || request()->is('admin/settings*') || request()->is('admin/reports*') ? 'active fw-bold text-primary' : '' }}" 
-                                    type="button" 
-                                    data-bs-toggle="collapse" 
-                                    data-bs-target="#settingsCollapse">
-                                <i class="fas fa-cog me-2"></i>
-                                الإعدادات
-                            </button>
-                        </h2>
-                        <div id="settingsCollapse" class="accordion-collapse collapse" data-bs-parent="#settingsAccordion">
-                            <div class="accordion-body p-0">
-                                <a class="nav-link py-2 ps-4 text-dark" href="{{ route('admin.users.index') }}">
-                                    <i class="fas fa-users-cog me-2"></i>
-                                    إدارة المستخدمين
-                                </a>
-                                
-                                <a class="nav-link py-2 ps-4 text-dark" href="#">
-                                    <i class="fas fa-sliders-h me-2"></i>
-                                    إعدادات النظام
-                                </a>
-                                <a class="nav-link py-2 ps-4 text-dark" href="#">
-                                    <i class="fas fa-database me-2"></i>
-                                    النسخ الاحتياطي
-                                </a>
-                                <hr class="my-2">
-                                <a class="nav-link py-2 ps-4 text-dark" href="{{ route('admin.reports.unified') }}">
-                                    <i class="fas fa-file-alt me-2"></i>
-                                    التقارير العامة للعقد الموحد
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                @endif
 
                 <form method="POST" action="{{ route('logout') }}" class="mt-3">
                     @csrf
@@ -291,6 +251,7 @@
     background-color: white;
     transition: all 0.2s ease;
     transform: translateX(-50%);
+    pointer-events: none;
 }
 
 .nav-link:hover:after {
@@ -301,8 +262,6 @@
     background-color: rgba(255, 255, 255, 0.1) !important;
     border-radius: 6px;
 }
-    width: auto;
-
 
 .nav-item.nav-link {
     color: rgba(255, 255, 255, 0.9) !important;
@@ -330,7 +289,6 @@
     border-radius: 0.5rem;
     margin-top: 0.5rem;
     z-index: 1050 !important;
-    position: absolute !important;
 }
 
 .dropdown {
@@ -341,8 +299,19 @@
     cursor: pointer !important;
 }
 
-.dropdown-toggle:hover {
-    opacity: 0.9;
+/* تنسيق الأزرار في الـ navbar */
+.nav-link.btn {
+    border: none !important;
+    padding: 0.5rem 0.75rem !important;
+    text-decoration: none !important;
+}
+
+.nav-link.btn:hover {
+    background-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+.nav-link.btn:focus {
+    box-shadow: none !important;
 }
 
 .dropdown-item {
@@ -469,7 +438,7 @@
     font-weight: 500;
 }
 
-#notificationBadge {
+#notificationBadgeNav {
     animation: pulse 2s infinite;
 }
 
@@ -488,64 +457,75 @@ let notificationsLoaded = false;
 
 // تحميل الإشعارات عند فتح القائمة
 function loadNotifications() {
-    if (notificationsLoaded) return;
+    console.log('loadNotifications called');
+    if (notificationsLoaded) {
+        console.log('Notifications already loaded');
+        return;
+    }
     
+    console.log('Fetching notifications...');
     fetch('/admin/notifications')
         .then(response => response.json())
         .then(data => {
+            console.log('Notifications received:', data);
             notificationsLoaded = true;
-            updateNotificationUI(data);
+            updateNotificationUINav(data);
         })
         .catch(error => {
             console.error('Error loading notifications:', error);
-            document.getElementById('notificationsLoader').style.display = 'none';
-            document.getElementById('notificationsEmpty').style.display = 'block';
+            const loader = document.getElementById('notificationsLoaderNav');
+            const empty = document.getElementById('notificationsEmptyNav');
+            
+            if(loader) loader.style.display = 'none';
+            if(empty) empty.style.display = 'block';
         });
 }
 
-// تحديث واجهة الإشعارات
-function updateNotificationUI(data) {
-    const loader = document.getElementById('notificationsLoader');
-    const empty = document.getElementById('notificationsEmpty');
-    const list = document.getElementById('notificationsList');
-    const badge = document.getElementById('notificationBadge');
+// تحديث واجهة الإشعارات (في الـ navbar)
+function updateNotificationUINav(data) {
+    const loader = document.getElementById('notificationsLoaderNav');
+    const empty = document.getElementById('notificationsEmptyNav');
+    const list = document.getElementById('notificationsListNav');
+    const badge = document.getElementById('notificationBadgeNav');
     
-    loader.style.display = 'none';
+    if(loader) loader.style.display = 'none';
     
     if (data.notifications && data.notifications.length > 0) {
-        list.innerHTML = data.notifications.map(notification => `
-            <li class="notification-item ${notification.is_read ? '' : 'unread'}" 
-                onclick="viewNotification(${notification.id}, ${notification.work_order ? notification.work_order.id : 'null'})">
-                <div class="notification-title">
-                    <i class="fas fa-comment-dots me-2 text-primary"></i>
-                    ${notification.title}
-                </div>
-                <div class="notification-message">
-                    ${notification.message}
-                </div>
-                <div class="notification-footer">
-                    <span class="notification-from">
-                        <i class="fas fa-user me-1"></i>
-                        ${notification.from_user}
-                    </span>
-                    <span class="notification-time">
-                        <i class="fas fa-clock me-1"></i>
-                        ${notification.created_at}
-                    </span>
-                </div>
-            </li>
-        `).join('');
+        if(list) {
+            list.innerHTML = data.notifications.map(notification => `
+                <li class="notification-item ${notification.is_read ? '' : 'unread'}" 
+                    onclick="viewNotification(${notification.id}, ${notification.work_order ? notification.work_order.id : 'null'})">
+                    <div class="notification-title">
+                        <i class="fas fa-comment-dots me-2 text-primary"></i>
+                        ${notification.title}
+                    </div>
+                    <div class="notification-message">
+                        ${notification.message}
+                    </div>
+                    <div class="notification-footer">
+                        <span class="notification-from">
+                            <i class="fas fa-user me-1"></i>
+                            ${notification.from_user}
+                        </span>
+                        <span class="notification-time">
+                            <i class="fas fa-clock me-1"></i>
+                            ${notification.created_at}
+                        </span>
+                    </div>
+                </li>
+            `).join('');
+        }
         
         // تحديث الـ badge
-        if (data.unread_count > 0) {
+        if (badge && data.unread_count > 0) {
             badge.textContent = data.unread_count;
             badge.style.display = 'block';
-        } else {
+        } else if(badge) {
             badge.style.display = 'none';
         }
     } else {
-        empty.style.display = 'block';
-        badge.style.display = 'none';
+        if(empty) empty.style.display = 'block';
+        if(badge) badge.style.display = 'none';
     }
 }
 
@@ -594,51 +574,33 @@ function markAllAsRead() {
     .catch(error => console.error('Error marking all as read:', error));
 }
 
-// تحديث عداد الإشعارات تلقائياً كل دقيقة
-setInterval(() => {
-    fetch('/admin/notifications?limit=1')
-        .then(response => response.json())
-        .then(data => {
-            const badge = document.getElementById('notificationBadge');
-            if (data.unread_count > 0) {
-                badge.textContent = data.unread_count;
-                badge.style.display = 'block';
-            } else {
-                badge.style.display = 'none';
-            }
-        })
-        .catch(error => console.error('Error updating notification count:', error));
-}, 60000); // كل دقيقة
-
-// تحميل عداد الإشعارات عند تحميل الصفحة
-document.addEventListener('DOMContentLoaded', () => {
-    fetch('/admin/notifications?limit=1')
-        .then(response => response.json())
-        .then(data => {
-            const badge = document.getElementById('notificationBadge');
-            if (data.unread_count > 0) {
-                badge.textContent = data.unread_count;
-                badge.style.display = 'block';
-            }
-        })
-        .catch(error => console.error('Error loading notification count:', error));
-});
-
-// تفعيل جميع الـ dropdowns يدوياً لضمان عملها في جميع الصفحات
-window.addEventListener('load', function() {
-    // تأكد من أن Bootstrap محمّل
-    if (typeof bootstrap !== 'undefined') {
-        // فعّل كل الـ dropdowns
-        const dropdownElementList = document.querySelectorAll('.dropdown-toggle');
-        dropdownElementList.forEach(function(dropdownToggleEl) {
-            try {
-                // تأكد إن الـ dropdown مش مفعّل من قبل
-                if (!bootstrap.Dropdown.getInstance(dropdownToggleEl)) {
-                    new bootstrap.Dropdown(dropdownToggleEl);
-                }
-            } catch(e) {
-                console.error('Error initializing dropdown:', e);
-            }
+// تفعيل تحميل الإشعارات عند فتح القائمة
+document.addEventListener('DOMContentLoaded', function() {
+    // للزر في الـ navbar
+    const notifNavButton = document.getElementById('notificationsNavButton');
+    if (notifNavButton) {
+        const dropdown = notifNavButton.parentElement;
+        dropdown.addEventListener('show.bs.dropdown', function () {
+            loadNotifications();
+        });
+        
+        // تفعيل يدوي للـ dropdown عند الضغط
+        notifNavButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const bsDropdown = bootstrap.Dropdown.getInstance(notifNavButton) || new bootstrap.Dropdown(notifNavButton);
+            bsDropdown.toggle();
+        });
+    }
+    
+    // للزر الخاص بـ Profile (ahmedelkomy)
+    const userDropdownButton = document.getElementById('userDropdown');
+    if (userDropdownButton) {
+        userDropdownButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const bsDropdown = bootstrap.Dropdown.getInstance(userDropdownButton) || new bootstrap.Dropdown(userDropdownButton);
+            bsDropdown.toggle();
         });
     }
 });

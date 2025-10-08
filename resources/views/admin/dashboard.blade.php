@@ -3,17 +3,7 @@
 @section('title', ' SahmBlady')
 
 @section('header')
-    @if(isset($project))
-        @if($project == 'riyadh')
-            مرحبا بكم في مشروع الرياض
-        @elseif($project == 'madinah')
-            مرحبا بكم في مشروع المدينة المنورة
-        @else
-            مرحبا بكم
-        @endif
-    @else
-        مرحبا بكم
-    @endif
+    مرحبا بك {{ auth()->user()->name }} في إدارة سهم بلدي
 @endsection
 
 @section('content')

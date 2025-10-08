@@ -2343,12 +2343,13 @@ function clearUserSearch() {
 
 <!-- Modal لإرسال الملاحظات -->
 <div class="modal fade" id="noteModal" tabindex="-1" aria-labelledby="noteModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-dialog-centered" id="noteModalDialog">
         <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
+            <div class="modal-header bg-primary text-white" id="noteModalHeader" style="cursor: move;">
                 <h5 class="modal-title" id="noteModalLabel">
                     <i class="fas fa-comment-dots me-2"></i>
                     إرسال ملاحظة
+                    <small class="ms-2 opacity-75" style="font-size: 0.75rem;">(اسحب لتحريك النافذة)</small>
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
@@ -2400,7 +2401,34 @@ function clearUserSearch() {
                                 <hr class="my-2">
                             </div>
                             <div id="usersListItems">
-                                @foreach(\App\Models\User::orderBy('name')->get() as $user)
+                                @php
+                                    // جلب المستخدمين الذين لديهم صلاحيات على مشاريع الرياض أو المدينة المنورة فقط
+                                    $projectUsers = \App\Models\User::orderBy('name')->get()->filter(function($user) {
+                                        // المشرفين يظهرون دائماً
+                                        if ($user->isAdmin()) {
+                                            return true;
+                                        }
+                                        
+                                        // فحص إذا كان لديه أي صلاحية خاصة بالرياض أو المدينة
+                                        $permissions = $user->permissions;
+                                        if (is_string($permissions)) {
+                                            $permissions = json_decode($permissions, true) ?? [];
+                                        }
+                                        if (!is_array($permissions)) {
+                                            $permissions = [];
+                                        }
+                                        
+                                        foreach ($permissions as $permission) {
+                                            if (str_starts_with($permission, 'riyadh_') || str_starts_with($permission, 'madinah_')) {
+                                                return true;
+                                            }
+                                        }
+                                        
+                                        return false;
+                                    });
+                                @endphp
+                                
+                                @forelse($projectUsers as $user)
                                     <div class="form-check mb-2 user-item" data-user-name="{{ strtolower($user->name) }}" data-user-email="{{ strtolower($user->email) }}">
                                         <input class="form-check-input user-checkbox" type="checkbox" name="user_ids[]" value="{{ $user->id }}" id="user{{ $user->id }}">
                                         <label class="form-check-label" for="user{{ $user->id }}">
@@ -2409,7 +2437,12 @@ function clearUserSearch() {
                                             <small class="text-muted">({{ $user->email }})</small>
                                         </label>
                                     </div>
-                                @endforeach
+                                @empty
+                                    <div class="text-center text-muted py-3">
+                                        <i class="fas fa-user-slash me-1"></i>
+                                        لا يوجد مستخدمين لديهم صلاحيات على المشاريع
+                                    </div>
+                                @endforelse
                             </div>
                             <div id="noUsersFound" class="text-center text-muted py-3" style="display: none;">
                                 <i class="fas fa-user-slash me-1"></i>
@@ -2450,5 +2483,108 @@ function clearUserSearch() {
         </div>
     </div>
 </div>
+
+<style>
+/* تحسين مظهر النافذة القابلة للسحب */
+.modal-dialog.dragging {
+    transition: none !important;
+}
+
+.modal-header[style*="cursor: move"]:active {
+    cursor: grabbing !important;
+}
+
+.modal-dialog {
+    transition: all 0.3s ease;
+}
+</style>
+
+<script>
+// جعل نافذة إرسال الملاحظة قابلة للسحب
+(function() {
+    let isDragging = false;
+    let currentX;
+    let currentY;
+    let initialX;
+    let initialY;
+    let xOffset = 0;
+    let yOffset = 0;
+    
+    const modal = document.getElementById('noteModal');
+    const modalDialog = document.getElementById('noteModalDialog');
+    const dragHandle = document.getElementById('noteModalHeader');
+    
+    if (!modal || !modalDialog || !dragHandle) {
+        console.warn('Modal elements not found for dragging functionality');
+        return;
+    }
+    
+    // عند فتح النافذة، إعادة تعيين الموضع
+    modal.addEventListener('shown.bs.modal', function() {
+        xOffset = 0;
+        yOffset = 0;
+        setTranslate(0, 0, modalDialog);
+    });
+    
+    dragHandle.addEventListener('mousedown', dragStart);
+    document.addEventListener('mousemove', drag);
+    document.addEventListener('mouseup', dragEnd);
+    
+    // دعم اللمس للأجهزة المحمولة
+    dragHandle.addEventListener('touchstart', dragStart);
+    document.addEventListener('touchmove', drag);
+    document.addEventListener('touchend', dragEnd);
+    
+    function dragStart(e) {
+        // عدم السماح بالسحب إذا تم الضغط على زر الإغلاق
+        if (e.target.classList.contains('btn-close')) {
+            return;
+        }
+        
+        if (e.type === "touchstart") {
+            initialX = e.touches[0].clientX - xOffset;
+            initialY = e.touches[0].clientY - yOffset;
+        } else {
+            initialX = e.clientX - xOffset;
+            initialY = e.clientY - yOffset;
+        }
+        
+        if (e.target === dragHandle || dragHandle.contains(e.target)) {
+            isDragging = true;
+            modalDialog.classList.add('dragging');
+        }
+    }
+    
+    function drag(e) {
+        if (isDragging) {
+            e.preventDefault();
+            
+            if (e.type === "touchmove") {
+                currentX = e.touches[0].clientX - initialX;
+                currentY = e.touches[0].clientY - initialY;
+            } else {
+                currentX = e.clientX - initialX;
+                currentY = e.clientY - initialY;
+            }
+            
+            xOffset = currentX;
+            yOffset = currentY;
+            
+            setTranslate(currentX, currentY, modalDialog);
+        }
+    }
+    
+    function dragEnd(e) {
+        initialX = currentX;
+        initialY = currentY;
+        isDragging = false;
+        modalDialog.classList.remove('dragging');
+    }
+    
+    function setTranslate(xPos, yPos, el) {
+        el.style.transform = `translate(${xPos}px, ${yPos}px)`;
+    }
+})();
+</script>
 
 @endsection 

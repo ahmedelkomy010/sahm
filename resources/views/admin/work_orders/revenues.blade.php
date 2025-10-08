@@ -261,6 +261,145 @@
         background: rgba(13, 110, 253, 0.02);
     }
 
+    /* Number input styling - إخفاء الأسهم وتحسين المظهر */
+    input[type="number"] {
+        -moz-appearance: textfield;
+        text-align: center;
+    }
+
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    input[type="number"].form-control {
+        border: 1px solid transparent;
+        border-radius: 3px;
+        background: transparent;
+        transition: all 0.3s ease;
+    }
+
+    input[type="number"].form-control:hover {
+        background-color: rgba(13, 110, 253, 0.05);
+        border-color: rgba(13, 110, 253, 0.2);
+    }
+
+    input[type="number"].form-control:focus {
+        outline: none;
+        background-color: rgba(13, 110, 253, 0.1);
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.1);
+    }
+
+    /* Filter Section Styles - استايل حقول الفلتر */
+    .card.mb-3 {
+        border-radius: 12px;
+        border: 1px solid #e3e6ea;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
+    }
+
+    .card.mb-3:hover {
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+        transform: translateY(-2px);
+    }
+
+    .card.mb-3 .card-body {
+        padding: 1.25rem;
+        background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+    }
+
+    /* Filter Input & Select Styles */
+    .form-control-sm, .form-select-sm {
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        transition: all 0.3s ease;
+        background-color: #ffffff;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    .form-control-sm:hover, .form-select-sm:hover {
+        border-color: #0d6efd;
+        box-shadow: 0 2px 6px rgba(13, 110, 253, 0.15);
+    }
+
+    .form-control-sm:focus, .form-select-sm:focus {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15);
+        background-color: #f8f9ff;
+    }
+
+    /* Filter Labels */
+    .form-label {
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 0.35rem;
+        display: flex;
+        align-items: center;
+    }
+
+    .form-label i {
+        color: #0d6efd;
+        margin-left: 0.3rem;
+        transition: transform 0.3s ease;
+    }
+
+    .form-label:hover i {
+        transform: scale(1.15);
+    }
+
+    /* Filter Buttons */
+    .btn-primary {
+        background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+        border: none;
+        border-radius: 6px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 6px rgba(13, 110, 253, 0.3);
+    }
+
+    .btn-primary:hover {
+        background: linear-gradient(135deg, #0a58ca 0%, #084298 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(13, 110, 253, 0.4);
+    }
+
+    .btn-outline-secondary {
+        border: 1px solid #6c757d;
+        border-radius: 6px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        background-color: #ffffff;
+    }
+
+    .btn-outline-secondary:hover {
+        background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(108, 117, 125, 0.3);
+    }
+
+    /* Quick Date Filters */
+    .btn-outline-primary {
+        border: 1px solid #0d6efd;
+        border-radius: 6px;
+        transition: all 0.3s ease;
+        font-size: 0.75rem;
+        padding: 0.35rem 0.75rem;
+    }
+
+    .btn-outline-primary:hover {
+        background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(13, 110, 253, 0.25);
+    }
+
+    /* Filter Row Spacing */
+    .row.g-2 {
+        margin-bottom: 0.75rem;
+    }
+
     /* Responsive adjustments */
     @media (max-width: 768px) {
         .table {
@@ -415,13 +554,13 @@
                                 </div>
                             </div>
 
-                            <!-- صافي قيمة المستخلصات غير شامل الضريبة -->
+                            <!-- صافي قيمة المستخلصات -->
                             <div class="col-md-1-5">
                                 <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);">
                                     <div class="card-body p-1 text-white">
                                         <div class="d-flex justify-content-between align-items-center">
                                             <div>
-                                                <h6 class="mb-1 opacity-75" style="font-size: 0.55rem;">صافي قيمة المستخلصات غير شامل الضريبة</h6>
+                                                <h6 class="mb-1 opacity-75" style="font-size: 0.65rem;">صافي قيمة المستخلصات</h6>
                                                 <h6 class="mb-0 fw-bold" style="font-size: 0.75rem;">{{ number_format($statistics['totalNetExtractValue'], 2) }}</h6>
                                                 <small class="opacity-75" style="font-size: 0.6rem;">ريال سعودي</small>
                                             </div>
@@ -463,24 +602,6 @@
                                             </div>
                                             <div class="bg-white bg-opacity-25 p-1 rounded-circle">
                                                 <i class="fas fa-hourglass-half fa-sm"></i>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- ضريبة الدفعة الأولى -->
-                            <div class="col-md-1-5">
-                                <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #2a5298 0%, #1e3c72 100%);">
-                                    <div class="card-body p-1 text-white">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <div>
-                                                <h6 class="mb-1 opacity-75" style="font-size: 0.65rem;">ضريبة الدفعة الأولى</h6>
-                                                <h6 class="mb-0 fw-bold" style="font-size: 0.75rem;">{{ number_format($statistics['totalFirstPaymentTax'], 2) }}</h6>
-                                                <small class="opacity-75" style="font-size: 0.6rem;">ريال سعودي</small>
-                                            </div>
-                                            <div class="bg-white bg-opacity-25 p-1 rounded-circle">
-                                                <i class="fas fa-file-invoice-dollar fa-sm"></i>
                                             </div>
                                         </div>
                                     </div>
@@ -599,7 +720,7 @@
                                         <i class="fas fa-hashtag me-1 text-primary" style="font-size: 0.7rem;"></i>
                                         رقم المستخلص
                                     </label>
-                                    <input type="text" class="form-control form-control-sm" id="filter_extract_number" placeholder="رقم المستخلص" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;">
+                                    <input type="number" class="form-control form-control-sm" id="filter_extract_number" placeholder="رقم المستخلص" style="font-size: 0.7rem; padding: 0.25rem 0.5rem;">
                                 </div>
                                 
                                 <div class="col-md-1">
@@ -613,6 +734,19 @@
                                         <option value="ادارة الكهرباء">ادارة الكهرباء</option>
                                         <option value="المالية">المالية</option>
                                         <option value="الخزينة">الخزينة</option>
+                                        <option value="تم الصرف">تم الصرف</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="col-md-1">
+                                    <label for="filter_tax_percentage" class="form-label mb-0" style="font-size: 0.75rem;">
+                                        <i class="fas fa-percent me-1 text-primary" style="font-size: 0.7rem;"></i>
+                                        جهة المستخلص
+                                    </label>
+                                    <select class="form-select form-select-sm" id="filter_tax_percentage" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;">
+                                        <option value="">الكل</option>
+                                        <option value="UDS">UDS</option>
+                                        <option value="SAP">SAP</option>
                                     </select>
                                 </div>
                                 
@@ -715,10 +849,10 @@
                                             <div class="editable-field" contenteditable="true" data-field="project_area" placeholder="المشروع">{{ $revenue->project_area }}</div>
                                         </td>
                                         <td>
-                                            <div class="editable-field" contenteditable="true" data-field="contract_number" placeholder="رقم العقد">{{ $revenue->contract_number }}</div>
+                                            <input type="number" class="form-control form-control-sm" data-field="contract_number" placeholder="رقم العقد" value="{{ $revenue->contract_number }}" style="font-size: 0.65rem; padding: 3px; min-width: 95px;">
                                         </td>
                                         <td>
-                                            <div class="editable-field" contenteditable="true" data-field="extract_number" placeholder="رقم المستخلص">{{ $revenue->extract_number }}</div>
+                                            <input type="number" class="form-control form-control-sm" data-field="extract_number" placeholder="رقم المستخلص" value="{{ $revenue->extract_number }}" style="font-size: 0.65rem; padding: 3px; min-width: 95px;">
                                         </td>
                                         <td>
                                             <div class="editable-field" contenteditable="true" data-field="office" placeholder="المكتب">{{ $revenue->office }}</div>
@@ -737,9 +871,8 @@
                                         </td>
                                         <td>
                                             <select class="form-select form-select-sm" data-field="tax_percentage" style="font-size: 0.75rem; padding: 4px;">
-                                                <option value="">اختر...</option>
-                                                <option value="SAP" {{ $revenue->tax_percentage === 'SAP' ? 'selected' : '' }}>SAP</option>
                                                 <option value="UDS" {{ $revenue->tax_percentage === 'UDS' ? 'selected' : '' }}>UDS</option>
+                                                <option value="SAP" {{ $revenue->tax_percentage === 'SAP' ? 'selected' : '' }}>SAP</option>
                                             </select>
                                         </td>
                                         <td>
@@ -749,7 +882,7 @@
                                             <div class="editable-field" contenteditable="true" data-field="penalties" placeholder="الغرامات">{{ $revenue->penalties }}</div>
                                         </td>
                                         <td>
-                                            <div class="editable-field" contenteditable="true" data-field="first_payment_tax" placeholder="ضريبة الدفعة الأولى">{{ $revenue->first_payment_tax }}</div>
+                                            <input type="number" step="0.01" class="form-control form-control-sm" data-field="first_payment_tax" placeholder="ضريبة الدفعة الأولى" value="{{ $revenue->first_payment_tax }}" style="font-size: 0.65rem; padding: 3px; min-width: 100px;">
                                         </td>
                                         <td>
                                             <div class="editable-field" contenteditable="false" data-field="net_extract_value" placeholder="صافي قيمة المستخلص" style="background-color: #fef3c7; font-weight: bold; cursor: not-allowed;" title="محسوب تلقائياً: قيمة المستخلص + الضريبة - الغرامات">{{ $revenue->net_extract_value }}</div>
@@ -761,22 +894,23 @@
                                             <div class="editable-field" contenteditable="true" data-field="year" placeholder="العام">{{ $revenue->year }}</div>
                                         </td>
                                         <td>
-                                            <select class="form-select form-select-sm" data-field="payment_type" style="font-size: 0.75rem; padding: 4px;">
+                                            <select class="form-select form-select-sm payment-type-select" data-field="payment_type" style="font-size: 0.75rem; padding: 4px;">
                                                 <option value="">اختر...</option>
                                                 <option value="المقاول" {{ $revenue->payment_type == 'المقاول' ? 'selected' : '' }}>المقاول</option>
                                                 <option value="ادارة الكهرباء" {{ $revenue->payment_type == 'ادارة الكهرباء' ? 'selected' : '' }}>ادارة الكهرباء</option>
                                                 <option value="المالية" {{ $revenue->payment_type == 'المالية' ? 'selected' : '' }}>المالية</option>
                                                 <option value="الخزينة" {{ $revenue->payment_type == 'الخزينة' ? 'selected' : '' }}>الخزينة</option>
+                                                <option value="تم الصرف" {{ $revenue->payment_type == 'تم الصرف' ? 'selected' : '' }}>تم الصرف</option>
                                             </select>
                                         </td>
                                         <td>
-                                            <div class="editable-field" contenteditable="true" data-field="reference_number" placeholder="الرقم المرجعي">{{ $revenue->reference_number }}</div>
+                                            <input type="number" class="form-control form-control-sm" data-field="reference_number" placeholder="الرقم المرجعي" value="{{ $revenue->reference_number }}" style="font-size: 0.65rem; padding: 3px; min-width: 105px;">
                                         </td>
                                         <td class="date-col">
                                             <input type="date" class="date-input" data-field="payment_date" value="{{ $revenue->payment_date ? $revenue->payment_date->format('Y-m-d') : '' }}" placeholder="تاريخ الصرف">
                                         </td>
                                         <td>
-                                            <div class="editable-field" contenteditable="true" data-field="payment_value" placeholder="قيمة الصرف">{{ $revenue->payment_value }}</div>
+                                            <input type="number" step="0.01" class="form-control form-control-sm" data-field="payment_value" placeholder="قيمة الصرف" value="{{ $revenue->payment_value }}" style="font-size: 0.65rem; padding: 3px; min-width: 105px;">
                                         </td>
                                         <td>
                                             <select class="form-select form-select-sm" data-field="extract_status" style="font-size: 0.75rem; padding: 4px;">
@@ -885,8 +1019,8 @@ function addNewRow() {
         </td>
         <td><div class="editable-field" contenteditable="true" data-field="client_name" placeholder="اسم العميل"></div></td>
         <td><div class="editable-field" contenteditable="true" data-field="project_area" placeholder="المشروع"></div></td>
-        <td><div class="editable-field" contenteditable="true" data-field="contract_number" placeholder="رقم العقد"></div></td>
-        <td><div class="editable-field" contenteditable="true" data-field="extract_number" placeholder="رقم المستخلص"></div></td>
+        <td><input type="number" class="form-control form-control-sm" data-field="contract_number" placeholder="رقم العقد" style="font-size: 0.65rem; padding: 3px; min-width: 95px;"></td>
+        <td><input type="number" class="form-control form-control-sm" data-field="extract_number" placeholder="رقم المستخلص" style="font-size: 0.65rem; padding: 3px; min-width: 95px;"></td>
         <td><div class="editable-field" contenteditable="true" data-field="office" placeholder="المكتب"></div></td>
         <td><div class="editable-field" contenteditable="true" data-field="extract_type" placeholder="نوع المستخلص"></div></td>
         <td><div class="editable-field" contenteditable="true" data-field="po_number" placeholder="رقم PO"></div></td>
@@ -894,29 +1028,29 @@ function addNewRow() {
         <td><input type="number" step="0.01" class="form-control form-control-sm" data-field="extract_value" placeholder="إجمالي قيمة المستخلصات غير شامله الضريبه" style="font-size: 0.75rem; padding: 4px; min-width: 100px;"></td>
         <td>
             <select class="form-select form-select-sm" data-field="tax_percentage" style="font-size: 0.75rem; padding: 4px;">
-                <option value="">اختر...</option>
-                <option value="SAP">SAP</option>
                 <option value="UDS">UDS</option>
+                <option value="SAP">SAP</option>
             </select>
         </td>
         <td><div class="editable-field" contenteditable="false" data-field="tax_value" placeholder="قيمة الضريبة" style="background-color: #fef3c7; font-weight: bold; cursor: not-allowed;" title="محسوب تلقائياً: قيمة المستخلص × 15%"></div></td>
         <td><div class="editable-field" contenteditable="true" data-field="penalties" placeholder="الغرامات"></div></td>
-        <td><div class="editable-field" contenteditable="true" data-field="first_payment_tax" placeholder="ضريبة الدفعة الأولى"></div></td>
+        <td><input type="number" step="0.01" class="form-control form-control-sm" data-field="first_payment_tax" placeholder="ضريبة الدفعة الأولى" style="font-size: 0.65rem; padding: 3px; min-width: 100px;"></td>
         <td><div class="editable-field" contenteditable="false" data-field="net_extract_value" placeholder="صافي قيمة المستخلص" style="background-color: #fef3c7; font-weight: bold; cursor: not-allowed;" title="محسوب تلقائياً: قيمة المستخلص + الضريبة - الغرامات"></div></td>
         <td class="date-col"><input type="date" class="date-input" data-field="extract_date" placeholder="تاريخ الإعداد"></td>
         <td><div class="editable-field" contenteditable="true" data-field="year" placeholder="العام"></div></td>
         <td>
-            <select class="form-select form-select-sm" data-field="payment_type" style="font-size: 0.75rem; padding: 4px;">
+            <select class="form-select form-select-sm payment-type-select" data-field="payment_type" style="font-size: 0.75rem; padding: 4px;">
                 <option value="">اختر...</option>
                 <option value="المقاول">المقاول</option>
                 <option value="ادارة الكهرباء">ادارة الكهرباء</option>
                 <option value="المالية">المالية</option>
                 <option value="الخزينة">الخزينة</option>
+                <option value="تم الصرف">تم الصرف</option>
             </select>
         </td>
-        <td><div class="editable-field" contenteditable="true" data-field="reference_number" placeholder="الرقم المرجعي"></div></td>
+        <td><input type="number" class="form-control form-control-sm" data-field="reference_number" placeholder="الرقم المرجعي" style="font-size: 0.65rem; padding: 3px; min-width: 105px;"></td>
         <td class="date-col"><input type="date" class="date-input" data-field="payment_date" placeholder="تاريخ الصرف"></td>
-        <td><div class="editable-field" contenteditable="true" data-field="payment_value" placeholder="قيمة الصرف"></div></td>
+        <td><input type="number" step="0.01" class="form-control form-control-sm" data-field="payment_value" placeholder="قيمة الصرف" style="font-size: 0.65rem; padding: 3px; min-width: 105px;"></td>
         <td>
             <select class="form-select form-select-sm" data-field="extract_status" style="font-size: 0.75rem; padding: 4px;">
                 <option value="">اختر...</option>
@@ -989,6 +1123,16 @@ function addEditableFieldListeners(row) {
         // حفظ تلقائي عند تغيير القيمة
         selectField.addEventListener('change', function() {
             console.log('Select field changed:', selectField.dataset.field, 'Value:', selectField.value);
+            
+            // إذا تم اختيار "تم الصرف" في موقف المستخلص، غيّر حالة الصرف إلى "مدفوع" تلقائياً
+            if (selectField.dataset.field === 'payment_type' && selectField.value === 'تم الصرف') {
+                const extractStatusField = row.querySelector('select[data-field="extract_status"]');
+                if (extractStatusField) {
+                    extractStatusField.value = 'مدفوع';
+                    console.log('Auto-changed extract_status to "مدفوع"');
+                }
+            }
+            
             autoSaveRow(row);
         });
     });
@@ -1031,8 +1175,8 @@ function autoSaveRow(row) {
         @endif
         client_name: row.querySelector('[data-field="client_name"]').textContent.trim(),
         project_area: row.querySelector('[data-field="project_area"]').textContent.trim(),
-        contract_number: row.querySelector('[data-field="contract_number"]').textContent.trim(),
-        extract_number: row.querySelector('[data-field="extract_number"]').textContent.trim(),
+        contract_number: row.querySelector('[data-field="contract_number"]').value || row.querySelector('[data-field="contract_number"]').textContent.trim(),
+        extract_number: row.querySelector('[data-field="extract_number"]').value || row.querySelector('[data-field="extract_number"]').textContent.trim(),
         office: row.querySelector('[data-field="office"]').textContent.trim(),
         extract_type: row.querySelector('[data-field="extract_type"]').textContent.trim(),
         po_number: row.querySelector('[data-field="po_number"]').textContent.trim(),
@@ -1041,14 +1185,14 @@ function autoSaveRow(row) {
         tax_percentage: row.querySelector('[data-field="tax_percentage"]').value || '',
         tax_value: row.querySelector('[data-field="tax_value"]').textContent.trim(),
         penalties: row.querySelector('[data-field="penalties"]').textContent.trim(),
-        first_payment_tax: row.querySelector('[data-field="first_payment_tax"]').textContent.trim(),
+        first_payment_tax: row.querySelector('[data-field="first_payment_tax"]').value || row.querySelector('[data-field="first_payment_tax"]').textContent.trim(),
         net_extract_value: row.querySelector('[data-field="net_extract_value"]').textContent.trim(),
         extract_date: row.querySelector('[data-field="extract_date"]').value || '',
         year: row.querySelector('[data-field="year"]').textContent.trim(),
         payment_type: row.querySelector('[data-field="payment_type"]').value || '',
-        reference_number: row.querySelector('[data-field="reference_number"]').textContent.trim(),
+        reference_number: row.querySelector('[data-field="reference_number"]').value || row.querySelector('[data-field="reference_number"]').textContent.trim(),
         payment_date: row.querySelector('[data-field="payment_date"]').value || '',
-        payment_value: row.querySelector('[data-field="payment_value"]').textContent.trim(),
+        payment_value: row.querySelector('[data-field="payment_value"]').value || row.querySelector('[data-field="payment_value"]').textContent.trim(),
         extract_status: row.querySelector('[data-field="extract_status"]').value || row.querySelector('[data-field="extract_status"]').textContent.trim()
     };
 
@@ -1631,6 +1775,7 @@ function applyFilters() {
     const dateOrder = document.getElementById('filter_date_order').value;
     const extractNumber = document.getElementById('filter_extract_number').value;
     const paymentType = document.getElementById('filter_payment_type').value;
+    const taxPercentage = document.getElementById('filter_tax_percentage').value;
     
     const table = document.querySelector('.table tbody');
     let rows = Array.from(table.querySelectorAll('tr'));
@@ -1675,6 +1820,17 @@ function applyFilters() {
             if (paymentTypeCell) {
                 const cellValue = paymentTypeCell.value || paymentTypeCell.textContent.trim();
                 if (cellValue !== paymentType) {
+                    showRow = false;
+                }
+            }
+        }
+        
+        // فلتر جهة المستخلص (UDS / SAP)
+        if (taxPercentage) {
+            const taxPercentageCell = row.querySelector('[data-field="tax_percentage"]');
+            if (taxPercentageCell) {
+                const cellValue = taxPercentageCell.value || taxPercentageCell.textContent.trim();
+                if (cellValue !== taxPercentage) {
                     showRow = false;
                 }
             }
@@ -1785,6 +1941,7 @@ function clearFilters() {
     document.getElementById('filter_date_order').value = '';
     document.getElementById('filter_extract_number').value = '';
     document.getElementById('filter_payment_type').value = '';
+    document.getElementById('filter_tax_percentage').value = '';
     
     // إظهار جميع الصفوف
     const table = document.querySelector('.table tbody');
