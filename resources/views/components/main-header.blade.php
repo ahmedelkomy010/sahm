@@ -34,11 +34,16 @@
 
                         @if(auth()->user()->is_admin)
                         <div class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle px-3 py-2 rounded text-white {{ request()->is('admin/users*') || request()->is('admin/settings*') || request()->is('admin/reports*') ? 'active' : '' }}" href="#" role="button" data-bs-toggle="dropdown">
+                            <a class="nav-link dropdown-toggle px-3 py-2 rounded text-white {{ request()->is('admin/users*') || request()->is('admin/settings*') || request()->is('admin/reports*') ? 'active' : '' }}" 
+                               href="#" 
+                               id="settingsDropdown"
+                               role="button" 
+                               data-bs-toggle="dropdown"
+                               aria-expanded="false">
                                 <i class="fas fa-cog me-1"></i>
                                 الإعدادات
                             </a>
-                            <ul class="dropdown-menu">
+                            <ul class="dropdown-menu" aria-labelledby="settingsDropdown">
                                 <li>
                                     <a class="dropdown-item" href="{{ route('admin.users.index') }}">
                                         <i class="fas fa-users-cog me-2"></i>
@@ -71,6 +76,7 @@
                             type="button" 
                             data-bs-toggle="dropdown" 
                             id="notificationsButton"
+                            aria-expanded="false"
                             onclick="loadNotifications()">
                         <i class="fas fa-bell fs-5"></i>
                         <span id="notificationBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display: none;">
@@ -78,7 +84,7 @@
                             <span class="visually-hidden">إشعارات غير مقروءة</span>
                         </span>
                     </button>
-                    <ul class="dropdown-menu dropdown-menu-end notification-dropdown" style="min-width: 350px; max-height: 500px; overflow-y: auto;">
+                    <ul class="dropdown-menu dropdown-menu-end notification-dropdown" aria-labelledby="notificationsButton" style="min-width: 350px; max-height: 500px; overflow-y: auto;">
                         <li>
                             <div class="d-flex justify-content-between align-items-center px-3 py-2 bg-light border-bottom">
                                 <h6 class="mb-0 fw-bold">
@@ -107,11 +113,14 @@
                 <!-- User Profile Dropdown -->
                 <div class="dropdown">
                     <button class="btn btn-link text-white d-flex align-items-center text-decoration-none dropdown-toggle" 
-                            type="button" data-bs-toggle="dropdown">
+                            type="button" 
+                            id="userDropdown"
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false">
                         <i class="fas fa-user-circle fs-5 me-1"></i>
                         <span class="d-none d-md-inline">{{ Auth::user()->name }}</span>
                     </button>
-                    <ul class="dropdown-menu dropdown-menu-end">
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                         <li>
                             <div class="dropdown-header">
                                 <div class="fw-bold">{{ Auth::user()->name }}</div>
@@ -320,6 +329,20 @@
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
     border-radius: 0.5rem;
     margin-top: 0.5rem;
+    z-index: 1050 !important;
+    position: absolute !important;
+}
+
+.dropdown {
+    position: relative;
+}
+
+.dropdown-toggle {
+    cursor: pointer !important;
+}
+
+.dropdown-toggle:hover {
+    opacity: 0.9;
 }
 
 .dropdown-item {
@@ -599,5 +622,24 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         })
         .catch(error => console.error('Error loading notification count:', error));
+});
+
+// تفعيل جميع الـ dropdowns يدوياً لضمان عملها في جميع الصفحات
+window.addEventListener('load', function() {
+    // تأكد من أن Bootstrap محمّل
+    if (typeof bootstrap !== 'undefined') {
+        // فعّل كل الـ dropdowns
+        const dropdownElementList = document.querySelectorAll('.dropdown-toggle');
+        dropdownElementList.forEach(function(dropdownToggleEl) {
+            try {
+                // تأكد إن الـ dropdown مش مفعّل من قبل
+                if (!bootstrap.Dropdown.getInstance(dropdownToggleEl)) {
+                    new bootstrap.Dropdown(dropdownToggleEl);
+                }
+            } catch(e) {
+                console.error('Error initializing dropdown:', e);
+            }
+        });
+    }
 });
 </script> 

@@ -6,24 +6,20 @@
         <div class="col-12">
             <!-- Header Section -->
             <div class="card shadow-lg border-0 mb-4">
-                <div class="card-header text-white py-4" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                <div class="card-header text-white py-4" style="background: linear-gradient(135deg, #8e44ad 0%, #c0392b 100%);">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h3 class="mb-1">
-                                <i class="fas fa-clipboard-check me-2"></i>
-                                اختبارات الجودة (المدينة المنورة)
+                                <i class="fas fa-truck-loading me-2"></i>
+                                الإخلاءات - رخص الحفر (الرياض)
                             </h3>
                             <p class="mb-0 opacity-90">
-                                <i class="fas fa-mosque me-1"></i>
-                                عرض جميع اختبارات الجودة لأوامر العمل في مشروع المدينة المنورة
+                                <i class="fas fa-city me-1"></i>
+                                عرض جميع رخص الحفر وحالة الإخلاء في مشروع الرياض
                             </p>
                         </div>
-                        <div class="d-flex gap-2">
-                            <a href="{{ route('admin.quality.inspections-reports.madinah') }}" class="btn btn-warning">
-                                <i class="fas fa-chart-bar me-2"></i>
-                                تقارير الاختبارات
-                            </a>
-                            <a href="/admin/work-orders/productivity/madinah" class="btn btn-light">
+                        <div>
+                            <a href="/admin/work-orders/productivity/riyadh" class="btn btn-light">
                                 <i class="fas fa-arrow-right me-2"></i>
                                 العودة إلى لوحة التحكم
                             </a>
@@ -35,43 +31,43 @@
             <!-- Statistics Card -->
             <div class="row mb-4">
                 <div class="col-md-4">
-                    <div class="card shadow-sm border-0" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                    <div class="card shadow-sm border-0" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
                         <div class="card-body text-white text-center">
-                            <i class="fas fa-clipboard-list fa-3x mb-3 opacity-75"></i>
-                            <h2 class="mb-1">{{ $totalOrders }}</h2>
-                            <p class="mb-0">إجمالي أوامر العمل</p>
+                            <i class="fas fa-file-contract fa-3x mb-3 opacity-75"></i>
+                            <h2 class="mb-1">{{ $licensesCount }}</h2>
+                            <p class="mb-0">إجمالي الرخص</p>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="card shadow-sm border-0" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
                         <div class="card-body text-white text-center">
-                            <i class="fas fa-tasks fa-3x mb-3 opacity-75"></i>
-                            <h2 class="mb-1">{{ $ordersWithTests }}</h2>
-                            <p class="mb-0">أوامر تحتوي على اختبارات</p>
+                            <i class="fas fa-check-circle fa-3x mb-3 opacity-75"></i>
+                            <h2 class="mb-1">{{ $licensesWithEvacuation }}</h2>
+                            <p class="mb-0">رخص تم إخلاؤها</p>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="card shadow-sm border-0" style="background: linear-gradient(135deg, #0e8c80 0%, #2ec96a 100%);">
                         <div class="card-body text-white text-center">
-                            <i class="fas fa-mosque fa-3x mb-3 opacity-75"></i>
-                            <h2 class="mb-1">المدينة المنورة</h2>
-                            <p class="mb-0">مشروع المدينة المنورة</p>
+                            <i class="fas fa-city fa-3x mb-3 opacity-75"></i>
+                            <h2 class="mb-1">الرياض</h2>
+                            <p class="mb-0">مشروع الرياض</p>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Inspections Table -->
+            <!-- Evacuations Table -->
             <div class="card shadow-sm border-0">
                 <div class="card-header bg-light">
                     <div class="d-flex justify-content-between align-items-center">
                         <h5 class="mb-0">
-                            <i class="fas fa-list me-2 text-info"></i>
-                            قائمة الاختبارات
+                            <i class="fas fa-list me-2 text-primary"></i>
+                            قائمة رخص الحفر وحالة الإخلاء
                         </h5>
-                        <a href="{{ route('admin.quality.inspections.export', ['city' => 'madinah']) }}" class="btn btn-success btn-sm">
+                        <a href="{{ route('admin.quality.evacuations.export', ['city' => 'riyadh']) }}" class="btn btn-success btn-sm">
                             <i class="fas fa-file-excel me-1"></i>
                             تصدير Excel
                         </a>
@@ -85,34 +81,40 @@
                                     <th class="text-center">#</th>
                                     <th>رقم أمر العمل</th>
                                     <th>نوع العمل</th>
-                                    <th class="text-center">يوجد اختبارات</th>
+                                    <th>رقم الرخصة</th>
+                                    <th class="text-center">يوجد إخلاء</th>
                                     <th class="text-center">الإجراءات</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse($workOrders as $index => $workOrder)
+                                @forelse($licenses as $index => $license)
                                 @php
-                                    // فحص وجود اختبارات معملية
-                                    $hasTests = false;
-                                    foreach($workOrder->licenses as $license) {
-                                        if ($license->total_tests_count > 0 || !empty($license->lab_tests_data)) {
-                                            $hasTests = true;
-                                            break;
-                                        }
+                                    // التحقق من بيانات الإخلاء في JSON
+                                    $evacuationData = null;
+                                    if (!empty($license->evacuation_data)) {
+                                        $evacuationData = is_string($license->evacuation_data) ? json_decode($license->evacuation_data, true) : $license->evacuation_data;
+                                    } elseif (!empty($license->additional_details)) {
+                                        $additionalDetails = is_string($license->additional_details) ? json_decode($license->additional_details, true) : $license->additional_details;
+                                        $evacuationData = $additionalDetails['evacuation_data'] ?? null;
                                     }
+                                    
+                                    $hasEvacuation = !empty($evacuationData) && is_array($evacuationData) && count($evacuationData) > 0;
                                 @endphp
                                 <tr>
-                                    <td class="text-center">{{ $workOrders->firstItem() + $index }}</td>
+                                    <td class="text-center">{{ $licenses->firstItem() + $index }}</td>
                                     <td>
-                                        <strong>{{ $workOrder->order_number ?? 'غير محدد' }}</strong>
+                                        <strong>{{ $license->workOrder->order_number ?? 'غير محدد' }}</strong>
                                     </td>
                                     <td>
                                         <span class="badge bg-info">
-                                            {{ $workOrder->work_type ?? 'غير محدد' }}
+                                            {{ $license->workOrder->work_type ?? 'غير محدد' }}
                                         </span>
                                     </td>
+                                    <td>
+                                        <strong class="text-primary">{{ $license->license_number ?? '-' }}</strong>
+                                    </td>
                                     <td class="text-center">
-                                        @if($hasTests)
+                                        @if($hasEvacuation)
                                             <span class="badge bg-success" style="font-size: 0.9rem;">
                                                 <i class="fas fa-check-circle me-1"></i>
                                                 نعم
@@ -125,7 +127,7 @@
                                         @endif
                                     </td>
                                     <td class="text-center">
-                                        <a href="{{ route('admin.work-orders.show', $workOrder->id) }}" 
+                                        <a href="{{ route('admin.work-orders.show', $license->work_order_id) }}" 
                                            class="btn btn-sm btn-primary" 
                                            title="عرض التفاصيل">
                                             <i class="fas fa-eye"></i>
@@ -134,10 +136,10 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="5" class="text-center py-5">
+                                    <td colspan="6" class="text-center py-5">
                                         <div class="alert alert-info mb-0">
                                             <i class="fas fa-info-circle fa-2x mb-3"></i>
-                                            <p class="mb-0">لا توجد أوامر عمل مسجلة حالياً</p>
+                                            <p class="mb-0">لا توجد رخص مسجلة حالياً</p>
                                         </div>
                                     </td>
                                 </tr>
@@ -146,9 +148,9 @@
                         </table>
 
                         <!-- Pagination -->
-                        @if($workOrders->hasPages())
+                        @if($licenses->hasPages())
                         <div class="d-flex justify-content-center mt-4">
-                            {{ $workOrders->links() }}
+                            {{ $licenses->links() }}
                         </div>
                         @endif
                     </div>

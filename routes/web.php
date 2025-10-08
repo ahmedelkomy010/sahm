@@ -373,6 +373,19 @@ Route::get('quality/extensions/{city}/export', [App\Http\Controllers\Admin\WorkO
     Route::get('quality/inspections/riyadh', [App\Http\Controllers\Admin\WorkOrderController::class, 'inspectionsRiyadh'])->name('quality.inspections.riyadh');
     Route::get('quality/inspections/madinah', [App\Http\Controllers\Admin\WorkOrderController::class, 'inspectionsMadinah'])->name('quality.inspections.madinah');
     Route::get('quality/inspections/{city}/export', [App\Http\Controllers\Admin\WorkOrderController::class, 'exportInspections'])->name('quality.inspections.export');
+    Route::get('quality/inspections-reports/riyadh', [App\Http\Controllers\Admin\WorkOrderController::class, 'inspectionsReportsRiyadh'])->name('quality.inspections-reports.riyadh');
+    Route::get('quality/inspections-reports/madinah', [App\Http\Controllers\Admin\WorkOrderController::class, 'inspectionsReportsMadinah'])->name('quality.inspections-reports.madinah');
+    Route::get('quality/evacuations/riyadh', [App\Http\Controllers\Admin\WorkOrderController::class, 'evacuationsRiyadh'])->name('quality.evacuations.riyadh');
+    Route::get('quality/evacuations/madinah', [App\Http\Controllers\Admin\WorkOrderController::class, 'evacuationsMadinah'])->name('quality.evacuations.madinah');
+    Route::get('quality/evacuations/{city}/export', [App\Http\Controllers\Admin\WorkOrderController::class, 'exportEvacuations'])->name('quality.evacuations.export');
+    
+    // Time Management Routes (تجاوز المدة الزمنية والغير منفذه)
+    Route::get('time-management/overdue/riyadh', [App\Http\Controllers\Admin\WorkOrderController::class, 'overdueOrdersRiyadh'])->name('time-management.overdue.riyadh');
+    Route::get('time-management/overdue/madinah', [App\Http\Controllers\Admin\WorkOrderController::class, 'overdueOrdersMadinah'])->name('time-management.overdue.madinah');
+    Route::get('time-management/unexecuted/riyadh', [App\Http\Controllers\Admin\WorkOrderController::class, 'unexecutedOrdersRiyadh'])->name('time-management.unexecuted.riyadh');
+    Route::get('time-management/unexecuted/madinah', [App\Http\Controllers\Admin\WorkOrderController::class, 'unexecutedOrdersMadinah'])->name('time-management.unexecuted.madinah');
+    Route::get('time-management/detailed-report/riyadh', [App\Http\Controllers\Admin\WorkOrderController::class, 'detailedReportRiyadh'])->name('time-management.detailed-report.riyadh');
+    Route::get('time-management/detailed-report/madinah', [App\Http\Controllers\Admin\WorkOrderController::class, 'detailedReportMadinah'])->name('time-management.detailed-report.madinah');
     
     // تقارير الإنتاجية حسب المدينة
     Route::get('work-orders/productivity/riyadh', [App\Http\Controllers\Admin\WorkOrderController::class, 'riyadhProductivity'])->name('work-orders.productivity.riyadh');

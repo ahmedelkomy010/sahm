@@ -188,7 +188,7 @@
                     <div class="card-body py-4">
                         <div class="row g-3">
                             <!-- Violations Card -->
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <div class="card h-100 shadow-sm border-0">
                                     <div class="card-header text-white" style="background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);">
                                         <h6 class="mb-0 text-center">
@@ -219,7 +219,7 @@
                             </div>
 
                             <!-- Extensions Card -->
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <div class="card h-100 shadow-sm border-0">
                                     <div class="card-header text-white" style="background: linear-gradient(135deg, #f2994a 0%, #f2c94c 100%);">
                                         <h6 class="mb-0 text-center">
@@ -250,7 +250,7 @@
                             </div>
 
                             <!-- Inspections Card -->
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <div class="card h-100 shadow-sm border-0">
                                     <div class="card-header text-white" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
                                         <h6 class="mb-0 text-center">
@@ -275,6 +275,145 @@
                                         </a>
                                         <p class="text-muted mt-3 mb-0" style="font-size: 0.85rem;">
                                             عرض جميع اختبارات الجودة
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Evacuations Card -->
+                            <div class="col-md-3">
+                                <div class="card h-100 shadow-sm border-0">
+                                    <div class="card-header text-white" style="background: linear-gradient(135deg, #8e44ad 0%, #c0392b 100%);">
+                                        <h6 class="mb-0 text-center">
+                                            <i class="fas fa-truck-loading me-2"></i>
+                                            الإخلاءات
+                                        </h6>
+                                    </div>
+                                    <div class="card-body text-center">
+                                        @php
+                                            $evacuationsRoute = ($project ?? 'riyadh') === 'madinah' 
+                                                ? route('admin.quality.evacuations.madinah')
+                                                : route('admin.quality.evacuations.riyadh');
+                                        @endphp
+                                        <div class="mb-3">
+                                            <i class="fas fa-ban fa-3x" style="color: #8e44ad;"></i>
+                                        </div>
+                                        <a href="{{ $evacuationsRoute }}" 
+                                           class="btn btn-sm shadow-sm"
+                                           style="background: linear-gradient(135deg, #8e44ad 0%, #c0392b 100%); color: white; min-width: 150px;">
+                                            <i class="fas fa-list me-1"></i>
+                                            الرخص الغير نشطة
+                                        </a>
+                                        <p class="text-muted mt-3 mb-0" style="font-size: 0.85rem;">
+                                            عرض رخص الحفر الغير نشطة
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Time Overdue and Unexecuted Section -->
+            <div class="col-12">
+                <div class="card shadow-sm border-0 mt-4">
+                    <div class="card-header" style="background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);">
+                        <h5 class="mb-0 text-white text-center">
+                            <i class="fas fa-hourglass-end me-2"></i>
+                            تجاوز المدة الزمنية والغير منفذه
+                        </h5>
+                    </div>
+                    <div class="card-body py-4">
+                        <div class="row g-3">
+                            <!-- Overdue Orders Card -->
+                            <div class="col-md-4">
+                                <div class="card h-100 shadow-sm border-0">
+                                    <div class="card-header text-white" style="background: linear-gradient(135deg, #fc4a1a 0%, #f7b733 100%);">
+                                        <h6 class="mb-0 text-center">
+                                            <i class="fas fa-clock me-2"></i>
+                                            أوامر متأخرة
+                                        </h6>
+                                    </div>
+                                    <div class="card-body text-center">
+                                        @php
+                                            $overdueRoute = ($project ?? 'riyadh') === 'madinah' 
+                                                ? route('admin.time-management.overdue.madinah')
+                                                : route('admin.time-management.overdue.riyadh');
+                                        @endphp
+                                        <div class="mb-3">
+                                            <i class="fas fa-exclamation-circle fa-3x" style="color: #fc4a1a;"></i>
+                                        </div>
+                                        <a href="{{ $overdueRoute }}" 
+                                           class="btn btn-sm shadow-sm"
+                                           style="background: linear-gradient(135deg, #fc4a1a 0%, #f7b733 100%); color: white; min-width: 150px;">
+                                            <i class="fas fa-list me-1"></i>
+                                            عرض الأوامر المتأخرة
+                                        </a>
+                                        <p class="text-muted mt-3 mb-0" style="font-size: 0.85rem;">
+                                            أوامر تجاوزت المدة الزمنية المحددة
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Unexecuted Orders Card -->
+                            <div class="col-md-4">
+                                <div class="card h-100 shadow-sm border-0">
+                                    <div class="card-header text-white" style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);">
+                                        <h6 class="mb-0 text-center">
+                                            <i class="fas fa-times-circle me-2"></i>
+                                            أوامر غير منفذة
+                                        </h6>
+                                    </div>
+                                    <div class="card-body text-center">
+                                        @php
+                                            $unexecutedRoute = ($project ?? 'riyadh') === 'madinah' 
+                                                ? route('admin.time-management.unexecuted.madinah')
+                                                : route('admin.time-management.unexecuted.riyadh');
+                                        @endphp
+                                        <div class="mb-3">
+                                            <i class="fas fa-ban fa-3x" style="color: #e74c3c;"></i>
+                                        </div>
+                                        <a href="{{ $unexecutedRoute }}" 
+                                           class="btn btn-sm shadow-sm"
+                                           style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); color: white; min-width: 150px;">
+                                            <i class="fas fa-list me-1"></i>
+                                            عرض الأوامر الغير منفذة
+                                        </a>
+                                        <p class="text-muted mt-3 mb-0" style="font-size: 0.85rem;">
+                                            أوامر لم يتم تنفيذها حتى الآن
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Detailed Report Card -->
+                            <div class="col-md-4">
+                                <div class="card h-100 shadow-sm border-0">
+                                    <div class="card-header text-white" style="background: linear-gradient(135deg, #fd79a8 0%, #a29bfe 100%);">
+                                        <h6 class="mb-0 text-center">
+                                            <i class="fas fa-chart-bar me-2"></i>
+                                            تقرير مفصل
+                                        </h6>
+                                    </div>
+                                    <div class="card-body text-center">
+                                        @php
+                                            $detailedReportRoute = ($project ?? 'riyadh') === 'madinah' 
+                                                ? route('admin.time-management.detailed-report.madinah')
+                                                : route('admin.time-management.detailed-report.riyadh');
+                                        @endphp
+                                        <div class="mb-3">
+                                            <i class="fas fa-file-alt fa-3x" style="color: #fd79a8;"></i>
+                                        </div>
+                                        <a href="{{ $detailedReportRoute }}" 
+                                           class="btn btn-sm shadow-sm"
+                                           style="background: linear-gradient(135deg, #fd79a8 0%, #a29bfe 100%); color: white; min-width: 150px;">
+                                            <i class="fas fa-list me-1"></i>
+                                            عرض التقرير المفصل
+                                        </a>
+                                        <p class="text-muted mt-3 mb-0" style="font-size: 0.85rem;">
+                                            تحليل شامل لأوامر العمل
                                         </p>
                                     </div>
                                 </div>

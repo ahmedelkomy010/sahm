@@ -18,7 +18,11 @@
                                 عرض جميع اختبارات الجودة لأوامر العمل في مشروع الرياض
                             </p>
                         </div>
-                        <div>
+                        <div class="d-flex gap-2">
+                            <a href="{{ route('admin.quality.inspections-reports.riyadh') }}" class="btn btn-warning">
+                                <i class="fas fa-chart-bar me-2"></i>
+                                تقارير الاختبارات
+                            </a>
                             <a href="/admin/work-orders/productivity/riyadh" class="btn btn-light">
                                 <i class="fas fa-arrow-right me-2"></i>
                                 العودة إلى لوحة التحكم

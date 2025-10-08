@@ -1620,6 +1620,126 @@ class WorkOrderController extends Controller
     }
 
     /**
+     * عرض تقارير الاختبارات للرياض
+     */
+    public function inspectionsReportsRiyadh()
+    {
+        $licenses = \App\Models\License::with(['workOrder'])
+            ->whereHas('workOrder', function($q) {
+                $q->where('city', 'الرياض')->orWhere('city', 'riyadh');
+            })
+            ->where(function($q) {
+                $q->where('total_tests_count', '>', 0)
+                  ->orWhereNotNull('lab_tests_data');
+            })
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        // حساب الإحصائيات
+        $totalTests = $licenses->sum('total_tests_count');
+        $successfulTests = $licenses->sum('successful_tests_count');
+        $failedTests = $licenses->sum('failed_tests_count');
+
+        return view('admin.quality.inspections-reports-riyadh', compact('licenses', 'totalTests', 'successfulTests', 'failedTests'));
+    }
+
+    /**
+     * عرض تقارير الاختبارات للمدينة المنورة
+     */
+    public function inspectionsReportsMadinah()
+    {
+        $licenses = \App\Models\License::with(['workOrder'])
+            ->whereHas('workOrder', function($q) {
+                $q->where('city', 'المدينة المنورة')->orWhere('city', 'madinah');
+            })
+            ->where(function($q) {
+                $q->where('total_tests_count', '>', 0)
+                  ->orWhereNotNull('lab_tests_data');
+            })
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        // حساب الإحصائيات
+        $totalTests = $licenses->sum('total_tests_count');
+        $successfulTests = $licenses->sum('successful_tests_count');
+        $failedTests = $licenses->sum('failed_tests_count');
+
+        return view('admin.quality.inspections-reports-madinah', compact('licenses', 'totalTests', 'successfulTests', 'failedTests'));
+    }
+
+    /**
+     * عرض صفحة الإخلاءات (الرخص التي ليس عليها إخلاء) للرياض
+     */
+    public function evacuationsRiyadh()
+    {
+        $licenses = \App\Models\License::with(['workOrder'])
+            ->whereHas('workOrder', function($q) {
+                $q->where('city', 'الرياض')->orWhere('city', 'riyadh');
+            })
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
+
+        $licensesCount = \App\Models\License::whereHas('workOrder', function($q) {
+            $q->where('city', 'الرياض')->orWhere('city', 'riyadh');
+        })->count();
+
+        $licensesWithEvacuation = \App\Models\License::whereHas('workOrder', function($q) {
+            $q->where('city', 'الرياض')->orWhere('city', 'riyadh');
+        })->whereNotNull('evacuation_date')->count();
+
+        return view('admin.quality.evacuations-riyadh', compact('licenses', 'licensesCount', 'licensesWithEvacuation'));
+    }
+
+    /**
+     * عرض صفحة الإخلاءات (الرخص التي ليس عليها إخلاء) للمدينة المنورة
+     */
+    public function evacuationsMadinah()
+    {
+        $licenses = \App\Models\License::with(['workOrder'])
+            ->whereHas('workOrder', function($q) {
+                $q->where('city', 'المدينة المنورة')->orWhere('city', 'madinah');
+            })
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
+
+        $licensesCount = \App\Models\License::whereHas('workOrder', function($q) {
+            $q->where('city', 'المدينة المنورة')->orWhere('city', 'madinah');
+        })->count();
+
+        $licensesWithEvacuation = \App\Models\License::whereHas('workOrder', function($q) {
+            $q->where('city', 'المدينة المنورة')->orWhere('city', 'madinah');
+        })->whereNotNull('evacuation_date')->count();
+
+        return view('admin.quality.evacuations-madinah', compact('licenses', 'licensesCount', 'licensesWithEvacuation'));
+    }
+
+    /**
+     * تصدير بيانات الإخلاءات إلى Excel
+     */
+    public function exportEvacuations($city)
+    {
+        ini_set('memory_limit', '2048M');
+        set_time_limit(600);
+
+        $cityCondition = $city === 'madinah' ? 
+            function($q) { $q->where('city', 'المدينة المنورة')->orWhere('city', 'madinah'); } :
+            function($q) { $q->where('city', 'الرياض')->orWhere('city', 'riyadh'); };
+
+        $licenses = \App\Models\License::with(['workOrder:id,order_number,work_type,city'])
+            ->whereHas('workOrder', $cityCondition)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $cityName = $city === 'madinah' ? 'المدينة المنورة' : 'الرياض';
+        $fileName = 'evacuations_' . $city . '_' . date('Y-m-d_H-i-s') . '.xlsx';
+
+        return \Excel::download(
+            new \App\Exports\EvacuationsExport($licenses, $cityName),
+            $fileName
+        );
+    }
+
+    /**
      * عرض صفحة مخالفات السلامة للرياض
      */
     public function safetyViolationsRiyadh()
@@ -1733,5 +1853,197 @@ class WorkOrderController extends Controller
             \Log::error('Error in exportViolations: ' . $e->getMessage());
             return redirect()->back()->with('error', 'حدث خطأ أثناء تصدير البيانات: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * عرض أوامر العمل المتأخرة (تجاوزت المدة الزمنية) - الرياض
+     */
+    public function overdueOrdersRiyadh()
+    {
+        $workOrders = WorkOrder::where(function($q) {
+            $q->where('city', 'الرياض')->orWhere('city', 'riyadh');
+        })
+        ->where('execution_status', '!=', 7) // ليست منتهية ومصروفة
+        ->whereNotNull('approval_date')
+        ->whereRaw('DATEDIFF(NOW(), approval_date) > 30') // تجاوزت 30 يوم مثلاً
+        ->orderBy('approval_date', 'asc')
+        ->paginate(20);
+
+        $ordersCount = WorkOrder::where(function($q) {
+            $q->where('city', 'الرياض')->orWhere('city', 'riyadh');
+        })
+        ->where('execution_status', '!=', 7)
+        ->whereNotNull('approval_date')
+        ->whereRaw('DATEDIFF(NOW(), approval_date) > 30')
+        ->count();
+
+        return view('admin.time-management.overdue-riyadh', compact('workOrders', 'ordersCount'));
+    }
+
+    /**
+     * عرض أوامر العمل المتأخرة (تجاوزت المدة الزمنية) - المدينة
+     */
+    public function overdueOrdersMadinah()
+    {
+        $workOrders = WorkOrder::where(function($q) {
+            $q->where('city', 'المدينة المنورة')->orWhere('city', 'madinah');
+        })
+        ->where('execution_status', '!=', 7)
+        ->whereNotNull('approval_date')
+        ->whereRaw('DATEDIFF(NOW(), approval_date) > 30')
+        ->orderBy('approval_date', 'asc')
+        ->paginate(20);
+
+        $ordersCount = WorkOrder::where(function($q) {
+            $q->where('city', 'المدينة المنورة')->orWhere('city', 'madinah');
+        })
+        ->where('execution_status', '!=', 7)
+        ->whereNotNull('approval_date')
+        ->whereRaw('DATEDIFF(NOW(), approval_date) > 30')
+        ->count();
+
+        return view('admin.time-management.overdue-madinah', compact('workOrders', 'ordersCount'));
+    }
+
+    /**
+     * عرض أوامر العمل الغير منفذة - الرياض
+     */
+    public function unexecutedOrdersRiyadh()
+    {
+        $workOrders = WorkOrder::where(function($q) {
+            $q->where('city', 'الرياض')->orWhere('city', 'riyadh');
+        })
+        ->where('execution_status', 1) // جاري العمل بالموقع فقط
+        ->orderBy('approval_date', 'asc')
+        ->paginate(20);
+
+        $ordersCount = WorkOrder::where(function($q) {
+            $q->where('city', 'الرياض')->orWhere('city', 'riyadh');
+        })
+        ->where('execution_status', 1)
+        ->count();
+
+        $totalValue = WorkOrder::where(function($q) {
+            $q->where('city', 'الرياض')->orWhere('city', 'riyadh');
+        })
+        ->where('execution_status', 1)
+        ->sum('order_value_without_consultant');
+
+        return view('admin.time-management.unexecuted-riyadh', compact('workOrders', 'ordersCount', 'totalValue'));
+    }
+
+    /**
+     * عرض أوامر العمل الغير منفذة - المدينة
+     */
+    public function unexecutedOrdersMadinah()
+    {
+        $workOrders = WorkOrder::where(function($q) {
+            $q->where('city', 'المدينة المنورة')->orWhere('city', 'madinah');
+        })
+        ->where('execution_status', 1)
+        ->orderBy('approval_date', 'asc')
+        ->paginate(20);
+
+        $ordersCount = WorkOrder::where(function($q) {
+            $q->where('city', 'المدينة المنورة')->orWhere('city', 'madinah');
+        })
+        ->where('execution_status', 1)
+        ->count();
+
+        $totalValue = WorkOrder::where(function($q) {
+            $q->where('city', 'المدينة المنورة')->orWhere('city', 'madinah');
+        })
+        ->where('execution_status', 1)
+        ->sum('order_value_without_consultant');
+
+        return view('admin.time-management.unexecuted-madinah', compact('workOrders', 'ordersCount', 'totalValue'));
+    }
+
+    /**
+     * عرض التقرير المفصل - الرياض
+     */
+    public function detailedReportRiyadh()
+    {
+        $overdueCount = WorkOrder::where(function($q) {
+            $q->where('city', 'الرياض')->orWhere('city', 'riyadh');
+        })
+        ->where('execution_status', '!=', 7)
+        ->whereNotNull('approval_date')
+        ->whereRaw('DATEDIFF(NOW(), approval_date) > 30')
+        ->count();
+
+        $unexecutedCount = WorkOrder::where(function($q) {
+            $q->where('city', 'الرياض')->orWhere('city', 'riyadh');
+        })
+        ->where('execution_status', 1)
+        ->count();
+
+        $completedCount = WorkOrder::where(function($q) {
+            $q->where('city', 'الرياض')->orWhere('city', 'riyadh');
+        })
+        ->where('execution_status', 7)
+        ->count();
+
+        $totalOrders = WorkOrder::where(function($q) {
+            $q->where('city', 'الرياض')->orWhere('city', 'riyadh');
+        })->count();
+
+        $workOrders = WorkOrder::where(function($q) {
+            $q->where('city', 'الرياض')->orWhere('city', 'riyadh');
+        })
+        ->orderBy('approval_date', 'desc')
+        ->paginate(20);
+
+        return view('admin.time-management.detailed-report-riyadh', compact(
+            'overdueCount', 
+            'unexecutedCount', 
+            'completedCount', 
+            'totalOrders',
+            'workOrders'
+        ));
+    }
+
+    /**
+     * عرض التقرير المفصل - المدينة
+     */
+    public function detailedReportMadinah()
+    {
+        $overdueCount = WorkOrder::where(function($q) {
+            $q->where('city', 'المدينة المنورة')->orWhere('city', 'madinah');
+        })
+        ->where('execution_status', '!=', 7)
+        ->whereNotNull('approval_date')
+        ->whereRaw('DATEDIFF(NOW(), approval_date) > 30')
+        ->count();
+
+        $unexecutedCount = WorkOrder::where(function($q) {
+            $q->where('city', 'المدينة المنورة')->orWhere('city', 'madinah');
+        })
+        ->where('execution_status', 1)
+        ->count();
+
+        $completedCount = WorkOrder::where(function($q) {
+            $q->where('city', 'المدينة المنورة')->orWhere('city', 'madinah');
+        })
+        ->where('execution_status', 7)
+        ->count();
+
+        $totalOrders = WorkOrder::where(function($q) {
+            $q->where('city', 'المدينة المنورة')->orWhere('city', 'madinah');
+        })->count();
+
+        $workOrders = WorkOrder::where(function($q) {
+            $q->where('city', 'المدينة المنورة')->orWhere('city', 'madinah');
+        })
+        ->orderBy('approval_date', 'desc')
+        ->paginate(20);
+
+        return view('admin.time-management.detailed-report-madinah', compact(
+            'overdueCount', 
+            'unexecutedCount', 
+            'completedCount', 
+            'totalOrders',
+            'workOrders'
+        ));
     }
 } 
