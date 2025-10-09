@@ -314,9 +314,9 @@
                                     <select class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" 
                                             data-field="extract_entity" 
                                             onchange="autoSaveTurnkey(this)">
-                                        <option value="">اختر...</option>
-                                        <option value="SAP" {{ $revenue->extract_entity === 'SAP' ? 'selected' : '' }}>SAP</option>
-                                        <option value="UDS" {{ $revenue->extract_entity === 'UDS' ? 'selected' : '' }}>UDS</option>
+                                        
+                                        <option value="UDS" {{ $revenue->extract_entity === 'UDS' ? 'selected' : '' }}>SAP</option>
+                                        <option value="SAP" {{ $revenue->extract_entity === 'SAP' ? 'selected' : '' }}>UDS</option>
                                     </select>
                                 </td>
                                 <!-- قيمة الضريبة -->
@@ -385,7 +385,7 @@
                                     <select class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" 
                                             data-field="extract_status" 
                                             onchange="autoSaveTurnkey(this)">
-                                        <option value="">اختر...</option>
+                                        
                                         <option value="المقاول" {{ $revenue->extract_status === 'المقاول' ? 'selected' : '' }}>المقاول</option>
                                         <option value="ادارة الكهرباء" {{ $revenue->extract_status === 'ادارة الكهرباء' ? 'selected' : '' }}>ادارة الكهرباء</option>
                                         <option value="المالية" {{ $revenue->extract_status === 'المالية' ? 'selected' : '' }}>المالية</option>
@@ -424,7 +424,7 @@
                                     <select class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" 
                                             data-field="payment_status" 
                                             onchange="autoSaveTurnkey(this)">
-                                        <option value="">اختر...</option>
+                                        
                                         <option value="مدفوع" {{ $revenue->payment_status === 'مدفوع' || $revenue->payment_status === 'paid' ? 'selected' : '' }}>مدفوع</option>
                                         <option value="غير مدفوع" {{ $revenue->payment_status === 'غير مدفوع' || $revenue->payment_status === 'unpaid' || $revenue->payment_status === 'pending' ? 'selected' : '' }}>غير مدفوع</option>
                                     </select>
@@ -958,9 +958,9 @@ function addNewTurnkeyRow() {
         <td class="px-3 py-3 border-r border-gray-200"><input type="number" step="0.01" class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all text-right" data-field="extract_value" onchange="autoSaveTurnkey(this)" placeholder="0.00"></td>
         <td class="px-3 py-3 border-r border-gray-200">
             <select class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" data-field="extract_entity" onchange="autoSaveTurnkey(this)">
-                <option value="">اختر...</option>
-                <option value="SAP">SAP</option>
+                
                 <option value="UDS">UDS</option>
+                <option value="SAP">SAP</option>
             </select>
         </td>
         <td class="px-3 py-3 border-r border-gray-200"><input type="number" step="0.01" class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all text-right bg-yellow-50" data-field="tax_value" onchange="autoSaveTurnkey(this)" placeholder="0.00" readonly title="محسوب تلقائياً: قيمة المستخلصات × 15%"></td>
@@ -971,7 +971,7 @@ function addNewTurnkeyRow() {
         <td class="px-3 py-3 border-r border-gray-200"><input type="number" class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all text-right" data-field="year" onchange="autoSaveTurnkey(this)" placeholder="${new Date().getFullYear()}"></td>
         <td class="px-3 py-3 border-r border-gray-200">
             <select class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" data-field="extract_status" onchange="autoSaveTurnkey(this)">
-                <option value="">اختر...</option>
+                
                 <option value="المقاول">المقاول</option>
                 <option value="ادارة الكهرباء">ادارة الكهرباء</option>
                 <option value="المالية">المالية</option>
@@ -983,7 +983,7 @@ function addNewTurnkeyRow() {
         <td class="px-3 py-3 border-r border-gray-200"><input type="number" step="0.01" class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all text-right" data-field="payment_value" onchange="autoSaveTurnkey(this)" placeholder="0.00"></td>
         <td class="px-3 py-3 border-r border-gray-200">
             <select class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" data-field="payment_status" onchange="autoSaveTurnkey(this)">
-                <option value="">اختر...</option>
+                
                 <option value="مدفوع">مدفوع</option>
                 <option value="غير مدفوع">غير مدفوع</option>
             </select>
@@ -1112,6 +1112,7 @@ function updateTurnkeyStatistics() {
     };
     
     let unpaidNetValue = 0; // لحساب المبلغ المتبقي عند العميل (فقط الغير مدفوع)
+    let paidNetValue = 0; // لحساب إجمالي المدفوعات (فقط المدفوع)
     
     rows.forEach(row => {
         const id = row.dataset.id;
@@ -1131,15 +1132,22 @@ function updateTurnkeyStatistics() {
             stats.totalTax += taxValue;
             stats.totalPenalties += penalties;
             stats.totalNetValue += netValue;
-            stats.totalPayments += paymentValue;
             stats.totalFirstPaymentTax += firstPaymentTax;
             
             // احسب صافي قيمة المستخلص للسجلات الغير مدفوعة فقط
             if (paymentStatus === 'غير مدفوع') {
                 unpaidNetValue += netValue;
             }
+            
+            // احسب صافي قيمة المستخلص للسجلات المدفوعة فقط (إجمالي المدفوعات)
+            if (paymentStatus === 'مدفوع') {
+                paidNetValue += netValue;
+            }
         }
     });
+    
+    // Calculate payments (فقط المستخلصات المدفوعة)
+    stats.totalPayments = paidNetValue;
     
     // Calculate remaining amount (فقط المستخلصات الغير مدفوعة)
     const remainingAmount = unpaidNetValue;

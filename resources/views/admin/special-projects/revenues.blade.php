@@ -744,10 +744,10 @@
         // 5. صافي قيمة المستخلصات غير شامل الضريبة (total_value - penalties)
         const netValueWithoutTax = totalValueWithoutTax - totalPenalties;
         
-        // 6. إجمالي المدفوعات (payment_amount)
+        // 6. إجمالي المدفوعات = صافي قيمة المستخلص للمدفوع فقط (net_value)
         const paidAmount = revenues
             .filter(r => r.payment_status === 'paid')
-            .reduce((sum, r) => sum + (parseFloat(r.payment_amount) || 0), 0);
+            .reduce((sum, r) => sum + (parseFloat(r.net_value) || 0), 0);
         
         // 7. المبلغ المتبقي عند العميل (فقط المستخلصات الغير مدفوعة)
         const remainingAmount = revenues

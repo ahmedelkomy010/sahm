@@ -4576,7 +4576,8 @@ class WorkOrderController extends Controller
                 'totalPenalties' => $revenues->sum('penalties') ?: 0,
                 'totalFirstPaymentTax' => $revenues->sum('first_payment_tax') ?: 0,
                 'totalNetExtractValue' => $revenues->sum('net_extract_value') ?: 0,
-                'totalPaymentValue' => $revenues->sum('payment_value') ?: 0,
+                // إجمالي المدفوعات = صافي قيمة المستخلص للمستخلصات المدفوعة فقط
+                'totalPaymentValue' => $revenues->where('extract_status', 'مدفوع')->sum('net_extract_value') ?: 0,
                 // المبلغ المتبقي عند العميل شامل الضريبة = فقط المستخلصات الغير مدفوعة
                 'remainingAmount' => $revenues->where('extract_status', 'غير مدفوع')->sum(function($revenue) {
                     return ($revenue->extract_value ?: 0) + ($revenue->tax_value ?: 0) - ($revenue->penalties ?: 0);
@@ -5107,28 +5108,33 @@ class WorkOrderController extends Controller
             $workOrdersRevenues = $workOrdersRevenuesQuery->get();
             
             // حساب المبلغ المتبقي للمستخلصات الغير مدفوعة فقط
-            $riyadhUnpaid = $workOrdersRevenues->where('project', 'riyadh')->where('extract_status', 'غير مدفوع');
-            $madinahUnpaid = $workOrdersRevenues->where('project', 'madinah')->where('extract_status', 'غير مدفوع');
+            $riyadhRevenues = $workOrdersRevenues->where('project', 'riyadh');
+            $riyadhUnpaid = $riyadhRevenues->where('extract_status', 'غير مدفوع');
+            $riyadhPaid = $riyadhRevenues->where('extract_status', 'مدفوع');
+            
+            $madinahRevenues = $workOrdersRevenues->where('project', 'madinah');
+            $madinahUnpaid = $madinahRevenues->where('extract_status', 'غير مدفوع');
+            $madinahPaid = $madinahRevenues->where('extract_status', 'مدفوع');
             
             $workOrdersStats = [
                 'riyadh' => [
-                    'count' => $workOrdersRevenues->where('project', 'riyadh')->count(),
-                    'total_value' => $workOrdersRevenues->where('project', 'riyadh')->sum('extract_value'),
-                    'total_tax' => $workOrdersRevenues->where('project', 'riyadh')->sum('tax_value'),
-                    'total_penalties' => $workOrdersRevenues->where('project', 'riyadh')->sum('penalties'),
-                    'total_payments' => $workOrdersRevenues->where('project', 'riyadh')->sum('payment_value'),
-                    'first_payment_tax' => $workOrdersRevenues->where('project', 'riyadh')->sum('first_payment_tax'),
+                    'count' => $riyadhRevenues->count(),
+                    'total_value' => $riyadhRevenues->sum('extract_value'),
+                    'total_tax' => $riyadhRevenues->sum('tax_value'),
+                    'total_penalties' => $riyadhRevenues->sum('penalties'),
+                    'total_payments' => $riyadhPaid->sum('net_extract_value'),
+                    'first_payment_tax' => $riyadhRevenues->sum('first_payment_tax'),
                     'unpaid_amount' => $riyadhUnpaid->sum(function($revenue) {
                         return ($revenue->extract_value ?: 0) + ($revenue->tax_value ?: 0) - ($revenue->penalties ?: 0);
                     }),
                 ],
                 'madinah' => [
-                    'count' => $workOrdersRevenues->where('project', 'madinah')->count(),
-                    'total_value' => $workOrdersRevenues->where('project', 'madinah')->sum('extract_value'),
-                    'total_tax' => $workOrdersRevenues->where('project', 'madinah')->sum('tax_value'),
-                    'total_penalties' => $workOrdersRevenues->where('project', 'madinah')->sum('penalties'),
-                    'total_payments' => $workOrdersRevenues->where('project', 'madinah')->sum('payment_value'),
-                    'first_payment_tax' => $workOrdersRevenues->where('project', 'madinah')->sum('first_payment_tax'),
+                    'count' => $madinahRevenues->count(),
+                    'total_value' => $madinahRevenues->sum('extract_value'),
+                    'total_tax' => $madinahRevenues->sum('tax_value'),
+                    'total_penalties' => $madinahRevenues->sum('penalties'),
+                    'total_payments' => $madinahPaid->sum('net_extract_value'),
+                    'first_payment_tax' => $madinahRevenues->sum('first_payment_tax'),
                     'unpaid_amount' => $madinahUnpaid->sum(function($revenue) {
                         return ($revenue->extract_value ?: 0) + ($revenue->tax_value ?: 0) - ($revenue->penalties ?: 0);
                     }),
@@ -5162,6 +5168,7 @@ class WorkOrderController extends Controller
             
             // جمع إحصائيات إجمالية لمشاريع تسليم المفتاح (من جميع السجلات)
             $turnkeyUnpaid = $turnkeyRevenues->where('payment_status', 'غير مدفوع');
+            $turnkeyPaid = $turnkeyRevenues->where('payment_status', 'مدفوع');
             
             $turnkeyStats = [
                 'count' => $turnkeyRevenues->count(),
@@ -5169,7 +5176,7 @@ class WorkOrderController extends Controller
                 'total_tax' => $turnkeyRevenues->sum('tax_value'),
                 'total_penalties' => $turnkeyRevenues->sum('penalties'),
                 'total_net_value' => $turnkeyRevenues->sum('net_extract_value'),
-                'total_payments' => $turnkeyRevenues->sum('payment_value'),
+                'total_payments' => $turnkeyPaid->sum('net_extract_value'),
                 'first_payment_tax' => $turnkeyRevenues->sum('first_payment_tax'),
                 'unpaid_amount' => $turnkeyUnpaid->sum('net_extract_value'),
             ];
@@ -5184,6 +5191,7 @@ class WorkOrderController extends Controller
                 // البحث باستخدام project_id
                 $projectRevenues = $turnkeyRevenues->where('project_id', $project->id);
                 $projectUnpaid = $projectRevenues->where('payment_status', 'غير مدفوع');
+                $projectPaid = $projectRevenues->where('payment_status', 'مدفوع');
                 
                 $turnkeyProjectsStats[] = [
                     'project_name' => $project->name,
@@ -5194,7 +5202,7 @@ class WorkOrderController extends Controller
                     'total_tax' => $projectRevenues->sum('tax_value'),
                     'total_penalties' => $projectRevenues->sum('penalties'),
                     'total_net_value' => $projectRevenues->sum('net_extract_value'),
-                    'total_payments' => $projectRevenues->sum('payment_value'),
+                    'total_payments' => $projectPaid->sum('net_extract_value'),
                     'first_payment_tax' => $projectRevenues->sum('first_payment_tax'),
                     'unpaid_amount' => $projectUnpaid->sum('net_extract_value'),
                 ];
@@ -5215,6 +5223,7 @@ class WorkOrderController extends Controller
             
             // جمع إحصائيات إجمالية للمشاريع الخاصة
             $specialUnpaid = $specialRevenues->where('payment_status', 'unpaid');
+            $specialPaid = $specialRevenues->where('payment_status', 'paid');
             
             $specialStats = [
                 'count' => $specialRevenues->count(),
@@ -5222,7 +5231,7 @@ class WorkOrderController extends Controller
                 'total_tax' => $specialRevenues->sum('tax_value'),
                 'total_penalties' => $specialRevenues->sum('penalties'),
                 'total_net_value' => $specialRevenues->sum('net_value'),
-                'total_payments' => $specialRevenues->sum('payment_amount'),
+                'total_payments' => $specialPaid->sum('net_value'),
                 'first_payment_tax' => $specialRevenues->sum('advance_payment_tax'),
                 'unpaid_amount' => $specialUnpaid->sum('net_value'),
             ];
@@ -5234,6 +5243,7 @@ class WorkOrderController extends Controller
             foreach ($specialProjects as $project) {
                 $projectRevenues = $specialRevenues->where('project_id', $project->id);
                 $projectUnpaid = $projectRevenues->where('payment_status', 'unpaid');
+                $projectPaid = $projectRevenues->where('payment_status', 'paid');
                 
                 $specialProjectsStats[] = [
                     'project_name' => $project->name,
@@ -5244,7 +5254,7 @@ class WorkOrderController extends Controller
                     'total_tax' => $projectRevenues->sum('tax_value'),
                     'total_penalties' => $projectRevenues->sum('penalties'),
                     'total_net_value' => $projectRevenues->sum('net_value'),
-                    'total_payments' => $projectRevenues->sum('payment_amount'),
+                    'total_payments' => $projectPaid->sum('net_value'),
                     'first_payment_tax' => $projectRevenues->sum('advance_payment_tax'),
                     'unpaid_amount' => $projectUnpaid->sum('net_value'),
                 ];

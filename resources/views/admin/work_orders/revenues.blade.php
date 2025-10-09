@@ -697,7 +697,7 @@
                                         حالة الصرف
                                     </label>
                                     <select class="form-select form-select-sm" id="filter_payment_status" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;">
-                                        <option value="">الكل</option>
+                                        
                                         <option value="مدفوع">مدفوع</option>
                                         <option value="غير مدفوع">غير مدفوع</option>
                                     </select>
@@ -895,7 +895,7 @@
                                         </td>
                                         <td>
                                             <select class="form-select form-select-sm payment-type-select" data-field="payment_type" style="font-size: 0.75rem; padding: 4px;">
-                                                <option value="">اختر...</option>
+                                                
                                                 <option value="المقاول" {{ $revenue->payment_type == 'المقاول' ? 'selected' : '' }}>المقاول</option>
                                                 <option value="ادارة الكهرباء" {{ $revenue->payment_type == 'ادارة الكهرباء' ? 'selected' : '' }}>ادارة الكهرباء</option>
                                                 <option value="المالية" {{ $revenue->payment_type == 'المالية' ? 'selected' : '' }}>المالية</option>
@@ -914,7 +914,7 @@
                                         </td>
                                         <td>
                                             <select class="form-select form-select-sm" data-field="extract_status" style="font-size: 0.75rem; padding: 4px;">
-                                                <option value="">اختر...</option>
+                                                
                                                 <option value="مدفوع" {{ $revenue->extract_status == 'مدفوع' ? 'selected' : '' }}>مدفوع</option>
                                                 <option value="غير مدفوع" {{ $revenue->extract_status == 'غير مدفوع' ? 'selected' : '' }}>غير مدفوع</option>
                                             </select>
@@ -1742,7 +1742,6 @@ function importExcel(input) {
     input.value = '';
 }
 
-// ملاحظة: تم إزالة function processImportedData لأن الاستيراد أصبح يحفظ مباشرة في قاعدة البيانات
 
 // تنسيق التاريخ لحقل الإدخال
 function formatDateForInput(dateValue) {

@@ -409,7 +409,7 @@
                         <div class="stat-icon">
                             <i class="fas fa-money-check-alt"></i>
                         </div>
-                        <div class="stat-title">صافي قيمة المستخلصات غير شامل الضريبة</div>
+                        <div class="stat-title">صافي قيمة المستخلصات</div>
                         <div class="stat-value">{{ number_format($grandTotal['total_value'] - $grandTotal['total_penalties'], 2) }}</div>
                         <div class="stat-currency">ريال سعودي</div>
                     </div>
@@ -496,7 +496,7 @@
                         <div class="stat-icon">
                             <i class="fas fa-money-check-alt"></i>
                         </div>
-                        <div class="stat-title">صافي قيمة المستخلصات غير شامل الضريبة</div>
+                        <div class="stat-title">صافي قيمة المستخلصات</div>
                         <div class="stat-value">{{ number_format($workOrdersStats['riyadh']['total_value'] - $workOrdersStats['riyadh']['total_penalties'], 2) }}</div>
                         <div class="stat-currency">ريال سعودي</div>
                     </div>
@@ -583,7 +583,7 @@
                         <div class="stat-icon">
                             <i class="fas fa-money-check-alt"></i>
                         </div>
-                        <div class="stat-title">صافي قيمة المستخلصات غير شامل الضريبة</div>
+                        <div class="stat-title">صافي قيمة المستخلصات</div>
                         <div class="stat-value">{{ number_format($workOrdersStats['madinah']['total_value'] - $workOrdersStats['madinah']['total_penalties'], 2) }}</div>
                         <div class="stat-currency">ريال سعودي</div>
                     </div>
@@ -670,7 +670,7 @@
                         <div class="stat-icon">
                             <i class="fas fa-money-check-alt"></i>
                         </div>
-                        <div class="stat-title">صافي قيمة المستخلصات غير شامل الضريبة</div>
+                        <div class="stat-title">صافي قيمة المستخلصات</div>
                         <div class="stat-value">{{ number_format($turnkeyStats['total_net_value'], 2) }}</div>
                         <div class="stat-currency">ريال سعودي</div>
                     </div>
@@ -761,7 +761,7 @@
                         <div class="stat-icon">
                             <i class="fas fa-money-check-alt"></i>
                         </div>
-                        <div class="stat-title">صافي قيمة المستخلصات غير شامل الضريبة</div>
+                        <div class="stat-title">صافي قيمة المستخلصات</div>
                         <div class="stat-value">{{ number_format($projectStat['total_value'] - $projectStat['total_penalties'], 2) }}</div>
                         <div class="stat-currency">ريال سعودي</div>
                     </div>
@@ -849,7 +849,7 @@
                         <div class="stat-icon">
                             <i class="fas fa-money-check-alt"></i>
                         </div>
-                        <div class="stat-title">صافي قيمة المستخلصات غير شامل الضريبة</div>
+                        <div class="stat-title">صافي قيمة المستخلصات</div>
                         <div class="stat-value">{{ number_format($specialStats['total_net_value'], 2) }}</div>
                         <div class="stat-currency">ريال سعودي</div>
                     </div>
@@ -940,7 +940,7 @@
                         <div class="stat-icon">
                             <i class="fas fa-money-check-alt"></i>
                         </div>
-                        <div class="stat-title">صافي قيمة المستخلصات غير شامل الضريبة</div>
+                        <div class="stat-title">صافي قيمة المستخلصات</div>
                         <div class="stat-value">{{ number_format($projectStat['total_value'] - $projectStat['total_penalties'], 2) }}</div>
                         <div class="stat-currency">ريال سعودي</div>
                     </div>
