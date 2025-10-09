@@ -5122,6 +5122,7 @@ class WorkOrderController extends Controller
                     'total_value' => $riyadhRevenues->sum('extract_value'),
                     'total_tax' => $riyadhRevenues->sum('tax_value'),
                     'total_penalties' => $riyadhRevenues->sum('penalties'),
+                    'total_net_extract_value' => $riyadhRevenues->sum('net_extract_value'),
                     'total_payments' => $riyadhPaid->sum('net_extract_value'),
                     'first_payment_tax' => $riyadhRevenues->sum('first_payment_tax'),
                     'unpaid_amount' => $riyadhUnpaid->sum(function($revenue) {
@@ -5133,6 +5134,7 @@ class WorkOrderController extends Controller
                     'total_value' => $madinahRevenues->sum('extract_value'),
                     'total_tax' => $madinahRevenues->sum('tax_value'),
                     'total_penalties' => $madinahRevenues->sum('penalties'),
+                    'total_net_extract_value' => $madinahRevenues->sum('net_extract_value'),
                     'total_payments' => $madinahPaid->sum('net_extract_value'),
                     'first_payment_tax' => $madinahRevenues->sum('first_payment_tax'),
                     'unpaid_amount' => $madinahUnpaid->sum(function($revenue) {
@@ -5270,6 +5272,8 @@ class WorkOrderController extends Controller
                                $turnkeyStats['total_tax'] + $specialStats['total_tax'],
                 'total_penalties' => $workOrdersStats['riyadh']['total_penalties'] + $workOrdersStats['madinah']['total_penalties'] + 
                                      $turnkeyStats['total_penalties'] + $specialStats['total_penalties'],
+                'total_net_extract_value' => $workOrdersStats['riyadh']['total_net_extract_value'] + $workOrdersStats['madinah']['total_net_extract_value'] + 
+                                             $turnkeyStats['total_net_value'] + $specialStats['total_net_value'],
                 'total_payments' => $workOrdersStats['riyadh']['total_payments'] + $workOrdersStats['madinah']['total_payments'] + 
                                     $turnkeyStats['total_payments'] + $specialStats['total_payments'],
                 'first_payment_tax' => $workOrdersStats['riyadh']['first_payment_tax'] + $workOrdersStats['madinah']['first_payment_tax'] + 
