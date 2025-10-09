@@ -5076,7 +5076,7 @@ class WorkOrderController extends Controller
     /**
      * عرض صفحة إيرادات المشاريع الموحدة (مشرف النظام فقط)
      */
-    public function allProjectsRevenues()
+    public function allProjectsRevenues(Request $request)
     {
         try {
             // التحقق من صلاحيات مشرف النظام
@@ -5086,8 +5086,22 @@ class WorkOrderController extends Controller
             
             // جمع إحصائيات من جميع المصادر
             
+            // Get date filters
+            $startDate = $request->input('start_date');
+            $endDate = $request->input('end_date');
+            
             // 1. إيرادات مشاريع الرياض والمدينة (من جدول revenues)
-            $workOrdersRevenues = \App\Models\Revenue::all();
+            $workOrdersRevenuesQuery = \App\Models\Revenue::query();
+            
+            // Apply date filters if provided
+            if ($startDate) {
+                $workOrdersRevenuesQuery->where('extract_date', '>=', $startDate);
+            }
+            if ($endDate) {
+                $workOrdersRevenuesQuery->where('extract_date', '<=', $endDate);
+            }
+            
+            $workOrdersRevenues = $workOrdersRevenuesQuery->get();
             
             $workOrdersStats = [
                 'riyadh' => [
@@ -5109,7 +5123,17 @@ class WorkOrderController extends Controller
             ];
             
             // 2. إيرادات مشاريع تسليم المفتاح (من جدول turnkey_revenues)
-            $turnkeyRevenues = \App\Models\TurnkeyRevenue::all();
+            $turnkeyRevenuesQuery = \App\Models\TurnkeyRevenue::query();
+            
+            // Apply date filters if provided
+            if ($startDate) {
+                $turnkeyRevenuesQuery->where('extract_date', '>=', $startDate);
+            }
+            if ($endDate) {
+                $turnkeyRevenuesQuery->where('extract_date', '<=', $endDate);
+            }
+            
+            $turnkeyRevenues = $turnkeyRevenuesQuery->get();
             
             // جمع إحصائيات إجمالية لمشاريع تسليم المفتاح
             $turnkeyStats = [
@@ -5147,7 +5171,17 @@ class WorkOrderController extends Controller
             }
             
             // 3. إيرادات المشاريع الخاصة (من جدول special_project_revenues)
-            $specialRevenues = \App\Models\SpecialProjectRevenue::all();
+            $specialRevenuesQuery = \App\Models\SpecialProjectRevenue::query();
+            
+            // Apply date filters if provided
+            if ($startDate) {
+                $specialRevenuesQuery->where('preparation_date', '>=', $startDate);
+            }
+            if ($endDate) {
+                $specialRevenuesQuery->where('preparation_date', '<=', $endDate);
+            }
+            
+            $specialRevenues = $specialRevenuesQuery->get();
             
             // جمع إحصائيات إجمالية للمشاريع الخاصة
             $specialStats = [

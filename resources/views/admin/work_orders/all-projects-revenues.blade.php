@@ -183,6 +183,83 @@
     .stat-currency {
         font-size: 0.7rem;
     }
+    
+    /* Filter Section Styles */
+    .filter-section {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 30px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.8);
+    }
+    
+    .filter-section .form-label {
+        font-weight: 600;
+        color: #4a5568;
+        margin-bottom: 8px;
+    }
+    
+    .filter-section .form-control {
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 10px 15px;
+        transition: all 0.3s ease;
+    }
+    
+    .filter-section .form-control:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    .quick-date-btn {
+        padding: 8px 16px;
+        border-radius: 8px;
+        border: 2px solid #e2e8f0;
+        background: white;
+        color: #4a5568;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .quick-date-btn:hover {
+        background: #667eea;
+        color: white;
+        border-color: #667eea;
+        transform: translateY(-2px);
+    }
+    
+    .filter-btn {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 10px 30px;
+        border-radius: 8px;
+        border: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .filter-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+    }
+    
+    .reset-btn {
+        background: #e2e8f0;
+        color: #4a5568;
+        padding: 10px 30px;
+        border-radius: 8px;
+        border: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .reset-btn:hover {
+        background: #cbd5e0;
+        transform: translateY(-2px);
+    }
 </style>
 @endpush
 
@@ -196,6 +273,83 @@
                 <i class="fas fa-chart-line me-3"></i>
              اجمالي إيرادات المشاريع 
             </h1>
+        </div>
+
+        <!-- Filter Section -->
+        <div class="filter-section">
+            <form method="GET" action="{{ route('admin.all-projects-revenues') }}" id="filterForm">
+                <div class="row g-3 align-items-end">
+                    <!-- Start Date -->
+                    <div class="col-md-3">
+                        <label class="form-label">
+                            <i class="fas fa-calendar-alt me-2"></i>
+                            تاريخ البداية
+                        </label>
+                        <input type="date" 
+                               name="start_date" 
+                               id="start_date"
+                               class="form-control" 
+                               value="{{ request('start_date') }}">
+                    </div>
+                    
+                    <!-- End Date -->
+                    <div class="col-md-3">
+                        <label class="form-label">
+                            <i class="fas fa-calendar-alt me-2"></i>
+                            تاريخ النهاية
+                        </label>
+                        <input type="date" 
+                               name="end_date" 
+                               id="end_date"
+                               class="form-control" 
+                               value="{{ request('end_date') }}">
+                    </div>
+                    
+                    <!-- Filter Buttons -->
+                    <div class="col-md-6">
+                        <div class="d-flex gap-2 justify-content-end">
+                            <button type="submit" class="filter-btn">
+                                <i class="fas fa-filter me-2"></i>
+                                فلترة
+                            </button>
+                            <a href="{{ route('admin.all-projects-revenues') }}" class="reset-btn">
+                                <i class="fas fa-redo me-2"></i>
+                                إعادة تعيين
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Quick Date Range Buttons -->
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <label class="form-label d-block mb-2">
+                            <i class="fas fa-clock me-2"></i>
+                            فترات زمنية سريعة
+                        </label>
+                        <div class="d-flex flex-wrap gap-2">
+                            <button type="button" class="quick-date-btn" onclick="setQuickDateRange('today')">
+                                <i class="fas fa-calendar-day me-1"></i> اليوم
+                            </button>
+                            <button type="button" class="quick-date-btn" onclick="setQuickDateRange('week')">
+                                <i class="fas fa-calendar-week me-1"></i> أسبوع
+                            </button>
+                            <button type="button" class="quick-date-btn" onclick="setQuickDateRange('month')">
+                                <i class="fas fa-calendar me-1"></i> شهر
+                            </button>
+                            <button type="button" class="quick-date-btn" onclick="setQuickDateRange('quarter')">
+                                <i class="fas fa-calendar-alt me-1"></i> ربع سنة
+                            </button>
+                            <button type="button" class="quick-date-btn" onclick="setQuickDateRange('half')">
+                                <i class="fas fa-calendar-plus me-1"></i> نصف سنة
+                            </button>
+                            <button type="button" class="quick-date-btn" onclick="setQuickDateRange('year')">
+                                <i class="fas fa-calendar-check me-1"></i> سنة
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
         </div>
 
         <!-- الإجمالي العام -->
@@ -819,5 +973,53 @@
 
     </div>
 </div>
+
+@push('scripts')
+<script>
+// Set quick date range
+function setQuickDateRange(range) {
+    const today = new Date();
+    let startDate = new Date();
+    let endDate = new Date();
+    
+    switch(range) {
+        case 'today':
+            startDate = new Date();
+            endDate = new Date();
+            break;
+        case 'week':
+            startDate.setDate(today.getDate() - 7);
+            break;
+        case 'month':
+            startDate.setMonth(today.getMonth() - 1);
+            break;
+        case 'quarter':
+            startDate.setMonth(today.getMonth() - 3);
+            break;
+        case 'half':
+            startDate.setMonth(today.getMonth() - 6);
+            break;
+        case 'year':
+            startDate.setFullYear(today.getFullYear() - 1);
+            break;
+    }
+    
+    // Format dates to YYYY-MM-DD
+    const formatDate = (date) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
+    
+    document.getElementById('start_date').value = formatDate(startDate);
+    document.getElementById('end_date').value = formatDate(endDate);
+    
+    // Auto submit form
+    document.getElementById('filterForm').submit();
+}
+</script>
+@endpush
+
 @endsection
 
