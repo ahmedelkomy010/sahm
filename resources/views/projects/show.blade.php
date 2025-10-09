@@ -180,7 +180,7 @@
                     <p class="text-blue-100 text-lg">Contract Number: {{ $project->contract_number }}</p>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl">
                     <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4">
                         <p class="text-blue-100 text-sm mb-1">Project Type</p>
                         <p class="font-semibold text-lg">{{ $project->getProjectTypeText() }}</p>
@@ -189,6 +189,15 @@
                         <p class="text-blue-100 text-sm mb-1">Location</p>
                         <p class="font-semibold text-lg">{{ $project->location }}</p>
                     </div>
+                    <a href="{{ route('projects.revenues', $project) }}" class="bg-white/10 backdrop-blur-sm rounded-xl p-4 hover:bg-white/20 transition-all duration-300 flex flex-col items-center justify-center group">
+                        <div class="flex items-center gap-2 mb-2">
+                            <svg class="w-5 h-5 text-green-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            <p class="text-blue-100 text-sm">Turnkey Revenues</p>
+                        </div>
+                        <p class="font-semibold text-lg text-white group-hover:scale-110 transition-transform">View Details →</p>
+                    </a>
                 </div>
             </div>
         </div>
@@ -520,39 +529,6 @@
                     </a>
                 </div>
             </div>
-
-            <!-- Revenues Card -->
-            <div class="project-card rounded-2xl p-8" style="--card-color: #059669; --card-bg: #D1FAE5;">
-                <div class="flex items-center mb-6">
-                    <div class="icon-wrapper w-16 h-16 rounded-2xl flex items-center justify-center mr-4">
-                        <svg class="w-8 h-8 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                    </div>
-                    <div class="text-left">
-                        <h3 class="text-xl font-bold text-gray-900 mb-1 text-left">Turnkey Revenues</h3>
-                        <p class="text-gray-600 text-sm text-left">Turnkey Revenues</p>
-                    </div>
-                </div>
-                <div class="mb-6">
-                    <div class="flex justify-between items-center mb-2">
-                        <span class="text-sm text-gray-500">Collection Rate</span>
-                        <span class="text-sm font-semibold text-emerald-600">0%</span>
-                    </div>
-                    <div class="w-full bg-gray-200 rounded-full h-2">
-                        <div class="bg-emerald-600 h-2 rounded-full" style="width: 0%"></div>
-                    </div>
-                </div>
-                <div class="text-left">
-                    <a href="{{ route('projects.revenues', $project) }}" class="card-link inline-flex items-center font-semibold">
-                        <span>View Details</span>
-                        <svg class="w-5 h-5 mr-2 view-details-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                        </svg>
-                    </a>
-                </div>
-            </div>
-
         </div>
     </div>
 </div>

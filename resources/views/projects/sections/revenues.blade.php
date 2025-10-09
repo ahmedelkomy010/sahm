@@ -140,7 +140,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
                     </svg>
                 </div>
-                <p class="text-gray-600 text-xs mb-1">المبلغ المتبقي<br>عند العميل</p>
+                <p class="text-gray-600 text-xs mb-1"> المبلغ المتبقي <br>عند العميل شامل الضريبة</p>
                 <p class="text-2xl font-bold text-gray-800" id="stat_remaining_amount">0.00</p>
             </div>
 
@@ -199,31 +199,28 @@
                         <thead class="bg-gradient-to-r from-green-600 to-green-700 text-white">
                             <tr>
                                 <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap">#</th>
-                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[150px]">اسم العميل</th>
-                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[120px]">المشروع</th>
-                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[150px]">رقم العقد</th>
-                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[150px]">رقم المستخلص</th>
-                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[120px]">المكتب</th>
-                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[130px]">نوع المستخلص</th>
-                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[120px]">رقم PO</th>
-                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[120px]">رقم الفاتورة</th>
-                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[120px]">الموقع</th>
-                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[120px]">نوع المشروع</th>
-                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[180px]">إجمالي قيمة المستخلصات<br>غير شامله الضريبه</th>
+                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[200px]">اسم العميل</th>
+                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[180px]">المشروع</th>
+                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[200px]">رقم العقد</th>
+                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[200px]">رقم المستخلص</th>
+                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[180px]">نوع المستخلص</th>
+                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[200px]">رقم PO</th>
+                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[200px]">رقم الفاتورة</th>
+                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[180px]">الموقع</th>
+                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[200px]">إجمالي قيمة المستخلصات<br>غير شامله الضريبه</th>
                                 <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[150px]">جهة المستخلص</th>
-                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[120px]">قيمة الضريبة</th>
-                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[120px]">الغرامات</th>
-                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[160px]">ضريبة الدفعة الأولى</th>
-                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[160px]">صافي قيمة المستخلص</th>
-                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[160px]">تاريخ إعداد المستخلص</th>
+                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[180px]">قيمة الضريبة</th>
+                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[180px]">الغرامات</th>
+                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[180px]">ضريبة الدفعة الأولى</th>
+                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[180px]">صافي قيمة المستخلص</th>
+                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[180px]">تاريخ إعداد المستخلص</th>
                                 <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[100px]">العام</th>
                                 <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[180px]">موقف المستخلص<br>عند ...</th>
-                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[150px]">الرقم المرجعي</th>
-                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[140px]">تاريخ الصرف</th>
-                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[140px]">قيمة الصرف</th>
-                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[120px]">حالة الصرف</th>
-                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[200px]">الإجراءات</th>
-                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap">Actions</th>
+                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[200px]">الرقم المرجعي</th>
+                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[180px]">تاريخ الصرف</th>
+                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[180px]">قيمة الصرف</th>
+                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[150px]">حالة الصرف</th>
+                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[100px]">Actions</th>
                             </tr>
                         </thead>
                         <tbody id="turnkeyRevenuesTableBody">
@@ -266,15 +263,6 @@
                                            onchange="autoSaveTurnkey(this)"
                                            placeholder="رقم المستخلص">
                                 </td>
-                                <!-- المكتب -->
-                                <td class="px-3 py-3 border-r border-gray-200">
-                                    <input type="text" 
-                                           class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" 
-                                           value="{{ $revenue->office }}" 
-                                           data-field="office" 
-                                           onchange="autoSaveTurnkey(this)"
-                                           placeholder="المكتب">
-                                </td>
                                 <!-- نوع المستخلص -->
                                 <td class="px-3 py-3 border-r border-gray-200">
                                     <input type="text" 
@@ -310,15 +298,6 @@
                                            data-field="location" 
                                            onchange="autoSaveTurnkey(this)"
                                            placeholder="الموقع">
-                                </td>
-                                <!-- نوع المشروع -->
-                                <td class="px-3 py-3 border-r border-gray-200">
-                                    <input type="text" 
-                                           class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" 
-                                           value="{{ $revenue->project_type }}" 
-                                           data-field="project_type" 
-                                           onchange="autoSaveTurnkey(this)"
-                                           placeholder="نوع المشروع">
                                 </td>
                                 <!-- إجمالي قيمة المستخلصات غير شامله الضريبه -->
                                 <td class="px-3 py-3 border-r border-gray-200">
@@ -450,15 +429,7 @@
                                         <option value="غير مدفوع" {{ $revenue->payment_status === 'غير مدفوع' || $revenue->payment_status === 'unpaid' || $revenue->payment_status === 'pending' ? 'selected' : '' }}>غير مدفوع</option>
                                     </select>
                                 </td>
-                                <!-- الإجراءات (Notes) -->
-                                <td class="px-3 py-3 border-r border-gray-200">
-                                    <input type="text" 
-                                           class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" 
-                                           value="{{ $revenue->notes }}" 
-                                           data-field="notes" 
-                                           onchange="autoSaveTurnkey(this)"
-                                           placeholder="الإجراءات">
-                                </td>
+                                <!-- Actions -->
                                 <td class="px-3 py-3 text-center">
                                     <div style="display: flex; gap: 0.25rem; justify-content: center; align-items: center;">
                                         <!-- زر رفع مرفق -->
@@ -499,7 +470,7 @@
                             </tr>
                             @empty
                             <tr id="emptyTurnkeyRow">
-                                <td colspan="26" class="text-center py-8 text-gray-500">
+                                <td colspan="25" class="text-center py-8 text-gray-500">
                                     <svg class="w-16 h-16 mx-auto mb-2 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                                     </svg>
@@ -880,7 +851,7 @@ function autoSaveTurnkey(element) {
     
     let data = {
         _token: '{{ csrf_token() }}',
-        project: '{{ $project->id }}'
+        project_id: '{{ $project->id }}'  // ربط المشروع تلقائياً
     };
     
     // إذا كان صف جديد، اجمع كل البيانات من الصف
@@ -894,8 +865,21 @@ function autoSaveTurnkey(element) {
             }
         });
     } else {
-        // إذا كان صف موجود، فقط حدث الـ field المعدل
+        // إذا كان صف موجود، حدث الـ field المعدل
         data[field] = value;
+        
+        // إذا تم تعديل extract_value، احفظ أيضاً القيم المحسوبة تلقائياً
+        if (field === 'extract_value') {
+            const taxValueInput = tr.querySelector('input[data-field="tax_value"]');
+            const netExtractValueInput = tr.querySelector('input[data-field="net_extract_value"]');
+            if (taxValueInput) data['tax_value'] = taxValueInput.value;
+            if (netExtractValueInput) data['net_extract_value'] = netExtractValueInput.value;
+        }
+        // إذا تم تعديل tax_value أو penalties، احفظ net_extract_value المحسوب
+        else if (field === 'tax_value' || field === 'penalties') {
+            const netExtractValueInput = tr.querySelector('input[data-field="net_extract_value"]');
+            if (netExtractValueInput) data['net_extract_value'] = netExtractValueInput.value;
+        }
     }
     
     const url = id && id !== 'new' 
@@ -967,12 +951,10 @@ function addNewTurnkeyRow() {
         <td class="px-3 py-3 border-r border-gray-200"><input type="text" class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" data-field="project" onchange="autoSaveTurnkey(this)" placeholder="المشروع"></td>
         <td class="px-3 py-3 border-r border-gray-200"><input type="text" class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" data-field="contract_number" onchange="autoSaveTurnkey(this)" placeholder="رقم العقد"></td>
         <td class="px-3 py-3 border-r border-gray-200"><input type="text" class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" data-field="extract_number" onchange="autoSaveTurnkey(this)" placeholder="رقم المستخلص"></td>
-        <td class="px-3 py-3 border-r border-gray-200"><input type="text" class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" data-field="office" onchange="autoSaveTurnkey(this)" placeholder="المكتب"></td>
         <td class="px-3 py-3 border-r border-gray-200"><input type="text" class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" data-field="extract_type" onchange="autoSaveTurnkey(this)" placeholder="نوع المستخلص"></td>
         <td class="px-3 py-3 border-r border-gray-200"><input type="text" class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" data-field="po_number" onchange="autoSaveTurnkey(this)" placeholder="رقم PO"></td>
         <td class="px-3 py-3 border-r border-gray-200"><input type="text" class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" data-field="invoice_number" onchange="autoSaveTurnkey(this)" placeholder="رقم الفاتورة"></td>
         <td class="px-3 py-3 border-r border-gray-200"><input type="text" class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" data-field="location" onchange="autoSaveTurnkey(this)" placeholder="الموقع"></td>
-        <td class="px-3 py-3 border-r border-gray-200"><input type="text" class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" data-field="project_type" onchange="autoSaveTurnkey(this)" placeholder="نوع المشروع"></td>
         <td class="px-3 py-3 border-r border-gray-200"><input type="number" step="0.01" class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all text-right" data-field="extract_value" onchange="autoSaveTurnkey(this)" placeholder="0.00"></td>
         <td class="px-3 py-3 border-r border-gray-200">
             <select class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" data-field="extract_entity" onchange="autoSaveTurnkey(this)">
@@ -1006,7 +988,6 @@ function addNewTurnkeyRow() {
                 <option value="غير مدفوع">غير مدفوع</option>
             </select>
         </td>
-        <td class="px-3 py-3 border-r border-gray-200"><input type="text" class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" data-field="notes" onchange="autoSaveTurnkey(this)" placeholder="الإجراءات"></td>
         <td class="px-3 py-3 text-center">
             <button type="button" class="text-red-600 hover:text-red-800 hover:bg-red-50 p-2 rounded transition-colors" onclick="deleteTurnkeyRow('new')" title="حذف">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1094,7 +1075,7 @@ function deleteTurnkeyRow(id) {
             if (tbody.querySelectorAll('tr').length === 0) {
                 tbody.innerHTML = `
                     <tr id="emptyTurnkeyRow">
-                        <td colspan="26" class="text-center py-8 text-gray-500">
+                        <td colspan="25" class="text-center py-8 text-gray-500">
                             <svg class="w-16 h-16 mx-auto mb-2 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                             </svg>

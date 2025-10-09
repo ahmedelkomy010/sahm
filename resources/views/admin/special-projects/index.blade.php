@@ -267,12 +267,7 @@
                               onsubmit="return confirm('هل أنت متأكد من حذف هذا المشروع؟');">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" 
-                                    class="action-button bg-red-100 text-red-700 hover:bg-red-200"
-                                    title="حذف المشروع">
-                                <i class="fas fa-trash me-1"></i>
-                                حذف
-                            </button>
+                            
                         </form>
                     </div>
                 </div>

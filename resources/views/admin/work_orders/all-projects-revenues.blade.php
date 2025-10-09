@@ -277,19 +277,8 @@
                         <div class="stat-icon">
                             <i class="fas fa-wallet"></i>
                         </div>
-                        <div class="stat-title">المبلغ المتبقي عند العميل</div>
-                        <div class="stat-value">{{ number_format(($grandTotal['total_value'] + $grandTotal['total_tax']) - $grandTotal['total_payments'], 2) }}</div>
-                        <div class="stat-currency">ريال سعودي</div>
-                    </div>
-                </div>
-                
-                <div class="stat-card-small p-2">
-                    <div class="stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-receipt"></i>
-                        </div>
-                        <div class="stat-title">ضريبة الدفعة الأولى</div>
-                        <div class="stat-value">{{ number_format($grandTotal['first_payment_tax'] ?? 0, 2) }}</div>
+                        <div class="stat-title">المبلغ المتبقي عند العميل شامل الضريبة</div>
+                        <div class="stat-value">{{ number_format(($grandTotal['total_value'] + $grandTotal['total_tax'] - $grandTotal['total_penalties']) - $grandTotal['total_payments'], 2) }}</div>
                         <div class="stat-currency">ريال سعودي</div>
                     </div>
                 </div>
@@ -353,7 +342,7 @@
                         <div class="stat-icon">
                             <i class="fas fa-money-check-alt"></i>
                         </div>
-                        <div class="stat-title">صافي قيمة المستخلصات</div>
+                        <div class="stat-title">صافي قيمة المستخلصات غير شامل الضريبة</div>
                         <div class="stat-value">{{ number_format($workOrdersStats['riyadh']['total_value'] - $workOrdersStats['riyadh']['total_penalties'], 2) }}</div>
                         <div class="stat-currency">ريال سعودي</div>
                     </div>
@@ -375,8 +364,8 @@
                         <div class="stat-icon">
                             <i class="fas fa-wallet"></i>
                         </div>
-                        <div class="stat-title">المبلغ المتبقي عند العميل</div>
-                        <div class="stat-value">{{ number_format(($workOrdersStats['riyadh']['total_value'] + $workOrdersStats['riyadh']['total_tax']) - $workOrdersStats['riyadh']['total_payments'], 2) }}</div>
+                        <div class="stat-title">المبلغ المتبقي عند العميل شامل الضريبة</div>
+                        <div class="stat-value">{{ number_format(($workOrdersStats['riyadh']['total_value'] + $workOrdersStats['riyadh']['total_tax'] - $workOrdersStats['riyadh']['total_penalties']) - $workOrdersStats['riyadh']['total_payments'], 2) }}</div>
                         <div class="stat-currency">ريال سعودي</div>
                     </div>
                 </div>
@@ -440,7 +429,7 @@
                         <div class="stat-icon">
                             <i class="fas fa-money-check-alt"></i>
                         </div>
-                        <div class="stat-title">صافي قيمة المستخلصات</div>
+                        <div class="stat-title">صافي قيمة المستخلصات غير شامل الضريبة</div>
                         <div class="stat-value">{{ number_format($workOrdersStats['madinah']['total_value'] - $workOrdersStats['madinah']['total_penalties'], 2) }}</div>
                         <div class="stat-currency">ريال سعودي</div>
                     </div>
@@ -462,8 +451,8 @@
                         <div class="stat-icon">
                             <i class="fas fa-wallet"></i>
                         </div>
-                        <div class="stat-title">المبلغ المتبقي عند العميل</div>
-                        <div class="stat-value">{{ number_format(($workOrdersStats['madinah']['total_value'] + $workOrdersStats['madinah']['total_tax']) - $workOrdersStats['madinah']['total_payments'], 2) }}</div>
+                        <div class="stat-title">المبلغ المتبقي عند العميل شامل الضريبة</div>
+                        <div class="stat-value">{{ number_format(($workOrdersStats['madinah']['total_value'] + $workOrdersStats['madinah']['total_tax'] - $workOrdersStats['madinah']['total_penalties']) - $workOrdersStats['madinah']['total_payments'], 2) }}</div>
                         <div class="stat-currency">ريال سعودي</div>
                     </div>
                 </div>
@@ -527,7 +516,7 @@
                         <div class="stat-icon">
                             <i class="fas fa-money-check-alt"></i>
                         </div>
-                        <div class="stat-title">صافي قيمة المستخلصات</div>
+                        <div class="stat-title">صافي قيمة المستخلصات غير شامل الضريبة</div>
                         <div class="stat-value">{{ number_format($turnkeyStats['total_net_value'], 2) }}</div>
                         <div class="stat-currency">ريال سعودي</div>
                     </div>
@@ -540,6 +529,17 @@
                         </div>
                         <div class="stat-title">إجمالي المدفوعات</div>
                         <div class="stat-value">{{ number_format($turnkeyStats['total_payments'], 2) }}</div>
+                        <div class="stat-currency">ريال سعودي</div>
+                    </div>
+                </div>
+                
+                <div class="stat-card-small p-2">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="stat-title">المبلغ المتبقي عند العميل</div>
+                        <div class="stat-value">{{ number_format($turnkeyStats['total_net_value'] - $turnkeyStats['total_payments'], 2) }}</div>
                         <div class="stat-currency">ريال سعودي</div>
                     </div>
                 </div>
@@ -630,18 +630,7 @@
                             <i class="fas fa-wallet"></i>
                         </div>
                         <div class="stat-title">المبلغ المتبقي عند العميل</div>
-                        <div class="stat-value">{{ number_format(($projectStat['total_value'] + $projectStat['total_tax']) - $projectStat['total_payments'], 2) }}</div>
-                        <div class="stat-currency">ريال سعودي</div>
-                    </div>
-                </div>
-                
-                <div class="stat-card-small p-2">
-                    <div class="stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-receipt"></i>
-                        </div>
-                        <div class="stat-title">ضريبة الدفعة الأولى</div>
-                        <div class="stat-value">{{ number_format($projectStat['first_payment_tax'], 2) }}</div>
+                        <div class="stat-value">{{ number_format($projectStat['total_net_value'] - $projectStat['total_payments'], 2) }}</div>
                         <div class="stat-currency">ريال سعودي</div>
                     </div>
                 </div>
@@ -706,7 +695,7 @@
                         <div class="stat-icon">
                             <i class="fas fa-money-check-alt"></i>
                         </div>
-                        <div class="stat-title">صافي قيمة المستخلصات</div>
+                        <div class="stat-title">صافي قيمة المستخلصات غير شامل الضريبة</div>
                         <div class="stat-value">{{ number_format($specialStats['total_net_value'], 2) }}</div>
                         <div class="stat-currency">ريال سعودي</div>
                     </div>
@@ -719,6 +708,17 @@
                         </div>
                         <div class="stat-title">إجمالي المدفوعات</div>
                         <div class="stat-value">{{ number_format($specialStats['total_payments'], 2) }}</div>
+                        <div class="stat-currency">ريال سعودي</div>
+                    </div>
+                </div>
+                
+                <div class="stat-card-small p-2">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-wallet"></i>
+                        </div>
+                        <div class="stat-title">المبلغ المتبقي عند العميل شامل الضريبة</div>
+                        <div class="stat-value">{{ number_format(($specialStats['total_value'] + $specialStats['total_tax'] - $specialStats['total_penalties']) - $specialStats['total_payments'], 2) }}</div>
                         <div class="stat-currency">ريال سعودي</div>
                     </div>
                 </div>
@@ -808,19 +808,8 @@
                         <div class="stat-icon">
                             <i class="fas fa-wallet"></i>
                         </div>
-                        <div class="stat-title">المبلغ المتبقي عند العميل</div>
-                        <div class="stat-value">{{ number_format(($projectStat['total_value'] + $projectStat['total_tax']) - $projectStat['total_payments'], 2) }}</div>
-                        <div class="stat-currency">ريال سعودي</div>
-                    </div>
-                </div>
-                
-                <div class="stat-card-small p-2">
-                    <div class="stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-receipt"></i>
-                        </div>
-                        <div class="stat-title">ضريبة الدفعة الأولى</div>
-                        <div class="stat-value">{{ number_format($projectStat['first_payment_tax'], 2) }}</div>
+                        <div class="stat-title">المبلغ المتبقي عند العميل شامل الضريبة</div>
+                        <div class="stat-value">{{ number_format(($projectStat['total_value'] + $projectStat['total_tax'] - $projectStat['total_penalties']) - $projectStat['total_payments'], 2) }}</div>
                         <div class="stat-currency">ريال سعودي</div>
                     </div>
                 </div>

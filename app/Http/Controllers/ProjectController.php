@@ -674,7 +674,7 @@ class ProjectController extends Controller
     public function revenues(Project $project)
     {
         // جلب إيرادات تسليم المفتاح
-        $turnkeyRevenues = \App\Models\TurnkeyRevenue::where('project', $project->id)
+        $turnkeyRevenues = \App\Models\TurnkeyRevenue::where('project_id', $project->id)
             ->orderBy('created_at', 'desc')
             ->get();
         

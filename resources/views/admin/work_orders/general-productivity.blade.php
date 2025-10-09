@@ -118,60 +118,79 @@
                         </div>
                     </div>
 
-            <!-- Survey Results Section -->
+            <!-- Survey and Completion Files Section - Combined -->
                 <div class="col-12">
                     <div class="card shadow-sm border-0 mt-4">
-                        <div class="card-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                            <h5 class="mb-0 text-white">
-                                <i class="fas fa-clipboard-list me-2"></i>
-                                أوامر العمل التي تحتاج للمسح
+                        <div class="card-header" style="background: linear-gradient(135deg, #667eea 0%, #f5576c 100%);">
+                            <h5 class="mb-0 text-white text-center">
+                                <i class="fas fa-tasks me-2"></i>
+                                أوامر العمل التي تحتاج لإجراءات
                             </h5>
                         </div>
-                        <div class="card-body text-center py-4">
-                            @php
-                                $surveyRoute = ($project ?? 'riyadh') === 'madinah' 
-                                    ? route('admin.work-orders.survey.madinah')
-                                    : route('admin.work-orders.survey.riyadh');
-                            @endphp
-                            <a href="{{ $surveyRoute }}" 
-                               class="btn btn-lg shadow-sm"
-                               style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; min-width: 250px;">
-                                <i class="fas fa-exclamation-triangle me-2"></i>
-                                عرض الأوامر التي تحتاج للمسح
-                                <i class="fas fa-arrow-left ms-2"></i>
-                            </a>
-                            <p class="text-muted mt-3 mb-0">
-                                <small>عرض جميع أوامر العمل التي لم يتم مسحها بعد</small>
-                            </p>
-                        </div>
-                    </div>
-                </div>
+                        <div class="card-body py-4">
+                            <div class="row g-3">
+                                <!-- Survey Orders Card -->
+                                <div class="col-md-6">
+                                    <div class="card h-100 shadow-sm border-0">
+                                        <div class="card-header text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                                            <h6 class="mb-0 text-center">
+                                                <i class="fas fa-clipboard-list me-2"></i>
+                                                أوامر تحتاج لمسح
+                                            </h6>
+                                        </div>
+                                        <div class="card-body text-center">
+                                            @php
+                                                $surveyRoute = ($project ?? 'riyadh') === 'madinah' 
+                                                    ? route('admin.work-orders.survey.madinah')
+                                                    : route('admin.work-orders.survey.riyadh');
+                                            @endphp
+                                            <div class="mb-3">
+                                                <i class="fas fa-map-marked-alt fa-3x" style="color: #667eea;"></i>
+                                            </div>
+                                            <a href="{{ $surveyRoute }}" 
+                                               class="btn btn-lg shadow-sm"
+                                               style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; min-width: 200px;">
+                                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                                عرض الأوامر التي تحتاج للمسح
+                                            </a>
+                                            <p class="text-muted mt-3 mb-0" style="font-size: 0.85rem;">
+                                                عرض جميع أوامر العمل التي لم يتم مسحها بعد
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
 
-            <!-- Completion Files Section -->
-                <div class="col-12">
-                    <div class="card shadow-sm border-0 mt-4">
-                        <div class="card-header" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
-                            <h5 class="mb-0 text-white">
-                                <i class="fas fa-exclamation-circle me-2"></i>
-                                أوامر تحتاج لرفع ملفات انتهاء العمل
-                            </h5>
-                        </div>
-                        <div class="card-body text-center py-4">
-                            @php
-                                $completionRoute = ($project ?? 'riyadh') === 'madinah' 
-                                    ? route('admin.work-orders.completion.madinah')
-                                    : route('admin.work-orders.completion.riyadh');
-                            @endphp
-                            <a href="{{ $completionRoute }}" 
-                               class="btn btn-lg shadow-sm"
-                               style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; min-width: 250px;">
-                                <i class="fas fa-exclamation-triangle me-2"></i>
-                                عرض الأوامر التي تحتاج لرفع ملفات
-                                <i class="fas fa-arrow-left ms-2"></i>
-                            </a>
-                            <p class="text-muted mt-3 mb-0">
-                                <small>عرض جميع أوامر العمل التي لم يتم رفع ملفات انتهاء العمل عليها</small>
-                            </p>
+                                <!-- Completion Files Orders Card -->
+                                <div class="col-md-6">
+                                    <div class="card h-100 shadow-sm border-0">
+                                        <div class="card-header text-white" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                                            <h6 class="mb-0 text-center">
+                                                <i class="fas fa-file-upload me-2"></i>
+                                                أوامر تحتاج لرفع ملفات
+                                            </h6>
+                                        </div>
+                                        <div class="card-body text-center">
+                                            @php
+                                                $completionRoute = ($project ?? 'riyadh') === 'madinah' 
+                                                    ? route('admin.work-orders.completion.madinah')
+                                                    : route('admin.work-orders.completion.riyadh');
+                                            @endphp
+                                            <div class="mb-3">
+                                                <i class="fas fa-cloud-upload-alt fa-3x" style="color: #f093fb;"></i>
+                                            </div>
+                                            <a href="{{ $completionRoute }}" 
+                                               class="btn btn-lg shadow-sm"
+                                               style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; min-width: 200px;">
+                                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                                عرض الأوامر التي تحتاج لرفع ملفات
+                                            </a>
+                                            <p class="text-muted mt-3 mb-0" style="font-size: 0.85rem;">
+                                                عرض جميع أوامر العمل التي لم يتم رفع ملفات انتهاء العمل عليها
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -187,8 +206,39 @@
                     </div>
                     <div class="card-body py-4">
                         <div class="row g-3">
+                            <!-- Licenses Card -->
+                            <div class="col-md-2-4">
+                                <div class="card h-100 shadow-sm border-0">
+                                    <div class="card-header text-white" style="background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);">
+                                        <h6 class="mb-0 text-center">
+                                            <i class="fas fa-certificate me-2"></i>
+                                            الرخص
+                                        </h6>
+                                    </div>
+                                    <div class="card-body text-center">
+                                        @php
+                                            $licensesRoute = ($project ?? 'riyadh') === 'madinah' 
+                                                ? route('admin.licenses.all.madinah')
+                                                : route('admin.licenses.all.riyadh');
+                                        @endphp
+                                        <div class="mb-3">
+                                            <i class="fas fa-file-contract fa-3x" style="color: #6a11cb;"></i>
+                                        </div>
+                                        <a href="{{ $licensesRoute }}" 
+                                           class="btn btn-sm shadow-sm"
+                                           style="background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%); color: white; min-width: 150px;">
+                                            <i class="fas fa-list me-1"></i>
+                                            عرض الرخص
+                                        </a>
+                                        <p class="text-muted mt-3 mb-0" style="font-size: 0.85rem;">
+                                            عرض جميع رخص أوامر العمل
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
                             <!-- Violations Card -->
-                            <div class="col-md-3">
+                            <div class="col-md-2-4">
                                 <div class="card h-100 shadow-sm border-0">
                                     <div class="card-header text-white" style="background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);">
                                         <h6 class="mb-0 text-center">
@@ -219,7 +269,7 @@
                             </div>
 
                             <!-- Extensions Card -->
-                            <div class="col-md-3">
+                            <div class="col-md-2-4">
                                 <div class="card h-100 shadow-sm border-0">
                                     <div class="card-header text-white" style="background: linear-gradient(135deg, #f2994a 0%, #f2c94c 100%);">
                                         <h6 class="mb-0 text-center">
@@ -250,7 +300,7 @@
                             </div>
 
                             <!-- Inspections Card -->
-                            <div class="col-md-3">
+                            <div class="col-md-2-4">
                                 <div class="card h-100 shadow-sm border-0">
                                     <div class="card-header text-white" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
                                         <h6 class="mb-0 text-center">
@@ -281,7 +331,7 @@
                             </div>
 
                             <!-- Evacuations Card -->
-                            <div class="col-md-3">
+                            <div class="col-md-2-4">
                                 <div class="card h-100 shadow-sm border-0">
                                     <div class="card-header text-white" style="background: linear-gradient(135deg, #8e44ad 0%, #c0392b 100%);">
                                         <h6 class="mb-0 text-center">
@@ -679,6 +729,24 @@
 
 @push('styles')
 <style>
+    /* Custom column for 5 cards in quality section */
+    .col-md-2-4 {
+        flex: 0 0 auto;
+        width: 20%; /* 5 cards per row */
+    }
+    
+    @media (max-width: 768px) {
+        .col-md-2-4 {
+            width: 100% !important; /* 1 card per row on mobile */
+        }
+    }
+    
+    @media (min-width: 769px) and (max-width: 991px) {
+        .col-md-2-4 {
+            width: 50% !important; /* 2 cards per row on tablet */
+        }
+    }
+
     /* Responsive grid for 11 cards */
     @media (max-width: 768px) {
         .col-6.col-md-4.col-lg {

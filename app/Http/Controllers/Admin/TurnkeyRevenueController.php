@@ -21,19 +21,31 @@ class TurnkeyRevenueController extends Controller
             ]);
             
             $validated = $request->validate([
-                'project' => 'required',
+                'project_id' => 'required|exists:projects,id',
+                'project' => 'nullable|string',
+                'client_name' => 'nullable|string',
                 'contract_number' => 'nullable|string',
+                'extract_number' => 'nullable|string',
+                'office' => 'nullable|string',
+                'extract_type' => 'nullable|string',
+                'po_number' => 'nullable|string',
+                'invoice_number' => 'nullable|string',
                 'location' => 'nullable|string',
                 'project_type' => 'nullable|string',
                 'extract_value' => 'nullable|numeric',
+                'extract_entity' => 'nullable|in:SAP,UDS',
                 'tax_value' => 'nullable|numeric',
                 'penalties' => 'nullable|numeric',
+                'first_payment_tax' => 'nullable|numeric',
                 'net_extract_value' => 'nullable|numeric',
                 'payment_value' => 'nullable|numeric',
                 'remaining_amount' => 'nullable|numeric',
-                'first_payment_tax' => 'nullable|numeric',
                 'extract_date' => 'nullable|date',
+                'year' => 'nullable|integer',
+                'extract_status' => 'nullable|in:المقاول,ادارة الكهرباء,المالية,الخزينة',
+                'reference_number' => 'nullable|string',
                 'payment_date' => 'nullable|date',
+                'payment_status' => 'nullable|in:unpaid,paid',
                 'notes' => 'nullable|string',
             ]);
             
@@ -79,8 +91,8 @@ class TurnkeyRevenueController extends Controller
         try {
             $revenue = TurnkeyRevenue::findOrFail($id);
             
-            // Get all fields except _token and project
-            $updateData = $request->except(['_token', 'project']);
+            // Get all fields except _token
+            $updateData = $request->except(['_token']);
             $updateData['updated_by'] = auth()->id();
             
             $revenue->update($updateData);

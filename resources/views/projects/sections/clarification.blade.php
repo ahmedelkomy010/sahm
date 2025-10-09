@@ -3,7 +3,7 @@
 @push('styles')
 <style>
     .header-gradient {
-        background: linear-gradient(135deg, #ec4899 0%, #db2777 100%);
+        background: linear-gradient(135deg,rgb(95, 35, 65) 0%,rgb(102, 5, 49) 100%);
         position: relative;
         overflow: hidden;
     }

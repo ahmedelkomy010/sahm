@@ -379,6 +379,11 @@ Route::get('quality/extensions/{city}/export', [App\Http\Controllers\Admin\WorkO
     Route::get('quality/evacuations/madinah', [App\Http\Controllers\Admin\WorkOrderController::class, 'evacuationsMadinah'])->name('quality.evacuations.madinah');
     Route::get('quality/evacuations/{city}/export', [App\Http\Controllers\Admin\WorkOrderController::class, 'exportEvacuations'])->name('quality.evacuations.export');
     
+    // All Licenses Routes (جميع الرخص)
+    Route::get('licenses/all/riyadh', [App\Http\Controllers\Admin\LicenseController::class, 'allLicensesRiyadh'])->name('licenses.all.riyadh');
+    Route::get('licenses/all/madinah', [App\Http\Controllers\Admin\LicenseController::class, 'allLicensesMadinah'])->name('licenses.all.madinah');
+    Route::get('licenses/all/{city}/export', [App\Http\Controllers\Admin\LicenseController::class, 'exportAllLicenses'])->name('licenses.all.export');
+    
     // Time Management Routes (تجاوز المدة الزمنية والغير منفذه)
     Route::get('time-management/overdue/riyadh', [App\Http\Controllers\Admin\WorkOrderController::class, 'overdueOrdersRiyadh'])->name('time-management.overdue.riyadh');
     Route::get('time-management/overdue/madinah', [App\Http\Controllers\Admin\WorkOrderController::class, 'overdueOrdersMadinah'])->name('time-management.overdue.madinah');

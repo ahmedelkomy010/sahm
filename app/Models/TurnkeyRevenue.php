@@ -10,6 +10,7 @@ class TurnkeyRevenue extends Model
     use HasFactory;
 
     protected $fillable = [
+        'project_id',
         'client_name',
         'project',
         'contract_number',
@@ -66,5 +67,13 @@ class TurnkeyRevenue extends Model
     public function updater()
     {
         return $this->belongsTo(User::class, 'updated_by');
+    }
+
+    /**
+     * علاقة مع المشروع
+     */
+    public function projectRelation()
+    {
+        return $this->belongsTo(Project::class, 'project_id');
     }
 }

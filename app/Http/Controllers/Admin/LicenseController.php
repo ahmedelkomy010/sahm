@@ -3190,4 +3190,142 @@ class LicenseController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * عرض جميع الرخص لمشروع الرياض
+     */
+    public function allLicensesRiyadh(Request $request)
+    {
+        return $this->allLicenses($request, 'riyadh');
+    }
+
+    /**
+     * عرض جميع الرخص لمشروع المدينة المنورة
+     */
+    public function allLicensesMadinah(Request $request)
+    {
+        return $this->allLicenses($request, 'madinah');
+    }
+
+    /**
+     * عرض جميع الرخص حسب المشروع
+     */
+    private function allLicenses(Request $request, $project)
+    {
+        try {
+            $city = $project === 'madinah' ? 'المدينة المنورة' : 'الرياض';
+            $projectName = $project === 'madinah' ? 'مشروع المدينة المنورة' : 'مشروع الرياض';
+
+            // بناء الاستعلام
+            $query = License::with(['workOrder'])
+                ->whereHas('workOrder', function ($q) use ($city) {
+                    $q->where('city', $city);
+                });
+
+            // تطبيق الفلاتر
+            if ($request->filled('search')) {
+                $search = $request->search;
+                $query->where(function ($q) use ($search) {
+                    $q->where('license_number', 'like', "%{$search}%")
+                      ->orWhereHas('workOrder', function ($subQ) use ($search) {
+                          $subQ->where('order_entry_number', 'like', "%{$search}%");
+                      });
+                });
+            }
+
+            // فلتر التاريخ (تاريخ بداية الرخصة)
+            if ($request->filled('start_date')) {
+                $query->whereDate('license_start_date', '>=', $request->start_date);
+            }
+
+            if ($request->filled('end_date')) {
+                $query->whereDate('license_start_date', '<=', $request->end_date);
+            }
+
+            // ترتيب وجلب البيانات
+            $licenses = $query->orderBy('created_at', 'desc')->paginate(50);
+
+            // حساب الإحصائيات من جميع البيانات (بدون pagination)
+            $allQuery = License::with(['workOrder'])
+                ->whereHas('workOrder', function ($q) use ($city) {
+                    $q->where('city', $city);
+                });
+
+            // تطبيق نفس الفلاتر للإحصائيات
+            if ($request->filled('search')) {
+                $search = $request->search;
+                $allQuery->where(function ($q) use ($search) {
+                    $q->where('license_number', 'like', "%{$search}%")
+                      ->orWhereHas('workOrder', function ($subQ) use ($search) {
+                          $subQ->where('order_entry_number', 'like', "%{$search}%");
+                      });
+                });
+            }
+
+            if ($request->filled('start_date')) {
+                $allQuery->whereDate('license_start_date', '>=', $request->start_date);
+            }
+
+            if ($request->filled('end_date')) {
+                $allQuery->whereDate('license_start_date', '<=', $request->end_date);
+            }
+
+            $stats = [
+                'total_licenses' => $allQuery->count(),
+                'total_value' => $allQuery->sum('license_value') ?? 0,
+            ];
+
+            return view('admin.licenses.all', compact('licenses', 'project', 'projectName', 'city', 'stats'));
+
+        } catch (\Exception $e) {
+            \Log::error('Error fetching all licenses: ' . $e->getMessage());
+            return back()->with('error', 'حدث خطأ في جلب الرخص');
+        }
+    }
+
+    /**
+     * تصدير جميع الرخص إلى Excel
+     */
+    public function exportAllLicenses(Request $request, $city)
+    {
+        try {
+            $cityName = $city === 'madinah' ? 'المدينة المنورة' : 'الرياض';
+            
+            $query = License::with(['workOrder'])
+                ->whereHas('workOrder', function ($q) use ($cityName) {
+                    $q->where('city', $cityName);
+                });
+
+            // تطبيق نفس الفلاتر
+            if ($request->filled('search')) {
+                $search = $request->search;
+                $query->where(function ($q) use ($search) {
+                    $q->where('license_number', 'like', "%{$search}%")
+                      ->orWhereHas('workOrder', function ($subQ) use ($search) {
+                          $subQ->where('order_entry_number', 'like', "%{$search}%");
+                      });
+                });
+            }
+
+            if ($request->filled('start_date')) {
+                $query->whereDate('license_start_date', '>=', $request->start_date);
+            }
+
+            if ($request->filled('end_date')) {
+                $query->whereDate('license_start_date', '<=', $request->end_date);
+            }
+
+            $licenses = $query->orderBy('created_at', 'desc')->get();
+
+            $export = new \App\Exports\LicensesExport($licenses);
+            
+            $filename = 'licenses_' . $city . '_' . now()->format('Y-m-d') . '.xlsx';
+            
+            return \Excel::download($export, $filename);
+
+        } catch (\Exception $e) {
+            \Log::error('Error exporting licenses: ' . $e->getMessage());
+            return back()->with('error', 'حدث خطأ في تصدير الرخص');
+        }
+    }
 } 

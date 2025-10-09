@@ -153,27 +153,22 @@
                         {{ $project->contract_number }}
                     </p>
                 </div>
-                <span class="px-6 py-3 bg-white/20 backdrop-blur-sm rounded-xl text-white font-bold text-lg border border-white/30">
-                    مشروع خاص
-                </span>
+                <div class="flex gap-3">
+                    <a href="{{ route('admin.special-projects.index') }}" class="px-6 py-3 bg-white/20 backdrop-blur-sm rounded-xl text-white font-bold text-lg border border-white/30 hover:bg-white/30 transition-all duration-300 flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                        </svg>
+                        العودة للقائمة
+                    </a>
+                    <a href="{{ route('admin.special-projects.revenues', $project) }}" class="px-6 py-3 bg-green-500/90 backdrop-blur-sm rounded-xl text-white font-bold text-lg border border-green-400/30 hover:bg-green-600 transition-all duration-300 flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        عرض الإيرادات
+                    </a>
+                </div>
             </div>
         </div>
-    </div>
-
-    <!-- Action Buttons -->
-    <div class="flex justify-end gap-4 mb-6">
-        <a href="{{ route('admin.special-projects.index') }}" class="action-btn btn-secondary">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-            </svg>
-            العودة للقائمة
-        </a>
-        <a href="{{ route('admin.special-projects.edit', $project) }}" class="action-btn btn-primary">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-            </svg>
-            تعديل المشروع
-        </a>
     </div>
 
     <!-- Project Information -->
@@ -250,40 +245,6 @@
         <div class="info-value text-gray-700 mt-2">{{ $project->description }}</div>
     </div>
     @endif
-
-    <!-- Project Sections Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        
-        <!-- Revenues Card -->
-        <a href="{{ route('admin.special-projects.revenues', $project) }}" class="section-card hover:cursor-pointer block">
-            <div class="section-header">
-                <h2 class="section-title">
-                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
-                    </svg>
-                    إيرادات
-                </h2>
-            </div>
-            <div class="section-body">
-                <div class="text-center py-12">
-                    <svg class="w-20 h-20 mx-auto text-purple-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                    <h3 class="text-2xl font-bold text-gray-800 mb-2">{{ $project->name }}</h3>
-                    <p class="text-gray-600 mb-4">إدارة إيرادات المشروع</p>
-                    <div class="inline-flex items-center gap-2 px-6 py-2 bg-purple-100 text-purple-700 rounded-lg font-semibold">
-                        <span>عرض الإيرادات</span>
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
-                        </svg>
-                    </div>
-                </div>
-            </div>
-        </a>
-
-        <!-- Future Sections Can Be Added Here -->
-        
-    </div>
 </div>
 @endsection
 
