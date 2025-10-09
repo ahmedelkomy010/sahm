@@ -749,9 +749,10 @@
             .filter(r => r.payment_status === 'paid')
             .reduce((sum, r) => sum + (parseFloat(r.payment_amount) || 0), 0);
         
-        // 7. المبلغ المتبقي عند العميل (net_value - paidAmount)
-        const totalNetValue = revenues.reduce((sum, r) => sum + (parseFloat(r.net_value) || 0), 0);
-        const remainingAmount = totalNetValue - paidAmount;
+        // 7. المبلغ المتبقي عند العميل (فقط المستخلصات الغير مدفوعة)
+        const remainingAmount = revenues
+            .filter(r => r.payment_status === 'unpaid')
+            .reduce((sum, r) => sum + (parseFloat(r.net_value) || 0), 0);
         
         // 8. ضريبة الدفعة الأولى (advance_payment_tax)
         const advancePaymentTax = revenues.reduce((sum, r) => sum + (parseFloat(r.advance_payment_tax) || 0), 0);

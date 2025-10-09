@@ -1111,6 +1111,8 @@ function updateTurnkeyStatistics() {
         totalFirstPaymentTax: 0
     };
     
+    let unpaidNetValue = 0; // لحساب المبلغ المتبقي عند العميل (فقط الغير مدفوع)
+    
     rows.forEach(row => {
         const id = row.dataset.id;
         if (id && id !== 'new') {
@@ -1123,6 +1125,7 @@ function updateTurnkeyStatistics() {
             const netValue = parseFloat(row.querySelector('input[data-field="net_extract_value"]')?.value) || 0;
             const paymentValue = parseFloat(row.querySelector('input[data-field="payment_value"]')?.value) || 0;
             const firstPaymentTax = parseFloat(row.querySelector('input[data-field="first_payment_tax"]')?.value) || 0;
+            const paymentStatus = row.querySelector('select[data-field="payment_status"]')?.value || '';
             
             stats.totalExtractValue += extractValue;
             stats.totalTax += taxValue;
@@ -1130,11 +1133,16 @@ function updateTurnkeyStatistics() {
             stats.totalNetValue += netValue;
             stats.totalPayments += paymentValue;
             stats.totalFirstPaymentTax += firstPaymentTax;
+            
+            // احسب صافي قيمة المستخلص للسجلات الغير مدفوعة فقط
+            if (paymentStatus === 'غير مدفوع') {
+                unpaidNetValue += netValue;
+            }
         }
     });
     
-    // Calculate remaining amount (net value - payments)
-    const remainingAmount = stats.totalNetValue - stats.totalPayments;
+    // Calculate remaining amount (فقط المستخلصات الغير مدفوعة)
+    const remainingAmount = unpaidNetValue;
     
     // Format numbers with commas
     const formatter = new Intl.NumberFormat('en-US', {

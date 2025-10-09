@@ -590,13 +590,13 @@
                                 </div>
                             </div>
 
-                            <!-- المبلغ المتبقي عند العميل -->
+                            <!-- المبلغ المتبقي عند العميل شامل الضريبة -->
                             <div class="col-md-1-5">
                                 <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);">
                                     <div class="card-body p-1 text-white">
                                         <div class="d-flex justify-content-between align-items-center">
                                             <div>
-                                                <h6 class="mb-1 opacity-75" style="font-size: 0.6rem;">المبلغ المتبقي عند العميل</h6>
+                                                <h6 class="mb-1 opacity-75" style="font-size: 0.6rem;">المبلغ المتبقي عند العميل شامل الضريبة</h6>
                                                 <h6 class="mb-0 fw-bold" style="font-size: 0.75rem;">{{ number_format($statistics['remainingAmount'], 2) }}</h6>
                                                 <small class="opacity-75" style="font-size: 0.6rem;">ريال سعودي</small>
                                             </div>
