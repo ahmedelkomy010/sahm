@@ -58,6 +58,11 @@
                                 <i class="fas fa-list me-2 text-danger"></i>
                                 قائمة الأوامر المتأخرة
                             </h5>
+                            <a href="{{ route('admin.time-management.export-overdue', ['project' => 'riyadh']) }}" 
+                               class="btn btn-success btn-sm">
+                                <i class="fas fa-file-excel me-2"></i>
+                                تصدير Excel
+                            </a>
                         </div>
                     </div>
                     <div class="card-body">
@@ -77,7 +82,7 @@
                                 <tbody>
                                     @forelse($workOrders as $index => $order)
                                     @php
-                                        $daysOverdue = $order->approval_date ? now()->diffInDays($order->approval_date) : 0;
+                                        $daysOverdue = $order->approval_date ? (int) now()->diffInDays($order->approval_date) : 0;
                                         $statusLabels = [
                                             1 => 'جاري العمل بالموقع',
                                             2 => 'تم التنفيذ بالموقع',

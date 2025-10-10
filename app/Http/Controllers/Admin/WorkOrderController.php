@@ -1906,6 +1906,32 @@ class WorkOrderController extends Controller
     }
 
     /**
+     * تصدير أوامر العمل المتأخرة إلى Excel
+     */
+    public function exportOverdueOrders($project)
+    {
+        $cityCondition = function($q) use ($project) {
+            if ($project === 'riyadh') {
+                $q->where('city', 'الرياض')->orWhere('city', 'riyadh');
+            } else {
+                $q->where('city', 'المدينة المنورة')->orWhere('city', 'madinah');
+            }
+        };
+
+        $workOrders = WorkOrder::where($cityCondition)
+            ->where('execution_status', '!=', 7)
+            ->whereNotNull('approval_date')
+            ->whereRaw('DATEDIFF(NOW(), approval_date) > 30')
+            ->orderBy('approval_date', 'asc')
+            ->get();
+
+        $cityName = $project === 'riyadh' ? 'الرياض' : 'المدينة المنورة';
+        $fileName = 'overdue-orders-' . $project . '-' . now()->format('Y-m-d') . '.xlsx';
+
+        return \Excel::download(new \App\Exports\OverdueOrdersExport($workOrders), $fileName);
+    }
+
+    /**
      * عرض أوامر العمل الغير منفذة - الرياض
      */
     public function unexecutedOrdersRiyadh()

@@ -387,6 +387,7 @@ Route::get('quality/extensions/{city}/export', [App\Http\Controllers\Admin\WorkO
     // Time Management Routes (تجاوز المدة الزمنية والغير منفذه)
     Route::get('time-management/overdue/riyadh', [App\Http\Controllers\Admin\WorkOrderController::class, 'overdueOrdersRiyadh'])->name('time-management.overdue.riyadh');
     Route::get('time-management/overdue/madinah', [App\Http\Controllers\Admin\WorkOrderController::class, 'overdueOrdersMadinah'])->name('time-management.overdue.madinah');
+    Route::get('time-management/overdue/{project}/export', [App\Http\Controllers\Admin\WorkOrderController::class, 'exportOverdueOrders'])->name('time-management.export-overdue');
     Route::get('time-management/unexecuted/riyadh', [App\Http\Controllers\Admin\WorkOrderController::class, 'unexecutedOrdersRiyadh'])->name('time-management.unexecuted.riyadh');
     Route::get('time-management/unexecuted/madinah', [App\Http\Controllers\Admin\WorkOrderController::class, 'unexecutedOrdersMadinah'])->name('time-management.unexecuted.madinah');
     Route::get('time-management/detailed-report/riyadh', [App\Http\Controllers\Admin\WorkOrderController::class, 'detailedReportRiyadh'])->name('time-management.detailed-report.riyadh');
