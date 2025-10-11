@@ -4359,10 +4359,21 @@ class WorkOrderController extends Controller
     public function deleteSafetyImage(WorkOrder $workOrder, $category, $index)
     {
         try {
+            \Log::info('Delete safety image request received', [
+                'workOrderId' => $workOrder->id,
+                'category' => $category,
+                'index' => $index
+            ]);
+            
             $fieldName = 'safety_' . $category . '_images';
             $images = $workOrder->$fieldName ?? [];
 
             if (!isset($images[$index])) {
+                \Log::warning('Safety image not found', [
+                    'fieldName' => $fieldName,
+                    'index' => $index,
+                    'imagesCount' => count($images)
+                ]);
                 return response()->json([
                     'success' => false,
                     'message' => 'الصورة غير موجودة'

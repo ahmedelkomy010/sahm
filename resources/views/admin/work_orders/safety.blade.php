@@ -1112,11 +1112,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 const index = this.dataset.index;
                 const imageCard = this.closest('.col-md-3');
                 
-                fetch(`/admin/work-orders/${workOrderId}/safety-image/${category}/${index}`, {
+                fetch(`{{ url('admin/work-orders') }}/${workOrderId}/safety-image/${category}/${index}`, {
                     method: 'DELETE',
                     headers: {
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                        'Accept': 'application/json'
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
                     }
                 })
                 .then(response => response.json())

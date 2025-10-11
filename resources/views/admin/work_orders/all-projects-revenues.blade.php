@@ -550,7 +550,7 @@
                         <div class="stat-icon">
                             <i class="fas fa-file-invoice-dollar"></i>
                         </div>
-                        <div class="stat-title">إجمالي قيمة المستخلصات</div>
+                        <div class="stat-title"> إجمالي قيمة المستخلصات غير شامل الضريبة</div>
                         <div class="stat-value">{{ number_format($workOrdersStats['madinah']['total_value'], 2) }}</div>
                         <div class="stat-currency">ريال سعودي</div>
                     </div>

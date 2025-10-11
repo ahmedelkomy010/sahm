@@ -31,7 +31,7 @@
 
     .table {
         margin-bottom: 0;
-        font-size: 0.7rem;
+        font-size: 0.85rem;
         min-width: 1800px;
     }
 
@@ -40,27 +40,27 @@
         color: white;
         font-weight: 600;
         text-align: center;
-        padding: 4px 2px;
+        padding: 8px 4px;
         border: none;
         white-space: nowrap;
-        font-size: 0.65rem;
+        font-size: 0.75rem;
         text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
         position: sticky;
         top: 0;
         z-index: 10;
         vertical-align: middle;
-        line-height: 1.1;
+        line-height: 1.3;
     }
 
     .table tbody td {
-        padding: 2px;
+        padding: 4px;
         border: 1px solid #e9ecef;
         vertical-align: middle;
         text-align: center;
-        transition: all 0.3s ease;
+        transition: all 0.2s ease;
         position: relative;
-        min-width: 70px;
-        max-width: 120px;
+        min-width: 80px;
+        max-width: 150px;
     }
 
     .table tbody tr:nth-child(even) {
@@ -74,30 +74,36 @@
     }
 
     .editable-field {
-        min-height: 20px;
-        min-width: 60px;
-        padding: 2px;
-        border: 1px solid transparent;
-        border-radius: 3px;
+        min-height: 28px;
+        min-width: 70px;
+        padding: 6px 8px;
+        border: 2px solid transparent;
+        border-radius: 4px;
         background: transparent;
-        transition: all 0.3s ease;
+        transition: all 0.2s ease;
         cursor: text;
         display: block;
         width: 100%;
-        font-size: 0.7rem;
-        line-height: 1.1;
+        font-size: 0.85rem;
+        line-height: 1.4;
     }
 
     .editable-field:hover {
-        background-color: rgba(13, 110, 253, 0.05);
-        border-color: rgba(13, 110, 253, 0.2);
+        background-color: rgba(13, 110, 253, 0.08);
+        border-color: rgba(13, 110, 253, 0.3);
     }
 
     .editable-field:focus {
         outline: none;
-        background-color: rgba(13, 110, 253, 0.1);
+        background-color: #fff;
         border-color: #0d6efd;
-        box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.1);
+        box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15);
+    }
+    
+    .editable-field[contenteditable="true"]:empty:before {
+        content: attr(placeholder);
+        color: #adb5bd;
+        font-style: italic;
     }
 
     .editable-field:empty::before {
@@ -239,26 +245,27 @@
 
     /* Date input styling */
     .date-input {
-        border: none;
-        border-radius: 3px;
-        padding: 3px 4px;
-        font-size: 0.75rem;
+        border: 2px solid transparent;
+        border-radius: 4px;
+        padding: 6px 8px;
+        font-size: 0.85rem;
         width: 100%;
         background: transparent;
         cursor: pointer;
-        min-height: 24px;
+        min-height: 32px;
+        transition: all 0.2s ease;
     }
 
     .date-input:focus {
         outline: none;
-        border: none;
-        box-shadow: none;
-        background: rgba(13, 110, 253, 0.05);
+        background: #fff;
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15);
     }
 
     .date-input:hover {
-        border: none;
-        background: rgba(13, 110, 253, 0.02);
+        background: rgba(13, 110, 253, 0.08);
+        border-color: rgba(13, 110, 253, 0.3);
     }
 
     /* Number input styling - إخفاء الأسهم وتحسين المظهر */
@@ -274,22 +281,25 @@
     }
 
     input[type="number"].form-control {
-        border: 1px solid transparent;
-        border-radius: 3px;
+        border: 2px solid transparent;
+        border-radius: 4px;
         background: transparent;
-        transition: all 0.3s ease;
+        transition: all 0.2s ease;
+        padding: 6px 8px;
+        font-size: 0.85rem;
+        min-height: 32px;
     }
 
     input[type="number"].form-control:hover {
-        background-color: rgba(13, 110, 253, 0.05);
-        border-color: rgba(13, 110, 253, 0.2);
+        background-color: rgba(13, 110, 253, 0.08);
+        border-color: rgba(13, 110, 253, 0.3);
     }
 
     input[type="number"].form-control:focus {
         outline: none;
-        background-color: rgba(13, 110, 253, 0.1);
+        background-color: #fff;
         border-color: #0d6efd;
-        box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.1);
+        box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15);
     }
 
     /* Filter Section Styles - استايل حقول الفلتر */
@@ -400,25 +410,80 @@
         margin-bottom: 0.75rem;
     }
 
+    /* Auto-save feedback */
+    .saving {
+        background-color: #fff3cd !important;
+        border-color: #ffc107 !important;
+    }
+    
+    .saved {
+        background-color: #d1e7dd !important;
+        border-color: #28a745 !important;
+        animation: savedPulse 0.5s ease-in-out;
+    }
+    
+    @keyframes savedPulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.02); }
+    }
+    
+    .error-field {
+        background-color: #f8d7da !important;
+        border-color: #dc3545 !important;
+    }
+    
+    /* Tab navigation enhancement */
+    .editable-field:focus-within,
+    .form-control:focus,
+    .field-focused {
+        z-index: 5;
+    }
+    
+    .field-focused {
+        transform: scale(1.02);
+    }
+    
+    /* Select dropdown styling */
+    select.form-control {
+        cursor: pointer;
+        border: 2px solid transparent;
+        border-radius: 4px;
+        padding: 6px 8px;
+        font-size: 0.85rem;
+        min-height: 32px;
+        background-color: transparent;
+        transition: all 0.2s ease;
+    }
+    
+    select.form-control:hover {
+        background-color: rgba(13, 110, 253, 0.08);
+        border-color: rgba(13, 110, 253, 0.3);
+    }
+    
+    select.form-control:focus {
+        outline: none;
+        background-color: #fff;
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15);
+    }
+
     /* Responsive adjustments */
     @media (max-width: 768px) {
         .table {
-            font-size: 0.65rem;
+            font-size: 0.75rem;
             min-width: 1400px;
         }
         
         .editable-field {
-            font-size: 0.65rem;
-            min-height: 22px;
-            padding: 3px;
+            font-size: 0.75rem;
+            min-height: 26px;
+            padding: 4px 6px;
         }
 
         .date-input {
-            font-size: 0.65rem;
-            min-height: 22px;
-            padding: 2px 3px;
-            border: none;
-            background: transparent;
+            font-size: 0.75rem;
+            min-height: 26px;
+            padding: 4px 6px;
         }
 
         .table thead th {
@@ -797,10 +862,10 @@
                             
                             @if(auth()->user()->isAdmin())
                             <!-- زر مسح جميع الصفوف -->
-                            <!-- <button type="button" class="btn btn-danger btn-sm" onclick="deleteAllRows()">
+                            <button type="button" class="btn btn-danger btn-sm" onclick="deleteAllRows()">
                                 <i class="fas fa-trash-alt me-1"></i>
                                 مسح جميع الصفوف
-                            </button> -->
+                            </button>
                             @endif
                         </div>
                     </div>
@@ -849,10 +914,10 @@
                                             <div class="editable-field" contenteditable="true" data-field="project_area" placeholder="المشروع">{{ $revenue->project_area }}</div>
                                         </td>
                                         <td>
-                                            <input type="number" class="form-control form-control-sm" data-field="contract_number" placeholder="رقم العقد" value="{{ $revenue->contract_number }}" style="font-size: 0.65rem; padding: 3px; min-width: 95px;">
+                                            <input type="number" class="form-control" data-field="contract_number" placeholder="رقم العقد" value="{{ $revenue->contract_number }}">
                                         </td>
                                         <td>
-                                            <input type="number" class="form-control form-control-sm" data-field="extract_number" placeholder="رقم المستخلص" value="{{ $revenue->extract_number }}" style="font-size: 0.65rem; padding: 3px; min-width: 95px;">
+                                            <input type="number" class="form-control" data-field="extract_number" placeholder="رقم المستخلص" value="{{ $revenue->extract_number }}">
                                         </td>
                                         <td>
                                             <div class="editable-field" contenteditable="true" data-field="office" placeholder="المكتب">{{ $revenue->office }}</div>
@@ -867,10 +932,10 @@
                                             <div class="editable-field" contenteditable="true" data-field="invoice_number" placeholder="رقم الفاتورة">{{ $revenue->invoice_number }}</div>
                                         </td>
                                         <td>
-                                            <input type="number" step="0.01" class="form-control form-control-sm" data-field="extract_value" placeholder="إجمالي قيمة المستخلصات غير شامله الضريبه" value="{{ $revenue->extract_value }}" style="font-size: 0.75rem; padding: 4px; min-width: 100px;">
+                                            <input type="number" step="0.01" class="form-control" data-field="extract_value" placeholder="إجمالي قيمة المستخلصات" value="{{ $revenue->extract_value }}">
                                         </td>
                                         <td>
-                                            <select class="form-select form-select-sm" data-field="tax_percentage" style="font-size: 0.75rem; padding: 4px;">
+                                            <select class="form-control" data-field="tax_percentage">
                                                 <option value="UDS" {{ $revenue->tax_percentage === 'UDS' ? 'selected' : '' }}>UDS</option>
                                                 <option value="SAP" {{ $revenue->tax_percentage === 'SAP' ? 'selected' : '' }}>SAP</option>
                                             </select>
@@ -879,10 +944,10 @@
                                             <div class="editable-field" contenteditable="false" data-field="tax_value" placeholder="قيمة الضريبة" style="background-color: #fef3c7; font-weight: bold; cursor: not-allowed;" title="محسوب تلقائياً: قيمة المستخلص × 15%">{{ $revenue->tax_value }}</div>
                                         </td>
                                         <td>
-                                            <div class="editable-field" contenteditable="true" data-field="penalties" placeholder="الغرامات">{{ $revenue->penalties }}</div>
+                                            <input type="number" step="0.01" class="form-control" data-field="penalties" placeholder="الغرامات" value="{{ $revenue->penalties }}">
                                         </td>
                                         <td>
-                                            <input type="number" step="0.01" class="form-control form-control-sm" data-field="first_payment_tax" placeholder="ضريبة الدفعة الأولى" value="{{ $revenue->first_payment_tax }}" style="font-size: 0.65rem; padding: 3px; min-width: 100px;">
+                                            <input type="number" step="0.01" class="form-control" data-field="first_payment_tax" placeholder="ضريبة الدفعة الأولى" value="{{ $revenue->first_payment_tax }}">
                                         </td>
                                         <td>
                                             <div class="editable-field" contenteditable="false" data-field="net_extract_value" placeholder="صافي قيمة المستخلص" style="background-color: #fef3c7; font-weight: bold; cursor: not-allowed;" title="محسوب تلقائياً: قيمة المستخلص + الضريبة - الغرامات">{{ $revenue->net_extract_value }}</div>
@@ -894,8 +959,7 @@
                                             <div class="editable-field" contenteditable="true" data-field="year" placeholder="العام">{{ $revenue->year }}</div>
                                         </td>
                                         <td>
-                                            <select class="form-select form-select-sm payment-type-select" data-field="payment_type" style="font-size: 0.75rem; padding: 4px;">
-                                                
+                                            <select class="form-control payment-type-select" data-field="payment_type">
                                                 <option value="المقاول" {{ $revenue->payment_type == 'المقاول' ? 'selected' : '' }}>المقاول</option>
                                                 <option value="ادارة الكهرباء" {{ $revenue->payment_type == 'ادارة الكهرباء' ? 'selected' : '' }}>ادارة الكهرباء</option>
                                                 <option value="المالية" {{ $revenue->payment_type == 'المالية' ? 'selected' : '' }}>المالية</option>
@@ -904,17 +968,16 @@
                                             </select>
                                         </td>
                                         <td>
-                                            <input type="number" class="form-control form-control-sm" data-field="reference_number" placeholder="الرقم المرجعي" value="{{ $revenue->reference_number }}" style="font-size: 0.65rem; padding: 3px; min-width: 105px;">
+                                            <input type="number" class="form-control" data-field="reference_number" placeholder="الرقم المرجعي" value="{{ $revenue->reference_number }}">
                                         </td>
                                         <td class="date-col">
                                             <input type="date" class="date-input" data-field="payment_date" value="{{ $revenue->payment_date ? $revenue->payment_date->format('Y-m-d') : '' }}" placeholder="تاريخ الصرف">
                                         </td>
                                         <td>
-                                            <input type="number" step="0.01" class="form-control form-control-sm" data-field="payment_value" placeholder="قيمة الصرف" value="{{ $revenue->payment_value }}" style="font-size: 0.65rem; padding: 3px; min-width: 105px;">
+                                            <input type="number" step="0.01" class="form-control" data-field="payment_value" placeholder="قيمة الصرف" value="{{ $revenue->payment_value }}">
                                         </td>
                                         <td>
-                                            <select class="form-select form-select-sm" data-field="extract_status" style="font-size: 0.75rem; padding: 4px;">
-                                                
+                                            <select class="form-control" data-field="extract_status">
                                                 <option value="مدفوع" {{ $revenue->extract_status == 'مدفوع' ? 'selected' : '' }}>مدفوع</option>
                                                 <option value="غير مدفوع" {{ $revenue->extract_status == 'غير مدفوع' ? 'selected' : '' }}>غير مدفوع</option>
                                             </select>
@@ -1019,27 +1082,27 @@ function addNewRow() {
         </td>
         <td><div class="editable-field" contenteditable="true" data-field="client_name" placeholder="اسم العميل"></div></td>
         <td><div class="editable-field" contenteditable="true" data-field="project_area" placeholder="المشروع"></div></td>
-        <td><input type="number" class="form-control form-control-sm" data-field="contract_number" placeholder="رقم العقد" style="font-size: 0.65rem; padding: 3px; min-width: 95px;"></td>
-        <td><input type="number" class="form-control form-control-sm" data-field="extract_number" placeholder="رقم المستخلص" style="font-size: 0.65rem; padding: 3px; min-width: 95px;"></td>
+        <td><input type="number" class="form-control" data-field="contract_number" placeholder="رقم العقد"></td>
+        <td><input type="number" class="form-control" data-field="extract_number" placeholder="رقم المستخلص"></td>
         <td><div class="editable-field" contenteditable="true" data-field="office" placeholder="المكتب"></div></td>
         <td><div class="editable-field" contenteditable="true" data-field="extract_type" placeholder="نوع المستخلص"></div></td>
         <td><div class="editable-field" contenteditable="true" data-field="po_number" placeholder="رقم PO"></div></td>
         <td><div class="editable-field" contenteditable="true" data-field="invoice_number" placeholder="رقم الفاتورة"></div></td>
-        <td><input type="number" step="0.01" class="form-control form-control-sm" data-field="extract_value" placeholder="إجمالي قيمة المستخلصات غير شامله الضريبه" style="font-size: 0.75rem; padding: 4px; min-width: 100px;"></td>
+        <td><input type="number" step="0.01" class="form-control" data-field="extract_value" placeholder="إجمالي قيمة المستخلصات غير شامله الضريبه"></td>
         <td>
-            <select class="form-select form-select-sm" data-field="tax_percentage" style="font-size: 0.75rem; padding: 4px;">
+            <select class="form-control" data-field="tax_percentage">
                 <option value="UDS">UDS</option>
                 <option value="SAP">SAP</option>
             </select>
         </td>
         <td><div class="editable-field" contenteditable="false" data-field="tax_value" placeholder="قيمة الضريبة" style="background-color: #fef3c7; font-weight: bold; cursor: not-allowed;" title="محسوب تلقائياً: قيمة المستخلص × 15%"></div></td>
-        <td><div class="editable-field" contenteditable="true" data-field="penalties" placeholder="الغرامات"></div></td>
-        <td><input type="number" step="0.01" class="form-control form-control-sm" data-field="first_payment_tax" placeholder="ضريبة الدفعة الأولى" style="font-size: 0.65rem; padding: 3px; min-width: 100px;"></td>
+        <td><input type="number" step="0.01" class="form-control" data-field="penalties" placeholder="الغرامات"></td>
+        <td><input type="number" step="0.01" class="form-control" data-field="first_payment_tax" placeholder="ضريبة الدفعة الأولى"></td>
         <td><div class="editable-field" contenteditable="false" data-field="net_extract_value" placeholder="صافي قيمة المستخلص" style="background-color: #fef3c7; font-weight: bold; cursor: not-allowed;" title="محسوب تلقائياً: قيمة المستخلص + الضريبة - الغرامات"></div></td>
         <td class="date-col"><input type="date" class="date-input" data-field="extract_date" placeholder="تاريخ الإعداد"></td>
         <td><div class="editable-field" contenteditable="true" data-field="year" placeholder="العام"></div></td>
         <td>
-            <select class="form-select form-select-sm payment-type-select" data-field="payment_type" style="font-size: 0.75rem; padding: 4px;">
+            <select class="form-control payment-type-select" data-field="payment_type">
                 <option value="">اختر...</option>
                 <option value="المقاول">المقاول</option>
                 <option value="ادارة الكهرباء">ادارة الكهرباء</option>
@@ -1048,11 +1111,11 @@ function addNewRow() {
                 <option value="تم الصرف">تم الصرف</option>
             </select>
         </td>
-        <td><input type="number" class="form-control form-control-sm" data-field="reference_number" placeholder="الرقم المرجعي" style="font-size: 0.65rem; padding: 3px; min-width: 105px;"></td>
+        <td><input type="number" class="form-control" data-field="reference_number" placeholder="الرقم المرجعي"></td>
         <td class="date-col"><input type="date" class="date-input" data-field="payment_date" placeholder="تاريخ الصرف"></td>
-        <td><input type="number" step="0.01" class="form-control form-control-sm" data-field="payment_value" placeholder="قيمة الصرف" style="font-size: 0.65rem; padding: 3px; min-width: 105px;"></td>
+        <td><input type="number" step="0.01" class="form-control" data-field="payment_value" placeholder="قيمة الصرف"></td>
         <td>
-            <select class="form-select form-select-sm" data-field="extract_status" style="font-size: 0.75rem; padding: 4px;">
+            <select class="form-control" data-field="extract_status">
                 <option value="">اختر...</option>
                 <option value="مدفوع">مدفوع</option>
                 <option value="غير مدفوع">غير مدفوع</option>
@@ -1184,7 +1247,7 @@ function autoSaveRow(row) {
         extract_value: row.querySelector('[data-field="extract_value"]').value || '',
         tax_percentage: row.querySelector('[data-field="tax_percentage"]').value || '',
         tax_value: row.querySelector('[data-field="tax_value"]').textContent.trim(),
-        penalties: row.querySelector('[data-field="penalties"]').textContent.trim(),
+        penalties: row.querySelector('[data-field="penalties"]').value || '',
         first_payment_tax: row.querySelector('[data-field="first_payment_tax"]').value || row.querySelector('[data-field="first_payment_tax"]').textContent.trim(),
         net_extract_value: row.querySelector('[data-field="net_extract_value"]').textContent.trim(),
         extract_date: row.querySelector('[data-field="extract_date"]').value || '',
@@ -1627,18 +1690,162 @@ function checkEmptyTable() {
 
 // تصدير البيانات إلى Excel
 function exportToExcel() {
-    const table = document.querySelector('.table');
-    const wb = XLSX.utils.table_to_book(table, {sheet: "الإيرادات"});
+    // إظهار مؤشر التحميل
+    const loadingToast = document.createElement('div');
+    loadingToast.innerHTML = `
+        <div style="position: fixed; top: 20px; right: 20px; background: #0d6efd; color: white; padding: 15px 25px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 10000; display: flex; align-items: center; gap: 10px;">
+            <div class="spinner-border spinner-border-sm" role="status"></div>
+            <span>جاري تصدير البيانات إلى Excel...</span>
+        </div>
+    `;
+    document.body.appendChild(loadingToast);
     
-    // تنسيق اسم الملف بالتاريخ الحالي
-    const today = new Date();
-    const dateStr = today.getFullYear() + '-' + 
-                   String(today.getMonth() + 1).padStart(2, '0') + '-' + 
-                   String(today.getDate()).padStart(2, '0');
+    // تأخير بسيط للسماح بعرض المؤشر
+    setTimeout(() => {
+        const rows = document.querySelectorAll('#revenuesTableBody tr[data-revenue-id]');
+        
+        // Headers
+        const headers = [
+            '#',
+            'اسم العميل/الجهة المالكة',
+            'المشروع/المنطقة',
+            'رقم العقد',
+            'رقم المستخلص',
+            'المكتب',
+            'نوع المستخلص',
+            'رقم PO',
+            'رقم الفاتورة',
+            'إجمالي قيمة المستخلصات غير شامله الضريبه',
+            'جهة المستخلص',
+            'قيمة الضريبة',
+            'الغرامات',
+            'ضريبة الدفعة الأولى',
+            'صافي قيمة المستخلص',
+            'تاريخ إعداد المستخلص',
+            'العام',
+            'موقف المستخلص',
+            'الرقم المرجعي',
+            'تاريخ الصرف',
+            'قيمة الصرف',
+            'حالة الصرف'
+        ];
+        
+        // Data rows
+        const data = [];
+        rows.forEach((row, index) => {
+            const rowData = [
+                index + 1,
+                getFieldValue(row, 'client_name'),
+                getFieldValue(row, 'project_area'),
+                getFieldValue(row, 'contract_number'),
+                getFieldValue(row, 'extract_number'),
+                getFieldValue(row, 'office'),
+                getFieldValue(row, 'extract_type'),
+                getFieldValue(row, 'po_number'),
+                getFieldValue(row, 'invoice_number'),
+                getFieldValue(row, 'extract_value'),
+                getFieldValue(row, 'tax_percentage'),
+                getFieldValue(row, 'tax_value'),
+                getFieldValue(row, 'penalties'),
+                getFieldValue(row, 'first_payment_tax'),
+                getFieldValue(row, 'net_extract_value'),
+                getFieldValue(row, 'extract_date'),
+                getFieldValue(row, 'year'),
+                getFieldValue(row, 'payment_type'),
+                getFieldValue(row, 'reference_number'),
+                getFieldValue(row, 'payment_date'),
+                getFieldValue(row, 'payment_value'),
+                getFieldValue(row, 'extract_status')
+            ];
+            data.push(rowData);
+        });
+        
+        // Create workbook
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.aoa_to_sheet([headers, ...data]);
+        
+        // تنسيق العرض التلقائي للأعمدة
+        const colWidths = [
+            { wch: 5 },   // #
+            { wch: 25 },  // اسم العميل
+            { wch: 25 },  // المشروع
+            { wch: 15 },  // رقم العقد
+            { wch: 15 },  // رقم المستخلص
+            { wch: 15 },  // المكتب
+            { wch: 20 },  // نوع المستخلص
+            { wch: 15 },  // رقم PO
+            { wch: 15 },  // رقم الفاتورة
+            { wch: 20 },  // إجمالي القيمة
+            { wch: 15 },  // جهة المستخلص
+            { wch: 15 },  // قيمة الضريبة
+            { wch: 15 },  // الغرامات
+            { wch: 20 },  // ضريبة الدفعة الأولى
+            { wch: 20 },  // صافي القيمة
+            { wch: 18 },  // تاريخ الإعداد
+            { wch: 10 },  // العام
+            { wch: 20 },  // موقف المستخلص
+            { wch: 15 },  // الرقم المرجعي
+            { wch: 18 },  // تاريخ الصرف
+            { wch: 15 },  // قيمة الصرف
+            { wch: 15 }   // حالة الصرف
+        ];
+        ws['!cols'] = colWidths;
+        
+        // تنسيق الهيدر (الصف الأول)
+        const range = XLSX.utils.decode_range(ws['!ref']);
+        for (let C = range.s.c; C <= range.e.c; ++C) {
+            const address = XLSX.utils.encode_col(C) + "1";
+            if (!ws[address]) continue;
+            ws[address].s = {
+                font: { bold: true, color: { rgb: "FFFFFF" } },
+                fill: { fgColor: { rgb: "4472C4" } },
+                alignment: { horizontal: "center", vertical: "center", wrapText: true }
+            };
+        }
+        
+        XLSX.utils.book_append_sheet(wb, ws, "الإيرادات");
+        
+        // تنسيق اسم الملف بالتاريخ الحالي
+        const today = new Date();
+        const dateStr = today.getFullYear() + '-' + 
+                       String(today.getMonth() + 1).padStart(2, '0') + '-' + 
+                       String(today.getDate()).padStart(2, '0');
     
-    XLSX.writeFile(wb, `revenues_${dateStr}.xlsx`);
+        XLSX.writeFile(wb, `revenues_${dateStr}.xlsx`);
+        
+        // إزالة مؤشر التحميل
+        document.body.removeChild(loadingToast);
+        
+        // إظهار رسالة نجاح
+        const successToast = document.createElement('div');
+        successToast.innerHTML = `
+            <div style="position: fixed; top: 20px; right: 20px; background: #28a745; color: white; padding: 15px 25px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 10000; display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-check-circle"></i>
+                <span>تم تصدير ${rows.length} سجل بنجاح!</span>
+            </div>
+        `;
+        document.body.appendChild(successToast);
+        
+        setTimeout(() => {
+            document.body.removeChild(successToast);
+        }, 3000);
+        
+        console.log('تم تصدير البيانات إلى Excel');
+    }, 100);
+}
+
+// دالة مساعدة لقراءة قيمة الحقل
+function getFieldValue(row, fieldName) {
+    const field = row.querySelector(`[data-field="${fieldName}"]`);
+    if (!field) return '';
     
-    console.log('تم تصدير البيانات إلى Excel');
+    // إذا كان input أو select
+    if (field.tagName === 'INPUT' || field.tagName === 'SELECT') {
+        return field.value || '';
+    }
+    
+    // إذا كان contenteditable div
+    return field.textContent.trim() || '';
 }
 
 // استيراد البيانات من Excel
@@ -1997,7 +2204,7 @@ function calculateNetExtractValue(row) {
     // الحصول على القيم
     const extractValue = parseFloat(extractValueInput.value) || 0;
     const taxValue = parseFloat(taxValueField.textContent.trim()) || 0;
-    const penalties = parseFloat(penaltiesField.textContent.trim()) || 0;
+    const penalties = parseFloat(penaltiesField.value) || 0;
     
     // حساب صافي قيمة المستخلص
     const netValue = extractValue + taxValue - penalties;
@@ -2042,6 +2249,138 @@ function addCalculationListeners(row) {
         });
     }
 }
+
+// ========== Enhanced Keyboard Navigation ==========
+// تحسين التنقل بين الحقول باستخدام Enter
+document.addEventListener('DOMContentLoaded', function() {
+    const table = document.querySelector('#revenuesTableBody');
+    if (!table) return;
+    
+    // Get all focusable elements in the table
+    function getFocusableElements() {
+        return Array.from(table.querySelectorAll('[contenteditable="true"], input, select'))
+            .filter(el => !el.disabled && el.offsetParent !== null);
+    }
+    
+    // Handle Enter key to move to next field
+    table.addEventListener('keydown', function(e) {
+        const target = e.target;
+        
+        // Check if it's an editable field or input
+        if (target.matches('[contenteditable="true"], input, select')) {
+            // Enter key (without Shift)
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                
+                const focusableElements = getFocusableElements();
+                const currentIndex = focusableElements.indexOf(target);
+                
+                if (currentIndex !== -1 && currentIndex < focusableElements.length - 1) {
+                    const nextElement = focusableElements[currentIndex + 1];
+                    nextElement.focus();
+                    
+                    // Select all text in the next field for easy replacement
+                    if (nextElement.matches('[contenteditable="true"]')) {
+                        const range = document.createRange();
+                        range.selectNodeContents(nextElement);
+                        const selection = window.getSelection();
+                        selection.removeAllRanges();
+                        selection.addRange(range);
+                    } else if (nextElement.matches('input')) {
+                        nextElement.select();
+                    }
+                }
+            }
+            
+            // Shift+Enter to move to previous field
+            if (e.key === 'Enter' && e.shiftKey) {
+                e.preventDefault();
+                
+                const focusableElements = getFocusableElements();
+                const currentIndex = focusableElements.indexOf(target);
+                
+                if (currentIndex > 0) {
+                    const prevElement = focusableElements[currentIndex - 1];
+                    prevElement.focus();
+                    
+                    // Select all text in the previous field
+                    if (prevElement.matches('[contenteditable="true"]')) {
+                        const range = document.createRange();
+                        range.selectNodeContents(prevElement);
+                        const selection = window.getSelection();
+                        selection.removeAllRanges();
+                        selection.addRange(range);
+                    } else if (prevElement.matches('input')) {
+                        prevElement.select();
+                    }
+                }
+            }
+        }
+    });
+    
+    // Visual feedback on focus
+    table.addEventListener('focus', function(e) {
+        if (e.target.matches('[contenteditable="true"], input, select')) {
+            e.target.classList.add('field-focused');
+        }
+    }, true);
+    
+    table.addEventListener('blur', function(e) {
+        if (e.target.matches('[contenteditable="true"], input, select')) {
+            e.target.classList.remove('field-focused');
+        }
+    }, true);
+    
+    // Add visual feedback classes for auto-save
+    const originalAutoSave = window.autoSaveRevenue;
+    if (originalAutoSave) {
+        window.autoSaveRevenue = function(field, revenueId) {
+            field.classList.add('saving');
+            field.classList.remove('saved', 'error-field');
+            
+            originalAutoSave(field, revenueId).then(() => {
+                field.classList.remove('saving');
+                field.classList.add('saved');
+                setTimeout(() => field.classList.remove('saved'), 1500);
+            }).catch(() => {
+                field.classList.remove('saving');
+                field.classList.add('error-field');
+                setTimeout(() => field.classList.remove('error-field'), 2000);
+            });
+        };
+    }
+    
+    // Double-click to select all text in editable fields
+    table.addEventListener('dblclick', function(e) {
+        if (e.target.matches('[contenteditable="true"]')) {
+            const range = document.createRange();
+            range.selectNodeContents(e.target);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+        } else if (e.target.matches('input')) {
+            e.target.select();
+        }
+    });
+    
+    // Escape key to blur (lose focus) from current field
+    table.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            if (e.target.matches('[contenteditable="true"], input, select')) {
+                e.target.blur();
+            }
+        }
+    });
+    
+    // Console log for debugging
+    console.log('Enhanced Revenue Table Navigation Loaded ✓');
+    console.log('Shortcuts:');
+    console.log('- Enter: Move to next field');
+    console.log('- Shift+Enter: Move to previous field');
+    console.log('- Tab: Standard tab navigation');
+    console.log('- Escape: Blur current field');
+    console.log('- Double-click: Select all text');
+});
 </script>
 
 <!-- إضافة مكتبة SheetJS لمعالجة Excel -->
