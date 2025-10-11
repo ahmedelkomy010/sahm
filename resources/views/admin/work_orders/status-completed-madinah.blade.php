@@ -60,6 +60,38 @@
                 </div>
             </div>
 
+            <!-- Filters -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-filter me-2"></i>
+                        خيارات العرض والتصدير
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="GET" action="{{ route('admin.work-orders.status.completed.madinah') }}" class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">عدد النتائج في الصفحة</label>
+                            <select class="form-select" name="per_page" onchange="this.form.submit()">
+                                <option value="10" {{ request('per_page') == 10 ? 'selected' : '' }}>10</option>
+                                <option value="20" {{ request('per_page', 20) == 20 ? 'selected' : '' }}>20</option>
+                                <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50</option>
+                                <option value="100" {{ request('per_page') == 100 ? 'selected' : '' }}>100</option>
+                                <option value="200" {{ request('per_page') == 200 ? 'selected' : '' }}>200</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label d-block">&nbsp;</label>
+                            <a href="{{ route('admin.work-orders.status.export-completed', ['project' => 'madinah']) }}" 
+                               class="btn btn-success w-100">
+                                <i class="fas fa-file-excel me-2"></i>
+                                تصدير إلى Excel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
             <!-- Work Orders Table -->
             <div class="card shadow-sm border-0">
                 <div class="card-header bg-light">

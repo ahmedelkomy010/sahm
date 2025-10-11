@@ -127,13 +127,17 @@ class WorkOrderController extends Controller
     /**
      * عرض أوامر العمل بحالة "جاري العمل بالموقع" - الرياض
      */
-    public function statusInProgressRiyadh()
+    public function statusInProgressRiyadh(Request $request)
     {
+        // جلب عدد النتائج من الطلب
+        $perPage = $request->input('per_page', 20);
+        
         // جلب أوامر العمل بحالة "جاري العمل بالموقع" (status = 1) - الرياض
         $workOrders = WorkOrder::where('execution_status', 1)
             ->where('city', 'الرياض')
             ->orderBy('created_at', 'desc')
-            ->paginate(20);
+            ->paginate($perPage)
+            ->appends($request->except('page'));
         
         // حساب إجمالي القيمة المبدئية
         $totalValue = WorkOrder::where('execution_status', 1)
@@ -146,13 +150,17 @@ class WorkOrderController extends Controller
     /**
      * عرض أوامر العمل بحالة "جاري العمل بالموقع" - المدينة المنورة
      */
-    public function statusInProgressMadinah()
+    public function statusInProgressMadinah(Request $request)
     {
+        // جلب عدد النتائج من الطلب
+        $perPage = $request->input('per_page', 20);
+        
         // جلب أوامر العمل بحالة "جاري العمل بالموقع" (status = 1) - المدينة المنورة
         $workOrders = WorkOrder::where('execution_status', 1)
             ->where('city', 'المدينة المنورة')
             ->orderBy('created_at', 'desc')
-            ->paginate(20);
+            ->paginate($perPage)
+            ->appends($request->except('page'));
         
         // حساب إجمالي القيمة المبدئية
         $totalValue = WorkOrder::where('execution_status', 1)
@@ -165,13 +173,17 @@ class WorkOrderController extends Controller
     /**
      * عرض أوامر العمل بحالة "تم التنفيذ بالموقع" - الرياض
      */
-    public function statusExecutedRiyadh()
+    public function statusExecutedRiyadh(Request $request)
     {
+        // جلب عدد النتائج من الطلب
+        $perPage = $request->input('per_page', 20);
+        
         // جلب أوامر العمل بحالة "تم التنفيذ بالموقع" (status = 2) - الرياض
         $workOrders = WorkOrder::where('execution_status', 2)
             ->where('city', 'الرياض')
             ->orderBy('created_at', 'desc')
-            ->paginate(20);
+            ->paginate($perPage)
+            ->appends($request->except('page'));
         
         // حساب إجمالي القيمة المبدئية
         $totalValue = WorkOrder::where('execution_status', 2)
@@ -184,13 +196,17 @@ class WorkOrderController extends Controller
     /**
      * عرض أوامر العمل بحالة "تم التنفيذ بالموقع" - المدينة المنورة
      */
-    public function statusExecutedMadinah()
+    public function statusExecutedMadinah(Request $request)
     {
+        // جلب عدد النتائج من الطلب
+        $perPage = $request->input('per_page', 20);
+        
         // جلب أوامر العمل بحالة "تم التنفيذ بالموقع" (status = 2) - المدينة المنورة
         $workOrders = WorkOrder::where('execution_status', 2)
             ->where('city', 'المدينة المنورة')
             ->orderBy('created_at', 'desc')
-            ->paginate(20);
+            ->paginate($perPage)
+            ->appends($request->except('page'));
         
         // حساب إجمالي القيمة المبدئية
         $totalValue = WorkOrder::where('execution_status', 2)
@@ -203,13 +219,17 @@ class WorkOrderController extends Controller
     /**
      * عرض أوامر العمل بحالة "تم تسليم 155 - جاري إصدار شهادة الإنجاز" - الرياض
      */
-    public function statusDelivery155Riyadh()
+    public function statusDelivery155Riyadh(Request $request)
     {
+        // جلب عدد النتائج من الطلب
+        $perPage = $request->input('per_page', 20);
+        
         // جلب أوامر العمل بحالة "تم تسليم 155 - جاري إصدار شهادة الإنجاز" (status = 3) - الرياض
         $workOrders = WorkOrder::where('execution_status', 3)
             ->where('city', 'الرياض')
             ->orderBy('created_at', 'desc')
-            ->paginate(20);
+            ->paginate($perPage)
+            ->appends($request->except('page'));
         
         // حساب إجمالي القيمة المبدئية
         $totalValue = WorkOrder::where('execution_status', 3)
@@ -222,13 +242,17 @@ class WorkOrderController extends Controller
     /**
      * عرض أوامر العمل بحالة "تم تسليم 155 - جاري إصدار شهادة الإنجاز" - المدينة المنورة
      */
-    public function statusDelivery155Madinah()
+    public function statusDelivery155Madinah(Request $request)
     {
+        // جلب عدد النتائج من الطلب
+        $perPage = $request->input('per_page', 20);
+        
         // جلب أوامر العمل بحالة "تم تسليم 155 - جاري إصدار شهادة الإنجاز" (status = 3) - المدينة المنورة
         $workOrders = WorkOrder::where('execution_status', 3)
             ->where('city', 'المدينة المنورة')
             ->orderBy('created_at', 'desc')
-            ->paginate(20);
+            ->paginate($perPage)
+            ->appends($request->except('page'));
         
         // حساب إجمالي القيمة المبدئية
         $totalValue = WorkOrder::where('execution_status', 3)
@@ -241,13 +265,17 @@ class WorkOrderController extends Controller
     /**
      * عرض أوامر العمل بحالة "إعداد مستخلص الدفعة الجزئية الأولى وجاري الصرف" - الرياض
      */
-    public function statusFirstExtractRiyadh()
+    public function statusFirstExtractRiyadh(Request $request)
     {
+        // جلب عدد النتائج من الطلب
+        $perPage = $request->input('per_page', 20);
+        
         // جلب أوامر العمل بحالة "إعداد مستخلص الدفعة الجزئية الأولى وجاري الصرف" (status = 4) - الرياض
         $workOrders = WorkOrder::where('execution_status', 4)
             ->where('city', 'الرياض')
             ->orderBy('created_at', 'desc')
-            ->paginate(20);
+            ->paginate($perPage)
+            ->appends($request->except('page'));
         
         // حساب إجمالي القيمة المبدئية
         $totalValue = WorkOrder::where('execution_status', 4)
@@ -260,13 +288,17 @@ class WorkOrderController extends Controller
     /**
      * عرض أوامر العمل بحالة "إعداد مستخلص الدفعة الجزئية الأولى وجاري الصرف" - المدينة المنورة
      */
-    public function statusFirstExtractMadinah()
+    public function statusFirstExtractMadinah(Request $request)
     {
+        // جلب عدد النتائج من الطلب
+        $perPage = $request->input('per_page', 20);
+        
         // جلب أوامر العمل بحالة "إعداد مستخلص الدفعة الجزئية الأولى وجاري الصرف" (status = 4) - المدينة المنورة
         $workOrders = WorkOrder::where('execution_status', 4)
             ->where('city', 'المدينة المنورة')
             ->orderBy('created_at', 'desc')
-            ->paginate(20);
+            ->paginate($perPage)
+            ->appends($request->except('page'));
         
         // حساب إجمالي القيمة المبدئية
         $totalValue = WorkOrder::where('execution_status', 4)
@@ -279,13 +311,17 @@ class WorkOrderController extends Controller
     /**
      * عرض أوامر العمل بحالة "تم صرف مستخلص الدفعة الجزئية الأولى" - الرياض
      */
-    public function statusPaidFirstRiyadh()
+    public function statusPaidFirstRiyadh(Request $request)
     {
+        // جلب عدد النتائج من الطلب
+        $perPage = $request->input('per_page', 20);
+        
         // جلب أوامر العمل بحالة "تم صرف مستخلص الدفعة الجزئية الأولى" (status = 5) - الرياض
         $workOrders = WorkOrder::where('execution_status', 5)
             ->where('city', 'الرياض')
             ->orderBy('created_at', 'desc')
-            ->paginate(20);
+            ->paginate($perPage)
+            ->appends($request->except('page'));
         
         // حساب إجمالي القيمة المبدئية
         $totalValue = WorkOrder::where('execution_status', 5)
@@ -298,13 +334,17 @@ class WorkOrderController extends Controller
     /**
      * عرض أوامر العمل بحالة "تم صرف مستخلص الدفعة الجزئية الأولى" - المدينة المنورة
      */
-    public function statusPaidFirstMadinah()
+    public function statusPaidFirstMadinah(Request $request)
     {
+        // جلب عدد النتائج من الطلب
+        $perPage = $request->input('per_page', 20);
+        
         // جلب أوامر العمل بحالة "تم صرف مستخلص الدفعة الجزئية الأولى" (status = 5) - المدينة المنورة
         $workOrders = WorkOrder::where('execution_status', 5)
             ->where('city', 'المدينة المنورة')
             ->orderBy('created_at', 'desc')
-            ->paginate(20);
+            ->paginate($perPage)
+            ->appends($request->except('page'));
         
         // حساب إجمالي القيمة المبدئية
         $totalValue = WorkOrder::where('execution_status', 5)
@@ -317,13 +357,17 @@ class WorkOrderController extends Controller
     /**
      * عرض أوامر العمل بحالة "تم إصدار شهادة الإنجاز" - الرياض
      */
-    public function statusCertificateRiyadh()
+    public function statusCertificateRiyadh(Request $request)
     {
+        // جلب عدد النتائج من الطلب
+        $perPage = $request->input('per_page', 20);
+        
         // جلب أوامر العمل بحالة "تم إصدار شهادة الإنجاز" (status = 8) - الرياض
         $workOrders = WorkOrder::where('execution_status', 8)
             ->where('city', 'الرياض')
             ->orderBy('created_at', 'desc')
-            ->paginate(20);
+            ->paginate($perPage)
+            ->appends($request->except('page'));
         
         // حساب إجمالي القيمة المبدئية
         $totalValue = WorkOrder::where('execution_status', 8)
@@ -336,13 +380,17 @@ class WorkOrderController extends Controller
     /**
      * عرض أوامر العمل بحالة "تم إصدار شهادة الإنجاز" - المدينة المنورة
      */
-    public function statusCertificateMadinah()
+    public function statusCertificateMadinah(Request $request)
     {
+        // جلب عدد النتائج من الطلب
+        $perPage = $request->input('per_page', 20);
+        
         // جلب أوامر العمل بحالة "تم إصدار شهادة الإنجاز" (status = 8) - المدينة المنورة
         $workOrders = WorkOrder::where('execution_status', 8)
             ->where('city', 'المدينة المنورة')
             ->orderBy('created_at', 'desc')
-            ->paginate(20);
+            ->paginate($perPage)
+            ->appends($request->except('page'));
         
         // حساب إجمالي القيمة المبدئية
         $totalValue = WorkOrder::where('execution_status', 8)
@@ -355,13 +403,17 @@ class WorkOrderController extends Controller
     /**
      * عرض أوامر العمل بحالة "إعداد مستخلص الدفعة الجزئية الثانية وجاري الصرف" - الرياض
      */
-    public function statusSecondExtractRiyadh()
+    public function statusSecondExtractRiyadh(Request $request)
     {
+        // جلب عدد النتائج من الطلب
+        $perPage = $request->input('per_page', 20);
+        
         // جلب أوامر العمل بحالة "إعداد مستخلص الدفعة الجزئية الثانية وجاري الصرف" (status = 6) - الرياض
         $workOrders = WorkOrder::where('execution_status', 6)
             ->where('city', 'الرياض')
             ->orderBy('created_at', 'desc')
-            ->paginate(20);
+            ->paginate($perPage)
+            ->appends($request->except('page'));
         
         // حساب إجمالي القيمة المبدئية
         $totalValue = WorkOrder::where('execution_status', 6)
@@ -374,13 +426,17 @@ class WorkOrderController extends Controller
     /**
      * عرض أوامر العمل بحالة "إعداد مستخلص الدفعة الجزئية الثانية وجاري الصرف" - المدينة المنورة
      */
-    public function statusSecondExtractMadinah()
+    public function statusSecondExtractMadinah(Request $request)
     {
+        // جلب عدد النتائج من الطلب
+        $perPage = $request->input('per_page', 20);
+        
         // جلب أوامر العمل بحالة "إعداد مستخلص الدفعة الجزئية الثانية وجاري الصرف" (status = 6) - المدينة المنورة
         $workOrders = WorkOrder::where('execution_status', 6)
             ->where('city', 'المدينة المنورة')
             ->orderBy('created_at', 'desc')
-            ->paginate(20);
+            ->paginate($perPage)
+            ->appends($request->except('page'));
         
         // حساب إجمالي القيمة المبدئية
         $totalValue = WorkOrder::where('execution_status', 6)
@@ -393,13 +449,17 @@ class WorkOrderController extends Controller
     /**
      * عرض أوامر العمل بحالة "تم إعداد المستخلص الكلي وجاري الصرف" - الرياض
      */
-    public function statusTotalExtractRiyadh()
+    public function statusTotalExtractRiyadh(Request $request)
     {
+        // جلب عدد النتائج من الطلب
+        $perPage = $request->input('per_page', 20);
+        
         // جلب أوامر العمل بحالة "تم إعداد المستخلص الكلي وجاري الصرف" (status = 10) - الرياض
         $workOrders = WorkOrder::where('execution_status', 10)
             ->where('city', 'الرياض')
             ->orderBy('created_at', 'desc')
-            ->paginate(20);
+            ->paginate($perPage)
+            ->appends($request->except('page'));
         
         // حساب إجمالي القيمة المبدئية
         $totalValue = WorkOrder::where('execution_status', 10)
@@ -412,13 +472,17 @@ class WorkOrderController extends Controller
     /**
      * عرض أوامر العمل بحالة "تم إعداد المستخلص الكلي وجاري الصرف" - المدينة المنورة
      */
-    public function statusTotalExtractMadinah()
+    public function statusTotalExtractMadinah(Request $request)
     {
+        // جلب عدد النتائج من الطلب
+        $perPage = $request->input('per_page', 20);
+        
         // جلب أوامر العمل بحالة "تم إعداد المستخلص الكلي وجاري الصرف" (status = 10) - المدينة المنورة
         $workOrders = WorkOrder::where('execution_status', 10)
             ->where('city', 'المدينة المنورة')
             ->orderBy('created_at', 'desc')
-            ->paginate(20);
+            ->paginate($perPage)
+            ->appends($request->except('page'));
         
         // حساب إجمالي القيمة المبدئية
         $totalValue = WorkOrder::where('execution_status', 10)
@@ -431,13 +495,17 @@ class WorkOrderController extends Controller
     /**
      * عرض أوامر العمل بحالة "منتهي تم الصرف" - الرياض
      */
-    public function statusCompletedRiyadh()
+    public function statusCompletedRiyadh(Request $request)
     {
+        // جلب عدد النتائج من الطلب
+        $perPage = $request->input('per_page', 20);
+        
         // جلب أوامر العمل بحالة "منتهي تم الصرف" (status = 7) - الرياض
         $workOrders = WorkOrder::where('execution_status', 7)
             ->where('city', 'الرياض')
             ->orderBy('created_at', 'desc')
-            ->paginate(20);
+            ->paginate($perPage)
+            ->appends($request->except('page'));
         
         // حساب إجمالي القيمة المبدئية
         $totalValue = WorkOrder::where('execution_status', 7)
@@ -450,13 +518,17 @@ class WorkOrderController extends Controller
     /**
      * عرض أوامر العمل بحالة "منتهي تم الصرف" - المدينة المنورة
      */
-    public function statusCompletedMadinah()
+    public function statusCompletedMadinah(Request $request)
     {
+        // جلب عدد النتائج من الطلب
+        $perPage = $request->input('per_page', 20);
+        
         // جلب أوامر العمل بحالة "منتهي تم الصرف" (status = 7) - المدينة المنورة
         $workOrders = WorkOrder::where('execution_status', 7)
             ->where('city', 'المدينة المنورة')
             ->orderBy('created_at', 'desc')
-            ->paginate(20);
+            ->paginate($perPage)
+            ->appends($request->except('page'));
         
         // حساب إجمالي القيمة المبدئية
         $totalValue = WorkOrder::where('execution_status', 7)
@@ -1932,11 +2004,253 @@ class WorkOrderController extends Controller
     }
 
     /**
+     * تصدير أوامر العمل الغير منفذة إلى Excel
+     */
+    public function exportUnexecutedOrders($project)
+    {
+        $cityCondition = function($q) use ($project) {
+            if ($project === 'riyadh') {
+                $q->where('city', 'الرياض')->orWhere('city', 'riyadh');
+            } else {
+                $q->where('city', 'المدينة المنورة')->orWhere('city', 'madinah');
+            }
+        };
+
+        $workOrders = WorkOrder::with(['licenses', 'dailyExecutionNotes'])
+            ->where($cityCondition)
+            ->where('execution_status', 1) // جاري العمل بالموقع
+            ->orderBy('approval_date', 'asc')
+            ->get();
+
+        $cityName = $project === 'riyadh' ? 'الرياض' : 'المدينة المنورة';
+        $fileName = 'unexecuted-orders-' . $project . '-' . now()->format('Y-m-d') . '.xlsx';
+
+        return \Excel::download(new \App\Exports\UnexecutedOrdersExport($workOrders), $fileName);
+    }
+
+    /**
+     * تصدير أوامر العمل جاري العمل بالموقع إلى Excel
+     */
+    public function exportInProgressOrders($project)
+    {
+        $cityCondition = function($q) use ($project) {
+            if ($project === 'riyadh') {
+                $q->where('city', 'الرياض')->orWhere('city', 'riyadh');
+            } else {
+                $q->where('city', 'المدينة المنورة')->orWhere('city', 'madinah');
+            }
+        };
+
+        $workOrders = WorkOrder::where($cityCondition)
+            ->where('execution_status', 1) // جاري العمل بالموقع
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $cityName = $project === 'riyadh' ? 'الرياض' : 'المدينة المنورة';
+        $fileName = 'inprogress-orders-' . $project . '-' . now()->format('Y-m-d') . '.xlsx';
+
+        return \Excel::download(new \App\Exports\InProgressOrdersExport($workOrders), $fileName);
+    }
+
+    /**
+     * تصدير أوامر العمل تم التنفيذ بالموقع إلى Excel
+     */
+    public function exportExecutedOrders($project)
+    {
+        $cityCondition = function($q) use ($project) {
+            if ($project === 'riyadh') {
+                $q->where('city', 'الرياض')->orWhere('city', 'riyadh');
+            } else {
+                $q->where('city', 'المدينة المنورة')->orWhere('city', 'madinah');
+            }
+        };
+
+        $workOrders = WorkOrder::where($cityCondition)
+            ->where('execution_status', 2) // تم التنفيذ بالموقع
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $cityName = $project === 'riyadh' ? 'الرياض' : 'المدينة المنورة';
+        $fileName = 'executed-orders-' . $project . '-' . now()->format('Y-m-d') . '.xlsx';
+
+        return \Excel::download(new \App\Exports\ExecutedOrdersExport($workOrders), $fileName);
+    }
+
+    /**
+     * تصدير أوامر العمل تم تسليم 155 إلى Excel
+     */
+    public function exportDelivery155Orders($project)
+    {
+        $cityCondition = function($q) use ($project) {
+            if ($project === 'riyadh') {
+                $q->where('city', 'الرياض')->orWhere('city', 'riyadh');
+            } else {
+                $q->where('city', 'المدينة المنورة')->orWhere('city', 'madinah');
+            }
+        };
+
+        $workOrders = WorkOrder::where($cityCondition)
+            ->where('execution_status', 3) // تم تسليم 155
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $cityName = $project === 'riyadh' ? 'الرياض' : 'المدينة المنورة';
+        $fileName = 'delivery155-orders-' . $project . '-' . now()->format('Y-m-d') . '.xlsx';
+
+        return \Excel::download(new \App\Exports\Delivery155OrdersExport($workOrders), $fileName);
+    }
+
+    /**
+     * تصدير أوامر العمل إعداد مستخلص الدفعة الأولى إلى Excel
+     */
+    public function exportFirstExtractOrders($project)
+    {
+        $cityCondition = function($q) use ($project) {
+            if ($project === 'riyadh') {
+                $q->where('city', 'الرياض')->orWhere('city', 'riyadh');
+            } else {
+                $q->where('city', 'المدينة المنورة')->orWhere('city', 'madinah');
+            }
+        };
+
+        $workOrders = WorkOrder::where($cityCondition)
+            ->where('execution_status', 4) // إعداد مستخلص الدفعة الأولى
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $cityName = $project === 'riyadh' ? 'الرياض' : 'المدينة المنورة';
+        $fileName = 'firstextract-orders-' . $project . '-' . now()->format('Y-m-d') . '.xlsx';
+
+        return \Excel::download(new \App\Exports\FirstExtractOrdersExport($workOrders), $fileName);
+    }
+
+    /**
+     * تصدير أوامر العمل تم صرف الدفعة الأولى إلى Excel
+     */
+    public function exportPaidFirstOrders($project)
+    {
+        $cityCondition = function($q) use ($project) {
+            if ($project === 'riyadh') {
+                $q->where('city', 'الرياض')->orWhere('city', 'riyadh');
+            } else {
+                $q->where('city', 'المدينة المنورة')->orWhere('city', 'madinah');
+            }
+        };
+
+        $workOrders = WorkOrder::where($cityCondition)
+            ->where('execution_status', 5) // تم صرف الدفعة الأولى
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $cityName = $project === 'riyadh' ? 'الرياض' : 'المدينة المنورة';
+        $fileName = 'paidfirst-orders-' . $project . '-' . now()->format('Y-m-d') . '.xlsx';
+
+        return \Excel::download(new \App\Exports\PaidFirstOrdersExport($workOrders), $fileName);
+    }
+
+    /**
+     * تصدير أوامر العمل شهادة الإنجاز إلى Excel
+     */
+    public function exportCertificateOrders($project)
+    {
+        $cityCondition = function($q) use ($project) {
+            if ($project === 'riyadh') {
+                $q->where('city', 'الرياض')->orWhere('city', 'riyadh');
+            } else {
+                $q->where('city', 'المدينة المنورة')->orWhere('city', 'madinah');
+            }
+        };
+
+        $workOrders = WorkOrder::where($cityCondition)
+            ->where('execution_status', 8) // تم إصدار شهادة الإنجاز
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $cityName = $project === 'riyadh' ? 'الرياض' : 'المدينة المنورة';
+        $fileName = 'certificate-orders-' . $project . '-' . now()->format('Y-m-d') . '.xlsx';
+
+        return \Excel::download(new \App\Exports\CertificateOrdersExport($workOrders), $fileName);
+    }
+
+    /**
+     * تصدير أوامر العمل مستخلص الدفعة الثانية إلى Excel
+     */
+    public function exportSecondExtractOrders($project)
+    {
+        $cityCondition = function($q) use ($project) {
+            if ($project === 'riyadh') {
+                $q->where('city', 'الرياض')->orWhere('city', 'riyadh');
+            } else {
+                $q->where('city', 'المدينة المنورة')->orWhere('city', 'madinah');
+            }
+        };
+
+        $workOrders = WorkOrder::where($cityCondition)
+            ->where('execution_status', 6) // إعداد مستخلص الدفعة الثانية
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $cityName = $project === 'riyadh' ? 'الرياض' : 'المدينة المنورة';
+        $fileName = 'secondextract-orders-' . $project . '-' . now()->format('Y-m-d') . '.xlsx';
+
+        return \Excel::download(new \App\Exports\SecondExtractOrdersExport($workOrders), $fileName);
+    }
+
+    /**
+     * تصدير أوامر العمل المستخلص الكلي إلى Excel
+     */
+    public function exportTotalExtractOrders($project)
+    {
+        $cityCondition = function($q) use ($project) {
+            if ($project === 'riyadh') {
+                $q->where('city', 'الرياض')->orWhere('city', 'riyadh');
+            } else {
+                $q->where('city', 'المدينة المنورة')->orWhere('city', 'madinah');
+            }
+        };
+
+        $workOrders = WorkOrder::where($cityCondition)
+            ->where('execution_status', 10) // تم إعداد المستخلص الكلي وجاري الصرف
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $cityName = $project === 'riyadh' ? 'الرياض' : 'المدينة المنورة';
+        $fileName = 'totalextract-orders-' . $project . '-' . now()->format('Y-m-d') . '.xlsx';
+
+        return \Excel::download(new \App\Exports\TotalExtractOrdersExport($workOrders), $fileName);
+    }
+
+    /**
+     * تصدير أوامر العمل منتهي تم الصرف إلى Excel
+     */
+    public function exportCompletedOrders($project)
+    {
+        $cityCondition = function($q) use ($project) {
+            if ($project === 'riyadh') {
+                $q->where('city', 'الرياض')->orWhere('city', 'riyadh');
+            } else {
+                $q->where('city', 'المدينة المنورة')->orWhere('city', 'madinah');
+            }
+        };
+
+        $workOrders = WorkOrder::where($cityCondition)
+            ->where('execution_status', 7) // منتهي تم الصرف
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $cityName = $project === 'riyadh' ? 'الرياض' : 'المدينة المنورة';
+        $fileName = 'completed-orders-' . $project . '-' . now()->format('Y-m-d') . '.xlsx';
+
+        return \Excel::download(new \App\Exports\CompletedOrdersExport($workOrders), $fileName);
+    }
+
+    /**
      * عرض أوامر العمل الغير منفذة - الرياض
      */
     public function unexecutedOrdersRiyadh()
     {
-        $workOrders = WorkOrder::where(function($q) {
+        $workOrders = WorkOrder::with(['licenses', 'dailyExecutionNotes'])
+        ->where(function($q) {
             $q->where('city', 'الرياض')->orWhere('city', 'riyadh');
         })
         ->where('execution_status', 1) // جاري العمل بالموقع فقط
@@ -1963,7 +2277,8 @@ class WorkOrderController extends Controller
      */
     public function unexecutedOrdersMadinah()
     {
-        $workOrders = WorkOrder::where(function($q) {
+        $workOrders = WorkOrder::with(['licenses', 'dailyExecutionNotes'])
+        ->where(function($q) {
             $q->where('city', 'المدينة المنورة')->orWhere('city', 'madinah');
         })
         ->where('execution_status', 1)
@@ -1988,43 +2303,64 @@ class WorkOrderController extends Controller
     /**
      * عرض التقرير المفصل - الرياض
      */
-    public function detailedReportRiyadh()
+    public function detailedReportRiyadh(Request $request)
     {
-        $overdueCount = WorkOrder::where(function($q) {
+        $cityCondition = function($q) {
             $q->where('city', 'الرياض')->orWhere('city', 'riyadh');
-        })
-        ->where('execution_status', '!=', 7)
-        ->whereNotNull('approval_date')
-        ->whereRaw('DATEDIFF(NOW(), approval_date) > 30')
-        ->count();
+        };
 
-        $unexecutedCount = WorkOrder::where(function($q) {
-            $q->where('city', 'الرياض')->orWhere('city', 'riyadh');
-        })
-        ->where('execution_status', 1)
-        ->count();
+        // Base query for filtering
+        $query = WorkOrder::query()->where($cityCondition);
 
-        $completedCount = WorkOrder::where(function($q) {
-            $q->where('city', 'الرياض')->orWhere('city', 'riyadh');
-        })
-        ->where('execution_status', 7)
-        ->count();
+        // Apply filters
+        if ($request->filled('start_date')) {
+            $query->where('approval_date', '>=', $request->start_date);
+        }
+        if ($request->filled('end_date')) {
+            $query->where('approval_date', '<=', $request->end_date);
+        }
+        if ($request->filled('search')) {
+            $query->where('order_number', 'like', '%' . $request->search . '%');
+        }
 
-        $totalOrders = WorkOrder::where(function($q) {
-            $q->where('city', 'الرياض')->orWhere('city', 'riyadh');
-        })->count();
+        // Statistics (using filtered query)
+        $statsQuery = clone $query;
+        
+        $overdueCount = (clone $query)
+            ->where('execution_status', '!=', 7)
+            ->whereNotNull('approval_date')
+            ->whereRaw('DATEDIFF(NOW(), approval_date) > 30')
+            ->count();
 
-        $workOrders = WorkOrder::where(function($q) {
-            $q->where('city', 'الرياض')->orWhere('city', 'riyadh');
-        })
-        ->orderBy('approval_date', 'desc')
-        ->paginate(20);
+        $unexecutedCount = (clone $query)
+            ->where('execution_status', 1)
+            ->count();
+
+        $completedCount = (clone $query)
+            ->where('execution_status', 7)
+            ->count();
+
+        $totalOrders = (clone $query)->count();
+
+        $obstaclesCount = (clone $query)
+            ->whereHas('survey', function($q) {
+                $q->where('has_obstacles', true);
+            })
+            ->count();
+
+        // Get paginated results
+        $perPage = $request->input('per_page', 20);
+        $workOrders = $query->with('survey')
+            ->orderBy('approval_date', 'desc')
+            ->paginate($perPage)
+            ->appends($request->except('page'));
 
         return view('admin.time-management.detailed-report-riyadh', compact(
             'overdueCount', 
             'unexecutedCount', 
             'completedCount', 
             'totalOrders',
+            'obstaclesCount',
             'workOrders'
         ));
     }
@@ -2032,44 +2368,89 @@ class WorkOrderController extends Controller
     /**
      * عرض التقرير المفصل - المدينة
      */
-    public function detailedReportMadinah()
+    public function detailedReportMadinah(Request $request)
     {
-        $overdueCount = WorkOrder::where(function($q) {
+        $cityCondition = function($q) {
             $q->where('city', 'المدينة المنورة')->orWhere('city', 'madinah');
-        })
-        ->where('execution_status', '!=', 7)
-        ->whereNotNull('approval_date')
-        ->whereRaw('DATEDIFF(NOW(), approval_date) > 30')
-        ->count();
+        };
 
-        $unexecutedCount = WorkOrder::where(function($q) {
-            $q->where('city', 'المدينة المنورة')->orWhere('city', 'madinah');
-        })
-        ->where('execution_status', 1)
-        ->count();
+        // Base query for filtering
+        $query = WorkOrder::query()->where($cityCondition);
 
-        $completedCount = WorkOrder::where(function($q) {
-            $q->where('city', 'المدينة المنورة')->orWhere('city', 'madinah');
-        })
-        ->where('execution_status', 7)
-        ->count();
+        // Apply filters
+        if ($request->filled('start_date')) {
+            $query->where('approval_date', '>=', $request->start_date);
+        }
+        if ($request->filled('end_date')) {
+            $query->where('approval_date', '<=', $request->end_date);
+        }
+        if ($request->filled('search')) {
+            $query->where('order_number', 'like', '%' . $request->search . '%');
+        }
 
-        $totalOrders = WorkOrder::where(function($q) {
-            $q->where('city', 'المدينة المنورة')->orWhere('city', 'madinah');
-        })->count();
+        // Statistics (using filtered query)
+        $statsQuery = clone $query;
+        
+        $overdueCount = (clone $query)
+            ->where('execution_status', '!=', 7)
+            ->whereNotNull('approval_date')
+            ->whereRaw('DATEDIFF(NOW(), approval_date) > 30')
+            ->count();
 
-        $workOrders = WorkOrder::where(function($q) {
-            $q->where('city', 'المدينة المنورة')->orWhere('city', 'madinah');
-        })
-        ->orderBy('approval_date', 'desc')
-        ->paginate(20);
+        $unexecutedCount = (clone $query)
+            ->where('execution_status', 1)
+            ->count();
+
+        $completedCount = (clone $query)
+            ->where('execution_status', 7)
+            ->count();
+
+        $totalOrders = (clone $query)->count();
+
+        $obstaclesCount = (clone $query)
+            ->whereHas('survey', function($q) {
+                $q->where('has_obstacles', true);
+            })
+            ->count();
+
+        // Get paginated results
+        $perPage = $request->input('per_page', 20);
+        $workOrders = $query->with('survey')
+            ->orderBy('approval_date', 'desc')
+            ->paginate($perPage)
+            ->appends($request->except('page'));
 
         return view('admin.time-management.detailed-report-madinah', compact(
             'overdueCount', 
             'unexecutedCount', 
             'completedCount', 
             'totalOrders',
+            'obstaclesCount',
             'workOrders'
         ));
+    }
+
+    /**
+     * تصدير أوامر العمل التي عليها معوقات إلى Excel
+     */
+    public function exportObstacles($project)
+    {
+        $cityCondition = function($q) use ($project) {
+            if ($project === 'riyadh') {
+                $q->where('city', 'الرياض')->orWhere('city', 'riyadh');
+            } else {
+                $q->where('city', 'المدينة المنورة')->orWhere('city', 'madinah');
+            }
+        };
+
+        $workOrders = WorkOrder::with('survey')
+            ->where($cityCondition)
+            ->orderBy('approval_date', 'desc')
+            ->get();
+
+        $cityName = $project === 'riyadh' ? 'الرياض' : 'المدينة المنورة';
+        $fileName = 'obstacles-report-' . $project . '-' . now()->format('Y-m-d') . '.xlsx';
+
+        return \Excel::download(new \App\Exports\ObstaclesReportExport($workOrders), $fileName);
     }
 } 

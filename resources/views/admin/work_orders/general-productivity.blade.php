@@ -118,6 +118,258 @@
                         </div>
                     </div>
 
+            <!-- Quick Stats Overview -->
+                <div class="col-12">
+                    <div class="card shadow-sm border-0 mt-4">
+                        <div class="card-header bg-light">
+                                <h5 class="mb-0">
+                                <i class="fas fa-th-large me-2 text-primary"></i>
+                                لوحة تحكم حالات أوامر العمل
+                                </h5>
+                                                </div>
+                            <div class="card-body">
+                            <div class="row g-2 justify-content-center">
+                                <div class="col-6 col-md-4 col-lg" style="flex: 0 0 auto; width: 9.09%;">
+                                    <div class="text-center">
+                                        <div class="bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 45px; height: 45px;">
+                                            <i class="fas fa-inbox text-success fs-6"></i>
+                                            </div>
+                                        <h6 class="mb-1" id="quickReceiptsCount">0</h6>
+                                        <small class="text-muted" style="font-size: 0.7rem;">أوامر مستلمة</small>
+                                        </div>
+                                                </div>
+                                <div class="col-6 col-md-4 col-lg" style="flex: 0 0 auto; width: 9.09%;">
+                                    @php
+                                        $inProgressRoute = ($project ?? 'riyadh') === 'madinah' 
+                                            ? route('admin.work-orders.status.inprogress.madinah')
+                                            : route('admin.work-orders.status.inprogress.riyadh');
+                                    @endphp
+                                    <a href="{{ $inProgressRoute }}" 
+                                       class="text-decoration-none"
+                                       style="color: inherit; transition: all 0.3s ease;">
+                                        <div class="text-center p-2 rounded" style="cursor: pointer; transition: all 0.3s ease;" 
+                                             onmouseover="this.style.backgroundColor='rgba(23, 162, 184, 0.1)'" 
+                                             onmouseout="this.style.backgroundColor='transparent'">
+                                            <div class="bg-info bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 45px; height: 45px;">
+                                                <i class="fas fa-cogs text-info fs-6"></i>
+                                            </div>
+                                            <h6 class="mb-1" id="quickInProgressCount">0</h6>
+                                            <small class="text-muted" style="font-size: 0.65rem;">جاري العمل</small>
+                                            <div class="mt-1">
+                                                <small class="text-info" style="font-size: 0.6rem;">
+                                                    <i class="fas fa-external-link-alt"></i>
+                                                </small>
+                                        </div>
+                                                </div>
+                            </a>
+                                                </div>
+                                <div class="col-6 col-md-4 col-lg" style="flex: 0 0 auto; width: 9.09%;">
+                                    @php
+                                        $executedRoute = ($project ?? 'riyadh') === 'madinah' 
+                                            ? route('admin.work-orders.status.executed.madinah')
+                                            : route('admin.work-orders.status.executed.riyadh');
+                                    @endphp
+                                    <a href="{{ $executedRoute }}" 
+                                       class="text-decoration-none"
+                                       style="color: inherit; transition: all 0.3s ease;">
+                                        <div class="text-center p-2 rounded" style="cursor: pointer; transition: all 0.3s ease;" 
+                                             onmouseover="this.style.backgroundColor='rgba(112, 68, 2, 0.1)'" 
+                                             onmouseout="this.style.backgroundColor='transparent'">
+                                            <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 45px; height: 45px; background-color: rgba(112, 68, 2, 0.1);">
+                                                <i class="fas fa-hammer fs-6" style="color: #704402;"></i>
+                                            </div>
+                                            <h6 class="mb-1" id="quickExecutedCount">0</h6>
+                                            <small class="text-muted" style="font-size: 0.65rem;">تم التنفيذ</small>
+                                            <div class="mt-1">
+                                                <small style="color: #704402; font-size: 0.6rem;">
+                                                    <i class="fas fa-external-link-alt"></i>
+                                                </small>
+                                        </div>
+                                    </div>
+                                    </a>
+                                                </div>
+                                <div class="col-6 col-md-4 col-lg" style="flex: 0 0 auto; width: 9.09%;">
+                                    @php
+                                        $delivery155Route = ($project ?? 'riyadh') === 'madinah' 
+                                            ? route('admin.work-orders.status.delivery155.madinah')
+                                            : route('admin.work-orders.status.delivery155.riyadh');
+                                    @endphp
+                                    <a href="{{ $delivery155Route }}" 
+                                       class="text-decoration-none"
+                                       style="color: inherit; transition: all 0.3s ease;">
+                                        <div class="text-center p-2 rounded" style="cursor: pointer; transition: all 0.3s ease;" 
+                                             onmouseover="this.style.backgroundColor='rgba(111, 66, 193, 0.1)'" 
+                                             onmouseout="this.style.backgroundColor='transparent'">
+                                            <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 45px; height: 45px; background-color: rgba(111, 66, 193, 0.1);">
+                                                <i class="fas fa-file-signature fs-6" style="color: #6f42c1;"></i>
+                                            </div>
+                                            <h6 class="mb-1" id="quickDelivery155Count">0</h6>
+                                            <small class="text-muted" style="font-size: 0.65rem;">تسليم 155</small>
+                                            <div class="mt-1">
+                                                <small style="color: #6f42c1; font-size: 0.6rem;">
+                                                    <i class="fas fa-external-link-alt"></i>
+                                                </small>
+                                        </div>
+                                                </div>
+                                    </a>
+                                            </div>
+                                <div class="col-6 col-md-4 col-lg" style="flex: 0 0 auto; width: 9.09%;">
+                                    @php
+                                        $firstExtractRoute = ($project ?? 'riyadh') === 'madinah' 
+                                            ? route('admin.work-orders.status.firstextract.madinah')
+                                            : route('admin.work-orders.status.firstextract.riyadh');
+                                    @endphp
+                                    <a href="{{ $firstExtractRoute }}" 
+                                       class="text-decoration-none"
+                                       style="color: inherit; transition: all 0.3s ease;">
+                                        <div class="text-center p-2 rounded" style="cursor: pointer; transition: all 0.3s ease;" 
+                                             onmouseover="this.style.backgroundColor='rgba(233, 30, 99, 0.1)'" 
+                                             onmouseout="this.style.backgroundColor='transparent'">
+                                            <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 45px; height: 45px; background-color: rgba(233, 30, 99, 0.1);">
+                                                <i class="fas fa-file-invoice-dollar fs-6" style="color: #e91e63;"></i>
+                                        </div>
+                                            <h6 class="mb-1" id="quickFirstExtractCount">0</h6>
+                                            <small class="text-muted" style="font-size: 0.65rem;">إعداد مستخلص</small>
+                                            <div class="mt-1">
+                                                <small style="color: #e91e63; font-size: 0.6rem;">
+                                                    <i class="fas fa-external-link-alt"></i>
+                                                </small>
+                                    </div>
+                                </div>
+                            </a>
+                            </div>
+                                <div class="col-6 col-md-4 col-lg" style="flex: 0 0 auto; width: 9.09%;">
+                                    @php
+                                        $paidFirstRoute = ($project ?? 'riyadh') === 'madinah' 
+                                            ? route('admin.work-orders.status.paidfirst.madinah')
+                                            : route('admin.work-orders.status.paidfirst.riyadh');
+                                    @endphp
+                                    <a href="{{ $paidFirstRoute }}" 
+                                       class="text-decoration-none"
+                                       style="color: inherit; transition: all 0.3s ease;">
+                                        <div class="text-center p-2 rounded" style="cursor: pointer; transition: all 0.3s ease;" 
+                                             onmouseover="this.style.backgroundColor='rgba(255, 152, 0, 0.1)'" 
+                                             onmouseout="this.style.backgroundColor='transparent'">
+                                            <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 45px; height: 45px; background-color: rgba(255, 152, 0, 0.1);">
+                                                <i class="fas fa-money-check-alt fs-6" style="color: #ff9800;"></i>
+                        </div>
+                                            <h6 class="mb-1" id="quickPaidFirstCount">0</h6>
+                                            <small class="text-muted" style="font-size: 0.65rem;">تم صرف أولى</small>
+                                            <div class="mt-1">
+                                                <small style="color: #ff9800; font-size: 0.6rem;">
+                                                    <i class="fas fa-external-link-alt"></i>
+                                                </small>
+                    </div>
+                                    </div>
+                            </a>
+                            </div>
+                                <div class="col-6 col-md-4 col-lg" style="flex: 0 0 auto; width: 9.09%;">
+                                    @php
+                                        $secondExtractRoute = ($project ?? 'riyadh') === 'madinah'
+                                            ? route('admin.work-orders.status.secondextract.madinah')
+                                            : route('admin.work-orders.status.secondextract.riyadh');
+                                    @endphp
+                                    <a href="{{ $secondExtractRoute }}" 
+                                       class="text-decoration-none"
+                                       style="color: inherit; transition: all 0.3s ease;">
+                                        <div class="text-center p-2 rounded" style="cursor: pointer; transition: all 0.3s ease;" 
+                                             onmouseover="this.style.backgroundColor='rgba(156, 39, 176, 0.1)'" 
+                                             onmouseout="this.style.backgroundColor='transparent'">
+                                            <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 45px; height: 45px; background-color: rgba(156, 39, 176, 0.1);">
+                                                <i class="fas fa-file-invoice fs-6" style="color: #9c27b0;"></i>
+                                            </div>
+                                            <h6 class="mb-1" id="quickSecondExtractCount">0</h6>
+                                            <small class="text-muted" style="font-size: 0.65rem;">مستخلص ثانية</small>
+                                            <div class="mt-1">
+                                                <small style="color: #9c27b0; font-size: 0.6rem;">
+                                                    <i class="fas fa-external-link-alt"></i>
+                                                </small>
+                                        </div>
+                                                </div>
+                                    </a>
+                                </div>
+                                <div class="col-6 col-md-4 col-lg" style="flex: 0 0 auto; width: 9.09%;">
+                                    @php
+                                        $certificateRoute = ($project ?? 'riyadh') === 'madinah'
+                                            ? route('admin.work-orders.status.certificate.madinah')
+                                            : route('admin.work-orders.status.certificate.riyadh');
+                                    @endphp
+                                    <a href="{{ $certificateRoute }}" 
+                                       class="text-decoration-none"
+                                       style="color: inherit; transition: all 0.3s ease;">
+                                        <div class="text-center p-2 rounded" style="cursor: pointer; transition: all 0.3s ease;" 
+                                             onmouseover="this.style.backgroundColor='rgba(76, 175, 80, 0.1)'" 
+                                             onmouseout="this.style.backgroundColor='transparent'">
+                                            <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 45px; height: 45px; background-color: rgba(76, 175, 80, 0.1);">
+                                                <i class="fas fa-certificate fs-6" style="color: #4caf50;"></i>
+                                        </div>
+                                            <h6 class="mb-1" id="quickCertificateCount">0</h6>
+                                            <small class="text-muted" style="font-size: 0.65rem;">شهادة إنجاز</small>
+                                            <div class="mt-1">
+                                                <small style="color: #4caf50; font-size: 0.6rem;">
+                                                    <i class="fas fa-external-link-alt"></i>
+                                                </small>
+                                    </div>
+                                </div>
+                                    </a>
+                                </div>
+                                <div class="col-6 col-md-4 col-lg" style="flex: 0 0 auto; width: 9.09%;">
+                                    @php
+                                        $totalExtractRoute = ($project ?? 'riyadh') === 'madinah' 
+                                            ? route('admin.work-orders.status.totalextract.madinah')
+                                            : route('admin.work-orders.status.totalextract.riyadh');
+                                    @endphp
+                                    <a href="{{ $totalExtractRoute }}" 
+                                       class="text-decoration-none"
+                                       style="color: inherit; transition: all 0.3s ease;">
+                                        <div class="text-center p-2 rounded" style="cursor: pointer; transition: all 0.3s ease;" 
+                                             onmouseover="this.style.backgroundColor='rgba(0, 188, 212, 0.1)'" 
+                                             onmouseout="this.style.backgroundColor='transparent'">
+                                            <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 45px; height: 45px; background-color: rgba(0, 188, 212, 0.1);">
+                                                <i class="fas fa-file-contract fs-6" style="color: #00bcd4;"></i>
+                                            </div>
+                                            <h6 class="mb-1" id="quickTotalExtractCount">0</h6>
+                                            <small class="text-muted" style="font-size: 0.65rem;">مستخلص كلي</small>
+                                            <div class="mt-1">
+                                                <small style="color: #00bcd4; font-size: 0.6rem;">
+                                                    <i class="fas fa-external-link-alt"></i>
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </a>
+                                </div>
+                                <div class="col-6 col-md-4 col-lg" style="flex: 0 0 auto; width: 9.09%;">
+                                    @php
+                                        $completedRoute = ($project ?? 'riyadh') === 'madinah' 
+                                            ? route('admin.work-orders.status.completed.madinah')
+                                            : route('admin.work-orders.status.completed.riyadh');
+                                    @endphp
+                                    <a href="{{ $completedRoute }}" 
+                                       class="text-decoration-none"
+                                       style="color: inherit; transition: all 0.3s ease;">
+                                        <div class="text-center p-2 rounded" style="cursor: pointer; transition: all 0.3s ease;" 
+                                             onmouseover="this.style.backgroundColor='rgba(108, 117, 125, 0.1)'" 
+                                             onmouseout="this.style.backgroundColor='transparent'">
+                                            <div class="bg-secondary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 45px; height: 45px;">
+                                                <i class="fas fa-check-circle text-secondary fs-6"></i>
+                                            </div>
+                                            <h6 class="mb-1" id="quickCompletedCount">0</h6>
+                                            <small class="text-muted" style="font-size: 0.65rem;">منتهي صرف</small>
+                                            <div class="mt-1">
+                                                <small class="text-secondary" style="font-size: 0.6rem;">
+                                                    <i class="fas fa-external-link-alt"></i>
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </a>
+                        </div>
+                    </div>
+                    </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Survey and Completion Files Section - Combined -->
                 <div class="col-12">
                     <div class="card shadow-sm border-0 mt-4">
@@ -473,253 +725,109 @@
                 </div>
             </div>
 
-            <!-- Quick Stats Overview -->
-                <div class="col-12">
-                    <div class="card shadow-sm border-0 mt-4">
-                        <div class="card-header bg-light">
-                                <h5 class="mb-0">
-                                <i class="fas fa-th-large me-2 text-primary"></i>
-                                لوحة تحكم حالات أوامر العمل
-                                </h5>
-                                                </div>
-                            <div class="card-body">
-                            <div class="row g-2 justify-content-center">
-                                <div class="col-6 col-md-4 col-lg" style="flex: 0 0 auto; width: 9.09%;">
-                                    <div class="text-center">
-                                        <div class="bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 45px; height: 45px;">
-                                            <i class="fas fa-inbox text-success fs-6"></i>
-                                            </div>
-                                        <h6 class="mb-1" id="quickReceiptsCount">0</h6>
-                                        <small class="text-muted" style="font-size: 0.7rem;">أوامر مستلمة</small>
-                                        </div>
-                                                </div>
-                                <div class="col-6 col-md-4 col-lg" style="flex: 0 0 auto; width: 9.09%;">
-                                    @php
-                                        $inProgressRoute = ($project ?? 'riyadh') === 'madinah' 
-                                            ? route('admin.work-orders.status.inprogress.madinah')
-                                            : route('admin.work-orders.status.inprogress.riyadh');
-                                    @endphp
-                                    <a href="{{ $inProgressRoute }}" 
-                                       class="text-decoration-none"
-                                       style="color: inherit; transition: all 0.3s ease;">
-                                        <div class="text-center p-2 rounded" style="cursor: pointer; transition: all 0.3s ease;" 
-                                             onmouseover="this.style.backgroundColor='rgba(23, 162, 184, 0.1)'" 
-                                             onmouseout="this.style.backgroundColor='transparent'">
-                                            <div class="bg-info bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 45px; height: 45px;">
-                                                <i class="fas fa-cogs text-info fs-6"></i>
-                                            </div>
-                                            <h6 class="mb-1" id="quickInProgressCount">0</h6>
-                                            <small class="text-muted" style="font-size: 0.65rem;">جاري العمل</small>
-                                            <div class="mt-1">
-                                                <small class="text-info" style="font-size: 0.6rem;">
-                                                    <i class="fas fa-external-link-alt"></i>
-                                                </small>
-                                        </div>
-                                                </div>
-                            </a>
-                                                </div>
-                                <div class="col-6 col-md-4 col-lg" style="flex: 0 0 auto; width: 9.09%;">
-                                    @php
-                                        $executedRoute = ($project ?? 'riyadh') === 'madinah' 
-                                            ? route('admin.work-orders.status.executed.madinah')
-                                            : route('admin.work-orders.status.executed.riyadh');
-                                    @endphp
-                                    <a href="{{ $executedRoute }}" 
-                                       class="text-decoration-none"
-                                       style="color: inherit; transition: all 0.3s ease;">
-                                        <div class="text-center p-2 rounded" style="cursor: pointer; transition: all 0.3s ease;" 
-                                             onmouseover="this.style.backgroundColor='rgba(112, 68, 2, 0.1)'" 
-                                             onmouseout="this.style.backgroundColor='transparent'">
-                                            <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 45px; height: 45px; background-color: rgba(112, 68, 2, 0.1);">
-                                                <i class="fas fa-hammer fs-6" style="color: #704402;"></i>
-                                            </div>
-                                            <h6 class="mb-1" id="quickExecutedCount">0</h6>
-                                            <small class="text-muted" style="font-size: 0.65rem;">تم التنفيذ</small>
-                                            <div class="mt-1">
-                                                <small style="color: #704402; font-size: 0.6rem;">
-                                                    <i class="fas fa-external-link-alt"></i>
-                                                </small>
-                                        </div>
+            <!-- Materials and Warehouses Status Section -->
+            <div class="col-12">
+                <div class="card shadow-sm border-0 mt-4">
+                    <div class="card-header" style="background: linear-gradient(135deg, #00b894 0%, #00cec9 100%);">
+                        <h5 class="mb-0 text-white text-center">
+                            <i class="fas fa-warehouse me-2"></i>
+                            موقف المواد والمستودعات
+                        </h5>
+                    </div>
+                    <div class="card-body py-4">
+                        <div class="row g-3">
+                            <!-- Materials Difference (Executed vs Disbursed) Card -->
+                            <div class="col-md-4">
+                                <div class="card h-100 shadow-sm border-0">
+                                    <div class="card-header text-white" style="background: linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%);">
+                                        <h6 class="mb-0 text-center">
+                                            <i class="fas fa-balance-scale me-2"></i>
+                                            الفرق بين المنفذ والمصروف
+                                        </h6>
                                     </div>
-                                    </a>
-                                                </div>
-                                <div class="col-6 col-md-4 col-lg" style="flex: 0 0 auto; width: 9.09%;">
-                                    @php
-                                        $delivery155Route = ($project ?? 'riyadh') === 'madinah' 
-                                            ? route('admin.work-orders.status.delivery155.madinah')
-                                            : route('admin.work-orders.status.delivery155.riyadh');
-                                    @endphp
-                                    <a href="{{ $delivery155Route }}" 
-                                       class="text-decoration-none"
-                                       style="color: inherit; transition: all 0.3s ease;">
-                                        <div class="text-center p-2 rounded" style="cursor: pointer; transition: all 0.3s ease;" 
-                                             onmouseover="this.style.backgroundColor='rgba(111, 66, 193, 0.1)'" 
-                                             onmouseout="this.style.backgroundColor='transparent'">
-                                            <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 45px; height: 45px; background-color: rgba(111, 66, 193, 0.1);">
-                                                <i class="fas fa-file-signature fs-6" style="color: #6f42c1;"></i>
-                                            </div>
-                                            <h6 class="mb-1" id="quickDelivery155Count">0</h6>
-                                            <small class="text-muted" style="font-size: 0.65rem;">تسليم 155</small>
-                                            <div class="mt-1">
-                                                <small style="color: #6f42c1; font-size: 0.6rem;">
-                                                    <i class="fas fa-external-link-alt"></i>
-                                                </small>
+                                    <div class="card-body text-center">
+                                        @php
+                                            $executedDisbursedRoute = ($project ?? 'riyadh') === 'madinah' 
+                                                ? route('admin.materials.executed-disbursed.madinah')
+                                                : route('admin.materials.executed-disbursed.riyadh');
+                                        @endphp
+                                        <div class="mb-3">
+                                            <i class="fas fa-chart-line fa-3x" style="color: #6c5ce7;"></i>
                                         </div>
-                                                </div>
-                                    </a>
-                                            </div>
-                                <div class="col-6 col-md-4 col-lg" style="flex: 0 0 auto; width: 9.09%;">
-                                    @php
-                                        $firstExtractRoute = ($project ?? 'riyadh') === 'madinah' 
-                                            ? route('admin.work-orders.status.firstextract.madinah')
-                                            : route('admin.work-orders.status.firstextract.riyadh');
-                                    @endphp
-                                    <a href="{{ $firstExtractRoute }}" 
-                                       class="text-decoration-none"
-                                       style="color: inherit; transition: all 0.3s ease;">
-                                        <div class="text-center p-2 rounded" style="cursor: pointer; transition: all 0.3s ease;" 
-                                             onmouseover="this.style.backgroundColor='rgba(233, 30, 99, 0.1)'" 
-                                             onmouseout="this.style.backgroundColor='transparent'">
-                                            <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 45px; height: 45px; background-color: rgba(233, 30, 99, 0.1);">
-                                                <i class="fas fa-file-invoice-dollar fs-6" style="color: #e91e63;"></i>
-                                        </div>
-                                            <h6 class="mb-1" id="quickFirstExtractCount">0</h6>
-                                            <small class="text-muted" style="font-size: 0.65rem;">إعداد مستخلص</small>
-                                            <div class="mt-1">
-                                                <small style="color: #e91e63; font-size: 0.6rem;">
-                                                    <i class="fas fa-external-link-alt"></i>
-                                                </small>
+                                        <a href="{{ $executedDisbursedRoute }}" 
+                                           class="btn btn-sm shadow-sm"
+                                           style="background: linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%); color: white; min-width: 150px;">
+                                            <i class="fas fa-list me-1"></i>
+                                            عرض الفروقات
+                                        </a>
+                                        <p class="text-muted mt-3 mb-0" style="font-size: 0.85rem;">
+                                            مقارنة المواد المنفذة مع المصروفة
+                                        </p>
                                     </div>
                                 </div>
-                            </a>
                             </div>
-                                <div class="col-6 col-md-4 col-lg" style="flex: 0 0 auto; width: 9.09%;">
-                                    @php
-                                        $paidFirstRoute = ($project ?? 'riyadh') === 'madinah' 
-                                            ? route('admin.work-orders.status.paidfirst.madinah')
-                                            : route('admin.work-orders.status.paidfirst.riyadh');
-                                    @endphp
-                                    <a href="{{ $paidFirstRoute }}" 
-                                       class="text-decoration-none"
-                                       style="color: inherit; transition: all 0.3s ease;">
-                                        <div class="text-center p-2 rounded" style="cursor: pointer; transition: all 0.3s ease;" 
-                                             onmouseover="this.style.backgroundColor='rgba(255, 152, 0, 0.1)'" 
-                                             onmouseout="this.style.backgroundColor='transparent'">
-                                            <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 45px; height: 45px; background-color: rgba(255, 152, 0, 0.1);">
-                                                <i class="fas fa-money-check-alt fs-6" style="color: #ff9800;"></i>
-                        </div>
-                                            <h6 class="mb-1" id="quickPaidFirstCount">0</h6>
-                                            <small class="text-muted" style="font-size: 0.65rem;">تم صرف أولى</small>
-                                            <div class="mt-1">
-                                                <small style="color: #ff9800; font-size: 0.6rem;">
-                                                    <i class="fas fa-external-link-alt"></i>
-                                                </small>
-                    </div>
+
+                            <!-- Materials to Return Card -->
+                            <div class="col-md-4">
+                                <div class="card h-100 shadow-sm border-0">
+                                    <div class="card-header text-white" style="background: linear-gradient(135deg, #fdcb6e 0%, #e17055 100%);">
+                                        <h6 class="mb-0 text-center">
+                                            <i class="fas fa-undo me-2"></i>
+                                            المواد المطلوب إرجاعها
+                                        </h6>
                                     </div>
-                            </a>
+                                    <div class="card-body text-center">
+                                        @php
+                                            $materialsReturnRoute = ($project ?? 'riyadh') === 'madinah' 
+                                                ? route('admin.materials.to-return.madinah')
+                                                : route('admin.materials.to-return.riyadh');
+                                        @endphp
+                                        <div class="mb-3">
+                                            <i class="fas fa-box-open fa-3x" style="color: #fdcb6e;"></i>
+                                        </div>
+                                        <a href="{{ $materialsReturnRoute }}" 
+                                           class="btn btn-sm shadow-sm"
+                                           style="background: linear-gradient(135deg, #fdcb6e 0%, #e17055 100%); color: white; min-width: 150px;">
+                                            <i class="fas fa-list me-1"></i>
+                                            عرض المواد للإرجاع
+                                        </a>
+                                        <p class="text-muted mt-3 mb-0" style="font-size: 0.85rem;">
+                                            المواد الزائدة المطلوب إرجاعها
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
-                                <div class="col-6 col-md-4 col-lg" style="flex: 0 0 auto; width: 9.09%;">
-                                    @php
-                                        $secondExtractRoute = ($project ?? 'riyadh') === 'madinah'
-                                            ? route('admin.work-orders.status.secondextract.madinah')
-                                            : route('admin.work-orders.status.secondextract.riyadh');
-                                    @endphp
-                                    <a href="{{ $secondExtractRoute }}" 
-                                       class="text-decoration-none"
-                                       style="color: inherit; transition: all 0.3s ease;">
-                                        <div class="text-center p-2 rounded" style="cursor: pointer; transition: all 0.3s ease;" 
-                                             onmouseover="this.style.backgroundColor='rgba(156, 39, 176, 0.1)'" 
-                                             onmouseout="this.style.backgroundColor='transparent'">
-                                            <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 45px; height: 45px; background-color: rgba(156, 39, 176, 0.1);">
-                                                <i class="fas fa-file-invoice fs-6" style="color: #9c27b0;"></i>
-                                            </div>
-                                            <h6 class="mb-1" id="quickSecondExtractCount">0</h6>
-                                            <small class="text-muted" style="font-size: 0.65rem;">مستخلص ثانية</small>
-                                            <div class="mt-1">
-                                                <small style="color: #9c27b0; font-size: 0.6rem;">
-                                                    <i class="fas fa-external-link-alt"></i>
-                                                </small>
+
+                            <!-- Materials to Disburse Card -->
+                            <div class="col-md-4">
+                                <div class="card h-100 shadow-sm border-0">
+                                    <div class="card-header text-white" style="background: linear-gradient(135deg, #00b894 0%, #00cec9 100%);">
+                                        <h6 class="mb-0 text-center">
+                                            <i class="fas fa-truck-loading me-2"></i>
+                                            المواد المطلوب صرفها
+                                        </h6>
+                                    </div>
+                                    <div class="card-body text-center">
+                                        @php
+                                            $materialsDisburseRoute = ($project ?? 'riyadh') === 'madinah' 
+                                                ? route('admin.materials.to-disburse.madinah')
+                                                : route('admin.materials.to-disburse.riyadh');
+                                        @endphp
+                                        <div class="mb-3">
+                                            <i class="fas fa-dolly fa-3x" style="color: #00b894;"></i>
                                         </div>
-                                                </div>
-                                    </a>
-                                </div>
-                                <div class="col-6 col-md-4 col-lg" style="flex: 0 0 auto; width: 9.09%;">
-                                    @php
-                                        $certificateRoute = ($project ?? 'riyadh') === 'madinah'
-                                            ? route('admin.work-orders.status.certificate.madinah')
-                                            : route('admin.work-orders.status.certificate.riyadh');
-                                    @endphp
-                                    <a href="{{ $certificateRoute }}" 
-                                       class="text-decoration-none"
-                                       style="color: inherit; transition: all 0.3s ease;">
-                                        <div class="text-center p-2 rounded" style="cursor: pointer; transition: all 0.3s ease;" 
-                                             onmouseover="this.style.backgroundColor='rgba(76, 175, 80, 0.1)'" 
-                                             onmouseout="this.style.backgroundColor='transparent'">
-                                            <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 45px; height: 45px; background-color: rgba(76, 175, 80, 0.1);">
-                                                <i class="fas fa-certificate fs-6" style="color: #4caf50;"></i>
-                                        </div>
-                                            <h6 class="mb-1" id="quickCertificateCount">0</h6>
-                                            <small class="text-muted" style="font-size: 0.65rem;">شهادة إنجاز</small>
-                                            <div class="mt-1">
-                                                <small style="color: #4caf50; font-size: 0.6rem;">
-                                                    <i class="fas fa-external-link-alt"></i>
-                                                </small>
+                                        <a href="{{ $materialsDisburseRoute }}" 
+                                           class="btn btn-sm shadow-sm"
+                                           style="background: linear-gradient(135deg, #00b894 0%, #00cec9 100%); color: white; min-width: 150px;">
+                                            <i class="fas fa-list me-1"></i>
+                                            عرض المواد للصرف
+                                        </a>
+                                        <p class="text-muted mt-3 mb-0" style="font-size: 0.85rem;">
+                                            المواد الناقصة المطلوب صرفها
+                                        </p>
                                     </div>
                                 </div>
-                                    </a>
-                                </div>
-                                <div class="col-6 col-md-4 col-lg" style="flex: 0 0 auto; width: 9.09%;">
-                                    @php
-                                        $totalExtractRoute = ($project ?? 'riyadh') === 'madinah' 
-                                            ? route('admin.work-orders.status.totalextract.madinah')
-                                            : route('admin.work-orders.status.totalextract.riyadh');
-                                    @endphp
-                                    <a href="{{ $totalExtractRoute }}" 
-                                       class="text-decoration-none"
-                                       style="color: inherit; transition: all 0.3s ease;">
-                                        <div class="text-center p-2 rounded" style="cursor: pointer; transition: all 0.3s ease;" 
-                                             onmouseover="this.style.backgroundColor='rgba(0, 188, 212, 0.1)'" 
-                                             onmouseout="this.style.backgroundColor='transparent'">
-                                            <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 45px; height: 45px; background-color: rgba(0, 188, 212, 0.1);">
-                                                <i class="fas fa-file-contract fs-6" style="color: #00bcd4;"></i>
-                                            </div>
-                                            <h6 class="mb-1" id="quickTotalExtractCount">0</h6>
-                                            <small class="text-muted" style="font-size: 0.65rem;">مستخلص كلي</small>
-                                            <div class="mt-1">
-                                                <small style="color: #00bcd4; font-size: 0.6rem;">
-                                                    <i class="fas fa-external-link-alt"></i>
-                                                </small>
-                                            </div>
-                                        </div>
-                                    </a>
-                                </div>
-                                <div class="col-6 col-md-4 col-lg" style="flex: 0 0 auto; width: 9.09%;">
-                                    @php
-                                        $completedRoute = ($project ?? 'riyadh') === 'madinah' 
-                                            ? route('admin.work-orders.status.completed.madinah')
-                                            : route('admin.work-orders.status.completed.riyadh');
-                                    @endphp
-                                    <a href="{{ $completedRoute }}" 
-                                       class="text-decoration-none"
-                                       style="color: inherit; transition: all 0.3s ease;">
-                                        <div class="text-center p-2 rounded" style="cursor: pointer; transition: all 0.3s ease;" 
-                                             onmouseover="this.style.backgroundColor='rgba(108, 117, 125, 0.1)'" 
-                                             onmouseout="this.style.backgroundColor='transparent'">
-                                            <div class="bg-secondary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 45px; height: 45px;">
-                                                <i class="fas fa-check-circle text-secondary fs-6"></i>
-                                            </div>
-                                            <h6 class="mb-1" id="quickCompletedCount">0</h6>
-                                            <small class="text-muted" style="font-size: 0.65rem;">منتهي صرف</small>
-                                            <div class="mt-1">
-                                                <small class="text-secondary" style="font-size: 0.6rem;">
-                                                    <i class="fas fa-external-link-alt"></i>
-                                                </small>
-                                            </div>
-                                        </div>
-                                    </a>
-                        </div>
-                    </div>
-                    </div>
+                            </div>
                         </div>
                     </div>
                 </div>

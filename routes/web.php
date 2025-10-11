@@ -388,10 +388,29 @@ Route::get('quality/extensions/{city}/export', [App\Http\Controllers\Admin\WorkO
     Route::get('time-management/overdue/riyadh', [App\Http\Controllers\Admin\WorkOrderController::class, 'overdueOrdersRiyadh'])->name('time-management.overdue.riyadh');
     Route::get('time-management/overdue/madinah', [App\Http\Controllers\Admin\WorkOrderController::class, 'overdueOrdersMadinah'])->name('time-management.overdue.madinah');
     Route::get('time-management/overdue/{project}/export', [App\Http\Controllers\Admin\WorkOrderController::class, 'exportOverdueOrders'])->name('time-management.export-overdue');
+    Route::get('work-orders/status/inprogress/{project}/export', [App\Http\Controllers\Admin\WorkOrderController::class, 'exportInProgressOrders'])->name('work-orders.status.export-inprogress');
+    Route::get('work-orders/status/executed/{project}/export', [App\Http\Controllers\Admin\WorkOrderController::class, 'exportExecutedOrders'])->name('work-orders.status.export-executed');
+    Route::get('work-orders/status/delivery155/{project}/export', [App\Http\Controllers\Admin\WorkOrderController::class, 'exportDelivery155Orders'])->name('work-orders.status.export-delivery155');
+    Route::get('work-orders/status/firstextract/{project}/export', [App\Http\Controllers\Admin\WorkOrderController::class, 'exportFirstExtractOrders'])->name('work-orders.status.export-firstextract');
+    Route::get('work-orders/status/paidfirst/{project}/export', [App\Http\Controllers\Admin\WorkOrderController::class, 'exportPaidFirstOrders'])->name('work-orders.status.export-paidfirst');
+    Route::get('work-orders/status/certificate/{project}/export', [App\Http\Controllers\Admin\WorkOrderController::class, 'exportCertificateOrders'])->name('work-orders.status.export-certificate');
+    Route::get('work-orders/status/secondextract/{project}/export', [App\Http\Controllers\Admin\WorkOrderController::class, 'exportSecondExtractOrders'])->name('work-orders.status.export-secondextract');
+    Route::get('work-orders/status/totalextract/{project}/export', [App\Http\Controllers\Admin\WorkOrderController::class, 'exportTotalExtractOrders'])->name('work-orders.status.export-totalextract');
+    Route::get('work-orders/status/completed/{project}/export', [App\Http\Controllers\Admin\WorkOrderController::class, 'exportCompletedOrders'])->name('work-orders.status.export-completed');
     Route::get('time-management/unexecuted/riyadh', [App\Http\Controllers\Admin\WorkOrderController::class, 'unexecutedOrdersRiyadh'])->name('time-management.unexecuted.riyadh');
     Route::get('time-management/unexecuted/madinah', [App\Http\Controllers\Admin\WorkOrderController::class, 'unexecutedOrdersMadinah'])->name('time-management.unexecuted.madinah');
+    Route::get('time-management/unexecuted/{project}/export', [App\Http\Controllers\Admin\WorkOrderController::class, 'exportUnexecutedOrders'])->name('time-management.export-unexecuted');
     Route::get('time-management/detailed-report/riyadh', [App\Http\Controllers\Admin\WorkOrderController::class, 'detailedReportRiyadh'])->name('time-management.detailed-report.riyadh');
     Route::get('time-management/detailed-report/madinah', [App\Http\Controllers\Admin\WorkOrderController::class, 'detailedReportMadinah'])->name('time-management.detailed-report.madinah');
+    Route::get('time-management/obstacles/{project}/export', [App\Http\Controllers\Admin\WorkOrderController::class, 'exportObstacles'])->name('time-management.export-obstacles');
+    
+    // Materials and Warehouses Status Routes
+    Route::get('materials/executed-disbursed/riyadh', [App\Http\Controllers\Admin\MaterialController::class, 'executedDisbursedRiyadh'])->name('materials.executed-disbursed.riyadh');
+    Route::get('materials/executed-disbursed/madinah', [App\Http\Controllers\Admin\MaterialController::class, 'executedDisbursedMadinah'])->name('materials.executed-disbursed.madinah');
+    Route::get('materials/to-return/riyadh', [App\Http\Controllers\Admin\MaterialController::class, 'toReturnRiyadh'])->name('materials.to-return.riyadh');
+    Route::get('materials/to-return/madinah', [App\Http\Controllers\Admin\MaterialController::class, 'toReturnMadinah'])->name('materials.to-return.madinah');
+    Route::get('materials/to-disburse/riyadh', [App\Http\Controllers\Admin\MaterialController::class, 'toDisburseRiyadh'])->name('materials.to-disburse.riyadh');
+    Route::get('materials/to-disburse/madinah', [App\Http\Controllers\Admin\MaterialController::class, 'toDisburseMadinah'])->name('materials.to-disburse.madinah');
     
     // تقارير الإنتاجية حسب المدينة
     Route::get('work-orders/productivity/riyadh', [App\Http\Controllers\Admin\WorkOrderController::class, 'riyadhProductivity'])->name('work-orders.productivity.riyadh');
