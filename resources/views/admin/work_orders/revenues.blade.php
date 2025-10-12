@@ -1804,14 +1804,14 @@ function exportToExcel() {
         }
         
         XLSX.utils.book_append_sheet(wb, ws, "الإيرادات");
-        
-        // تنسيق اسم الملف بالتاريخ الحالي
-        const today = new Date();
-        const dateStr = today.getFullYear() + '-' + 
-                       String(today.getMonth() + 1).padStart(2, '0') + '-' + 
-                       String(today.getDate()).padStart(2, '0');
     
-        XLSX.writeFile(wb, `revenues_${dateStr}.xlsx`);
+    // تنسيق اسم الملف بالتاريخ الحالي
+    const today = new Date();
+    const dateStr = today.getFullYear() + '-' + 
+                   String(today.getMonth() + 1).padStart(2, '0') + '-' + 
+                   String(today.getDate()).padStart(2, '0');
+    
+    XLSX.writeFile(wb, `revenues_${dateStr}.xlsx`);
         
         // إزالة مؤشر التحميل
         document.body.removeChild(loadingToast);
@@ -1829,8 +1829,8 @@ function exportToExcel() {
         setTimeout(() => {
             document.body.removeChild(successToast);
         }, 3000);
-        
-        console.log('تم تصدير البيانات إلى Excel');
+    
+    console.log('تم تصدير البيانات إلى Excel');
     }, 100);
 }
 

@@ -704,6 +704,11 @@ function resetCountdown(workOrderId) {
                                 <span class="btn-text">الإيرادات</span>
                             </a>
                             @endif
+                            
+                            <a href="{{ route('admin.work-orders.daily-program', ['project' => $project ?? 'riyadh']) }}" class="btn btn-warning btn-responsive" style="background: linear-gradient(135deg, #ffc107 0%, #ffb300 100%); border: none; color: white;">
+                                <i class="fas fa-calendar-day me-1"></i>
+                                <span class="btn-text">برنامج العمل اليومي</span>
+                            </a>
                             </div>
                         </div>
 
@@ -2214,8 +2219,66 @@ function openNoteModal(workOrderId, orderNumber) {
     // مسح حقل البحث وإظهار جميع المستخدمين
     clearUserSearch();
     
-    const modal = new bootstrap.Modal(document.getElementById('noteModal'));
+    const modalElement = document.getElementById('noteModal');
+    const modal = new bootstrap.Modal(modalElement, {
+        backdrop: true,
+        keyboard: true,
+        focus: true
+    });
     modal.show();
+    
+    // إصلاح مشكلة الكتابة في الحقول - حل أقوى
+    setTimeout(function() {
+        // إزالة أي overlay أو backdrop يمنع التفاعل
+        const backdrop = document.querySelector('.modal-backdrop');
+        if (backdrop) {
+            backdrop.style.pointerEvents = 'none';
+        }
+        
+        // تفعيل جميع الحقول
+        const allInputs = modalElement.querySelectorAll('input, textarea, select, button, .form-check-input');
+        allInputs.forEach(function(element) {
+            element.style.pointerEvents = 'auto';
+            element.style.userSelect = 'text';
+            element.style.webkitUserSelect = 'text';
+            element.style.mozUserSelect = 'text';
+            element.style.msUserSelect = 'text';
+            element.removeAttribute('readonly');
+            element.removeAttribute('disabled');
+            element.tabIndex = 0;
+        });
+        
+        // تأكيد أن modal-content و modal-body يقبلوا التفاعل
+        const modalContent = modalElement.querySelector('.modal-content');
+        const modalBody = modalElement.querySelector('.modal-body');
+        if (modalContent) {
+            modalContent.style.pointerEvents = 'auto';
+            modalContent.style.zIndex = '1057';
+        }
+        if (modalBody) {
+            modalBody.style.pointerEvents = 'auto';
+        }
+        
+        // focus على حقل الملاحظة
+        const noteContent = document.getElementById('noteContent');
+        if (noteContent) {
+            noteContent.focus();
+            noteContent.click();
+        }
+    }, 100);
+    
+    // إضافة event listener للتأكد من استمرار عمل الحقول
+    modalElement.addEventListener('shown.bs.modal', function() {
+        const backdrop = document.querySelector('.modal-backdrop');
+        if (backdrop) {
+            backdrop.style.pointerEvents = 'none';
+        }
+        
+        const noteContent = document.getElementById('noteContent');
+        if (noteContent) {
+            noteContent.focus();
+        }
+    });
 }
 
 // إرسال الملاحظة
@@ -2485,6 +2548,60 @@ function clearUserSearch() {
 </div>
 
 <style>
+/* Fix modal input/textarea issues */
+.modal-backdrop {
+    z-index: 1050 !important;
+}
+
+#noteModal {
+    z-index: 1055 !important;
+}
+
+#noteModal.show {
+    display: block !important;
+}
+
+#noteModal .modal-dialog {
+    z-index: 1056 !important;
+    pointer-events: auto !important;
+}
+
+#noteModal .modal-content {
+    pointer-events: auto !important;
+    position: relative;
+    z-index: 1057 !important;
+}
+
+#noteModal .modal-body {
+    pointer-events: auto !important;
+}
+
+#noteModal input,
+#noteModal textarea,
+#noteModal .form-control,
+#noteModal .form-check-input,
+#noteModal select,
+#noteModal button {
+    pointer-events: auto !important;
+    user-select: text !important;
+    -webkit-user-select: text !important;
+    -moz-user-select: text !important;
+    -ms-user-select: text !important;
+    cursor: text !important;
+}
+
+#noteModal textarea {
+    resize: vertical !important;
+}
+
+#noteModal .form-check-input {
+    cursor: pointer !important;
+}
+
+#noteModal button {
+    cursor: pointer !important;
+}
+
 /* تحسين مظهر النافذة القابلة للسحب */
 .modal-dialog.dragging {
     transition: none !important;
@@ -2584,6 +2701,42 @@ function clearUserSearch() {
     function setTranslate(xPos, yPos, el) {
         el.style.transform = `translate(${xPos}px, ${yPos}px)`;
     }
+})();
+
+// إصلاح backdrop للنافذة المنبثقة - مراقبة مستمرة
+(function() {
+    // مراقبة أي backdrop يظهر
+    const observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            mutation.addedNodes.forEach(function(node) {
+                if (node.classList && node.classList.contains('modal-backdrop')) {
+                    node.style.pointerEvents = 'none';
+                    console.log('✅ Backdrop pointer-events disabled');
+                }
+            });
+        });
+    });
+    
+    // بدء المراقبة
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true
+    });
+    
+    // تأكيد عند فتح أي modal
+    document.addEventListener('DOMContentLoaded', function() {
+        const noteModal = document.getElementById('noteModal');
+        if (noteModal) {
+            noteModal.addEventListener('show.bs.modal', function() {
+                setTimeout(function() {
+                    const backdrops = document.querySelectorAll('.modal-backdrop');
+                    backdrops.forEach(function(backdrop) {
+                        backdrop.style.pointerEvents = 'none';
+                    });
+                }, 50);
+            });
+        }
+    });
 })();
 </script>
 

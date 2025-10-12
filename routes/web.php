@@ -95,6 +95,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::get('notifications', [App\Http\Controllers\Admin\WorkOrderController::class, 'getNotifications'])->name('notifications.index');
     Route::post('notifications/{notification}/mark-read', [App\Http\Controllers\Admin\WorkOrderController::class, 'markNotificationAsRead'])->name('notifications.mark-read');
     Route::post('notifications/mark-all-read', [App\Http\Controllers\Admin\WorkOrderController::class, 'markAllNotificationsAsRead'])->name('notifications.mark-all-read');
+    Route::post('notifications/reply', [App\Http\Controllers\Admin\WorkOrderController::class, 'replyToNotification'])->name('notifications.reply');
     
     // Turnkey Revenues routes
     Route::post('turnkey-revenues/store', [App\Http\Controllers\Admin\TurnkeyRevenueController::class, 'store'])->name('turnkey-revenues.store');
@@ -119,6 +120,12 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::post('work-orders/revenues/save', [App\Http\Controllers\WorkOrderController::class, 'saveRevenue'])->name('work-orders.revenues.save');
     Route::post('work-orders/revenues/import', [App\Http\Controllers\WorkOrderController::class, 'importRevenues'])->name('work-orders.revenues.import');
     Route::post('work-orders/revenues/upload-attachment', [App\Http\Controllers\WorkOrderController::class, 'uploadRevenueAttachment'])->name('work-orders.revenues.upload-attachment');
+    
+    // برنامج العمل اليومي
+    Route::get('work-orders/daily-program', [App\Http\Controllers\WorkOrderController::class, 'dailyProgram'])->name('work-orders.daily-program');
+    Route::post('work-orders/daily-program', [App\Http\Controllers\WorkOrderController::class, 'storeDailyProgram'])->name('work-orders.daily-program.store');
+    Route::put('work-orders/daily-program/{dailyWorkProgram}', [App\Http\Controllers\WorkOrderController::class, 'updateDailyProgram'])->name('work-orders.daily-program.update');
+    Route::delete('work-orders/daily-program/{dailyWorkProgram}', [App\Http\Controllers\WorkOrderController::class, 'destroyDailyProgram'])->name('work-orders.daily-program.destroy');
     Route::delete('work-orders/revenues/{id}', [App\Http\Controllers\WorkOrderController::class, 'deleteRevenue'])->name('work-orders.revenues.delete');
     Route::get('work-orders/export/excel', [App\Http\Controllers\WorkOrderController::class, 'exportExcel'])->name('work-orders.export.excel');
     Route::post('work-orders', [App\Http\Controllers\WorkOrderController::class, 'store'])->name('work-orders.store');
@@ -221,8 +228,8 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::get('work-orders/{workOrder}/safety', [WorkOrderController::class, 'safety'])->name('work-orders.safety');
     Route::put('work-orders/{workOrder}/safety', [WorkOrderController::class, 'updateSafety'])->name('work-orders.update-safety');
     Route::post('work-orders/{workOrder}/upload-safety', [WorkOrderController::class, 'uploadSafety'])->name('work-orders.upload-safety');
-    Route::delete('work-orders/safety-files/{fileId}', [WorkOrderController::class, 'deleteSafetyFile'])->name('work-orders.delete-safety-file');
     Route::delete('work-orders/{workOrder}/safety-image/{category}/{index}', [WorkOrderController::class, 'deleteSafetyImage'])->name('work-orders.delete-safety-image');
+    Route::delete('work-orders/{workOrder}/safety-file/{category}/{index}', [WorkOrderController::class, 'deleteSafetyFile'])->name('work-orders.delete-safety-file');
     Route::delete('work-orders/{workOrder}/non-compliance-attachment/{index}', [WorkOrderController::class, 'deleteNonComplianceAttachment'])->name('work-orders.delete-non-compliance-attachment');
     Route::post('work-orders/{workOrder}/safety-violation', [WorkOrderController::class, 'addSafetyViolation'])->name('work-orders.add-safety-violation');
     Route::delete('work-orders/safety-violation/{violationId}', [WorkOrderController::class, 'deleteSafetyViolation'])->name('work-orders.delete-safety-violation');

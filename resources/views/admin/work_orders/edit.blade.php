@@ -261,10 +261,10 @@
                                             </label>
                                             <input type="file" class="form-control @error('files.attachments.*') is-invalid @enderror" 
                                                    name="files[attachments][]" 
-                                                   accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png"
-                                                   multiple>
-                                            <div class="form-text">
-                                                PDF, Word, Excel, أو صورة - الحد الأقصى 20 ميجابايت لكل ملف
+                                                   accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png">
+                                            <div class="form-text text-info">
+                                                <i class="fas fa-info-circle me-1"></i>
+                                                PDF, Word, Excel, أو صورة - <strong>ملف واحد فقط</strong> - الحد الأقصى <strong>5 ميجابايت</strong>
                                             </div>
                                             
                                             @php

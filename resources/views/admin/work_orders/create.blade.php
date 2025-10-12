@@ -344,10 +344,10 @@
                                             <input type="file" class="form-control @error('files.attachments.*') is-invalid @enderror" 
                                                    name="files[attachments][]" 
                                                    accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png"
-                                                   multiple
                                                    onchange="displaySelectedFiles(this)">
-                                            <div class="form-text">
-                                                PDF, Word, Excel, أو صورة - الحد الأقصى 20 ميجابايت لكل ملف - يمكن اختيار عدة ملفات
+                                            <div class="form-text text-info">
+                                                <i class="fas fa-info-circle me-1"></i>
+                                                PDF, Word, Excel, أو صورة - <strong>ملف واحد فقط</strong> - الحد الأقصى <strong>5 ميجابايت</strong>
                                             </div>
                                             <div id="selected-files-preview" class="mt-2"></div>
                                             @error('files.attachments.*')
@@ -359,7 +359,7 @@
                                     </div>
                                     <div class="alert alert-info mt-3">
                                         <i class="fas fa-info-circle me-2"></i>
-                                        - الحد الأقصى 20 ميجابايت  
+                                        <strong>ملاحظة:</strong> يمكن رفع ملف واحد فقط بحد أقصى 5 ميجابايت
                                     </div>
                                 </div>
                             </div>

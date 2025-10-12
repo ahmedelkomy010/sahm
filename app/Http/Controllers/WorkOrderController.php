@@ -207,10 +207,10 @@ class WorkOrderController extends Controller
             'work_items.*.planned_quantity' => 'required_with:work_items|numeric|min:0',
             'work_items.*.unit_price' => 'nullable|numeric|min:0',
             'work_items.*.notes' => 'nullable|string',
-            // المرفقات
-            'files.license_estimate' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png|max:20480',
-            'files.daily_measurement' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png|max:20480',
-            'files.attachments.*' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png|max:20480',
+            // المرفقات - ملف واحد فقط بحد أقصى 5 ميجابايت
+            'files.license_estimate' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png|max:5120',
+            'files.daily_measurement' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png|max:5120',
+            'files.attachments.*' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png|max:5120',
         ]);
 
         $validated = $request->validate($rules, $messages);
@@ -964,8 +964,13 @@ class WorkOrderController extends Controller
         // تحديث بيانات أمر العمل
         $workOrder->update($validated);
 
-        // معالجة المرفقات الجديدة
+        // معالجة المرفقات الجديدة - التحقق من validation (ملف واحد، حد أقصى 5 ميجابايت)
         if ($request->hasFile('files.attachments')) {
+            // Validate attachments
+            $request->validate([
+                'files.attachments.*' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png|max:5120',
+            ]);
+            
             foreach ($request->file('files.attachments') as $file) {
                 $originalName = $file->getClientOriginalName();
                 $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
@@ -3975,6 +3980,111 @@ class WorkOrderController extends Controller
     }
 
     /**
+     * عرض صفحة برنامج العمل اليومي
+     */
+    public function dailyProgram(Request $request)
+    {
+        $project = $request->get('project', 'riyadh');
+        
+        // جلب برامج العمل لليوم الحالي
+        $programs = \App\Models\DailyWorkProgram::with('workOrder')
+            ->whereDate('program_date', today())
+            ->whereHas('workOrder', function($q) use ($project) {
+                if ($project === 'riyadh') {
+                    $q->where('city', 'الرياض');
+                } else {
+                    $q->where('city', 'المدينة المنورة');
+                }
+            })
+            ->get();
+        
+        // جلب أوامر العمل المتاحة للإضافة (السماح بالتكرار)
+        $availableWorkOrders = WorkOrder::where('city', $project === 'riyadh' ? 'الرياض' : 'المدينة المنورة')
+            ->select('id', 'order_number', 'work_type', 'district', 'consultant_name', 'address')
+            ->orderBy('order_number', 'desc')
+            ->get();
+        
+        return view('admin.work_orders.daily-program', compact('programs', 'availableWorkOrders', 'project'));
+    }
+
+    /**
+     * إضافة أمر عمل لبرنامج اليوم
+     */
+    public function storeDailyProgram(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'work_order_id' => 'required|exists:work_orders,id',
+                'work_type' => 'nullable|string|max:255',
+                'location' => 'nullable|string|max:255',
+                'google_coordinates' => 'nullable|string|max:500',
+                'consultant_name' => 'nullable|string|max:255',
+                'site_engineer' => 'nullable|string|max:255',
+                'supervisor' => 'nullable|string|max:255',
+                'issuer' => 'nullable|string|max:255',
+                'receiver' => 'nullable|string|max:255',
+                'safety_officer' => 'nullable|string|max:255',
+                'quality_monitor' => 'nullable|string|max:255',
+                'notes' => 'nullable|string',
+            ]);
+
+            $validated['program_date'] = today();
+            
+            \App\Models\DailyWorkProgram::create($validated);
+
+            return redirect()->back()->with('success', 'تم إضافة أمر العمل لبرنامج اليوم بنجاح');
+
+        } catch (\Exception $e) {
+            \Log::error('Error storing daily program: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'حدث خطأ أثناء إضافة أمر العمل');
+        }
+    }
+
+    /**
+     * تحديث بيانات برنامج العمل اليومي
+     */
+    public function updateDailyProgram(Request $request, \App\Models\DailyWorkProgram $dailyWorkProgram)
+    {
+        try {
+            $validated = $request->validate([
+                'work_type' => 'nullable|string|max:255',
+                'location' => 'nullable|string|max:255',
+                'google_coordinates' => 'nullable|string|max:500',
+                'consultant_name' => 'nullable|string|max:255',
+                'site_engineer' => 'nullable|string|max:255',
+                'supervisor' => 'nullable|string|max:255',
+                'issuer' => 'nullable|string|max:255',
+                'receiver' => 'nullable|string|max:255',
+                'safety_officer' => 'nullable|string|max:255',
+                'quality_monitor' => 'nullable|string|max:255',
+                'notes' => 'nullable|string',
+            ]);
+
+            $dailyWorkProgram->update($validated);
+
+            return redirect()->back()->with('success', 'تم تحديث البيانات بنجاح');
+
+        } catch (\Exception $e) {
+            \Log::error('Error updating daily program: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'حدث خطأ أثناء تحديث البيانات');
+        }
+    }
+
+    /**
+     * حذف سجل من برنامج العمل اليومي
+     */
+    public function destroyDailyProgram(\App\Models\DailyWorkProgram $dailyWorkProgram)
+    {
+        try {
+            $dailyWorkProgram->delete();
+            return redirect()->back()->with('success', 'تم حذف السجل بنجاح');
+        } catch (\Exception $e) {
+            \Log::error('Error deleting daily program: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'حدث خطأ أثناء حذف السجل');
+        }
+    }
+
+    /**
      * تحديث بيانات السلامة لأمر العمل
      */
     public function updateSafety(Request $request, WorkOrder $workOrder)
@@ -4002,6 +4112,12 @@ class WorkOrderController extends Controller
                 'general_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:102400',
                 'tbt_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:102400',
                 'non_compliance_attachments.*' => 'nullable|file|mimes:jpeg,png,jpg,gif,pdf,doc,docx|max:102400',
+                // الملفات الجديدة (PDF + صور)
+                'tbt_files.*' => 'nullable|file|mimes:jpeg,png,jpg,gif,pdf|max:102400',
+                'permits_files.*' => 'nullable|file|mimes:jpeg,png,jpg,gif,pdf|max:102400',
+                'team_files.*' => 'nullable|file|mimes:jpeg,png,jpg,gif,pdf|max:102400',
+                'equipment_files.*' => 'nullable|file|mimes:jpeg,png,jpg,gif,pdf|max:102400',
+                'general_files.*' => 'nullable|file|mimes:jpeg,png,jpg,gif,pdf|max:102400',
             ]);
 
             // حفظ البيانات الحالية في سجل السلامة إذا تم تغيير أي منها
@@ -4115,6 +4231,27 @@ class WorkOrderController extends Controller
                 $this->uploadNonComplianceAttachments($request->file('non_compliance_attachments'), $workOrder);
             }
 
+            // رفع الملفات الجديدة (PDF + صور)
+            if ($request->hasFile('tbt_files')) {
+                $this->uploadSafetyFiles($request->file('tbt_files'), $workOrder, 'tbt_files');
+            }
+
+            if ($request->hasFile('permits_files')) {
+                $this->uploadSafetyFiles($request->file('permits_files'), $workOrder, 'permits_files');
+            }
+
+            if ($request->hasFile('team_files')) {
+                $this->uploadSafetyFiles($request->file('team_files'), $workOrder, 'team_files');
+            }
+
+            if ($request->hasFile('equipment_files')) {
+                $this->uploadSafetyFiles($request->file('equipment_files'), $workOrder, 'equipment_files');
+            }
+
+            if ($request->hasFile('general_files')) {
+                $this->uploadSafetyFiles($request->file('general_files'), $workOrder, 'general_files');
+            }
+
             return redirect()->route('admin.work-orders.safety', $workOrder)
                 ->with('success', 'تم تحديث بيانات السلامة بنجاح');
 
@@ -4200,6 +4337,84 @@ class WorkOrderController extends Controller
         } catch (\Exception $e) {
             \Log::error('Error in uploadSafetyImages', [
                 'error' => $e->getMessage(),
+                'category' => $category,
+                'workOrderId' => $workOrder->id
+            ]);
+            throw $e;
+        }
+    }
+
+    /**
+     * رفع ملفات السلامة (PDF + صور)
+     */
+    private function uploadSafetyFiles($files, WorkOrder $workOrder, $category)
+    {
+        try {
+            $uploadedFiles = [];
+            $fieldName = 'safety_' . $category;
+            
+            \Log::info('Starting uploadSafetyFiles', [
+                'category' => $category,
+                'fieldName' => $fieldName,
+                'workOrderId' => $workOrder->id,
+                'filesCount' => count($files)
+            ]);
+            
+            // الحصول على الملفات الموجودة
+            $existingFiles = $workOrder->$fieldName ?? [];
+            \Log::info('Existing files', ['count' => count($existingFiles)]);
+
+            foreach ($files as $index => $file) {
+                \Log::info('Processing file', [
+                    'index' => $index,
+                    'originalName' => $file->getClientOriginalName(),
+                    'size' => $file->getSize(),
+                    'mimeType' => $file->getMimeType()
+                ]);
+                
+                $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                $path = 'work_orders/' . $workOrder->id . '/safety/files/' . str_replace('_files', '', $category);
+                
+                if (!Storage::disk('public')->exists($path)) {
+                    Storage::disk('public')->makeDirectory($path);
+                }
+                
+                $filePath = $file->storeAs($path, $filename, 'public');
+                $uploadedFiles[] = $filePath;
+                
+                \Log::info('File uploaded successfully', [
+                    'filename' => $filename,
+                    'filePath' => $filePath
+                ]);
+            }
+
+            // دمج الملفات الجديدة مع الموجودة
+            $allFiles = array_merge($existingFiles, $uploadedFiles);
+            
+            \Log::info('Merging files', [
+                'existingCount' => count($existingFiles),
+                'newCount' => count($uploadedFiles),
+                'totalCount' => count($allFiles)
+            ]);
+            
+            // تحديث قاعدة البيانات
+            $updateResult = $workOrder->update([
+                $fieldName => $allFiles
+            ]);
+            
+            \Log::info('Database update', [
+                'fieldName' => $fieldName,
+                'success' => $updateResult,
+                'finalFileCount' => count($allFiles)
+            ]);
+            
+            $workOrder->refresh();
+            \Log::info('Work order refreshed', [
+                'finalFileCount' => count($workOrder->$fieldName ?? [])
+            ]);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error uploading safety files: ' . $e->getMessage(), [
                 'category' => $category,
                 'workOrderId' => $workOrder->id
             ]);
@@ -4322,38 +4537,6 @@ class WorkOrderController extends Controller
     }
 
     /**
-     * حذف ملف السلامة
-     */
-    public function deleteSafetyFile($fileId)
-    {
-        try {
-            $file = WorkOrderFile::where('id', $fileId)
-                ->where('file_category', 'safety_files')
-                ->firstOrFail();
-
-            // حذف الملف من التخزين
-            if (Storage::disk('public')->exists($file->file_path)) {
-                Storage::disk('public')->delete($file->file_path);
-            }
-
-            // حذف السجل من قاعدة البيانات
-            $file->delete();
-
-            return response()->json([
-                'success' => true,
-                'message' => 'تم حذف ملف السلامة بنجاح'
-            ]);
-
-        } catch (\Exception $e) {
-            \Log::error('Error deleting safety file: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'حدث خطأ أثناء حذف ملف السلامة'
-            ], 500);
-        }
-    }
-
-    /**
      * حذف صورة السلامة
      */
     public function deleteSafetyImage(WorkOrder $workOrder, $category, $index)
@@ -4406,6 +4589,72 @@ class WorkOrderController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'حدث خطأ أثناء حذف الصورة'
+            ], 500);
+        }
+    }
+
+    /**
+     * حذف ملف السلامة (PDF + صور)
+     */
+    public function deleteSafetyFile(WorkOrder $workOrder, $category, $index)
+    {
+        try {
+            \Log::info('Delete safety file request received', [
+                'workOrderId' => $workOrder->id,
+                'category' => $category,
+                'index' => $index
+            ]);
+            
+            $fieldName = 'safety_' . $category;
+            $files = $workOrder->$fieldName ?? [];
+
+            if (!isset($files[$index])) {
+                \Log::warning('Safety file not found', [
+                    'fieldName' => $fieldName,
+                    'index' => $index,
+                    'filesCount' => count($files)
+                ]);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'الملف غير موجود'
+                ], 404);
+            }
+
+            $filePath = $files[$index];
+
+            // حذف الملف من التخزين
+            if (Storage::disk('public')->exists($filePath)) {
+                Storage::disk('public')->delete($filePath);
+                \Log::info('File deleted from storage', ['filePath' => $filePath]);
+            } else {
+                \Log::warning('File not found in storage', ['filePath' => $filePath]);
+            }
+
+            // إزالة الملف من المصفوفة
+            unset($files[$index]);
+            $files = array_values($files); // إعادة ترقيم المصفوفة
+
+            // تحديث قاعدة البيانات
+            $workOrder->update([
+                $fieldName => $files
+            ]);
+
+            \Log::info('Safety file deleted successfully', [
+                'remainingFiles' => count($files)
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'تم حذف الملف بنجاح'
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error deleting safety file: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء حذف الملف'
             ], 500);
         }
     }
@@ -4587,8 +4836,8 @@ class WorkOrderController extends Controller
                 'totalPenalties' => $revenues->sum('penalties') ?: 0,
                 'totalFirstPaymentTax' => $revenues->sum('first_payment_tax') ?: 0,
                 'totalNetExtractValue' => $revenues->sum('net_extract_value') ?: 0,
-                // إجمالي المدفوعات = صافي قيمة المستخلص للمستخلصات المدفوعة فقط
-                'totalPaymentValue' => $revenues->where('extract_status', 'مدفوع')->sum('net_extract_value') ?: 0,
+                // إجمالي المدفوعات = قيمة الصرف للمستخلصات المدفوعة فقط
+                'totalPaymentValue' => $revenues->where('extract_status', 'مدفوع')->sum('payment_value') ?: 0,
                 // المبلغ المتبقي عند العميل شامل الضريبة = فقط المستخلصات الغير مدفوعة
                 'remainingAmount' => $revenues->where('extract_status', 'غير مدفوع')->sum(function($revenue) {
                     return ($revenue->extract_value ?: 0) + ($revenue->tax_value ?: 0) - ($revenue->penalties ?: 0);

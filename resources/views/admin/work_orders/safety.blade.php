@@ -82,20 +82,40 @@
                 <!-- حقول الصور -->
                 <div class="row">
                     <!-- صور اجتماع ما قبل بدء العمل TBT -->
-                    <div class="col-md-4 mb-3">
+                    <div class="col-md-6 mb-3">
                         <label for="tbt_images" class="form-label fw-bold">
                             <i class="fas fa-users-cog me-2 text-success"></i>
                             صور اجتماع ما قبل بدء العمل TBT
                         </label>
-                        <div class="input-group">
+                        <div class="input-group mb-2">
+                            <span class="input-group-text bg-success text-white"><i class="fas fa-image"></i></span>
                             <input type="file" class="form-control @error('tbt_images.*') is-invalid @enderror" 
                                    name="tbt_images[]" 
                                    id="tbt_images"
                                    accept="image/*"
                                    multiple>
                         </div>
-                        <div class="form-text">يمكن رفع عدة صور (JPG, PNG, GIF) - الحد الأقصى 100 ميجابايت لكل صورة</div>
+                        <div class="form-text text-success mb-2">صور فقط (JPG, PNG, GIF) - الحد الأقصى 100 ميجابايت</div>
+                        
+                        <label for="tbt_files" class="form-label fw-bold mt-2">
+                            <i class="fas fa-file-pdf me-2 text-danger"></i>
+                            ملفات TBT (PDF + صور)
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-danger text-white"><i class="fas fa-paperclip"></i></span>
+                            <input type="file" class="form-control @error('tbt_files.*') is-invalid @enderror" 
+                                   name="tbt_files[]" 
+                                   id="tbt_files"
+                                   accept="image/*,.pdf"
+                                   multiple>
+                        </div>
+                        <div class="form-text text-danger">ملفات وصور (JPG, PNG, GIF, PDF) - الحد الأقصى 100 ميجابايت</div>
                         @error('tbt_images.*')
+                            <span class="invalid-feedback" role="alert">
+                                <strong>{{ $message }}</strong>
+                            </span>
+                        @enderror
+                        @error('tbt_files.*')
                             <span class="invalid-feedback" role="alert">
                                 <strong>{{ $message }}</strong>
                             </span>
@@ -107,15 +127,35 @@
                             <i class="fas fa-file-contract me-2 text-warning"></i>
                             صور التصاريح PERMITS
                         </label>
-                        <div class="input-group">
+                        <div class="input-group mb-2">
+                            <span class="input-group-text bg-warning text-dark"><i class="fas fa-image"></i></span>
                             <input type="file" class="form-control @error('permits_images.*') is-invalid @enderror" 
                                    name="permits_images[]" 
                                    id="permits_images"
                                    accept="image/*"
                                    multiple>
                         </div>
-                        <div class="form-text">يمكن رفع عدة صور (JPG, PNG, GIF) - الحد الأقصى 100 ميجابايت لكل صورة</div>
+                        <div class="form-text text-warning mb-2">صور فقط (JPG, PNG, GIF) - الحد الأقصى 100 ميجابايت</div>
+                        
+                        <label for="permits_files" class="form-label fw-bold mt-2">
+                            <i class="fas fa-file-pdf me-2 text-danger"></i>
+                            ملفات التصاريح (PDF + صور)
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-danger text-white"><i class="fas fa-paperclip"></i></span>
+                            <input type="file" class="form-control @error('permits_files.*') is-invalid @enderror" 
+                                   name="permits_files[]" 
+                                   id="permits_files"
+                                   accept="image/*,.pdf"
+                                   multiple>
+                        </div>
+                        <div class="form-text text-danger">ملفات وصور (JPG, PNG, GIF, PDF) - الحد الأقصى 100 ميجابايت</div>
                         @error('permits_images.*')
+                            <span class="invalid-feedback" role="alert">
+                                <strong>{{ $message }}</strong>
+                            </span>
+                        @enderror
+                        @error('permits_files.*')
                             <span class="invalid-feedback" role="alert">
                                 <strong>{{ $message }}</strong>
                             </span>
@@ -128,15 +168,117 @@
                             <i class="fas fa-users me-2 text-info"></i>
                             صور فريق العمل والتأهيل للعمالة
                         </label>
-                        <div class="input-group">
+                        <div class="input-group mb-2">
+                            <span class="input-group-text bg-info text-white"><i class="fas fa-image"></i></span>
                             <input type="file" class="form-control @error('team_images.*') is-invalid @enderror" 
                                    name="team_images[]" 
                                    id="team_images"
                                    accept="image/*"
                                    multiple>
                         </div>
-                        <div class="form-text">يمكن رفع عدة صور (JPG, PNG, GIF) - الحد الأقصى 100 ميجابايت لكل صورة</div>
+                        <div class="form-text text-info mb-2">صور فقط (JPG, PNG, GIF) - الحد الأقصى 100 ميجابايت</div>
+                        
+                        <label for="team_files" class="form-label fw-bold mt-2">
+                            <i class="fas fa-file-pdf me-2 text-danger"></i>
+                            ملفات فريق العمل (PDF + صور)
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-danger text-white"><i class="fas fa-paperclip"></i></span>
+                            <input type="file" class="form-control @error('team_files.*') is-invalid @enderror" 
+                                   name="team_files[]" 
+                                   id="team_files"
+                                   accept="image/*,.pdf"
+                                   multiple>
+                        </div>
+                        <div class="form-text text-danger">ملفات وصور (JPG, PNG, GIF, PDF) - الحد الأقصى 100 ميجابايت</div>
                         @error('team_images.*')
+                            <span class="invalid-feedback" role="alert">
+                                <strong>{{ $message }}</strong>
+                            </span>
+                        @enderror
+                        @error('team_files.*')
+                            <span class="invalid-feedback" role="alert">
+                                <strong>{{ $message }}</strong>
+                            </span>
+                        @enderror
+                    </div>
+
+                    <!-- صور المعدات والتأهيل للمعدات -->
+                    <div class="col-md-6 mb-3">
+                        <label for="equipment_images" class="form-label fw-bold">
+                            <i class="fas fa-tools me-2 text-primary"></i>
+                            صور المعدات والتأهيل للمعدات
+                        </label>
+                        <div class="input-group mb-2">
+                            <span class="input-group-text bg-primary text-white"><i class="fas fa-image"></i></span>
+                            <input type="file" class="form-control @error('equipment_images.*') is-invalid @enderror" 
+                                   name="equipment_images[]" 
+                                   id="equipment_images"
+                                   accept="image/*"
+                                   multiple>
+                        </div>
+                        <div class="form-text text-primary mb-2">صور فقط (JPG, PNG, GIF) - الحد الأقصى 100 ميجابايت</div>
+                        
+                        <label for="equipment_files" class="form-label fw-bold mt-2">
+                            <i class="fas fa-file-pdf me-2 text-danger"></i>
+                            ملفات المعدات (PDF + صور)
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-danger text-white"><i class="fas fa-paperclip"></i></span>
+                            <input type="file" class="form-control @error('equipment_files.*') is-invalid @enderror" 
+                                   name="equipment_files[]" 
+                                   id="equipment_files"
+                                   accept="image/*,.pdf"
+                                   multiple>
+                        </div>
+                        <div class="form-text text-danger">ملفات وصور (JPG, PNG, GIF, PDF) - الحد الأقصى 100 ميجابايت</div>
+                        @error('equipment_images.*')
+                            <span class="invalid-feedback" role="alert">
+                                <strong>{{ $message }}</strong>
+                            </span>
+                        @enderror
+                        @error('equipment_files.*')
+                            <span class="invalid-feedback" role="alert">
+                                <strong>{{ $message }}</strong>
+                            </span>
+                        @enderror
+                    </div>
+
+                    <!-- صور عامة -->
+                    <div class="col-md-6 mb-3">
+                        <label for="general_images" class="form-label fw-bold">
+                            <i class="fas fa-images me-2 text-secondary"></i>
+                            صور عامة للموقعٍ
+                        </label>
+                        <div class="input-group mb-2">
+                            <span class="input-group-text bg-secondary text-white"><i class="fas fa-image"></i></span>
+                            <input type="file" class="form-control @error('general_images.*') is-invalid @enderror" 
+                                   name="general_images[]" 
+                                   id="general_images"
+                                   accept="image/*"
+                                   multiple>
+                        </div>
+                        <div class="form-text text-secondary mb-2">صور فقط (JPG, PNG, GIF) - الحد الأقصى 100 ميجابايت</div>
+                        
+                        <label for="general_files" class="form-label fw-bold mt-2">
+                            <i class="fas fa-file-pdf me-2 text-danger"></i>
+                            ملفات عامة (PDF + صور)
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-danger text-white"><i class="fas fa-paperclip"></i></span>
+                            <input type="file" class="form-control @error('general_files.*') is-invalid @enderror" 
+                                   name="general_files[]" 
+                                   id="general_files"
+                                   accept="image/*,.pdf"
+                                   multiple>
+                        </div>
+                        <div class="form-text text-danger">ملفات وصور (JPG, PNG, GIF, PDF) - الحد الأقصى 100 ميجابايت</div>
+                        @error('general_images.*')
+                            <span class="invalid-feedback" role="alert">
+                                <strong>{{ $message }}</strong>
+                            </span>
+                        @enderror
+                        @error('general_files.*')
                             <span class="invalid-feedback" role="alert">
                                 <strong>{{ $message }}</strong>
                             </span>
@@ -145,47 +287,6 @@
                 </div>
 
                 <div class="row">
-                    <!-- صور المعدات والتأهيل للمعدات -->
-                    <div class="col-md-4 mb-3">
-                        <label for="equipment_images" class="form-label fw-bold">
-                            <i class="fas fa-tools me-2 text-primary"></i>
-                            صور المعدات والتأهيل للمعدات
-                        </label>
-                        <div class="input-group">
-                            <input type="file" class="form-control @error('equipment_images.*') is-invalid @enderror" 
-                                   name="equipment_images[]" 
-                                   id="equipment_images"
-                                   accept="image/*"
-                                   multiple>
-                        </div>
-                        <div class="form-text">يمكن رفع عدة صور (JPG, PNG, GIF) - الحد الأقصى 100 ميجابايت لكل صورة</div>
-                        @error('equipment_images.*')
-                            <span class="invalid-feedback" role="alert">
-                                <strong>{{ $message }}</strong>
-                            </span>
-                        @enderror
-                    </div>
-
-                    <!-- صور عامة -->
-                    <div class="col-md-4 mb-3">
-                        <label for="general_images" class="form-label fw-bold">
-                            <i class="fas fa-images me-2 text-secondary"></i>
-                            صور عامة للموقعٍ
-                        </label>
-                        <div class="input-group">
-                            <input type="file" class="form-control @error('general_images.*') is-invalid @enderror" 
-                                   name="general_images[]" 
-                                   id="general_images"
-                                   accept="image/*"
-                                   multiple>
-                        </div>
-                        <div class="form-text">يمكن رفع عدة صور (JPG, PNG, GIF) - الحد الأقصى 100 ميجابايت لكل صورة</div>
-                        @error('general_images.*')
-                            <span class="invalid-feedback" role="alert">
-                                <strong>{{ $message }}</strong>
-                            </span>
-                        @enderror
-                    </div>
 
                     
                 </div>
@@ -539,6 +640,122 @@
                                 </div>
                                 <div class="card-body p-2 text-center">
                                     <small class="text-muted">صورة {{ $index + 1 }}</small>
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+        @endif
+    @endforeach
+
+    <!-- عرض الملفات المرفوعة (PDF + صور) -->
+    @php
+        $fileCategories = [
+            'tbt_files' => [
+                'title' => 'ملفات TBT (PDF + صور)',
+                'icon' => 'fa-file-pdf',
+                'color' => 'success',
+                'files' => $workOrder->safety_tbt_files ?? []
+            ],
+            'permits_files' => [
+                'title' => 'ملفات التصاريح (PDF + صور)',
+                'icon' => 'fa-file-contract',
+                'color' => 'warning',
+                'files' => $workOrder->safety_permits_files ?? []
+            ],
+            'team_files' => [
+                'title' => 'ملفات فريق العمل (PDF + صور)',
+                'icon' => 'fa-users',
+                'color' => 'info',
+                'files' => $workOrder->safety_team_files ?? []
+            ],
+            'equipment_files' => [
+                'title' => 'ملفات المعدات (PDF + صور)',
+                'icon' => 'fa-tools',
+                'color' => 'primary',
+                'files' => $workOrder->safety_equipment_files ?? []
+            ],
+            'general_files' => [
+                'title' => 'ملفات عامة (PDF + صور)',
+                'icon' => 'fa-images',
+                'color' => 'secondary',
+                'files' => $workOrder->safety_general_files ?? []
+            ]
+        ];
+    @endphp
+
+    @foreach($fileCategories as $category => $data)
+        @if(count($data['files']) > 0)
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header bg-{{ $data['color'] }} text-white d-flex align-items-center">
+                <i class="fas {{ $data['icon'] }} me-2"></i>
+                {{ $data['title'] }} ({{ count($data['files']) }})
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    @foreach($data['files'] as $index => $filePath)
+                        @php
+                            $fileExtension = pathinfo($filePath, PATHINFO_EXTENSION);
+                            $isImage = in_array(strtolower($fileExtension), ['jpg', 'jpeg', 'png', 'gif', 'webp']);
+                            $isPdf = strtolower($fileExtension) === 'pdf';
+                        @endphp
+                        <div class="col-md-3 col-sm-4 col-6">
+                            <div class="card border safety-file-card" data-category="{{ $category }}" data-index="{{ $index }}">
+                                <div class="position-relative">
+                                    @if($isImage)
+                                        <img src="{{ Storage::url($filePath) }}" 
+                                             class="card-img-top safety-file" 
+                                             alt="ملف {{ $data['title'] }}"
+                                             style="height: 200px; object-fit: cover; cursor: pointer;"
+                                             onclick="showImageModal('{{ Storage::url($filePath) }}', '{{ $data['title'] }}')">
+                                    @else
+                                        <div class="d-flex align-items-center justify-content-center bg-light" style="height: 200px; cursor: pointer;" onclick="window.open('{{ Storage::url($filePath) }}', '_blank')">
+                                            <div class="text-center">
+                                                @if($isPdf)
+                                                    <i class="fas fa-file-pdf fs-1 text-danger mb-2"></i>
+                                                @else
+                                                    <i class="fas fa-file-alt fs-1 text-secondary mb-2"></i>
+                                                @endif
+                                                <br>
+                                                <small class="text-muted fw-bold">{{ strtoupper($fileExtension) }}</small>
+                                            </div>
+                                        </div>
+                                    @endif
+                                    
+                                    <!-- أزرار العمليات -->
+                                    <div class="position-absolute top-0 end-0 m-2">
+                                        @if($isImage)
+                                            <!-- زر العرض للصور -->
+                                            <button type="button" 
+                                                    class="btn btn-primary btn-sm me-1"
+                                                    onclick="showImageModal('{{ Storage::url($filePath) }}', '{{ $data['title'] }}')"
+                                                    title="عرض الصورة">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        @else
+                                            <!-- زر العرض للملفات -->
+                                            <a href="{{ Storage::url($filePath) }}" 
+                                               target="_blank" 
+                                               class="btn btn-primary btn-sm me-1"
+                                               title="عرض الملف">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                        @endif
+                                        <!-- زر الحذف -->
+                                        <button type="button" 
+                                                class="btn btn-danger btn-sm delete-safety-file"
+                                                data-work-order="{{ $workOrder->id }}"
+                                                data-category="{{ $category }}"
+                                                data-index="{{ $index }}"
+                                                title="حذف الملف">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body p-2 text-center">
+                                    <small class="text-muted">ملف {{ $index + 1 }} ({{ strtoupper($fileExtension) }})</small>
                                 </div>
                             </div>
                         </div>
@@ -1147,6 +1364,58 @@ document.addEventListener('DOMContentLoaded', function() {
                 .catch(error => {
                     console.error('Error:', error);
                     alert('حدث خطأ أثناء حذف الصورة');
+                });
+            }
+        });
+    });
+
+    // حذف ملفات السلامة (PDF + صور)
+    document.querySelectorAll('.delete-safety-file').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            if (confirm('هل أنت متأكد من حذف هذا الملف؟')) {
+                const workOrderId = this.dataset.workOrder;
+                const category = this.dataset.category;
+                const index = this.dataset.index;
+                const fileCard = this.closest('.col-md-3');
+                
+                fetch(`{{ url('admin/work-orders') }}/${workOrderId}/safety-file/${category}/${index}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        fileCard.remove();
+                        
+                        // تحديث عداد الملفات في العنوان
+                        const cardHeader = fileCard.closest('.card').querySelector('.card-header');
+                        const currentCount = cardHeader.textContent.match(/\((\d+)\)/);
+                        if (currentCount) {
+                            const newCount = parseInt(currentCount[1]) - 1;
+                            if (newCount === 0) {
+                                // إخفاء القسم كاملاً إذا لم تعد هناك ملفات
+                                fileCard.closest('.card').remove();
+                            } else {
+                                cardHeader.innerHTML = cardHeader.innerHTML.replace(/\(\d+\)/, `(${newCount})`);
+                            }
+                        }
+                        
+                        // إظهار رسالة نجاح
+                        showSuccessMessage('تم حذف الملف بنجاح');
+                    } else {
+                        alert('حدث خطأ أثناء حذف الملف');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('حدث خطأ أثناء حذف الملف');
                 });
             }
         });

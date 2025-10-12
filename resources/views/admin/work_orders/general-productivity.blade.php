@@ -125,8 +125,8 @@
                                 <h5 class="mb-0">
                                 <i class="fas fa-th-large me-2 text-primary"></i>
                                 لوحة تحكم حالات أوامر العمل
-                                </h5>
-                                                </div>
+                            </h5>
+                        </div>
                             <div class="card-body">
                             <div class="row g-2 justify-content-center">
                                 <div class="col-6 col-md-4 col-lg" style="flex: 0 0 auto; width: 9.09%;">
@@ -391,26 +391,26 @@
                                             </h6>
                                         </div>
                                         <div class="card-body text-center">
-                                            @php
-                                                $surveyRoute = ($project ?? 'riyadh') === 'madinah' 
-                                                    ? route('admin.work-orders.survey.madinah')
-                                                    : route('admin.work-orders.survey.riyadh');
-                                            @endphp
+                            @php
+                                $surveyRoute = ($project ?? 'riyadh') === 'madinah' 
+                                    ? route('admin.work-orders.survey.madinah')
+                                    : route('admin.work-orders.survey.riyadh');
+                            @endphp
                                             <div class="mb-3">
                                                 <i class="fas fa-map-marked-alt fa-3x" style="color: #667eea;"></i>
                                             </div>
-                                            <a href="{{ $surveyRoute }}" 
-                                               class="btn btn-lg shadow-sm"
+                            <a href="{{ $surveyRoute }}" 
+                               class="btn btn-lg shadow-sm"
                                                style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; min-width: 200px;">
-                                                <i class="fas fa-exclamation-triangle me-2"></i>
-                                                عرض الأوامر التي تحتاج للمسح
-                                            </a>
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                عرض الأوامر التي تحتاج للمسح
+                            </a>
                                             <p class="text-muted mt-3 mb-0" style="font-size: 0.85rem;">
                                                 عرض جميع أوامر العمل التي لم يتم مسحها بعد
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
+                            </p>
+                        </div>
+                    </div>
+                </div>
 
                                 <!-- Completion Files Orders Card -->
                                 <div class="col-md-6">
@@ -420,25 +420,25 @@
                                                 <i class="fas fa-file-upload me-2"></i>
                                                 أوامر تحتاج لرفع ملفات
                                             </h6>
-                                        </div>
+                        </div>
                                         <div class="card-body text-center">
-                                            @php
-                                                $completionRoute = ($project ?? 'riyadh') === 'madinah' 
-                                                    ? route('admin.work-orders.completion.madinah')
-                                                    : route('admin.work-orders.completion.riyadh');
-                                            @endphp
+                            @php
+                                $completionRoute = ($project ?? 'riyadh') === 'madinah' 
+                                    ? route('admin.work-orders.completion.madinah')
+                                    : route('admin.work-orders.completion.riyadh');
+                            @endphp
                                             <div class="mb-3">
                                                 <i class="fas fa-cloud-upload-alt fa-3x" style="color: #f093fb;"></i>
                                             </div>
-                                            <a href="{{ $completionRoute }}" 
-                                               class="btn btn-lg shadow-sm"
+                            <a href="{{ $completionRoute }}" 
+                               class="btn btn-lg shadow-sm"
                                                style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; min-width: 200px;">
-                                                <i class="fas fa-exclamation-triangle me-2"></i>
-                                                عرض الأوامر التي تحتاج لرفع ملفات
-                                            </a>
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                عرض الأوامر التي تحتاج لرفع ملفات
+                            </a>
                                             <p class="text-muted mt-3 mb-0" style="font-size: 0.85rem;">
                                                 عرض جميع أوامر العمل التي لم يتم رفع ملفات انتهاء العمل عليها
-                                            </p>
+                            </p>
                                         </div>
                                     </div>
                                 </div>
@@ -726,14 +726,14 @@
             </div>
 
             <!-- Materials and Warehouses Status Section -->
-            <div class="col-12">
-                <div class="card shadow-sm border-0 mt-4">
+                <div class="col-12">
+                    <div class="card shadow-sm border-0 mt-4">
                     <div class="card-header" style="background: linear-gradient(135deg, #00b894 0%, #00cec9 100%);">
                         <h5 class="mb-0 text-white text-center">
                             <i class="fas fa-warehouse me-2"></i>
                             موقف المواد والمستودعات
-                        </h5>
-                    </div>
+                                </h5>
+                                                </div>
                     <div class="card-body py-4">
                         <div class="row g-3">
                             <!-- Materials Difference (Executed vs Disbursed) Card -->
@@ -744,16 +744,16 @@
                                             <i class="fas fa-balance-scale me-2"></i>
                                             الفرق بين المنفذ والمصروف
                                         </h6>
-                                    </div>
+                                            </div>
                                     <div class="card-body text-center">
                                         @php
                                             $executedDisbursedRoute = ($project ?? 'riyadh') === 'madinah' 
                                                 ? route('admin.materials.executed-disbursed.madinah')
                                                 : route('admin.materials.executed-disbursed.riyadh');
-                                        @endphp
+                                    @endphp
                                         <div class="mb-3">
                                             <i class="fas fa-chart-line fa-3x" style="color: #6c5ce7;"></i>
-                                        </div>
+                                            </div>
                                         <a href="{{ $executedDisbursedRoute }}" 
                                            class="btn btn-sm shadow-sm"
                                            style="background: linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%); color: white; min-width: 150px;">
@@ -763,9 +763,9 @@
                                         <p class="text-muted mt-3 mb-0" style="font-size: 0.85rem;">
                                             مقارنة المواد المنفذة مع المصروفة
                                         </p>
-                                    </div>
-                                </div>
-                            </div>
+                                                </div>
+                                            </div>
+                                        </div>
 
                             <!-- Materials to Return Card -->
                             <div class="col-md-4">
@@ -781,10 +781,10 @@
                                             $materialsReturnRoute = ($project ?? 'riyadh') === 'madinah' 
                                                 ? route('admin.materials.to-return.madinah')
                                                 : route('admin.materials.to-return.riyadh');
-                                        @endphp
+                                    @endphp
                                         <div class="mb-3">
                                             <i class="fas fa-box-open fa-3x" style="color: #fdcb6e;"></i>
-                                        </div>
+                                            </div>
                                         <a href="{{ $materialsReturnRoute }}" 
                                            class="btn btn-sm shadow-sm"
                                            style="background: linear-gradient(135deg, #fdcb6e 0%, #e17055 100%); color: white; min-width: 150px;">
@@ -794,9 +794,9 @@
                                         <p class="text-muted mt-3 mb-0" style="font-size: 0.85rem;">
                                             المواد الزائدة المطلوب إرجاعها
                                         </p>
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                            </div>
 
                             <!-- Materials to Disburse Card -->
                             <div class="col-md-4">
@@ -806,16 +806,16 @@
                                             <i class="fas fa-truck-loading me-2"></i>
                                             المواد المطلوب صرفها
                                         </h6>
-                                    </div>
+                                </div>
                                     <div class="card-body text-center">
                                         @php
                                             $materialsDisburseRoute = ($project ?? 'riyadh') === 'madinah' 
                                                 ? route('admin.materials.to-disburse.madinah')
                                                 : route('admin.materials.to-disburse.riyadh');
-                                        @endphp
+                                    @endphp
                                         <div class="mb-3">
                                             <i class="fas fa-dolly fa-3x" style="color: #00b894;"></i>
-                                        </div>
+                        </div>
                                         <a href="{{ $materialsDisburseRoute }}" 
                                            class="btn btn-sm shadow-sm"
                                            style="background: linear-gradient(135deg, #00b894 0%, #00cec9 100%); color: white; min-width: 150px;">
@@ -825,12 +825,12 @@
                                         <p class="text-muted mt-3 mb-0" style="font-size: 0.85rem;">
                                             المواد الناقصة المطلوب صرفها
                                         </p>
-                                    </div>
-                                </div>
                             </div>
-                        </div>
-                    </div>
-                </div>
+                                            </div>
+                                        </div>
+                                                </div>
+                                </div>
+                                        </div>
             </div>
     </div>
 </div>

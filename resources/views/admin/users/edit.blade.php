@@ -259,6 +259,12 @@
                                         <label for="riyadh_manage_revenues" class="text-xs text-blue-700 mr-2">إدارة الإيرادات</label>
                                     </div>
                                     <div class="flex items-center">
+                                        <input type="checkbox" id="riyadh_daily_work_program" name="permissions[]" value="riyadh_daily_work_program" 
+                                            {{ (is_array($user->permissions) && in_array('riyadh_daily_work_program', $user->permissions)) ? 'checked' : '' }}
+                                            class="h-3 w-3 ml-1 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                        <label for="riyadh_daily_work_program" class="text-xs text-blue-700 mr-2">برنامج العمل اليومي</label>
+                                    </div>
+                                    <div class="flex items-center">
                                         <input type="checkbox" id="riyadh_create_work_order" name="permissions[]" value="riyadh_create_work_order" 
                                             {{ (is_array($user->permissions) && in_array('riyadh_create_work_order', $user->permissions)) ? 'checked' : '' }}
                                             class="h-3 w-3 ml-1 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
@@ -354,6 +360,12 @@
                                             {{ (is_array($user->permissions) && in_array('madinah_manage_revenues', $user->permissions)) ? 'checked' : '' }}
                                             class="h-3 w-3 ml-1 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
                                         <label for="madinah_manage_revenues" class="text-xs text-blue-700 mr-2">إدارة الإيرادات</label>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <input type="checkbox" id="madinah_daily_work_program" name="permissions[]" value="madinah_daily_work_program" 
+                                            {{ (is_array($user->permissions) && in_array('madinah_daily_work_program', $user->permissions)) ? 'checked' : '' }}
+                                            class="h-3 w-3 ml-1 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                        <label for="madinah_daily_work_program" class="text-xs text-blue-700 mr-2">برنامج العمل اليومي</label>
                                     </div>
                                     <div class="flex items-center">
                                         <input type="checkbox" id="madinah_create_work_order" name="permissions[]" value="madinah_create_work_order" 

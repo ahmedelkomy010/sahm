@@ -438,6 +438,60 @@
     font-weight: 500;
 }
 
+.notification-actions {
+    padding-top: 8px;
+    border-top: 1px solid #e9ecef;
+}
+
+.notification-actions .btn {
+    font-size: 0.75rem;
+    padding: 4px 12px;
+    transition: all 0.2s ease;
+}
+
+.notification-actions .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* تنسيق Modal الرد */
+#replyNotificationModal {
+    z-index: 99999 !important;
+}
+
+.modal-backdrop {
+    z-index: 99998 !important;
+}
+
+#replyNotificationModal .modal-content {
+    position: relative;
+    z-index: 100000 !important;
+}
+
+#replyNotificationModal .modal-body {
+    position: relative;
+    z-index: 100001 !important;
+}
+
+#replyNotificationModal textarea {
+    pointer-events: auto !important;
+    user-select: text !important;
+    -webkit-user-select: text !important;
+    -moz-user-select: text !important;
+    -ms-user-select: text !important;
+    cursor: text !important;
+}
+
+#replyNotificationModal textarea:focus {
+    outline: none !important;
+    border-color: #0d6efd !important;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
+}
+
+#replyNotificationModal .modal-dialog {
+    pointer-events: auto !important;
+}
+
 #notificationBadgeNav {
     animation: pulse 2s infinite;
 }
@@ -493,24 +547,31 @@ function updateNotificationUINav(data) {
     if (data.notifications && data.notifications.length > 0) {
         if(list) {
             list.innerHTML = data.notifications.map(notification => `
-                <li class="notification-item ${notification.is_read ? '' : 'unread'}" 
-                    onclick="viewNotification(${notification.id}, ${notification.work_order ? notification.work_order.id : 'null'})">
-                    <div class="notification-title">
-                        <i class="fas fa-comment-dots me-2 text-primary"></i>
-                        ${notification.title}
+                <li class="notification-item ${notification.is_read ? '' : 'unread'}">
+                    <div onclick="viewNotification(${notification.id}, ${notification.work_order ? notification.work_order.id : 'null'})" style="cursor: pointer; flex: 1;">
+                        <div class="notification-title">
+                            <i class="fas fa-comment-dots me-2 text-primary"></i>
+                            ${notification.title}
+                        </div>
+                        <div class="notification-message">
+                            ${notification.message}
+                        </div>
+                        <div class="notification-footer">
+                            <span class="notification-from">
+                                <i class="fas fa-user me-1"></i>
+                                ${notification.from_user}
+                            </span>
+                            <span class="notification-time">
+                                <i class="fas fa-clock me-1"></i>
+                                ${notification.created_at}
+                            </span>
+                        </div>
                     </div>
-                    <div class="notification-message">
-                        ${notification.message}
-                    </div>
-                    <div class="notification-footer">
-                        <span class="notification-from">
-                            <i class="fas fa-user me-1"></i>
-                            ${notification.from_user}
-                        </span>
-                        <span class="notification-time">
-                            <i class="fas fa-clock me-1"></i>
-                            ${notification.created_at}
-                        </span>
+                    <div class="notification-actions mt-2" style="display: flex; gap: 6px; justify-content: flex-end;">
+                        <button class="btn btn-sm btn-outline-primary" onclick="event.stopPropagation(); replyToNotification(${notification.id}, '${notification.title.replace(/'/g, "\\'")}', '${notification.from_user.replace(/'/g, "\\'")}', ${notification.work_order ? notification.work_order.id : 'null'})" title="الرد">
+                            <i class="fas fa-reply me-1"></i>
+                            رد
+                        </button>
                     </div>
                 </li>
             `).join('');
@@ -574,6 +635,126 @@ function markAllAsRead() {
     .catch(error => console.error('Error marking all as read:', error));
 }
 
+// فتح نافذة الرد على الإشعار
+function replyToNotification(notificationId, title, fromUser, workOrderId) {
+    console.log('Opening reply modal for notification:', notificationId);
+    
+    // ملء بيانات الإشعار الأصلي
+    document.getElementById('originalNotificationTitle').textContent = title;
+    document.getElementById('originalNotificationFrom').textContent = fromUser;
+    document.getElementById('replyNotificationId').value = notificationId;
+    document.getElementById('replyWorkOrderId').value = workOrderId || '';
+    
+    // التأكد من تفريغ الـ textarea
+    const textarea = document.getElementById('replyMessage');
+    if (textarea) {
+        textarea.value = '';
+        textarea.disabled = false;
+        textarea.readOnly = false;
+        console.log('Textarea found and cleared');
+    } else {
+        console.error('Textarea not found!');
+    }
+    
+    // فتح الـ modal
+    const modalElement = document.getElementById('replyNotificationModal');
+    if (!modalElement) {
+        console.error('Modal element not found!');
+        return;
+    }
+    
+    const modal = new bootstrap.Modal(modalElement, {
+        backdrop: true,
+        keyboard: true,
+        focus: true
+    });
+    
+    // Focus على الـ textarea بعد فتح الـ modal
+    modalElement.addEventListener('shown.bs.modal', function () {
+        console.log('Modal shown event triggered');
+        const textarea = document.getElementById('replyMessage');
+        if (textarea) {
+            setTimeout(() => {
+                textarea.focus();
+                textarea.click();
+                console.log('Textarea focused and clicked');
+            }, 300);
+        }
+    }, { once: true });
+    
+    modal.show();
+    console.log('Modal show() called');
+}
+
+// إرسال الرد على الإشعار
+function sendReply() {
+    const notificationId = document.getElementById('replyNotificationId').value;
+    const workOrderId = document.getElementById('replyWorkOrderId').value;
+    const message = document.getElementById('replyMessage').value.trim();
+    
+    if (!message) {
+        alert('يرجى كتابة رسالة الرد');
+        return;
+    }
+    
+    // إظهار مؤشر التحميل
+    const sendButton = event.target;
+    const originalText = sendButton.innerHTML;
+    sendButton.disabled = true;
+    sendButton.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> جاري الإرسال...';
+    
+    // إرسال الرد
+    fetch('/admin/notifications/reply', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify({
+            notification_id: notificationId,
+            work_order_id: workOrderId,
+            message: message
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        sendButton.disabled = false;
+        sendButton.innerHTML = originalText;
+        
+        if (data.success) {
+            // إغلاق الـ modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('replyNotificationModal'));
+            modal.hide();
+            
+            // إظهار رسالة نجاح
+            const successToast = document.createElement('div');
+            successToast.innerHTML = `
+                <div style="position: fixed; top: 20px; right: 20px; background: #28a745; color: white; padding: 15px 25px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 10000; display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-check-circle"></i>
+                    <span>تم إرسال الرد بنجاح!</span>
+                </div>
+            `;
+            document.body.appendChild(successToast);
+            
+            setTimeout(() => {
+                document.body.removeChild(successToast);
+            }, 3000);
+            
+            // إعادة تحميل الإشعارات
+            notificationsLoaded = false;
+            loadNotifications();
+        } else {
+            alert('حدث خطأ: ' + (data.message || 'فشل إرسال الرد'));
+        }
+    })
+    .catch(error => {
+        sendButton.disabled = false;
+        sendButton.innerHTML = originalText;
+        console.error('Error sending reply:', error);
+        alert('حدث خطأ أثناء إرسال الرد');
+    });
+}
+
 // تفعيل تحميل الإشعارات عند فتح القائمة
 document.addEventListener('DOMContentLoaded', function() {
     // للزر في الـ navbar
@@ -604,4 +785,57 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
-</script> 
+</script>
+
+<!-- Modal للرد على الإشعار - خارج الـ header -->
+<div class="modal fade" id="replyNotificationModal" tabindex="-1" aria-labelledby="replyNotificationModalLabel" aria-hidden="true" data-bs-backdrop="true" data-bs-keyboard="true" style="z-index: 99999;">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="replyNotificationModalLabel">
+                    <i class="fas fa-reply me-2"></i>
+                    الرد على الإشعار
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">الإشعار الأصلي:</label>
+                    <div class="alert alert-light" id="originalNotificationContent">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <span class="fw-bold text-primary" id="originalNotificationTitle"></span>
+                            <span class="badge bg-info text-white" id="originalNotificationFrom"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="replyMessage" class="form-label fw-bold">
+                        <i class="fas fa-comment-dots me-1"></i>
+                        رسالة الرد:
+                    </label>
+                    <textarea 
+                        class="form-control" 
+                        id="replyMessage" 
+                        rows="4" 
+                        placeholder="اكتب ردك هنا..." 
+                        required 
+                        autocomplete="off"
+                        style="resize: vertical; min-height: 100px; position: relative; z-index: 100000;"></textarea>
+                    <div class="form-text">سيتم إرسال الرد كإشعار للمستخدم</div>
+                </div>
+                <input type="hidden" id="replyNotificationId">
+                <input type="hidden" id="replyWorkOrderId">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>
+                    إلغاء
+                </button>
+                <button type="button" class="btn btn-primary" onclick="sendReply()">
+                    <i class="fas fa-paper-plane me-1"></i>
+                    إرسال الرد
+                </button>
+            </div>
+        </div>
+    </div>
+</div> 

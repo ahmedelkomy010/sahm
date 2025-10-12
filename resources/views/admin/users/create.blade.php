@@ -276,7 +276,37 @@
                                         <input type="checkbox" id="riyadh_license_details" name="permissions[]" value="riyadh_license_details" 
                                             {{ (is_array(old('permissions')) && in_array('riyadh_license_details', old('permissions'))) ? 'checked' : '' }}
                                             class="h-3 w-3 ml-1 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-                                        <label for="riyadh_license_details" class="text-xs text-blue-700 mr-2">تفاصيل الرخص</label>
+                                        <label for="riyadh_license_details" class="text-xs text-blue-700 mr-2">تفاصيل الرخص والجودة</label>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <input type="checkbox" id="riyadh_manage_revenues" name="permissions[]" value="riyadh_manage_revenues" 
+                                            {{ (is_array(old('permissions')) && in_array('riyadh_manage_revenues', old('permissions'))) ? 'checked' : '' }}
+                                            class="h-3 w-3 ml-1 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                        <label for="riyadh_manage_revenues" class="text-xs text-blue-700 mr-2">إدارة الإيرادات</label>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <input type="checkbox" id="riyadh_daily_work_program" name="permissions[]" value="riyadh_daily_work_program" 
+                                            {{ (is_array(old('permissions')) && in_array('riyadh_daily_work_program', old('permissions'))) ? 'checked' : '' }}
+                                            class="h-3 w-3 ml-1 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                        <label for="riyadh_daily_work_program" class="text-xs text-blue-700 mr-2">برنامج العمل اليومي</label>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <input type="checkbox" id="riyadh_create_work_order" name="permissions[]" value="riyadh_create_work_order" 
+                                            {{ (is_array(old('permissions')) && in_array('riyadh_create_work_order', old('permissions'))) ? 'checked' : '' }}
+                                            class="h-3 w-3 ml-1 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                        <label for="riyadh_create_work_order" class="text-xs text-blue-700 mr-2">إنشاء أمر عمل</label>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <input type="checkbox" id="riyadh_edit_work_order" name="permissions[]" value="riyadh_edit_work_order" 
+                                            {{ (is_array(old('permissions')) && in_array('riyadh_edit_work_order', old('permissions'))) ? 'checked' : '' }}
+                                            class="h-3 w-3 ml-1 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                        <label for="riyadh_edit_work_order" class="text-xs text-blue-700 mr-2">تعديل أمر عمل</label>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <input type="checkbox" id="riyadh_export_excel" name="permissions[]" value="riyadh_export_excel" 
+                                            {{ (is_array(old('permissions')) && in_array('riyadh_export_excel', old('permissions'))) ? 'checked' : '' }}
+                                            class="h-3 w-3 ml-1 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                        <label for="riyadh_export_excel" class="text-xs text-blue-700 mr-2">تصدير إكسل</label>
                                     </div>
                                 </div>
                             </div>
@@ -349,7 +379,37 @@
                                         <input type="checkbox" id="madinah_license_details" name="permissions[]" value="madinah_license_details" 
                                             {{ (is_array(old('permissions')) && in_array('madinah_license_details', old('permissions'))) ? 'checked' : '' }}
                                             class="h-3 w-3 ml-1 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-                                        <label for="madinah_license_details" class="text-xs text-blue-700 mr-2">تفاصيل الرخص</label>
+                                        <label for="madinah_license_details" class="text-xs text-blue-700 mr-2">تفاصيل الرخص والجودة</label>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <input type="checkbox" id="madinah_manage_revenues" name="permissions[]" value="madinah_manage_revenues" 
+                                            {{ (is_array(old('permissions')) && in_array('madinah_manage_revenues', old('permissions'))) ? 'checked' : '' }}
+                                            class="h-3 w-3 ml-1 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                        <label for="madinah_manage_revenues" class="text-xs text-blue-700 mr-2">إدارة الإيرادات</label>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <input type="checkbox" id="madinah_daily_work_program" name="permissions[]" value="madinah_daily_work_program" 
+                                            {{ (is_array(old('permissions')) && in_array('madinah_daily_work_program', old('permissions'))) ? 'checked' : '' }}
+                                            class="h-3 w-3 ml-1 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                        <label for="madinah_daily_work_program" class="text-xs text-blue-700 mr-2">برنامج العمل اليومي</label>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <input type="checkbox" id="madinah_create_work_order" name="permissions[]" value="madinah_create_work_order" 
+                                            {{ (is_array(old('permissions')) && in_array('madinah_create_work_order', old('permissions'))) ? 'checked' : '' }}
+                                            class="h-3 w-3 ml-1 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                        <label for="madinah_create_work_order" class="text-xs text-blue-700 mr-2">إنشاء أمر عمل</label>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <input type="checkbox" id="madinah_edit_work_order" name="permissions[]" value="madinah_edit_work_order" 
+                                            {{ (is_array(old('permissions')) && in_array('madinah_edit_work_order', old('permissions'))) ? 'checked' : '' }}
+                                            class="h-3 w-3 ml-1 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                        <label for="madinah_edit_work_order" class="text-xs text-blue-700 mr-2">تعديل أمر عمل</label>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <input type="checkbox" id="madinah_export_excel" name="permissions[]" value="madinah_export_excel" 
+                                            {{ (is_array(old('permissions')) && in_array('madinah_export_excel', old('permissions'))) ? 'checked' : '' }}
+                                            class="h-3 w-3 ml-1 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                        <label for="madinah_export_excel" class="text-xs text-blue-700 mr-2">تصدير إكسل</label>
                                     </div>
                                 </div>
                             </div>

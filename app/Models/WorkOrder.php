@@ -115,6 +115,12 @@ class WorkOrder extends Model
         'safety_equipment_images',
         'safety_general_images',
         'safety_tbt_images',
+        // ملفات السلامة الجديدة (PDF + صور)
+        'safety_tbt_files',
+        'safety_permits_files',
+        'safety_team_files',
+        'safety_equipment_files',
+        'safety_general_files',
         'removal_scrap_materials',
         'survey_date',
     ];
@@ -139,6 +145,12 @@ class WorkOrder extends Model
         'safety_general_images' => 'array',
         'safety_tbt_images' => 'array',
         'non_compliance_attachments' => 'array',
+        // ملفات السلامة الجديدة (PDF + صور)
+        'safety_tbt_files' => 'array',
+        'safety_permits_files' => 'array',
+        'safety_team_files' => 'array',
+        'safety_equipment_files' => 'array',
+        'safety_general_files' => 'array',
         'removal_scrap_materials' => 'array',
         'single_meter_installation' => 'string',
         'double_meter_installation' => 'string',
@@ -474,5 +486,13 @@ class WorkOrder extends Model
     public function latestSafetyHistory()
     {
         return $this->hasOne(WorkOrderSafetyHistory::class)->latestOfMany('created_at');
+    }
+
+    /**
+     * العلاقة مع برنامج العمل اليومي
+     */
+    public function dailyWorkProgram()
+    {
+        return $this->hasOne(DailyWorkProgram::class);
     }
 }

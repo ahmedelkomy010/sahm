@@ -1300,6 +1300,64 @@ class WorkOrderController extends Controller
             ], 500);
         }
     }
+    
+    /**
+     * الرد على إشعار
+     */
+    public function replyToNotification(Request $request)
+    {
+        try {
+            $request->validate([
+                'notification_id' => 'required|exists:notifications,id',
+                'message' => 'required|string|max:1000',
+                'work_order_id' => 'nullable|exists:work_orders,id'
+            ]);
+            
+            // الحصول على الإشعار الأصلي
+            $originalNotification = \App\Models\Notification::findOrFail($request->notification_id);
+            
+            // الحصول على معلومات المرسل الأصلي
+            $recipientId = $originalNotification->from_user_id;
+            
+            if (!$recipientId) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'لا يمكن الرد على هذا الإشعار'
+                ], 400);
+            }
+            
+            // إنشاء إشعار جديد كرد
+            $replyNotification = \App\Models\Notification::create([
+                'user_id' => $recipientId,
+                'from_user_id' => auth()->id(),
+                'work_order_id' => $request->work_order_id ?? $originalNotification->work_order_id,
+                'title' => 'رد على: ' . $originalNotification->title,
+                'message' => $request->message,
+                'type' => 'reply',
+                'is_read' => false
+            ]);
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'تم إرسال الرد بنجاح',
+                'notification' => $replyNotification
+            ]);
+            
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'بيانات غير صحيحة',
+                'errors' => $e->errors()
+            ], 422);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error in replyToNotification: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء إرسال الرد'
+            ], 500);
+        }
+    }
 
     /**
      * عرض أوامر العمل التي لم يتم رفع ملفات انتهاء العمل - الرياض
@@ -2327,31 +2385,31 @@ class WorkOrderController extends Controller
         $statsQuery = clone $query;
         
         $overdueCount = (clone $query)
-            ->where('execution_status', '!=', 7)
-            ->whereNotNull('approval_date')
-            ->whereRaw('DATEDIFF(NOW(), approval_date) > 30')
-            ->count();
+        ->where('execution_status', '!=', 7)
+        ->whereNotNull('approval_date')
+        ->whereRaw('DATEDIFF(NOW(), approval_date) > 30')
+        ->count();
 
         $unexecutedCount = (clone $query)
-            ->where('execution_status', 1)
-            ->count();
+        ->where('execution_status', 1)
+        ->count();
 
         $completedCount = (clone $query)
-            ->where('execution_status', 7)
-            ->count();
+        ->where('execution_status', 7)
+        ->count();
 
         $totalOrders = (clone $query)->count();
 
         $obstaclesCount = (clone $query)
             ->whereHas('survey', function($q) {
                 $q->where('has_obstacles', true);
-            })
+        })
             ->count();
 
         // Get paginated results
         $perPage = $request->input('per_page', 20);
         $workOrders = $query->with('survey')
-            ->orderBy('approval_date', 'desc')
+        ->orderBy('approval_date', 'desc')
             ->paginate($perPage)
             ->appends($request->except('page'));
 
@@ -2392,31 +2450,31 @@ class WorkOrderController extends Controller
         $statsQuery = clone $query;
         
         $overdueCount = (clone $query)
-            ->where('execution_status', '!=', 7)
-            ->whereNotNull('approval_date')
-            ->whereRaw('DATEDIFF(NOW(), approval_date) > 30')
-            ->count();
+        ->where('execution_status', '!=', 7)
+        ->whereNotNull('approval_date')
+        ->whereRaw('DATEDIFF(NOW(), approval_date) > 30')
+        ->count();
 
         $unexecutedCount = (clone $query)
-            ->where('execution_status', 1)
-            ->count();
+        ->where('execution_status', 1)
+        ->count();
 
         $completedCount = (clone $query)
-            ->where('execution_status', 7)
-            ->count();
+        ->where('execution_status', 7)
+        ->count();
 
         $totalOrders = (clone $query)->count();
 
         $obstaclesCount = (clone $query)
             ->whereHas('survey', function($q) {
                 $q->where('has_obstacles', true);
-            })
+        })
             ->count();
 
         // Get paginated results
         $perPage = $request->input('per_page', 20);
         $workOrders = $query->with('survey')
-            ->orderBy('approval_date', 'desc')
+        ->orderBy('approval_date', 'desc')
             ->paginate($perPage)
             ->appends($request->except('page'));
 
