@@ -35,17 +35,41 @@
         </div>
     @endif
 
-    <!-- معلومات التاريخ -->
+    <!-- فلتر التاريخ -->
     <div class="card mb-4 shadow-sm">
-        <div class="card-header bg-warning text-white d-flex align-items-center justify-content-between">
-            <div>
-                <i class="fas fa-info-circle me-2"></i>
-                <strong>تاريخ اليوم: {{ \Carbon\Carbon::today()->format('Y-m-d') }}</strong>
+        <div class="card-header bg-warning text-white d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <form method="GET" class="d-flex align-items-center gap-3 flex-grow-1">
+                <input type="hidden" name="project" value="{{ $project }}">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="fas fa-calendar me-2"></i>
+                    <label class="form-label mb-0 fw-bold">التاريخ:</label>
+                    <input type="date" 
+                           name="selected_date" 
+                           class="form-control form-control-sm" 
+                           value="{{ $selectedDate }}"
+                           style="min-width: 180px; background: white; color: #000;">
+                </div>
+                <button type="submit" class="btn btn-light btn-sm">
+                    <i class="fas fa-search me-1"></i>
+                    عرض
+                </button>
+                <a href="{{ route('admin.work-orders.daily-program', ['project' => $project]) }}" class="btn btn-light btn-sm">
+                    <i class="fas fa-sync me-1"></i>
+                    اليوم
+                </a>
+            </form>
+            <div class="d-flex gap-2">
+                @if($programs->count() > 0)
+                <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#sendNotificationModal">
+                    <i class="fas fa-bell me-1"></i>
+                    إرسال البرنامج كإشعار
+                </button>
+                @endif
+                <button type="button" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#addToProgramModal">
+                    <i class="fas fa-plus me-1"></i>
+                    إضافة أمر عمل للبرنامج
+                </button>
             </div>
-            <button type="button" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#addToProgramModal">
-                <i class="fas fa-plus me-1"></i>
-                إضافة أمر عمل للبرنامج
-            </button>
         </div>
     </div>
 
@@ -53,7 +77,7 @@
     <div class="card shadow-sm">
         <div class="card-header bg-primary text-white">
             <i class="fas fa-table me-2"></i>
-            أوامر العمل المقررة اليوم ({{ $programs->count() }})
+            <strong>أوامر العمل المقررة اليوم ({{ $programs->count() }})</strong>
         </div>
         <div class="card-body p-0">
             @if($programs->count() > 0)
@@ -73,13 +97,15 @@
                             <th style="min-width: 150px;">المستلم</th>
                             <th style="min-width: 150px;">مسئول السلامة</th>
                             <th style="min-width: 150px;">مراقب الجودة</th>
+                            <th style="min-width: 250px;">وصف العمل</th>
                             <th style="min-width: 250px;">ملاحظات</th>
                             <th style="min-width: 150px;">الإجراءات</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach($programs as $index => $program)
-                        <tr>
+                        <tr data-start-time="{{ $program->start_time ? \Carbon\Carbon::parse($program->start_time)->format('H:i') : '' }}"
+                            data-end-time="{{ $program->end_time ? \Carbon\Carbon::parse($program->end_time)->format('H:i') : '' }}">
                             <td class="text-center">{{ $index + 1 }}</td>
                             <td class="text-center">
                                 <a href="{{ route('admin.work-orders.show', $program->workOrder) }}" class="btn btn-link text-primary fw-bold">
@@ -102,6 +128,7 @@
                             <td>{{ $program->receiver }}</td>
                             <td>{{ $program->safety_officer }}</td>
                             <td>{{ $program->quality_monitor }}</td>
+                            <td>{{ $program->work_description }}</td>
                             <td>{{ $program->notes }}</td>
                             <td class="text-center">
                                 <button type="button" class="btn btn-sm btn-primary mb-1" data-bs-toggle="modal" data-bs-target="#editProgramModal{{ $program->id }}">
@@ -171,6 +198,10 @@
                                                     <input type="text" class="form-control" name="quality_monitor" value="{{ $program->quality_monitor }}">
                                                 </div>
                                                 <div class="col-md-12">
+                                                    <label class="form-label fw-bold">وصف العمل</label>
+                                                    <textarea class="form-control" name="work_description" rows="3">{{ $program->work_description }}</textarea>
+                                                </div>
+                                                <div class="col-md-12">
                                                     <label class="form-label fw-bold">ملاحظات</label>
                                                     <textarea class="form-control" name="notes" rows="3">{{ $program->notes }}</textarea>
                                                 </div>
@@ -212,6 +243,7 @@
             </div>
             <form action="{{ route('admin.work-orders.daily-program.store') }}" method="POST">
                 @csrf
+                <input type="hidden" name="program_date" value="{{ $selectedDate }}">
                 <div class="modal-body">
                     <div class="row g-3">
                         <div class="col-md-12">
@@ -271,6 +303,10 @@
                             <input type="text" class="form-control" id="qualityMonitorInput" name="quality_monitor">
                         </div>
                         <div class="col-md-12">
+                            <label class="form-label fw-bold">وصف العمل</label>
+                            <textarea class="form-control" name="work_description" rows="3"></textarea>
+                        </div>
+                        <div class="col-md-12">
                             <label class="form-label fw-bold">ملاحظات</label>
                             <textarea class="form-control" name="notes" rows="3"></textarea>
                         </div>
@@ -284,6 +320,62 @@
                     </button>
                 </div>
             </form>
+        </div>
+    </div>
+</div>
+
+<!-- Send Notification Modal -->
+<div class="modal fade" id="sendNotificationModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-bell me-2"></i>
+                    إرسال برنامج العمل كإشعار
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    اختر المستخدمين الذين تريد إرسال برنامج العمل اليومي لهم كإشعار
+                </div>
+                
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <label class="form-label fw-bold mb-0">المستخدمين المتاحين:</label>
+                        <div class="btn-group btn-group-sm" role="group">
+                            <button type="button" class="btn btn-outline-primary" onclick="selectAllUsers()">
+                                <i class="fas fa-check-double me-1"></i>
+                                تحديد الكل
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary" onclick="deselectAllUsers()">
+                                <i class="fas fa-times me-1"></i>
+                                إلغاء التحديد
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="usersList" class="border rounded p-3" style="max-height: 400px; overflow-y: auto;">
+                        <p class="text-center text-muted">
+                            <i class="fas fa-spinner fa-spin me-2"></i>
+                            جاري تحميل المستخدمين...
+                        </p>
+                    </div>
+                </div>
+                
+                <div id="selectedCount" class="alert alert-success d-none">
+                    <i class="fas fa-users me-2"></i>
+                    تم تحديد <strong><span id="countNumber">0</span></strong> مستخدم
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-info" onclick="sendToSelectedUsers()">
+                    <i class="fas fa-paper-plane me-1"></i>
+                    إرسال الإشعار
+                </button>
+            </div>
         </div>
     </div>
 </div>
@@ -439,6 +531,230 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+
+// تصفية الجدول حسب الوقت
+function filterByTime() {
+    const startTime = document.getElementById('filterStartTime').value;
+    const endTime = document.getElementById('filterEndTime').value;
+    
+    if (!startTime && !endTime) {
+        alert('⚠️ من فضلك حدد على الأقل وقت البداية أو النهاية');
+        return;
+    }
+    
+    // حفظ القيم في localStorage
+    if (startTime) {
+        localStorage.setItem('dailyProgram_filterStartTime', startTime);
+    }
+    if (endTime) {
+        localStorage.setItem('dailyProgram_filterEndTime', endTime);
+    }
+    
+    const rows = document.querySelectorAll('tbody tr[data-start-time]');
+    let visibleCount = 0;
+    
+    rows.forEach(function(row) {
+        const rowStartTime = row.getAttribute('data-start-time');
+        const rowEndTime = row.getAttribute('data-end-time');
+        
+        let shouldShow = true;
+        
+        // التصفية حسب وقت البداية
+        if (startTime && rowStartTime) {
+            shouldShow = shouldShow && (rowStartTime >= startTime);
+        }
+        
+        // التصفية حسب وقت النهاية
+        if (endTime && rowEndTime) {
+            shouldShow = shouldShow && (rowEndTime <= endTime);
+        }
+        
+        // إخفاء أو إظهار الصف
+        if (shouldShow) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+    
+    // تحديث العدد في الهيدر
+    const headerText = document.querySelector('.card-header strong');
+    if (headerText) {
+        const totalCount = rows.length;
+        headerText.innerHTML = `أوامر العمل المقررة اليوم (${visibleCount} من ${totalCount})`;
+    }
+    
+    console.log(`✅ تم تصفية ${visibleCount} من ${rows.length} أوامر عمل`);
+}
+
+// إعادة تعيين التصفية
+function resetTimeFilter() {
+    // مسح القيم من الحقول
+    document.getElementById('filterStartTime').value = '';
+    document.getElementById('filterEndTime').value = '';
+    
+    // مسح القيم من localStorage
+    localStorage.removeItem('dailyProgram_filterStartTime');
+    localStorage.removeItem('dailyProgram_filterEndTime');
+    
+    // إظهار جميع الصفوف
+    const rows = document.querySelectorAll('tbody tr[data-start-time]');
+    rows.forEach(function(row) {
+        row.style.display = '';
+    });
+    
+    // تحديث العدد في الهيدر
+    const headerText = document.querySelector('.card-header strong');
+    if (headerText) {
+        const totalCount = rows.length;
+        headerText.innerHTML = `أوامر العمل المقررة اليوم (${totalCount})`;
+    }
+    
+    console.log('✅ تم إعادة تعيين التصفية ومسح القيم المحفوظة');
+}
+
+// تحميل المستخدمين عند فتح modal الإشعارات
+document.getElementById('sendNotificationModal').addEventListener('shown.bs.modal', function() {
+    loadAvailableUsers();
+});
+
+// تحميل قائمة المستخدمين المتاحين
+function loadAvailableUsers() {
+    const project = '{{ $project }}';
+    const usersList = document.getElementById('usersList');
+    
+    console.log('Loading users for project:', project);
+    
+    fetch('{{ route("admin.work-orders.daily-program.get-users") }}?project=' + project, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        }
+    })
+    .then(response => {
+        console.log('Response status:', response.status);
+        return response.json();
+    })
+    .then(data => {
+        console.log('Users data:', data);
+        
+        if (data.success && data.users && data.users.length > 0) {
+            let html = '<div class="row g-2">';
+            data.users.forEach(user => {
+                html += `
+                    <div class="col-md-6">
+                        <div class="form-check">
+                            <input class="form-check-input user-checkbox" type="checkbox" value="${user.id}" id="user_${user.id}" onchange="updateSelectedCount()">
+                            <label class="form-check-label" for="user_${user.id}">
+                                <i class="fas fa-user me-1 text-primary"></i>
+                                ${user.name}
+                            </label>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            usersList.innerHTML = html;
+            console.log('Loaded', data.users.length, 'users');
+        } else {
+            const message = data.message || 'لا يوجد مستخدمون متاحون للمشروع المحدد';
+            usersList.innerHTML = `<p class="text-center text-muted"><i class="fas fa-info-circle me-2"></i>${message}</p>`;
+            console.log('No users found');
+        }
+    })
+    .catch(error => {
+        console.error('Error loading users:', error);
+        usersList.innerHTML = `<p class="text-center text-danger"><i class="fas fa-exclamation-triangle me-2"></i>حدث خطأ أثناء تحميل المستخدمين: ${error.message}</p>`;
+    });
+}
+
+// تحديد جميع المستخدمين
+function selectAllUsers() {
+    document.querySelectorAll('.user-checkbox').forEach(checkbox => {
+        checkbox.checked = true;
+    });
+    updateSelectedCount();
+}
+
+// إلغاء تحديد جميع المستخدمين
+function deselectAllUsers() {
+    document.querySelectorAll('.user-checkbox').forEach(checkbox => {
+        checkbox.checked = false;
+    });
+    updateSelectedCount();
+}
+
+// تحديث عدد المستخدمين المحددين
+function updateSelectedCount() {
+    const selectedCount = document.querySelectorAll('.user-checkbox:checked').length;
+    const countElement = document.getElementById('selectedCount');
+    const countNumber = document.getElementById('countNumber');
+    
+    countNumber.textContent = selectedCount;
+    
+    if (selectedCount > 0) {
+        countElement.classList.remove('d-none');
+    } else {
+        countElement.classList.add('d-none');
+    }
+}
+
+// إرسال الإشعار للمستخدمين المحددين
+function sendToSelectedUsers() {
+    const selectedUsers = Array.from(document.querySelectorAll('.user-checkbox:checked')).map(cb => cb.value);
+    
+    if (selectedUsers.length === 0) {
+        alert('⚠️ من فضلك اختر مستخدم واحد على الأقل');
+        return;
+    }
+    
+    if (!confirm(`هل أنت متأكد من إرسال برنامج العمل اليومي لـ ${selectedUsers.length} مستخدم؟`)) {
+        return;
+    }
+    
+    const selectedDate = '{{ $selectedDate }}';
+    const project = '{{ $project }}';
+    
+    // إظهار رسالة تحميل
+    const sendBtn = event.target;
+    const originalHTML = sendBtn.innerHTML;
+    sendBtn.disabled = true;
+    sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> جاري الإرسال...';
+    
+    fetch('{{ route("admin.work-orders.daily-program.send-notification") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify({
+            selected_date: selectedDate,
+            project: project,
+            user_ids: selectedUsers
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        sendBtn.disabled = false;
+        sendBtn.innerHTML = originalHTML;
+        
+        if (data.success) {
+            alert('✅ ' + data.message);
+            // إغلاق الـ modal
+            bootstrap.Modal.getInstance(document.getElementById('sendNotificationModal')).hide();
+        } else {
+            alert('❌ ' + (data.message || 'حدث خطأ أثناء إرسال الإشعار'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        sendBtn.disabled = false;
+        sendBtn.innerHTML = originalHTML;
+        alert('❌ حدث خطأ أثناء إرسال الإشعار');
+    });
+}
 </script>
 @endsection
 

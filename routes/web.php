@@ -126,6 +126,8 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::post('work-orders/daily-program', [App\Http\Controllers\WorkOrderController::class, 'storeDailyProgram'])->name('work-orders.daily-program.store');
     Route::put('work-orders/daily-program/{dailyWorkProgram}', [App\Http\Controllers\WorkOrderController::class, 'updateDailyProgram'])->name('work-orders.daily-program.update');
     Route::delete('work-orders/daily-program/{dailyWorkProgram}', [App\Http\Controllers\WorkOrderController::class, 'destroyDailyProgram'])->name('work-orders.daily-program.destroy');
+    Route::get('work-orders/daily-program/get-users', [App\Http\Controllers\WorkOrderController::class, 'getDailyProgramUsers'])->name('work-orders.daily-program.get-users');
+    Route::post('work-orders/daily-program/send-notification', [App\Http\Controllers\WorkOrderController::class, 'sendDailyProgramNotification'])->name('work-orders.daily-program.send-notification');
     Route::delete('work-orders/revenues/{id}', [App\Http\Controllers\WorkOrderController::class, 'deleteRevenue'])->name('work-orders.revenues.delete');
     Route::get('work-orders/export/excel', [App\Http\Controllers\WorkOrderController::class, 'exportExcel'])->name('work-orders.export.excel');
     Route::post('work-orders', [App\Http\Controllers\WorkOrderController::class, 'store'])->name('work-orders.store');

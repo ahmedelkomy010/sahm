@@ -2254,5 +2254,112 @@ document.addEventListener('DOMContentLoaded', function() {
     border-top-color: rgba(0, 0, 0, 0.8);
     z-index: 1000;
 }
+
+/* إصلاح مشكلة الـ modal backdrop */
+.modal-backdrop {
+    z-index: 1050 !important;
+    pointer-events: none !important;
+}
+
+#createSurveyModal {
+    z-index: 1055 !important;
+}
+
+#createSurveyModal .modal-dialog {
+    z-index: 1056 !important;
+    pointer-events: auto !important;
+}
+
+#createSurveyModal .modal-content {
+    pointer-events: auto !important;
+    position: relative;
+    z-index: 1057 !important;
+}
+
+#createSurveyModal .modal-body {
+    pointer-events: auto !important;
+}
+
+#createSurveyModal input,
+#createSurveyModal textarea,
+#createSurveyModal select,
+#createSurveyModal button {
+    pointer-events: auto !important;
+    user-select: text !important;
+    -webkit-user-select: text !important;
+    -moz-user-select: text !important;
+    -ms-user-select: text !important;
+}
+
+#createSurveyModal input,
+#createSurveyModal textarea {
+    cursor: text !important;
+}
+
+#createSurveyModal select,
+#createSurveyModal button {
+    cursor: pointer !important;
+}
 </style>
+
+<script>
+// إصلاح مشكلة الـ backdrop للنافذة المنبثقة
+(function() {
+    const createSurveyModal = document.getElementById('createSurveyModal');
+    
+    if (createSurveyModal) {
+        // عند فتح النافذة
+        createSurveyModal.addEventListener('show.bs.modal', function() {
+            setTimeout(function() {
+                const backdrops = document.querySelectorAll('.modal-backdrop');
+                backdrops.forEach(function(backdrop) {
+                    backdrop.style.pointerEvents = 'none';
+                });
+            }, 50);
+        });
+        
+        // عند ظهور النافذة بشكل كامل
+        createSurveyModal.addEventListener('shown.bs.modal', function() {
+            const backdrops = document.querySelectorAll('.modal-backdrop');
+            backdrops.forEach(function(backdrop) {
+                backdrop.style.pointerEvents = 'none';
+            });
+            
+            // تفعيل جميع الحقول
+            const allInputs = createSurveyModal.querySelectorAll('input, textarea, select, button');
+            allInputs.forEach(function(element) {
+                element.style.pointerEvents = 'auto';
+                element.removeAttribute('readonly');
+                element.removeAttribute('disabled');
+                element.style.userSelect = 'text';
+            });
+            
+            // التركيز على أول حقل
+            const firstInput = createSurveyModal.querySelector('input:not([type="hidden"])');
+            if (firstInput) {
+                setTimeout(function() {
+                    firstInput.focus();
+                    firstInput.click();
+                }, 100);
+            }
+        });
+    }
+    
+    // مراقبة مستمرة للـ backdrop
+    const observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            mutation.addedNodes.forEach(function(node) {
+                if (node.nodeType === 1 && node.classList && node.classList.contains('modal-backdrop')) {
+                    node.style.pointerEvents = 'none';
+                }
+            });
+        });
+    });
+    
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true
+    });
+})();
+</script>
 @endsection 

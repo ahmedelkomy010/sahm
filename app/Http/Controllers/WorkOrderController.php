@@ -8,6 +8,7 @@ use App\Models\WorkOrderMaterial;
 use App\Models\WorkOrderInspectionDate;
 use App\Models\WorkOrderSafetyHistory;
 use App\Models\Survey;
+use App\Models\User;
 use App\Imports\RevenuesImport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -3985,10 +3986,11 @@ class WorkOrderController extends Controller
     public function dailyProgram(Request $request)
     {
         $project = $request->get('project', 'riyadh');
+        $selectedDate = $request->get('selected_date', today()->toDateString());
         
-        // جلب برامج العمل لليوم الحالي
+        // جلب برامج العمل للتاريخ المحدد
         $programs = \App\Models\DailyWorkProgram::with('workOrder')
-            ->whereDate('program_date', today())
+            ->whereDate('program_date', $selectedDate)
             ->whereHas('workOrder', function($q) use ($project) {
                 if ($project === 'riyadh') {
                     $q->where('city', 'الرياض');
@@ -3996,6 +3998,7 @@ class WorkOrderController extends Controller
                     $q->where('city', 'المدينة المنورة');
                 }
             })
+            ->orderBy('start_time')
             ->get();
         
         // جلب أوامر العمل المتاحة للإضافة (السماح بالتكرار)
@@ -4004,7 +4007,7 @@ class WorkOrderController extends Controller
             ->orderBy('order_number', 'desc')
             ->get();
         
-        return view('admin.work_orders.daily-program', compact('programs', 'availableWorkOrders', 'project'));
+        return view('admin.work_orders.daily-program', compact('programs', 'availableWorkOrders', 'project', 'selectedDate'));
     }
 
     /**
@@ -4015,6 +4018,9 @@ class WorkOrderController extends Controller
         try {
             $validated = $request->validate([
                 'work_order_id' => 'required|exists:work_orders,id',
+                'program_date' => 'nullable|date',
+                'start_time' => 'nullable|date_format:H:i',
+                'end_time' => 'nullable|date_format:H:i',
                 'work_type' => 'nullable|string|max:255',
                 'location' => 'nullable|string|max:255',
                 'google_coordinates' => 'nullable|string|max:500',
@@ -4025,10 +4031,14 @@ class WorkOrderController extends Controller
                 'receiver' => 'nullable|string|max:255',
                 'safety_officer' => 'nullable|string|max:255',
                 'quality_monitor' => 'nullable|string|max:255',
+                'work_description' => 'nullable|string',
                 'notes' => 'nullable|string',
             ]);
 
-            $validated['program_date'] = today();
+            // إذا لم يتم تحديد التاريخ، استخدم اليوم
+            if (!isset($validated['program_date'])) {
+                $validated['program_date'] = today();
+            }
             
             \App\Models\DailyWorkProgram::create($validated);
 
@@ -4047,6 +4057,8 @@ class WorkOrderController extends Controller
     {
         try {
             $validated = $request->validate([
+                'start_time' => 'nullable|date_format:H:i',
+                'end_time' => 'nullable|date_format:H:i',
                 'work_type' => 'nullable|string|max:255',
                 'location' => 'nullable|string|max:255',
                 'google_coordinates' => 'nullable|string|max:500',
@@ -4057,6 +4069,7 @@ class WorkOrderController extends Controller
                 'receiver' => 'nullable|string|max:255',
                 'safety_officer' => 'nullable|string|max:255',
                 'quality_monitor' => 'nullable|string|max:255',
+                'work_description' => 'nullable|string',
                 'notes' => 'nullable|string',
             ]);
 
@@ -4081,6 +4094,172 @@ class WorkOrderController extends Controller
         } catch (\Exception $e) {
             \Log::error('Error deleting daily program: ' . $e->getMessage());
             return redirect()->back()->with('error', 'حدث خطأ أثناء حذف السجل');
+        }
+    }
+
+    /**
+     * جلب المستخدمين المتاحين لإرسال الإشعار
+     */
+    public function getDailyProgramUsers(Request $request)
+    {
+        try {
+            $project = $request->input('project', 'riyadh');
+            
+            // جلب جميع المستخدمين
+            $allUsers = User::select('id', 'name', 'email', 'permissions')->get();
+            
+            \Log::info('Total users found: ' . $allUsers->count());
+            
+            // فلترة المستخدمين حسب الصلاحيات
+            $users = $allUsers->filter(function($user) use ($project) {
+                $permissions = $user->permissions;
+                
+                // التأكد من أن الـ permissions عبارة عن array
+                if (is_string($permissions)) {
+                    $permissions = json_decode($permissions, true) ?? [];
+                }
+                
+                if (!is_array($permissions)) {
+                    return false;
+                }
+                
+                // فحص الصلاحيات حسب المشروع
+                if ($project === 'riyadh') {
+                    return in_array('riyadh', $permissions) || 
+                           in_array('riyadh_daily_work_program', $permissions);
+                } else {
+                    return in_array('madinah', $permissions) || 
+                           in_array('madinah_daily_work_program', $permissions);
+                }
+            })->map(function($user) {
+                return [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email
+                ];
+            })->values();
+            
+            \Log::info('Filtered users count: ' . $users->count() . ' for project: ' . $project);
+            
+            // إذا لم يتم العثور على مستخدمين بصلاحيات معينة، إرجاع جميع المستخدمين
+            if ($users->isEmpty()) {
+                $users = $allUsers->map(function($user) {
+                    return [
+                        'id' => $user->id,
+                        'name' => $user->name,
+                        'email' => $user->email
+                    ];
+                })->values();
+                
+                \Log::info('No users found with specific permissions, returning all users: ' . $users->count());
+            }
+            
+            return response()->json([
+                'success' => true,
+                'users' => $users
+            ]);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error fetching users: ' . $e->getMessage());
+            \Log::error('Stack trace: ' . $e->getTraceAsString());
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء جلب المستخدمين: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * إرسال برنامج العمل اليومي كإشعار للمستخدمين المحددين
+     */
+    public function sendDailyProgramNotification(Request $request)
+    {
+        try {
+            $selectedDate = $request->input('selected_date', today()->toDateString());
+            $project = $request->input('project', 'riyadh');
+            $userIds = $request->input('user_ids', []);
+            
+            if (empty($userIds)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'لم يتم تحديد أي مستخدم'
+                ]);
+            }
+            
+            // جلب برامج العمل للتاريخ المحدد
+            $programs = \App\Models\DailyWorkProgram::with('workOrder')
+                ->whereDate('program_date', $selectedDate)
+                ->whereHas('workOrder', function($q) use ($project) {
+                    if ($project === 'riyadh') {
+                        $q->where('city', 'الرياض');
+                    } else {
+                        $q->where('city', 'المدينة المنورة');
+                    }
+                })
+                ->orderBy('start_time')
+                ->get();
+            
+            if ($programs->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'لا توجد أوامر عمل في برنامج هذا اليوم'
+                ]);
+            }
+            
+            // تحديد المدينة
+            $cityName = $project === 'riyadh' ? 'الرياض' : 'المدينة المنورة';
+            
+            // إنشاء محتوى الإشعار
+            $dateFormatted = \Carbon\Carbon::parse($selectedDate)->locale('ar')->translatedFormat('l j F Y');
+            $message = "📋 برنامج العمل اليومي - {$cityName}\n";
+            $message .= "📅 التاريخ: {$dateFormatted}\n";
+            $message .= "📊 عدد أوامر العمل: " . $programs->count() . "\n\n";
+            
+            $message .= "أوامر العمل المقررة:\n";
+            foreach ($programs as $index => $program) {
+                $message .= ($index + 1) . ". ";
+                $message .= "أمر عمل: " . $program->workOrder->order_number;
+                
+                if ($program->start_time && $program->end_time) {
+                    $startTime = \Carbon\Carbon::parse($program->start_time)->format('H:i');
+                    $endTime = \Carbon\Carbon::parse($program->end_time)->format('H:i');
+                    $message .= " ({$startTime} - {$endTime})";
+                }
+                
+                if ($program->work_type) {
+                    $message .= " - " . $program->work_type;
+                }
+                
+                if ($program->location) {
+                    $message .= " - " . $program->location;
+                }
+                
+                $message .= "\n";
+            }
+            
+            // إرسال الإشعار للمستخدمين المحددين
+            $notificationCount = 0;
+            foreach ($userIds as $userId) {
+                \App\Models\Notification::create([
+                    'user_id' => $userId,
+                    'message' => $message,
+                    'type' => 'daily_program',
+                    'is_read' => false,
+                ]);
+                $notificationCount++;
+            }
+            
+            return response()->json([
+                'success' => true,
+                'message' => "تم إرسال برنامج العمل اليومي بنجاح إلى {$notificationCount} مستخدم"
+            ]);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error sending daily program notification: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء إرسال الإشعار: ' . $e->getMessage()
+            ], 500);
         }
     }
 

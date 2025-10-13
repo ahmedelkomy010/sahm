@@ -9,6 +9,8 @@ class DailyWorkProgram extends Model
     protected $fillable = [
         'work_order_id',
         'program_date',
+        'start_time',
+        'end_time',
         'work_type',
         'location',
         'google_coordinates',
@@ -19,6 +21,7 @@ class DailyWorkProgram extends Model
         'receiver',
         'safety_officer',
         'quality_monitor',
+        'work_description',
         'notes',
     ];
 
