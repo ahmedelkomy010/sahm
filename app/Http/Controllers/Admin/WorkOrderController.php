@@ -1227,6 +1227,7 @@ class WorkOrderController extends Controller
                         'title' => $notification->title,
                         'message' => $notification->message,
                         'type' => $notification->type,
+                        'link' => $notification->link,
                         'is_read' => $notification->is_read,
                         'created_at' => $notification->created_at->diffForHumans(),
                         'from_user' => $notification->fromUser ? $notification->fromUser->name : 'النظام',

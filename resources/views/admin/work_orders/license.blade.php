@@ -3682,6 +3682,221 @@ function deleteExtension(extensionId) {
                         </div>
                     </div>
                     
+                    <!-- نتائج المسح -->
+                    @if($workOrder->surveys && $workOrder->surveys->count() > 0)
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-clipboard-list me-2"></i>
+                                        نتائج المسح ({{ $workOrder->surveys->count() }})
+                                    </h5>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover mb-0">
+                                            <thead style="background-color: #f8f9fa;">
+                                                <tr>
+                                                    <th class="text-center" style="width: 5%;">#</th>
+                                                    <th style="width: 12%;">التاريخ</th>
+                                                    <th style="width: 12%;">إحداثيات البداية</th>
+                                                    <th style="width: 12%;">إحداثيات النهاية</th>
+                                                    <th style="width: 8%;">يوجد حفر</th>
+                                                    <th style="width: 8%;">يوجد معوقات</th>
+                                                    <th style="width: 15%;">ملاحظات المعوقات</th>
+                                                    <th class="text-center" style="width: 15%;">ملفات المسح</th>
+                                                    <th class="text-center" style="width: 8%;">الإجراءات</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach($workOrder->surveys as $index => $survey)
+                                                <tr>
+                                                    <td class="text-center">{{ $index + 1 }}</td>
+                                                    <td>
+                                                        <i class="fas fa-calendar text-primary me-1"></i>
+                                                        {{ $survey->created_at ? $survey->created_at->format('Y-m-d H:i') : 'غير محدد' }}
+                                                    </td>
+                                                    <td>
+                                                        @if($survey->start_coordinates)
+                                                            <a href="https://www.google.com/maps?q={{ $survey->start_coordinates }}" 
+                                                               target="_blank" 
+                                                               class="text-decoration-none">
+                                                                <i class="fas fa-map-marker-alt text-success me-1"></i>
+                                                                {{ Str::limit($survey->start_coordinates, 20) }}
+                                                            </a>
+                                                        @else
+                                                            <span class="text-muted">غير محدد</span>
+                                                        @endif
+                                                    </td>
+                                                    <td>
+                                                        @if($survey->end_coordinates)
+                                                            <a href="https://www.google.com/maps?q={{ $survey->end_coordinates }}" 
+                                                               target="_blank" 
+                                                               class="text-decoration-none">
+                                                                <i class="fas fa-map-marker-alt text-danger me-1"></i>
+                                                                {{ Str::limit($survey->end_coordinates, 20) }}
+                                                            </a>
+                                                        @else
+                                                            <span class="text-muted">غير محدد</span>
+                                                        @endif
+                                                    </td>
+                                                    <td>
+                                                        @if($survey->has_excavation)
+                                                            <span class="badge bg-success">
+                                                                <i class="fas fa-check me-1"></i>نعم
+                                                            </span>
+                                                        @else
+                                                            <span class="badge bg-secondary">
+                                                                <i class="fas fa-times me-1"></i>لا
+                                                            </span>
+                                                        @endif
+                                                    </td>
+                                                    <td>
+                                                        @if($survey->has_obstacles)
+                                                            <span class="badge bg-warning text-dark">
+                                                                <i class="fas fa-exclamation-triangle me-1"></i>نعم
+                                                            </span>
+                                                        @else
+                                                            <span class="badge bg-success">
+                                                                <i class="fas fa-check me-1"></i>لا
+                                                            </span>
+                                                        @endif
+                                                    </td>
+                                                    <td>
+                                                        @if($survey->obstacles_notes)
+                                                            <div style="max-height: 60px; overflow-y: auto; font-size: 0.9rem;">
+                                                                {{ $survey->obstacles_notes }}
+                                                            </div>
+                                                        @else
+                                                            <span class="text-muted">-</span>
+                                                        @endif
+                                                    </td>
+                                                    <td class="text-center">
+                                                        @if($survey->files && $survey->files->count() > 0)
+                                                            <div class="d-flex flex-wrap gap-1 justify-content-center">
+                                                                @foreach($survey->files->take(3) as $file)
+                                                                    @php
+                                                                        $extension = pathinfo($file->file_name, PATHINFO_EXTENSION);
+                                                                        $isImage = in_array(strtolower($extension), ['jpg', 'jpeg', 'png', 'gif', 'webp']);
+                                                                        $isPdf = strtolower($extension) === 'pdf';
+                                                                    @endphp
+                                                                    <a href="{{ Storage::url($file->file_path) }}" 
+                                                                       target="_blank" 
+                                                                       class="btn btn-sm {{ $isImage ? 'btn-success' : ($isPdf ? 'btn-danger' : 'btn-info') }}" 
+                                                                       title="{{ $file->file_name }}"
+                                                                       style="padding: 0.25rem 0.5rem;">
+                                                                        @if($isImage)
+                                                                            <i class="fas fa-image"></i>
+                                                                        @elseif($isPdf)
+                                                                            <i class="fas fa-file-pdf"></i>
+                                                                        @else
+                                                                            <i class="fas fa-file"></i>
+                                                                        @endif
+                                                                    </a>
+                                                                @endforeach
+                                                                @if($survey->files->count() > 3)
+                                                                    <button type="button" 
+                                                                            class="btn btn-sm btn-secondary" 
+                                                                            data-bs-toggle="modal" 
+                                                                            data-bs-target="#surveyFilesModal{{ $survey->id }}"
+                                                                            style="padding: 0.25rem 0.5rem;">
+                                                                        <i class="fas fa-plus"></i>
+                                                                        {{ $survey->files->count() - 3 }}+
+                                                                    </button>
+                                                                @endif
+                                                            </div>
+                                                        @else
+                                                            <span class="badge bg-secondary">
+                                                                <i class="fas fa-file-slash me-1"></i>لا توجد ملفات
+                                                            </span>
+                                                        @endif
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <a href="{{ route('admin.work-orders.survey', $workOrder) }}" 
+                                                           class="btn btn-sm btn-primary" 
+                                                           title="عرض تفاصيل المسح">
+                                                            <i class="fas fa-eye"></i>
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Modals لعرض جميع ملفات المسح -->
+                    @foreach($workOrder->surveys as $survey)
+                        @if($survey->files && $survey->files->count() > 3)
+                        <div class="modal fade" id="surveyFilesModal{{ $survey->id }}" tabindex="-1" aria-labelledby="surveyFilesModalLabel{{ $survey->id }}" aria-hidden="true">
+                            <div class="modal-dialog modal-lg">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                                        <h5 class="modal-title" id="surveyFilesModalLabel{{ $survey->id }}">
+                                            <i class="fas fa-images me-2"></i>
+                                            ملفات المسح - {{ $survey->created_at ? $survey->created_at->format('Y-m-d') : 'غير محدد' }}
+                                        </h5>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="row g-3">
+                                            @foreach($survey->files as $file)
+                                                @php
+                                                    $extension = pathinfo($file->file_name, PATHINFO_EXTENSION);
+                                                    $isImage = in_array(strtolower($extension), ['jpg', 'jpeg', 'png', 'gif', 'webp']);
+                                                    $isPdf = strtolower($extension) === 'pdf';
+                                                @endphp
+                                                <div class="col-md-4">
+                                                    <div class="card h-100">
+                                                        <div class="card-body text-center">
+                                                            @if($isImage)
+                                                                <a href="{{ Storage::url($file->file_path) }}" target="_blank">
+                                                                    <img src="{{ Storage::url($file->file_path) }}" 
+                                                                         alt="{{ $file->file_name }}" 
+                                                                         class="img-fluid rounded mb-2"
+                                                                         style="max-height: 150px; object-fit: cover;">
+                                                                </a>
+                                                            @elseif($isPdf)
+                                                                <a href="{{ Storage::url($file->file_path) }}" target="_blank" class="text-decoration-none">
+                                                                    <i class="fas fa-file-pdf text-danger" style="font-size: 4rem;"></i>
+                                                                </a>
+                                                            @else
+                                                                <a href="{{ Storage::url($file->file_path) }}" target="_blank" class="text-decoration-none">
+                                                                    <i class="fas fa-file text-info" style="font-size: 4rem;"></i>
+                                                                </a>
+                                                            @endif
+                                                            <div class="mt-2">
+                                                                <small class="text-muted d-block text-truncate" title="{{ $file->file_name }}">
+                                                                    {{ $file->file_name }}
+                                                                </small>
+                                                                <a href="{{ Storage::url($file->file_path) }}" 
+                                                                   target="_blank" 
+                                                                   class="btn btn-sm btn-primary mt-2">
+                                                                    <i class="fas fa-download me-1"></i>تحميل
+                                                                </a>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                            <i class="fas fa-times me-1"></i>إغلاق
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+                    @endforeach
+                    @endif
+                    
                     <!-- مفتاح حالة الرخص -->
                     <div class="row align-items-center mt-4">
                         <div class="col-12 text-center">

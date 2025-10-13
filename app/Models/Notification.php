@@ -14,6 +14,7 @@ class Notification extends Model
         'from_user_id',
         'work_order_id',
         'type',
+        'link',
         'title',
         'message',
         'is_read',

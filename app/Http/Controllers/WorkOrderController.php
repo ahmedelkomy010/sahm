@@ -481,7 +481,7 @@ class WorkOrderController extends Controller
      */
     public function license(WorkOrder $workOrder)
     {
-        $workOrder->load(['licenses.violations', 'licenses.attachments']);
+        $workOrder->load(['licenses.violations', 'licenses.attachments', 'surveys.files']);
         
         // تحديد المشروع بناءً على المدينة
         $project = $workOrder->city === 'المدينة المنورة' ? 'madinah' : 'riyadh';
@@ -3988,6 +3988,15 @@ class WorkOrderController extends Controller
         $project = $request->get('project', 'riyadh');
         $selectedDate = $request->get('selected_date', today()->toDateString());
         
+        // التحقق من صلاحيات المستخدم
+        $user = auth()->user();
+        $requiredPermission = $project === 'riyadh' ? 'riyadh_daily_work_program' : 'madinah_daily_work_program';
+        
+        // التحقق من أن المستخدم لديه الصلاحية المطلوبة
+        if (!$user->is_admin && !$user->hasPermission($requiredPermission)) {
+            abort(403, 'ليس لديك صلاحية للوصول إلى برنامج العمل اليومي لهذا المشروع');
+        }
+        
         // جلب برامج العمل للتاريخ المحدد
         $programs = \App\Models\DailyWorkProgram::with('workOrder')
             ->whereDate('program_date', $selectedDate)
@@ -4035,6 +4044,16 @@ class WorkOrderController extends Controller
                 'notes' => 'nullable|string',
             ]);
 
+            // التحقق من صلاحيات المستخدم بناءً على مدينة أمر العمل
+            $workOrder = WorkOrder::findOrFail($validated['work_order_id']);
+            $user = auth()->user();
+            $project = $workOrder->city === 'المدينة المنورة' ? 'madinah' : 'riyadh';
+            $requiredPermission = $project . '_daily_work_program';
+            
+            if (!$user->is_admin && !$user->hasPermission($requiredPermission)) {
+                return redirect()->back()->with('error', 'ليس لديك صلاحية لإضافة برنامج عمل يومي لهذا المشروع');
+            }
+
             // إذا لم يتم تحديد التاريخ، استخدم اليوم
             if (!isset($validated['program_date'])) {
                 $validated['program_date'] = today();
@@ -4056,6 +4075,16 @@ class WorkOrderController extends Controller
     public function updateDailyProgram(Request $request, \App\Models\DailyWorkProgram $dailyWorkProgram)
     {
         try {
+            // التحقق من صلاحيات المستخدم بناءً على مدينة أمر العمل
+            $workOrder = $dailyWorkProgram->workOrder;
+            $user = auth()->user();
+            $project = $workOrder->city === 'المدينة المنورة' ? 'madinah' : 'riyadh';
+            $requiredPermission = $project . '_daily_work_program';
+            
+            if (!$user->is_admin && !$user->hasPermission($requiredPermission)) {
+                return redirect()->back()->with('error', 'ليس لديك صلاحية لتعديل برنامج العمل اليومي لهذا المشروع');
+            }
+
             $validated = $request->validate([
                 'start_time' => 'nullable|date_format:H:i',
                 'end_time' => 'nullable|date_format:H:i',
@@ -4089,6 +4118,16 @@ class WorkOrderController extends Controller
     public function destroyDailyProgram(\App\Models\DailyWorkProgram $dailyWorkProgram)
     {
         try {
+            // التحقق من صلاحيات المستخدم بناءً على مدينة أمر العمل
+            $workOrder = $dailyWorkProgram->workOrder;
+            $user = auth()->user();
+            $project = $workOrder->city === 'المدينة المنورة' ? 'madinah' : 'riyadh';
+            $requiredPermission = $project . '_daily_work_program';
+            
+            if (!$user->is_admin && !$user->hasPermission($requiredPermission)) {
+                return redirect()->back()->with('error', 'ليس لديك صلاحية لحذف برنامج العمل اليومي لهذا المشروع');
+            }
+
             $dailyWorkProgram->delete();
             return redirect()->back()->with('success', 'تم حذف السجل بنجاح');
         } catch (\Exception $e) {
@@ -4239,11 +4278,17 @@ class WorkOrderController extends Controller
             
             // إرسال الإشعار للمستخدمين المحددين
             $notificationCount = 0;
+            $dailyProgramUrl = route('admin.work-orders.daily-program', [
+                'project' => $project,
+                'selected_date' => $selectedDate
+            ]);
+            
             foreach ($userIds as $userId) {
                 \App\Models\Notification::create([
                     'user_id' => $userId,
                     'message' => $message,
                     'type' => 'daily_program',
+                    'link' => $dailyProgramUrl,
                     'is_read' => false,
                 ]);
                 $notificationCount++;

@@ -705,10 +705,12 @@ function resetCountdown(workOrderId) {
                             </a>
                             @endif
                             
-                            <!-- <a href="{{ route('admin.work-orders.daily-program', ['project' => $project ?? 'riyadh']) }}" class="btn btn-warning btn-responsive" style="background: linear-gradient(135deg, #ffc107 0%, #ffb300 100%); border: none; color: white;">
+                            @if(auth()->user()->hasPermission($project . '_daily_work_program') || auth()->user()->isAdmin())
+                            <a href="{{ route('admin.work-orders.daily-program', ['project' => $project ?? 'riyadh']) }}" class="btn btn-warning btn-responsive" style="background: linear-gradient(135deg, #ffc107 0%, #ffb300 100%); border: none; color: white;">
                                 <i class="fas fa-calendar-day me-1"></i>
                                 <span class="btn-text">برنامج العمل اليومي</span>
-                            </a> -->
+                            </a>
+                            @endif
                             </div>
                         </div>
 

@@ -44,6 +44,7 @@
                             <i class="fas fa-users-cog me-1"></i>
                             إدارة أعضاء فريق العمل
                         </a>
+                        @endif
 
                         <!-- الإشعارات -->
                         <div class="dropdown" style="display: inline-block;">
@@ -84,7 +85,6 @@
                             <div id="notificationsListNav"></div>
                         </ul>
                         </div>
-                        @endif
                     @endauth
                 </nav>
             </div>
@@ -546,12 +546,18 @@ function updateNotificationUINav(data) {
     
     if (data.notifications && data.notifications.length > 0) {
         if(list) {
-            list.innerHTML = data.notifications.map(notification => `
+            list.innerHTML = data.notifications.map(notification => {
+                // إذا كان الإشعار فيه link، نستخدم onclick للرابط
+                const clickAction = notification.link 
+                    ? `onclick="window.location.href='${notification.link}'" style="cursor: pointer; flex: 1;"`
+                    : `onclick="viewNotification(${notification.id}, ${notification.work_order ? notification.work_order.id : 'null'})" style="cursor: pointer; flex: 1;"`;
+                
+                return `
                 <li class="notification-item ${notification.is_read ? '' : 'unread'}">
-                    <div onclick="viewNotification(${notification.id}, ${notification.work_order ? notification.work_order.id : 'null'})" style="cursor: pointer; flex: 1;">
+                    <div ${clickAction}>
                         <div class="notification-title">
-                            <i class="fas fa-comment-dots me-2 text-primary"></i>
-                            ${notification.title}
+                            <i class="fas ${notification.type === 'daily_program' ? 'fa-calendar-day' : 'fa-comment-dots'} me-2 text-primary"></i>
+                            ${notification.title || 'إشعار جديد'}
                         </div>
                         <div class="notification-message">
                             ${notification.message}
@@ -559,7 +565,7 @@ function updateNotificationUINav(data) {
                         <div class="notification-footer">
                             <span class="notification-from">
                                 <i class="fas fa-user me-1"></i>
-                                ${notification.from_user}
+                                ${notification.from_user || 'النظام'}
                             </span>
                             <span class="notification-time">
                                 <i class="fas fa-clock me-1"></i>
@@ -567,14 +573,17 @@ function updateNotificationUINav(data) {
                             </span>
                         </div>
                     </div>
+                    ${notification.work_order ? `
                     <div class="notification-actions mt-2" style="display: flex; gap: 6px; justify-content: flex-end;">
-                        <button class="btn btn-sm btn-outline-primary" onclick="event.stopPropagation(); replyToNotification(${notification.id}, '${notification.title.replace(/'/g, "\\'")}', '${notification.from_user.replace(/'/g, "\\'")}', ${notification.work_order ? notification.work_order.id : 'null'})" title="الرد">
+                        <button class="btn btn-sm btn-outline-primary" onclick="event.stopPropagation(); replyToNotification(${notification.id}, '${(notification.title || '').replace(/'/g, "\\'")}', '${(notification.from_user || '').replace(/'/g, "\\'")}', ${notification.work_order.id})" title="الرد">
                             <i class="fas fa-reply me-1"></i>
                             رد
                         </button>
                     </div>
+                    ` : ''}
                 </li>
-            `).join('');
+                `;
+            }).join('');
         }
         
         // تحديث الـ badge
