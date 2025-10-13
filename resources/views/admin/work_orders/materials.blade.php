@@ -244,10 +244,10 @@
     </div>
 
     <!-- Modal إضافة مادة جديدة -->
-    <div class="modal fade" id="addMaterialModal" tabindex="-1" aria-labelledby="addMaterialModalLabel" aria-hidden="true">
+    <div class="modal fade" id="addMaterialModal" tabindex="-1" role="dialog" aria-labelledby="addMaterialModalLabel" aria-modal="true" data-bs-backdrop="static" data-bs-keyboard="false">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
-                <form action="{{ route('admin.work-orders.materials.store', $workOrder) }}" method="POST">
+                <form action="{{ route('admin.work-orders.materials.store', $workOrder) }}" method="POST" id="addMaterialForm">
                     @csrf
                     <div class="modal-header bg-primary text-white">
                         <h5 class="modal-title" id="addMaterialModalLabel">
@@ -1375,6 +1375,51 @@
 
 @push('styles')
 <style>
+/* Fix modal backdrop issues */
+.modal-backdrop {
+    z-index: 1050 !important;
+}
+
+#addMaterialModal {
+    z-index: 1055 !important;
+}
+
+#addMaterialModal .modal-dialog {
+    z-index: 1056 !important;
+    pointer-events: auto !important;
+}
+
+#addMaterialModal .modal-content {
+    pointer-events: auto !important;
+    position: relative;
+    z-index: 1057 !important;
+}
+
+#addMaterialModal .modal-body {
+    pointer-events: auto !important;
+}
+
+#addMaterialModal input,
+#addMaterialModal textarea,
+#addMaterialModal select,
+#addMaterialModal button {
+    pointer-events: auto !important;
+    user-select: text !important;
+    -webkit-user-select: text !important;
+    -moz-user-select: text !important;
+    -ms-user-select: text !important;
+}
+
+#addMaterialModal input,
+#addMaterialModal textarea {
+    cursor: text !important;
+}
+
+#addMaterialModal select,
+#addMaterialModal button {
+    cursor: pointer !important;
+}
+
 /* تحسين مظهر الجدول */
 .materials-table-wrapper {
     border-radius: 0.5rem;
@@ -3966,6 +4011,128 @@ document.getElementById('addMaterialModal').addEventListener('hidden.bs.modal', 
     document.getElementById('modalPreview').style.display = 'none';
     document.getElementById('addMaterialModal').querySelector('form').reset();
 });
+
+// إصلاح مشكلة الـ backdrop للنافذة المنبثقة - حل شامل وقوي
+(function() {
+    console.log('🔧 Initializing Material Modal Fix...');
+    
+    // إزالة الـ backdrop فوراً عند ظهوره
+    const disableBackdrop = function() {
+        const backdrops = document.querySelectorAll('.modal-backdrop');
+        backdrops.forEach(function(backdrop) {
+            backdrop.style.pointerEvents = 'none !important';
+            backdrop.style.display = 'none';
+            console.log('✅ Backdrop hidden');
+        });
+    };
+    
+    // تفعيل كل حقول النافذة
+    const enableModalInputs = function() {
+        const modal = document.getElementById('addMaterialModal');
+        if (!modal) return;
+        
+        // تفعيل modal نفسه
+        modal.style.pointerEvents = 'auto';
+        
+        const modalDialog = modal.querySelector('.modal-dialog');
+        const modalContent = modal.querySelector('.modal-content');
+        const modalBody = modal.querySelector('.modal-body');
+        
+        if (modalDialog) modalDialog.style.pointerEvents = 'auto';
+        if (modalContent) {
+            modalContent.style.pointerEvents = 'auto';
+            modalContent.style.zIndex = '9999';
+        }
+        if (modalBody) modalBody.style.pointerEvents = 'auto';
+        
+        // تفعيل كل الحقول
+        const allElements = modal.querySelectorAll('input, textarea, select, button, label, .form-control, .form-select');
+        allElements.forEach(function(element) {
+            element.style.pointerEvents = 'auto !important';
+            element.style.userSelect = 'text';
+            element.style.webkitUserSelect = 'text';
+            element.style.mozUserSelect = 'text';
+            element.style.msUserSelect = 'text';
+            element.removeAttribute('readonly');
+            element.removeAttribute('disabled');
+            element.tabIndex = element.tabIndex || 0;
+        });
+        
+        console.log('✅ Modal inputs enabled');
+    };
+    
+    // مراقبة مستمرة لأي backdrop
+    const backdropObserver = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            mutation.addedNodes.forEach(function(node) {
+                if (node.nodeType === 1 && node.classList && node.classList.contains('modal-backdrop')) {
+                    setTimeout(function() {
+                        node.style.pointerEvents = 'none';
+                        node.style.display = 'none';
+                    }, 0);
+                }
+            });
+        });
+    });
+    
+    backdropObserver.observe(document.body, {
+        childList: true,
+        subtree: true
+    });
+    
+    // عند تحميل الصفحة
+    document.addEventListener('DOMContentLoaded', function() {
+        const addMaterialModal = document.getElementById('addMaterialModal');
+        
+        if (addMaterialModal) {
+            // عند بداية فتح النافذة
+            addMaterialModal.addEventListener('show.bs.modal', function(e) {
+                console.log('🚀 Modal opening...');
+                disableBackdrop();
+            });
+            
+            // عند اكتمال فتح النافذة
+            addMaterialModal.addEventListener('shown.bs.modal', function(e) {
+                console.log('✅ Modal opened');
+                disableBackdrop();
+                enableModalInputs();
+                
+                // focus على أول حقل بعد تأخير صغير
+                setTimeout(function() {
+                    const firstInput = document.getElementById('code');
+                    if (firstInput) {
+                        firstInput.focus();
+                        firstInput.click();
+                        console.log('✅ First input focused');
+                    }
+                }, 100);
+            });
+            
+            // تشغيل مستمر كل 100ms للتأكد
+            let intervalId = null;
+            addMaterialModal.addEventListener('shown.bs.modal', function() {
+                intervalId = setInterval(function() {
+                    disableBackdrop();
+                    enableModalInputs();
+                }, 100);
+            });
+            
+            // إيقاف التشغيل المستمر عند إغلاق النافذة
+            addMaterialModal.addEventListener('hidden.bs.modal', function() {
+                if (intervalId) {
+                    clearInterval(intervalId);
+                    intervalId = null;
+                }
+            });
+        }
+    });
+    
+    // تشغيل فوري
+    setTimeout(disableBackdrop, 100);
+    setTimeout(enableModalInputs, 100);
+    
+    console.log('✅ Material Modal Fix Initialized');
+})();
 
 </script>
 @endpush
