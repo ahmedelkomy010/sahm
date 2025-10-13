@@ -251,11 +251,23 @@
                             <select class="form-select work-order-select" id="workOrderSelect" name="work_order_id" required>
                                 <option value="">-- ابحث عن رقم أمر العمل --</option>
                                 @foreach($availableWorkOrders as $workOrder)
+                                    @php
+                                        $latestSurvey = $workOrder->surveys->first();
+                                        $googleCoordinates = '';
+                                        if ($latestSurvey) {
+                                            if ($latestSurvey->start_coordinates) {
+                                                $googleCoordinates = $latestSurvey->start_coordinates;
+                                            } elseif ($latestSurvey->end_coordinates) {
+                                                $googleCoordinates = $latestSurvey->end_coordinates;
+                                            }
+                                        }
+                                    @endphp
                                     <option value="{{ $workOrder->id }}"
                                         data-work-type="{{ $workOrder->work_type }}"
                                         data-district="{{ $workOrder->district }}"
                                         data-consultant="{{ $workOrder->consultant_name }}"
-                                        data-address="{{ $workOrder->address }}">
+                                        data-address="{{ $workOrder->address }}"
+                                        data-google-coordinates="{{ $googleCoordinates }}">
                                         {{ $workOrder->order_number }} - {{ $workOrder->work_type }} - {{ $workOrder->district }}
                                     </option>
                                 @endforeach
@@ -488,13 +500,20 @@ document.addEventListener('DOMContentLoaded', function() {
             // ملء اسم الاستشاري
             $('#consultantInput').val(selectedOption.data('consultant') || '');
             
+            // ملء إحداثيات جوجل من آخر مسح
+            const googleCoordinates = selectedOption.data('google-coordinates') || '';
+            $('#googleCoordinatesInput').val(googleCoordinates);
+            
             // إظهار رسالة نجاح
             console.log('✅ تم ملء البيانات الأساسية تلقائياً');
+            if (googleCoordinates) {
+                console.log('✅ تم ملء إحداثيات جوجل من المسح: ' + googleCoordinates);
+            }
             
             // يمكن للمستخدم ملء باقي الحقول يدوياً
         } else {
             // مسح الحقول الأساسية
-            $('#workTypeInput, #locationInput, #consultantInput').val('');
+            $('#workTypeInput, #locationInput, #consultantInput, #googleCoordinatesInput').val('');
         }
     });
 

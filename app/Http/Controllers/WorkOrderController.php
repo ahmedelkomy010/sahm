@@ -4012,6 +4012,11 @@ class WorkOrderController extends Controller
         
         // جلب أوامر العمل المتاحة للإضافة (السماح بالتكرار)
         $availableWorkOrders = WorkOrder::where('city', $project === 'riyadh' ? 'الرياض' : 'المدينة المنورة')
+            ->with(['surveys' => function($query) {
+                $query->select('id', 'work_order_id', 'start_coordinates', 'end_coordinates')
+                      ->latest()
+                      ->limit(1);
+            }])
             ->select('id', 'order_number', 'work_type', 'district', 'consultant_name', 'address')
             ->orderBy('order_number', 'desc')
             ->get();
