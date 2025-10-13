@@ -122,4 +122,31 @@ class LicenseViolation extends Model
                 return 'unknown';
         }
     }
+
+    /**
+     * Get payment status - automatically mark as paid after 3 months
+     */
+    public function getPaymentStatusAttribute($value)
+    {
+        // إذا كانت الحالة بالفعل "مسددة"، ارجعها
+        if ($value == 1 || $value == '1' || $value == 'paid' || $value == 'مسددة') {
+            return 1;
+        }
+        
+        // التحقق من تاريخ المخالفة
+        if (!$this->attributes['violation_date']) {
+            return $value;
+        }
+        
+        $violationDate = \Carbon\Carbon::parse($this->attributes['violation_date']);
+        $threeMonthsLater = $violationDate->copy()->addMonths(3);
+        
+        // إذا مر 3 أشهر أو أكثر، اعتبرها مسددة تلقائياً
+        if (now()->greaterThanOrEqualTo($threeMonthsLater)) {
+            return 1; // مسددة
+        }
+        
+        // وإلا، ارجع القيمة الأصلية
+        return $value;
+    }
 } 

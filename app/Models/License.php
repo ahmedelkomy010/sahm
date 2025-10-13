@@ -273,6 +273,11 @@ class License extends Model
         'is_active' => 'boolean',
     ];
 
+    protected $appends = [
+        'work_order_execution_status',
+        'work_order_execution_status_date',
+    ];
+
     public function getIsRestrictedAttribute(): bool
     {
         return $this->has_restriction ?? false;
@@ -567,5 +572,21 @@ class License extends Model
         }
         
         return null;
+    }
+
+    /**
+     * Get the work order execution status
+     */
+    public function getWorkOrderExecutionStatusAttribute()
+    {
+        return $this->workOrder ? $this->workOrder->execution_status : null;
+    }
+
+    /**
+     * Get the work order execution status date
+     */
+    public function getWorkOrderExecutionStatusDateAttribute()
+    {
+        return $this->workOrder ? $this->workOrder->execution_status_date : null;
     }
 } 

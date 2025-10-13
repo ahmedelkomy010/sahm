@@ -481,7 +481,7 @@ class WorkOrderController extends Controller
      */
     public function license(WorkOrder $workOrder)
     {
-        $workOrder->load(['licenses.violations', 'licenses.attachments', 'surveys.files']);
+        $workOrder->load(['licenses.violations', 'licenses.attachments', 'licenses.workOrder', 'surveys.files']);
         
         // تحديد المشروع بناءً على المدينة
         $project = $workOrder->city === 'المدينة المنورة' ? 'madinah' : 'riyadh';

@@ -391,7 +391,7 @@ $(document).ready(function() {
                     const period = startDate && endDate ? `${startDate} - ${endDate}` : '-';
                     
                     // حساب العد التنازلي مع التحقق من حالة التنفيذ
-                    const countdown = calculateCountdown(license.license_end_date, license.work_order_execution_status, license.license_start_date);
+                    const countdown = calculateCountdown(license.license_end_date, license.work_order_execution_status, license.license_start_date, license.work_order_execution_status_date);
                     
                     // إضافة قيمة الرخصة للإجمالي
                     if (license.license_value) {
@@ -416,7 +416,7 @@ $(document).ready(function() {
                             <td><strong class="text-success">${formatCurrency(license.license_value)}</strong></td>
                             <td><small>${dimensions}</small></td>
                             <td><small>${period}</small></td>
-                            <td data-end-date="${license.license_end_date || ''}" data-start-date="${license.license_start_date || ''}" data-execution-status="${license.work_order_execution_status || ''}">${countdown}</td>
+                            <td data-end-date="${license.license_end_date || ''}" data-start-date="${license.license_start_date || ''}" data-execution-status="${license.work_order_execution_status || ''}" data-execution-status-date="${license.work_order_execution_status_date || ''}">${countdown}</td>
                             <td>
                                 <div class="btn-group btn-group-sm">
                                     <button class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#addLicenseModal" title="إضافة رخصة">
@@ -523,52 +523,85 @@ $(document).ready(function() {
     }
 
     // دالة حساب المدة الكاملة للرخصة (الفرق بين تاريخ البداية والنهاية)
-    function calculateCountdown(endDate, executionStatus, startDate = null) {
-        // التحقق من حالة التنفيذ - إذا كانت "تم تسليم 155" (حالة 2)، عرض حالة التسليم
-        if (executionStatus && parseInt(executionStatus) >= 2) {
-            return '<span class="badge bg-info"><i class="fas fa-check me-1"></i>تم التسليم</span>';
-        }
-        
-        // التحقق من وجود تاريخ البداية والنهاية
-        if (!startDate || !endDate) {
+    function calculateCountdown(endDate, executionStatus, startDate = null, executionStatusDate = null) {
+        // التحقق من وجود تاريخ البداية
+        if (!startDate) {
             return '<span class="badge bg-secondary"><i class="fas fa-question me-1"></i>غير محدد</span>';
         }
         
-        // حساب الفرق بين تاريخ البداية والنهاية
-            const start = new Date(startDate);
-        const end = new Date(endDate);
-            const totalTime = end.getTime() - start.getTime();
-            const totalDays = Math.ceil(totalTime / (1000 * 60 * 60 * 24));
+        const start = new Date(startDate);
+        let calculationEnd;
+        let isExecuted = false;
         
-        // التحقق من صحة التواريخ
-        if (totalDays <= 0) {
-            return '<span class="badge bg-danger"><i class="fas fa-exclamation-triangle me-1"></i>تواريخ غير صحيحة</span>';
+        // التحقق من حالة التنفيذ - إذا كانت "تم التنفيذ بالموقع" (حالة 2) أو أعلى
+        if (executionStatus && parseInt(executionStatus) >= 2) {
+            isExecuted = true;
+            // إذا كان هناك تاريخ تنفيذ، استخدمه، وإلا استخدم التاريخ الحالي
+            if (executionStatusDate) {
+                calculationEnd = new Date(executionStatusDate);
+            } else {
+                calculationEnd = new Date();
+            }
+        } else {
+            // إذا لم يتم التنفيذ بعد، استخدم التاريخ الحالي
+            calculationEnd = new Date();
         }
         
-        // عرض المدة حسب الفترة
-        if (totalDays === 1) {
-            return `<span class="badge bg-primary"><i class="fas fa-calendar-day me-1"></i>يوم واحد</span>`;
+        // حساب الفرق بين تاريخ البداية وتاريخ الحساب النهائي
+        const totalTime = calculationEnd.getTime() - start.getTime();
+        const totalDays = Math.ceil(totalTime / (1000 * 60 * 60 * 24));
+        
+        // التحقق من صحة التواريخ
+        if (totalDays < 0) {
+            return '<span class="badge bg-secondary"><i class="fas fa-clock me-1"></i>لم تبدأ بعد</span>';
+        }
+        
+        // إنشاء النص بناءً على المدة
+        let badgeClass = '';
+        let iconClass = '';
+        let durationText = '';
+        
+        if (totalDays === 0) {
+            durationText = 'أقل من يوم';
+            badgeClass = 'bg-primary';
+            iconClass = 'fas fa-calendar-day';
+        } else if (totalDays === 1) {
+            durationText = 'يوم واحد';
+            badgeClass = 'bg-primary';
+            iconClass = 'fas fa-calendar-day';
         } else if (totalDays <= 7) {
-            return `<span class="badge bg-success"><i class="fas fa-calendar-week me-1"></i>${totalDays} أيام</span>`;
+            durationText = `${totalDays} أيام`;
+            badgeClass = isExecuted ? 'bg-success' : 'bg-success';
+            iconClass = 'fas fa-calendar-week';
         } else if (totalDays <= 30) {
-            return `<span class="badge bg-info"><i class="fas fa-calendar-alt me-1"></i>${totalDays} يوم</span>`;
+            durationText = `${totalDays} يوم`;
+            badgeClass = isExecuted ? 'bg-info' : 'bg-info';
+            iconClass = 'fas fa-calendar-alt';
         } else if (totalDays <= 90) {
             const weeks = Math.floor(totalDays / 7);
             const remainingDays = totalDays % 7;
-            let weekText = `${weeks} أسبوع`;
+            durationText = `${weeks} أسبوع`;
             if (remainingDays > 0) {
-                weekText += ` و ${remainingDays} يوم`;
+                durationText += ` و ${remainingDays} يوم`;
             }
-            return `<span class="badge bg-warning text-dark"><i class="fas fa-calendar me-1"></i>${weekText}</span>`;
+            badgeClass = isExecuted ? 'bg-warning text-dark' : 'bg-warning text-dark';
+            iconClass = 'fas fa-calendar';
         } else {
             const months = Math.floor(totalDays / 30);
             const remainingDays = totalDays % 30;
-            let monthText = `${months} شهر`;
+            durationText = `${months} شهر`;
             if (remainingDays > 0) {
-                monthText += ` و ${remainingDays} يوم`;
+                durationText += ` و ${remainingDays} يوم`;
             }
-            return `<span class="badge bg-secondary"><i class="fas fa-calendar-check me-1"></i>${monthText}</span>`;
+            badgeClass = isExecuted ? 'bg-secondary' : 'bg-secondary';
+            iconClass = 'fas fa-calendar-check';
         }
+        
+        // إضافة علامة "منتهي" إذا تم التنفيذ
+        const statusIcon = isExecuted ? '<i class="fas fa-check-circle me-1"></i>' : `<i class="${iconClass} me-1"></i>`;
+        const statusSuffix = isExecuted ? ' (منتهي)' : '';
+        
+        return `<span class="badge ${badgeClass}">${statusIcon}${durationText}${statusSuffix}</span>`;
     }
 
     // دالة تحديث العد التنازلي كل دقيقة
@@ -601,7 +634,7 @@ $(document).ready(function() {
             
             const countdownCell = row.cells[7]; // عمود العد التنازلي
             if (countdownCell && countdownCell.dataset.endDate) {
-                const countdown = calculateCountdown(countdownCell.dataset.endDate, countdownCell.dataset.executionStatus, countdownCell.dataset.startDate);
+                const countdown = calculateCountdown(countdownCell.dataset.endDate, countdownCell.dataset.executionStatus, countdownCell.dataset.startDate, countdownCell.dataset.executionStatusDate);
                 countdownCell.innerHTML = countdown;
             }
         });
@@ -2882,159 +2915,7 @@ function selectViolationLicense() {
 }
 
 
-// // دالة إظهار نموذج التمديد
-// function showExtensionForm() {
-//     const formCard = document.getElementById('extension-form-card');
-//     const licenseId = document.getElementById('extension-license-id').value;
-    
-//     if (!licenseId) {
-//         toastr.warning('يجب اختيار رخصة أولاً');
-//         return;
-//     }
 
-//     // تنظيف النموذج بالكامل قبل الإظهار
-//     const form = document.getElementById('extensionForm');
-//     if (form) {
-//         form.reset();
-        
-//         // تنظيف جميع الحقول يدوياً عدا work_order_id
-//         const inputs = form.querySelectorAll('input, select, textarea');
-//         inputs.forEach(input => {
-//             if (input.name !== 'work_order_id') {
-//                 if (input.type === 'checkbox' || input.type === 'radio') {
-//                     input.checked = false;
-//                 } else if (input.type === 'file') {
-//                     input.value = '';
-//                 } else {
-//                     input.value = '';
-//                 }
-//             }
-//         });
-        
-//         // تنظيف عرض الأيام
-//         const extensionDaysDisplay = document.getElementById('extension-days-display');
-//         if (extensionDaysDisplay) {
-//             extensionDaysDisplay.value = '';
-//         }
-        
-//         console.log('Extension form cleared before showing');
-//     }
-
-//     formCard.style.display = 'block';
-//     formCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    
-//     // تعيين التاريخ الافتراضي (اليوم لتاريخ البداية)
-//     const today = new Date().toISOString().split('T')[0];
-//     const startDateInput = document.getElementById('extension-start-date');
-//     if (startDateInput) {
-//         startDateInput.value = today;
-//     }
-    
-//     // إضافة مستمعي الأحداث لحساب الأيام
-//     const endDateInput = document.getElementById('extension-end-date');
-    
-//     if (startDateInput) {
-//         startDateInput.removeEventListener('change', calculateExtensionDays);
-//         startDateInput.addEventListener('change', calculateExtensionDays);
-//     }
-//     if (endDateInput) {
-//         endDateInput.removeEventListener('change', calculateExtensionDays);
-//         endDateInput.addEventListener('change', calculateExtensionDays);
-//     }
-// }
-
-// دالة إخفاء نموذج التمديد
-// function hideExtensionForm() {
-//     const formCard = document.getElementById('extension-form-card');
-//     const form = document.getElementById('extensionForm');
-    
-//     formCard.style.display = 'none';
-    
-//     // إعادة تعيين النموذج بالكامل
-//     if (form) {
-//         form.reset();
-        
-//         // تنظيف جميع الحقول يدوياً
-//         const inputs = form.querySelectorAll('input, select, textarea');
-//         inputs.forEach(input => {
-//             if (input.type === 'checkbox' || input.type === 'radio') {
-//                 input.checked = false;
-//             } else if (input.type === 'file') {
-//                 input.value = '';
-//             } else {
-//                 input.value = '';
-//             }
-//         });
-        
-//         // تنظيف الحقول المخفية
-//         const extensionLicenseId = document.getElementById('extension-license-id');
-//         if (extensionLicenseId) {
-//             extensionLicenseId.value = '';
-//         }
-        
-//         // تنظيف عرض الأيام
-//         const extensionDaysDisplay = document.getElementById('extension-days-display');
-//         if (extensionDaysDisplay) {
-//             extensionDaysDisplay.value = '';
-//         }
-        
-//         // إعادة تعيين اختيار الرخصة
-//         const licenseSelector = document.getElementById('extension-license-selector');
-//         if (licenseSelector) {
-//             licenseSelector.value = '';
-//         }
-        
-//         // إخفاء معلومات الرخصة المختارة
-//         const licenseInfo = document.getElementById('selected-extension-license-info');
-//         if (licenseInfo) {
-//             licenseInfo.style.display = 'none';
-//         }
-        
-//         // مسح حقل البحث
-//         const searchInput = document.getElementById('license-search-input');
-//         if (searchInput) {
-//             searchInput.value = '';
-//         }
-        
-//         // إظهار جميع خيارات الرخص
-//         if (licenseSelector) {
-//             Array.from(licenseSelector.options).forEach(option => {
-//                 option.style.display = '';
-//             });
-//         }
-        
-//         // تعطيل زر الإضافة
-//         const addBtn = document.getElementById('add-extension-btn');
-//         if (addBtn) {
-//             addBtn.disabled = true;
-//         }
-        
-//         console.log('Extension form has been completely reset');
-//     }
-// }
-
-// دالة حساب أيام التمديد
-// function calculateExtensionDays() {
-//     const startDate = document.getElementById('extension-start-date').value;
-//     const endDate = document.getElementById('extension-end-date').value;
-//     const daysDisplay = document.getElementById('extension-days-display');
-    
-//     if (startDate && endDate) {
-//         const start = new Date(startDate);
-//         const end = new Date(endDate);
-        
-//         if (end >= start) {
-//             const diffTime = Math.abs(end - start);
-//             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-//             daysDisplay.value = diffDays;
-//         } else {
-//             daysDisplay.value = '';
-//             toastr.warning('تاريخ النهاية يجب أن يكون بعد تاريخ البداية');
-//         }
-//     } else {
-//         daysDisplay.value = '';
-//     }
-// }
 
 // دالة حفظ التمديد
 function saveExtensionData() {
@@ -7434,7 +7315,105 @@ selectEvacuationLicense = function() {
     }
 };
 
+// إصلاح مشكلة الـ backdrop في modal المرفقات
+(function() {
+    const attachmentsModal = document.getElementById('attachmentsModal');
+    
+    if (attachmentsModal) {
+        // عند فتح النافذة
+        attachmentsModal.addEventListener('show.bs.modal', function() {
+            setTimeout(function() {
+                const backdrops = document.querySelectorAll('.modal-backdrop');
+                backdrops.forEach(function(backdrop) {
+                    backdrop.style.pointerEvents = 'none';
+                    backdrop.style.display = 'none';
+                });
+            }, 50);
+        });
+        
+        // عند ظهور النافذة بشكل كامل
+        attachmentsModal.addEventListener('shown.bs.modal', function() {
+            const backdrops = document.querySelectorAll('.modal-backdrop');
+            backdrops.forEach(function(backdrop) {
+                backdrop.style.pointerEvents = 'none';
+                backdrop.style.display = 'none';
+            });
+            
+            // تفعيل جميع الحقول
+            const allInputs = attachmentsModal.querySelectorAll('input, textarea, select, button, a');
+            allInputs.forEach(function(element) {
+                element.style.pointerEvents = 'auto';
+                element.removeAttribute('readonly');
+                element.removeAttribute('disabled');
+                element.style.userSelect = 'text';
+            });
+        });
+    }
+    
+    // مراقبة مستمرة للـ backdrop
+    const observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            mutation.addedNodes.forEach(function(node) {
+                if (node.nodeType === 1 && node.classList && node.classList.contains('modal-backdrop')) {
+                    node.style.pointerEvents = 'none';
+                    node.style.display = 'none';
+                }
+            });
+        });
+    });
+    
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true
+    });
+})();
+
 </script>
+
+<style>
+/* إصلاح مشكلة الـ modal backdrop للمرفقات */
+#attachmentsModal .modal-backdrop {
+    z-index: 1050 !important;
+    pointer-events: none !important;
+    display: none !important;
+}
+
+#attachmentsModal {
+    z-index: 1055 !important;
+}
+
+#attachmentsModal .modal-dialog {
+    z-index: 1056 !important;
+    pointer-events: auto !important;
+}
+
+#attachmentsModal .modal-content {
+    pointer-events: auto !important;
+    position: relative;
+    z-index: 1057 !important;
+}
+
+#attachmentsModal .modal-body {
+    pointer-events: auto !important;
+}
+
+#attachmentsModal input,
+#attachmentsModal textarea,
+#attachmentsModal select,
+#attachmentsModal button,
+#attachmentsModal a {
+    pointer-events: auto !important;
+    user-select: text !important;
+    -webkit-user-select: text !important;
+    -moz-user-select: text !important;
+    -ms-user-select: text !important;
+}
+
+#attachmentsModal a,
+#attachmentsModal button {
+    cursor: pointer !important;
+}
+</style>
 
 @endsection
 
@@ -8724,13 +8703,56 @@ const DigLicenseApp = createApp({
     
     // العداد التنازلي الجديد
     getRemainingDays(license) {
-      if (!license.license_start_date || !license.license_end_date) {
+      if (!license.license_start_date) {
         return 'غير محدد';
       }
       
       const startDate = new Date(license.license_start_date);
       const endDate = new Date(license.license_end_date);
       const currentDate = new Date();
+      
+      // التحقق من حالة التنفيذ
+      const executionStatus = license.work_order_execution_status;
+      const isExecuted = executionStatus && parseInt(executionStatus) >= 2;
+      
+      // إذا تم التنفيذ، حساب المدة الفعلية
+      if (isExecuted) {
+        let calculationEnd;
+        
+        // استخدام تاريخ التنفيذ إذا كان موجوداً، وإلا التاريخ الحالي
+        if (license.work_order_execution_status_date) {
+          calculationEnd = new Date(license.work_order_execution_status_date);
+        } else {
+          calculationEnd = currentDate;
+        }
+        
+        // حساب المدة من البداية حتى التنفيذ
+        const totalDays = Math.ceil((calculationEnd - startDate) / (1000 * 60 * 60 * 24));
+        
+        if (totalDays < 0) {
+          return 'لم تبدأ بعد';
+        } else if (totalDays === 0) {
+          return 'أقل من يوم (منتهي)';
+        } else if (totalDays === 1) {
+          return 'يوم واحد (منتهي)';
+        } else if (totalDays <= 7) {
+          return `${totalDays} أيام (منتهي)`;
+        } else if (totalDays <= 30) {
+          return `${totalDays} يوم (منتهي)`;
+        } else {
+          const weeks = Math.floor(totalDays / 7);
+          const remainingDays = totalDays % 7;
+          if (remainingDays > 0) {
+            return `${weeks} أسبوع و ${remainingDays} يوم (منتهي)`;
+          }
+          return `${weeks} أسبوع (منتهي)`;
+        }
+      }
+      
+      // إذا لم يتم التنفيذ بعد، استخدام المنطق القديم
+      if (!license.license_end_date) {
+        return 'جاري...';
+      }
       
       if (currentDate < startDate) {
         const daysToStart = Math.ceil((startDate - currentDate) / (1000 * 60 * 60 * 24));
@@ -8745,7 +8767,20 @@ const DigLicenseApp = createApp({
     },
     
     getCountdownBadgeClass(license) {
-      if (!license.license_start_date || !license.license_end_date) {
+      if (!license.license_start_date) {
+        return 'bg-secondary';
+      }
+      
+      // التحقق من حالة التنفيذ
+      const executionStatus = license.work_order_execution_status;
+      const isExecuted = executionStatus && parseInt(executionStatus) >= 2;
+      
+      // إذا تم التنفيذ، عرض badge أخضر
+      if (isExecuted) {
+        return 'bg-success'; // أخضر - منتهي
+      }
+      
+      if (!license.license_end_date) {
         return 'bg-secondary';
       }
       
@@ -8830,6 +8865,15 @@ const DigLicenseApp = createApp({
     },
     
     getCountdownStatus(license) {
+      // التحقق من حالة التنفيذ
+      const executionStatus = license.work_order_execution_status;
+      const isExecuted = executionStatus && parseInt(executionStatus) >= 2;
+      
+      // إذا تم التنفيذ
+      if (isExecuted) {
+        return 'تم التنفيذ بالموقع - الرخصة منتهية';
+      }
+      
       if (!license.license_start_date || !license.license_end_date) {
         return 'غير محدد';
       }
