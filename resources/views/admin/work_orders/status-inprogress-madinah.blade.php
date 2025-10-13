@@ -108,10 +108,11 @@
                                 <tr>
                                     <th class="text-center">#</th>
                                     <th>رقم أمر العمل</th>
+                                    <th>نوع أمر العمل</th>
                                     <th>المكتب</th>
                                     <th class="text-center">القيمة المبدئية</th>
                                     <th class="text-center">الحالة</th>
-                                    <th class="text-center">تاريخ الإنشاء</th>
+                                    <th class="text-center">تاريخ الاعتماد</th>
                                     <th class="text-center">الإجراءات</th>
                                 </tr>
                             </thead>
@@ -122,6 +123,7 @@
                                     <td>
                                         <strong>{{ $order->work_order_number }}</strong>
                                     </td>
+                                    <td>{{ $order->work_type ?? '-' }}</td>
                                     <td>{{ $order->office ?? '-' }}</td>
                                     <td class="text-center">
                                         <strong class="text-primary">
@@ -135,7 +137,7 @@
                                         </span>
                                     </td>
                                     <td class="text-center">
-                                        {{ $order->created_at ? $order->created_at->format('Y-m-d') : '-' }}
+                                        {{ $order->approval_date ? \Carbon\Carbon::parse($order->approval_date)->format('Y-m-d') : '-' }}
                                     </td>
                                     <td class="text-center">
                                         <a href="{{ route('admin.work-orders.show', $order->id) }}" 
