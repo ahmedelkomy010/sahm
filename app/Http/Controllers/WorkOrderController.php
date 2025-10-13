@@ -4154,7 +4154,7 @@ class WorkOrderController extends Controller
             
             \Log::info('Total users found: ' . $allUsers->count());
             
-            // فلترة المستخدمين حسب الصلاحيات
+            // فلترة المستخدمين حسب الصلاحيات - جلب كل من لديه أي صلاحية للمشروع
             $users = $allUsers->filter(function($user) use ($project) {
                 $permissions = $user->permissions;
                 
@@ -4167,14 +4167,21 @@ class WorkOrderController extends Controller
                     return false;
                 }
                 
-                // فحص الصلاحيات حسب المشروع
-                if ($project === 'riyadh') {
-                    return in_array('riyadh', $permissions) || 
-                           in_array('riyadh_daily_work_program', $permissions);
-                } else {
-                    return in_array('madinah', $permissions) || 
-                           in_array('madinah_daily_work_program', $permissions);
+                // فحص أي صلاحية تحتوي على اسم المشروع
+                foreach ($permissions as $permission) {
+                    if (is_string($permission)) {
+                        // للرياض: أي صلاحية تحتوي على 'riyadh'
+                        if ($project === 'riyadh' && stripos($permission, 'riyadh') !== false) {
+                            return true;
+                        }
+                        // للمدينة: أي صلاحية تحتوي على 'madinah'
+                        if ($project === 'madinah' && stripos($permission, 'madinah') !== false) {
+                            return true;
+                        }
+                    }
                 }
+                
+                return false;
             })->map(function($user) {
                 return [
                     'id' => $user->id,
