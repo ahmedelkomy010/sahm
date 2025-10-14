@@ -33,7 +33,7 @@ class TurnkeyRevenueController extends Controller
                 'location' => 'nullable|string',
                 'project_type' => 'nullable|string',
                 'extract_value' => 'nullable|numeric',
-                'extract_entity' => 'nullable|in:SAP,UDS',
+                'extract_entity' => 'nullable|string',
                 'tax_value' => 'nullable|numeric',
                 'penalties' => 'nullable|numeric',
                 'first_payment_tax' => 'nullable|numeric',
@@ -41,11 +41,11 @@ class TurnkeyRevenueController extends Controller
                 'payment_value' => 'nullable|numeric',
                 'remaining_amount' => 'nullable|numeric',
                 'extract_date' => 'nullable|date',
-                'year' => 'nullable|integer',
-                'extract_status' => 'nullable|in:المقاول,ادارة الكهرباء,المالية,الخزينة',
+                'year' => 'nullable',
+                'extract_status' => 'nullable|string',
                 'reference_number' => 'nullable|string',
                 'payment_date' => 'nullable|date',
-                'payment_status' => 'nullable|in:unpaid,paid',
+                'payment_status' => 'nullable|string',
                 'notes' => 'nullable|string',
             ]);
             

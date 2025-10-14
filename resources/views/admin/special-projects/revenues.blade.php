@@ -318,7 +318,7 @@
                 <svg class="w-5 h-5 inline-block text-blue-600 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
-                <div style="font-size: 0.9rem;">إجمالي المدفوعات</div>
+                <div style="font-size: 0.9rem;">إجمالي المدفوعات شامل ضريبة
             </div>
             <div class="stats-value text-blue-600" style="font-size: 1.5rem;" id="paidAmount">0.00 ريال</div>
         </div>
@@ -328,7 +328,7 @@
                 <svg class="w-5 h-5 inline-block text-orange-600 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
-                <div style="font-size: 0.85rem;">المبلغ المتبقي عند العميل شامل الضريبه</div>
+                <div style="font-size: 0.85rem;">المبلغ المتبقي عند العميل شامل الضريبة (غير شامل ضريبة الدفعة الاولي )
             </div>
             <div class="stats-value text-orange-600" style="font-size: 1.5rem;" id="remainingAmount">0.00 ريال</div>
         </div>

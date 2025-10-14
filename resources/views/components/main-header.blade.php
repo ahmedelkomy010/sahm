@@ -133,8 +133,43 @@
             @endauth
             
             <!-- Mobile menu button -->
-            <div class="d-lg-none">
-                <button class="btn btn-link text-white" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileMenu">
+            <div class="d-lg-none d-flex align-items-center gap-2">
+                <!-- Mobile Notifications Button -->
+                <div class="dropdown">
+                    <a class="btn btn-link text-white position-relative p-2" 
+                       href="javascript:void(0);"
+                       data-bs-toggle="dropdown"
+                       id="mobileNotificationsButton"
+                       role="button"
+                       aria-expanded="false">
+                        <i class="fas fa-bell fs-5"></i>
+                        <span id="mobileNotificationBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display: none; font-size: 0.6rem;">
+                            0
+                        </span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end notification-dropdown" aria-labelledby="mobileNotificationsButton" style="min-width: 320px; max-width: 95vw; max-height: 70vh; overflow-y: auto;">
+                        <li>
+                            <div class="d-flex justify-content-between align-items-center px-3 py-2 bg-light border-bottom">
+                                <h6 class="mb-0 fw-bold">
+                                    <i class="fas fa-bell me-2 text-primary"></i>
+                                    الإشعارات
+                                </h6>
+                                <button class="btn btn-sm btn-outline-primary" onclick="markAllAsRead()" title="تعليم الكل كمقروء">
+                                    <i class="fas fa-check-double"></i>
+                                </button>
+                            </div>
+                        </li>
+                        <li id="mobileNotificationsList">
+                            <div class="text-center py-4 text-muted">
+                                <i class="fas fa-bell-slash fa-2x mb-2"></i>
+                                <p class="mb-0">لا توجد إشعارات جديدة</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- Hamburger Menu -->
+                <button class="btn btn-link text-white p-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileMenu">
                     <i class="fas fa-bars fs-4"></i>
                 </button>
             </div>
@@ -542,6 +577,10 @@ function updateNotificationUINav(data) {
     const list = document.getElementById('notificationsListNav');
     const badge = document.getElementById('notificationBadgeNav');
     
+    // Mobile elements
+    const mobileList = document.getElementById('mobileNotificationsList');
+    const mobileBadge = document.getElementById('mobileNotificationBadge');
+    
     if(loader) loader.style.display = 'none';
     
     if (data.notifications && data.notifications.length > 0) {
@@ -586,16 +625,38 @@ function updateNotificationUINav(data) {
             }).join('');
         }
         
-        // تحديث الـ badge
+        // تحديث الـ badge للـ desktop
         if (badge && data.unread_count > 0) {
             badge.textContent = data.unread_count;
             badge.style.display = 'block';
         } else if(badge) {
             badge.style.display = 'none';
         }
+        
+        // تحديث الـ badge للـ mobile
+        if (mobileBadge && data.unread_count > 0) {
+            mobileBadge.textContent = data.unread_count;
+            mobileBadge.style.display = 'block';
+        } else if(mobileBadge) {
+            mobileBadge.style.display = 'none';
+        }
+        
+        // تحديث القائمة للـ mobile
+        if(mobileList) {
+            mobileList.innerHTML = list ? list.innerHTML : '';
+        }
     } else {
         if(empty) empty.style.display = 'block';
         if(badge) badge.style.display = 'none';
+        if(mobileBadge) mobileBadge.style.display = 'none';
+        if(mobileList) {
+            mobileList.innerHTML = `
+                <div class="text-center py-4 text-muted">
+                    <i class="fas fa-bell-slash fa-2x mb-2"></i>
+                    <p class="mb-0">لا توجد إشعارات جديدة</p>
+                </div>
+            `;
+        }
     }
 }
 
@@ -790,6 +851,21 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
             e.stopPropagation();
             const bsDropdown = bootstrap.Dropdown.getInstance(userDropdownButton) || new bootstrap.Dropdown(userDropdownButton);
+            bsDropdown.toggle();
+        });
+    }
+    
+    // للزر الخاص بالإشعارات على الموبايل
+    const mobileNotifButton = document.getElementById('mobileNotificationsButton');
+    if (mobileNotifButton) {
+        mobileNotifButton.addEventListener('show.bs.dropdown', function() {
+            loadNotifications();
+        });
+        
+        mobileNotifButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const bsDropdown = bootstrap.Dropdown.getInstance(mobileNotifButton) || new bootstrap.Dropdown(mobileNotifButton);
             bsDropdown.toggle();
         });
     }

@@ -4,18 +4,187 @@
 <!-- Select2 CSS -->
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
+
+<style>
+/* Responsive Styles for Mobile */
+@media (max-width: 768px) {
+    /* Header responsive */
+    .mobile-header {
+        font-size: 1.3rem !important;
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .mobile-header h2 {
+        font-size: 1.5rem !important;
+        text-align: center;
+    }
+    
+    /* Filter section responsive */
+    .card-header .d-flex {
+        flex-direction: column !important;
+        gap: 0.5rem !important;
+    }
+    
+    .card-header form {
+        width: 100% !important;
+    }
+    
+    .card-header .d-flex.gap-2 {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    /* Date input responsive */
+    .card-header input[type="date"] {
+        width: 100% !important;
+        min-width: 100% !important;
+    }
+    
+    /* Buttons responsive */
+    .btn-sm {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+    }
+    
+    /* Table responsive - Card View */
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    /* Hide table on mobile, show cards instead */
+    .desktop-table {
+        display: none;
+    }
+    
+    .mobile-cards {
+        display: block;
+    }
+    
+    .mobile-card {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        margin-bottom: 1rem;
+        padding: 1rem;
+        border-left: 4px solid #0d6efd;
+    }
+    
+    .mobile-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid #e9ecef;
+    }
+    
+    .mobile-card-header h5 {
+        font-size: 1.1rem;
+        font-weight: bold;
+        color: #0d6efd;
+        margin: 0;
+    }
+    
+    .mobile-card-body {
+        display: grid;
+        gap: 0.5rem;
+    }
+    
+    .mobile-field {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+    
+    .mobile-field-label {
+        font-size: 0.75rem;
+        color: #6c757d;
+        font-weight: 600;
+    }
+    
+    .mobile-field-value {
+        font-size: 0.9rem;
+        color: #212529;
+    }
+    
+    .mobile-actions {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 1rem;
+        padding-top: 0.75rem;
+        border-top: 1px solid #e9ecef;
+    }
+    
+    .mobile-actions .btn {
+        flex: 1;
+    }
+    
+    /* Modal responsive */
+    .modal-dialog {
+        margin: 0.5rem;
+    }
+    
+    .modal-xl {
+        max-width: 95%;
+    }
+    
+    .modal-body .row {
+        margin: 0;
+    }
+    
+    .modal-body .col-md-6,
+    .modal-body .col-md-12 {
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+    }
+}
+
+@media (min-width: 769px) {
+    .desktop-table {
+        display: table;
+    }
+    
+    .mobile-cards {
+        display: none;
+    }
+}
+
+/* Common responsive improvements */
+.container-fluid {
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+@media (max-width: 576px) {
+    .container-fluid {
+        padding-left: 10px;
+        padding-right: 10px;
+        padding-top: 1rem;
+    }
+    
+    .card {
+        margin-bottom: 1rem;
+    }
+    
+    .btn {
+        font-size: 0.8rem;
+    }
+}
+</style>
 @endsection
 
 @section('content')
 <div class="container-fluid py-4">
     <!-- Header Section -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 mobile-header">
         <h2 class="mb-0" style="font-size:2.1rem; font-weight:800; color:#2c3e50; letter-spacing:1px; display:flex; align-items:center;">
             <i class="fas fa-calendar-day me-3" style="color:#ffc107;"></i>
             برنامج العمل اليومي
         </h2>
-        <a href="{{ route('admin.work-orders.index', ['project' => $project]) }}" class="btn btn-secondary">
-            <i class="fas fa-arrow-right"></i> عودة إلى قائمة أوامر العمل
+        <a href="{{ route('admin.work-orders.index', ['project' => $project]) }}" class="btn btn-secondary btn-sm">
+            <i class="fas fa-arrow-right"></i> عودة لأوامر العمل 
         </a>
     </div>
 
@@ -57,6 +226,10 @@
                     <i class="fas fa-sync me-1"></i>
                     اليوم
                 </a>
+                <a href="{{ route('admin.work-orders.daily-program', ['project' => $project, 'selected_date' => \Carbon\Carbon::tomorrow()->format('Y-m-d')]) }}" class="btn btn-light btn-sm">
+                    <i class="fas fa-calendar-plus me-1"></i>
+                    غداً
+                </a>
             </form>
             <div class="d-flex gap-2">
                 @if($programs->count() > 0)
@@ -67,7 +240,7 @@
                 @endif
                 <button type="button" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#addToProgramModal">
                     <i class="fas fa-plus me-1"></i>
-                    إضافة أمر عمل للبرنامج
+                       اضافة برنامج عمل يومي 
                 </button>
             </div>
         </div>

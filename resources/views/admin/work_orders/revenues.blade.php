@@ -672,6 +672,42 @@
                                     </div>
                                 </div>
                             </div>
+
+                            <!-- المتبقي لدي العميل (ضريبة الدفعة الاولي) -->
+                            <div class="col-md-1-5">
+                                <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #2a5298 0%, #1e3c72 100%);">
+                                    <div class="card-body p-1 text-white">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h6 class="mb-1 opacity-75" style="font-size: 0.6rem;">المتبقي لدي العميل (ضريبة الدفعة الاولي)</h6>
+                                                <h6 class="mb-0 fw-bold" style="font-size: 0.75rem;">{{ number_format($statistics['totalFirstPaymentTax'], 2) }}</h6>
+                                                <small class="opacity-75" style="font-size: 0.6rem;">ريال سعودي</small>
+                                            </div>
+                                            <div class="bg-white bg-opacity-25 p-1 rounded-circle">
+                                                <i class="fas fa-receipt fa-sm"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- الاجمالي لدي العميل (شامل الضريبة + ضريبة الدفعة الاولي) -->
+                            <div class="col-md-1-5">
+                                <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                                    <div class="card-body p-1 text-white">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h6 class="mb-1 opacity-75" style="font-size: 0.55rem;">الاجمالي لدي العميل (شامل الضريبة + ضريبة الدفعة الاولي)</h6>
+                                                <h6 class="mb-0 fw-bold" style="font-size: 0.8rem;">{{ number_format($statistics['remainingAmount'] + $statistics['totalFirstPaymentTax'], 2) }}</h6>
+                                                <small class="opacity-75" style="font-size: 0.6rem;">ريال سعودي</small>
+                                            </div>
+                                            <div class="bg-white bg-opacity-25 p-1 rounded-circle">
+                                                <i class="fas fa-coins fa-sm"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
