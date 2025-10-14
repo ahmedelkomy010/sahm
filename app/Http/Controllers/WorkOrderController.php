@@ -5064,6 +5064,10 @@ class WorkOrderController extends Controller
                                           ->orderBy('created_at', 'desc')
                                           ->get();
             
+            // حساب القيم الأساسية أولاً
+            $totalNetExtractValue = $revenues->sum('net_extract_value') ?: 0;
+            $totalPaymentValue = $revenues->where('extract_status', 'مدفوع')->sum('net_extract_value') ?: 0;
+            
             // إحصائيات سريعة شاملة
             $statistics = [
                 'totalRevenues' => $revenues->count(),
@@ -5071,13 +5075,11 @@ class WorkOrderController extends Controller
                 'totalTaxValue' => $revenues->sum('tax_value') ?: 0,
                 'totalPenalties' => $revenues->sum('penalties') ?: 0,
                 'totalFirstPaymentTax' => $revenues->sum('first_payment_tax') ?: 0,
-                'totalNetExtractValue' => $revenues->sum('net_extract_value') ?: 0,
-                // إجمالي المدفوعات = قيمة الصرف للمستخلصات المدفوعة فقط
-                'totalPaymentValue' => $revenues->where('extract_status', 'مدفوع')->sum('payment_value') ?: 0,
-                // المبلغ المتبقي عند العميل شامل الضريبة = فقط المستخلصات الغير مدفوعة
-                'remainingAmount' => $revenues->where('extract_status', 'غير مدفوع')->sum(function($revenue) {
-                    return ($revenue->extract_value ?: 0) + ($revenue->tax_value ?: 0) - ($revenue->penalties ?: 0);
-                }),
+                'totalNetExtractValue' => $totalNetExtractValue,
+                // إجمالي المدفوعات = صافي قيمة المستخلصات للمستخلصات المدفوعة فقط
+                'totalPaymentValue' => $totalPaymentValue,
+                // المبلغ المتبقي عند العميل شامل الضريبة = إجمالي صافي قيمة المستخلصات - إجمالي المدفوعات
+                'remainingAmount' => $totalNetExtractValue - $totalPaymentValue,
             ];
             
             \Log::info('Revenues page loaded', [
