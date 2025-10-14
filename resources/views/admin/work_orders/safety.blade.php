@@ -1071,6 +1071,52 @@
     backdrop-filter: blur(2px);
 }
 
+/* إصلاح مشكلة الـ backdrop في الـ modal */
+#imageModal {
+    z-index: 9999 !important;
+    pointer-events: auto !important;
+}
+
+#imageModal .modal-dialog {
+    z-index: 10000 !important;
+    pointer-events: auto !important;
+}
+
+#imageModal .modal-content {
+    z-index: 10001 !important;
+    pointer-events: auto !important;
+}
+
+#imageModal .modal-header,
+#imageModal .modal-body,
+#imageModal .modal-footer {
+    pointer-events: auto !important;
+    user-select: auto !important;
+}
+
+#imageModal .btn,
+#imageModal .btn-close,
+#imageModal img,
+#imageModal a {
+    pointer-events: auto !important;
+    cursor: pointer !important;
+}
+
+.modal-backdrop {
+    z-index: 9998 !important;
+    pointer-events: none !important;
+    display: none !important;
+}
+
+.modal-open {
+    overflow: auto !important;
+}
+
+.modal-open .modal {
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
 /* تنسيق عرض التاريخ المحفوظ */
 .saved-date-display {
     animation: slideInFromLeft 0.5s ease-out;
@@ -1603,9 +1649,45 @@ function showImageModal(imageSrc, title) {
     document.getElementById('downloadImage').href = imageSrc;
     document.getElementById('imageModalLabel').textContent = title;
     
-    const modal = new bootstrap.Modal(document.getElementById('imageModal'));
+    // إزالة أي backdrop موجود قبل فتح الـ modal
+    const existingBackdrops = document.querySelectorAll('.modal-backdrop');
+    existingBackdrops.forEach(backdrop => backdrop.remove());
+    
+    const modalElement = document.getElementById('imageModal');
+    const modal = new bootstrap.Modal(modalElement, {
+        backdrop: false, // تعطيل الـ backdrop تماماً
+        keyboard: true
+    });
+    
     modal.show();
+    
+    // التأكد من إزالة أي backdrop بعد فتح الـ modal
+    setTimeout(() => {
+        const backdrops = document.querySelectorAll('.modal-backdrop');
+        backdrops.forEach(backdrop => {
+            backdrop.style.display = 'none';
+            backdrop.style.pointerEvents = 'none';
+        });
+    }, 100);
 }
+
+// مراقبة وإزالة أي backdrop يتم إضافته ديناميكياً
+const backdropObserver = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+        mutation.addedNodes.forEach((node) => {
+            if (node.classList && node.classList.contains('modal-backdrop')) {
+                node.style.display = 'none';
+                node.style.pointerEvents = 'none';
+            }
+        });
+    });
+});
+
+// بدء المراقبة
+backdropObserver.observe(document.body, {
+    childList: true,
+    subtree: true
+});
 
 // دالة عرض رسالة النجاح
 function showSuccessMessage(message) {

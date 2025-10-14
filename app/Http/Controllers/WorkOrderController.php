@@ -5066,7 +5066,7 @@ class WorkOrderController extends Controller
             
             // حساب القيم الأساسية أولاً
             $totalNetExtractValue = $revenues->sum('net_extract_value') ?: 0;
-            $totalPaymentValue = $revenues->where('extract_status', 'مدفوع')->sum('net_extract_value') ?: 0;
+            $totalPaymentValue = $revenues->where('extract_status', 'مدفوع')->sum('payment_value') ?: 0;
             
             // إحصائيات سريعة شاملة
             $statistics = [
@@ -5076,7 +5076,7 @@ class WorkOrderController extends Controller
                 'totalPenalties' => $revenues->sum('penalties') ?: 0,
                 'totalFirstPaymentTax' => $revenues->sum('first_payment_tax') ?: 0,
                 'totalNetExtractValue' => $totalNetExtractValue,
-                // إجمالي المدفوعات = صافي قيمة المستخلصات للمستخلصات المدفوعة فقط
+                // إجمالي المدفوعات = إجمالي قيمة الصرف للمستخلصات المدفوعة فقط
                 'totalPaymentValue' => $totalPaymentValue,
                 // المبلغ المتبقي عند العميل شامل الضريبة = إجمالي صافي قيمة المستخلصات - إجمالي المدفوعات
                 'remainingAmount' => $totalNetExtractValue - $totalPaymentValue,
