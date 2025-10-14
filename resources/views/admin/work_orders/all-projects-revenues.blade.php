@@ -316,6 +316,10 @@
                                 <i class="fas fa-redo me-2"></i>
                                 إعادة تعيين
                             </a>
+                            <a href="{{ route('admin.all-projects-revenues.export', request()->all()) }}" class="btn btn-success">
+                                <i class="fas fa-file-excel me-2"></i>
+                                تصدير Excel
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -441,9 +445,15 @@
 
         <!-- مشروع الرياض -->
         <div class="project-section">
-            <div class="section-title riyadh">
-                <i class="fas fa-building me-2"></i>
-                مشروع الرياض
+            <div class="section-title riyadh d-flex justify-content-between align-items-center">
+                <div>
+                    <i class="fas fa-building me-2"></i>
+                    مشروع الرياض
+                </div>
+                <a href="{{ route('admin.work-orders.revenues', ['project' => 'riyadh']) }}" class="btn btn-light btn-sm">
+                    <i class="fas fa-eye me-1"></i>
+                    عرض الإيرادات
+                </a>
             </div>
             
             <div class="row g-2">
@@ -528,9 +538,15 @@
 
         <!-- مشروع المدينة المنورة -->
         <div class="project-section">
-            <div class="section-title madinah">
-                <i class="fas fa-mosque me-2"></i>
-                مشروع المدينة المنورة
+            <div class="section-title madinah d-flex justify-content-between align-items-center">
+                <div>
+                    <i class="fas fa-mosque me-2"></i>
+                    مشروع المدينة المنورة
+                </div>
+                <a href="{{ route('admin.work-orders.revenues', ['project' => 'madinah']) }}" class="btn btn-light btn-sm">
+                    <i class="fas fa-eye me-1"></i>
+                    عرض الإيرادات
+                </a>
             </div>
             
             <div class="row g-2">
@@ -703,12 +719,20 @@
         <!-- مشاريع تسليم المفتاح - التفاصيل لكل مشروع -->
         @foreach($turnkeyProjectsStats as $projectStat)
         <div class="project-section">
-            <div class="section-title turnkey">
-                <i class="fas fa-building me-2"></i>
-                {{ $projectStat['project_name'] }}
-                <small style="font-size: 0.8rem; opacity: 0.8; margin-right: 10px;">
-                    ({{ $projectStat['project_type'] }} - {{ $projectStat['contract_number'] }})
-                </small>
+            <div class="section-title turnkey d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div>
+                    <i class="fas fa-building me-2"></i>
+                    {{ $projectStat['project_name'] }}
+                    <small style="font-size: 0.8rem; opacity: 0.8; margin-right: 10px;">
+                        ({{ $projectStat['project_type'] }} - {{ $projectStat['contract_number'] }})
+                    </small>
+                </div>
+                @if(isset($projectStat['project_id']))
+                <a href="{{ route('projects.revenues', ['project' => $projectStat['project_id']]) }}" class="btn btn-light btn-sm">
+                    <i class="fas fa-eye me-1"></i>
+                    عرض الإيرادات
+                </a>
+                @endif
             </div>
             
             <div class="row g-2">
@@ -762,7 +786,7 @@
                             <i class="fas fa-money-check-alt"></i>
                         </div>
                         <div class="stat-title">صافي قيمة المستخلصات</div>
-                        <div class="stat-value">{{ number_format($projectStat['total_value'] - $projectStat['total_penalties'], 2) }}</div>
+                        <div class="stat-value">{{ number_format($projectStat['total_net_value'], 2) }}</div>
                         <div class="stat-currency">ريال سعودي</div>
                     </div>
                 </div>
@@ -882,12 +906,20 @@
         <!-- المشاريع الخاصة - التفاصيل لكل مشروع -->
         @foreach($specialProjectsStats as $projectStat)
         <div class="project-section">
-            <div class="section-title special">
-                <i class="fas fa-star-half-alt me-2"></i>
-                {{ $projectStat['project_name'] }}
-                <small style="font-size: 0.8rem; opacity: 0.8; margin-right: 10px;">
-                    ({{ $projectStat['contract_number'] }} - {{ $projectStat['location'] }})
-                </small>
+            <div class="section-title special d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div>
+                    <i class="fas fa-star-half-alt me-2"></i>
+                    {{ $projectStat['project_name'] }}
+                    <small style="font-size: 0.8rem; opacity: 0.8; margin-right: 10px;">
+                        ({{ $projectStat['contract_number'] }} - {{ $projectStat['location'] }})
+                    </small>
+                </div>
+                @if(isset($projectStat['project_id']))
+                <a href="{{ route('admin.special-projects.revenues', ['project' => $projectStat['project_id']]) }}" class="btn btn-light btn-sm">
+                    <i class="fas fa-eye me-1"></i>
+                    عرض الإيرادات
+                </a>
+                @endif
             </div>
             
             <div class="row g-2">
@@ -941,7 +973,7 @@
                             <i class="fas fa-money-check-alt"></i>
                         </div>
                         <div class="stat-title">صافي قيمة المستخلصات</div>
-                        <div class="stat-value">{{ number_format($projectStat['total_value'] - $projectStat['total_penalties'], 2) }}</div>
+                        <div class="stat-value">{{ number_format($projectStat['total_net_value'], 2) }}</div>
                         <div class="stat-currency">ريال سعودي</div>
                     </div>
                 </div>

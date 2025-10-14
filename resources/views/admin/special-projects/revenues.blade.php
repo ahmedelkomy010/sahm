@@ -220,20 +220,20 @@
 @endpush
 
 @section('content')
-<div class="container-fluid px-4 py-6">
+<div class="container-fluid px-4 py-4">
     <!-- Revenue Header -->
-    <div class="revenue-header rounded-3xl shadow-2xl mb-8 overflow-hidden">
-        <div class="p-8 relative z-10">
-            <div class="flex justify-between items-start">
+    <div class="revenue-header rounded-3 shadow mb-4">
+        <div class="p-4 position-relative" style="z-index: 10;">
+            <div class="d-flex justify-content-between align-items-start">
                 <div>
-                    <h1 class="text-4xl font-bold text-white mb-3">إيرادات المشروع</h1>
-                    <p class="text-purple-100 text-lg mb-2">{{ $project->name }}</p>
-                    <p class="text-purple-200 text-sm font-mono bg-white/20 px-4 py-2 rounded-lg inline-block">
+                    <h1 class="h2 fw-bold text-white mb-2">إيرادات المشروع</h1>
+                    <p class="text-white mb-2" style="opacity: 0.9; font-size: 1.1rem;">{{ $project->name }}</p>
+                    <p class="text-white small d-inline-block px-3 py-2 rounded" style="background-color: rgba(255, 255, 255, 0.2); font-family: monospace;">
                         {{ $project->contract_number }}
                     </p>
                 </div>
-                <a href="{{ route('admin.special-projects.show', $project) }}" class="px-6 py-3 bg-white/20 backdrop-blur-sm rounded-xl text-white font-bold text-lg border border-white/30 hover:bg-white/30 transition-all duration-300 flex items-center gap-2">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <a href="{{ route('admin.special-projects.show', $project) }}" class="btn btn-light d-flex align-items-center gap-2" style="background-color: rgba(255, 255, 255, 0.2); border: 1px solid rgba(255, 255, 255, 0.3); color: white; backdrop-filter: blur(10px);">
+                    <svg style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                     </svg>
                     العودة للمشروع
@@ -243,16 +243,16 @@
     </div>
 
     <!-- Action Buttons -->
-    <div class="flex justify-end items-center mb-6" style="gap: 0.75rem;">
+    <div class="d-flex justify-content-end align-items-center mb-3 gap-2">
         <a href="{{ route('admin.special-projects.revenues.export', $project) }}" class="action-btn btn-primary">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
             </svg>
             تصدير Excel
         </a>
         
         <button onclick="addNewRevenue()" class="action-btn btn-success">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
             </svg>
             إضافة إيراد جديد
@@ -260,87 +260,103 @@
     </div>
 
     <!-- Statistics Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-8 gap-3 mb-8">
+    <div class="row g-2 mb-4">
         <!-- All Stats in One Row -->
-        <div class="stats-card">
-            <div class="stats-label">
-                <svg class="w-5 h-5 inline-block text-purple-600 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
-                </svg>
-                <div style="font-size: 0.9rem;">عدد المستخلصات</div>
+        <div class="col-md-3 col-lg-2">
+            <div class="stats-card">
+                <div class="stats-label">
+                    <svg style="width: 20px; height: 20px; display: inline-block; color: #7c3aed; margin-bottom: 4px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                    </svg>
+                    <div style="font-size: 0.9rem;">عدد المستخلصات</div>
+                </div>
+                <div class="stats-value" style="font-size: 1.8rem;" id="totalRevenues">0</div>
             </div>
-            <div class="stats-value" style="font-size: 1.8rem;" id="totalRevenues">0</div>
         </div>
 
-        <div class="stats-card">
-            <div class="stats-label">
-                <svg class="w-5 h-5 inline-block text-indigo-600 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-                <div style="font-size: 0.85rem;">إجمالي قيمة المستخلصات غير شامله الضريبه</div>
+        <div class="col-md-3 col-lg-2">
+            <div class="stats-card">
+                <div class="stats-label">
+                    <svg style="width: 20px; height: 20px; display: inline-block; color: #6366f1; margin-bottom: 4px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <div style="font-size: 0.85rem;">إجمالي قيمة المستخلصات<br>غير شامله الضريبه</div>
+                </div>
+                <div class="stats-value" style="font-size: 1.5rem; color: #6366f1;" id="totalValueWithoutTax">0.00 ريال</div>
             </div>
-            <div class="stats-value text-indigo-600" style="font-size: 1.5rem;" id="totalValueWithoutTax">0.00 ريال</div>
         </div>
 
-        <div class="stats-card">
-            <div class="stats-label">
-                <svg class="w-5 h-5 inline-block text-yellow-600 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z"></path>
-                </svg>
-                <div style="font-size: 0.9rem;">إجمالي الضريبة</div>
+        <div class="col-md-3 col-lg-2">
+            <div class="stats-card">
+                <div class="stats-label">
+                    <svg style="width: 20px; height: 20px; display: inline-block; color: #eab308; margin-bottom: 4px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z"></path>
+                    </svg>
+                    <div style="font-size: 0.9rem;">إجمالي الضريبة</div>
+                </div>
+                <div class="stats-value" style="font-size: 1.5rem; color: #eab308;" id="totalTax">0.00 ريال</div>
             </div>
-            <div class="stats-value text-yellow-600" style="font-size: 1.5rem;" id="totalTax">0.00 ريال</div>
         </div>
 
-        <div class="stats-card">
-            <div class="stats-label">
-                <svg class="w-5 h-5 inline-block text-red-600 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-                </svg>
-                <div style="font-size: 0.9rem;">إجمالي الغرامات</div>
+        <div class="col-md-3 col-lg-2">
+            <div class="stats-card">
+                <div class="stats-label">
+                    <svg style="width: 20px; height: 20px; display: inline-block; color: #dc2626; margin-bottom: 4px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                    </svg>
+                    <div style="font-size: 0.9rem;">إجمالي الغرامات</div>
+                </div>
+                <div class="stats-value" style="font-size: 1.5rem; color: #dc2626;" id="totalPenalties">0.00 ريال</div>
             </div>
-            <div class="stats-value text-red-600" style="font-size: 1.5rem;" id="totalPenalties">0.00 ريال</div>
         </div>
 
         <!-- Row 2 -->
-        <div class="stats-card">
-            <div class="stats-label">
-                <svg class="w-5 h-5 inline-block text-green-600 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
-                </svg>
-                <div style="font-size: 0.85rem;">صافي قيمة المستخلصات غير شامل الضريبة</div>
+        <div class="col-md-3 col-lg-2">
+            <div class="stats-card">
+                <div class="stats-label">
+                    <svg style="width: 20px; height: 20px; display: inline-block; color: #059669; margin-bottom: 4px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                    </svg>
+                    <div style="font-size: 0.85rem;">صافي قيمة المستخلصات</div>
+                </div>
+                <div class="stats-value" style="font-size: 1.5rem; color: #059669;" id="netValueWithoutTax">0.00 ريال</div>
             </div>
-            <div class="stats-value text-green-600" style="font-size: 1.5rem;" id="netValueWithoutTax">0.00 ريال</div>
         </div>
 
-        <div class="stats-card">
-            <div class="stats-label">
-                <svg class="w-5 h-5 inline-block text-blue-600 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-                <div style="font-size: 0.9rem;">إجمالي المدفوعات شامل ضريبة
+        <div class="col-md-3 col-lg-2">
+            <div class="stats-card">
+                <div class="stats-label">
+                    <svg style="width: 20px; height: 20px; display: inline-block; color: #2563eb; margin-bottom: 4px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <div style="font-size: 0.9rem;">إجمالي المدفوعات<br>شامل ضريبة</div>
+                </div>
+                <div class="stats-value" style="font-size: 1.5rem; color: #2563eb;" id="paidAmount">0.00 ريال</div>
             </div>
-            <div class="stats-value text-blue-600" style="font-size: 1.5rem;" id="paidAmount">0.00 ريال</div>
         </div>
 
-        <div class="stats-card">
-            <div class="stats-label">
-                <svg class="w-5 h-5 inline-block text-orange-600 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-                <div style="font-size: 0.85rem;">المبلغ المتبقي عند العميل شامل الضريبة (غير شامل ضريبة الدفعة الاولي )
+        <div class="col-md-3 col-lg-2">
+            <div class="stats-card">
+                <div class="stats-label">
+                    <svg style="width: 20px; height: 20px; display: inline-block; color: #ea580c; margin-bottom: 4px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <div style="font-size: 0.85rem;">المبلغ المتبقي عند العميل<br>شامل الضريبة</div>
+                </div>
+                <div class="stats-value" style="font-size: 1.5rem; color: #ea580c;" id="remainingAmount">0.00 ريال</div>
             </div>
-            <div class="stats-value text-orange-600" style="font-size: 1.5rem;" id="remainingAmount">0.00 ريال</div>
         </div>
 
-        <div class="stats-card">
-            <div class="stats-label">
-                <svg class="w-5 h-5 inline-block text-pink-600 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                </svg>
-                <div style="font-size: 0.85rem;">ضريبة الدفعة الأولى</div>
+        <div class="col-md-3 col-lg-2">
+            <div class="stats-card">
+                <div class="stats-label">
+                    <svg style="width: 20px; height: 20px; display: inline-block; color: #db2777; margin-bottom: 4px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                    </svg>
+                    <div style="font-size: 0.85rem;">ضريبة الدفعة الأولى</div>
+                </div>
+                <div class="stats-value" style="font-size: 1.5rem; color: #db2777;" id="advancePaymentTax">0.00 ريال</div>
             </div>
-            <div class="stats-value text-pink-600" style="font-size: 1.5rem;" id="advancePaymentTax">0.00 ريال</div>
         </div>
     </div>
 
@@ -377,11 +393,11 @@
             <tbody id="revenuesTableBody">
                 <tr>
                     <td colspan="23" class="empty-state">
-                        <svg class="w-20 h-20 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg style="width: 80px; height: 80px; color: #d1d5db; margin-bottom: 10px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                         </svg>
-                        <h3 class="text-xl font-bold mb-2">لا توجد إيرادات</h3>
-                        <p>ابدأ بإضافة أول إيراد للمشروع</p>
+                        <h3 class="h5 fw-bold mb-2">لا توجد إيرادات</h3>
+                        <p class="text-muted">ابدأ بإضافة أول إيراد للمشروع</p>
                     </td>
                 </tr>
             </tbody>

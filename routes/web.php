@@ -115,6 +115,8 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     // صفحة إيرادات المشاريع الموحدة (مشرف النظام فقط)
     Route::get('all-projects-revenues', [App\Http\Controllers\WorkOrderController::class, 'allProjectsRevenues'])
         ->name('all-projects-revenues');
+    Route::get('all-projects-revenues/export', [App\Http\Controllers\WorkOrderController::class, 'exportAllProjectsRevenues'])
+        ->name('all-projects-revenues.export');
     
     Route::get('work-orders/revenues', [App\Http\Controllers\WorkOrderController::class, 'revenues'])->name('work-orders.revenues');
     Route::post('work-orders/revenues/save', [App\Http\Controllers\WorkOrderController::class, 'saveRevenue'])->name('work-orders.revenues.save');

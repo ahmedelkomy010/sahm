@@ -5668,15 +5668,28 @@ class WorkOrderController extends Controller
             $turnkeyUnpaid = $turnkeyRevenues->where('payment_status', 'غير مدفوع');
             $turnkeyPaid = $turnkeyRevenues->where('payment_status', 'مدفوع');
             
+            // حساب صافي قيمة المستخلصات: extract_value + tax_value - penalties
+            $turnkeyTotalNetValue = $turnkeyRevenues->sum(function($revenue) {
+                return ($revenue->extract_value ?? 0) + ($revenue->tax_value ?? 0) - ($revenue->penalties ?? 0);
+            });
+            
+            $turnkeyTotalPayments = $turnkeyPaid->sum(function($revenue) {
+                return ($revenue->extract_value ?? 0) + ($revenue->tax_value ?? 0) - ($revenue->penalties ?? 0);
+            });
+            
+            $turnkeyUnpaidAmount = $turnkeyUnpaid->sum(function($revenue) {
+                return ($revenue->extract_value ?? 0) + ($revenue->tax_value ?? 0) - ($revenue->penalties ?? 0);
+            });
+            
             $turnkeyStats = [
                 'count' => $turnkeyRevenues->count(),
                 'total_value' => $turnkeyRevenues->sum('extract_value'),
                 'total_tax' => $turnkeyRevenues->sum('tax_value'),
                 'total_penalties' => $turnkeyRevenues->sum('penalties'),
-                'total_net_value' => $turnkeyRevenues->sum('net_extract_value'),
-                'total_payments' => $turnkeyPaid->sum('net_extract_value'),
+                'total_net_value' => $turnkeyTotalNetValue,
+                'total_payments' => $turnkeyTotalPayments,
                 'first_payment_tax' => $turnkeyRevenues->sum('first_payment_tax'),
-                'unpaid_amount' => $turnkeyUnpaid->sum('net_extract_value'),
+                'unpaid_amount' => $turnkeyUnpaidAmount,
             ];
             
             // جمع المشاريع للإحصائيات التفصيلية
@@ -5691,7 +5704,21 @@ class WorkOrderController extends Controller
                 $projectUnpaid = $projectRevenues->where('payment_status', 'غير مدفوع');
                 $projectPaid = $projectRevenues->where('payment_status', 'مدفوع');
                 
+                // حساب صافي قيمة المستخلصات: extract_value + tax_value - penalties
+                $totalNetValue = $projectRevenues->sum(function($revenue) {
+                    return ($revenue->extract_value ?? 0) + ($revenue->tax_value ?? 0) - ($revenue->penalties ?? 0);
+                });
+                
+                $totalPayments = $projectPaid->sum(function($revenue) {
+                    return ($revenue->extract_value ?? 0) + ($revenue->tax_value ?? 0) - ($revenue->penalties ?? 0);
+                });
+                
+                $unpaidAmount = $projectUnpaid->sum(function($revenue) {
+                    return ($revenue->extract_value ?? 0) + ($revenue->tax_value ?? 0) - ($revenue->penalties ?? 0);
+                });
+                
                 $turnkeyProjectsStats[] = [
+                    'project_id' => $project->id,
                     'project_name' => $project->name,
                     'project_type' => $project->project_type,
                     'contract_number' => $project->contract_number,
@@ -5699,10 +5726,10 @@ class WorkOrderController extends Controller
                     'total_value' => $projectRevenues->sum('extract_value'),
                     'total_tax' => $projectRevenues->sum('tax_value'),
                     'total_penalties' => $projectRevenues->sum('penalties'),
-                    'total_net_value' => $projectRevenues->sum('net_extract_value'),
-                    'total_payments' => $projectPaid->sum('net_extract_value'),
+                    'total_net_value' => $totalNetValue,
+                    'total_payments' => $totalPayments,
                     'first_payment_tax' => $projectRevenues->sum('first_payment_tax'),
-                    'unpaid_amount' => $projectUnpaid->sum('net_extract_value'),
+                    'unpaid_amount' => $unpaidAmount,
                 ];
             }
             
@@ -5744,6 +5771,7 @@ class WorkOrderController extends Controller
                 $projectPaid = $projectRevenues->where('payment_status', 'paid');
                 
                 $specialProjectsStats[] = [
+                    'project_id' => $project->id,
                     'project_name' => $project->name,
                     'contract_number' => $project->contract_number,
                     'location' => $project->location,
@@ -5792,6 +5820,193 @@ class WorkOrderController extends Controller
             
             return back()
                 ->with('error', 'حدث خطأ أثناء جلب البيانات: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Export all projects revenues to Excel
+     */
+    public function exportAllProjectsRevenues(Request $request)
+    {
+        try {
+            // التحقق من صلاحيات مشرف النظام
+            if (!auth()->user()->is_admin) {
+                abort(403, 'غير مصرح لك بالوصول إلى هذه الصفحة');
+            }
+            
+            // Get date filters
+            $startDate = $request->input('start_date');
+            $endDate = $request->input('end_date');
+            
+            // جمع البيانات (نفس المنطق من allProjectsRevenues)
+            
+            // 1. إيرادات مشاريع الرياض والمدينة
+            $workOrdersRevenuesQuery = \App\Models\Revenue::query();
+            
+            if ($startDate) {
+                $workOrdersRevenuesQuery->where('extract_date', '>=', $startDate);
+            }
+            if ($endDate) {
+                $workOrdersRevenuesQuery->where('extract_date', '<=', $endDate);
+            }
+            
+            $workOrdersRevenues = $workOrdersRevenuesQuery->get();
+            
+            $riyadhRevenues = $workOrdersRevenues->where('project', 'riyadh');
+            $riyadhUnpaid = $riyadhRevenues->where('extract_status', 'غير مدفوع');
+            $riyadhPaid = $riyadhRevenues->where('extract_status', 'مدفوع');
+            
+            $madinahRevenues = $workOrdersRevenues->where('project', 'madinah');
+            $madinahUnpaid = $madinahRevenues->where('extract_status', 'غير مدفوع');
+            $madinahPaid = $madinahRevenues->where('extract_status', 'مدفوع');
+            
+            // 2. إيرادات مشاريع تسليم المفتاح
+            $turnkeyRevenuesQuery = \App\Models\TurnkeyRevenue::whereNotNull('project_id');
+            
+            if ($startDate && $endDate) {
+                $turnkeyRevenuesQuery->where(function($q) use ($startDate, $endDate) {
+                    $q->whereBetween('extract_date', [$startDate, $endDate])
+                      ->orWhereNull('extract_date');
+                });
+            } elseif ($startDate) {
+                $turnkeyRevenuesQuery->where(function($q) use ($startDate) {
+                    $q->where('extract_date', '>=', $startDate)
+                      ->orWhereNull('extract_date');
+                });
+            } elseif ($endDate) {
+                $turnkeyRevenuesQuery->where(function($q) use ($endDate) {
+                    $q->where('extract_date', '<=', $endDate)
+                      ->orWhereNull('extract_date');
+                });
+            }
+            
+            $turnkeyRevenues = $turnkeyRevenuesQuery->get();
+            
+            // 3. إيرادات المشاريع الخاصة
+            $specialRevenuesQuery = \App\Models\SpecialProjectRevenue::query();
+            
+            if ($startDate) {
+                $specialRevenuesQuery->where('preparation_date', '>=', $startDate);
+            }
+            if ($endDate) {
+                $specialRevenuesQuery->where('preparation_date', '<=', $endDate);
+            }
+            
+            $specialRevenues = $specialRevenuesQuery->get();
+            
+            // تجهيز البيانات للتصدير
+            $exportData = [];
+            
+            // مشروع الرياض
+            $exportData[] = [
+                'project_type' => 'عقد موحد - الرياض',
+                'project_name' => 'مشروع الرياض',
+                'contract_number' => 'عقد موحد',
+                'location' => 'الرياض',
+                'count' => $riyadhRevenues->count(),
+                'total_value' => $riyadhRevenues->sum('extract_value'),
+                'total_tax' => $riyadhRevenues->sum('tax_value'),
+                'total_penalties' => $riyadhRevenues->sum('penalties'),
+                'total_net_value' => $riyadhRevenues->sum('net_extract_value'),
+                'total_payments' => $riyadhPaid->sum('net_extract_value'),
+                'first_payment_tax' => $riyadhRevenues->sum('first_payment_tax'),
+                'unpaid_amount' => $riyadhUnpaid->sum(function($revenue) {
+                    return ($revenue->extract_value ?: 0) + ($revenue->tax_value ?: 0) - ($revenue->penalties ?: 0);
+                }),
+            ];
+            
+            // مشروع المدينة
+            $exportData[] = [
+                'project_type' => 'عقد موحد - المدينة',
+                'project_name' => 'مشروع المدينة المنورة',
+                'contract_number' => 'عقد موحد',
+                'location' => 'المدينة المنورة',
+                'count' => $madinahRevenues->count(),
+                'total_value' => $madinahRevenues->sum('extract_value'),
+                'total_tax' => $madinahRevenues->sum('tax_value'),
+                'total_penalties' => $madinahRevenues->sum('penalties'),
+                'total_net_value' => $madinahRevenues->sum('net_extract_value'),
+                'total_payments' => $madinahPaid->sum('net_extract_value'),
+                'first_payment_tax' => $madinahRevenues->sum('first_payment_tax'),
+                'unpaid_amount' => $madinahUnpaid->sum(function($revenue) {
+                    return ($revenue->extract_value ?: 0) + ($revenue->tax_value ?: 0) - ($revenue->penalties ?: 0);
+                }),
+            ];
+            
+            // مشاريع تسليم المفتاح
+            $turnkeyProjects = \App\Models\Project::where('project_type', '!=', 'special')
+                ->whereIn('project_type', ['OH33KV', 'UA33LW', 'SLS33KV', 'UG132KV'])
+                ->get();
+            
+            foreach ($turnkeyProjects as $project) {
+                $projectRevenues = $turnkeyRevenues->where('project_id', $project->id);
+                $projectUnpaid = $projectRevenues->where('payment_status', 'غير مدفوع');
+                $projectPaid = $projectRevenues->where('payment_status', 'مدفوع');
+                
+                // حساب صافي قيمة المستخلصات: extract_value + tax_value - penalties
+                $totalNetValue = $projectRevenues->sum(function($revenue) {
+                    return ($revenue->extract_value ?? 0) + ($revenue->tax_value ?? 0) - ($revenue->penalties ?? 0);
+                });
+                
+                $totalPayments = $projectPaid->sum(function($revenue) {
+                    return ($revenue->extract_value ?? 0) + ($revenue->tax_value ?? 0) - ($revenue->penalties ?? 0);
+                });
+                
+                $unpaidAmount = $projectUnpaid->sum(function($revenue) {
+                    return ($revenue->extract_value ?? 0) + ($revenue->tax_value ?? 0) - ($revenue->penalties ?? 0);
+                });
+                
+                $exportData[] = [
+                    'project_type' => 'تسليم مفتاح - ' . $project->project_type,
+                    'project_name' => $project->name,
+                    'contract_number' => $project->contract_number,
+                    'location' => $project->location ?? '-',
+                    'count' => $projectRevenues->count(),
+                    'total_value' => $projectRevenues->sum('extract_value'),
+                    'total_tax' => $projectRevenues->sum('tax_value'),
+                    'total_penalties' => $projectRevenues->sum('penalties'),
+                    'total_net_value' => $totalNetValue,
+                    'total_payments' => $totalPayments,
+                    'first_payment_tax' => $projectRevenues->sum('first_payment_tax'),
+                    'unpaid_amount' => $unpaidAmount,
+                ];
+            }
+            
+            // المشاريع الخاصة
+            $specialProjects = \App\Models\Project::where('project_type', 'special')->get();
+            
+            foreach ($specialProjects as $project) {
+                $projectRevenues = $specialRevenues->where('project_id', $project->id);
+                $projectUnpaid = $projectRevenues->where('payment_status', 'unpaid');
+                $projectPaid = $projectRevenues->where('payment_status', 'paid');
+                
+                $exportData[] = [
+                    'project_type' => 'مشروع خاص',
+                    'project_name' => $project->name,
+                    'contract_number' => $project->contract_number,
+                    'location' => $project->location,
+                    'count' => $projectRevenues->count(),
+                    'total_value' => $projectRevenues->sum('total_value'),
+                    'total_tax' => $projectRevenues->sum('tax_value'),
+                    'total_penalties' => $projectRevenues->sum('penalties'),
+                    'total_net_value' => $projectRevenues->sum('net_value'),
+                    'total_payments' => $projectPaid->sum('net_value'),
+                    'first_payment_tax' => $projectRevenues->sum('advance_payment_tax'),
+                    'unpaid_amount' => $projectUnpaid->sum('net_value'),
+                ];
+            }
+            
+            // تصدير البيانات
+            $fileName = 'اجمالي_ايرادات_المشاريع_' . date('Y-m-d_H-i-s') . '.xlsx';
+            
+            return \Excel::download(
+                new \App\Exports\AllProjectsRevenuesExport($exportData),
+                $fileName
+            );
+            
+        } catch (\Exception $e) {
+            \Log::error('Error exporting all projects revenues: ' . $e->getMessage());
+            return back()->with('error', 'حدث خطأ أثناء تصدير البيانات: ' . $e->getMessage());
         }
     }
 } 
