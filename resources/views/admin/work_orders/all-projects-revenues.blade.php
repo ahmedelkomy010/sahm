@@ -424,7 +424,7 @@
                         <div class="stat-icon">
                             <i class="fas fa-hand-holding-usd"></i>
                         </div>
-                        <div class="stat-title">إجمالي المدفوعات</div>
+                        <div class="stat-title"> إجمالي المدفوعات شامل الضريبة</div>
                         <div class="stat-value">{{ number_format($grandTotal['total_payments'], 2) }}</div>
                         <div class="stat-currency">ريال سعودي</div>
                     </div>
@@ -437,6 +437,17 @@
                         </div>
                         <div class="stat-title">المبلغ المتبقي عند العميل شامل الضريبة</div>
                         <div class="stat-value">{{ number_format($grandTotal['unpaid_amount'], 2) }}</div>
+                        <div class="stat-currency">ريال سعودي</div>
+                    </div>
+                </div>
+                
+                <div class="stat-card-small p-2">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-hand-holding-heart"></i>
+                        </div>
+                        <div class="stat-title">الإجمالي العام عند العميل</div>
+                        <div class="stat-value">{{ number_format($workOrdersStats['riyadh']['first_payment_tax'] + $workOrdersStats['madinah']['first_payment_tax'] + $grandTotal['unpaid_amount'], 2) }}</div>
                         <div class="stat-currency">ريال سعودي</div>
                     </div>
                 </div>
@@ -517,7 +528,7 @@
                         <div class="stat-icon">
                             <i class="fas fa-hand-holding-usd"></i>
                         </div>
-                        <div class="stat-title">إجمالي المدفوعات</div>
+                        <div class="stat-title"> إجمالي المدفوعات شامل الضريبة</div>
                         <div class="stat-value">{{ number_format($workOrdersStats['riyadh']['total_payments'], 2) }}</div>
                         <div class="stat-currency">ريال سعودي</div>
                     </div>
@@ -530,6 +541,28 @@
                         </div>
                         <div class="stat-title">المبلغ المتبقي عند العميل شامل الضريبة</div>
                         <div class="stat-value">{{ number_format($workOrdersStats['riyadh']['unpaid_amount'], 2) }}</div>
+                        <div class="stat-currency">ريال سعودي</div>
+                    </div>
+                </div>
+                
+                <div class="stat-card-small p-2">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-receipt"></i>
+                        </div>
+                        <div class="stat-title">المتبقي لدي العميل (ضريبة الدفعة الاولي)</div>
+                        <div class="stat-value">{{ number_format($workOrdersStats['riyadh']['first_payment_tax'], 2) }}</div>
+                        <div class="stat-currency">ريال سعودي</div>
+                    </div>
+                </div>
+                
+                <div class="stat-card-small p-2">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-coins"></i>
+                        </div>
+                        <div class="stat-title">الاجمالي لدي العميل (شامل الضريبة + ضريبة الدفعة الاولي)</div>
+                        <div class="stat-value">{{ number_format($workOrdersStats['riyadh']['unpaid_amount'] + $workOrdersStats['riyadh']['first_payment_tax'], 2) }}</div>
                         <div class="stat-currency">ريال سعودي</div>
                     </div>
                 </div>
@@ -610,7 +643,7 @@
                         <div class="stat-icon">
                             <i class="fas fa-hand-holding-usd"></i>
                         </div>
-                        <div class="stat-title">إجمالي المدفوعات</div>
+                        <div class="stat-title"> إجمالي المدفوعات شامل الضريبة</div>
                         <div class="stat-value">{{ number_format($workOrdersStats['madinah']['total_payments'], 2) }}</div>
                         <div class="stat-currency">ريال سعودي</div>
                     </div>
@@ -623,6 +656,28 @@
                         </div>
                         <div class="stat-title">المبلغ المتبقي عند العميل شامل الضريبة</div>
                         <div class="stat-value">{{ number_format($workOrdersStats['madinah']['unpaid_amount'], 2) }}</div>
+                        <div class="stat-currency">ريال سعودي</div>
+                    </div>
+                </div>
+                
+                <div class="stat-card-small p-2">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-receipt"></i>
+                        </div>
+                        <div class="stat-title">المتبقي لدي العميل (ضريبة الدفعة الاولي)</div>
+                        <div class="stat-value">{{ number_format($workOrdersStats['madinah']['first_payment_tax'], 2) }}</div>
+                        <div class="stat-currency">ريال سعودي</div>
+                    </div>
+                </div>
+                
+                <div class="stat-card-small p-2">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-coins"></i>
+                        </div>
+                        <div class="stat-title">الاجمالي لدي العميل (شامل الضريبة + ضريبة الدفعة الاولي)</div>
+                        <div class="stat-value">{{ number_format($workOrdersStats['madinah']['unpaid_amount'] + $workOrdersStats['madinah']['first_payment_tax'], 2) }}</div>
                         <div class="stat-currency">ريال سعودي</div>
                     </div>
                 </div>
@@ -697,7 +752,7 @@
                         <div class="stat-icon">
                             <i class="fas fa-hand-holding-usd"></i>
                         </div>
-                        <div class="stat-title">إجمالي المدفوعات</div>
+                        <div class="stat-title"> إجمالي المدفوعات شامل الضريبة</div>
                         <div class="stat-value">{{ number_format($turnkeyStats['total_payments'], 2) }}</div>
                         <div class="stat-currency">ريال سعودي</div>
                     </div>
@@ -728,7 +783,7 @@
                     </small>
                 </div>
                 @if(isset($projectStat['project_id']))
-                <a href="{{ route('projects.revenues', ['project' => $projectStat['project_id']]) }}" class="btn btn-light btn-sm">
+                <a href="{{ route('projects.revenues', ['project' => $projectStat['project_id']]) }}" class="btn btn-left sm">
                     <i class="fas fa-eye me-1"></i>
                     عرض الإيرادات
                 </a>
@@ -796,7 +851,7 @@
                         <div class="stat-icon">
                             <i class="fas fa-hand-holding-usd"></i>
                         </div>
-                        <div class="stat-title">إجمالي المدفوعات</div>
+                        <div class="stat-title"> إجمالي المدفوعات شامل الضريبة</div>
                         <div class="stat-value">{{ number_format($projectStat['total_payments'], 2) }}</div>
                         <div class="stat-currency">ريال سعودي</div>
                     </div>
@@ -884,7 +939,7 @@
                         <div class="stat-icon">
                             <i class="fas fa-hand-holding-usd"></i>
                         </div>
-                        <div class="stat-title">إجمالي المدفوعات</div>
+                        <div class="stat-title"> إجمالي المدفوعات شامل الضريبة</div>
                         <div class="stat-value">{{ number_format($specialStats['total_payments'], 2) }}</div>
                         <div class="stat-currency">ريال سعودي</div>
                     </div>
@@ -983,7 +1038,7 @@
                         <div class="stat-icon">
                             <i class="fas fa-hand-holding-usd"></i>
                         </div>
-                        <div class="stat-title">إجمالي المدفوعات</div>
+                        <div class="stat-title"> إجمالي المدفوعات شامل الضريبة</div>
                         <div class="stat-value">{{ number_format($projectStat['total_payments'], 2) }}</div>
                         <div class="stat-currency">ريال سعودي</div>
                     </div>

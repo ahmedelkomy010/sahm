@@ -1392,6 +1392,13 @@ function resetCountdown(workOrderId) {
                                                 <a href="{{ route('admin.work-orders.edit', $workOrder) }}" class="btn btn-sm btn-primary">تعديل</a>
                                                 @endif
                                                 
+                                                <button type="button" 
+                                                        class="btn btn-sm btn-success" 
+                                                        onclick="showWorkOrderNotifications({{ $workOrder->id }}, '{{ $workOrder->order_number }}')"
+                                                        title="عرض الإشعارات">
+                                                    <i class="fas fa-bell"></i>
+                                                </button>
+                                                
                                                 @if(auth()->user()->is_admin)
                                                     <button type="button" 
                                                             class="btn btn-sm btn-warning" 
@@ -2740,6 +2747,165 @@ function clearUserSearch() {
         }
     });
 })();
+
+// Function to show work order notifications
+async function showWorkOrderNotifications(workOrderId, orderNumber) {
+    try {
+        const response = await fetch(`/admin/work-orders/${workOrderId}/notifications`);
+        const data = await response.json();
+        
+        if (data.success) {
+            // Update modal title
+            document.getElementById('notificationsModalLabel').textContent = `إشعارات أمر العمل: ${orderNumber}`;
+            
+            // Clear previous content
+            const modalBody = document.getElementById('notificationsModalBody');
+            modalBody.innerHTML = '';
+            
+            if (data.notifications && data.notifications.length > 0) {
+                const notificationsList = document.createElement('div');
+                notificationsList.className = 'notifications-list';
+                
+                data.notifications.forEach((notification, index) => {
+                    const notificationItem = document.createElement('div');
+                    notificationItem.className = 'notification-item mb-3 p-3 border rounded';
+                    notificationItem.style.backgroundColor = notification.is_read ? '#f8f9fa' : '#fff3cd';
+                    
+                    // Create a div for the message with proper styling
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = 'notification-message mb-2';
+                    messageDiv.style.whiteSpace = 'pre-wrap';
+                    messageDiv.style.wordWrap = 'break-word';
+                    messageDiv.style.overflowWrap = 'break-word';
+                    messageDiv.style.maxHeight = '300px';
+                    messageDiv.style.overflowY = 'auto';
+                    messageDiv.style.lineHeight = '1.6';
+                    messageDiv.textContent = notification.message || '';
+                    
+                    notificationItem.innerHTML = `
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h6 class="mb-0">
+                                <i class="fas fa-bell text-primary me-2"></i>
+                                ${notification.title || 'إشعار'}
+                            </h6>
+                            <small class="text-muted" style="white-space: nowrap;">${new Date(notification.created_at).toLocaleString('ar-EG')}</small>
+                        </div>
+                    `;
+                    
+                    // Append the message div
+                    notificationItem.appendChild(messageDiv);
+                    
+                    // Add footer
+                    const footer = document.createElement('div');
+                    footer.className = 'd-flex justify-content-between align-items-center mt-2';
+                    footer.innerHTML = `
+                        <small class="text-muted">
+                            <i class="fas fa-user me-1"></i>
+                            من: ${notification.sender_name || 'النظام'}
+                        </small>
+                        <span class="badge ${notification.is_read ? 'bg-secondary' : 'bg-warning'}">
+                            ${notification.is_read ? 'مقروء' : 'جديد'}
+                        </span>
+                    `;
+                    notificationItem.appendChild(footer);
+                    
+                    notificationsList.appendChild(notificationItem);
+                });
+                
+                modalBody.appendChild(notificationsList);
+            } else {
+                modalBody.innerHTML = `
+                    <div class="text-center py-5">
+                        <i class="fas fa-bell-slash fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">لا توجد إشعارات لهذا الأمر</p>
+                    </div>
+                `;
+            }
+            
+            // Show modal
+            const modal = new bootstrap.Modal(document.getElementById('notificationsModal'));
+            modal.show();
+        } else {
+            alert('حدث خطأ أثناء جلب الإشعارات');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('حدث خطأ أثناء جلب الإشعارات');
+    }
+}
 </script>
+
+<!-- Modal لعرض الإشعارات -->
+<div class="modal fade" id="notificationsModal" tabindex="-1" aria-labelledby="notificationsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="notificationsModalLabel">إشعارات أمر العمل</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="notificationsModalBody" style="max-height: 500px; overflow-y: auto;">
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">جاري التحميل...</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.notifications-list {
+    max-height: 450px;
+    overflow-y: auto;
+}
+
+.notification-item {
+    transition: all 0.3s ease;
+    border-left: 4px solid #0d6efd !important;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+.notification-item:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transform: translateX(-5px);
+}
+
+.notification-message {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    max-height: 300px;
+    overflow-y: auto;
+    line-height: 1.6;
+    padding: 10px;
+    background-color: rgba(255, 255, 255, 0.5);
+    border-radius: 5px;
+    font-size: 0.95rem;
+    color: #333;
+}
+
+.notification-message::-webkit-scrollbar {
+    width: 6px;
+}
+
+.notification-message::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.notification-message::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 3px;
+}
+
+.notification-message::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+</style>
 
 @endsection 

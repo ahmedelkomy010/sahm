@@ -6009,4 +6009,43 @@ class WorkOrderController extends Controller
             return back()->with('error', 'حدث خطأ أثناء تصدير البيانات: ' . $e->getMessage());
         }
     }
+
+    /**
+     * Get all notifications for a specific work order
+     */
+    public function getWorkOrderNotifications(WorkOrder $workOrder)
+    {
+        try {
+            // Get all notifications related to this work order
+            // Assuming notifications table has a work_order_id or link field
+            $notifications = \App\Models\Notification::where(function($query) use ($workOrder) {
+                $query->where('work_order_id', $workOrder->id)
+                      ->orWhere('link', 'like', '%/work-orders/' . $workOrder->id . '%');
+            })
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function($notification) {
+                return [
+                    'id' => $notification->id,
+                    'title' => $notification->title ?? 'إشعار',
+                    'message' => $notification->message,
+                    'is_read' => $notification->is_read ?? 0,
+                    'created_at' => $notification->created_at,
+                    'sender_name' => $notification->user ? $notification->user->name : 'النظام',
+                ];
+            });
+
+            return response()->json([
+                'success' => true,
+                'notifications' => $notifications
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error fetching work order notifications: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء جلب الإشعارات'
+            ], 500);
+        }
+    }
 } 
