@@ -551,60 +551,29 @@
                                     }
 
                                     function fillFormFields(data) {
+                                        // دالة مساعدة لملء الحقل بشكل آمن
+                                        function setFieldValue(fieldId, value) {
+                                            const field = document.getElementById(fieldId);
+                                            if (field && value) {
+                                                field.value = value;
+                                            }
+                                        }
+                                        
                                         // ملء الحقول بالبيانات المسترجعة
-                                        if (data.work_type) {
-                                            document.getElementById('work_type').value = data.work_type;
-                                            // تحديث رقم نوع العمل إذا وجد
-                                            document.getElementById('work_type_number').value = data.work_type;
-                                        }
-                                        
-                                        if (data.work_description) {
-                                            document.getElementById('work_description').value = data.work_description;
-                                        }
-                                        
-                                        if (data.approval_date) {
-                                            document.getElementById('approval_date').value = data.approval_date;
-                                        }
-                                        
-                                        if (data.manual_days) {
-                                            document.getElementById('manual_days').value = data.manual_days;
-                                        }
-                                        
-                                        if (data.subscriber_name) {
-                                            document.getElementById('subscriber_name').value = data.subscriber_name;
-                                        }
-                                        
-                                        if (data.district) {
-                                            document.getElementById('district').value = data.district;
-                                        }
-                                        
-                                        if (data.municipality) {
-                                            document.getElementById('municipality').value = data.municipality;
-                                        }
-                                        
-                                        if (data.station_number) {
-                                            document.getElementById('station_number').value = data.station_number;
-                                        }
-                                        
-                                        if (data.consultant_name) {
-                                            document.getElementById('consultant_name').value = data.consultant_name;
-                                        }
-                                        
-                                        if (data.office) {
-                                            document.getElementById('office').value = data.office;
-                                        }
-                                        
-                                        if (data.order_value_with_consultant) {
-                                            document.getElementById('order_value_with_consultant').value = data.order_value_with_consultant;
-                                        }
-                                        
-                                        if (data.order_value_without_consultant) {
-                                            document.getElementById('order_value_without_consultant').value = data.order_value_without_consultant;
-                                        }
-                                        
-                                        if (data.execution_status) {
-                                            document.getElementById('execution_status').value = data.execution_status;
-                                        }
+                                        setFieldValue('work_type', data.work_type);
+                                        setFieldValue('work_type_number', data.work_type);
+                                        setFieldValue('work_description', data.work_description);
+                                        setFieldValue('approval_date', data.approval_date);
+                                        setFieldValue('manual_days', data.manual_days);
+                                        setFieldValue('subscriber_name', data.subscriber_name);
+                                        setFieldValue('district', data.district);
+                                        setFieldValue('municipality', data.municipality);
+                                        setFieldValue('station_number', data.station_number);
+                                        setFieldValue('consultant_name', data.consultant_name);
+                                        setFieldValue('office', data.office);
+                                        setFieldValue('order_value_with_consultant', data.order_value_with_consultant);
+                                        setFieldValue('order_value_without_consultant', data.order_value_without_consultant);
+                                        setFieldValue('execution_status', data.execution_status);
                                     }
 
                                     function clearFormFields() {
