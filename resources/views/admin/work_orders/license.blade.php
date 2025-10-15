@@ -5827,44 +5827,42 @@ function updateTestsTable() {
         // إنشاء أزرار المرفق
         let attachmentButtons = '';
         if (test.fileName && test.fileUrl) {
-            attachmentButtons = `
-                <div class="d-flex gap-1 flex-wrap">
-                    <button type="button" class="btn btn-info btn-sm" onclick="viewAttachment('${test.fileUrl}', '${test.fileName}')" title="عرض المرفق">
-                        <i class="fas fa-eye"></i>
-                    </button>
-                    <button type="button" class="btn btn-success btn-sm" onclick="downloadAttachment('${test.fileUrl}', '${test.fileName}')" title="تحميل المرفق">
-                        <i class="fas fa-download"></i>
-                    </button>
-                </div>
-                <small class="text-success d-block mt-1">
-                    <i class="fas fa-check-circle me-1"></i>${test.fileName}
-                </small>
-            `;
+            // استخدام data attributes وعدم استخدام template literals لتجنب تعارض Blade
+            attachmentButtons = '<div class="d-flex gap-1 flex-wrap">' +
+                '<button type="button" class="btn btn-info btn-sm view-attachment-btn" data-url="' + test.fileUrl + '" data-name="' + test.fileName + '" title="عرض المرفق">' +
+                '<i class="fas fa-eye"></i>' +
+                '</button>' +
+                '<button type="button" class="btn btn-success btn-sm download-attachment-btn" data-url="' + test.fileUrl + '" data-name="' + test.fileName + '" title="تحميل المرفق">' +
+                '<i class="fas fa-download"></i>' +
+                '</button>' +
+                '</div>' +
+                '<small class="text-success d-block mt-1">' +
+                '<i class="fas fa-check-circle me-1"></i>' + test.fileName +
+                '</small>';
         } else {
             attachmentButtons = '<span class="text-muted">لا توجد مرفقات</span>';
         }
         
-        row.innerHTML = `
-            <td>${index + 1}</td>
-            <td>${test.name}</td>
-            <td>${test.points}</td>
-            <td>${test.price.toFixed(2)}</td>
-            <td class="fw-bold">${test.total.toFixed(2)}</td>
-            <td>
-                <span class="badge ${test.result === 'pass' ? 'bg-success' : 'bg-danger'}">
-                    <i class="fas ${test.result === 'pass' ? 'fa-check' : 'fa-times'} me-1"></i>
-                    ${test.result === 'pass' ? 'ناجح' : 'راسب'}
-                </span>
-            </td>
-            <td>
-                ${attachmentButtons}
-            </td>
-            <td>
-                <button type="button" class="btn btn-danger btn-sm" onclick="removeTest(${test.id})" title="حذف الاختبار">
-                    <i class="fas fa-trash"></i>
-                </button>
-            </td>
-        `;
+        // استخدام createElement بدلاً من template strings لتجنب تعارض Blade
+        row.innerHTML = '<td>' + (index + 1) + '</td>' +
+            '<td>' + test.name + '</td>' +
+            '<td>' + test.points + '</td>' +
+            '<td>' + test.price.toFixed(2) + '</td>' +
+            '<td class="fw-bold">' + test.total.toFixed(2) + '</td>' +
+            '<td>' +
+                '<span class="badge ' + (test.result === 'pass' ? 'bg-success' : 'bg-danger') + '">' +
+                    '<i class="fas ' + (test.result === 'pass' ? 'fa-check' : 'fa-times') + ' me-1"></i>' +
+                    (test.result === 'pass' ? 'ناجح' : 'راسب') +
+                '</span>' +
+            '</td>' +
+            '<td>' +
+                attachmentButtons +
+            '</td>' +
+            '<td>' +
+                '<button type="button" class="btn btn-danger btn-sm remove-test-btn" data-test-id="' + test.id + '" title="حذف الاختبار">' +
+                    '<i class="fas fa-trash"></i>' +
+                '</button>' +
+            '</td>';
         tableBody.appendChild(row);
     });
 }
@@ -5885,9 +5883,37 @@ function removeTest(testId) {
     }
 }
 
-
-
-
+// Event delegation للأزرار الجديدة (بدلاً من inline onclick)
+document.addEventListener('click', function(e) {
+    // زر عرض المرفق
+    if (e.target.closest('.view-attachment-btn')) {
+        const btn = e.target.closest('.view-attachment-btn');
+        const fileUrl = btn.getAttribute('data-url');
+        const fileName = btn.getAttribute('data-name');
+        if (fileUrl && fileName) {
+            viewAttachment(fileUrl, fileName);
+        }
+    }
+    
+    // زر تحميل المرفق
+    if (e.target.closest('.download-attachment-btn')) {
+        const btn = e.target.closest('.download-attachment-btn');
+        const fileUrl = btn.getAttribute('data-url');
+        const fileName = btn.getAttribute('data-name');
+        if (fileUrl && fileName) {
+            downloadAttachment(fileUrl, fileName);
+        }
+    }
+    
+    // زر حذف اختبار
+    if (e.target.closest('.remove-test-btn')) {
+        const btn = e.target.closest('.remove-test-btn');
+        const testId = parseInt(btn.getAttribute('data-test-id'));
+        if (testId) {
+            removeTest(testId);
+        }
+    }
+});
 
 // دالة عرض المرفق
 function viewAttachment(fileUrl, fileName) {
@@ -5896,62 +5922,71 @@ function viewAttachment(fileUrl, fileName) {
     const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp'];
     const pdfExtensions = ['pdf'];
     
+    const modalId = 'attachmentModal-' + Date.now();
     let modalContent = '';
     
     if (imageExtensions.includes(fileExtension)) {
-        modalContent = `<img src="${fileUrl}" class="img-fluid" alt="${fileName}" style="max-height: 500px;">`;
+        const imgEl = document.createElement('img');
+        imgEl.src = fileUrl;
+        imgEl.className = 'img-fluid';
+        imgEl.style.maxHeight = '500px';
+        imgEl.alt = fileName;
+        modalContent = imgEl.outerHTML;
     } else if (pdfExtensions.includes(fileExtension)) {
-        modalContent = `<iframe src="${fileUrl}" width="100%" height="600px" frameborder="0"></iframe>`;
+        const iframeEl = document.createElement('iframe');
+        iframeEl.src = fileUrl;
+        iframeEl.width = '100%';
+        iframeEl.height = '600px';
+        iframeEl.frameBorder = '0';
+        modalContent = iframeEl.outerHTML;
     } else {
-        modalContent = `
-            <div class="text-center p-4">
-                <i class="fas fa-file fa-5x text-muted mb-3"></i>
-                <h5>${fileName}</h5>
-                <p class="text-muted">تم رفع الملف بنجاح - لا يمكن معاينة هذا النوع من الملفات</p>
-                <button type="button" class="btn btn-primary" onclick="downloadAttachment('${fileUrl}', '${fileName}')">
-                    <i class="fas fa-download me-2"></i>تحميل الملف
-                </button>
-            </div>
-        `;
+        modalContent = '<div class="text-center p-4">' +
+            '<i class="fas fa-file fa-5x text-muted mb-3"></i>' +
+            '<h5>' + fileName + '</h5>' +
+            '<p class="text-muted">تم رفع الملف بنجاح - لا يمكن معاينة هذا النوع من الملفات</p>' +
+            '<button type="button" class="btn btn-primary download-attachment-btn" data-url="' + fileUrl + '" data-name="' + fileName + '">' +
+                '<i class="fas fa-download me-2"></i>تحميل الملف' +
+            '</button>' +
+            '</div>';
     }
     
     // إنشاء modal
-    const modalHtml = `
-        <div class="modal fade" id="attachmentModal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-lg">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">
-                            <i class="fas fa-eye me-2"></i>عرض المرفق: ${fileName}
-                        </h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body">
-                        ${modalContent}
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-success" onclick="downloadAttachment('${fileUrl}', '${fileName}')">
-                            <i class="fas fa-download me-2"></i>تحميل
-                        </button>
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
+    const modalHtml = '<div class="modal fade" id="' + modalId + '" tabindex="-1" aria-hidden="true">' +
+        '<div class="modal-dialog modal-lg">' +
+            '<div class="modal-content">' +
+                '<div class="modal-header">' +
+                    '<h5 class="modal-title">' +
+                        '<i class="fas fa-eye me-2"></i>عرض المرفق: ' + fileName +
+                    '</h5>' +
+                    '<button type="button" class="btn-close" data-bs-dismiss="modal"></button>' +
+                '</div>' +
+                '<div class="modal-body">' +
+                    modalContent +
+                '</div>' +
+                '<div class="modal-footer">' +
+                    '<button type="button" class="btn btn-success download-attachment-btn" data-url="' + fileUrl + '" data-name="' + fileName + '">' +
+                        '<i class="fas fa-download me-2"></i>تحميل' +
+                    '</button>' +
+                    '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>' +
+                '</div>' +
+            '</div>' +
+        '</div>' +
+        '</div>';
     
-    // إزالة modal السابق إن وجد
-    const existingModal = document.getElementById('attachmentModal');
-    if (existingModal) {
-        existingModal.remove();
-    }
+    // إزالة أي modals سابقة
+    document.querySelectorAll('[id^="attachmentModal-"]').forEach(m => m.remove());
     
     // إضافة modal الجديد
     document.body.insertAdjacentHTML('beforeend', modalHtml);
     
     // إظهار modal
-    const modal = new bootstrap.Modal(document.getElementById('attachmentModal'));
+    const modal = new bootstrap.Modal(document.getElementById(modalId));
     modal.show();
+    
+    // إزالة modal بعد إغلاقه
+    document.getElementById(modalId).addEventListener('hidden.bs.modal', function() {
+        this.remove();
+    });
 }
 
 // دالة تحميل المرفق
