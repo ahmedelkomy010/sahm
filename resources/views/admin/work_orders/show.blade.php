@@ -953,19 +953,16 @@
                     </div>
 
                     <!-- معلومات آخر تحديث -->
-                    @php
-                        $lastNote = $workOrder->workOrderNotes()->latest()->first();
-                    @endphp
-                    @if($lastNote)
+                    @if($workOrder->updated_at)
                     <div class="alert alert-info mb-0">
                         <div class="d-flex align-items-center">
-                            <i class="fas fa-user-edit fs-5 me-3"></i>
+                            <i class="fas fa-clock fs-5 me-3"></i>
                             <div>
-                                <strong class="d-block">آخر تحديث للملاحظات:</strong>
-                                <span id="updatedByName">{{ $lastNote->createdBy->name ?? 'غير معروف' }}</span>
+                                <strong class="d-block">آخر تحديث:</strong>
+                                <span id="updatedByName">{{ auth()->user()->name ?? 'النظام' }}</span>
                                 <br>
                                 <small class="text-muted" id="updatedAtTime">
-                                    {{ $lastNote->created_at->format('Y-m-d H:i') }}
+                                    {{ $workOrder->updated_at->format('Y-m-d H:i') }}
                                 </small>
                             </div>
                         </div>

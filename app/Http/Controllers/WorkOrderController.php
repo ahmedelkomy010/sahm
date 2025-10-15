@@ -126,7 +126,7 @@ class WorkOrderController extends Controller
         $perPage = $request->get('per_page', 15);
         $perPage = in_array($perPage, [10, 15, 25, 50, 100, 300, 500, 1000]) ? $perPage : 15;
         
-        $workOrders = $query->with('notesUpdatedBy')->paginate($perPage);
+        $workOrders = $query->paginate($perPage);
         
         return view('admin.work_orders.index', compact('workOrders', 'project', 'projectName'));
     }
@@ -441,7 +441,7 @@ class WorkOrderController extends Controller
             ]);
         }
         
-        $workOrder->load(['files', 'basicAttachments', 'invoiceAttachments', 'licenses.violations', 'safetyViolations', 'notesUpdatedBy']);
+        $workOrder->load(['files', 'basicAttachments', 'invoiceAttachments', 'licenses.violations', 'safetyViolations']);
         
         // تحديد المشروع بناءً على المدينة
         $project = $workOrder->city === 'المدينة المنورة' ? 'madinah' : 'riyadh';
@@ -6062,28 +6062,12 @@ class WorkOrderController extends Controller
                 'notes' => 'nullable|string'
             ]);
             
-            // حفظ الملاحظة في الجدول الجديد إذا كانت غير فارغة
-            if (!empty(trim($request->notes))) {
-                // التحقق من آخر ملاحظة لتجنب التكرار
-                $lastNote = $workOrder->workOrderNotes()->latest()->first();
-                
-                // حفظ فقط إذا كانت الملاحظة مختلفة عن آخر ملاحظة
-                if (!$lastNote || $lastNote->note !== $request->notes) {
-                    \App\Models\WorkOrderNote::create([
-                        'work_order_id' => $workOrder->id,
-                        'note' => $request->notes,
-                        'created_by' => auth()->id(),
-                    ]);
-                }
-            }
-            
-            // تحديث حقل notes القديم للتوافق مع الكود القديم
-            $workOrder->update([
-                'notes' => $request->notes,
-            ]);
+            // حفظ الملاحظة في حقل notes فقط
+            $workOrder->notes = $request->notes;
+            $workOrder->save();
             
             // جلب اسم المستخدم
-            $updatedBy = auth()->user()->name;
+            $updatedBy = auth()->user()->name ?? 'غير معروف';
             
             \Log::info('Work order notes updated', [
                 'work_order_id' => $workOrder->id,
