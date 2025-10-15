@@ -786,14 +786,11 @@
                                                         $evacuationAmount += ($license->evac_license_value ?? 0);
                                                         
                                                         // جمع بيانات الإخلاء من additional_details إذا وجدت
-                                                        if ($license->additional_details) {
-                                                            $additionalDetails = json_decode($license->additional_details, true);
-                                                            if (isset($additionalDetails['evacuation_data']) && is_array($additionalDetails['evacuation_data'])) {
-                                                                foreach ($additionalDetails['evacuation_data'] as $evacData) {
-                                                                    if (isset($evacData['evacuation_amount']) && is_numeric($evacData['evacuation_amount'])) {
-                                                                        $evacuationAmount += floatval($evacData['evacuation_amount']);
-                                                                        $totalEvacuationCount++;
-                                                                    }
+                                                        if ($license->additional_details && isset($license->additional_details['evacuation_data']) && is_array($license->additional_details['evacuation_data'])) {
+                                                            foreach ($license->additional_details['evacuation_data'] as $evacData) {
+                                                                if (isset($evacData['evacuation_amount']) && is_numeric($evacData['evacuation_amount'])) {
+                                                                    $evacuationAmount += floatval($evacData['evacuation_amount']);
+                                                                    $totalEvacuationCount++;
                                                                 }
                                                             }
                                                         }

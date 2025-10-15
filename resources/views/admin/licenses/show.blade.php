@@ -799,11 +799,8 @@ use Illuminate\Support\Facades\Storage;
                 @php
                             $evacuationData = [];
                         // Check for evacuation data in additional_details
-                            if ($license->additional_details) {
-                                $additionalDetails = json_decode($license->additional_details, true);
-                            if (isset($additionalDetails['evacuation_data']) && is_array($additionalDetails['evacuation_data'])) {
-                                    $evacuationData = $additionalDetails['evacuation_data'];
-                                }
+                            if ($license->additional_details && isset($license->additional_details['evacuation_data']) && is_array($license->additional_details['evacuation_data'])) {
+                                $evacuationData = $license->additional_details['evacuation_data'];
                             }
                         // Fallback to evac_table2_data if no data in additional_details
                         if (empty($evacuationData) && $license->evac_table2_data) {

@@ -94,7 +94,7 @@
                                     if (!empty($license->evacuation_data)) {
                                         $evacuationData = is_string($license->evacuation_data) ? json_decode($license->evacuation_data, true) : $license->evacuation_data;
                                     } elseif (!empty($license->additional_details)) {
-                                        $additionalDetails = is_string($license->additional_details) ? json_decode($license->additional_details, true) : $license->additional_details;
+                                        $additionalDetails = $license->additional_details ?? [];
                                         $evacuationData = $additionalDetails['evacuation_data'] ?? null;
                                     }
                                     
