@@ -458,7 +458,7 @@ class LicenseController extends Controller
         }
         
         // تحضير البيانات المطلوبة للعرض
-        $additionalDetails = $license->additional_details ? json_decode($license->additional_details, true) : [];
+        $additionalDetails = $license->additional_details ?? [];
         
         $labTechnicalData = [];
         if ($license->lab_table2_data) {
@@ -2063,7 +2063,7 @@ class LicenseController extends Controller
             }
             
             // الحصول على البيانات الإضافية الحالية أو إنشاء مصفوفة فارغة
-            $additionalDetails = $license->additional_details ? json_decode($license->additional_details, true) : [];
+            $additionalDetails = $license->additional_details ?? [];
             
             // تحديث بيانات الإخلاء
             $additionalDetails['evacuation_data'] = $processedEvacuationData;
@@ -2106,7 +2106,7 @@ class LicenseController extends Controller
     {
         try {
             $license = License::findOrFail($licenseId);
-            $additionalDetails = json_decode($license->additional_details, true);
+            $additionalDetails = $license->additional_details ?? [];
             
             if (isset($additionalDetails['evacuation_data'][$index]['evacuation_file'])) {
                 $filePath = $additionalDetails['evacuation_data'][$index]['evacuation_file'];
@@ -2356,7 +2356,7 @@ class LicenseController extends Controller
             ]);
             
             // إذا لم توجد مرفقات جديدة، احتفظ بالمرفقات الموجودة إن وجدت
-            $additionalDetailsTemp = $license->additional_details ? json_decode($license->additional_details, true) : [];
+            $additionalDetailsTemp = $license->additional_details ?? [];
             $existingEvacuationDataTemp = $additionalDetailsTemp['evacuation_data'] ?? [];
             
             if (isset($existingEvacuationDataTemp[$dataIndex]['attachments']) 
@@ -2374,7 +2374,7 @@ class LicenseController extends Controller
     }
             
             // الحصول على البيانات الإضافية الحالية أو إنشاء مصفوفة فارغة
-            $additionalDetails = $license->additional_details ? json_decode($license->additional_details, true) : [];
+            $additionalDetails = $license->additional_details ?? [];
             
             // الحصول على بيانات الإخلاء الموجودة للحفاظ على المرفقات
             $existingEvacuationData = $additionalDetails['evacuation_data'] ?? [];
@@ -2432,7 +2432,7 @@ class LicenseController extends Controller
                 'license_id' => $license->id,
                 'merged_data_count' => count($mergedEvacuationData),
                 'additional_details_saved' => $license->additional_details,
-                'evacuation_data_in_db' => $license->additional_details ? json_decode($license->additional_details, true)['evacuation_data'] ?? 'NOT FOUND' : 'NULL'
+                'evacuation_data_in_db' => $license->additional_details['evacuation_data'] ?? 'NOT FOUND'
             ]);
 
             \Log::info('Evacuation data saved successfully', [
@@ -2499,7 +2499,7 @@ class LicenseController extends Controller
             
             $evacuationData = [];
             if ($license->additional_details) {
-                $additionalDetails = json_decode($license->additional_details, true);
+                $additionalDetails = $license->additional_details ?? [];
                 
                 // التأكد من أن البيانات في تنسيق مصفوفة
                 if (is_array($additionalDetails) && isset($additionalDetails['evacuation_data'])) {
@@ -3018,7 +3018,7 @@ class LicenseController extends Controller
             $license = License::findOrFail($request->license_id);
             
             // فك تشفير البيانات الإضافية الحالية
-            $additionalDetails = $license->additional_details ? json_decode($license->additional_details, true) : [];
+            $additionalDetails = $license->additional_details ?? [];
             
             // التأكد من وجود مصفوفة المرفقات
             if (!isset($additionalDetails['evacuation_attachments'])) {
@@ -3077,7 +3077,7 @@ class LicenseController extends Controller
     {
         try {
             $license = License::findOrFail($licenseId);
-            $additionalDetails = $license->additional_details ? json_decode($license->additional_details, true) : [];
+            $additionalDetails = $license->additional_details ?? [];
             
             $attachments = [];
             
@@ -3117,7 +3117,7 @@ class LicenseController extends Controller
     {
         try {
             $license = License::findOrFail($licenseId);
-            $additionalDetails = $license->additional_details ? json_decode($license->additional_details, true) : [];
+            $additionalDetails = $license->additional_details ?? [];
             
             if (!isset($additionalDetails['evacuation_attachments']) || !isset($additionalDetails['evacuation_attachments'][$index])) {
                 return response()->json(['success' => false, 'message' => 'المرفق غير موجود']);
