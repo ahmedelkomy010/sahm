@@ -12,12 +12,6 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('work_orders', function (Blueprint $table) {
-            // إضافة عمود notes إذا لم يكن موجوداً
-            if (!Schema::hasColumn('work_orders', 'notes')) {
-                $table->text('notes')->nullable();
-            }
-            
-            // إضافة أعمدة التتبع إذا لم تكن موجودة
             if (!Schema::hasColumn('work_orders', 'notes_updated_by')) {
                 $table->unsignedBigInteger('notes_updated_by')->nullable();
                 $table->timestamp('notes_updated_at')->nullable();
@@ -33,14 +27,8 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('work_orders', function (Blueprint $table) {
-            if (Schema::hasColumn('work_orders', 'notes_updated_by')) {
-                $table->dropForeign(['notes_updated_by']);
-                $table->dropColumn(['notes_updated_by', 'notes_updated_at']);
-            }
-            
-            if (Schema::hasColumn('work_orders', 'notes')) {
-                $table->dropColumn('notes');
-            }
+            $table->dropForeign(['notes_updated_by']);
+            $table->dropColumn(['notes_updated_by', 'notes_updated_at']);
         });
     }
 };
