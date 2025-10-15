@@ -6062,10 +6062,24 @@ class WorkOrderController extends Controller
                 'notes' => 'nullable|string'
             ]);
             
+            // حفظ الملاحظة في الجدول الجديد إذا كانت غير فارغة
+            if (!empty(trim($request->notes))) {
+                // التحقق من آخر ملاحظة لتجنب التكرار
+                $lastNote = $workOrder->workOrderNotes()->latest()->first();
+                
+                // حفظ فقط إذا كانت الملاحظة مختلفة عن آخر ملاحظة
+                if (!$lastNote || $lastNote->note !== $request->notes) {
+                    \App\Models\WorkOrderNote::create([
+                        'work_order_id' => $workOrder->id,
+                        'note' => $request->notes,
+                        'created_by' => auth()->id(),
+                    ]);
+                }
+            }
+            
+            // تحديث حقل notes القديم للتوافق مع الكود القديم
             $workOrder->update([
                 'notes' => $request->notes,
-                'notes_updated_by' => auth()->id(),
-                'notes_updated_at' => now()
             ]);
             
             // جلب اسم المستخدم
@@ -6073,7 +6087,7 @@ class WorkOrderController extends Controller
             
             \Log::info('Work order notes updated', [
                 'work_order_id' => $workOrder->id,
-                'notes_length' => mb_strlen($request->notes),
+                'notes_length' => mb_strlen($request->notes ?? ''),
                 'updated_by' => $updatedBy
             ]);
             
@@ -6081,7 +6095,7 @@ class WorkOrderController extends Controller
                 'success' => true,
                 'message' => 'تم حفظ الملاحظات بنجاح',
                 'updated_by' => $updatedBy,
-                'updated_at' => $workOrder->notes_updated_at->format('Y-m-d H:i')
+                'updated_at' => now()->format('Y-m-d H:i')
             ]);
             
         } catch (\Exception $e) {

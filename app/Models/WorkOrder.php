@@ -207,6 +207,11 @@ class WorkOrder extends Model
         return $this->belongsTo(User::class, 'notes_updated_by');
     }
 
+    public function workOrderNotes()
+    {
+        return $this->hasMany(WorkOrderNote::class)->orderBy('created_at', 'desc');
+    }
+
     public function surveys()
     {
         return $this->hasMany(Survey::class);
