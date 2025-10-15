@@ -1181,6 +1181,10 @@ function resetCountdown(workOrderId) {
                                         <br>
                                         <small>غير شامل الاستشاري</small>
                                     </th>
+                                    <th class="text-center" style="width: 10%;">
+                                        <i class="fas fa-sticky-note me-1"></i>
+                                        ملاحظات
+                                    </th>
                                     <th class="text-center" style="width: 8%;">
                                         <i class="fas fa-cogs me-1"></i>
                                         الإجراءات
@@ -1385,6 +1389,28 @@ function resetCountdown(workOrderId) {
                                             @endif
                                         </td>
                                         <td>{{ number_format($workOrder->order_value_without_consultant ?? 0, 2) }} ريال</td>
+                                        <td class="text-center notes-cell" data-work-order-id="{{ $workOrder->id }}">
+                                            <div class="notes-container position-relative" 
+                                                 onclick="openEditNotesModal({{ $workOrder->id }}, '{{ $workOrder->order_number }}', event)"
+                                                 style="cursor: pointer;">
+                                                <div class="notes-display p-2 border rounded bg-light" style="min-height: 60px; max-height: 80px; overflow: hidden;">
+                                                    @if($workOrder->notes)
+                                                        <small class="text-muted d-block">{{ mb_strlen($workOrder->notes) > 50 ? mb_substr($workOrder->notes, 0, 50) . '...' : $workOrder->notes }}</small>
+                                                        @if($workOrder->notes_updated_by)
+                                                            <small class="text-success d-block mt-1" style="font-size: 0.7rem;">
+                                                                <i class="fas fa-user me-1"></i>
+                                                                {{ $workOrder->notesUpdatedBy->name ?? 'غير معروف' }}
+                                                            </small>
+                                                        @endif
+                                                    @else
+                                                        <small class="text-muted fst-italic">اضغط للكتابة...</small>
+                                                    @endif
+                                                </div>
+                                                <div class="notes-status position-absolute top-0 end-0 me-2 mt-2" style="font-size: 0.8rem;">
+                                                    <i class="fas fa-edit text-primary"></i>
+                                                </div>
+                                            </div>
+                                        </td>
                                         <td>
                                             <div class="btn-group" role="group">
                                                 <a href="{{ route('admin.work-orders.show', $workOrder) }}" class="btn btn-sm btn-info">عرض</a>
@@ -1418,7 +1444,7 @@ function resetCountdown(workOrderId) {
                                     </tr>
                                 @empty
                                     <tr id="noResultsRow">
-                                        <td colspan="13" class="text-center">لا توجد أوامر عمل لهذا المشروع</td>
+                                        <td colspan="14" class="text-center">لا توجد أوامر عمل لهذا المشروع</td>
                                     </tr>
                                 @endforelse
                             </tbody>
@@ -2856,6 +2882,238 @@ async function showWorkOrderNotifications(workOrderId, orderNumber) {
         </div>
     </div>
 </div>
+
+<!-- Modal لتعديل الملاحظات -->
+<div class="modal fade" id="editNotesModal" tabindex="-1" aria-labelledby="editNotesModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="editNotesModalLabel">
+                    <i class="fas fa-edit me-2"></i>
+                    تعديل ملاحظات أمر العمل
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="editNotesTextarea" class="form-label fw-bold">
+                        <i class="fas fa-sticky-note me-2"></i>
+                        الملاحظات
+                    </label>
+                    <textarea class="form-control" 
+                              id="editNotesTextarea" 
+                              rows="8" 
+                              placeholder="اكتب ملاحظاتك هنا..."
+                              style="font-size: 1rem; line-height: 1.6;"></textarea>
+                    <small class="text-muted">
+                        <i class="fas fa-info-circle me-1"></i>
+                        سيتم الحفظ تلقائياً عند التوقف عن الكتابة
+                    </small>
+                </div>
+                
+                <!-- معلومات آخر تحديث -->
+                <div class="alert alert-info d-none" id="lastUpdateInfo">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-user-edit fs-5 me-3"></i>
+                        <div>
+                            <strong class="d-block">آخر تحديث:</strong>
+                            <small id="updateUserName"></small>
+                            <br>
+                            <small class="text-muted" id="updateDateTime"></small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="alert alert-success d-none" id="saveSuccessAlert">
+                    <i class="fas fa-check-circle me-2"></i>
+                    تم حفظ الملاحظات بنجاح
+                </div>
+                <div class="alert alert-danger d-none" id="saveErrorAlert">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    حدث خطأ أثناء حفظ الملاحظات
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="me-auto" id="savingIndicator" style="display: none;">
+                    <span class="text-muted">
+                        <i class="fas fa-spinner fa-spin me-2"></i>
+                        جاري الحفظ...
+                    </span>
+                </div>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>
+                    إغلاق
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let saveNotesTimeout = null;
+let currentEditingWorkOrderId = null;
+
+// دالة فتح modal التعديل
+function openEditNotesModal(workOrderId, orderNumber, event) {
+    event.stopPropagation();
+    
+    currentEditingWorkOrderId = workOrderId;
+    
+    // تحديث عنوان الـ modal
+    document.getElementById('editNotesModalLabel').innerHTML = '<i class="fas fa-edit me-2"></i>تعديل ملاحظات أمر العمل - ' + orderNumber;
+    
+    // جلب الملاحظات الحالية من الخلية
+    const notesCell = document.querySelector(`td[data-work-order-id="${workOrderId}"] .notes-display small`);
+    const currentNotes = notesCell ? notesCell.textContent.replace('...', '').trim() : '';
+    
+    // جلب الملاحظات الكاملة عبر AJAX
+    fetch(`{{ url('admin/work-orders') }}/${workOrderId}`, {
+        headers: {
+            'Accept': 'application/json'
+        }
+    })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('editNotesTextarea').value = data.notes || '';
+            
+            // عرض معلومات آخر تحديث إذا كانت موجودة
+            // سنحصل عليها من الـ DOM مباشرة
+            const notesCell = document.querySelector(`td[data-work-order-id="${workOrderId}"]`);
+            const userNameElement = notesCell ? notesCell.querySelector('.text-success') : null;
+            
+            if (userNameElement) {
+                const userName = userNameElement.textContent.trim();
+                document.getElementById('updateUserName').textContent = userName;
+                document.getElementById('lastUpdateInfo').classList.remove('d-none');
+            } else {
+                document.getElementById('lastUpdateInfo').classList.add('d-none');
+            }
+        })
+        .catch(() => {
+            document.getElementById('editNotesTextarea').value = currentNotes !== 'اضغط للكتابة...' ? currentNotes : '';
+            document.getElementById('lastUpdateInfo').classList.add('d-none');
+        });
+    
+    // إخفاء رسائل النجاح/الخطأ
+    document.getElementById('saveSuccessAlert').classList.add('d-none');
+    document.getElementById('saveErrorAlert').classList.add('d-none');
+    
+    // عرض الـ modal
+    const modal = new bootstrap.Modal(document.getElementById('editNotesModal'));
+    modal.show();
+    
+    // التركيز على الـ textarea بعد فتح الـ modal
+    setTimeout(() => {
+        document.getElementById('editNotesTextarea').focus();
+    }, 500);
+}
+
+// الحفظ التلقائي عند الكتابة
+document.addEventListener('DOMContentLoaded', function() {
+    const textarea = document.getElementById('editNotesTextarea');
+    
+    if (textarea) {
+        textarea.addEventListener('input', function() {
+            // إلغاء التايمر السابق
+            if (saveNotesTimeout) {
+                clearTimeout(saveNotesTimeout);
+            }
+            
+            // إخفاء الرسائل
+            document.getElementById('saveSuccessAlert').classList.add('d-none');
+            document.getElementById('saveErrorAlert').classList.add('d-none');
+            
+            // إنشاء تايمر جديد للحفظ بعد 1 ثانية من التوقف عن الكتابة
+            saveNotesTimeout = setTimeout(() => {
+                saveNotes();
+            }, 1000);
+        });
+    }
+});
+
+// دالة حفظ الملاحظات
+async function saveNotes() {
+    if (!currentEditingWorkOrderId) return;
+    
+    const notes = document.getElementById('editNotesTextarea').value;
+    const savingIndicator = document.getElementById('savingIndicator');
+    
+    // عرض مؤشر الحفظ
+    savingIndicator.style.display = 'block';
+    
+    try {
+        const response = await fetch(`{{ url('admin/work-orders') }}/${currentEditingWorkOrderId}/update-notes`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: JSON.stringify({ notes: notes })
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            
+            // إخفاء مؤشر الحفظ
+            savingIndicator.style.display = 'none';
+            
+            // عرض رسالة النجاح
+            const successAlert = document.getElementById('saveSuccessAlert');
+            successAlert.classList.remove('d-none');
+            setTimeout(() => successAlert.classList.add('d-none'), 3000);
+            
+            // تحديث معلومات آخر تحديث في الـ modal
+            if (data.updated_by) {
+                document.getElementById('updateUserName').textContent = data.updated_by;
+                document.getElementById('updateDateTime').textContent = data.updated_at || '';
+                document.getElementById('lastUpdateInfo').classList.remove('d-none');
+            }
+            
+            // تحديث عرض الملاحظات في الجدول
+            const notesDisplay = document.querySelector(`td[data-work-order-id="${currentEditingWorkOrderId}"] .notes-display`);
+            if (notesDisplay) {
+                if (notes) {
+                    const displayText = notes.length > 50 ? notes.substring(0, 50) + '...' : notes;
+                    let html = `<small class="text-muted d-block">${displayText}</small>`;
+                    
+                    // إضافة اسم المستخدم والوقت
+                    if (data.updated_by) {
+                        html += `<small class="text-success d-block mt-1" style="font-size: 0.7rem;">
+                                    <i class="fas fa-user me-1"></i>
+                                    ${data.updated_by}
+                                 </small>`;
+                    }
+                    
+                    notesDisplay.innerHTML = html;
+                } else {
+                    notesDisplay.innerHTML = '<small class="text-muted fst-italic">اضغط للكتابة...</small>';
+                }
+            }
+        } else {
+            throw new Error('Failed to save');
+        }
+    } catch (error) {
+        console.error('Error saving notes:', error);
+        
+        // إخفاء مؤشر الحفظ
+        savingIndicator.style.display = 'none';
+        
+        // عرض رسالة الخطأ
+        const errorAlert = document.getElementById('saveErrorAlert');
+        errorAlert.classList.remove('d-none');
+        setTimeout(() => errorAlert.classList.add('d-none'), 3000);
+    }
+}
+
+// دالة عرض الملاحظات القديمة (للتوافق)
+function showNotesModal(notes, orderNumber) {
+    document.getElementById('editNotesTextarea').value = notes;
+    document.getElementById('editNotesModalLabel').innerHTML = '<i class="fas fa-sticky-note me-2"></i>ملاحظات أمر العمل - ' + orderNumber;
+    
+    const modal = new bootstrap.Modal(document.getElementById('editNotesModal'));
+    modal.show();
+}
+</script>
 
 <style>
 .notifications-list {

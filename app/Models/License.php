@@ -242,6 +242,8 @@ class License extends Model
         'successful_tests_amount',
         'failed_tests_amount',
         'is_active',
+        'evacuation_data',
+        'additional_details',
     ];
 
     protected $casts = [
@@ -264,6 +266,8 @@ class License extends Model
         'has_interlock_test' => 'boolean',
         'is_evacuated' => 'boolean',
         'lab_tests_data' => 'array',
+        'evacuation_data' => 'array',
+        'additional_details' => 'array',
         'total_tests_count' => 'integer',
         'successful_tests_count' => 'integer',
         'failed_tests_count' => 'integer',

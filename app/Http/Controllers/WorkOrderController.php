@@ -126,7 +126,7 @@ class WorkOrderController extends Controller
         $perPage = $request->get('per_page', 15);
         $perPage = in_array($perPage, [10, 15, 25, 50, 100, 300, 500, 1000]) ? $perPage : 15;
         
-        $workOrders = $query->paginate($perPage);
+        $workOrders = $query->with('notesUpdatedBy')->paginate($perPage);
         
         return view('admin.work_orders.index', compact('workOrders', 'project', 'projectName'));
     }
@@ -432,7 +432,16 @@ class WorkOrderController extends Controller
     // عرض أمر عمل محدد
     public function show(WorkOrder $workOrder)
     {
-        $workOrder->load(['files', 'basicAttachments', 'invoiceAttachments', 'licenses.violations', 'safetyViolations']);
+        // إذا كان الطلب عبر AJAX، إرجاع JSON
+        if (request()->wantsJson() || request()->ajax()) {
+            return response()->json([
+                'id' => $workOrder->id,
+                'order_number' => $workOrder->order_number,
+                'notes' => $workOrder->notes
+            ]);
+        }
+        
+        $workOrder->load(['files', 'basicAttachments', 'invoiceAttachments', 'licenses.violations', 'safetyViolations', 'notesUpdatedBy']);
         
         // تحديد المشروع بناءً على المدينة
         $project = $workOrder->city === 'المدينة المنورة' ? 'madinah' : 'riyadh';
@@ -5067,6 +5076,7 @@ class WorkOrderController extends Controller
             // حساب القيم الأساسية أولاً
             $totalNetExtractValue = $revenues->sum('net_extract_value') ?: 0;
             $totalPaymentValue = $revenues->where('extract_status', 'مدفوع')->sum('payment_value') ?: 0;
+            $totalFirstPaymentTaxUnpaid = $revenues->where('extract_status', 'غير مدفوع')->sum('first_payment_tax') ?: 0;
             
             // إحصائيات سريعة شاملة
             $statistics = [
@@ -5074,7 +5084,7 @@ class WorkOrderController extends Controller
                 'totalExtractValue' => $revenues->sum('extract_value') ?: 0,
                 'totalTaxValue' => $revenues->sum('tax_value') ?: 0,
                 'totalPenalties' => $revenues->sum('penalties') ?: 0,
-                'totalFirstPaymentTax' => $revenues->sum('first_payment_tax') ?: 0,
+                'totalFirstPaymentTax' => $totalFirstPaymentTaxUnpaid,
                 'totalNetExtractValue' => $totalNetExtractValue,
                 // إجمالي المدفوعات = إجمالي قيمة الصرف للمستخلصات المدفوعة فقط
                 'totalPaymentValue' => $totalPaymentValue,
@@ -6047,6 +6057,47 @@ class WorkOrderController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'حدث خطأ أثناء جلب الإشعارات'
+            ], 500);
+        }
+    }
+
+    /**
+     * Update work order notes
+     */
+    public function updateNotes(Request $request, WorkOrder $workOrder)
+    {
+        try {
+            $request->validate([
+                'notes' => 'nullable|string'
+            ]);
+            
+            $workOrder->update([
+                'notes' => $request->notes,
+                'notes_updated_by' => auth()->id(),
+                'notes_updated_at' => now()
+            ]);
+            
+            // جلب اسم المستخدم
+            $updatedBy = auth()->user()->name;
+            
+            \Log::info('Work order notes updated', [
+                'work_order_id' => $workOrder->id,
+                'notes_length' => mb_strlen($request->notes),
+                'updated_by' => $updatedBy
+            ]);
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'تم حفظ الملاحظات بنجاح',
+                'updated_by' => $updatedBy,
+                'updated_at' => $workOrder->notes_updated_at->format('Y-m-d H:i')
+            ]);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error updating work order notes: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء حفظ الملاحظات'
             ], 500);
         }
     }

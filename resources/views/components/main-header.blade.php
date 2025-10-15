@@ -594,23 +594,23 @@ function updateNotificationUINav(data) {
                 return `
                 <li class="notification-item ${notification.is_read ? '' : 'unread'}">
                     <div ${clickAction}>
-                        <div class="notification-title">
+                    <div class="notification-title">
                             <i class="fas ${notification.type === 'daily_program' ? 'fa-calendar-day' : 'fa-comment-dots'} me-2 text-primary"></i>
                             ${notification.title || 'إشعار جديد'}
-                        </div>
-                        <div class="notification-message">
-                            ${notification.message}
-                        </div>
-                        <div class="notification-footer">
-                            <span class="notification-from">
-                                <i class="fas fa-user me-1"></i>
+                    </div>
+                    <div class="notification-message">
+                        ${notification.message}
+                    </div>
+                    <div class="notification-footer">
+                        <span class="notification-from">
+                            <i class="fas fa-user me-1"></i>
                                 ${notification.from_user || 'النظام'}
-                            </span>
-                            <span class="notification-time">
-                                <i class="fas fa-clock me-1"></i>
-                                ${notification.created_at}
-                            </span>
-                        </div>
+                        </span>
+                        <span class="notification-time">
+                            <i class="fas fa-clock me-1"></i>
+                            ${notification.created_at}
+                        </span>
+                    </div>
                     </div>
                     ${notification.work_order ? `
                     <div class="notification-actions mt-2" style="display: flex; gap: 6px; justify-content: flex-end;">
@@ -870,7 +870,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
-</script>
+</script> 
 
 <!-- Modal للرد على الإشعار - خارج الـ header -->
 <div class="modal fade" id="replyNotificationModal" tabindex="-1" aria-labelledby="replyNotificationModalLabel" aria-hidden="true" data-bs-backdrop="true" data-bs-keyboard="true" style="z-index: 99999;">

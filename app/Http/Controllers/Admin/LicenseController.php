@@ -194,10 +194,20 @@ class LicenseController extends Controller
                 $totalEvacuationLicenseValue += floatval($license->evac_amount ?? 0);
                 
                 // إضافة قيم الإخلاء من evacuation_data إذا كان موجود
-                if ($license->evacuation_data) {
-                    $evacuationData = json_decode($license->evacuation_data, true);
-                    if (is_array($evacuationData)) {
-                        foreach ($evacuationData as $evacItem) {
+                if ($license->evacuation_data && is_array($license->evacuation_data)) {
+                    foreach ($license->evacuation_data as $evacItem) {
+                        $totalEvacuationLicenseValue += floatval($evacItem['evacuation_amount'] ?? 0);
+                    }
+                }
+                
+                // إضافة قيم الإخلاء من additional_details['evacuation_data']
+                if ($license->additional_details) {
+                    $additionalDetails = is_string($license->additional_details) 
+                        ? json_decode($license->additional_details, true) 
+                        : $license->additional_details;
+                    
+                    if (isset($additionalDetails['evacuation_data']) && is_array($additionalDetails['evacuation_data'])) {
+                        foreach ($additionalDetails['evacuation_data'] as $evacItem) {
                             $totalEvacuationLicenseValue += floatval($evacItem['evacuation_amount'] ?? 0);
                         }
                     }
@@ -211,7 +221,32 @@ class LicenseController extends Controller
                     ->sum('violation_amount');
             }
 
-            // Debug - log the values
+            // Debug - log the values with detailed evacuation info
+            $evacuationDebug = [];
+            foreach ($allFilteredLicenses as $license) {
+                $hasEvacData = $license->evac_license_value > 0 
+                    || $license->evac_amount > 0 
+                    || $license->evacuation_data
+                    || ($license->additional_details && isset($license->additional_details['evacuation_data']));
+                    
+                if ($hasEvacData) {
+                    $additionalEvacData = null;
+                    if ($license->additional_details && isset($license->additional_details['evacuation_data'])) {
+                        $additionalEvacData = $license->additional_details['evacuation_data'];
+                    }
+                    
+                    $evacuationDebug[] = [
+                        'license_id' => $license->id,
+                        'license_number' => $license->license_number,
+                        'evac_license_value' => $license->evac_license_value,
+                        'evac_amount' => $license->evac_amount,
+                        'evacuation_data' => $license->evacuation_data,
+                        'additional_details_evacuation' => $additionalEvacData,
+                        'evacuation_data_type' => gettype($license->evacuation_data),
+                    ];
+                }
+            }
+            
             \Log::info('License Display Debug', [
                 'project' => $project,
                 'filtered_licenses_count' => $allFilteredLicenses->count(),
@@ -219,7 +254,9 @@ class LicenseController extends Controller
                 'totalPassedTestsValue' => $totalPassedTestsValue,
                 'totalFailedTestsValue' => $totalFailedTestsValue,
                 'totalEvacuationLicenseValue' => $totalEvacuationLicenseValue,
-                'license_ids' => $allFilteredLicenses->pluck('id')->toArray()
+                'license_ids' => $allFilteredLicenses->pluck('id')->toArray(),
+                'evacuation_debug' => $evacuationDebug,
+                'evacuation_count' => count($evacuationDebug)
             ]);
 
             // تحديد اسم المشروع

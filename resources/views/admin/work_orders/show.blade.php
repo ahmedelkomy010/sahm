@@ -912,5 +912,158 @@
             </div>
         </div>
     </div>
+
+    <!-- قسم الملاحظات -->
+    <div class="row mt-4 mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                    <h5 class="mb-0">
+                        <i class="fas fa-sticky-note me-2"></i>
+                        ملاحظات على تفاصيل أمر العمل
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <textarea 
+                            class="form-control" 
+                            id="workOrderNotes" 
+                            rows="6" 
+                            placeholder="اكتب ملاحظاتك هنا... سيتم الحفظ تلقائياً"
+                            style="font-size: 1rem; line-height: 1.8; resize: vertical; min-height: 150px;">{{ $workOrder->notes }}</textarea>
+                        
+                        <div class="d-flex justify-content-between align-items-center mt-2">
+                            <small class="text-muted">
+                                <i class="fas fa-info-circle me-1"></i>
+                                سيتم الحفظ تلقائياً بعد التوقف عن الكتابة
+                            </small>
+                            
+                            <div id="noteSaveStatus" class="d-flex align-items-center">
+                                <span id="saveIndicator" class="text-muted" style="display: none;">
+                                    <i class="fas fa-spinner fa-spin me-1"></i>
+                                    جاري الحفظ...
+                                </span>
+                                <span id="savedIndicator" class="text-success" style="display: none;">
+                                    <i class="fas fa-check-circle me-1"></i>
+                                    تم الحفظ
+                                </span>
+                                <span id="errorIndicator" class="text-danger" style="display: none;">
+                                    <i class="fas fa-exclamation-circle me-1"></i>
+                                    خطأ في الحفظ
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- معلومات آخر تحديث -->
+                    @if($workOrder->notes_updated_by)
+                    <div class="alert alert-info mb-0">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-user-edit fs-5 me-3"></i>
+                            <div>
+                                <strong class="d-block">آخر تحديث للملاحظات:</strong>
+                                <span id="updatedByName">{{ $workOrder->notesUpdatedBy->name ?? 'غير معروف' }}</span>
+                                <br>
+                                <small class="text-muted" id="updatedAtTime">
+                                    {{ $workOrder->notes_updated_at ? $workOrder->notes_updated_at->format('Y-m-d H:i') : '' }}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    @else
+                    <div class="alert alert-info mb-0" id="noUpdateInfo">
+                        <i class="fas fa-info-circle me-2"></i>
+                        لم يتم إضافة ملاحظات بعد
+                    </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const notesTextarea = document.getElementById('workOrderNotes');
+    const saveIndicator = document.getElementById('saveIndicator');
+    const savedIndicator = document.getElementById('savedIndicator');
+    const errorIndicator = document.getElementById('errorIndicator');
+    let saveTimeout;
+    
+    // دالة الحفظ التلقائي
+    async function autoSaveNotes() {
+        const notes = notesTextarea.value;
+        
+        // إظهار مؤشر الحفظ
+        saveIndicator.style.display = 'inline';
+        savedIndicator.style.display = 'none';
+        errorIndicator.style.display = 'none';
+        
+        try {
+            const response = await fetch('{{ route("admin.work-orders.update-notes", $workOrder) }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ notes: notes })
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                
+                // إخفاء مؤشر الحفظ وإظهار النجاح
+                saveIndicator.style.display = 'none';
+                savedIndicator.style.display = 'inline';
+                
+                // تحديث معلومات آخر تحديث
+                if (data.updated_by) {
+                    const updatedByElement = document.getElementById('updatedByName');
+                    const updatedAtElement = document.getElementById('updatedAtTime');
+                    const noUpdateInfo = document.getElementById('noUpdateInfo');
+                    
+                    if (updatedByElement) {
+                        updatedByElement.textContent = data.updated_by;
+                    }
+                    if (updatedAtElement) {
+                        updatedAtElement.textContent = data.updated_at || '';
+                    }
+                    if (noUpdateInfo) {
+                        noUpdateInfo.style.display = 'none';
+                    }
+                }
+                
+                // إخفاء رسالة النجاح بعد 3 ثواني
+                setTimeout(() => {
+                    savedIndicator.style.display = 'none';
+                }, 3000);
+            } else {
+                throw new Error('فشل الحفظ');
+            }
+        } catch (error) {
+            console.error('خطأ في حفظ الملاحظات:', error);
+            
+            // إخفاء مؤشر الحفظ وإظهار الخطأ
+            saveIndicator.style.display = 'none';
+            errorIndicator.style.display = 'inline';
+            
+            // إخفاء رسالة الخطأ بعد 5 ثواني
+            setTimeout(() => {
+                errorIndicator.style.display = 'none';
+            }, 5000);
+        }
+    }
+    
+    // الاستماع لحدث الكتابة
+    notesTextarea.addEventListener('input', function() {
+        // إلغاء أي timeout سابق
+        clearTimeout(saveTimeout);
+        
+        // إنشاء timeout جديد للحفظ بعد ثانية من التوقف عن الكتابة
+        saveTimeout = setTimeout(autoSaveNotes, 1000);
+    });
+});
+</script>
+
 @endsection 

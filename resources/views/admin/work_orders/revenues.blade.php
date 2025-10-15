@@ -692,7 +692,7 @@
                             </div>
 
                             <!-- الاجمالي لدي العميل (شامل الضريبة + ضريبة الدفعة الاولي) -->
-                            <div class="col-md-1-5">
+                            <!-- <div class="col-md-1-5">
                                 <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
                                     <div class="card-body p-1 text-white">
                                         <div class="d-flex justify-content-between align-items-center">
@@ -707,7 +707,7 @@
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+                            </div> -->
                         </div>
                     </div>
 
