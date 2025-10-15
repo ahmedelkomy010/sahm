@@ -1048,6 +1048,36 @@ class WorkOrderController extends Controller
         }
     }
 
+    // تحديث الملاحظات (للاستخدام مع AJAX في صفحة index)
+    public function updateNotes(Request $request, WorkOrder $workOrder)
+    {
+        try {
+            \Log::info('Updating notes for work order: ' . $workOrder->id, [
+                'notes' => $request->input('notes')
+            ]);
+
+            $workOrder->notes = $request->input('notes');
+            $workOrder->save();
+
+            \Log::info('Notes updated successfully for work order: ' . $workOrder->id);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'تم حفظ الملاحظات بنجاح'
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error updating notes: ' . $e->getMessage(), [
+                'work_order_id' => $workOrder->id,
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء حفظ الملاحظات: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
     // رفع ملف عام (مثال)
     public function uploadFile(Request $request, WorkOrder $workOrder)
     {
