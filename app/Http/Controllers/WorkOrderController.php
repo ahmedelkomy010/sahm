@@ -920,6 +920,18 @@ class WorkOrderController extends Controller
             return redirect()->back()->with('error', 'ليس لديك صلاحية لتعديل أمر العمل');
         }
 
+        // دعم التحديث الجزئي للملاحظات فقط
+        if ($request->has('notes') && !$request->has('order_number')) {
+            $workOrder->notes = $request->input('notes');
+            $workOrder->save();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'تم حفظ الملاحظات بنجاح',
+                'updated_at' => now()->format('Y-m-d H:i')
+            ]);
+        }
+        
         // دعم التحديث الجزئي لحقول رقم أمر الشراء وصحيفة الإدخال ورقم المستخلص والحقول الجديدة
         if ($request->input('_section') === 'extract_number_group') {
             $updateData = $request->only([

@@ -992,14 +992,18 @@ async function saveNotes() {
     errorIndicator.style.display = 'none';
     
     try {
-        const response = await fetch('{{ route("admin.work-orders.update-notes", $workOrder) }}', {
+        // استخدام FormData بدلاً من JSON للتوافق الأفضل
+        const formData = new FormData();
+        formData.append('notes', notes);
+        formData.append('_method', 'PATCH');
+        
+        const response = await fetch('{{ route("admin.work-orders.update", $workOrder) }}', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                 'Accept': 'application/json'
             },
-            body: JSON.stringify({ notes: notes })
+            body: formData
         });
         
         if (response.ok) {
