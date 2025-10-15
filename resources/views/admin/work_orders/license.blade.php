@@ -195,8 +195,10 @@ $(document).ready(function() {
             updateLicenseToggle(true);
         }
         
-        // تحميل رخص الحفر عند تحميل الصفحة
-        loadDigLicenses();
+        // تحميل رخص الحفر عند تحميل الصفحة (إذا كان الجدول موجود في الصفحة)
+        if (document.getElementById('dig-licenses-table-body')) {
+            loadDigLicenses();
+        }
         
         // تحميل قوائم الرخص في جميع التبويبات
         loadLicensesForSelectors();
@@ -285,15 +287,17 @@ $(document).ready(function() {
                 // تحديث فوري للمفتاح بعد الحفظ - يوجد رخصة الآن
                 updateLicenseToggle(true);
                 
-                // تحديث جدول رخص الحفر فوراً
-                setTimeout(() => {
-                    loadDigLicenses();
-                }, 500);
-                
-                // تحديث إضافي بعد ثانية للتأكد
-                setTimeout(() => {
-                    loadDigLicenses();
-                }, 1500);
+                // تحديث جدول رخص الحفر فوراً (إذا كان موجود)
+                if (document.getElementById('dig-licenses-table-body')) {
+                    setTimeout(() => {
+                        loadDigLicenses();
+                    }, 500);
+                    
+                    // تحديث إضافي بعد ثانية للتأكد
+                    setTimeout(() => {
+                        loadDigLicenses();
+                    }, 1500);
+                }
                 
                 // إعادة تعيين النموذج (اختياري - يمكن تعطيله إذا كان المستخدم يريد الاحتفاظ بالبيانات)
                 // document.getElementById('coordinationForm').reset();
@@ -820,8 +824,10 @@ $(document).ready(function() {
 
     // تشغيل عرض مدة الرخص عند تحميل الصفحة
     document.addEventListener('DOMContentLoaded', function() {
-        // تحميل رخص الحفر مع عرض المدة
-        loadDigLicenses();
+        // تحميل رخص الحفر مع عرض المدة (إذا كان الجدول موجود)
+        if (document.getElementById('dig-licenses-table-body')) {
+            loadDigLicenses();
+        }
         
         // إضافة مستمعي الأحداث لحساب أيام الرخصة
         const startDateInput = document.getElementById('license_start_date');
@@ -884,7 +890,9 @@ $(document).ready(function() {
             },
             success: function(response) {
                 toastr.success('تم حذف الرخصة بنجاح');
-                loadDigLicenses();
+                if (document.getElementById('dig-licenses-table-body')) {
+                    loadDigLicenses();
+                }
             },
             error: function(xhr) {
                 console.error('Error deleting license:', xhr);
@@ -915,8 +923,10 @@ $(document).ready(function() {
             success: function(response) {
                 if (response.success) {
                     toastr.success(response.message);
-                    // إعادة تحميل قائمة الرخص
-                    loadDigLicenses();
+                    // إعادة تحميل قائمة الرخص (إذا كان الجدول موجود)
+                    if (document.getElementById('dig-licenses-table-body')) {
+                        loadDigLicenses();
+                    }
                     
                     // تحديث فوري للمفتاح بعد الحفظ - يوجد رخصة الآن
                     updateLicenseToggle(true);
@@ -5007,8 +5017,10 @@ function saveDigLicenseSection() {
             // تحديث فوري للمفتاح بعد الحفظ - يوجد رخصة الآن
             updateLicenseToggle(true);
             
-            // تحديث جدول رخص الحفر
-            loadDigLicenses();
+            // تحديث جدول رخص الحفر (إذا كان الجدول موجود)
+            if (document.getElementById('dig-licenses-table-body')) {
+                loadDigLicenses();
+            }
             
             // إظهار رسالة إضافية وإعادة تحميل الصفحة
             setTimeout(() => {

@@ -458,7 +458,10 @@ class LicenseController extends Controller
         }
         
         // تحضير البيانات المطلوبة للعرض
-        $additionalDetails = $license->additional_details ?? [];
+        $additionalDetails = $license->additional_details;
+        if (!is_array($additionalDetails)) {
+            $additionalDetails = [];
+        }
         
         $labTechnicalData = [];
         if ($license->lab_table2_data) {
@@ -2063,7 +2066,10 @@ class LicenseController extends Controller
             }
             
             // الحصول على البيانات الإضافية الحالية أو إنشاء مصفوفة فارغة
-            $additionalDetails = $license->additional_details ?? [];
+            $additionalDetails = $license->additional_details;
+            if (!is_array($additionalDetails)) {
+                $additionalDetails = [];
+            }
             
             // تحديث بيانات الإخلاء
             $additionalDetails['evacuation_data'] = $processedEvacuationData;
@@ -2080,7 +2086,7 @@ class LicenseController extends Controller
                 ];
             }
             
-            $license->additional_details = json_encode($additionalDetails, JSON_UNESCAPED_UNICODE);
+            $license->additional_details = $additionalDetails;
             $license->save();
             
             return response()->json([
@@ -2106,7 +2112,10 @@ class LicenseController extends Controller
     {
         try {
             $license = License::findOrFail($licenseId);
-            $additionalDetails = $license->additional_details ?? [];
+            $additionalDetails = $license->additional_details;
+            if (!is_array($additionalDetails)) {
+                $additionalDetails = [];
+            }
             
             if (isset($additionalDetails['evacuation_data'][$index]['evacuation_file'])) {
                 $filePath = $additionalDetails['evacuation_data'][$index]['evacuation_file'];
@@ -2356,8 +2365,13 @@ class LicenseController extends Controller
             ]);
             
             // إذا لم توجد مرفقات جديدة، احتفظ بالمرفقات الموجودة إن وجدت
-            $additionalDetailsTemp = $license->additional_details ?? [];
-            $existingEvacuationDataTemp = $additionalDetailsTemp['evacuation_data'] ?? [];
+            $additionalDetailsTemp = $license->additional_details;
+            if (!is_array($additionalDetailsTemp)) {
+                $additionalDetailsTemp = [];
+            }
+            $existingEvacuationDataTemp = isset($additionalDetailsTemp['evacuation_data']) && is_array($additionalDetailsTemp['evacuation_data']) 
+                ? $additionalDetailsTemp['evacuation_data'] 
+                : [];
             
             if (isset($existingEvacuationDataTemp[$dataIndex]['attachments']) 
                 && !empty($existingEvacuationDataTemp[$dataIndex]['attachments'])) {
@@ -2374,10 +2388,15 @@ class LicenseController extends Controller
     }
             
             // الحصول على البيانات الإضافية الحالية أو إنشاء مصفوفة فارغة
-            $additionalDetails = $license->additional_details ?? [];
+            $additionalDetails = $license->additional_details;
+            if (!is_array($additionalDetails)) {
+                $additionalDetails = [];
+            }
             
             // الحصول على بيانات الإخلاء الموجودة للحفاظ على المرفقات
-            $existingEvacuationData = $additionalDetails['evacuation_data'] ?? [];
+            $existingEvacuationData = isset($additionalDetails['evacuation_data']) && is_array($additionalDetails['evacuation_data']) 
+                ? $additionalDetails['evacuation_data'] 
+                : [];
             
             // دمج البيانات الجديدة مع المرفقات الموجودة
             $mergedEvacuationData = [];
@@ -2421,8 +2440,8 @@ class LicenseController extends Controller
                 'additional_details_after_prep' => json_encode($additionalDetails, JSON_UNESCAPED_UNICODE)
             ]);
             
-            // حفظ البيانات الإضافية المحدثة
-            $license->additional_details = json_encode($additionalDetails, JSON_UNESCAPED_UNICODE);
+            // حفظ البيانات الإضافية المحدثة (Laravel سيقوم بتحويلها لـ JSON تلقائياً)
+            $license->additional_details = $additionalDetails;
             $saved = $license->save();
             
             // التحقق من الحفظ
@@ -2499,7 +2518,10 @@ class LicenseController extends Controller
             
             $evacuationData = [];
             if ($license->additional_details) {
-                $additionalDetails = $license->additional_details ?? [];
+                $additionalDetails = $license->additional_details;
+                if (!is_array($additionalDetails)) {
+                    $additionalDetails = [];
+                }
                 
                 // التأكد من أن البيانات في تنسيق مصفوفة
                 if (is_array($additionalDetails) && isset($additionalDetails['evacuation_data'])) {
@@ -3018,7 +3040,10 @@ class LicenseController extends Controller
             $license = License::findOrFail($request->license_id);
             
             // فك تشفير البيانات الإضافية الحالية
-            $additionalDetails = $license->additional_details ?? [];
+            $additionalDetails = $license->additional_details;
+            if (!is_array($additionalDetails)) {
+                $additionalDetails = [];
+            }
             
             // التأكد من وجود مصفوفة المرفقات
             if (!isset($additionalDetails['evacuation_attachments'])) {
@@ -3046,7 +3071,7 @@ class LicenseController extends Controller
             }
 
             // حفظ البيانات المحدثة
-            $license->additional_details = json_encode($additionalDetails, JSON_UNESCAPED_UNICODE);
+            $license->additional_details = $additionalDetails;
             $license->save();
 
             \Log::info('Evacuation attachments uploaded successfully', [
@@ -3077,7 +3102,10 @@ class LicenseController extends Controller
     {
         try {
             $license = License::findOrFail($licenseId);
-            $additionalDetails = $license->additional_details ?? [];
+            $additionalDetails = $license->additional_details;
+            if (!is_array($additionalDetails)) {
+                $additionalDetails = [];
+            }
             
             $attachments = [];
             
@@ -3117,7 +3145,10 @@ class LicenseController extends Controller
     {
         try {
             $license = License::findOrFail($licenseId);
-            $additionalDetails = $license->additional_details ?? [];
+            $additionalDetails = $license->additional_details;
+            if (!is_array($additionalDetails)) {
+                $additionalDetails = [];
+            }
             
             if (!isset($additionalDetails['evacuation_attachments']) || !isset($additionalDetails['evacuation_attachments'][$index])) {
                 return response()->json(['success' => false, 'message' => 'المرفق غير موجود']);
@@ -3133,7 +3164,7 @@ class LicenseController extends Controller
             array_splice($additionalDetails['evacuation_attachments'], $index, 1);
 
             // تحديث قاعدة البيانات
-            $license->additional_details = json_encode($additionalDetails, JSON_UNESCAPED_UNICODE);
+            $license->additional_details = $additionalDetails;
             $license->save();
 
             return response()->json(['success' => true, 'message' => 'تم حذف المرفق بنجاح']);

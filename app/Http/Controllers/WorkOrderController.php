@@ -5769,23 +5769,44 @@ class WorkOrderController extends Controller
             }
             
             // 4. إجمالي عام لكل المشاريع
+            // حساب الإجمالي العام بطريقة صحيحة
+            $totalCount = $workOrdersStats['riyadh']['count'] + $workOrdersStats['madinah']['count'] + 
+                         $turnkeyStats['count'] + $specialStats['count'];
+            
+            $totalValue = $workOrdersStats['riyadh']['total_value'] + $workOrdersStats['madinah']['total_value'] + 
+                         $turnkeyStats['total_value'] + $specialStats['total_value'];
+            
+            $totalTax = $workOrdersStats['riyadh']['total_tax'] + $workOrdersStats['madinah']['total_tax'] + 
+                       $turnkeyStats['total_tax'] + $specialStats['total_tax'];
+            
+            $totalPenalties = $workOrdersStats['riyadh']['total_penalties'] + $workOrdersStats['madinah']['total_penalties'] + 
+                             $turnkeyStats['total_penalties'] + $specialStats['total_penalties'];
+            
+            $totalNetExtractValue = $workOrdersStats['riyadh']['total_net_extract_value'] + 
+                                   $workOrdersStats['madinah']['total_net_extract_value'] + 
+                                   $turnkeyStats['total_net_value'] + 
+                                   $specialStats['total_net_value'];
+            
+            $totalPayments = $workOrdersStats['riyadh']['total_payments'] + $workOrdersStats['madinah']['total_payments'] + 
+                            $turnkeyStats['total_payments'] + $specialStats['total_payments'];
+            
+            $totalFirstPaymentTax = $workOrdersStats['riyadh']['first_payment_tax'] + 
+                                   $workOrdersStats['madinah']['first_payment_tax'] + 
+                                   $turnkeyStats['first_payment_tax'] + 
+                                   $specialStats['first_payment_tax'];
+            
+            // المبلغ المتبقي = إجمالي صافي المستخلصات - إجمالي المدفوعات
+            $totalUnpaidAmount = $totalNetExtractValue - $totalPayments;
+            
             $grandTotal = [
-                'count' => $workOrdersStats['riyadh']['count'] + $workOrdersStats['madinah']['count'] + 
-                           $turnkeyStats['count'] + $specialStats['count'],
-                'total_value' => $workOrdersStats['riyadh']['total_value'] + $workOrdersStats['madinah']['total_value'] + 
-                                 $turnkeyStats['total_value'] + $specialStats['total_value'],
-                'total_tax' => $workOrdersStats['riyadh']['total_tax'] + $workOrdersStats['madinah']['total_tax'] + 
-                               $turnkeyStats['total_tax'] + $specialStats['total_tax'],
-                'total_penalties' => $workOrdersStats['riyadh']['total_penalties'] + $workOrdersStats['madinah']['total_penalties'] + 
-                                     $turnkeyStats['total_penalties'] + $specialStats['total_penalties'],
-                'total_net_extract_value' => $workOrdersStats['riyadh']['total_net_extract_value'] + $workOrdersStats['madinah']['total_net_extract_value'] + 
-                                             $turnkeyStats['total_net_value'] + $specialStats['total_net_value'],
-                'total_payments' => $workOrdersStats['riyadh']['total_payments'] + $workOrdersStats['madinah']['total_payments'] + 
-                                    $turnkeyStats['total_payments'] + $specialStats['total_payments'],
-                'first_payment_tax' => $workOrdersStats['riyadh']['first_payment_tax'] + $workOrdersStats['madinah']['first_payment_tax'] + 
-                                       $turnkeyStats['first_payment_tax'] + $specialStats['first_payment_tax'],
-                'unpaid_amount' => $workOrdersStats['riyadh']['unpaid_amount'] + $workOrdersStats['madinah']['unpaid_amount'] + 
-                                   $turnkeyStats['unpaid_amount'] + $specialStats['unpaid_amount'],
+                'count' => $totalCount,
+                'total_value' => $totalValue,
+                'total_tax' => $totalTax,
+                'total_penalties' => $totalPenalties,
+                'total_net_extract_value' => $totalNetExtractValue,
+                'total_payments' => $totalPayments,
+                'first_payment_tax' => $totalFirstPaymentTax,
+                'unpaid_amount' => $totalUnpaidAmount,
             ];
             
             return view('admin.work_orders.all-projects-revenues', compact(

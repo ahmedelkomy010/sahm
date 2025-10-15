@@ -233,7 +233,7 @@ use Illuminate\Support\Facades\Storage;
                     <div class="row g-4">
                         <div class="col-md-4">
                             <div class="text-center p-3 border rounded">
-                                <i class="fas fa-arrows-alt-h text-primary fa-2x mb-2"></i>
+                            <i class="fas fa-arrows-alt-v text-success fa-2x mb-2"></i>
                                 <h6 class="fw-bold">الطول</h6>
                                 <p class="mb-0 fs-4 fw-bold text-primary">
                                     {{ number_format($license->excavation_length ?? 0, 2) }}
@@ -243,7 +243,8 @@ use Illuminate\Support\Facades\Storage;
             </div>
                         <div class="col-md-4">
                             <div class="text-center p-3 border rounded">
-                                <i class="fas fa-arrows-alt-v text-success fa-2x mb-2"></i>
+                                
+                                <i class="fas fa-arrows-alt-h text-primary fa-2x mb-2"></i>
                                 <h6 class="fw-bold">العرض</h6>
                                 <p class="mb-0 fs-4 fw-bold text-success">
                                     {{ number_format($license->excavation_width ?? 0, 2) }}
