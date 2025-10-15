@@ -921,15 +921,32 @@ class WorkOrderController extends Controller
         }
 
         // دعم التحديث الجزئي للملاحظات فقط
-        if ($request->has('notes') && !$request->has('order_number')) {
-            $workOrder->notes = $request->input('notes');
-            $workOrder->save();
-            
-            return response()->json([
-                'success' => true,
-                'message' => 'تم حفظ الملاحظات بنجاح',
-                'updated_at' => now()->format('Y-m-d H:i')
-            ]);
+        if ($request->has('_notes_only') || ($request->has('notes') && !$request->has('order_number'))) {
+            try {
+                $workOrder->notes = $request->input('notes');
+                $saved = $workOrder->save();
+                
+                \Log::info('Notes saved successfully', [
+                    'work_order_id' => $workOrder->id,
+                    'saved' => $saved
+                ]);
+                
+                return response()->json([
+                    'success' => true,
+                    'message' => 'تم حفظ الملاحظات بنجاح',
+                    'updated_at' => now()->format('Y-m-d H:i')
+                ]);
+            } catch (\Exception $e) {
+                \Log::error('Error saving notes', [
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ]);
+                
+                return response()->json([
+                    'success' => false,
+                    'message' => 'خطأ: ' . $e->getMessage()
+                ], 500);
+            }
         }
         
         // دعم التحديث الجزئي لحقول رقم أمر الشراء وصحيفة الإدخال ورقم المستخلص والحقول الجديدة

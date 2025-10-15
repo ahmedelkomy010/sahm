@@ -991,24 +991,17 @@ async function saveNotes() {
     savedIndicator.style.display = 'none';
     errorIndicator.style.display = 'none';
     
-    try {
-        // استخدام FormData بدلاً من JSON للتوافق الأفضل
-        const formData = new FormData();
-        formData.append('notes', notes);
-        formData.append('_method', 'PATCH');
-        
-        const response = await fetch('{{ route("admin.work-orders.update", $workOrder) }}', {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                'Accept': 'application/json'
-            },
-            body: formData
-        });
-        
-        if (response.ok) {
-            const data = await response.json();
-            
+    $.ajax({
+        url: '{{ route("admin.work-orders.update", $workOrder) }}',
+        method: 'POST',
+        data: {
+            _token: '{{ csrf_token() }}',
+            _method: 'PATCH',
+            notes: notes,
+            _notes_only: true
+        },
+        dataType: 'json',
+        success: function(data) {
             // إخفاء مؤشر الحفظ وإظهار النجاح
             saveIndicator.style.display = 'none';
             savedIndicator.style.display = 'inline';
@@ -1027,26 +1020,25 @@ async function saveNotes() {
             setTimeout(() => {
                 savedIndicator.style.display = 'none';
             }, 5000);
+        },
+        error: function(xhr, status, error) {
+            console.error('خطأ في حفظ الملاحظات:', error);
+            console.log('Response:', xhr.responseText);
             
-        } else {
-            throw new Error('فشل الحفظ');
+            // إخفاء مؤشر الحفظ وإظهار الخطأ
+            saveIndicator.style.display = 'none';
+            errorIndicator.style.display = 'inline';
+            
+            // إعادة تفعيل الزر
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = '<i class="fas fa-save me-2"></i>حفظ الملاحظات';
+            
+            // إخفاء رسالة الخطأ بعد 5 ثواني
+            setTimeout(() => {
+                errorIndicator.style.display = 'none';
+            }, 5000);
         }
-    } catch (error) {
-        console.error('خطأ في حفظ الملاحظات:', error);
-        
-        // إخفاء مؤشر الحفظ وإظهار الخطأ
-        saveIndicator.style.display = 'none';
-        errorIndicator.style.display = 'inline';
-        
-        // إعادة تفعيل الزر
-        saveBtn.disabled = false;
-        saveBtn.innerHTML = '<i class="fas fa-save me-2"></i>حفظ الملاحظات';
-        
-        // إخفاء رسالة الخطأ بعد 5 ثواني
-        setTimeout(() => {
-            errorIndicator.style.display = 'none';
-        }, 5000);
-    }
+    });
 }
 
 // السماح بالحفظ عند الضغط على Ctrl+S
