@@ -2023,6 +2023,15 @@ function applyFilters() {
     let rows = Array.from(table.querySelectorAll('tr'));
     let visibleRows = [];
     
+    // متغيرات لحساب الإحصائيات
+    let totalRevenues = 0;
+    let totalExtractValue = 0;
+    let totalTaxValue = 0;
+    let totalPenalties = 0;
+    let totalFirstPaymentTax = 0;
+    let totalNetExtractValue = 0;
+    let totalPaymentValue = 0;
+    
     rows.forEach(row => {
         let showRow = true;
         
@@ -2095,6 +2104,58 @@ function applyFilters() {
         
         if (showRow) {
             visibleRows.push(row);
+            
+            // حساب الإحصائيات للصفوف المرئية فقط
+            totalRevenues++;
+            
+            // جمع قيمة المستخلص
+            const extractValueCell = row.querySelector('[data-field="extract_value"]');
+            if (extractValueCell) {
+                const val = parseFloat(extractValueCell.value || extractValueCell.textContent) || 0;
+                totalExtractValue += val;
+            }
+            
+            // جمع قيمة الضريبة
+            const taxValueCell = row.querySelector('[data-field="tax_value"]');
+            if (taxValueCell) {
+                const val = parseFloat(taxValueCell.textContent) || 0;
+                totalTaxValue += val;
+            }
+            
+            // جمع الغرامات
+            const penaltiesCell = row.querySelector('[data-field="penalties"]');
+            if (penaltiesCell) {
+                const val = parseFloat(penaltiesCell.value || penaltiesCell.textContent) || 0;
+                totalPenalties += val;
+            }
+            
+            // جمع صافي قيمة المستخلص
+            const netExtractValueCell = row.querySelector('[data-field="net_extract_value"]');
+            if (netExtractValueCell) {
+                const val = parseFloat(netExtractValueCell.textContent) || 0;
+                totalNetExtractValue += val;
+            }
+            
+            // جمع قيمة الصرف للمستخلصات المدفوعة فقط
+            const statusCell = row.querySelector('[data-field="extract_status"]');
+            const status = statusCell ? (statusCell.value || statusCell.textContent.trim()) : '';
+            
+            if (status === 'مدفوع') {
+                const paymentValueCell = row.querySelector('[data-field="payment_value"]');
+                if (paymentValueCell) {
+                    const val = parseFloat(paymentValueCell.value || paymentValueCell.textContent) || 0;
+                    totalPaymentValue += val;
+                }
+            }
+            
+            // جمع ضريبة الدفعة الأولى للمستخلصات غير المدفوعة
+            if (status === 'غير مدفوع') {
+                const firstPaymentTaxCell = row.querySelector('[data-field="first_payment_tax"]');
+                if (firstPaymentTaxCell) {
+                    const val = parseFloat(firstPaymentTaxCell.value || firstPaymentTaxCell.textContent) || 0;
+                    totalFirstPaymentTax += val;
+                }
+            }
         } else {
             row.style.display = 'none';
         }
@@ -2131,6 +2192,65 @@ function applyFilters() {
     
     // تحديث عدد السجلات
     document.getElementById('recordCount').textContent = visibleRows.length;
+    
+    // تحديث الإحصائيات في الكروت
+    updateStatisticsCards({
+        totalRevenues: totalRevenues,
+        totalExtractValue: totalExtractValue,
+        totalTaxValue: totalTaxValue,
+        totalPenalties: totalPenalties,
+        totalFirstPaymentTax: totalFirstPaymentTax,
+        totalNetExtractValue: totalNetExtractValue,
+        totalPaymentValue: totalPaymentValue,
+        remainingAmount: totalNetExtractValue - totalPaymentValue
+    });
+}
+
+// دالة لتحديث كروت الإحصائيات
+function updateStatisticsCards(stats) {
+    // تحديث عدد المستخلصات
+    const totalRevenuesCard = document.querySelector('.card-body h6.fw-bold');
+    if (totalRevenuesCard && totalRevenuesCard.textContent.match(/^\d+$/)) {
+        totalRevenuesCard.textContent = stats.totalRevenues;
+    }
+    
+    // تحديث باقي الإحصائيات
+    const statCards = document.querySelectorAll('.card-body.p-1.text-white');
+    
+    statCards.forEach((card, index) => {
+        const valueElement = card.querySelector('h6.fw-bold');
+        if (!valueElement) return;
+        
+        const headerText = card.querySelector('h6.opacity-75')?.textContent.trim();
+        
+        if (headerText) {
+            if (headerText.includes('عدد المستخلصات')) {
+                valueElement.textContent = stats.totalRevenues;
+            } else if (headerText.includes('إجمالي قيمة المستخلصات غير شامله الضريبه')) {
+                valueElement.textContent = formatNumber(stats.totalExtractValue);
+            } else if (headerText.includes('إجمالي الضريبة')) {
+                valueElement.textContent = formatNumber(stats.totalTaxValue);
+            } else if (headerText.includes('إجمالي الغرامات')) {
+                valueElement.textContent = formatNumber(stats.totalPenalties);
+            } else if (headerText.includes('صافي قيمة المستخلصات')) {
+                valueElement.textContent = formatNumber(stats.totalNetExtractValue);
+            } else if (headerText.includes('إجمالي المدفوعات')) {
+                valueElement.textContent = formatNumber(stats.totalPaymentValue);
+            } else if (headerText.includes('المبلغ المتبقي عند العميل شامل الضريبة')) {
+                valueElement.textContent = formatNumber(stats.remainingAmount);
+            } else if (headerText.includes('المتبقي لدي العميل (ضريبة الدفعة الاولي)')) {
+                valueElement.textContent = formatNumber(stats.totalFirstPaymentTax);
+            }
+        }
+    });
+}
+
+// دالة لتنسيق الأرقام
+function formatNumber(num) {
+    return new Intl.NumberFormat('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    }).format(num);
 }
 
 // دالة لضبط الفترات الزمنية السريعة
@@ -2172,6 +2292,9 @@ function setQuickDateRange(period) {
     
     document.getElementById('filter_start_date').value = startDate;
     document.getElementById('filter_end_date').value = endDate;
+    
+    // تطبيق الفلترة تلقائياً بعد اختيار الفترة
+    applyFilters();
 }
 
 function clearFilters() {
@@ -2187,13 +2310,87 @@ function clearFilters() {
     
     // إظهار جميع الصفوف
     const table = document.querySelector('.table tbody');
-    const rows = table.querySelectorAll('tr');
+    const rows = Array.from(table.querySelectorAll('tr'));
     rows.forEach(row => {
         row.style.display = '';
     });
     
     // إعادة عدد السجلات للقيمة الأصلية
     document.getElementById('recordCount').textContent = rows.length;
+    
+    // إعادة حساب الإحصائيات لجميع الصفوف
+    let totalRevenues = 0;
+    let totalExtractValue = 0;
+    let totalTaxValue = 0;
+    let totalPenalties = 0;
+    let totalFirstPaymentTax = 0;
+    let totalNetExtractValue = 0;
+    let totalPaymentValue = 0;
+    
+    rows.forEach(row => {
+        totalRevenues++;
+        
+        // جمع قيمة المستخلص
+        const extractValueCell = row.querySelector('[data-field="extract_value"]');
+        if (extractValueCell) {
+            const val = parseFloat(extractValueCell.value || extractValueCell.textContent) || 0;
+            totalExtractValue += val;
+        }
+        
+        // جمع قيمة الضريبة
+        const taxValueCell = row.querySelector('[data-field="tax_value"]');
+        if (taxValueCell) {
+            const val = parseFloat(taxValueCell.textContent) || 0;
+            totalTaxValue += val;
+        }
+        
+        // جمع الغرامات
+        const penaltiesCell = row.querySelector('[data-field="penalties"]');
+        if (penaltiesCell) {
+            const val = parseFloat(penaltiesCell.value || penaltiesCell.textContent) || 0;
+            totalPenalties += val;
+        }
+        
+        // جمع صافي قيمة المستخلص
+        const netExtractValueCell = row.querySelector('[data-field="net_extract_value"]');
+        if (netExtractValueCell) {
+            const val = parseFloat(netExtractValueCell.textContent) || 0;
+            totalNetExtractValue += val;
+        }
+        
+        // جمع قيمة الصرف للمستخلصات المدفوعة فقط
+        const statusCell = row.querySelector('[data-field="extract_status"]');
+        const status = statusCell ? (statusCell.value || statusCell.textContent.trim()) : '';
+        
+        if (status === 'مدفوع') {
+            const paymentValueCell = row.querySelector('[data-field="payment_value"]');
+            if (paymentValueCell) {
+                const val = parseFloat(paymentValueCell.value || paymentValueCell.textContent) || 0;
+                totalPaymentValue += val;
+            }
+        }
+        
+        // جمع ضريبة الدفعة الأولى للمستخلصات غير المدفوعة
+        if (status === 'غير مدفوع') {
+            const firstPaymentTaxCell = row.querySelector('[data-field="first_payment_tax"]');
+            if (firstPaymentTaxCell) {
+                const val = parseFloat(firstPaymentTaxCell.value || firstPaymentTaxCell.textContent) || 0;
+                totalFirstPaymentTax += val;
+            }
+        }
+    });
+    
+    // تحديث الإحصائيات
+    updateStatisticsCards({
+        totalRevenues: totalRevenues,
+        totalExtractValue: totalExtractValue,
+        totalTaxValue: totalTaxValue,
+        totalPenalties: totalPenalties,
+        totalFirstPaymentTax: totalFirstPaymentTax,
+        totalNetExtractValue: totalNetExtractValue,
+        totalPaymentValue: totalPaymentValue,
+        remainingAmount: totalNetExtractValue - totalPaymentValue
+    });
 }
 
 // حساب قيمة الضريبة تلقائياً (15%)
