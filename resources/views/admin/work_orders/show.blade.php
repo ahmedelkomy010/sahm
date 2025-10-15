@@ -921,137 +921,49 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    <div class="mb-3">
-                        <textarea 
-                            class="form-control" 
-                            id="workOrderNotes" 
-                            rows="6" 
-                            placeholder="اكتب ملاحظاتك هنا..."
-                            style="font-size: 1rem; line-height: 1.8; resize: vertical; min-height: 150px;">{{ $workOrder->notes }}</textarea>
+                    <form action="{{ route('admin.work-orders.update', $workOrder) }}" method="POST">
+                        @csrf
+                        @method('PATCH')
+                        <input type="hidden" name="_notes_only" value="1">
                         
-                        <div class="d-flex justify-content-between align-items-center mt-3">
-                            <button type="button" class="btn btn-primary btn-lg" id="saveNotesBtn" onclick="saveNotes()">
+                        <div class="mb-3">
+                            <textarea 
+                                name="notes"
+                                class="form-control @error('notes') is-invalid @enderror" 
+                                rows="6" 
+                                placeholder="اكتب ملاحظاتك هنا..."
+                                style="font-size: 1rem; line-height: 1.8; resize: vertical; min-height: 150px;">{{ old('notes', $workOrder->notes) }}</textarea>
+                            @error('notes')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        
+                        <div class="d-flex justify-content-between align-items-center">
+                            <button type="submit" class="btn btn-primary btn-lg">
                                 <i class="fas fa-save me-2"></i>
                                 حفظ الملاحظات
                             </button>
                             
-                            <div id="noteSaveStatus" class="d-flex align-items-center">
-                                <span id="saveIndicator" class="text-muted" style="display: none;">
-                                    <i class="fas fa-spinner fa-spin me-1"></i>
-                                    جاري الحفظ...
-                                </span>
-                                <span id="savedIndicator" class="text-success fw-bold" style="display: none;">
+                            @if(session('notes_success'))
+                                <div class="alert alert-success mb-0 py-2 px-3">
                                     <i class="fas fa-check-circle me-1"></i>
-                                    تم الحفظ بنجاح
-                                </span>
-                                <span id="errorIndicator" class="text-danger fw-bold" style="display: none;">
-                                    <i class="fas fa-exclamation-circle me-1"></i>
-                                    خطأ في الحفظ
-                                </span>
-                            </div>
+                                    {{ session('notes_success') }}
+                                </div>
+                            @endif
                         </div>
+                    </form>
+                    
+                    @if($workOrder->updated_at)
+                    <div class="alert alert-info mt-3 mb-0">
+                        <i class="fas fa-clock me-2"></i>
+                        آخر تحديث: {{ $workOrder->updated_at->format('Y-m-d H:i') }}
                     </div>
-
-                    <!-- معلومات آخر تحديث -->
-                    <div class="alert alert-info mb-0" id="lastUpdateInfo">
-                        <div class="d-flex align-items-center">
-                            <i class="fas fa-info-circle fs-5 me-3"></i>
-                            <div>
-                                <span id="updateInfoText">
-                                    @if($workOrder->updated_at)
-                                        آخر تحديث: {{ $workOrder->updated_at->format('Y-m-d H:i') }}
-                                    @else
-                                        لم يتم إضافة ملاحظات بعد
-                                    @endif
-                                </span>
-                            </div>
-                        </div>
-                    </div>
+                    @endif
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<script>
-// دالة حفظ الملاحظات
-async function saveNotes() {
-    const notesTextarea = document.getElementById('workOrderNotes');
-    const saveBtn = document.getElementById('saveNotesBtn');
-    const saveIndicator = document.getElementById('saveIndicator');
-    const savedIndicator = document.getElementById('savedIndicator');
-    const errorIndicator = document.getElementById('errorIndicator');
-    
-    const notes = notesTextarea.value;
-    
-    // تعطيل الزر وإظهار مؤشر الحفظ
-    saveBtn.disabled = true;
-    saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>جاري الحفظ...';
-    saveIndicator.style.display = 'inline';
-    savedIndicator.style.display = 'none';
-    errorIndicator.style.display = 'none';
-    
-    $.ajax({
-        url: '{{ route("admin.work-orders.update", $workOrder) }}',
-        method: 'POST',
-        data: {
-            _token: '{{ csrf_token() }}',
-            _method: 'PATCH',
-            notes: notes,
-            _notes_only: true
-        },
-        dataType: 'json',
-        success: function(data) {
-            // إخفاء مؤشر الحفظ وإظهار النجاح
-            saveIndicator.style.display = 'none';
-            savedIndicator.style.display = 'inline';
-            
-            // تحديث معلومات آخر تحديث
-            const updateInfoText = document.getElementById('updateInfoText');
-            if (updateInfoText && data.updated_at) {
-                updateInfoText.textContent = 'آخر تحديث: ' + data.updated_at;
-            }
-            
-            // إعادة تفعيل الزر
-            saveBtn.disabled = false;
-            saveBtn.innerHTML = '<i class="fas fa-save me-2"></i>حفظ الملاحظات';
-            
-            // إخفاء رسالة النجاح بعد 5 ثواني
-            setTimeout(() => {
-                savedIndicator.style.display = 'none';
-            }, 5000);
-        },
-        error: function(xhr, status, error) {
-            console.error('خطأ في حفظ الملاحظات:', error);
-            console.log('Response:', xhr.responseText);
-            
-            // إخفاء مؤشر الحفظ وإظهار الخطأ
-            saveIndicator.style.display = 'none';
-            errorIndicator.style.display = 'inline';
-            
-            // إعادة تفعيل الزر
-            saveBtn.disabled = false;
-            saveBtn.innerHTML = '<i class="fas fa-save me-2"></i>حفظ الملاحظات';
-            
-            // إخفاء رسالة الخطأ بعد 5 ثواني
-            setTimeout(() => {
-                errorIndicator.style.display = 'none';
-            }, 5000);
-        }
-    });
-}
-
-// السماح بالحفظ عند الضغط على Ctrl+S
-document.addEventListener('DOMContentLoaded', function() {
-    const notesTextarea = document.getElementById('workOrderNotes');
-    
-    notesTextarea.addEventListener('keydown', function(e) {
-        if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-            e.preventDefault();
-            saveNotes();
-        }
-    });
-});
-</script>
 
 @endsection
