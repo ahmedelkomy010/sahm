@@ -126,7 +126,7 @@ class WorkOrderController extends Controller
         $perPage = $request->get('per_page', 15);
         $perPage = in_array($perPage, [10, 15, 25, 50, 100, 300, 500, 1000]) ? $perPage : 15;
         
-        $workOrders = $query->paginate($perPage);
+        $workOrders = $query->with('notesUpdatedBy')->paginate($perPage);
         
         return view('admin.work_orders.index', compact('workOrders', 'project', 'projectName'));
     }
@@ -441,7 +441,7 @@ class WorkOrderController extends Controller
             ]);
         }
         
-        $workOrder->load(['files', 'basicAttachments', 'invoiceAttachments', 'licenses.violations', 'safetyViolations']);
+        $workOrder->load(['files', 'basicAttachments', 'invoiceAttachments', 'licenses.violations', 'safetyViolations', 'notesUpdatedBy']);
         
         // تحديد المشروع بناءً على المدينة
         $project = $workOrder->city === 'المدينة المنورة' ? 'madinah' : 'riyadh';
@@ -6062,23 +6062,40 @@ class WorkOrderController extends Controller
                 'notes' => 'nullable|string'
             ]);
             
-            // حفظ الملاحظة في حقل notes فقط
+            // تحديث الملاحظات مباشرة
             $workOrder->notes = $request->notes;
             $workOrder->save();
             
-            // جلب اسم المستخدم
-            $updatedBy = auth()->user()->name ?? 'غير معروف';
+            // محاولة حفظ في الجدول الجديد إذا كان موجوداً
+            try {
+                if (!empty(trim($request->notes)) && class_exists(\App\Models\WorkOrderNote::class)) {
+                    // التحقق من آخر ملاحظة لتجنب التكرار
+                    $lastNote = $workOrder->workOrderNotes()->latest()->first();
+                    
+                    // حفظ فقط إذا كانت الملاحظة مختلفة عن آخر ملاحظة
+                    if (!$lastNote || $lastNote->note !== $request->notes) {
+                        \App\Models\WorkOrderNote::create([
+                            'work_order_id' => $workOrder->id,
+                            'note' => $request->notes,
+                            'created_by' => auth()->id(),
+                        ]);
+                    }
+                }
+            } catch (\Exception $noteError) {
+                // تجاهل الخطأ إذا كان الجدول غير موجود
+                \Log::warning('Could not save to work_order_notes table: ' . $noteError->getMessage());
+            }
             
             \Log::info('Work order notes updated', [
                 'work_order_id' => $workOrder->id,
                 'notes_length' => mb_strlen($request->notes ?? ''),
-                'updated_by' => $updatedBy
+                'updated_by' => auth()->user()->name ?? 'Unknown'
             ]);
             
             return response()->json([
                 'success' => true,
                 'message' => 'تم حفظ الملاحظات بنجاح',
-                'updated_by' => $updatedBy,
+                'updated_by' => auth()->user()->name ?? 'Unknown',
                 'updated_at' => now()->format('Y-m-d H:i')
             ]);
             

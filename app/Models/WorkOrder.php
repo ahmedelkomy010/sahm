@@ -63,6 +63,8 @@ class WorkOrder extends Model
         'purchase_order_number',
         'tax_value',
         'notes',
+        'notes_updated_by',
+        'notes_updated_at',
         'project',
         'user_id',
         'execution_file',
@@ -139,6 +141,7 @@ class WorkOrder extends Model
         'updated_at' => 'datetime',
         'inspection_date' => 'date',
         'execution_status_date' => 'datetime',
+        'notes_updated_at' => 'datetime',
         'safety_permits_images' => 'array',
         'safety_team_images' => 'array',
         'safety_equipment_images' => 'array',
@@ -197,6 +200,16 @@ class WorkOrder extends Model
     public function createdBy()
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function notesUpdatedBy()
+    {
+        return $this->belongsTo(User::class, 'notes_updated_by');
+    }
+
+    public function workOrderNotes()
+    {
+        return $this->hasMany(WorkOrderNote::class)->orderBy('created_at', 'desc');
     }
 
     public function surveys()

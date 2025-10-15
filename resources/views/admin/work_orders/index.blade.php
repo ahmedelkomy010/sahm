@@ -1396,10 +1396,12 @@ function resetCountdown(workOrderId) {
                                                 <div class="notes-display p-2 border rounded bg-light" style="min-height: 60px; max-height: 80px; overflow: hidden;">
                                                     @if($workOrder->notes)
                                                         <small class="text-muted d-block">{{ mb_strlen($workOrder->notes) > 50 ? mb_substr($workOrder->notes, 0, 50) . '...' : $workOrder->notes }}</small>
-                                                        <small class="text-success d-block mt-1" style="font-size: 0.7rem;">
-                                                            <i class="fas fa-clock me-1"></i>
-                                                            {{ $workOrder->updated_at ? $workOrder->updated_at->format('Y-m-d H:i') : '' }}
-                                                        </small>
+                                                        @if($workOrder->notes_updated_by)
+                                                            <small class="text-success d-block mt-1" style="font-size: 0.7rem;">
+                                                                <i class="fas fa-user me-1"></i>
+                                                                {{ $workOrder->notesUpdatedBy->name ?? 'غير معروف' }}
+                                                            </small>
+                                                        @endif
                                                     @else
                                                         <small class="text-muted fst-italic">اضغط للكتابة...</small>
                                                     @endif
