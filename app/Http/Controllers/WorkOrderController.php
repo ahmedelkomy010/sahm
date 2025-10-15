@@ -6062,34 +6062,18 @@ class WorkOrderController extends Controller
                 'notes' => 'nullable|string'
             ]);
             
-            // تحديث الملاحظات مباشرة
+            // تحديث الملاحظات مباشرة بأبسط طريقة
             $workOrder->notes = $request->notes;
-            $workOrder->save();
+            $saved = $workOrder->save();
             
-            // محاولة حفظ في الجدول الجديد إذا كان موجوداً
-            try {
-                if (!empty(trim($request->notes)) && class_exists(\App\Models\WorkOrderNote::class)) {
-                    // التحقق من آخر ملاحظة لتجنب التكرار
-                    $lastNote = $workOrder->workOrderNotes()->latest()->first();
-                    
-                    // حفظ فقط إذا كانت الملاحظة مختلفة عن آخر ملاحظة
-                    if (!$lastNote || $lastNote->note !== $request->notes) {
-                        \App\Models\WorkOrderNote::create([
-                            'work_order_id' => $workOrder->id,
-                            'note' => $request->notes,
-                            'created_by' => auth()->id(),
-                        ]);
-                    }
-                }
-            } catch (\Exception $noteError) {
-                // تجاهل الخطأ إذا كان الجدول غير موجود
-                \Log::warning('Could not save to work_order_notes table: ' . $noteError->getMessage());
+            if (!$saved) {
+                throw new \Exception('فشل حفظ الملاحظات في قاعدة البيانات');
             }
             
-            \Log::info('Work order notes updated', [
+            \Log::info('Work order notes updated successfully', [
                 'work_order_id' => $workOrder->id,
                 'notes_length' => mb_strlen($request->notes ?? ''),
-                'updated_by' => auth()->user()->name ?? 'Unknown'
+                'user_id' => auth()->id()
             ]);
             
             return response()->json([
@@ -6099,11 +6083,24 @@ class WorkOrderController extends Controller
                 'updated_at' => now()->format('Y-m-d H:i')
             ]);
             
-        } catch (\Exception $e) {
-            \Log::error('Error updating work order notes: ' . $e->getMessage());
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            \Log::error('Validation error updating notes', [
+                'errors' => $e->errors()
+            ]);
             return response()->json([
                 'success' => false,
-                'message' => 'حدث خطأ أثناء حفظ الملاحظات'
+                'message' => 'بيانات غير صحيحة'
+            ], 422);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error updating work order notes', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء حفظ الملاحظات: ' . $e->getMessage()
             ], 500);
         }
     }
