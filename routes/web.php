@@ -132,6 +132,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::post('work-orders/daily-program/send-notification', [App\Http\Controllers\WorkOrderController::class, 'sendDailyProgramNotification'])->name('work-orders.daily-program.send-notification');
     Route::get('work-orders/{workOrder}/notifications', [App\Http\Controllers\WorkOrderController::class, 'getWorkOrderNotifications'])->name('work-orders.notifications');
     Route::post('work-orders/{workOrder}/update-notes', [App\Http\Controllers\WorkOrderController::class, 'updateNotes'])->name('work-orders.update-notes');
+    Route::post('work-orders/{workOrder}/update-status-note', [App\Http\Controllers\WorkOrderController::class, 'updateStatusNote'])->name('work-orders.update-status-note');
     Route::delete('work-orders/revenues/{id}', [App\Http\Controllers\WorkOrderController::class, 'deleteRevenue'])->name('work-orders.revenues.delete');
     Route::get('work-orders/export/excel', [App\Http\Controllers\WorkOrderController::class, 'exportExcel'])->name('work-orders.export.excel');
     Route::post('work-orders', [App\Http\Controllers\WorkOrderController::class, 'store'])->name('work-orders.store');

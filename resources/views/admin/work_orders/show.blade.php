@@ -898,6 +898,47 @@
         </div>
     </div>
     
+    <!-- موقف أمر العمل -->
+    <div class="row mt-3">
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-header" style="background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%); color: white;">
+                    <h5 class="mb-0">
+                        <i class="fas fa-clipboard-check me-2"></i>
+                        موقف أمر العمل
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <textarea 
+                            id="workOrderStatusNote"
+                            class="form-control" 
+                            rows="4" 
+                            placeholder="اكتب موقف أمر العمل هنا... (الحفظ تلقائي)"
+                            style="font-size: 1rem; line-height: 1.8; resize: vertical; min-height: 100px;">{{ old('work_order_status_note', $workOrder->work_order_status_note) }}</textarea>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span id="statusNoteSaveIndicator" class="text-muted small">
+                                <i class="fas fa-clock me-1"></i>
+                                <span id="statusNoteSaveText">سيتم الحفظ تلقائياً</span>
+                            </span>
+                        </div>
+                        
+                        <div id="statusNoteLastUpdateInfo" class="text-muted small {{ $workOrder->status_note_updated_by ? '' : 'd-none' }}">
+                            <i class="fas fa-user me-1"></i>
+                            <span id="statusNoteUpdateUserName">{{ $workOrder->statusNoteUpdatedBy?->name }}</span>
+                            <span class="mx-2">|</span>
+                            <i class="fas fa-clock me-1"></i>
+                            <span id="statusNoteUpdateDateTime">{{ $workOrder->status_note_updated_at?->format('Y-m-d H:i') }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- تاريخ إنشاء أمر العمل -->
     <div class="row mt-3">
         <div class="col-12">
@@ -953,10 +994,13 @@
                         </div>
                     </form>
                     
-                    @if($workOrder->updated_at)
+                    @if($workOrder->notes_updated_by)
                     <div class="alert alert-info mt-3 mb-0">
-                        <i class="fas fa-clock me-2"></i>
-                        آخر تحديث: {{ $workOrder->updated_at->format('Y-m-d H:i') }}
+                        <i class="fas fa-user me-2"></i>
+                        <strong>{{ $workOrder->notesUpdatedBy?->name }}</strong>
+                        <span class="mx-2">|</span>
+                        <i class="fas fa-clock me-1"></i>
+                        {{ $workOrder->notes_updated_at?->format('Y-m-d H:i') }}
                     </div>
                     @endif
                 </div>
@@ -965,5 +1009,103 @@
     </div>
 </div>
 
+@push('scripts')
+<script>
+// الحفظ التلقائي لموقف أمر العمل
+(function() {
+    const textarea = document.getElementById('workOrderStatusNote');
+    const saveIndicator = document.getElementById('statusNoteSaveIndicator');
+    const saveText = document.getElementById('statusNoteSaveText');
+    
+    if (!textarea) return;
+    
+    let timeout = null;
+    let isFirstLoad = true;
+    
+    // وظيفة للحفظ
+    function saveStatusNote() {
+        const content = textarea.value;
+        
+        // تغيير المؤشر
+        saveIndicator.className = 'text-warning small';
+        saveText.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> جاري الحفظ...';
+        
+        // إرسال البيانات
+        fetch('{{ route("admin.work-orders.update-status-note", $workOrder) }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                work_order_status_note: content
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // نجح الحفظ
+                saveIndicator.className = 'text-success small';
+                saveText.innerHTML = '<i class="fas fa-check-circle me-1"></i> تم الحفظ';
+                
+                // تحديث معلومات اليوزر
+                if (data.user_name) {
+                    const lastUpdateInfo = document.getElementById('statusNoteLastUpdateInfo');
+                    const userName = document.getElementById('statusNoteUpdateUserName');
+                    const dateTime = document.getElementById('statusNoteUpdateDateTime');
+                    
+                    if (lastUpdateInfo && userName && dateTime) {
+                        userName.textContent = data.user_name;
+                        dateTime.textContent = data.updated_at || '';
+                        lastUpdateInfo.classList.remove('d-none');
+                    }
+                }
+                
+                // إرجاع المؤشر بعد 3 ثوانٍ
+                setTimeout(() => {
+                    saveIndicator.className = 'text-muted small';
+                    saveText.innerHTML = '<i class="fas fa-clock me-1"></i> سيتم الحفظ تلقائياً';
+                }, 3000);
+            } else {
+                // فشل الحفظ
+                saveIndicator.className = 'text-danger small';
+                saveText.innerHTML = '<i class="fas fa-exclamation-circle me-1"></i> فشل الحفظ';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            saveIndicator.className = 'text-danger small';
+            saveText.innerHTML = '<i class="fas fa-exclamation-circle me-1"></i> حدث خطأ';
+        });
+    }
+    
+    // مراقبة التغييرات في النص
+    textarea.addEventListener('input', function() {
+        // إلغاء المؤقت السابق
+        if (timeout) {
+            clearTimeout(timeout);
+        }
+        
+        // تخطي الحفظ في أول مرة
+        if (isFirstLoad) {
+            isFirstLoad = false;
+            return;
+        }
+        
+        // تعيين مؤقت جديد للحفظ بعد ثانيتين من التوقف عن الكتابة
+        saveIndicator.className = 'text-info small';
+        saveText.innerHTML = '<i class="fas fa-pencil-alt me-1"></i> جاري الكتابة...';
+        
+        timeout = setTimeout(saveStatusNote, 2000);
+    });
+    
+    // إعادة تعيين العلامة عند التركيز
+    textarea.addEventListener('focus', function() {
+        isFirstLoad = false;
+    });
+})();
+</script>
+@endpush
 
 @endsection

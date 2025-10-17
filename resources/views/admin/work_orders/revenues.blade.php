@@ -506,6 +506,46 @@
             font-size: 0.6rem !important;
         }
     }
+    
+    /* عمود قيمة الصرف */
+    .payment-value-col {
+        min-width: 120px !important;
+        max-width: 150px !important;
+        width: 130px !important;
+    }
+    
+    .payment-value-col input {
+        font-weight: bold !important;
+        font-size: 0.9rem !important;
+        text-align: center !important;
+        padding: 8px !important;
+    }
+    
+    /* عمود إجمالي قيمة المستخلصات */
+    input[data-field="extract_value"] {
+        font-weight: bold !important;
+        font-size: 0.9rem !important;
+        text-align: center !important;
+    }
+    
+    /* حقل اسم العميل */
+    .editable-field[data-field="client_name"] {
+        font-weight: 600 !important;
+        color: #2c3e50 !important;
+    }
+    
+    /* حقل المشروع/المنطقة */
+    .editable-field[data-field="project_area"] {
+        font-weight: 600 !important;
+        color: #2c3e50 !important;
+    }
+    
+    /* حقل رقم العقد */
+    .editable-field[data-field="contract_number"] {
+        font-weight: bold !important;
+        color: #1a5490 !important;
+        font-size: 0.95rem !important;
+    }
 </style>
 @endpush
 
@@ -793,6 +833,19 @@
                                 </div>
                                 
                                 <div class="col-md-1">
+                                    <label for="filter_extract_type" class="form-label mb-0" style="font-size: 0.75rem;">
+                                        <i class="fas fa-file-invoice me-1 text-primary" style="font-size: 0.7rem;"></i>
+                                        نوع المستخلص
+                                    </label>
+                                    <select class="form-select form-select-sm" id="filter_extract_type" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;">
+                                        <option value="">الكل</option>
+                                        <option value="دفعة أولي">دفعة أولي</option>
+                                        <option value="كلي">كلي</option>
+                                        <option value="دفعة نهائية">دفعة نهائية</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="col-md-1">
                                     <label for="filter_payment_status" class="form-label mb-0" style="font-size: 0.75rem;">
                                         <i class="fas fa-money-check-alt me-1 text-primary" style="font-size: 0.7rem;"></i>
                                         حالة الصرف
@@ -898,10 +951,10 @@
                             
                             @if(auth()->user()->isAdmin())
                             <!-- زر مسح جميع الصفوف -->
-                            <button type="button" class="btn btn-danger btn-sm" onclick="deleteAllRows()">
+                            <!-- <button type="button" class="btn btn-danger btn-sm" onclick="deleteAllRows()">
                                 <i class="fas fa-trash-alt me-1"></i>
                                 مسح جميع الصفوف
-                            </button>
+                            </button> -->
                             @endif
                         </div>
                     </div>
@@ -931,7 +984,7 @@
                                     <th>موقف المستخلص<br>عند ...</th>
                                     <th>الرقم المرجعي</th>
                                     <th class="date-col">تاريخ الصرف</th>
-                                    <th>قيمة الصرف</th>
+                                    <th class="payment-value-col">قيمة الصرف</th>
                                     <th>حالة الصرف</th>
                                     <th>الإجراءات</th>
                                 </tr>
@@ -944,13 +997,13 @@
                                             <span class="badge bg-primary">{{ $loop->iteration }}</span>
                                         </td>
                                         <td>
-                                            <div class="editable-field" contenteditable="true" data-field="client_name" placeholder="اسم العميل">{{ $revenue->client_name }}</div>
+                                            <div class="editable-field" contenteditable="false" data-field="client_name" style="background-color: #e9ecef; cursor: default;">{{ $revenue->client_name ?: 'الشركة السعودية للكهرباء' }}</div>
                                         </td>
                                         <td>
-                                            <div class="editable-field" contenteditable="true" data-field="project_area" placeholder="المشروع">{{ $revenue->project_area }}</div>
+                                            <div class="editable-field" contenteditable="false" data-field="project_area" style="background-color: #e9ecef; cursor: default;">{{ $revenue->project_area ?: (isset($project) && $project == 'madinah' ? 'العقد الموحد - المدينة المنورة' : 'العقد الموحد - الرياض') }}</div>
                                         </td>
                                         <td>
-                                            <input type="number" class="form-control" data-field="contract_number" placeholder="رقم العقد" value="{{ $revenue->contract_number }}">
+                                            <div class="editable-field" contenteditable="false" data-field="contract_number" style="background-color: #e9ecef; cursor: default; font-weight: bold;">{{ $revenue->contract_number ?: (isset($project) && $project == 'madinah' ? '4400019706' : '4400015737') }}</div>
                                         </td>
                                         <td>
                                             <input type="number" class="form-control" data-field="extract_number" placeholder="رقم المستخلص" value="{{ $revenue->extract_number }}">
@@ -1009,7 +1062,7 @@
                                         <td class="date-col">
                                             <input type="date" class="date-input" data-field="payment_date" value="{{ $revenue->payment_date ? $revenue->payment_date->format('Y-m-d') : '' }}" placeholder="تاريخ الصرف">
                                         </td>
-                                        <td>
+                                        <td class="payment-value-col">
                                             <input type="number" step="0.01" class="form-control" data-field="payment_value" placeholder="قيمة الصرف" value="{{ $revenue->payment_value }}">
                                         </td>
                                         <td>
@@ -1116,9 +1169,9 @@ function addNewRow() {
         <td class="serial-col">
             <span class="badge bg-primary">${rowCounter}</span>
         </td>
-        <td><div class="editable-field" contenteditable="true" data-field="client_name" placeholder="اسم العميل"></div></td>
-        <td><div class="editable-field" contenteditable="true" data-field="project_area" placeholder="المشروع"></div></td>
-        <td><input type="number" class="form-control" data-field="contract_number" placeholder="رقم العقد"></td>
+        <td><div class="editable-field" contenteditable="false" data-field="client_name" style="background-color: #e9ecef; cursor: default;">الشركة السعودية للكهرباء</div></td>
+        <td><div class="editable-field" contenteditable="false" data-field="project_area" style="background-color: #e9ecef; cursor: default;">@if(isset($project) && $project == 'madinah')العقد الموحد - المدينة المنورة @else العقد الموحد - الرياض @endif</div></td>
+        <td><div class="editable-field" contenteditable="false" data-field="contract_number" style="background-color: #e9ecef; cursor: default; font-weight: bold;">@if(isset($project) && $project == 'madinah')4400019706 @else 4400015737 @endif</div></td>
         <td><input type="number" class="form-control" data-field="extract_number" placeholder="رقم المستخلص"></td>
         <td><div class="editable-field" contenteditable="true" data-field="office" placeholder="المكتب"></div></td>
         <td><div class="editable-field" contenteditable="true" data-field="extract_type" placeholder="نوع المستخلص"></div></td>
@@ -1149,7 +1202,7 @@ function addNewRow() {
         </td>
         <td><input type="number" class="form-control" data-field="reference_number" placeholder="الرقم المرجعي"></td>
         <td class="date-col"><input type="date" class="date-input" data-field="payment_date" placeholder="تاريخ الصرف"></td>
-        <td><input type="number" step="0.01" class="form-control" data-field="payment_value" placeholder="قيمة الصرف"></td>
+        <td class="payment-value-col"><input type="number" step="0.01" class="form-control" data-field="payment_value" placeholder="قيمة الصرف"></td>
         <td>
             <select class="form-control" data-field="extract_status">
                 <option value="">اختر...</option>
@@ -2013,6 +2066,7 @@ function applyFilters() {
     const startDate = document.getElementById('filter_start_date').value;
     const endDate = document.getElementById('filter_end_date').value;
     const office = document.getElementById('filter_office').value;
+    const extractType = document.getElementById('filter_extract_type').value;
     const paymentStatus = document.getElementById('filter_payment_status').value;
     const dateOrder = document.getElementById('filter_date_order').value;
     const extractNumber = document.getElementById('filter_extract_number').value;
@@ -2040,6 +2094,30 @@ function applyFilters() {
             const officeCell = row.querySelector('[data-field="office"]');
             if (officeCell && officeCell.textContent.trim() !== office) {
                 showRow = false;
+            }
+        }
+        
+        // فلتر نوع المستخلص
+        if (extractType) {
+            const extractTypeCell = row.querySelector('[data-field="extract_type"]');
+            if (extractTypeCell) {
+                const cellValue = extractTypeCell.textContent.trim().toLowerCase()
+                    .replace(/ى/g, 'ي')  // توحيد الألف المقصورة
+                    .replace(/أ/g, 'ا')  // توحيد الألف
+                    .replace(/إ/g, 'ا')
+                    .replace(/آ/g, 'ا')
+                    .replace(/\s+/g, ' '); // توحيد المسافات
+                
+                const filterValue = extractType.toLowerCase()
+                    .replace(/ى/g, 'ي')
+                    .replace(/أ/g, 'ا')
+                    .replace(/إ/g, 'ا')
+                    .replace(/آ/g, 'ا')
+                    .replace(/\s+/g, ' ');
+                
+                if (cellValue !== filterValue) {
+                    showRow = false;
+                }
             }
         }
         
@@ -2302,6 +2380,7 @@ function clearFilters() {
     document.getElementById('filter_start_date').value = '';
     document.getElementById('filter_end_date').value = '';
     document.getElementById('filter_office').value = '';
+    document.getElementById('filter_extract_type').value = '';
     document.getElementById('filter_payment_status').value = '';
     document.getElementById('filter_date_order').value = '';
     document.getElementById('filter_extract_number').value = '';

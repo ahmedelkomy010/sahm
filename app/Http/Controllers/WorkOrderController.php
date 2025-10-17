@@ -434,14 +434,19 @@ class WorkOrderController extends Controller
     {
         // إذا كان الطلب عبر AJAX، إرجاع JSON
         if (request()->wantsJson() || request()->ajax()) {
+            $workOrder->load('notesUpdatedBy');
+            
             return response()->json([
                 'id' => $workOrder->id,
                 'order_number' => $workOrder->order_number,
-                'notes' => $workOrder->notes
+                'notes' => $workOrder->notes,
+                'notes_updated_by' => $workOrder->notes_updated_by,
+                'notes_updated_by_name' => $workOrder->notesUpdatedBy?->name,
+                'notes_updated_at' => $workOrder->notes_updated_at?->format('Y-m-d H:i')
             ]);
         }
         
-        $workOrder->load(['files', 'basicAttachments', 'invoiceAttachments', 'licenses.violations', 'safetyViolations', 'notesUpdatedBy']);
+        $workOrder->load(['files', 'basicAttachments', 'invoiceAttachments', 'licenses.violations', 'safetyViolations', 'notesUpdatedBy', 'statusNoteUpdatedBy']);
         
         // تحديد المشروع بناءً على المدينة
         $project = $workOrder->city === 'المدينة المنورة' ? 'madinah' : 'riyadh';
@@ -1053,17 +1058,22 @@ class WorkOrderController extends Controller
     {
         try {
             \Log::info('Updating notes for work order: ' . $workOrder->id, [
-                'notes' => $request->input('notes')
+                'notes' => $request->input('notes'),
+                'user_id' => auth()->id()
             ]);
 
             $workOrder->notes = $request->input('notes');
+            $workOrder->notes_updated_by = auth()->id();
+            $workOrder->notes_updated_at = now();
             $workOrder->save();
 
             \Log::info('Notes updated successfully for work order: ' . $workOrder->id);
 
             return response()->json([
                 'success' => true,
-                'message' => 'تم حفظ الملاحظات بنجاح'
+                'message' => 'تم حفظ الملاحظات بنجاح',
+                'user_name' => auth()->user()->name,
+                'updated_at' => $workOrder->notes_updated_at->format('Y-m-d H:i')
             ]);
         } catch (\Exception $e) {
             \Log::error('Error updating notes: ' . $e->getMessage(), [
@@ -1074,6 +1084,41 @@ class WorkOrderController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'حدث خطأ أثناء حفظ الملاحظات: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    // تحديث موقف أمر العمل (للحفظ التلقائي مع AJAX)
+    public function updateStatusNote(Request $request, WorkOrder $workOrder)
+    {
+        try {
+            \Log::info('Updating status note for work order: ' . $workOrder->id, [
+                'work_order_status_note' => $request->input('work_order_status_note'),
+                'user_id' => auth()->id()
+            ]);
+
+            $workOrder->work_order_status_note = $request->input('work_order_status_note');
+            $workOrder->status_note_updated_by = auth()->id();
+            $workOrder->status_note_updated_at = now();
+            $workOrder->save();
+
+            \Log::info('Status note updated successfully for work order: ' . $workOrder->id);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'تم حفظ موقف أمر العمل بنجاح',
+                'user_name' => auth()->user()->name,
+                'updated_at' => $workOrder->status_note_updated_at->format('Y-m-d H:i')
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error updating status note: ' . $e->getMessage(), [
+                'work_order_id' => $workOrder->id,
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء حفظ موقف أمر العمل: ' . $e->getMessage()
             ], 500);
         }
     }

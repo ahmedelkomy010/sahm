@@ -307,12 +307,15 @@
                                 <button type="button" class="btn btn-sm btn-primary mb-1" data-bs-toggle="modal" data-bs-target="#editProgramModal{{ $program->id }}">
                                     <i class="fas fa-edit"></i> تعديل
                                 </button>
+                                <button type="button" class="btn btn-sm btn-info mb-1" data-bs-toggle="modal" data-bs-target="#attachmentsModal{{ $program->id }}">
+                                    <i class="fas fa-paperclip"></i> مرفقات
+                                </button>
                                 <form action="{{ route('admin.work-orders.daily-program.destroy', $program) }}" method="POST" class="d-inline">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('هل أنت متأكد من حذف هذا السجل؟')">
+                                    <!-- <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('هل أنت متأكد من حذف هذا السجل؟')">
                                         <i class="fas fa-trash"></i> حذف
-                                    </button>
+                                    </button> -->
                                 </form>
                             </td>
                         </tr>
@@ -385,6 +388,340 @@
                                             <button type="submit" class="btn btn-primary">حفظ التغييرات</button>
                                         </div>
                                     </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Attachments Modal -->
+                        <div class="modal fade" id="attachmentsModal{{ $program->id }}" tabindex="-1">
+                            <div class="modal-dialog modal-lg">
+                                <div class="modal-content">
+                                    <div class="modal-header bg-info text-white">
+                                        <h5 class="modal-title">
+                                            <i class="fas fa-paperclip me-2"></i>
+                                            مرفقات أمر العمل - {{ $program->workOrder->order_number }}
+                                        </h5>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        @php
+                                            // مرفقات إنشاء أمر العمل
+                                            $attachments = $program->workOrder->files()
+                                                ->where('file_category', 'basic_attachments')
+                                                ->get();
+                                            
+                                            // رخص الحفر المرتبطة مع المرفقات والتمديدات
+                                            $licenses = $program->workOrder->licenses()->with(['attachments', 'extensions'])->get();
+                                            
+                                            // تصاريح السلامة
+                                            $safetyPermitsImages = $program->workOrder->safety_permits_images ?? [];
+                                            $safetyPermitsFiles = $program->workOrder->safety_permits_files ?? [];
+                                        @endphp
+                                        
+                                        @if($attachments->count() > 0 || $licenses->count() > 0 || count($safetyPermitsImages) > 0 || count($safetyPermitsFiles) > 0)
+                                            {{-- مرفقات إنشاء أمر العمل --}}
+                                            @if($attachments->count() > 0)
+                                                <h6 class="mb-3 text-primary">
+                                                    <i class="fas fa-folder me-2"></i>
+                                                    مرفقات إنشاء أمر العمل ({{ $attachments->count() }})
+                                                </h6>
+                                                <div class="list-group mb-4">
+                                                    @foreach($attachments as $file)
+                                                        <div class="list-group-item d-flex justify-content-between align-items-start">
+                                                            <div class="d-flex align-items-center flex-grow-1">
+                                                                @php
+                                                                    $fileExtension = strtolower(pathinfo($file->original_filename, PATHINFO_EXTENSION));
+                                                                    $fileIcon = 'fas fa-file';
+                                                                    $iconColor = 'text-secondary';
+                                                                    
+                                                                    switch($fileExtension) {
+                                                                        case 'pdf':
+                                                                            $fileIcon = 'fas fa-file-pdf';
+                                                                            $iconColor = 'text-danger';
+                                                                            break;
+                                                                        case 'doc':
+                                                                        case 'docx':
+                                                                            $fileIcon = 'fas fa-file-word';
+                                                                            $iconColor = 'text-primary';
+                                                                            break;
+                                                                        case 'xls':
+                                                                        case 'xlsx':
+                                                                            $fileIcon = 'fas fa-file-excel';
+                                                                            $iconColor = 'text-success';
+                                                                            break;
+                                                                        case 'jpg':
+                                                                        case 'jpeg':
+                                                                        case 'png':
+                                                                        case 'gif':
+                                                                            $fileIcon = 'fas fa-file-image';
+                                                                            $iconColor = 'text-info';
+                                                                            break;
+                                                                    }
+                                                                @endphp
+                                                                <i class="{{ $fileIcon }} {{ $iconColor }} me-3 fa-2x"></i>
+                                                                <div>
+                                                                    <h6 class="mb-1">{{ $file->original_filename }}</h6>
+                                                                    <small class="text-muted">
+                                                                        <i class="fas fa-calendar me-1"></i>
+                                                                        {{ $file->created_at->format('Y-m-d H:i') }}
+                                                                        <span class="mx-2">|</span>
+                                                                        <i class="fas fa-weight-hanging me-1"></i>
+                                                                        {{ number_format($file->file_size / 1024 / 1024, 2) }} MB
+                                                                    </small>
+                                                                </div>
+                                                            </div>
+                                                            <div class="d-flex gap-2">
+                                                                <a href="{{ Storage::url($file->file_path) }}" 
+                                                                   target="_blank" 
+                                                                   class="btn btn-sm btn-outline-primary"
+                                                                   title="عرض الملف">
+                                                                    <i class="fas fa-eye"></i>
+                                                                </a>
+                                                                <a href="{{ Storage::url($file->file_path) }}" 
+                                                                   download="{{ $file->original_filename }}" 
+                                                                   class="btn btn-sm btn-outline-success"
+                                                                   title="تحميل الملف">
+                                                                    <i class="fas fa-download"></i>
+                                                                </a>
+                                                            </div>
+                                                        </div>
+                                                    @endforeach
+                                                </div>
+                                            @endif
+
+                                            {{-- رخص الحفر --}}
+                                            @if($licenses->count() > 0)
+                                                @foreach($licenses as $license)
+                                                    @php
+                                                        // جمع كل ملفات الرخصة من الحقول المختلفة
+                                                        $licenseFiles = [];
+                                                        
+                                                        // ملف الرخصة الأساسي
+                                                        if($license->license_file_path && Storage::disk('public')->exists($license->license_file_path)) {
+                                                            $licenseFiles[] = [
+                                                                'path' => $license->license_file_path,
+                                                                'name' => 'رخصة حفر رقم ' . $license->license_number,
+                                                                'type' => 'رخصة حفر'
+                                                            ];
+                                                        }
+                                                        
+                                                        // شهادة التنسيق
+                                                        if($license->coordination_certificate_path && Storage::disk('public')->exists($license->coordination_certificate_path)) {
+                                                            $licenseFiles[] = [
+                                                                'path' => $license->coordination_certificate_path,
+                                                                'name' => 'شهادة تنسيق رقم ' . ($license->coordination_certificate_number ?? $license->license_number),
+                                                                'type' => 'شهادة تنسيق'
+                                                            ];
+                                                        }
+                                                        
+                                                        // الرسائل والتعهدات
+                                                        if($license->letters_and_commitments_path && Storage::disk('public')->exists($license->letters_and_commitments_path)) {
+                                                            $licenseFiles[] = [
+                                                                'path' => $license->letters_and_commitments_path,
+                                                                'name' => 'رسائل وتعهدات',
+                                                                'type' => 'رسائل وتعهدات'
+                                                            ];
+                                                        }
+                                                        
+                                                        // المرفقات من جدول license_attachments
+                                                        if($license->attachments) {
+                                                            foreach($license->attachments as $attachment) {
+                                                                if(Storage::disk('public')->exists($attachment->file_path)) {
+                                                                    $licenseFiles[] = [
+                                                                        'path' => $attachment->file_path,
+                                                                        'name' => $attachment->file_name ?? 'مرفق رخصة',
+                                                                        'type' => $attachment->attachment_type ?? 'رخصة حفر'
+                                                                    ];
+                                                                }
+                                                            }
+                                                        }
+                                                    @endphp
+                                                    
+                                                    {{-- مرفقات الرخصة الأساسية --}}
+                                                    @if(count($licenseFiles) > 0)
+                                                        <h6 class="mb-3 text-success">
+                                                            <i class="fas fa-file-contract me-2"></i>
+                                                            رخصة الحفر رقم {{ $license->license_number }} ({{ count($licenseFiles) }})
+                                                        </h6>
+                                                        <div class="list-group mb-4">
+                                                            @foreach($licenseFiles as $file)
+                                                                <div class="list-group-item d-flex justify-content-between align-items-start">
+                                                                    <div class="d-flex align-items-center flex-grow-1">
+                                                                        <i class="fas fa-file-pdf text-danger me-3 fa-2x"></i>
+                                                                        <div>
+                                                                            <h6 class="mb-1">{{ $file['name'] }}</h6>
+                                                                            <small class="text-muted">
+                                                                                <span class="badge bg-success">{{ $file['type'] }}</span>
+                                                                                @if($license->license_date)
+                                                                                    <span class="mx-2">|</span>
+                                                                                    <i class="fas fa-calendar me-1"></i>
+                                                                                    {{ \Carbon\Carbon::parse($license->license_date)->format('Y-m-d') }}
+                                                                                @endif
+                                                                            </small>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="d-flex gap-2">
+                                                                        <a href="{{ Storage::url($file['path']) }}" 
+                                                                           target="_blank" 
+                                                                           class="btn btn-sm btn-outline-primary"
+                                                                           title="عرض الملف">
+                                                                            <i class="fas fa-eye"></i>
+                                                                        </a>
+                                                                        <a href="{{ Storage::url($file['path']) }}" 
+                                                                           download 
+                                                                           class="btn btn-sm btn-outline-success"
+                                                                           title="تحميل الملف">
+                                                                            <i class="fas fa-download"></i>
+                                                                        </a>
+                                                                    </div>
+                                                                </div>
+                                                            @endforeach
+                                                        </div>
+                                                    @endif
+                                                    
+                                                    {{-- مرفقات التمديدات --}}
+                                                    @if($license->extensions && $license->extensions->count() > 0)
+                                                        @foreach($license->extensions as $extension)
+                                                            @php
+                                                                $extensionAttachments = is_array($extension->attachments) ? $extension->attachments : [];
+                                                            @endphp
+                                                            @if(count($extensionAttachments) > 0)
+                                                                <h6 class="mb-3 text-warning">
+                                                                    <i class="fas fa-clock me-2"></i>
+                                                                    تمديد رخصة {{ $license->license_number }} - التمديد رقم {{ $loop->iteration }} ({{ count($extensionAttachments) }})
+                                                                </h6>
+                                                                <div class="list-group mb-4">
+                                                                    @foreach($extensionAttachments as $filePath)
+                                                                        @if($filePath)
+                                                                            <div class="list-group-item d-flex justify-content-between align-items-start">
+                                                                                <div class="d-flex align-items-center flex-grow-1">
+                                                                                    <i class="fas fa-file-pdf text-warning me-3 fa-2x"></i>
+                                                                                    <div>
+                                                                                        <h6 class="mb-1">
+                                                                                            {{ basename($filePath) }}
+                                                                                        </h6>
+                                                                                        <small class="text-muted">
+                                                                                            <span class="badge bg-warning text-dark">رخصة تمديد</span>
+                                                                                            @if($extension->start_date && $extension->end_date)
+                                                                                                <span class="mx-2">|</span>
+                                                                                                من {{ \Carbon\Carbon::parse($extension->start_date)->format('Y-m-d') }}
+                                                                                                إلى {{ \Carbon\Carbon::parse($extension->end_date)->format('Y-m-d') }}
+                                                                                            @endif
+                                                                                        </small>
+                                                                                    </div>
+                                                                                </div>
+                                                                                <div class="d-flex gap-2">
+                                                                                    <a href="{{ Storage::url($filePath) }}" 
+                                                                                       target="_blank" 
+                                                                                       class="btn btn-sm btn-outline-primary"
+                                                                                       title="عرض الملف">
+                                                                                        <i class="fas fa-eye"></i>
+                                                                                    </a>
+                                                                                    <a href="{{ Storage::url($filePath) }}" 
+                                                                                       download 
+                                                                                       class="btn btn-sm btn-outline-success"
+                                                                                       title="تحميل الملف">
+                                                                                        <i class="fas fa-download"></i>
+                                                                                    </a>
+                                                                                </div>
+                                                                            </div>
+                                                                        @endif
+                                                                    @endforeach
+                                                                </div>
+                                                            @endif
+                                                        @endforeach
+                                                    @endif
+                                                @endforeach
+                                            @endif
+                                            
+                                            {{-- تصاريح السلامة (Permits) --}}
+                                            @if(count($safetyPermitsImages) > 0 || count($safetyPermitsFiles) > 0)
+                                                <h6 class="mb-3 text-danger">
+                                                    <i class="fas fa-shield-alt me-2"></i>
+                                                    تصاريح السلامة (Permits) ({{ count($safetyPermitsImages) + count($safetyPermitsFiles) }})
+                                                </h6>
+                                                <div class="list-group mb-4">
+                                                    {{-- صور التصاريح --}}
+                                                    @foreach($safetyPermitsImages as $index => $imagePath)
+                                                        @if($imagePath && Storage::disk('public')->exists($imagePath))
+                                                            <div class="list-group-item d-flex justify-content-between align-items-start">
+                                                                <div class="d-flex align-items-center flex-grow-1">
+                                                                    <i class="fas fa-file-image text-info me-3 fa-2x"></i>
+                                                                    <div>
+                                                                        <h6 class="mb-1">صورة تصريح رقم {{ $index + 1 }}</h6>
+                                                                        <small class="text-muted">
+                                                                            <span class="badge bg-danger">تصريح سلامة</span>
+                                                                            <span class="mx-2">|</span>
+                                                                            <span class="badge bg-info">صورة</span>
+                                                                        </small>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="d-flex gap-2">
+                                                                    <a href="{{ Storage::url($imagePath) }}" 
+                                                                       target="_blank" 
+                                                                       class="btn btn-sm btn-outline-primary"
+                                                                       title="عرض الصورة">
+                                                                        <i class="fas fa-eye"></i>
+                                                                    </a>
+                                                                    <a href="{{ Storage::url($imagePath) }}" 
+                                                                       download 
+                                                                       class="btn btn-sm btn-outline-success"
+                                                                       title="تحميل الصورة">
+                                                                        <i class="fas fa-download"></i>
+                                                                    </a>
+                                                                </div>
+                                                            </div>
+                                                        @endif
+                                                    @endforeach
+                                                    
+                                                    {{-- ملفات التصاريح --}}
+                                                    @foreach($safetyPermitsFiles as $index => $filePath)
+                                                        @if($filePath && Storage::disk('public')->exists($filePath))
+                                                            <div class="list-group-item d-flex justify-content-between align-items-start">
+                                                                <div class="d-flex align-items-center flex-grow-1">
+                                                                    <i class="fas fa-file-pdf text-danger me-3 fa-2x"></i>
+                                                                    <div>
+                                                                        <h6 class="mb-1">{{ basename($filePath) }}</h6>
+                                                                        <small class="text-muted">
+                                                                            <span class="badge bg-danger">تصريح سلامة</span>
+                                                                            <span class="mx-2">|</span>
+                                                                            <span class="badge bg-warning text-dark">ملف PDF</span>
+                                                                        </small>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="d-flex gap-2">
+                                                                    <a href="{{ Storage::url($filePath) }}" 
+                                                                       target="_blank" 
+                                                                       class="btn btn-sm btn-outline-primary"
+                                                                       title="عرض الملف">
+                                                                        <i class="fas fa-eye"></i>
+                                                                    </a>
+                                                                    <a href="{{ Storage::url($filePath) }}" 
+                                                                       download 
+                                                                       class="btn btn-sm btn-outline-success"
+                                                                       title="تحميل الملف">
+                                                                        <i class="fas fa-download"></i>
+                                                                    </a>
+                                                                </div>
+                                                            </div>
+                                                        @endif
+                                                    @endforeach
+                                                </div>
+                                            @endif
+                                        @else
+                                            <div class="text-center py-5">
+                                                <i class="fas fa-folder-open fa-4x text-muted mb-3"></i>
+                                                <p class="text-muted">لا توجد مرفقات لهذا الأمر</p>
+                                            </div>
+                                        @endif
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
+                                        <a href="{{ route('admin.work-orders.show', $program->workOrder) }}" class="btn btn-info" target="_blank">
+                                            <i class="fas fa-external-link-alt me-1"></i>
+                                            فتح صفحة أمر العمل
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
                         </div>

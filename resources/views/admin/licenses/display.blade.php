@@ -458,10 +458,10 @@
 
         </div>
         
-        <!-- الترقيم -->
+        <!-- الترقيم
         <div class="mt-4">
             {{ $licenses->links() }}
-        </div>
+        </div> -->
         </div>
     </div>
 </div>

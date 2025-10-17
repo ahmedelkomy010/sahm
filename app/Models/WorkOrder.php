@@ -65,6 +65,9 @@ class WorkOrder extends Model
         'notes',
         'notes_updated_by',
         'notes_updated_at',
+        'work_order_status_note',
+        'status_note_updated_by',
+        'status_note_updated_at',
         'project',
         'user_id',
         'execution_file',
@@ -142,6 +145,7 @@ class WorkOrder extends Model
         'inspection_date' => 'date',
         'execution_status_date' => 'datetime',
         'notes_updated_at' => 'datetime',
+        'status_note_updated_at' => 'datetime',
         'safety_permits_images' => 'array',
         'safety_team_images' => 'array',
         'safety_equipment_images' => 'array',
@@ -205,6 +209,11 @@ class WorkOrder extends Model
     public function notesUpdatedBy()
     {
         return $this->belongsTo(User::class, 'notes_updated_by');
+    }
+
+    public function statusNoteUpdatedBy()
+    {
+        return $this->belongsTo(User::class, 'status_note_updated_by');
     }
 
     public function workOrderNotes()

@@ -2912,14 +2912,20 @@ async function showWorkOrderNotifications(workOrderId, orderNumber) {
                 </div>
                 
                 <!-- معلومات آخر تحديث -->
-                <div class="alert alert-info d-none" id="lastUpdateInfo">
+                <div class="alert alert-info d-none mb-3" id="lastUpdateInfo">
                     <div class="d-flex align-items-center">
-                        <i class="fas fa-user-edit fs-5 me-3"></i>
-                        <div>
-                            <strong class="d-block">آخر تحديث:</strong>
-                            <small id="updateUserName"></small>
-                            <br>
-                            <small class="text-muted" id="updateDateTime"></small>
+                        <i class="fas fa-user-edit fs-4 me-3 text-primary"></i>
+                        <div class="flex-grow-1">
+                            <div class="mb-1">
+                                <i class="fas fa-user me-2 text-primary"></i>
+                                <strong>المستخدم:</strong>
+                                <span id="updateUserName" class="text-dark fw-bold"></span>
+                            </div>
+                            <div>
+                                <i class="fas fa-clock me-2 text-primary"></i>
+                                <strong>التاريخ:</strong>
+                                <span id="updateDateTime" class="text-muted"></span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -2977,13 +2983,9 @@ function openEditNotesModal(workOrderId, orderNumber, event) {
             document.getElementById('editNotesTextarea').value = data.notes || '';
             
             // عرض معلومات آخر تحديث إذا كانت موجودة
-            // سنحصل عليها من الـ DOM مباشرة
-            const notesCell = document.querySelector(`td[data-work-order-id="${workOrderId}"]`);
-            const userNameElement = notesCell ? notesCell.querySelector('.text-success') : null;
-            
-            if (userNameElement) {
-                const userName = userNameElement.textContent.trim();
-                document.getElementById('updateUserName').textContent = userName;
+            if (data.notes_updated_by_name && data.notes_updated_at) {
+                document.getElementById('updateUserName').textContent = data.notes_updated_by_name;
+                document.getElementById('updateDateTime').textContent = data.notes_updated_at;
                 document.getElementById('lastUpdateInfo').classList.remove('d-none');
             } else {
                 document.getElementById('lastUpdateInfo').classList.add('d-none');
@@ -3063,8 +3065,8 @@ async function saveNotes() {
             setTimeout(() => successAlert.classList.add('d-none'), 3000);
             
             // تحديث معلومات آخر تحديث في الـ modal
-            if (data.updated_by) {
-                document.getElementById('updateUserName').textContent = data.updated_by;
+            if (data.user_name) {
+                document.getElementById('updateUserName').textContent = data.user_name;
                 document.getElementById('updateDateTime').textContent = data.updated_at || '';
                 document.getElementById('lastUpdateInfo').classList.remove('d-none');
             }
@@ -3077,10 +3079,10 @@ async function saveNotes() {
                     let html = `<small class="text-muted d-block">${displayText}</small>`;
                     
                     // إضافة اسم المستخدم والوقت
-                    if (data.updated_by) {
+                    if (data.user_name) {
                         html += `<small class="text-success d-block mt-1" style="font-size: 0.7rem;">
                                     <i class="fas fa-user me-1"></i>
-                                    ${data.updated_by}
+                                    ${data.user_name}
                                  </small>`;
                     }
                     
