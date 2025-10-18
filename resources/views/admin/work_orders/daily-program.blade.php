@@ -750,7 +750,7 @@
                 <i class="fas fa-check-circle me-2"></i>
                 <strong>نسبة الالتزام اليومي</strong>
             </div>
-            <a href="{{ route('admin.work-orders.daily-program.export-status', ['date' => request('date', now()->format('Y-m-d'))]) }}" 
+            <a href="{{ route('admin.work-orders.daily-program.export-status', ['date' => $selectedDate ?? now()->format('Y-m-d'), 'project' => $project ?? 'riyadh']) }}" 
                class="btn btn-light btn-sm">
                 <i class="fas fa-file-excel me-1"></i>
                 تصدير Excel
