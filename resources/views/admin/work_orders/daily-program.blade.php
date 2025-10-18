@@ -741,6 +741,242 @@
             @endif
         </div>
     </div>
+
+    <!-- جدول حالة البيانات المدخلة -->
+    @if($programs->count() > 0)
+    <div class="card shadow-sm mt-4">
+        <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+            <div>
+                <i class="fas fa-check-circle me-2"></i>
+                <strong>نسبة الالتزام اليومي</strong>
+            </div>
+            <a href="{{ route('admin.work-orders.daily-program.export-status', ['date' => request('date', now()->format('Y-m-d'))]) }}" 
+               class="btn btn-light btn-sm">
+                <i class="fas fa-file-excel me-1"></i>
+                تصدير Excel
+            </a>
+        </div>
+        <div class="card-body p-0">
+            <!-- Desktop Table -->
+            <div class="table-responsive desktop-table">
+                <table class="table table-hover table-bordered mb-0">
+                    <thead class="table-light">
+                        <tr class="text-center">
+                            <th style="min-width: 80px;">#</th>
+                            <th style="min-width: 150px;">رقم أمر العمل</th>
+                            <th style="min-width: 200px;">نوع العمل</th>
+                            <th style="min-width: 120px;">المسح</th>
+                            <th style="min-width: 120px;">المواد</th>
+                            <th style="min-width: 120px;">الجودة</th>
+                            <th style="min-width: 120px;">السلامة</th>
+                            <th style="min-width: 120px;">التنفيذ</th>
+                            <th style="min-width: 150px;">نسبة الالتزام</th>
+                            <th style="min-width: 180px;">إدخال الإنتاجية اليومية</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($programs as $index => $program)
+                        @php
+                            $workOrder = $program->workOrder;
+                            // التحقق من وجود بيانات المسح
+                            $hasSurvey = $workOrder->surveys()->exists();
+                            // التحقق من وجود المواد
+                            $hasMaterials = $workOrder->materials()->exists() || $workOrder->workOrderMaterials()->exists();
+                            // التحقق من وجود بيانات الجودة (شهادة تنسيق)
+                            $hasQuality = $workOrder->licenses()
+                                ->where(function($query) {
+                                    $query->whereNotNull('coordination_certificate_path')
+                                          ->orWhereNotNull('coordination_certificate_number');
+                                })
+                                ->exists();
+                            // التحقق من وجود بيانات السلامة
+                            $hasSafety = !empty($workOrder->safety_permits_images) || 
+                                        !empty($workOrder->safety_permits_files) ||
+                                        !empty($workOrder->safety_team_images) ||
+                                        !empty($workOrder->safety_equipment_images) ||
+                                        !empty($workOrder->safety_general_images) ||
+                                        !empty($workOrder->safety_tbt_images) ||
+                                        $workOrder->safetyViolations()->exists() ||
+                                        $workOrder->safetyHistory()->exists();
+                        @endphp
+                        <tr>
+                            <td class="text-center">{{ $index + 1 }}</td>
+                            <td class="text-center">
+                                <a href="{{ route('admin.work-orders.show', $workOrder) }}" class="btn btn-link text-primary fw-bold">
+                                    {{ $workOrder->order_number }}
+                                </a>
+                            </td>
+                            <td>{{ $program->work_type ?? $workOrder->work_type }}</td>
+                            <td class="text-center">
+                                @if($hasSurvey)
+                                    <i class="fas fa-check-circle text-success fa-2x" title="تم إدخال بيانات المسح"></i>
+                                @else
+                                    <i class="fas fa-times-circle text-danger fa-2x" title="لم يتم إدخال بيانات المسح"></i>
+                                @endif
+                            </td>
+                            <td class="text-center">
+                                @if($hasMaterials)
+                                    <i class="fas fa-check-circle text-success fa-2x" title="تم إدخال بيانات المواد"></i>
+                                @else
+                                    <i class="fas fa-times-circle text-danger fa-2x" title="لم يتم إدخال بيانات المواد"></i>
+                                @endif
+                            </td>
+                            <td class="text-center">
+                                @if($hasQuality)
+                                    <i class="fas fa-check-circle text-success fa-2x" title="تم إدخال بيانات الجودة"></i>
+                                @else
+                                    <i class="fas fa-times-circle text-danger fa-2x" title="لم يتم إدخال بيانات الجودة"></i>
+                                @endif
+                            </td>
+                            <td class="text-center">
+                                @if($hasSafety)
+                                    <i class="fas fa-check-circle text-success fa-2x" title="تم إدخال بيانات السلامة"></i>
+                                @else
+                                    <i class="fas fa-times-circle text-danger fa-2x" title="لم يتم إدخال بيانات السلامة"></i>
+                                @endif
+                            </td>
+                            <td class="text-center">
+                                <div class="form-check form-switch d-flex justify-content-center">
+                                    <input class="form-check-input execution-checkbox" 
+                                           type="checkbox" 
+                                           id="execution_{{ $program->id }}"
+                                           data-program-id="{{ $program->id }}"
+                                           {{ $program->execution_completed ? 'checked' : '' }}
+                                           style="width: 3rem; height: 1.5rem; cursor: pointer;">
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-{{ $program->execution_completed ? 'success' : 'danger' }} fs-6 execution-percentage" 
+                                      id="percentage_{{ $program->id }}">
+                                    {{ $program->execution_completed ? '100%' : '0%' }}
+                                        </span>
+                            </td>
+                            <td class="text-center">
+                                <a href="{{ route('admin.work-orders.execution', ['workOrder' => $workOrder->id]) }}" 
+                                   class="btn btn-primary btn-sm"
+                                   title="إدخال الإنتاجية اليومية">
+                                    <i class="fas fa-tasks me-1"></i>
+                                    التنفيذ
+                                </a>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+                                    </div>
+            
+            <!-- Mobile Cards -->
+            <div class="mobile-cards p-3">
+                @foreach($programs as $index => $program)
+                @php
+                    $workOrder = $program->workOrder;
+                    $hasSurvey = $workOrder->surveys()->exists();
+                    $hasMaterials = $workOrder->materials()->exists() || $workOrder->workOrderMaterials()->exists();
+                    $hasQuality = $workOrder->licenses()
+                        ->where(function($query) {
+                            $query->whereNotNull('coordination_certificate_path')
+                                  ->orWhereNotNull('coordination_certificate_number');
+                        })
+                        ->exists();
+                    $hasSafety = !empty($workOrder->safety_permits_images) || 
+                                !empty($workOrder->safety_permits_files) ||
+                                !empty($workOrder->safety_team_images) ||
+                                !empty($workOrder->safety_equipment_images) ||
+                                !empty($workOrder->safety_general_images) ||
+                                !empty($workOrder->safety_tbt_images) ||
+                                $workOrder->safetyViolations()->exists() ||
+                                $workOrder->safetyHistory()->exists();
+                @endphp
+                <div class="mobile-card">
+                    <div class="mobile-card-header">
+                        <h5>#{{ $index + 1 }}</h5>
+                        <a href="{{ route('admin.work-orders.show', $workOrder) }}" class="btn btn-sm btn-primary">
+                            {{ $workOrder->order_number }}
+                        </a>
+                    </div>
+                    <div class="mobile-card-body">
+                        <div class="mobile-field">
+                            <span class="mobile-field-label">نوع العمل</span>
+                            <span class="mobile-field-value">{{ $program->work_type ?? $workOrder->work_type }}</span>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-6">
+                                <div class="mobile-field text-center">
+                                    <span class="mobile-field-label">المسح</span>
+                                    @if($hasSurvey)
+                                        <i class="fas fa-check-circle text-success fa-3x mt-2"></i>
+                                @else
+                                        <i class="fas fa-times-circle text-danger fa-3x mt-2"></i>
+                                    @endif
+                                    </div>
+                                    </div>
+                            <div class="col-6">
+                                <div class="mobile-field text-center">
+                                    <span class="mobile-field-label">المواد</span>
+                                    @if($hasMaterials)
+                                        <i class="fas fa-check-circle text-success fa-3x mt-2"></i>
+                                    @else
+                                        <i class="fas fa-times-circle text-danger fa-3x mt-2"></i>
+                                @endif
+                                    </div>
+                            </div>
+                            <div class="col-6 mt-3">
+                                <div class="mobile-field text-center">
+                                    <span class="mobile-field-label">الجودة</span>
+                                    @if($hasQuality)
+                                        <i class="fas fa-check-circle text-success fa-3x mt-2"></i>
+                                @else
+                                        <i class="fas fa-times-circle text-danger fa-3x mt-2"></i>
+                                    @endif
+                                    </div>
+                                    </div>
+                            <div class="col-6 mt-3">
+                                <div class="mobile-field text-center">
+                                    <span class="mobile-field-label">السلامة</span>
+                                    @if($hasSafety)
+                                        <i class="fas fa-check-circle text-success fa-3x mt-2"></i>
+                                    @else
+                                        <i class="fas fa-times-circle text-danger fa-3x mt-2"></i>
+                                @endif
+                                </div>
+                            </div>
+                            <div class="col-6 mt-3">
+                                <div class="mobile-field text-center">
+                                    <span class="mobile-field-label">التنفيذ</span>
+                                    <div class="form-check form-switch d-flex justify-content-center mt-2">
+                                        <input class="form-check-input execution-checkbox" 
+                                               type="checkbox" 
+                                               id="execution_mobile_{{ $program->id }}"
+                                               data-program-id="{{ $program->id }}"
+                                               {{ $program->execution_completed ? 'checked' : '' }}
+                                               style="width: 3rem; height: 1.5rem; cursor: pointer;">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6 mt-3">
+                                <div class="mobile-field text-center">
+                                    <span class="mobile-field-label">نسبة الالتزام</span>
+                                    <span class="badge bg-{{ $program->execution_completed ? 'success' : 'danger' }} fs-5 mt-2 execution-percentage" 
+                                          id="percentage_mobile_{{ $program->id }}">
+                                        {{ $program->execution_completed ? '100%' : '0%' }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mobile-actions">
+                        <a href="{{ route('admin.work-orders.execution', ['workOrder' => $workOrder->id]) }}" 
+                           class="btn btn-primary">
+                            <i class="fas fa-tasks me-1"></i>
+                            إدخال الإنتاجية اليومية
+                        </a>
+                    </div>
+                </div>
+                        @endforeach
+            </div>
+        </div>
+    </div>
+    @endif
 </div>
 
 <!-- Add to Program Modal -->
@@ -1282,6 +1518,78 @@ function sendToSelectedUsers() {
         sendBtn.disabled = false;
         sendBtn.innerHTML = originalHTML;
         alert('❌ حدث خطأ أثناء إرسال الإشعار');
+    });
+}
+
+// حفظ حالة التنفيذ
+document.addEventListener('DOMContentLoaded', function() {
+    const executionCheckboxes = document.querySelectorAll('.execution-checkbox');
+    
+    executionCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const programId = this.getAttribute('data-program-id');
+            const isCompleted = this.checked;
+            
+            // تحديث النسبة في كل الأماكن (desktop & mobile)
+            updateExecutionPercentage(programId, isCompleted);
+            
+            // حفظ التغيير في الداتابيز
+            saveExecutionStatus(programId, isCompleted);
+        });
+    });
+});
+
+function updateExecutionPercentage(programId, isCompleted) {
+    // تحديث النسبة في Desktop
+    const desktopPercentage = document.getElementById('percentage_' + programId);
+    if (desktopPercentage) {
+        desktopPercentage.textContent = isCompleted ? '100%' : '0%';
+        desktopPercentage.classList.remove('bg-success', 'bg-danger');
+        desktopPercentage.classList.add(isCompleted ? 'bg-success' : 'bg-danger');
+    }
+    
+    // تحديث النسبة في Mobile
+    const mobilePercentage = document.getElementById('percentage_mobile_' + programId);
+    if (mobilePercentage) {
+        mobilePercentage.textContent = isCompleted ? '100%' : '0%';
+        mobilePercentage.classList.remove('bg-success', 'bg-danger');
+        mobilePercentage.classList.add(isCompleted ? 'bg-success' : 'bg-danger');
+    }
+    
+    // تزامن الـ checkboxes (desktop و mobile)
+    const desktopCheckbox = document.getElementById('execution_' + programId);
+    const mobileCheckbox = document.getElementById('execution_mobile_' + programId);
+    
+    if (desktopCheckbox) desktopCheckbox.checked = isCompleted;
+    if (mobileCheckbox) mobileCheckbox.checked = isCompleted;
+}
+
+function saveExecutionStatus(programId, isCompleted) {
+    fetch('{{ route("admin.work-orders.daily-program.update-execution") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify({
+            program_id: programId,
+            execution_completed: isCompleted
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            console.log('✅ تم حفظ حالة التنفيذ بنجاح');
+        } else {
+            console.error('❌ فشل حفظ حالة التنفيذ');
+            // إرجاع الـ checkbox للحالة السابقة
+            updateExecutionPercentage(programId, !isCompleted);
+        }
+    })
+    .catch(error => {
+        console.error('❌ خطأ في حفظ حالة التنفيذ:', error);
+        // إرجاع الـ checkbox للحالة السابقة
+        updateExecutionPercentage(programId, !isCompleted);
     });
 }
 </script>

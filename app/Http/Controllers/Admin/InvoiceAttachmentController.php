@@ -13,9 +13,11 @@ class InvoiceAttachmentController extends Controller
     public function store(Request $request, WorkOrder $workOrder)
     {
         $request->validate([
-            'attachments.*' => 'required|file|mimes:pdf,jpg,jpeg,png|max:10240',
+            'attachments.*' => 'required|file|mimes:pdf,jpg,jpeg,png|max:1024', // 1 MB max
             'file_type' => 'required|string|max:255',
             'description' => 'nullable|string',
+        ], [
+            'attachments.*.max' => 'حجم الملف يجب أن لا يتجاوز 1 ميجابايت'
         ]);
 
         if (count($request->file('attachments')) > 20) {

@@ -23,14 +23,16 @@
                     </a>
 
                     @auth
-                        @if(auth()->user()->is_admin)
                         <!-- إيرادات المشاريع -->
+                        @if(auth()->user()->is_admin || (is_array(auth()->user()->permissions) && in_array('access_total_project_revenues', auth()->user()->permissions)))
                         <a href="{{ route('admin.all-projects-revenues') }}" 
                            class="nav-item nav-link px-3 py-2 rounded {{ request()->routeIs('admin.all-projects-revenues') ? 'active' : '' }}">
                             <i class="fas fa-coins me-1"></i>
                             إيرادات المشاريع
                         </a>
+                        @endif
 
+                        @if(auth()->user()->is_admin)
                         <!-- التقارير -->
                         <a href="{{ route('admin.reports.unified') }}" 
                            class="nav-item nav-link px-3 py-2 rounded {{ request()->routeIs('admin.reports.unified') ? 'active' : '' }}">
@@ -49,11 +51,11 @@
                         <!-- الإشعارات -->
                         <div class="dropdown" style="display: inline-block;">
                             <a class="nav-item nav-link px-3 py-2 rounded position-relative" 
-                               href="javascript:void(0);"
-                               data-bs-toggle="dropdown"
+                               href="#"
                                id="notificationsNavButton"
                                role="button"
-                               aria-expanded="false">
+                               aria-expanded="false"
+                               style="cursor: pointer;">
                                 <i class="fas fa-bell me-1"></i>
                                 الإشعارات
                                 <span id="notificationBadgeNav" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display: none; font-size: 0.6rem;">
@@ -97,8 +99,8 @@
                     <button class="btn btn-link text-white d-flex align-items-center text-decoration-none dropdown-toggle" 
                             type="button" 
                             id="userDropdown"
-                            data-bs-toggle="dropdown"
-                            aria-expanded="false">
+                            aria-expanded="false"
+                            style="cursor: pointer;">
                         <i class="fas fa-user-circle fs-5 me-1"></i>
                         <span class="d-none d-md-inline">{{ Auth::user()->name }}</span>
                     </button>
@@ -137,11 +139,11 @@
                 <!-- Mobile Notifications Button -->
                 <div class="dropdown">
                     <a class="btn btn-link text-white position-relative p-2" 
-                       href="javascript:void(0);"
-                       data-bs-toggle="dropdown"
+                       href="#"
                        id="mobileNotificationsButton"
                        role="button"
-                       aria-expanded="false">
+                       aria-expanded="false"
+                       style="cursor: pointer;">
                         <i class="fas fa-bell fs-5"></i>
                         <span id="mobileNotificationBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display: none; font-size: 0.6rem;">
                             0
@@ -210,12 +212,14 @@
             </a>
 
             @auth
-                @if(auth()->user()->is_admin)
+                @if(auth()->user()->is_admin || (is_array(auth()->user()->permissions) && in_array('access_total_project_revenues', auth()->user()->permissions)))
                 <a href="{{ route('admin.all-projects-revenues') }}" class="nav-link text-dark">
                     <i class="fas fa-coins me-2"></i>
                     إيرادات المشاريع
                 </a>
+                @endif
 
+                @if(auth()->user()->is_admin)
                 <a href="{{ route('admin.reports.unified') }}" class="nav-link text-dark">
                     <i class="fas fa-file-alt me-2"></i>
                     التقارير
@@ -361,6 +365,23 @@
 
 .bg-primary-light {
     background-color: rgba(59, 130, 246, 0.1) !important;
+}
+
+/* إخفاء زرار القائمة على الشاشات الكبيرة */
+@media (min-width: 992px) {
+    .d-lg-none {
+        display: none !important;
+    }
+    
+    /* إخفاء زرار الموبايل تحديداً على الشاشات الكبيرة */
+    .main-header .d-lg-none,
+    .main-header button[data-bs-target="#mobileMenu"],
+    .offcanvas-end#mobileMenu {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+    }
 }
 
 @media (max-width: 991.98px) {
@@ -830,43 +851,117 @@ document.addEventListener('DOMContentLoaded', function() {
     // للزر في الـ navbar
     const notifNavButton = document.getElementById('notificationsNavButton');
     if (notifNavButton) {
-        const dropdown = notifNavButton.parentElement;
-        dropdown.addEventListener('show.bs.dropdown', function () {
-            loadNotifications();
-        });
+        const dropdownMenu = notifNavButton.nextElementSibling;
         
-        // تفعيل يدوي للـ dropdown عند الضغط
+        // إنشاء dropdown instance
+        let dropdownInstance = null;
+        
+        // عند الضغط على الزر
         notifNavButton.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
-            const bsDropdown = bootstrap.Dropdown.getInstance(notifNavButton) || new bootstrap.Dropdown(notifNavButton);
-            bsDropdown.toggle();
+            
+            console.log('Notifications button clicked');
+            
+            // إنشاء أو الحصول على dropdown instance
+            if (!dropdownInstance) {
+                dropdownInstance = new bootstrap.Dropdown(notifNavButton, {
+                    autoClose: true,
+                    boundary: 'viewport'
+                });
+            }
+            
+            // التبديل بين الفتح والإغلاق
+            if (dropdownMenu.classList.contains('show')) {
+                dropdownInstance.hide();
+            } else {
+                // تحميل الإشعارات قبل الفتح
+                loadNotifications();
+                dropdownInstance.show();
+            }
+        });
+        
+        // عند فتح الـ dropdown
+        notifNavButton.addEventListener('show.bs.dropdown', function () {
+            console.log('Dropdown showing...');
+            loadNotifications();
+        });
+        
+        // عند إغلاق الـ dropdown من الخارج
+        notifNavButton.addEventListener('hide.bs.dropdown', function () {
+            console.log('Dropdown hiding...');
         });
     }
     
     // للزر الخاص بـ Profile (ahmedelkomy)
     const userDropdownButton = document.getElementById('userDropdown');
     if (userDropdownButton) {
+        const userDropdownMenu = userDropdownButton.nextElementSibling;
+        let userDropdownInstance = null;
+        
         userDropdownButton.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
-            const bsDropdown = bootstrap.Dropdown.getInstance(userDropdownButton) || new bootstrap.Dropdown(userDropdownButton);
-            bsDropdown.toggle();
+            
+            console.log('User dropdown button clicked');
+            
+            // إنشاء أو الحصول على dropdown instance
+            if (!userDropdownInstance) {
+                userDropdownInstance = new bootstrap.Dropdown(userDropdownButton, {
+                    autoClose: true,
+                    boundary: 'viewport'
+                });
+            }
+            
+            // التبديل بين الفتح والإغلاق
+            if (userDropdownMenu.classList.contains('show')) {
+                userDropdownInstance.hide();
+            } else {
+                userDropdownInstance.show();
+            }
+        });
+        
+        // عند فتح الـ dropdown
+        userDropdownButton.addEventListener('show.bs.dropdown', function () {
+            console.log('User dropdown showing...');
+        });
+        
+        // عند إغلاق الـ dropdown
+        userDropdownButton.addEventListener('hide.bs.dropdown', function () {
+            console.log('User dropdown hiding...');
         });
     }
     
     // للزر الخاص بالإشعارات على الموبايل
     const mobileNotifButton = document.getElementById('mobileNotificationsButton');
     if (mobileNotifButton) {
-        mobileNotifButton.addEventListener('show.bs.dropdown', function() {
-            loadNotifications();
-        });
+        const mobileDropdownMenu = mobileNotifButton.nextElementSibling;
+        let mobileDropdownInstance = null;
         
         mobileNotifButton.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
-            const bsDropdown = bootstrap.Dropdown.getInstance(mobileNotifButton) || new bootstrap.Dropdown(mobileNotifButton);
-            bsDropdown.toggle();
+            
+            console.log('Mobile notifications button clicked');
+            
+            if (!mobileDropdownInstance) {
+                mobileDropdownInstance = new bootstrap.Dropdown(mobileNotifButton, {
+                    autoClose: true,
+                    boundary: 'viewport'
+                });
+            }
+            
+            if (mobileDropdownMenu.classList.contains('show')) {
+                mobileDropdownInstance.hide();
+            } else {
+                loadNotifications();
+                mobileDropdownInstance.show();
+            }
+        });
+        
+        mobileNotifButton.addEventListener('show.bs.dropdown', function() {
+            console.log('Mobile dropdown showing...');
+            loadNotifications();
         });
     }
 });

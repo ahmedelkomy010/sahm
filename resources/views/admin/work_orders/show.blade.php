@@ -905,7 +905,7 @@
                 <div class="card-header" style="background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%); color: white;">
                     <h5 class="mb-0">
                         <i class="fas fa-clipboard-check me-2"></i>
-                        موقف أمر العمل
+                        ملاحظات علي أمر العمل
                     </h5>
                 </div>
                 <div class="card-body">
@@ -914,7 +914,7 @@
                             id="workOrderStatusNote"
                             class="form-control" 
                             rows="4" 
-                            placeholder="اكتب موقف أمر العمل هنا... (الحفظ تلقائي)"
+                            placeholder="اكتب ملاحظات علي أمر العمل هنا... (الحفظ تلقائي)"
                             style="font-size: 1rem; line-height: 1.8; resize: vertical; min-height: 100px;">{{ old('work_order_status_note', $workOrder->work_order_status_note) }}</textarea>
                     </div>
                     
@@ -958,7 +958,7 @@
                 <div class="card-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
                     <h5 class="mb-0">
                         <i class="fas fa-sticky-note me-2"></i>
-                        ملاحظات على تفاصيل أمر العمل
+                       (خارجي) ملاحظات على الأمر 
                     </h5>
                 </div>
                 <div class="card-body">

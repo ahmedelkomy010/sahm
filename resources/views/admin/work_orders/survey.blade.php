@@ -189,7 +189,7 @@
                                                 <div class="form-group">
                                                     <label for="site_images" class="form-label">
                                                         صور الموقع 
-                                                        <small class="text-muted">(حد أقصى 50 ملف)</small>
+                                                        <small class="text-muted">(حد أقصى 21 ملف)</small>
                                                     </label>
                                                     <div class="input-group">
                                                                                                             <input type="file" 
@@ -198,7 +198,7 @@
                                                            name="site_images[]" 
                                                            accept="image/*,application/pdf" 
                                                            multiple
-                                                           onchange="validateFileCount(this, 50)">
+                                                           onchange="validateFileCount(this, 21)">
                                                         <button type="button" 
                                                                 class="btn btn-outline-primary" 
                                                                 onclick="openCamera()">
@@ -638,7 +638,7 @@
                                             <label for="completion_files_upload" class="form-label fw-bold">
                                                 <i class="fas fa-paperclip me-2 text-success"></i>
                                                   مرفقات
-                                                <small class="text-muted">(يمكن رفع أكثر من 50 ملف)</small>
+                                                <small class="text-muted">(حد أقصى 10 ملفات)</small>
                                             </label>
                                             <div class="input-group">
                                                 <input type="file" 
@@ -1806,7 +1806,7 @@ function deleteCompletionFile(fileId) {
 // دوال قسم رفع ملفات بعد الانتهاء في أسفل الصفحة
 function validateCompletionUploadFiles(input) {
     const files = input.files;
-    const maxFiles = 100;
+    const maxFiles = 10;
     const maxSizePerFile = 50 * 1024 * 1024; // 50MB
     
     // التحقق من عدد الملفات

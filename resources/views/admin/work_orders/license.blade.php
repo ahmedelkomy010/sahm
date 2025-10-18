@@ -213,6 +213,36 @@ $(document).ready(function() {
         });
     });
 
+    // دالة للتحقق من حجم ملف شهادة التنسيق
+    function validateCoordinationFile(input) {
+        const file = input.files[0];
+        if (file) {
+            const maxSize = 1 * 1024 * 1024; // 1 MB
+            if (file.size > maxSize) {
+                toastr.error('حجم الملف يتجاوز الحد الأقصى المسموح به (1 ميجابايت)');
+                input.value = ''; // مسح الملف المختار
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // دالة للتحقق من حجم ملفات الخطابات والتعهدات
+    function validateLettersCommitmentsFiles(input) {
+        const files = input.files;
+        if (files.length === 0) return true;
+        
+        const maxSize = 1 * 1024 * 1024; // 1 MB
+        for (let i = 0; i < files.length; i++) {
+            if (files[i].size > maxSize) {
+                toastr.error(`الملف ${files[i].name} يتجاوز الحد الأقصى المسموح به (1 ميجابايت)`);
+                input.value = ''; // مسح جميع الملفات
+                return false;
+            }
+        }
+        return true;
+    }
+
     function saveCoordinationSection() {
         // التحقق من إدخال البيانات الأساسية
         const coordinationNumber = document.querySelector('input[name="coordination_certificate_number"]').value;
@@ -1658,10 +1688,10 @@ $(document).ready(function() {
             return;
         }
 
-        // التحقق من حجم الملف (10 MB)
-        const maxSize = 10 * 1024 * 1024; // 10 MB
+        // التحقق من حجم الملف (1 MB)
+        const maxSize = 1 * 1024 * 1024; // 1 MB
         if (file.size > maxSize) {
-            toastr.error('حجم الملف يجب أن يكون أقل من 10 ميجابايت');
+            toastr.error('حجم الملف يجب أن يكون أقل من 1 ميجابايت');
             input.value = '';
             clearViolationFile();
             return;
@@ -3822,7 +3852,8 @@ function deleteExtension(extensionId) {
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label fw-bold">مرفق شهادة التنسيق</label>
-                            <input type="file" class="form-control" name="coordination_certificate_path">
+                            <input type="file" class="form-control" name="coordination_certificate_path" id="coordination_certificate_file" onchange="validateCoordinationFile(this)">
+                            <small class="text-muted">الحد الأقصى: 1 ميجابايت</small>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-bold">رقم شهادة التنسيق</label>
@@ -3845,7 +3876,8 @@ function deleteExtension(extensionId) {
                         </div>
                         <div class="col-md-4" id="letters_commitments_field" style="display: none;">
                             <label class="form-label fw-bold">مرفق الخطابات والتعهدات</label>
-                            <input type="file" class="form-control" name="letters_commitments_files[]" multiple>
+                            <input type="file" class="form-control" name="letters_commitments_files[]" multiple onchange="validateLettersCommitmentsFiles(this)">
+                            <small class="text-muted">الحد الأقصى: 1 ميجابايت لكل ملف</small>
                         </div>
                     </div>
 
@@ -4096,7 +4128,8 @@ function deleteExtension(extensionId) {
                                             </div>
                                             <div class="col-md-1">
                                                 <label class="form-label fw-bold">المرفق</label>
-                                                <input type="file" class="form-control" id="test_file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+                                                <input type="file" class="form-control" id="test_file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" onchange="validateLabTestFile(this)">
+                                                <small class="text-muted">حد أقصى: 200 KB</small>
                                             </div>
                                         </div>
                                         <div class="row mt-3">
@@ -4518,7 +4551,7 @@ function deleteExtension(extensionId) {
                                                    multiple accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" 
                                                    onchange="handleEvacuationAttachments(this.files)">
                                             <small class="text-muted">
-                                                يمكن رفع ملفات PDF, Word, أو صور (حد أقصى 10 ملفات لكل مرة)
+                                                يمكن رفع ملفات PDF, Word, أو صور (حد أقصى 10 ملفات لكل مرة - 200 KB لكل ملف)
                                             </small>
                                         </div>
                                         <div class="col-md-4">
@@ -4760,7 +4793,7 @@ function deleteExtension(extensionId) {
                                         </div>
                                         <div class="form-text">
                                             <i class="fas fa-info-circle me-1"></i>
-                                            يمكن رفع الملفات التالية: الصور (JPG, PNG)، PDF، مستندات Word - الحد الأقصى: 10 MB
+                                            يمكن رفع الملفات التالية: الصور (JPG, PNG)، PDF، مستندات Word - الحد الأقصى: 1 ميجابايت
                                         </div>
                                         <div id="violation-file-preview" class="mt-2" style="display: none;">
                                             <div class="alert alert-info mb-0">
@@ -5654,6 +5687,20 @@ function calculateTotal() {
     const price = parseFloat(document.getElementById('test_price').value) || 0;
     const total = points * price;
     document.getElementById('test_total').value = total.toFixed(2);
+}
+
+// دالة التحقق من حجم ملف المختبر
+function validateLabTestFile(input) {
+    const file = input.files[0];
+    if (file) {
+        const maxSize = 200 * 1024; // 200 KB
+        if (file.size > maxSize) {
+            toastr.error('حجم الملف يتجاوز الحد الأقصى المسموح به (200 كيلوبايت)');
+            input.value = ''; // مسح الملف المختار
+            return false;
+        }
+    }
+    return true;
 }
 
 // دالة إضافة اختبار إلى الجدول
@@ -7010,15 +7057,15 @@ function handleEvacuationAttachments(files) {
     let totalSize = 0;
     for (let file of files) {
         totalSize += file.size;
-        if (file.size > 10 * 1024 * 1024) { // 10MB
-            toastr.error(`الملف ${file.name} كبير جداً. الحد الأقصى 10 ميجابايت`);
+        if (file.size > 200 * 1024) { // 200 KB
+            toastr.error(`الملف ${file.name} كبير جداً. الحد الأقصى 200 كيلوبايت`);
             document.getElementById('evacuation-attachments').value = '';
             return;
         }
     }
     
-    if (totalSize > 50 * 1024 * 1024) { // 50MB إجمالي
-        toastr.error('حجم الملفات الإجمالي كبير جداً. الحد الأقصى 50 ميجابايت');
+    if (totalSize > 2 * 1024 * 1024) { // 2 MB إجمالي (10 ملفات × 200 KB)
+        toastr.error('حجم الملفات الإجمالي كبير جداً. الحد الأقصى 2 ميجابايت');
         document.getElementById('evacuation-attachments').value = '';
         return;
     }
@@ -7809,6 +7856,27 @@ const ExtensionApp = createApp({
     handleFileUpload(event, fieldName) {
       const file = event.target.files[0];
       if (file) {
+        // التحقق من حجم الملف حسب نوع الحقل
+        let maxSize = 10 * 1024 * 1024; // 10 MB default
+        let maxSizeText = '10 ميجابايت';
+        
+        // ملفات الرخصة: 1 ميجا
+        if (fieldName === 'extension_license_file') {
+          maxSize = 1 * 1024 * 1024; // 1 MB
+          maxSizeText = '1 ميجابايت';
+        } 
+        // إثبات سداد البنك وفواتير السداد: 0.5 ميجا
+        else if (fieldName === 'extension_payment_proof' || fieldName === 'extension_bank_proof') {
+          maxSize = 0.5 * 1024 * 1024; // 0.5 MB
+          maxSizeText = '0.5 ميجابايت';
+        }
+        
+        if (file.size > maxSize) {
+          toastr.error(`حجم الملف يتجاوز الحد الأقصى المسموح به (${maxSizeText})`);
+          event.target.value = ''; // مسح الملف المختار
+          return;
+        }
+        
         this.extensionForm[fieldName] = file;
       }
     },
@@ -8037,7 +8105,7 @@ const ExtensionApp = createApp({
                   accept=".pdf,.jpg,.jpeg,.png"
                   @change="handleFileUpload($event, 'extension_license_file')"
                 >
-                <small class="form-text text-muted">PDF, JPG, PNG</small>
+                <small class="form-text text-muted">PDF, JPG, PNG - الحد الأقصى: 1 ميجابايت</small>
               </div>
               
               <div class="col-md-4 mb-3">
@@ -8048,7 +8116,7 @@ const ExtensionApp = createApp({
                   accept=".pdf,.jpg,.jpeg,.png"
                   @change="handleFileUpload($event, 'extension_payment_proof')"
                 >
-                <small class="form-text text-muted">PDF, JPG, PNG</small>
+                <small class="form-text text-muted">PDF, JPG, PNG - الحد الأقصى: 0.5 ميجابايت</small>
               </div>
               
               <div class="col-md-4 mb-3">
@@ -8059,7 +8127,7 @@ const ExtensionApp = createApp({
                   accept=".pdf,.jpg,.jpeg,.png"
                   @change="handleFileUpload($event, 'extension_bank_proof')"
                 >
-                <small class="form-text text-muted">PDF, JPG, PNG</small>
+                <small class="form-text text-muted">PDF, JPG, PNG - الحد الأقصى: 0.5 ميجابايت</small>
               </div>
             </div>
             
@@ -8675,12 +8743,54 @@ const DigLicenseApp = createApp({
     handleFileUpload(event, fieldName) {
       const file = event.target.files[0];
       if (file) {
+        // التحقق من حجم الملف حسب نوع الحقل
+        let maxSize = 10 * 1024 * 1024; // 10 MB default
+        let maxSizeText = '10 ميجابايت';
+        
+        // ملفات الرخصة: 1 ميجا
+        if (fieldName === 'license_file' || fieldName === 'extension_license_file') {
+          maxSize = 1 * 1024 * 1024; // 1 MB
+          maxSizeText = '1 ميجابايت';
+        } 
+        // إثبات سداد البنك وفواتير السداد: 0.5 ميجا
+        else if (fieldName === 'coordination_certificate_file' || 
+                 fieldName === 'extension_payment_proof' || 
+                 fieldName === 'extension_bank_proof') {
+          maxSize = 0.5 * 1024 * 1024; // 0.5 MB
+          maxSizeText = '0.5 ميجابايت';
+        }
+        
+        if (file.size > maxSize) {
+          toastr.error(`حجم الملف يتجاوز الحد الأقصى المسموح به (${maxSizeText})`);
+          event.target.value = ''; // مسح الملف المختار
+          return;
+        }
+        
         this.licenseForm[fieldName] = file;
       }
     },
     
     handleMultipleFileUpload(event, fieldName) {
       const files = Array.from(event.target.files);
+      
+      // التحقق من حجم كل ملف للفواتير (نصف ميجا)
+      if (fieldName === 'payment_proof_files') {
+        const maxSize = 0.5 * 1024 * 1024; // 0.5 MB
+        let hasOversizedFile = false;
+        
+        for (const file of files) {
+          if (file.size > maxSize) {
+            toastr.error(`الملف "${file.name}" يتجاوز الحد الأقصى المسموح به (0.5 ميجابايت)`);
+            hasOversizedFile = true;
+          }
+        }
+        
+        if (hasOversizedFile) {
+          event.target.value = ''; // مسح جميع الملفات
+          return;
+        }
+      }
+      
       this.licenseForm[fieldName] = files;
     },
     
@@ -9425,7 +9535,7 @@ const DigLicenseApp = createApp({
                 >
                 <small class="form-text text-muted">
                   <i class="fas fa-info-circle me-1"></i>
-                  PDF, صور, مستندات Word
+                  PDF, صور, مستندات Word - الحد الأقصى: 1 ميجابايت
                 </small>
                 <div v-if="errors.license_file" class="invalid-feedback" v-text="errors.license_file[0]"></div>
                 <!-- عرض اسم الملف المختار أو الموجود -->
@@ -9458,7 +9568,7 @@ const DigLicenseApp = createApp({
                 >
                 <small class="form-text text-muted">
                   <i class="fas fa-info-circle me-1"></i>
-                  يمكن رفع عدة ملفات - PDF وصور فقط
+                  يمكن رفع عدة ملفات - PDF وصور فقط - الحد الأقصى: 0.5 ميجابايت لكل ملف
                 </small>
                 <div v-if="errors.payment_proof_files" class="invalid-feedback" v-text="errors.payment_proof_files[0]"></div>
                 <!-- عرض أسماء الملفات المختارة أو الموجودة -->
@@ -9503,7 +9613,10 @@ const DigLicenseApp = createApp({
                   @change="handleFileUpload($event, 'coordination_certificate_file')"
                   :class="{ 'is-invalid': errors.coordination_certificate_file }"
                 >
-                
+                <small class="form-text text-muted">
+                  <i class="fas fa-info-circle me-1"></i>
+                  PDF, صور, مستندات Word - الحد الأقصى: 0.5 ميجابايت
+                </small>
                 <div v-if="errors.coordination_certificate_file" class="invalid-feedback" v-text="errors.coordination_certificate_file[0]"></div>
                 <!-- عرض اسم الملف المختار أو الموجود -->
                 <div v-if="licenseForm.coordination_certificate_file" class="mt-2">

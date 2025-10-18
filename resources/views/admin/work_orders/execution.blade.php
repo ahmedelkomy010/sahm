@@ -516,8 +516,8 @@
                 <div class="col-md-6">
                     <div class="form-group">
                         <label for="images" class="form-label">اختر الملفات</label>
-                        <input type="file" class="form-control" id="images" name="images[]" multiple accept="image/*,application/pdf" required>
-                        <small class="text-muted">يمكنك اختيار عدة صور أو ملفات PDF في نفس الوقت. الحد الأقصى لحجم كل ملف 10 ميجابايت.</small>
+                        <input type="file" class="form-control" id="images" name="images[]" multiple accept="image/*,application/pdf" required onchange="validateExecutionImages(this)">
+                        <small class="text-muted">حد أقصى: 12 صورة - 1 ميجابايت لكل ملف</small>
                     </div>
                 </div>
                 <div class="col-md-6">
@@ -1572,6 +1572,31 @@ document.addEventListener('DOMContentLoaded', function() {
     setInterval(updateDailyTotals, 60000);
 });
 
+// دالة التحقق من صور التنفيذ
+function validateExecutionImages(input) {
+    const files = input.files;
+    if (files.length === 0) return true;
+    
+    // التحقق من عدد الصور (حد أقصى 12 صورة)
+    if (files.length > 12) {
+        toastr.error('لا يمكن رفع أكثر من 12 صورة في المرة الواحدة');
+        input.value = '';
+        return false;
+    }
+    
+    // التحقق من حجم كل ملف (1 MB max)
+    const maxSize = 1 * 1024 * 1024; // 1 MB
+    for (let i = 0; i < files.length; i++) {
+        if (files[i].size > maxSize) {
+            toastr.error(`الملف ${files[i].name} يتجاوز الحد الأقصى المسموح به (1 ميجابايت)`);
+            input.value = '';
+            return false;
+        }
+    }
+    
+    return true;
+}
+
 // JavaScript لرفع صور التنفيذ
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('uploadExecutionImagesForm');
@@ -1587,6 +1612,11 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (!fileInput.files.length) {
                 toastr.error('يرجى اختيار صور للرفع');
+                return;
+            }
+            
+            // التحقق من عدد الصور وحجمها قبل الرفع
+            if (!validateExecutionImages(fileInput)) {
                 return;
             }
             

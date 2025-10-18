@@ -7,6 +7,31 @@
 @endpush
 
 @section('content')
+<style>
+    /* إصلاح مشكلة المودالات - حل شامل لكل المودالات */
+    .modal {
+        z-index: 9999 !important;
+        position: fixed !important;
+    }
+    .modal.show {
+        z-index: 9999 !important;
+        display: block !important;
+    }
+    .modal .modal-dialog {
+        z-index: 10000 !important;
+        position: relative !important;
+    }
+    .modal .modal-content {
+        z-index: 10001 !important;
+        position: relative !important;
+    }
+    .modal-backdrop {
+        z-index: 1040 !important;
+    }
+    .modal-backdrop.show {
+        z-index: 1040 !important;
+    }
+</style>
 <div class="container py-4">
     <div class="row justify-content-center">
         <div class="col-md-10">
@@ -3394,6 +3419,36 @@ function addMaterialToTable(material) {
     
     // إضافة صف واحد افتراضي عند تحميل الصفحة
     document.addEventListener('DOMContentLoaded', function() {
+        // إصلاح مشكلة المودالات - تطبيق على كل المودالات
+        const modals = document.querySelectorAll('.modal');
+        modals.forEach(function(modal) {
+            modal.addEventListener('show.bs.modal', function () {
+                this.style.setProperty('z-index', '9999', 'important');
+                this.style.setProperty('position', 'fixed', 'important');
+            });
+            
+            modal.addEventListener('shown.bs.modal', function () {
+                this.style.setProperty('z-index', '9999', 'important');
+                this.style.setProperty('position', 'fixed', 'important');
+                
+                const backdrops = document.querySelectorAll('.modal-backdrop');
+                backdrops.forEach(backdrop => {
+                    backdrop.style.setProperty('z-index', '1040', 'important');
+                });
+                
+                const dialog = this.querySelector('.modal-dialog');
+                const content = this.querySelector('.modal-content');
+                if (dialog) {
+                    dialog.style.setProperty('z-index', '10000', 'important');
+                    dialog.style.setProperty('position', 'relative', 'important');
+                }
+                if (content) {
+                    content.style.setProperty('z-index', '10001', 'important');
+                    content.style.setProperty('position', 'relative', 'important');
+                }
+            });
+        });
+
         addMaterial(); // إضافة مادة افتراضية
         updateApprovalInfo(); // تحديث معلومات تاريخ الاعتماد
         updateExecutionCountdown(); // تحديث عداد مدة التنفيذ

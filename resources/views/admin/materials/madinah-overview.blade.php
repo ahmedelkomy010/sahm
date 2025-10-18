@@ -291,12 +291,17 @@
                     <i class="fas fa-boxes me-3"></i>
                      مستودعات المدينة المنورة
                 </h1>
-            </div>
-            <div class="text-left">
-                <a href="{{ route('admin.work-orders.index', ['project' => $project]) }}" class="btn btn-success btn-lg">
-                    <i class="fas fa-arrow-right me-2"></i>
-                    العودة لأوامر العمل
-                </a>
+                <p class="mb-3 fs-5">عرض شامل لجميع المواد المستخدمة في المشروع</p>
+                <div class="d-flex gap-2 justify-content-center">
+                    <a href="{{ route('admin.materials.attachments.index', ['project' => $project ?? 'madinah']) }}" class="btn btn-warning btn-lg">
+                        <i class="fas fa-paperclip me-2"></i>
+                        مرفقات المواد
+                    </a>
+                    <a href="{{ route('admin.work-orders.index', ['project' => $project ?? 'madinah']) }}" class="btn btn-success btn-lg">
+                        <i class="fas fa-arrow-right me-2"></i>
+                        العودة لأوامر العمل
+                    </a>
+                </div>
             </div>
         </div>
     </div>

@@ -363,6 +363,31 @@
                                         </div>
                                     </a>
                         </div>
+                        <div class="col-6 col-md-4 col-lg" style="flex: 0 0 auto; width: 9.09%;">
+                            @php
+                                $droopRoute = ($project ?? 'riyadh') === 'madinah'
+                                    ? route('admin.work-orders.status.droop.madinah')
+                                    : route('admin.work-orders.status.droop.riyadh');
+                            @endphp
+                            <a href="{{ $droopRoute }}" 
+                               class="text-decoration-none"
+                               style="color: inherit; transition: all 0.3s ease;">
+                                <div class="text-center p-2 rounded" style="cursor: pointer; transition: all 0.3s ease;" 
+                                     onmouseover="this.style.backgroundColor='rgba(220, 53, 69, 0.1)'" 
+                                     onmouseout="this.style.backgroundColor='transparent'">
+                                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 45px; height: 45px; background-color: rgba(220, 53, 69, 0.1);">
+                                        <i class="fas fa-ban fs-6" style="color: #dc3545;"></i>
+                                    </div>
+                                    <h6 class="mb-1" id="quickDroopCount">0</h6>
+                                    <small class="text-muted" style="font-size: 0.65rem;">دروب</small>
+                                    <div class="mt-1">
+                                        <small style="color: #dc3545; font-size: 0.6rem;">
+                                            <i class="fas fa-external-link-alt"></i>
+                                        </small>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
                     </div>
                     </div>
                         </div>

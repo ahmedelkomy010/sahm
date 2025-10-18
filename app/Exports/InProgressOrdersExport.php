@@ -31,6 +31,7 @@ class InProgressOrdersExport implements FromCollection, WithHeadings, WithMappin
             'المكتب',
             'القيمة المبدئية',
             'الحالة',
+            'موقف أمر العمل',
             'تاريخ الاعتماد',
         ];
     }
@@ -47,6 +48,7 @@ class InProgressOrdersExport implements FromCollection, WithHeadings, WithMappin
             $order->office ?? '-',
             number_format($order->order_value_without_consultant ?? 0, 2),
             'جاري العمل بالموقع',
+            $order->notes ?? '-',
             $order->approval_date ? \Carbon\Carbon::parse($order->approval_date)->format('Y-m-d') : '-',
         ];
     }

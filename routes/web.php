@@ -130,6 +130,8 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::delete('work-orders/daily-program/{dailyWorkProgram}', [App\Http\Controllers\WorkOrderController::class, 'destroyDailyProgram'])->name('work-orders.daily-program.destroy');
     Route::get('work-orders/daily-program/get-users', [App\Http\Controllers\WorkOrderController::class, 'getDailyProgramUsers'])->name('work-orders.daily-program.get-users');
     Route::post('work-orders/daily-program/send-notification', [App\Http\Controllers\WorkOrderController::class, 'sendDailyProgramNotification'])->name('work-orders.daily-program.send-notification');
+    Route::post('work-orders/daily-program/update-execution', [App\Http\Controllers\WorkOrderController::class, 'updateDailyProgramExecution'])->name('work-orders.daily-program.update-execution');
+    Route::get('work-orders/daily-program/export-status', [App\Http\Controllers\WorkOrderController::class, 'exportDailyProgramStatus'])->name('work-orders.daily-program.export-status');
     Route::get('work-orders/{workOrder}/notifications', [App\Http\Controllers\WorkOrderController::class, 'getWorkOrderNotifications'])->name('work-orders.notifications');
     Route::post('work-orders/{workOrder}/update-notes', [App\Http\Controllers\WorkOrderController::class, 'updateNotes'])->name('work-orders.update-notes');
     Route::post('work-orders/{workOrder}/update-status-note', [App\Http\Controllers\WorkOrderController::class, 'updateStatusNote'])->name('work-orders.update-status-note');
@@ -362,6 +364,9 @@ Route::post('licenses/save-evacuation-data-simple', [\App\Http\Controllers\Admin
     Route::get('work-orders/status/totalextract/riyadh', [App\Http\Controllers\Admin\WorkOrderController::class, 'statusTotalExtractRiyadh'])->name('work-orders.status.totalextract.riyadh');
     Route::get('work-orders/status/totalextract/madinah', [App\Http\Controllers\Admin\WorkOrderController::class, 'statusTotalExtractMadinah'])->name('work-orders.status.totalextract.madinah');
     Route::get('work-orders/status/certificate/riyadh', [App\Http\Controllers\Admin\WorkOrderController::class, 'statusCertificateRiyadh'])->name('work-orders.status.certificate.riyadh');
+    Route::get('work-orders/status/droop/riyadh', [App\Http\Controllers\Admin\WorkOrderController::class, 'statusDroopRiyadh'])->name('work-orders.status.droop.riyadh');
+    Route::get('work-orders/status/droop/madinah', [App\Http\Controllers\Admin\WorkOrderController::class, 'statusDroopMadinah'])->name('work-orders.status.droop.madinah');
+    Route::get('work-orders/status/droop/{city}/export', [App\Http\Controllers\Admin\WorkOrderController::class, 'exportDroopOrders'])->name('work-orders.status.droop.export');
     Route::get('work-orders/status/certificate/madinah', [App\Http\Controllers\Admin\WorkOrderController::class, 'statusCertificateMadinah'])->name('work-orders.status.certificate.madinah');
     Route::get('work-orders/status/completed/riyadh', [App\Http\Controllers\Admin\WorkOrderController::class, 'statusCompletedRiyadh'])->name('work-orders.status.completed.riyadh');
     Route::get('work-orders/status/completed/madinah', [App\Http\Controllers\Admin\WorkOrderController::class, 'statusCompletedMadinah'])->name('work-orders.status.completed.madinah');
@@ -425,6 +430,11 @@ Route::get('quality/extensions/{city}/export', [App\Http\Controllers\Admin\WorkO
     Route::get('materials/to-return/madinah', [App\Http\Controllers\Admin\MaterialController::class, 'toReturnMadinah'])->name('materials.to-return.madinah');
     Route::get('materials/to-disburse/riyadh', [App\Http\Controllers\Admin\MaterialController::class, 'toDisburseRiyadh'])->name('materials.to-disburse.riyadh');
     Route::get('materials/to-disburse/madinah', [App\Http\Controllers\Admin\MaterialController::class, 'toDisburseMadinah'])->name('materials.to-disburse.madinah');
+    
+    // Material Attachments Routes
+    Route::get('materials/attachments', [MaterialsController::class, 'attachmentsIndex'])->name('materials.attachments.index');
+    Route::post('materials/attachments/upload', [MaterialsController::class, 'uploadAttachment'])->name('materials.attachments.upload');
+    Route::delete('materials/attachments/{attachment}', [MaterialsController::class, 'deleteAttachment'])->name('materials.attachments.delete');
     
     // تقارير الإنتاجية حسب المدينة
     Route::get('work-orders/productivity/riyadh', [App\Http\Controllers\Admin\WorkOrderController::class, 'riyadhProductivity'])->name('work-orders.productivity.riyadh');

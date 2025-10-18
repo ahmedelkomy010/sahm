@@ -112,6 +112,7 @@
                                     <th>المكتب</th>
                                     <th class="text-center">القيمة المبدئية</th>
                                     <th class="text-center">الحالة</th>
+                                    <th class="text-center">تعديل ملاحظات أمر العمل</th>
                                     <th class="text-center">تاريخ الاعتماد</th>
                                     <th class="text-center">الإجراءات</th>
                                 </tr>
@@ -135,6 +136,20 @@
                                             <i class="fas fa-cogs me-1"></i>
                                             جاري العمل بالموقع
                                         </span>
+                                    </td>
+                                    <td class="text-center">
+                                        <button type="button" 
+                                                class="btn btn-sm btn-warning" 
+                                                onclick="openNotesModal({{ $order->id }}, '{{ addslashes($order->work_order_number) }}', '{{ addslashes($order->notes ?? '') }}')"
+                                                title="تعديل الملاحظات">
+                                            <i class="fas fa-edit me-1"></i>
+                                            تعديل
+                                        </button>
+                                        @if($order->notes)
+                                            <small class="d-block text-muted mt-1" title="{{ $order->notes }}">
+                                                {{ Str::limit($order->notes, 20) }}
+                                            </small>
+                                        @endif
                                     </td>
                                     <td class="text-center">
                                         {{ $order->approval_date ? \Carbon\Carbon::parse($order->approval_date)->format('Y-m-d') : '-' }}
@@ -168,6 +183,56 @@
     </div>
 </div>
 
+<!-- Modal تعديل الملاحظات -->
+<div class="modal fade" id="notesModal" tabindex="-1" aria-hidden="true" style="z-index: 9999 !important;">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title">
+                    <i class="fas fa-edit me-2"></i>
+                    تعديل ملاحظات أمر العمل
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="notesForm">
+                    @csrf
+                    @method('PUT')
+                    <input type="hidden" id="workOrderId" name="work_order_id">
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">رقم أمر العمل:</label>
+                        <p class="text-primary" id="workOrderNumber"></p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="notes" class="form-label fw-bold">
+                            <i class="fas fa-sticky-note me-1"></i>
+                            الملاحظات:
+                        </label>
+                        <textarea class="form-control" 
+                                  id="notes" 
+                                  name="notes" 
+                                  rows="5" 
+                                  placeholder="أدخل ملاحظات أمر العمل هنا..."></textarea>
+                        <small class="text-muted">يمكنك كتابة أي ملاحظات خاصة بأمر العمل</small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>
+                    إلغاء
+                </button>
+                <button type="button" class="btn btn-warning" onclick="saveNotes()">
+                    <i class="fas fa-save me-1"></i>
+                    حفظ الملاحظات
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @push('styles')
 <style>
     .card {
@@ -181,14 +246,118 @@
     
     .table-hover tbody tr:hover {
         background-color: #f8f9fa;
-        cursor: pointer;
     }
     
     .badge {
         font-size: 0.85rem;
         padding: 0.5rem 0.75rem;
     }
+    
+    #notesModal {
+        z-index: 9999 !important;
+    }
+    
+    #notesModal .modal-dialog {
+        z-index: 10000 !important;
+        position: relative !important;
+    }
+    
+    #notesModal .modal-content {
+        z-index: 10001 !important;
+        position: relative !important;
+    }
+    
+    .modal-backdrop {
+        z-index: 1040 !important;
+    }
 </style>
+@endpush
+
+@push('scripts')
+<script>
+function openNotesModal(workOrderId, workOrderNumber, currentNotes) {
+    document.getElementById('workOrderId').value = workOrderId;
+    document.getElementById('workOrderNumber').textContent = workOrderNumber;
+    document.getElementById('notes').value = currentNotes;
+    
+    const modalElement = document.getElementById('notesModal');
+    const modal = new bootstrap.Modal(modalElement, {
+        backdrop: true,
+        keyboard: true
+    });
+    
+    // إصلاح الـ z-index عند فتح المودال
+    modalElement.addEventListener('shown.bs.modal', function () {
+        const backdrops = document.querySelectorAll('.modal-backdrop');
+        backdrops.forEach(backdrop => {
+            backdrop.style.setProperty('z-index', '1040', 'important');
+        });
+        modalElement.style.setProperty('z-index', '9999', 'important');
+    }, { once: true });
+    
+    modal.show();
+}
+
+function saveNotes() {
+    const workOrderId = document.getElementById('workOrderId').value;
+    const notes = document.getElementById('notes').value;
+    const saveButton = event.target;
+    
+    // إظهار مؤشر التحميل
+    saveButton.disabled = true;
+    saveButton.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> جاري الحفظ...';
+    
+    // إرسال البيانات
+    fetch(`/admin/work-orders/${workOrderId}/update-notes`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({ notes: notes })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // إغلاق المودال
+            const modal = bootstrap.Modal.getInstance(document.getElementById('notesModal'));
+            modal.hide();
+            
+            // إظهار رسالة نجاح
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-success alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3';
+            alertDiv.style.zIndex = '9999';
+            alertDiv.innerHTML = `
+                <i class="fas fa-check-circle me-2"></i>
+                ${data.message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(alertDiv);
+            
+            // إزالة الرسالة بعد 3 ثواني
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 3000);
+            
+            // إعادة تحميل الصفحة لتحديث البيانات
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
+        } else {
+            alert('حدث خطأ: ' + (data.message || 'فشل حفظ الملاحظات'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('حدث خطأ أثناء حفظ الملاحظات');
+    })
+    .finally(() => {
+        saveButton.disabled = false;
+        saveButton.innerHTML = '<i class="fas fa-save me-1"></i> حفظ الملاحظات';
+    });
+}
+</script>
 @endpush
 @endsection
 

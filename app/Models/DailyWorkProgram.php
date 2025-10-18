@@ -23,10 +23,12 @@ class DailyWorkProgram extends Model
         'quality_monitor',
         'work_description',
         'notes',
+        'execution_completed',
     ];
 
     protected $casts = [
         'program_date' => 'date',
+        'execution_completed' => 'boolean',
     ];
 
     /**

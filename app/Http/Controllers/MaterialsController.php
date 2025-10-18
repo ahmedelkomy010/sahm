@@ -1397,4 +1397,111 @@ class MaterialsController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * عرض صفحة مرفقات المواد
+     */
+    public function attachmentsIndex(Request $request)
+    {
+        $project = $request->get('project', 'riyadh');
+        $uploadDate = $request->get('upload_date');
+        $attachmentType = $request->get('attachment_type');
+        $searchTerm = $request->get('search');
+
+        // بناء الاستعلام
+        $query = \App\Models\MaterialAttachment::with(['uploadedBy'])
+            ->where('project', $project);
+
+        // فلترة حسب التاريخ
+        if ($uploadDate) {
+            $query->whereDate('upload_date', $uploadDate);
+        }
+
+        // فلترة حسب نوع المرفق
+        if ($attachmentType) {
+            $query->where('attachment_type', $attachmentType);
+        }
+
+        // البحث
+        if ($searchTerm) {
+            $query->where('file_name', 'like', "%{$searchTerm}%");
+        }
+
+        $attachments = $query->orderBy('upload_date', 'desc')
+            ->orderBy('created_at', 'desc')
+            ->paginate(50);
+
+        return view('admin.materials.attachments', compact('attachments', 'project'));
+    }
+
+    /**
+     * رفع مرفق جديد
+     */
+    public function uploadAttachment(Request $request)
+    {
+        try {
+            $request->validate([
+                'project' => 'required|in:riyadh,madinah',
+                'file' => 'required|file|max:2048', // 2MB max
+                'attachment_type' => 'nullable|string',
+                'upload_date' => 'required|date',
+            ]);
+
+            $file = $request->file('file');
+            $fileName = time() . '_' . $file->getClientOriginalName();
+            $filePath = $file->storeAs('material_attachments', $fileName, 'public');
+
+            $attachment = \App\Models\MaterialAttachment::create([
+                'material_id' => null,
+                'work_order_id' => null,
+                'project' => $request->project,
+                'file_name' => $file->getClientOriginalName(),
+                'file_path' => $filePath,
+                'file_type' => $file->getClientMimeType(),
+                'file_size' => $file->getSize(),
+                'attachment_type' => $request->attachment_type,
+                'description' => null,
+                'upload_date' => $request->upload_date,
+                'uploaded_by' => auth()->id(),
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'تم رفع الملف بنجاح',
+                'attachment' => $attachment
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء رفع الملف: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * حذف مرفق
+     */
+    public function deleteAttachment(\App\Models\MaterialAttachment $attachment)
+    {
+        try {
+            // حذف الملف من التخزين
+            if (Storage::disk('public')->exists($attachment->file_path)) {
+                Storage::disk('public')->delete($attachment->file_path);
+            }
+
+            $attachment->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'تم حذف الملف بنجاح'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء حذف الملف: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

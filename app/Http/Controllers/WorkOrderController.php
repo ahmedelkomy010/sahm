@@ -621,6 +621,7 @@ class WorkOrderController extends Controller
         try {
             $validated = $request->validate([
                 'survey_id' => 'required|exists:surveys,id',
+                'completion_images' => 'required|array|max:10',
                 'completion_images.*' => 'required|file|mimes:jpeg,png,jpg,pdf,doc,docx,xls,xlsx|max:51200', // 50MB max
             ]);
 
@@ -752,6 +753,7 @@ class WorkOrderController extends Controller
                 'end_coordinates' => 'required|string|max:500',
                 'has_obstacles' => 'required|boolean',
                 'obstacles_notes' => 'required_if:has_obstacles,1|nullable|string|max:1000',
+                'site_images' => 'nullable|array|max:21',
                 'site_images.*' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:30720', // 30MB max
             ]);
 
@@ -3159,7 +3161,9 @@ class WorkOrderController extends Controller
                     
                     // التحقق من صحة الملفات
                     $request->validate([
-                        $fieldName . '.*' => 'file|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png|max:20480'
+                        $fieldName . '.*' => 'file|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png|max:1024' // 1 MB max
+                    ], [
+                        $fieldName . '.*.max' => 'حجم الملف يجب أن لا يتجاوز 1 ميجابايت'
                     ]);
                     
                     foreach ($files as $file) {
@@ -3308,6 +3312,7 @@ class WorkOrderController extends Controller
                 'end_coordinates' => 'required|string|max:500',
                 'has_obstacles' => 'required|boolean',
                 'obstacles_notes' => 'required_if:has_obstacles,1|nullable|string|max:1000',
+                'site_images' => 'nullable|array|max:21',
                 'site_images.*' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:30720', // 30MB max
                 'deleted_files' => 'nullable|array',
                 'deleted_files.*' => 'exists:work_order_files,id'
@@ -3790,7 +3795,11 @@ class WorkOrderController extends Controller
             \Log::info('Starting image upload for work order: ' . $workOrder->id);
             
             $request->validate([
-                'images.*' => 'required|image|mimes:jpeg,png,jpg|max:10240', // 10MB max
+                'images' => 'required|array|max:12', // حد أقصى 12 صورة
+                'images.*' => 'required|image|mimes:jpeg,png,jpg|max:1024', // 1 MB max
+            ], [
+                'images.max' => 'لا يمكن رفع أكثر من 12 صورة في المرة الواحدة',
+                'images.*.max' => 'حجم الصورة يجب أن لا يتجاوز 1 ميجابايت',
             ]);
 
             if (!$request->hasFile('images')) {
@@ -4410,6 +4419,74 @@ class WorkOrderController extends Controller
                 'success' => false,
                 'message' => 'حدث خطأ أثناء إرسال الإشعار: ' . $e->getMessage()
             ], 500);
+        }
+    }
+
+    /**
+     * تحديث حالة التنفيذ في برنامج العمل اليومي
+     */
+    public function updateDailyProgramExecution(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'program_id' => 'required|integer|exists:daily_work_programs,id',
+                'execution_completed' => 'required|boolean'
+            ]);
+            
+            $program = \App\Models\DailyWorkProgram::findOrFail($validated['program_id']);
+            $program->execution_completed = $validated['execution_completed'];
+            $program->save();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'تم تحديث حالة التنفيذ بنجاح'
+            ]);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error updating execution status: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء تحديث حالة التنفيذ'
+            ], 500);
+        }
+    }
+
+    /**
+     * تصدير حالة البيانات المدخلة لبرنامج العمل اليومي
+     */
+    public function exportDailyProgramStatus(Request $request)
+    {
+        try {
+            $date = $request->get('date', now()->format('Y-m-d'));
+            $project = $request->get('project', 'riyadh');
+            
+            // التحقق من صلاحيات المستخدم
+            $user = auth()->user();
+            $requiredPermission = $project === 'riyadh' ? 'riyadh_daily_work_program' : 'madinah_daily_work_program';
+            
+            if (!$user->is_admin && !$user->hasPermission($requiredPermission)) {
+                abort(403, 'ليس لديك صلاحية لتصدير برنامج العمل اليومي لهذا المشروع');
+            }
+            
+            // جلب برامج العمل للتاريخ المحدد
+            $programs = \App\Models\DailyWorkProgram::with('workOrder')
+                ->whereDate('program_date', $date)
+                ->whereHas('workOrder', function($q) use ($project) {
+                    if ($project === 'riyadh') {
+                        $q->where('city', 'الرياض');
+                    } else {
+                        $q->where('city', 'المدينة المنورة');
+                    }
+                })
+                ->orderBy('start_time')
+                ->get();
+            
+            $fileName = 'daily_program_status_' . $date . '_' . $project . '.xlsx';
+            
+            return \Excel::download(new \App\Exports\DailyProgramStatusExport($programs), $fileName);
+        } catch (\Exception $e) {
+            \Log::error('Error exporting daily program status: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'حدث خطأ أثناء تصدير البيانات: ' . $e->getMessage());
         }
     }
 
@@ -5675,8 +5752,8 @@ class WorkOrderController extends Controller
     public function allProjectsRevenues(Request $request)
     {
         try {
-            // التحقق من صلاحيات مشرف النظام
-            if (!auth()->user()->is_admin) {
+            // التحقق من صلاحيات الوصول (مشرف النظام أو صلاحية access_total_project_revenues)
+            if (!auth()->user()->is_admin && !(is_array(auth()->user()->permissions) && in_array('access_total_project_revenues', auth()->user()->permissions))) {
                 abort(403, 'غير مصرح لك بالوصول إلى هذه الصفحة');
             }
             
@@ -5916,8 +5993,8 @@ class WorkOrderController extends Controller
     public function exportAllProjectsRevenues(Request $request)
     {
         try {
-            // التحقق من صلاحيات مشرف النظام
-            if (!auth()->user()->is_admin) {
+            // التحقق من صلاحيات الوصول (مشرف النظام أو صلاحية access_total_project_revenues)
+            if (!auth()->user()->is_admin && !(is_array(auth()->user()->permissions) && in_array('access_total_project_revenues', auth()->user()->permissions))) {
                 abort(403, 'غير مصرح لك بالوصول إلى هذه الصفحة');
             }
             

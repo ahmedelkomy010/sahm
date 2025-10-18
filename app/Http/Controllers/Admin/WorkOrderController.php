@@ -378,6 +378,144 @@ class WorkOrderController extends Controller
     }
 
     /**
+     * عرض أوامر العمل المقررة (دروب) - الرياض
+     * عرض الأوامر المتشابهة في رقم أمر العمل ونوع العمل (المكررة)
+     */
+    public function statusDroopRiyadh(Request $request)
+    {
+        // جلب عدد النتائج من الطلب
+        $perPage = $request->input('per_page', 20);
+        
+        // جلب الأوامر المتكررة (المتشابهة في رقم أمر العمل ونوع العمل معاً)
+        // أولاً: نجيب الأوامر اللي متكررة في الاتنين مع بعض
+        $duplicates = WorkOrder::select('order_number', 'work_type')
+            ->where('city', 'الرياض')
+            ->whereNotNull('order_number')
+            ->whereNotNull('work_type')
+            ->where('order_number', '!=', '')
+            ->where('work_type', '!=', '')
+            ->groupBy('order_number', 'work_type')
+            ->havingRaw('COUNT(*) > 1')
+            ->get();
+        
+        // ثانياً: نجيب كل الأوامر اللي عندها نفس الأرقام والأنواع المتكررة
+        // بس لو فيه duplicates فعلاً
+        if ($duplicates->isEmpty()) {
+            // لو مافيش أوامر مكررة، نرجع صفحة فاضية
+            $workOrders = WorkOrder::where('id', -1)->paginate($perPage);
+        } else {
+            $workOrders = WorkOrder::where('city', 'الرياض')
+                ->where(function($query) use ($duplicates) {
+                    foreach ($duplicates as $duplicate) {
+                        $query->orWhere(function($q) use ($duplicate) {
+                            $q->where('order_number', $duplicate->order_number)
+                              ->where('work_type', $duplicate->work_type);
+                        });
+                    }
+                })
+                ->orderBy('order_number', 'asc')
+                ->orderBy('work_type', 'asc')
+                ->orderBy('created_at', 'desc')
+                ->paginate($perPage)
+                ->appends($request->except('page'));
+        }
+        
+        return view('admin.work_orders.status-droop-riyadh', compact('workOrders'));
+    }
+
+    /**
+     * عرض أوامر العمل المقررة (دروب) - المدينة المنورة
+     * عرض الأوامر المتشابهة في رقم أمر العمل ونوع العمل (المكررة)
+     */
+    public function statusDroopMadinah(Request $request)
+    {
+        // جلب عدد النتائج من الطلب
+        $perPage = $request->input('per_page', 20);
+        
+        // جلب الأوامر المتكررة (المتشابهة في رقم أمر العمل ونوع العمل معاً)
+        // أولاً: نجيب الأوامر اللي متكررة في الاتنين مع بعض
+        $duplicates = WorkOrder::select('order_number', 'work_type')
+            ->where('city', 'المدينة المنورة')
+            ->whereNotNull('order_number')
+            ->whereNotNull('work_type')
+            ->where('order_number', '!=', '')
+            ->where('work_type', '!=', '')
+            ->groupBy('order_number', 'work_type')
+            ->havingRaw('COUNT(*) > 1')
+            ->get();
+        
+        // ثانياً: نجيب كل الأوامر اللي عندها نفس الأرقام والأنواع المتكررة
+        // بس لو فيه duplicates فعلاً
+        if ($duplicates->isEmpty()) {
+            // لو مافيش أوامر مكررة، نرجع صفحة فاضية
+            $workOrders = WorkOrder::where('id', -1)->paginate($perPage);
+        } else {
+            $workOrders = WorkOrder::where('city', 'المدينة المنورة')
+                ->where(function($query) use ($duplicates) {
+                    foreach ($duplicates as $duplicate) {
+                        $query->orWhere(function($q) use ($duplicate) {
+                            $q->where('order_number', $duplicate->order_number)
+                              ->where('work_type', $duplicate->work_type);
+                        });
+                    }
+                })
+                ->orderBy('order_number', 'asc')
+                ->orderBy('work_type', 'asc')
+                ->orderBy('created_at', 'desc')
+                ->paginate($perPage)
+                ->appends($request->except('page'));
+        }
+        
+        return view('admin.work_orders.status-droop-madinah', compact('workOrders'));
+    }
+
+    /**
+     * تصدير أوامر العمل المقررة (دروب) إلى Excel
+     */
+    public function exportDroopOrders($city)
+    {
+        try {
+            $cityName = $city === 'riyadh' ? 'الرياض' : 'المدينة المنورة';
+            
+            // جلب الأوامر المتكررة (المتشابهة في رقم أمر العمل ونوع العمل معاً)
+            $duplicates = WorkOrder::select('order_number', 'work_type')
+                ->where('city', $cityName)
+                ->whereNotNull('order_number')
+                ->whereNotNull('work_type')
+                ->where('order_number', '!=', '')
+                ->where('work_type', '!=', '')
+                ->groupBy('order_number', 'work_type')
+                ->havingRaw('COUNT(*) > 1')
+                ->get();
+            
+            // جلب كل الأوامر المتكررة - بس لو فيه duplicates فعلاً
+            if ($duplicates->isEmpty()) {
+                $workOrders = collect(); // collection فاضية
+            } else {
+                $workOrders = WorkOrder::where('city', $cityName)
+                    ->where(function($query) use ($duplicates) {
+                        foreach ($duplicates as $duplicate) {
+                            $query->orWhere(function($q) use ($duplicate) {
+                                $q->where('order_number', $duplicate->order_number)
+                                  ->where('work_type', $duplicate->work_type);
+                            });
+                        }
+                    })
+                    ->orderBy('order_number', 'asc')
+                    ->orderBy('work_type', 'asc')
+                    ->orderBy('created_at', 'desc')
+                    ->get();
+            }
+            
+            $fileName = 'droop_orders_' . $city . '_' . now()->format('Y_m_d_H_i_s') . '.xlsx';
+            
+            return \Excel::download(new \App\Exports\DroopOrdersExport($workOrders), $fileName);
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'حدث خطأ أثناء تصدير البيانات: ' . $e->getMessage());
+        }
+    }
+
+    /**
      * عرض أوامر العمل بحالة "تم إصدار شهادة الإنجاز" - المدينة المنورة
      */
     public function statusCertificateMadinah(Request $request)
@@ -1529,25 +1667,123 @@ class WorkOrderController extends Controller
     /**
      * عرض صفحة المخالفات للرياض
      */
-    public function violationsRiyadh()
+    public function violationsRiyadh(Request $request)
     {
-        $violations = \App\Models\LicenseViolation::with('workOrder')
+        $query = \App\Models\LicenseViolation::with('workOrder')
             ->whereHas('workOrder', function($q) {
-                $q->where('city', 'الرياض');
-            })
-            ->orWhereHas('workOrder', function($q) {
-                $q->where('city', 'riyadh');
-            })
-            ->orderBy('violation_date', 'desc')
-            ->paginate(20);
+                $q->where('city', 'الرياض')->orWhere('city', 'riyadh');
+            });
 
-        $violationsCount = \App\Models\LicenseViolation::whereHas('workOrder', function($q) {
-            $q->where('city', 'الرياض')->orWhere('city', 'riyadh');
-        })->count();
+        // تطبيق الفلاتر
+        // فلتر رقم أمر العمل
+        if ($request->filled('order_number')) {
+            $query->whereHas('workOrder', function($q) use ($request) {
+                $q->where('order_number', 'like', '%' . $request->order_number . '%')
+                  ->orWhere('work_order_number', 'like', '%' . $request->order_number . '%');
+            });
+        }
 
-        $totalAmount = \App\Models\LicenseViolation::whereHas('workOrder', function($q) {
+        // فلتر نوع العمل
+        if ($request->filled('work_type')) {
+            $query->whereHas('workOrder', function($q) use ($request) {
+                $q->where('work_type', 'like', '%' . $request->work_type . '%');
+            });
+        }
+
+        // فلتر نوع المخالفة (جسيمة أو غير جسيمة)
+        if ($request->filled('violation_type')) {
+            $query->where('violation_type', $request->violation_type);
+        }
+
+        // فلتر حالة السداد (مسددة أو غير مسددة)
+        if ($request->filled('payment_status')) {
+            $query->where('payment_status', $request->payment_status);
+        }
+
+        // فلتر التاريخ من
+        if ($request->filled('date_from')) {
+            $query->where('violation_date', '>=', $request->date_from);
+        }
+
+        // فلتر التاريخ إلى
+        if ($request->filled('date_to')) {
+            $query->where('violation_date', '<=', $request->date_to);
+        }
+
+        // فلتر قيمة المخالفة من
+        if ($request->filled('amount_from')) {
+            $query->where('violation_amount', '>=', $request->amount_from);
+        }
+
+        // فلتر قيمة المخالفة إلى
+        if ($request->filled('amount_to')) {
+            $query->where('violation_amount', '<=', $request->amount_to);
+        }
+
+        $violations = $query->orderBy('violation_date', 'desc')->paginate(20)->withQueryString();
+
+        // حساب الإحصائيات بناءً على الفلاتر المطبقة
+        $countQuery = \App\Models\LicenseViolation::whereHas('workOrder', function($q) {
             $q->where('city', 'الرياض')->orWhere('city', 'riyadh');
-        })->sum('violation_amount');
+        });
+        
+        $totalQuery = \App\Models\LicenseViolation::whereHas('workOrder', function($q) {
+            $q->where('city', 'الرياض')->orWhere('city', 'riyadh');
+        });
+
+        // تطبيق نفس الفلاتر على الإحصائيات
+        if ($request->filled('order_number')) {
+            $countQuery->whereHas('workOrder', function($q) use ($request) {
+                $q->where('order_number', 'like', '%' . $request->order_number . '%')
+                  ->orWhere('work_order_number', 'like', '%' . $request->order_number . '%');
+            });
+            $totalQuery->whereHas('workOrder', function($q) use ($request) {
+                $q->where('order_number', 'like', '%' . $request->order_number . '%')
+                  ->orWhere('work_order_number', 'like', '%' . $request->order_number . '%');
+            });
+        }
+
+        if ($request->filled('work_type')) {
+            $countQuery->whereHas('workOrder', function($q) use ($request) {
+                $q->where('work_type', 'like', '%' . $request->work_type . '%');
+            });
+            $totalQuery->whereHas('workOrder', function($q) use ($request) {
+                $q->where('work_type', 'like', '%' . $request->work_type . '%');
+            });
+        }
+
+        if ($request->filled('violation_type')) {
+            $countQuery->where('violation_type', $request->violation_type);
+            $totalQuery->where('violation_type', $request->violation_type);
+        }
+
+        if ($request->filled('payment_status')) {
+            $countQuery->where('payment_status', $request->payment_status);
+            $totalQuery->where('payment_status', $request->payment_status);
+        }
+
+        if ($request->filled('date_from')) {
+            $countQuery->where('violation_date', '>=', $request->date_from);
+            $totalQuery->where('violation_date', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $countQuery->where('violation_date', '<=', $request->date_to);
+            $totalQuery->where('violation_date', '<=', $request->date_to);
+        }
+
+        if ($request->filled('amount_from')) {
+            $countQuery->where('violation_amount', '>=', $request->amount_from);
+            $totalQuery->where('violation_amount', '>=', $request->amount_from);
+        }
+
+        if ($request->filled('amount_to')) {
+            $countQuery->where('violation_amount', '<=', $request->amount_to);
+            $totalQuery->where('violation_amount', '<=', $request->amount_to);
+        }
+
+        $violationsCount = $countQuery->count();
+        $totalAmount = $totalQuery->sum('violation_amount');
 
         return view('admin.quality.violations-riyadh', compact('violations', 'violationsCount', 'totalAmount'));
     }
@@ -1555,25 +1791,123 @@ class WorkOrderController extends Controller
     /**
      * عرض صفحة المخالفات للمدينة المنورة
      */
-    public function violationsMadinah()
+    public function violationsMadinah(Request $request)
     {
-        $violations = \App\Models\LicenseViolation::with('workOrder')
+        $query = \App\Models\LicenseViolation::with('workOrder')
             ->whereHas('workOrder', function($q) {
-                $q->where('city', 'المدينة المنورة');
-            })
-            ->orWhereHas('workOrder', function($q) {
-                $q->where('city', 'madinah');
-            })
-            ->orderBy('violation_date', 'desc')
-            ->paginate(20);
+                $q->where('city', 'المدينة المنورة')->orWhere('city', 'madinah');
+            });
 
-        $violationsCount = \App\Models\LicenseViolation::whereHas('workOrder', function($q) {
-            $q->where('city', 'المدينة المنورة')->orWhere('city', 'madinah');
-        })->count();
+        // تطبيق الفلاتر
+        // فلتر رقم أمر العمل
+        if ($request->filled('order_number')) {
+            $query->whereHas('workOrder', function($q) use ($request) {
+                $q->where('order_number', 'like', '%' . $request->order_number . '%')
+                  ->orWhere('work_order_number', 'like', '%' . $request->order_number . '%');
+            });
+        }
 
-        $totalAmount = \App\Models\LicenseViolation::whereHas('workOrder', function($q) {
+        // فلتر نوع العمل
+        if ($request->filled('work_type')) {
+            $query->whereHas('workOrder', function($q) use ($request) {
+                $q->where('work_type', 'like', '%' . $request->work_type . '%');
+            });
+        }
+
+        // فلتر نوع المخالفة (جسيمة أو غير جسيمة)
+        if ($request->filled('violation_type')) {
+            $query->where('violation_type', $request->violation_type);
+        }
+
+        // فلتر حالة السداد (مسددة أو غير مسددة)
+        if ($request->filled('payment_status')) {
+            $query->where('payment_status', $request->payment_status);
+        }
+
+        // فلتر التاريخ من
+        if ($request->filled('date_from')) {
+            $query->where('violation_date', '>=', $request->date_from);
+        }
+
+        // فلتر التاريخ إلى
+        if ($request->filled('date_to')) {
+            $query->where('violation_date', '<=', $request->date_to);
+        }
+
+        // فلتر قيمة المخالفة من
+        if ($request->filled('amount_from')) {
+            $query->where('violation_amount', '>=', $request->amount_from);
+        }
+
+        // فلتر قيمة المخالفة إلى
+        if ($request->filled('amount_to')) {
+            $query->where('violation_amount', '<=', $request->amount_to);
+        }
+
+        $violations = $query->orderBy('violation_date', 'desc')->paginate(20)->withQueryString();
+
+        // حساب الإحصائيات بناءً على الفلاتر المطبقة
+        $countQuery = \App\Models\LicenseViolation::whereHas('workOrder', function($q) {
             $q->where('city', 'المدينة المنورة')->orWhere('city', 'madinah');
-        })->sum('violation_amount');
+        });
+        
+        $totalQuery = \App\Models\LicenseViolation::whereHas('workOrder', function($q) {
+            $q->where('city', 'المدينة المنورة')->orWhere('city', 'madinah');
+        });
+
+        // تطبيق نفس الفلاتر على الإحصائيات
+        if ($request->filled('order_number')) {
+            $countQuery->whereHas('workOrder', function($q) use ($request) {
+                $q->where('order_number', 'like', '%' . $request->order_number . '%')
+                  ->orWhere('work_order_number', 'like', '%' . $request->order_number . '%');
+            });
+            $totalQuery->whereHas('workOrder', function($q) use ($request) {
+                $q->where('order_number', 'like', '%' . $request->order_number . '%')
+                  ->orWhere('work_order_number', 'like', '%' . $request->order_number . '%');
+            });
+        }
+
+        if ($request->filled('work_type')) {
+            $countQuery->whereHas('workOrder', function($q) use ($request) {
+                $q->where('work_type', 'like', '%' . $request->work_type . '%');
+            });
+            $totalQuery->whereHas('workOrder', function($q) use ($request) {
+                $q->where('work_type', 'like', '%' . $request->work_type . '%');
+            });
+        }
+
+        if ($request->filled('violation_type')) {
+            $countQuery->where('violation_type', $request->violation_type);
+            $totalQuery->where('violation_type', $request->violation_type);
+        }
+
+        if ($request->filled('payment_status')) {
+            $countQuery->where('payment_status', $request->payment_status);
+            $totalQuery->where('payment_status', $request->payment_status);
+        }
+
+        if ($request->filled('date_from')) {
+            $countQuery->where('violation_date', '>=', $request->date_from);
+            $totalQuery->where('violation_date', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $countQuery->where('violation_date', '<=', $request->date_to);
+            $totalQuery->where('violation_date', '<=', $request->date_to);
+        }
+
+        if ($request->filled('amount_from')) {
+            $countQuery->where('violation_amount', '>=', $request->amount_from);
+            $totalQuery->where('violation_amount', '>=', $request->amount_from);
+        }
+
+        if ($request->filled('amount_to')) {
+            $countQuery->where('violation_amount', '<=', $request->amount_to);
+            $totalQuery->where('violation_amount', '<=', $request->amount_to);
+        }
+
+        $violationsCount = $countQuery->count();
+        $totalAmount = $totalQuery->sum('violation_amount');
 
         return view('admin.quality.violations-madinah', compact('violations', 'violationsCount', 'totalAmount'));
     }

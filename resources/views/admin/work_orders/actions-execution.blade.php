@@ -1,6 +1,34 @@
 @extends('layouts.app')
 
 @section('content')
+<style>
+    /* إصلاح مشكلة المودال - الحل الشامل */
+    #uploadInvoiceAttachmentsModal {
+        z-index: 9999 !important;
+        position: fixed !important;
+    }
+    #uploadInvoiceAttachmentsModal.show {
+        z-index: 9999 !important;
+        display: block !important;
+    }
+    #uploadInvoiceAttachmentsModal .modal-dialog {
+        z-index: 10000 !important;
+        position: relative !important;
+    }
+    #uploadInvoiceAttachmentsModal .modal-content {
+        z-index: 10001 !important;
+        position: relative !important;
+    }
+    .modal-backdrop {
+        z-index: 1040 !important;
+    }
+    .modal-backdrop.show {
+        z-index: 1040 !important;
+    }
+    body.modal-open .modal-backdrop + .modal {
+        z-index: 9999 !important;
+    }
+</style>
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="mb-0" style="font-size:2.1rem; font-weight:800; color:#2c3e50; letter-spacing:1px; display:flex; align-items:center;">
@@ -704,8 +732,8 @@
                     @foreach($fileTypes as $field => $label)
                         <div class="col-md-4 mb-3">
                             <label class="form-label">{{ $label }}</label>
-                            <input type="file" name="{{ $field }}[]" class="form-control" accept=".pdf,.jpg,.jpeg,.png" multiple>
-                            <small class="text-muted">يمكن اختيار أكثر من ملف</small>
+                            <input type="file" name="{{ $field }}[]" class="form-control" accept=".pdf,.jpg,.jpeg,.png" multiple onchange="validatePostExecutionFiles(this)">
+                            <small class="text-muted">حد أقصى: 1 ميجابايت لكل ملف</small>
                             @error($field)
                                 <div class="text-danger small mt-1">{{ $message }}</div>
                             @enderror
@@ -1068,8 +1096,9 @@
                                    class="form-control" 
                                    multiple 
                                    accept=".pdf,.jpg,.jpeg,.png"
-                                   required>
-                            <small class="text-muted">يمكن رفع حتى 20 ملف. الأنواع المدعومة: PDF, JPG, JPEG, PNG</small>
+                                   required
+                                   onchange="validateInvoiceAttachments(this)">
+                            <small class="text-muted">حد أقصى: 20 ملف - 1 ميجابايت لكل ملف</small>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">نوع المرفقات</label>
@@ -1143,14 +1172,93 @@
 
 
 
+        // دالة التحقق من حجم ملفات المرفقات
+        function validatePostExecutionFiles(input) {
+            const files = input.files;
+            if (files.length === 0) return true;
+            
+            const maxSize = 1 * 1024 * 1024; // 1 MB
+            for (let i = 0; i < files.length; i++) {
+                if (files[i].size > maxSize) {
+                    alert(`الملف ${files[i].name} يتجاوز الحد الأقصى المسموح به (1 ميجابايت)`);
+                    input.value = '';
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        // دالة التحقق من حجم مرفقات الفاتورة
+        function validateInvoiceAttachments(input) {
+            const files = input.files;
+            if (files.length === 0) return true;
+            
+            // التحقق من عدد الملفات
+            if (files.length > 20) {
+                alert('لا يمكن رفع أكثر من 20 ملف في المرة الواحدة');
+                input.value = '';
+                return false;
+            }
+            
+            // التحقق من حجم كل ملف
+            const maxSize = 1 * 1024 * 1024; // 1 MB
+            for (let i = 0; i < files.length; i++) {
+                if (files[i].size > maxSize) {
+                    alert(`الملف ${files[i].name} يتجاوز الحد الأقصى المسموح به (1 ميجابايت)`);
+                    input.value = '';
+                    return false;
+                }
+            }
+            return true;
+        }
+
         // التحقق من عدد الملفات قبل الرفع
         document.getElementById('uploadInvoiceAttachmentsForm').addEventListener('submit', function(e) {
             const fileInput = this.querySelector('input[type="file"]');
-            if (fileInput.files.length > 20) {
+            if (!validateInvoiceAttachments(fileInput)) {
                 e.preventDefault();
-                alert('يمكن رفع 20 ملف كحد أقصى');
             }
         });
+
+        // إصلاح مشكلة الـ backdrop للمودال - حل شامل
+        const invoiceModal = document.getElementById('uploadInvoiceAttachmentsModal');
+        if (invoiceModal) {
+            // عند بداية فتح المودال
+            invoiceModal.addEventListener('show.bs.modal', function (event) {
+                console.log('Modal opening...');
+                this.style.setProperty('z-index', '9999', 'important');
+                this.style.setProperty('position', 'fixed', 'important');
+            });
+            
+            // بعد ما المودال يفتح تماماً
+            invoiceModal.addEventListener('shown.bs.modal', function (event) {
+                console.log('Modal opened!');
+                // تعيين z-index للمودال
+                this.style.setProperty('z-index', '9999', 'important');
+                this.style.setProperty('position', 'fixed', 'important');
+                
+                // تعيين z-index للـ backdrop
+                const backdrops = document.querySelectorAll('.modal-backdrop');
+                backdrops.forEach(backdrop => {
+                    backdrop.style.setProperty('z-index', '1040', 'important');
+                    console.log('Backdrop z-index set to 1040');
+                });
+                
+                // تعيين z-index للـ modal-dialog والـ modal-content
+                const dialog = this.querySelector('.modal-dialog');
+                const content = this.querySelector('.modal-content');
+                if (dialog) {
+                    dialog.style.setProperty('z-index', '10000', 'important');
+                    dialog.style.setProperty('position', 'relative', 'important');
+                }
+                if (content) {
+                    content.style.setProperty('z-index', '10001', 'important');
+                    content.style.setProperty('position', 'relative', 'important');
+                }
+                
+                console.log('All z-indexes set successfully!');
+            });
+        }
 
         document.getElementById('uploadFilesForm').addEventListener('submit', function(e) {
             e.preventDefault();

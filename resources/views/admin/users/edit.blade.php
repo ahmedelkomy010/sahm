@@ -451,6 +451,40 @@
             </div>
         </div>
         
+        <!-- صلاحيات إجمالي إيرادات المشاريع -->
+        <div class="bg-gradient-to-br from-teal-50 to-cyan-50 p-4 rounded-lg mb-6 border-2 border-teal-200">
+            <div class="flex items-start">
+                <input type="checkbox" id="access_total_project_revenues" name="permissions[]" value="access_total_project_revenues" 
+                    {{ (is_array($user->permissions) && in_array('access_total_project_revenues', $user->permissions)) ? 'checked' : '' }}
+                    class="h-6 w-6 ml-3 mt-1 text-teal-600 focus:ring-teal-500 border-gray-300 rounded">
+                <div class="mr-2">
+                    <label for="access_total_project_revenues" class="text-lg font-bold text-teal-900 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        إجمالي إيرادات المشاريع
+                    </label>
+                    <p class="text-sm text-teal-700 mt-2">الوصول إلى صفحة عرض إجمالي إيرادات جميع المشاريع والتقارير المالية الشاملة</p>
+                    
+                    <div class="mt-3 p-3 bg-white rounded-lg border border-teal-200 shadow-sm">
+                        <div class="flex items-start">
+                            <svg class="flex-shrink-0 h-5 w-5 text-teal-500 ml-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                            </svg>
+                            <div class="mr-2">
+                                <p class="text-sm font-medium text-teal-900">معلومات هامة:</p>
+                                <ul class="mt-1 text-xs text-teal-700 list-disc list-inside space-y-1">
+                                    <li>تتيح هذه الصلاحية الوصول إلى بيانات مالية حساسة</li>
+                                    <li>يمكن للمستخدم عرض إجمالي الإيرادات والمصروفات لجميع المشاريع</li>
+                                    <li>المشرف يمكنه الوصول تلقائياً دون الحاجة لتفعيل هذه الصلاحية</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
         <div class="border-t border-gray-200 pt-4">
             <div class="flex justify-end">
                 <a href="{{ route('admin.users.index') }}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">

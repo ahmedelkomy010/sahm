@@ -1237,6 +1237,15 @@ class LicenseController extends Controller
                 'force_new' => $request->input('force_new', false)
             ]);
             
+            // التحقق من حجم ملف شهادة التنسيق
+            if ($request->hasFile('coordination_certificate_path')) {
+                $request->validate([
+                    'coordination_certificate_path' => 'file|max:1024', // 1 MB max
+                ], [
+                    'coordination_certificate_path.max' => 'حجم ملف شهادة التنسيق يجب أن لا يتجاوز 1 ميجابايت'
+                ]);
+            }
+            
             // تعيين رقم الرخصة التلقائي إذا لم يكن موجوداً
             if (!$license->license_number) {
                 $workOrderId = $license->work_order_id ?: $request->input('work_order_id');
@@ -1275,6 +1284,13 @@ class LicenseController extends Controller
             
             // معالجة ملفات الخطابات والتعهدات
             if ($request->hasFile('letters_commitments_files')) {
+                // التحقق من حجم الملفات
+                $request->validate([
+                    'letters_commitments_files.*' => 'file|max:1024', // 1 MB max
+                ], [
+                    'letters_commitments_files.*.max' => 'حجم ملفات الخطابات والتعهدات يجب أن لا يتجاوز 1 ميجابايت لكل ملف'
+                ]);
+                
                 // حذف الملفات القديمة إذا كانت موجودة
                 if ($license->letters_commitments_file_path) {
                     $oldFiles = json_decode($license->letters_commitments_file_path, true);
@@ -1523,6 +1539,13 @@ class LicenseController extends Controller
         
         // معالجة ملفات الإخلاءات
         if ($request->hasFile('evacuations_files')) {
+            // التحقق من حجم الملفات
+            $request->validate([
+                'evacuations_files.*' => 'file|max:200', // 200 KB max
+            ], [
+                'evacuations_files.*.max' => 'حجم ملفات الإخلاءات يجب أن لا يتجاوز 200 كيلوبايت لكل ملف'
+            ]);
+            
             $files = $request->file('evacuations_files');
             $filePaths = [];
             
@@ -1567,6 +1590,13 @@ class LicenseController extends Controller
             
             // معالجة ملفات المخالفات
             if ($request->hasFile('violations_files')) {
+                // التحقق من حجم الملفات
+                $request->validate([
+                    'violations_files.*' => 'file|max:1024', // 1 MB max
+                ], [
+                    'violations_files.*.max' => 'حجم ملفات المخالفات يجب أن لا يتجاوز 1 ميجابايت لكل ملف'
+                ]);
+                
                 $files = $request->file('violations_files');
                 $filePaths = [];
                 
@@ -1781,6 +1811,17 @@ class LicenseController extends Controller
      */
     private function handleDigLicenseFiles(Request $request, License $license)
     {
+        // التحقق من أحجام الملفات
+        $request->validate([
+            'license_file' => 'nullable|file|max:1024', // 1 MB
+            'payment_proof_files.*' => 'nullable|file|max:512', // 0.5 MB
+            'coordination_certificate_file' => 'nullable|file|max:512', // 0.5 MB
+        ], [
+            'license_file.max' => 'حجم ملف الرخصة يجب أن لا يتجاوز 1 ميجابايت',
+            'payment_proof_files.*.max' => 'حجم ملفات فواتير السداد يجب أن لا يتجاوز 0.5 ميجابايت لكل ملف',
+            'coordination_certificate_file.max' => 'حجم ملف إثبات سداد البنك يجب أن لا يتجاوز 0.5 ميجابايت',
+        ]);
+        
         // معالجة ملف الرخصة الرئيسي
         if ($request->hasFile('license_file')) {
             // حذف الملف القديم
@@ -2052,6 +2093,11 @@ class LicenseController extends Controller
             $evacuationAttachmentPath = null;
             if ($request->hasFile('evacuation_attachment')) {
                 $file = $request->file('evacuation_attachment');
+                
+                // التحقق من حجم الملف (200 KB max)
+                if ($file->getSize() > 200 * 1024) {
+                    throw new \Exception('حجم ملف الإخلاء يتجاوز الحد الأقصى المسموح به (200 كيلوبايت)');
+                }
                 
                 // التأكد من وجود المجلد
                 if (!\Storage::disk('public')->exists('licenses/evacuations')) {
@@ -2340,25 +2386,30 @@ class LicenseController extends Controller
                     foreach ($attachmentFiles as $fileIndex => $file) {
                         // التحقق من صحة الملف
                         if ($file->isValid()) {
+                            // التحقق من حجم الملف (200 KB max)
+                            if ($file->getSize() > 200 * 1024) {
+                                throw new \Exception('حجم ملف الإخلاء ' . $file->getClientOriginalName() . ' يتجاوز الحد الأقصى المسموح به (200 كيلوبايت)');
+                            }
+                            
                             $sanitizedFileName = preg_replace('/[^a-zA-Z0-9._-]/', '_', $file->getClientOriginalName());
                             $filename = time() . '_' . $dataIndex . '_' . $fileIndex . '_' . $sanitizedFileName;
                             $path = $file->storeAs('licenses/evacuations', $filename, 'public');
                             $attachmentPaths[] = $path;
-                                        } else {
-                    \Log::warning("Invalid file uploaded for evacuation {$dataIndex}", [
-                        'file_error' => $file->getError(),
-                        'file_name' => $file->getClientOriginalName()
+                        } else {
+                            \Log::warning("Invalid file uploaded for evacuation {$dataIndex}", [
+                                'file_error' => $file->getError(),
+                                'file_name' => $file->getClientOriginalName()
+                            ]);
+                        }
+                    }
+                    
+                    $processedEvacuation['attachments'] = $attachmentPaths;
+                    
+                    \Log::info("Processed attachments for evacuation {$dataIndex}", [
+                        'attachment_count' => count($attachmentPaths),
+                        'files' => $attachmentPaths
                     ]);
-                }
-            }
-            
-            $processedEvacuation['attachments'] = $attachmentPaths;
-            
-            \Log::info("Processed attachments for evacuation {$dataIndex}", [
-                'attachment_count' => count($attachmentPaths),
-                'files' => $attachmentPaths
-            ]);
-        } else {
+                } else {
             \Log::warning("No attachments found for evacuation {$dataIndex}", [
                 'attachment_index' => $attachmentIndex,
                 'all_file_keys' => array_keys($request->allFiles())
@@ -2725,7 +2776,9 @@ class LicenseController extends Controller
             $request->validate([
                 'license_id' => 'required|exists:licenses,id',
                 'test_field' => 'required|string',
-                'file' => 'required|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:10240'
+                'file' => 'required|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:200' // 200 KB max
+            ], [
+                'file.max' => 'حجم ملف المختبر يجب أن لا يتجاوز 200 كيلوبايت'
             ]);
 
             $license = License::findOrFail($request->license_id);
@@ -3034,7 +3087,9 @@ class LicenseController extends Controller
         try {
             $request->validate([
                 'license_id' => 'required|exists:licenses,id',
-                'attachments.*' => 'required|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:10240', // 10MB
+                'attachments.*' => 'required|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:200', // 200 KB
+            ], [
+                'attachments.*.max' => 'حجم ملفات الإخلاءات يجب أن لا يتجاوز 200 كيلوبايت لكل ملف'
             ]);
 
             $license = License::findOrFail($request->license_id);

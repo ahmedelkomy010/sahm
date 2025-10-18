@@ -63,6 +63,132 @@
                 </div>
             </div>
 
+            <!-- Filters Card -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-filter me-2 text-primary"></i>
+                        فلاتر البحث والتصفية
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="GET" action="{{ route('admin.quality.violations.riyadh') }}" class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">
+                                <i class="fas fa-file-alt me-1"></i>
+                                رقم أمر العمل
+                            </label>
+                            <input type="text" 
+                                   name="order_number" 
+                                   class="form-control" 
+                                   placeholder="ابحث برقم أمر العمل"
+                                   value="{{ request('order_number') }}">
+                        </div>
+
+                        <div class="col-md-3">
+                            <label class="form-label">
+                                <i class="fas fa-tools me-1"></i>
+                                نوع العمل
+                            </label>
+                            <input type="text" 
+                                   name="work_type" 
+                                   class="form-control" 
+                                   placeholder="ابحث بنوع العمل"
+                                   value="{{ request('work_type') }}">
+                        </div>
+
+                        <div class="col-md-3">
+                            <label class="form-label">
+                                <i class="fas fa-tag me-1"></i>
+                                نوع المخالفة
+                            </label>
+                            <select name="violation_type" class="form-select">
+                                <option value="">-- الكل --</option>
+                                <option value="جسيمة" {{ request('violation_type') == 'جسيمة' ? 'selected' : '' }}>جسيمة</option>
+                                <option value="غير جسيمة" {{ request('violation_type') == 'غير جسيمة' ? 'selected' : '' }}>غير جسيمة</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label class="form-label">
+                                <i class="fas fa-money-check-alt me-1"></i>
+                                حالة السداد
+                            </label>
+                            <select name="payment_status" class="form-select">
+                                <option value="">-- الكل --</option>
+                                <option value="1" {{ request('payment_status') == '1' ? 'selected' : '' }}>مسددة</option>
+                                <option value="0" {{ request('payment_status') == '0' ? 'selected' : '' }}>غير مسددة</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label class="form-label">
+                                <i class="fas fa-calendar-alt me-1"></i>
+                                من تاريخ
+                            </label>
+                            <input type="date" 
+                                   name="date_from" 
+                                   class="form-control"
+                                   value="{{ request('date_from') }}">
+                        </div>
+
+                        <div class="col-md-3">
+                            <label class="form-label">
+                                <i class="fas fa-calendar-alt me-1"></i>
+                                إلى تاريخ
+                            </label>
+                            <input type="date" 
+                                   name="date_to" 
+                                   class="form-control"
+                                   value="{{ request('date_to') }}">
+                        </div>
+
+                        <div class="col-md-3">
+                            <label class="form-label">
+                                <i class="fas fa-money-bill-wave me-1"></i>
+                                قيمة المخالفة (من)
+                            </label>
+                            <input type="number" 
+                                   name="amount_from" 
+                                   class="form-control" 
+                                   placeholder="0.00"
+                                   step="0.01"
+                                   value="{{ request('amount_from') }}">
+                        </div>
+
+                        <div class="col-md-3">
+                            <label class="form-label">
+                                <i class="fas fa-money-bill-wave me-1"></i>
+                                قيمة المخالفة (إلى)
+                            </label>
+                            <input type="number" 
+                                   name="amount_to" 
+                                   class="form-control" 
+                                   placeholder="0.00"
+                                   step="0.01"
+                                   value="{{ request('amount_to') }}">
+                        </div>
+
+                        <div class="col-12">
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-search me-1"></i>
+                                    بحث
+                                </button>
+                                <a href="{{ route('admin.quality.violations.riyadh') }}" class="btn btn-secondary">
+                                    <i class="fas fa-redo me-1"></i>
+                                    إعادة تعيين
+                                </a>
+                                <a href="{{ route('admin.quality.violations.export', ['city' => 'riyadh']) }}" class="btn btn-success ms-auto">
+                                    <i class="fas fa-file-excel me-1"></i>
+                                    تصدير Excel
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
             <!-- Violations Table -->
             <div class="card shadow-sm border-0">
                 <div class="card-header bg-light">
@@ -70,11 +196,10 @@
                         <h5 class="mb-0">
                             <i class="fas fa-list me-2 text-danger"></i>
                             قائمة المخالفات
+                            @if(request()->hasAny(['order_number', 'work_type', 'violation_type', 'payment_status', 'date_from', 'date_to', 'amount_from', 'amount_to']))
+                                <span class="badge bg-primary">{{ $violations->total() }} نتيجة</span>
+                            @endif
                         </h5>
-                        <a href="{{ route('admin.quality.violations.export', ['city' => 'riyadh']) }}" class="btn btn-success btn-sm">
-                            <i class="fas fa-file-excel me-1"></i>
-                            تصدير Excel
-                        </a>
                     </div>
                 </div>
                 <div class="card-body">

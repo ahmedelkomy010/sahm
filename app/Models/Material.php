@@ -97,6 +97,14 @@ class Material extends Model
     }
 
     /**
+     * العلاقة مع المرفقات
+     */
+    public function attachments()
+    {
+        return $this->hasMany(MaterialAttachment::class);
+    }
+
+    /**
      * Set the planned quantity attribute.
      */
     public function setPlannedQuantityAttribute($value)

@@ -233,7 +233,12 @@
                         <span class="badge bg-light text-primary ms-2">{{ $materials->total() }} مادة</span>
                     </div>
                         <div class="d-flex gap-2">
-                            
+                            @php
+                                $project = $workOrder->city === 'المدينة المنورة' ? 'madinah' : 'riyadh';
+                            @endphp
+                            <a href="{{ route('admin.materials.attachments.index', ['project' => $project]) }}" class="btn btn-warning btn-sm">
+                                <i class="fas fa-paperclip me-1"></i> مرفقات المواد
+                            </a>
                             <a href="{{ route('admin.work-orders.show', $workOrder) }}" class="btn btn-outline-light btn-sm">
                                 <i class="fas fa-arrow-right"></i> عودة الي تفاصيل أمر العمل
                             </a>
