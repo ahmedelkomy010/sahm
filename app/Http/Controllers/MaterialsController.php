@@ -1407,9 +1407,10 @@ class MaterialsController extends Controller
         $uploadDate = $request->get('upload_date');
         $attachmentType = $request->get('attachment_type');
         $searchTerm = $request->get('search');
+        $workOrder = $request->get('work_order');
 
         // بناء الاستعلام
-        $query = \App\Models\MaterialAttachment::with(['uploadedBy'])
+        $query = \App\Models\MaterialAttachment::with(['uploadedBy', 'workOrder'])
             ->where('project', $project);
 
         // فلترة حسب التاريخ
@@ -1420,6 +1421,13 @@ class MaterialsController extends Controller
         // فلترة حسب نوع المرفق
         if ($attachmentType) {
             $query->where('attachment_type', $attachmentType);
+        }
+
+        // فلترة حسب أمر العمل
+        if ($workOrder) {
+            $query->whereHas('workOrder', function($q) use ($workOrder) {
+                $q->where('order_number', 'like', "%{$workOrder}%");
+            });
         }
 
         // البحث
@@ -1442,9 +1450,10 @@ class MaterialsController extends Controller
         try {
             $request->validate([
                 'project' => 'required|in:riyadh,madinah',
-                'file' => 'required|file|max:2048', // 2MB max
+                'file' => 'required|file|max:4300', // 4.2MB max
                 'attachment_type' => 'nullable|string',
                 'upload_date' => 'required|date',
+                'work_order_id' => 'nullable|exists:work_orders,id',
             ]);
 
             $file = $request->file('file');
@@ -1453,7 +1462,7 @@ class MaterialsController extends Controller
 
             $attachment = \App\Models\MaterialAttachment::create([
                 'material_id' => null,
-                'work_order_id' => null,
+                'work_order_id' => $request->work_order_id,
                 'project' => $request->project,
                 'file_name' => $file->getClientOriginalName(),
                 'file_path' => $filePath,

@@ -151,7 +151,7 @@ class LicenseController extends Controller
             $perPage = $request->get('per_page', 50); // القيمة الافتراضية 50
             
             // التأكد من أن القيمة صحيحة
-            $perPage = in_array((int)$perPage, [50, 100, 400, 700]) ? (int)$perPage : 50;
+            $perPage = in_array((int)$perPage, [50, 100, 400, 700, 999999]) ? (int)$perPage : 50;
             $licenses = $query->with(['workOrder', 'extensions'])->latest()->paginate($perPage);
 
             // Calculate total license values for ALL filtered data (not just current page)

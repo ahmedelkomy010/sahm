@@ -28,7 +28,7 @@
     
     .revenue-table table {
         width: 100%;
-        min-width: 3500px;
+        min-width: 2800px;
         border-collapse: collapse;
     }
     
@@ -347,17 +347,6 @@
             </div>
         </div>
 
-        <div class="col-md-3 col-lg-2">
-        <div class="stats-card">
-            <div class="stats-label">
-                    <svg style="width: 20px; height: 20px; display: inline-block; color: #db2777; margin-bottom: 4px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                </svg>
-                <div style="font-size: 0.85rem;">ضريبة الدفعة الأولى</div>
-            </div>
-                <div class="stats-value" style="font-size: 1.5rem; color: #db2777;" id="advancePaymentTax">0.00 ريال</div>
-            </div>
-        </div>
     </div>
 
     <!-- Revenues Table -->
@@ -370,15 +359,11 @@
                     <th style="min-width: 150px;">المشروع</th>
                     <th style="min-width: 130px;">رقم العقد</th>
                     <th style="min-width: 150px;">رقم المستخلص</th>
-                    <th style="min-width: 120px;">المكتب</th>
-                    <th style="min-width: 130px;">نوع المستخلص</th>
                     <th style="min-width: 120px;">رقم PO</th>
                     <th style="min-width: 130px;">رقم الفاتورة</th>
                     <th style="min-width: 180px;">إجمالي قيمة المستخلصات<br>غير شامله الضريبه</th>
-                    <th style="min-width: 130px;">جهة المستخلص</th>
                     <th style="min-width: 130px;">قيمة الضريبة</th>
                     <th style="min-width: 110px;">الغرامات</th>
-                    <th style="min-width: 150px;">ضريبة الدفعة الأولى</th>
                     <th style="min-width: 150px;">صافي قيمة المستخلص</th>
                     <th style="min-width: 130px;">تاريخ إعداد المستخلص</th>
                     <th style="min-width: 80px;">العام</th>
@@ -421,15 +406,11 @@
             project: '{{ $project->name }}',
             contract_number: '{{ $project->contract_number }}',
             extract_number: '',
-            office: '',
-            extract_type: '',
             po_number: '',
             invoice_number: '',
             total_value: 0,
-            extract_entity: 'SAP',
             tax_value: 0,
             penalties: 0,
-            advance_payment_tax: 0,
             net_value: 0,
             preparation_date: new Date().toISOString().split('T')[0],
             year: currentYear,
@@ -661,7 +642,7 @@
         if (revenues.length === 0) {
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="23" class="empty-state">
+                    <td colspan="19" class="empty-state">
                         <svg class="w-20 h-20 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                         </svg>
@@ -680,20 +661,11 @@
                 <td><input type="text" value="${revenue.project}" onchange="updateField(${index}, 'project', this.value)" placeholder="المشروع"></td>
                 <td><input type="text" value="${revenue.contract_number}" onchange="updateField(${index}, 'contract_number', this.value)" placeholder="رقم العقد"></td>
                 <td><input type="text" value="${revenue.extract_number}" onchange="updateField(${index}, 'extract_number', this.value)" placeholder="رقم المستخلص"></td>
-                <td><input type="text" value="${revenue.office}" onchange="updateField(${index}, 'office', this.value)" placeholder="المكتب"></td>
-                <td><input type="text" value="${revenue.extract_type}" onchange="updateField(${index}, 'extract_type', this.value)" placeholder="نوع المستخلص"></td>
                 <td><input type="text" value="${revenue.po_number}" onchange="updateField(${index}, 'po_number', this.value)" placeholder="رقم PO"></td>
                 <td><input type="text" value="${revenue.invoice_number}" onchange="updateField(${index}, 'invoice_number', this.value)" placeholder="رقم الفاتورة"></td>
                 <td><input type="number" value="${revenue.total_value}" onchange="updateField(${index}, 'total_value', this.value)" step="0.01" placeholder="0.00"></td>
-                <td>
-                    <select onchange="updateField(${index}, 'extract_entity', this.value)">
-                        <option value="SAP" ${revenue.extract_entity === 'SAP' ? 'selected' : ''}>SAP</option>
-                        <option value="UDS" ${revenue.extract_entity === 'UDS' ? 'selected' : ''}>UDS</option>
-                    </select>
-                </td>
                 <td><input type="number" value="${revenue.tax_value}" onchange="updateField(${index}, 'tax_value', this.value)" step="0.01" placeholder="0.00" style="background-color: #f0fdf4;" title="محسوب تلقائياً: إجمالي القيمة × 15%"></td>
                 <td><input type="number" value="${revenue.penalties}" onchange="updateField(${index}, 'penalties', this.value)" step="0.01" placeholder="0.00"></td>
-                <td><input type="number" value="${revenue.advance_payment_tax}" onchange="updateField(${index}, 'advance_payment_tax', this.value)" step="0.01" placeholder="0.00"></td>
                 <td style="background-color: #fef3c7;"><strong>${parseFloat(revenue.net_value).toFixed(2)}</strong></td>
                 <td><input type="date" value="${formatDate(revenue.preparation_date)}" onchange="updateField(${index}, 'preparation_date', this.value)"></td>
                 <td><input type="number" value="${revenue.year}" onchange="updateField(${index}, 'year', this.value)" placeholder="${new Date().getFullYear()}"></td>
@@ -703,6 +675,7 @@
                         <option value="ادارة الكهرباء" ${revenue.extract_status === 'ادارة الكهرباء' ? 'selected' : ''}>ادارة الكهرباء</option>
                         <option value="المالية" ${revenue.extract_status === 'المالية' ? 'selected' : ''}>المالية</option>
                         <option value="الخزينة" ${revenue.extract_status === 'الخزينة' ? 'selected' : ''}>الخزينة</option>
+                        <option value="تم الصرف" ${revenue.extract_status === 'تم الصرف' ? 'selected' : ''}>تم الصرف</option>
                     </select>
                 </td>
                 <td><input type="text" value="${revenue.reference_number}" onchange="updateField(${index}, 'reference_number', this.value)" placeholder="الرقم المرجعي"></td>
@@ -757,21 +730,16 @@
         // 4. إجمالي الغرامات (penalties)
         const totalPenalties = revenues.reduce((sum, r) => sum + (parseFloat(r.penalties) || 0), 0);
         
-        // 5. صافي قيمة المستخلصات غير شامل الضريبة (total_value - penalties)
-        const netValueWithoutTax = totalValueWithoutTax - totalPenalties;
+        // 5. صافي قيمة المستخلصات (total_value + tax_value - penalties)
+        const netValueWithoutTax = revenues.reduce((sum, r) => sum + (parseFloat(r.net_value) || 0), 0);
         
-        // 6. إجمالي المدفوعات = صافي قيمة المستخلص للمدفوع فقط (net_value)
+        // 6. إجمالي المدفوعات = مجموع قيمة الصرف للمدفوع فقط (payment_amount)
         const paidAmount = revenues
             .filter(r => r.payment_status === 'paid')
-            .reduce((sum, r) => sum + (parseFloat(r.net_value) || 0), 0);
+            .reduce((sum, r) => sum + (parseFloat(r.payment_amount) || 0), 0);
         
-        // 7. المبلغ المتبقي عند العميل (فقط المستخلصات الغير مدفوعة)
-        const remainingAmount = revenues
-            .filter(r => r.payment_status === 'unpaid')
-            .reduce((sum, r) => sum + (parseFloat(r.net_value) || 0), 0);
-        
-        // 8. ضريبة الدفعة الأولى (advance_payment_tax)
-        const advancePaymentTax = revenues.reduce((sum, r) => sum + (parseFloat(r.advance_payment_tax) || 0), 0);
+        // 7. المبلغ المتبقي عند العميل = إجمالي صافي القيمة - إجمالي المدفوعات
+        const remainingAmount = netValueWithoutTax - paidAmount;
         
         // Update UI
         document.getElementById('totalRevenues').textContent = totalRevenues;
@@ -781,7 +749,6 @@
         document.getElementById('netValueWithoutTax').textContent = netValueWithoutTax.toFixed(2) + ' ريال';
         document.getElementById('paidAmount').textContent = paidAmount.toFixed(2) + ' ريال';
         document.getElementById('remainingAmount').textContent = remainingAmount.toFixed(2) + ' ريال';
-        document.getElementById('advancePaymentTax').textContent = advancePaymentTax.toFixed(2) + ' ريال';
     }
     
     // Initialize

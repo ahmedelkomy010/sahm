@@ -5899,9 +5899,9 @@ class WorkOrderController extends Controller
                 'total_tax' => $specialRevenues->sum('tax_value'),
                 'total_penalties' => $specialRevenues->sum('penalties'),
                 'total_net_value' => $specialRevenues->sum('net_value'),
-                'total_payments' => $specialPaid->sum('payment_value'),
+                'total_payments' => $specialPaid->sum('payment_amount'),
                 'first_payment_tax' => $specialUnpaid->sum('advance_payment_tax'),
-                'unpaid_amount' => $specialRevenues->sum('net_value') - $specialPaid->sum('payment_value'),
+                'unpaid_amount' => $specialRevenues->sum('net_value') - $specialPaid->sum('payment_amount'),
             ];
             
             // جمع إحصائيات لكل مشروع خاص على حدة
@@ -5923,9 +5923,9 @@ class WorkOrderController extends Controller
                     'total_tax' => $projectRevenues->sum('tax_value'),
                     'total_penalties' => $projectRevenues->sum('penalties'),
                     'total_net_value' => $projectRevenues->sum('net_value'),
-                    'total_payments' => $projectPaid->sum('payment_value'),
+                    'total_payments' => $projectPaid->sum('payment_amount'),
                     'first_payment_tax' => $projectUnpaid->sum('advance_payment_tax'),
-                    'unpaid_amount' => $projectRevenues->sum('net_value') - $projectPaid->sum('payment_value'),
+                    'unpaid_amount' => $projectRevenues->sum('net_value') - $projectPaid->sum('payment_amount'),
                 ];
             }
             

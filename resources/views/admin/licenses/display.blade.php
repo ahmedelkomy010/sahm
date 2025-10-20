@@ -115,6 +115,7 @@
                     <option value="100" {{ request('per_page') == '100' ? 'selected' : '' }}>100 </option>
                     <option value="400" {{ request('per_page') == '400' ? 'selected' : '' }}>400 </option>
                     <option value="700" {{ request('per_page') == '700' ? 'selected' : '' }}>700 </option>
+                    <option value="999999" {{ request('per_page') == '999999' ? 'selected' : '' }}>الكل </option>
                 </select>
             </div>
             <div>

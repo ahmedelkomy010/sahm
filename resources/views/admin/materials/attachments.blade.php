@@ -69,11 +69,11 @@
             <form method="GET" action="{{ route('admin.materials.attachments.index') }}">
                 <input type="hidden" name="project" value="{{ $project }}">
                 <div class="row g-3">
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <label class="form-label fw-bold">تاريخ الرفع</label>
                         <input type="date" name="upload_date" class="form-control" value="{{ request('upload_date') }}">
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <label class="form-label fw-bold">نوع المرفق</label>
                         <select name="attachment_type" class="form-select">
                             <option value="">الكل</option>
@@ -84,7 +84,11 @@
                             <option value="STORE IN" {{ request('attachment_type') === 'STORE IN' ? 'selected' : '' }}>STORE IN</option>
                         </select>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">رقم أمر العمل</label>
+                        <input type="text" name="work_order" class="form-control" placeholder="رقم أمر العمل..." value="{{ request('work_order') }}">
+                    </div>
+                    <div class="col-md-3">
                         <label class="form-label fw-bold">بحث</label>
                         <input type="text" name="search" class="form-control" placeholder="اسم الملف..." value="{{ request('search') }}">
                     </div>
@@ -118,6 +122,7 @@
                             <th style="width: 60px;">#</th>
                             <th>اسم الملف</th>
                             <th>نوع المرفق</th>
+                            <th>رقم أمر العمل</th>
                             <th>تاريخ الرفع</th>
                             <th>رفع بواسطة</th>
                             <th>الحجم</th>
@@ -135,6 +140,15 @@
                             <td class="text-center">
                                 @if($attachment->attachment_type)
                                     <span class="badge bg-secondary">{{ $attachment->attachment_type }}</span>
+                                @else
+                                    <span class="text-muted">-</span>
+                                @endif
+                            </td>
+                            <td class="text-center">
+                                @if($attachment->workOrder)
+                                    <a href="{{ route('admin.work-orders.show', $attachment->workOrder) }}" class="text-primary fw-bold" target="_blank">
+                                        {{ $attachment->workOrder->order_number }}
+                                    </a>
                                 @else
                                     <span class="text-muted">-</span>
                                 @endif
@@ -198,7 +212,7 @@
                         <div class="col-md-12">
                             <label class="form-label fw-bold">اختر الملف <span class="text-danger">*</span></label>
                             <input type="file" name="file" class="form-control" required>
-                            <small class="text-muted">الحد الأقصى: 2 ميجابايت</small>
+                            <small class="text-muted">الحد الأقصى: 4.2 ميجابايت</small>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-bold">تاريخ الرفع <span class="text-danger">*</span></label>
@@ -214,6 +228,12 @@
                                 <option value="DDO">DDO</option>
                                 <option value="STORE IN">STORE IN</option>
                             </select>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label fw-bold">رقم أمر العمل</label>
+                            <input type="text" name="work_order_number" id="work_order_number" class="form-control" placeholder="ابحث عن رقم أمر العمل...">
+                            <input type="hidden" name="work_order_id" id="work_order_id">
+                            <div id="work_order_suggestions" class="list-group mt-1" style="position: absolute; z-index: 1000; display: none; max-height: 200px; overflow-y: auto;"></div>
                         </div>
                     </div>
                 </div>
@@ -246,6 +266,53 @@ document.addEventListener('DOMContentLoaded', function() {
             // إزالة أي backdrop موجود بعد فتح الـ modal
             const backdrops = document.querySelectorAll('.modal-backdrop');
             backdrops.forEach(backdrop => backdrop.remove());
+        });
+    }
+    
+    // البحث في أوامر العمل
+    const workOrderInput = document.getElementById('work_order_number');
+    const workOrderIdInput = document.getElementById('work_order_id');
+    const suggestionsDiv = document.getElementById('work_order_suggestions');
+    
+    if (workOrderInput) {
+        workOrderInput.addEventListener('input', function() {
+            const searchTerm = this.value.trim();
+            
+            if (searchTerm.length < 2) {
+                suggestionsDiv.style.display = 'none';
+                return;
+            }
+            
+            fetch(`{{ route('admin.work-orders.search', '') }}/${searchTerm}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.length > 0) {
+                        suggestionsDiv.innerHTML = '';
+                        data.forEach(workOrder => {
+                            const item = document.createElement('button');
+                            item.type = 'button';
+                            item.className = 'list-group-item list-group-item-action';
+                            item.textContent = workOrder.order_number + ' - ' + (workOrder.project_name || '');
+                            item.onclick = function() {
+                                workOrderInput.value = workOrder.order_number;
+                                workOrderIdInput.value = workOrder.id;
+                                suggestionsDiv.style.display = 'none';
+                            };
+                            suggestionsDiv.appendChild(item);
+                        });
+                        suggestionsDiv.style.display = 'block';
+                    } else {
+                        suggestionsDiv.style.display = 'none';
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        });
+        
+        // إخفاء الاقتراحات عند النقر خارجها
+        document.addEventListener('click', function(e) {
+            if (!workOrderInput.contains(e.target) && !suggestionsDiv.contains(e.target)) {
+                suggestionsDiv.style.display = 'none';
+            }
         });
     }
     

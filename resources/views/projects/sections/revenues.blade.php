@@ -143,18 +143,7 @@
                 <p class="text-gray-600 text-xs mb-1"> المبلغ المتبقي <br>عند العميل شامل الضريبة</p>
                 <p class="text-2xl font-bold text-gray-800" id="stat_remaining_amount">0.00</p>
             </div>
-
-            <!-- ضريبة الدفعة الأولى -->
-            <div class="bg-white rounded-xl shadow-lg p-4 border-t-4 border-pink-500 hover:shadow-xl transition-all duration-300">
-                <div class="flex items-center justify-between mb-2">
-                    <svg class="w-8 h-8 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                </div>
-                <p class="text-gray-600 text-xs mb-1">ضريبة الدفعة الأولى</p>
-                <p class="text-2xl font-bold text-gray-800" id="stat_first_payment_tax">0.00</p>
-                </div>
-            </div>
+        </div>
 
         <!-- Success/Error Messages -->
         @if(session('success'))
@@ -208,10 +197,8 @@
                                 <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[200px]">رقم الفاتورة</th>
                                 <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[180px]">الموقع</th>
                                 <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[200px]">إجمالي قيمة المستخلصات<br>غير شامله الضريبه</th>
-                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[150px]">جهة المستخلص</th>
                                 <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[180px]">قيمة الضريبة</th>
                                 <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[180px]">الغرامات</th>
-                                <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[180px]">ضريبة الدفعة الأولى</th>
                                 <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[180px]">صافي قيمة المستخلص</th>
                                 <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[180px]">تاريخ إعداد المستخلص</th>
                                 <th class="px-3 py-3 font-semibold border-b border-green-500 whitespace-nowrap min-w-[100px]">العام</th>
@@ -309,16 +296,6 @@
                                            onchange="autoSaveTurnkey(this)"
                                            placeholder="0.00">
                                 </td>
-                                <!-- جهة المستخلص -->
-                                <td class="px-3 py-3 border-r border-gray-200">
-                                    <select class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" 
-                                            data-field="extract_entity" 
-                                            onchange="autoSaveTurnkey(this)">
-                                        
-                                        <option value="UDS" {{ $revenue->extract_entity === 'UDS' ? 'selected' : '' }}>SAP</option>
-                                        <option value="SAP" {{ $revenue->extract_entity === 'SAP' ? 'selected' : '' }}>UDS</option>
-                                    </select>
-                                </td>
                                 <!-- قيمة الضريبة -->
                                 <td class="px-3 py-3 border-r border-gray-200">
                                     <input type="number" 
@@ -338,16 +315,6 @@
                                            class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all text-right" 
                                            value="{{ $revenue->penalties }}" 
                                            data-field="penalties" 
-                                           onchange="autoSaveTurnkey(this)"
-                                           placeholder="0.00">
-                                </td>
-                                <!-- ضريبة الدفعة الأولى -->
-                                <td class="px-3 py-3 border-r border-gray-200">
-                                    <input type="number" 
-                                           step="0.01" 
-                                           class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all text-right" 
-                                           value="{{ $revenue->first_payment_tax }}" 
-                                           data-field="first_payment_tax" 
                                            onchange="autoSaveTurnkey(this)"
                                            placeholder="0.00">
                                 </td>
@@ -390,6 +357,7 @@
                                         <option value="ادارة الكهرباء" {{ $revenue->extract_status === 'ادارة الكهرباء' ? 'selected' : '' }}>ادارة الكهرباء</option>
                                         <option value="المالية" {{ $revenue->extract_status === 'المالية' ? 'selected' : '' }}>المالية</option>
                                         <option value="الخزينة" {{ $revenue->extract_status === 'الخزينة' ? 'selected' : '' }}>الخزينة</option>
+                                        <option value="تم الصرف" {{ $revenue->extract_status === 'تم الصرف' ? 'selected' : '' }}>تم الصرف</option>
                                     </select>
                                 </td>
                                 <!-- الرقم المرجعي -->
@@ -956,16 +924,8 @@ function addNewTurnkeyRow() {
         <td class="px-3 py-3 border-r border-gray-200"><input type="text" class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" data-field="invoice_number" onchange="autoSaveTurnkey(this)" placeholder="رقم الفاتورة"></td>
         <td class="px-3 py-3 border-r border-gray-200"><input type="text" class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" data-field="location" onchange="autoSaveTurnkey(this)" placeholder="الموقع"></td>
         <td class="px-3 py-3 border-r border-gray-200"><input type="number" step="0.01" class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all text-right" data-field="extract_value" onchange="autoSaveTurnkey(this)" placeholder="0.00"></td>
-        <td class="px-3 py-3 border-r border-gray-200">
-            <select class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" data-field="extract_entity" onchange="autoSaveTurnkey(this)">
-                
-                <option value="UDS">UDS</option>
-                <option value="SAP">SAP</option>
-            </select>
-        </td>
         <td class="px-3 py-3 border-r border-gray-200"><input type="number" step="0.01" class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all text-right bg-yellow-50" data-field="tax_value" onchange="autoSaveTurnkey(this)" placeholder="0.00" readonly title="محسوب تلقائياً: قيمة المستخلصات × 15%"></td>
         <td class="px-3 py-3 border-r border-gray-200"><input type="number" step="0.01" class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all text-right" data-field="penalties" onchange="autoSaveTurnkey(this)" placeholder="0.00"></td>
-        <td class="px-3 py-3 border-r border-gray-200"><input type="number" step="0.01" class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all text-right" data-field="first_payment_tax" onchange="autoSaveTurnkey(this)" placeholder="0.00"></td>
         <td class="px-3 py-3 border-r border-gray-200"><input type="number" step="0.01" class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all text-right bg-yellow-50" data-field="net_extract_value" onchange="autoSaveTurnkey(this)" placeholder="0.00" readonly title="محسوب تلقائياً: قيمة المستخلص + قيمة الضريبة - الغرامات"></td>
         <td class="px-3 py-3 border-r border-gray-200"><input type="date" class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" data-field="extract_date" onchange="autoSaveTurnkey(this)"></td>
         <td class="px-3 py-3 border-r border-gray-200"><input type="number" class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all text-right" data-field="year" onchange="autoSaveTurnkey(this)" placeholder="${new Date().getFullYear()}"></td>
@@ -976,6 +936,7 @@ function addNewTurnkeyRow() {
                 <option value="ادارة الكهرباء">ادارة الكهرباء</option>
                 <option value="المالية">المالية</option>
                 <option value="الخزينة">الخزينة</option>
+                <option value="تم الصرف">تم الصرف</option>
             </select>
         </td>
         <td class="px-3 py-3 border-r border-gray-200"><input type="text" class="w-full px-2 py-1.5 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" data-field="reference_number" onchange="autoSaveTurnkey(this)" placeholder="الرقم المرجعي"></td>
@@ -1107,8 +1068,7 @@ function updateTurnkeyStatistics() {
         totalTax: 0,
         totalPenalties: 0,
         totalNetValue: 0,
-        totalPayments: 0,
-        totalFirstPaymentTax: 0
+        totalPayments: 0
     };
     
     let unpaidNetValue = 0; // لحساب المبلغ المتبقي عند العميل (فقط الغير مدفوع)
@@ -1125,14 +1085,12 @@ function updateTurnkeyStatistics() {
             const penalties = parseFloat(row.querySelector('input[data-field="penalties"]')?.value) || 0;
             const netValue = parseFloat(row.querySelector('input[data-field="net_extract_value"]')?.value) || 0;
             const paymentValue = parseFloat(row.querySelector('input[data-field="payment_value"]')?.value) || 0;
-            const firstPaymentTax = parseFloat(row.querySelector('input[data-field="first_payment_tax"]')?.value) || 0;
             const paymentStatus = row.querySelector('select[data-field="payment_status"]')?.value || '';
             
             stats.totalExtractValue += extractValue;
             stats.totalTax += taxValue;
             stats.totalPenalties += penalties;
             stats.totalNetValue += netValue;
-            stats.totalFirstPaymentTax += firstPaymentTax;
             
             // احسب صافي قيمة المستخلص للسجلات الغير مدفوعة فقط
             if (paymentStatus === 'غير مدفوع') {
@@ -1166,7 +1124,6 @@ function updateTurnkeyStatistics() {
     document.getElementById('stat_net_value').textContent = formatter.format(stats.totalNetValue);
     document.getElementById('stat_total_payments').textContent = formatter.format(stats.totalPayments);
     document.getElementById('stat_remaining_amount').textContent = formatter.format(remainingAmount);
-    document.getElementById('stat_first_payment_tax').textContent = formatter.format(stats.totalFirstPaymentTax);
 }
 </script>
 @endpush
