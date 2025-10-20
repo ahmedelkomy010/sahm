@@ -113,7 +113,7 @@ class LicenseViolationController extends Controller
             'payment_due_date' => 'required|date',
             'violation_description' => 'nullable|string',
             'payment_invoice_number' => 'nullable|string|max:255',
-            'violation_attachment' => 'nullable|file|mimes:jpg,jpeg,png,pdf,doc,docx|max:10240',
+            'violation_attachment' => 'nullable|file|mimes:jpg,jpeg,png,pdf,doc,docx|max:1536',
             'notes' => 'nullable|string',
         ]);
 
@@ -209,7 +209,7 @@ class LicenseViolationController extends Controller
             'violation_number' => 'required|string',
             'responsible_party' => 'required|string',
             'violation_description' => 'nullable|string',
-            'violation_attachment' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:10240',
+            'violation_attachment' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:1536',
             'notes' => 'nullable|string',
         ]);
 

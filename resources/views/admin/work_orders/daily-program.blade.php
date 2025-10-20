@@ -288,10 +288,23 @@
                             <td>{{ $program->work_type ?? $program->workOrder->work_type }}</td>
                             <td>{{ $program->location }}</td>
                             <td>
-                                @if($program->google_coordinates)
-                                    <a href="https://www.google.com/maps?q={{ $program->google_coordinates }}" target="_blank" class="btn btn-sm btn-info">
+                                @php
+                                    // إذا كانت الإحداثيات محفوظة في البرنامج، نستخدمها
+                                    $coordinates = $program->google_coordinates;
+                                    
+                                    // إذا ما فيش إحداثيات في البرنامج، نشوف المسح
+                                    if (!$coordinates && $program->workOrder->surveys->isNotEmpty()) {
+                                        $latestSurvey = $program->workOrder->surveys->first();
+                                        $coordinates = $latestSurvey->start_coordinates ?: $latestSurvey->end_coordinates;
+                                    }
+                                @endphp
+                                
+                                @if($coordinates)
+                                    <a href="https://www.google.com/maps?q={{ $coordinates }}" target="_blank" class="btn btn-sm btn-info">
                                         <i class="fas fa-map-marker-alt"></i> فتح الخريطة
                                     </a>
+                                @else
+                                    <span class="text-muted small">لا توجد إحداثيات</span>
                                 @endif
                             </td>
                             <td>{{ $program->consultant_name }}</td>
@@ -310,13 +323,15 @@
                                 <button type="button" class="btn btn-sm btn-info mb-1" data-bs-toggle="modal" data-bs-target="#attachmentsModal{{ $program->id }}">
                                     <i class="fas fa-paperclip"></i> مرفقات
                                 </button>
+                                @if(auth()->user()->is_admin)
                                 <form action="{{ route('admin.work-orders.daily-program.destroy', $program) }}" method="POST" class="d-inline">
                                     @csrf
                                     @method('DELETE')
-                                    <!-- <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('هل أنت متأكد من حذف هذا السجل؟')">
+                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('هل أنت متأكد من حذف هذا السجل؟')">
                                         <i class="fas fa-trash"></i> حذف
-                                    </button> -->
+                                    </button>
                                 </form>
+                                @endif
                             </td>
                         </tr>
 
@@ -780,8 +795,9 @@
                             $workOrder = $program->workOrder;
                             // التحقق من وجود بيانات المسح
                             $hasSurvey = $workOrder->surveys()->exists();
-                            // التحقق من وجود المواد
-                            $hasMaterials = $workOrder->materials()->exists() || $workOrder->workOrderMaterials()->exists();
+                            // التحقق من وجود المواد مع كمية مصروفة (نشوف الجدولين)
+                            $hasMaterials = $workOrder->materials()->where('spent_quantity', '>', 0)->exists() || 
+                                          $workOrder->workOrderMaterials()->where('used_quantity', '>', 0)->exists();
                             // التحقق من وجود بيانات الجودة (شهادة تنسيق)
                             $hasQuality = $workOrder->licenses()
                                 ->where(function($query) {
@@ -852,16 +868,48 @@
                                         </span>
                             </td>
                             <td class="text-center">
+                                @if($program->execution_completed)
                                 <a href="{{ route('admin.work-orders.execution', ['workOrder' => $workOrder->id]) }}" 
                                    class="btn btn-primary btn-sm"
                                    title="إدخال الإنتاجية اليومية">
                                     <i class="fas fa-tasks me-1"></i>
                                     التنفيذ
                                 </a>
+                                @else
+                                <span class="text-muted small">
+                                    <i class="fas fa-lock me-1"></i>
+                                    متاح عند اكتمال الالتزام
+                                </span>
+                                @endif
                             </td>
                         </tr>
                         @endforeach
                     </tbody>
+                    <tfoot class="table-light">
+                        @php
+                            $totalPrograms = $programs->count();
+                            $completedPrograms = $programs->where('execution_completed', true)->count();
+                            $completionPercentage = $totalPrograms > 0 ? round(($completedPrograms / $totalPrograms) * 100, 2) : 0;
+                        @endphp
+                        <tr class="fw-bold border-top border-3">
+                            <td colspan="8" class="text-end bg-light">
+                                <span class="text-primary">
+                                    <i class="fas fa-chart-line me-2"></i>
+                                    نسبة الإنجاز الإجمالية:
+                                </span>
+                            </td>
+                            <td class="text-center bg-light">
+                                <span class="badge {{ $completionPercentage >= 70 ? 'bg-success' : ($completionPercentage >= 40 ? 'bg-warning' : 'bg-danger') }} fs-5 px-3 py-2">
+                                    {{ $completionPercentage }}%
+                                </span>
+                            </td>
+                            <td class="text-center bg-light">
+                                <small class="text-muted">
+                                    ({{ $completedPrograms }} من {{ $totalPrograms }})
+                                </small>
+                            </td>
+                        </tr>
+                    </tfoot>
                 </table>
                                     </div>
             
@@ -871,7 +919,8 @@
                 @php
                     $workOrder = $program->workOrder;
                     $hasSurvey = $workOrder->surveys()->exists();
-                    $hasMaterials = $workOrder->materials()->exists() || $workOrder->workOrderMaterials()->exists();
+                    $hasMaterials = $workOrder->materials()->where('spent_quantity', '>', 0)->exists() || 
+                                  $workOrder->workOrderMaterials()->where('used_quantity', '>', 0)->exists();
                     $hasQuality = $workOrder->licenses()
                         ->where(function($query) {
                             $query->whereNotNull('coordination_certificate_path')
@@ -965,15 +1014,166 @@
                         </div>
                     </div>
                     <div class="mobile-actions">
+                        @if($program->execution_completed)
                         <a href="{{ route('admin.work-orders.execution', ['workOrder' => $workOrder->id]) }}" 
                            class="btn btn-primary">
                             <i class="fas fa-tasks me-1"></i>
                             إدخال الإنتاجية اليومية
                         </a>
+                        @else
+                        <button class="btn btn-secondary" disabled>
+                            <i class="fas fa-lock me-1"></i>
+                            متاح عند اكتمال الالتزام (100%)
+                        </button>
+                        @endif
                     </div>
                 </div>
                         @endforeach
+                
+                <!-- نسبة الإنجاز الإجمالية للموبايل -->
+                @php
+                    $totalPrograms = $programs->count();
+                    $completedPrograms = $programs->where('execution_completed', true)->count();
+                    $completionPercentage = $totalPrograms > 0 ? round(($completedPrograms / $totalPrograms) * 100, 2) : 0;
+                @endphp
+                <div class="card bg-light border-3 border-top mt-3">
+                    <div class="card-body text-center">
+                        <h6 class="text-primary mb-3">
+                            <i class="fas fa-chart-line me-2"></i>
+                            نسبة الإنجاز الإجمالية
+                        </h6>
+                        <div class="d-flex justify-content-center align-items-center gap-3">
+                            <span class="badge {{ $completionPercentage >= 70 ? 'bg-success' : ($completionPercentage >= 40 ? 'bg-warning' : 'bg-danger') }} fs-3 px-4 py-3">
+                                {{ $completionPercentage }}%
+                            </span>
+                            <div class="text-muted">
+                                <small>{{ $completedPrograms }} مكتمل من {{ $totalPrograms }}</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
+        </div>
+    </div>
+    @endif
+
+    <!-- جدول سجل التنفيذ اليومي -->
+    @if(isset($dailyExecutions))
+    <div class="card shadow-sm mt-4">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <div>
+                <i class="fas fa-clipboard-list me-2"></i>
+                <strong>سجل التنفيذ اليومي - {{ \Carbon\Carbon::parse($selectedDate)->locale('ar')->translatedFormat('l، j F Y') }}</strong>
+            </div>
+            <span class="badge bg-light text-dark fs-6">
+                <i class="fas fa-list me-1"></i>
+                {{ $dailyExecutions->count() }} سجل
+            </span>
+        </div>
+        <div class="card-body p-0">
+            @if($dailyExecutions->count() > 0)
+            <div class="table-responsive">
+                <table class="table table-hover table-striped align-middle mb-0">
+                    <thead class="table-light">
+                        <tr class="text-center">
+                            <th style="min-width: 60px;">#</th>
+                            <th style="min-width: 120px;">رقم أمر العمل</th>
+                            <th style="min-width: 250px;">وصف البند</th>
+                            <th style="min-width: 100px;">الوحدة</th>
+                            <th style="min-width: 100px;">الكمية المنفذة</th>
+                            <th style="min-width: 120px;">سعر الوحدة</th>
+                            <th style="min-width: 120px;">القيمة الإجمالية</th>
+                            <th style="min-width: 150px;">المنفذ بواسطة</th>
+                            <th style="min-width: 150px;">تاريخ الإدخال</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($dailyExecutions as $index => $execution)
+                        <tr>
+                            <td class="text-center fw-bold">{{ $index + 1 }}</td>
+                            <td class="text-center">
+                                <a href="{{ route('admin.work-orders.show', $execution->workOrder) }}" 
+                                   class="btn btn-link text-primary fw-bold p-0"
+                                   target="_blank">
+                                    {{ $execution->workOrder->order_number }}
+                                </a>
+                            </td>
+                            <td>
+                                @if($execution->workOrderItem && $execution->workOrderItem->workItem)
+                                    {{ $execution->workOrderItem->workItem->description }}
+                                @else
+                                    <span class="text-muted">غير محدد</span>
+                                @endif
+                            </td>
+                            <td class="text-center">
+                                @if($execution->workOrderItem && $execution->workOrderItem->workItem)
+                                    <span class="badge bg-info">{{ $execution->workOrderItem->workItem->unit }}</span>
+                                @else
+                                    <span class="text-muted">-</span>
+                                @endif
+                            </td>
+                            <td class="text-center">
+                                <strong class="text-success">{{ number_format($execution->executed_quantity, 2) }}</strong>
+                            </td>
+                            <td class="text-center">
+                                @if($execution->workOrderItem)
+                                    {{ number_format($execution->workOrderItem->unit_price ?? 0, 2) }} ر.س
+                                @else
+                                    <span class="text-muted">-</span>
+                                @endif
+                            </td>
+                            <td class="text-center">
+                                @php
+                                    $totalValue = $execution->executed_quantity * ($execution->workOrderItem->unit_price ?? 0);
+                                @endphp
+                                <strong class="text-primary">{{ number_format($totalValue, 2) }} ر.س</strong>
+                            </td>
+                            <td class="text-center">
+                                @if($execution->createdBy)
+                                    <div class="d-flex align-items-center justify-content-center">
+                                        <i class="fas fa-user-circle text-secondary me-1"></i>
+                                        <small>{{ $execution->createdBy->name }}</small>
+                                    </div>
+                                @else
+                                    <span class="text-muted">-</span>
+                                @endif
+                            </td>
+                            <td class="text-center">
+                                <small class="text-muted">
+                                    <i class="far fa-clock me-1"></i>
+                                    {{ $execution->created_at->locale('ar')->translatedFormat('H:i') }}
+                                </small>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                    <tfoot class="table-light">
+                        <tr class="fw-bold">
+                            <td colspan="4" class="text-end">الإجمالي:</td>
+                            <td class="text-center text-success">
+                                {{ number_format($dailyExecutions->sum('executed_quantity'), 2) }}
+                            </td>
+                            <td></td>
+                            <td class="text-center text-primary">
+                                @php
+                                    $totalExecutionValue = $dailyExecutions->sum(function($execution) {
+                                        return $execution->executed_quantity * ($execution->workOrderItem->unit_price ?? 0);
+                                    });
+                                @endphp
+                                {{ number_format($totalExecutionValue, 2) }} ر.س
+                            </td>
+                            <td colspan="2"></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+            @else
+            <div class="alert alert-info text-center mb-0">
+                <i class="fas fa-info-circle fa-2x mb-3"></i>
+                <h5>لا توجد سجلات تنفيذ لهذا التاريخ</h5>
+                <p class="mb-0">عند إدخال بيانات التنفيذ لهذا اليوم، ستظهر السجلات هنا تلقائياً</p>
+            </div>
+            @endif
         </div>
     </div>
     @endif
@@ -1562,6 +1762,130 @@ function updateExecutionPercentage(programId, isCompleted) {
     
     if (desktopCheckbox) desktopCheckbox.checked = isCompleted;
     if (mobileCheckbox) mobileCheckbox.checked = isCompleted;
+    
+    // إظهار/إخفاء زر إدخال الإنتاجية اليومية
+    updateProductivityButton(programId, isCompleted);
+    
+    // تحديث نسبة الإنجاز الإجمالية
+    updateOverallCompletionPercentage();
+}
+
+function updateProductivityButton(programId, isCompleted) {
+    // تحديث الزر في النسخة المكتبية (Desktop)
+    const desktopCheckbox = document.getElementById('execution_' + programId);
+    if (desktopCheckbox) {
+        const row = desktopCheckbox.closest('tr');
+        const buttonCell = row.querySelector('td:last-child');
+        
+        if (isCompleted) {
+            // عرض الزر عندما النسبة 100%
+            const workOrderLink = row.querySelector('a[href*="work-orders"]');
+            const workOrderId = workOrderLink.href.match(/work-orders\/(\d+)/)[1];
+            buttonCell.innerHTML = `
+                <a href="/admin/work-orders/${workOrderId}/execution" 
+                   class="btn btn-primary btn-sm"
+                   title="إدخال الإنتاجية اليومية">
+                    <i class="fas fa-tasks me-1"></i>
+                    التنفيذ
+                </a>
+            `;
+        } else {
+            // إخفاء الزر وعرض رسالة
+            buttonCell.innerHTML = `
+                <span class="text-muted small">
+                    <i class="fas fa-lock me-1"></i>
+                    متاح عند اكتمال الالتزام
+                </span>
+            `;
+        }
+    }
+    
+    // تحديث الزر في النسخة المحمولة (Mobile)
+    const mobileCheckbox = document.getElementById('execution_mobile_' + programId);
+    if (mobileCheckbox) {
+        const mobileCard = mobileCheckbox.closest('.mobile-card');
+        const mobileActions = mobileCard.querySelector('.mobile-actions');
+        
+        if (isCompleted) {
+            const workOrderLink = mobileCard.querySelector('a[href*="work-orders"]');
+            const workOrderId = workOrderLink.href.match(/work-orders\/(\d+)/)[1];
+            mobileActions.innerHTML = `
+                <a href="/admin/work-orders/${workOrderId}/execution" 
+                   class="btn btn-primary">
+                    <i class="fas fa-tasks me-1"></i>
+                    إدخال الإنتاجية اليومية
+                </a>
+            `;
+        } else {
+            mobileActions.innerHTML = `
+                <button class="btn btn-secondary" disabled>
+                    <i class="fas fa-lock me-1"></i>
+                    متاح عند اكتمال الالتزام (100%)
+                </button>
+            `;
+        }
+    }
+}
+
+function updateOverallCompletionPercentage() {
+    // حساب عدد البرامج المكتملة
+    const allCheckboxes = document.querySelectorAll('.execution-checkbox');
+    const totalPrograms = allCheckboxes.length / 2; // مقسوم على 2 لأن عندنا desktop و mobile
+    let completedPrograms = 0;
+    
+    // عد البرامج المكتملة (نستخدم فقط desktop checkboxes عشان منحسبش مرتين)
+    document.querySelectorAll('.execution-checkbox[id^="execution_"]:not([id*="mobile"])').forEach(checkbox => {
+        if (checkbox.checked) {
+            completedPrograms++;
+        }
+    });
+    
+    // حساب النسبة المئوية
+    const completionPercentage = totalPrograms > 0 ? ((completedPrograms / totalPrograms) * 100).toFixed(2) : 0;
+    
+    // تحديث النسبة في footer الجدول (Desktop)
+    const desktopFooterBadge = document.querySelector('tfoot .badge');
+    if (desktopFooterBadge) {
+        desktopFooterBadge.textContent = completionPercentage + '%';
+        
+        // تغيير اللون حسب النسبة
+        desktopFooterBadge.classList.remove('bg-success', 'bg-warning', 'bg-danger');
+        if (completionPercentage >= 70) {
+            desktopFooterBadge.classList.add('bg-success');
+        } else if (completionPercentage >= 40) {
+            desktopFooterBadge.classList.add('bg-warning');
+        } else {
+            desktopFooterBadge.classList.add('bg-danger');
+        }
+        
+        // تحديث النص (X من Y)
+        const footerText = desktopFooterBadge.closest('tr').querySelector('small');
+        if (footerText) {
+            footerText.textContent = `(${completedPrograms} من ${totalPrograms})`;
+        }
+    }
+    
+    // تحديث النسبة في Mobile
+    const mobileCompletionBadge = document.querySelector('.mobile-cards .badge.fs-3');
+    if (mobileCompletionBadge) {
+        mobileCompletionBadge.textContent = completionPercentage + '%';
+        
+        // تغيير اللون حسب النسبة
+        mobileCompletionBadge.classList.remove('bg-success', 'bg-warning', 'bg-danger');
+        if (completionPercentage >= 70) {
+            mobileCompletionBadge.classList.add('bg-success');
+        } else if (completionPercentage >= 40) {
+            mobileCompletionBadge.classList.add('bg-warning');
+        } else {
+            mobileCompletionBadge.classList.add('bg-danger');
+        }
+        
+        // تحديث النص (X مكتمل من Y)
+        const mobileText = mobileCompletionBadge.closest('.card-body').querySelector('.text-muted small');
+        if (mobileText) {
+            mobileText.textContent = `${completedPrograms} مكتمل من ${totalPrograms}`;
+        }
+    }
 }
 
 function saveExecutionStatus(programId, isCompleted) {

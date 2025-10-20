@@ -500,6 +500,42 @@
         </div>
     </div>
 
+    <!-- نسبة الإنجاز الإجمالية -->
+    @php
+        $completionPercentage = $totalPrograms > 0 ? round(($completedPrograms / $totalPrograms) * 100, 2) : 0;
+        $badgeClass = $completionPercentage >= 70 ? 'bg-success' : ($completionPercentage >= 40 ? 'bg-warning' : 'bg-danger');
+        $iconClass = $completionPercentage >= 70 ? 'fa-check-circle' : ($completionPercentage >= 40 ? 'fa-exclamation-circle' : 'fa-times-circle');
+    @endphp
+    
+    <div class="alert border-0 mb-4" style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%); border-radius: 15px;">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h5 class="mb-2">
+                    <i class="fas fa-chart-line me-2 text-primary"></i>
+                    <strong>نسبة الإنجاز الإجمالية</strong>
+                </h5>
+                <p class="mb-0 text-muted">
+                    <i class="fas fa-info-circle me-1"></i>
+                    يتم حساب النسبة بناءً على عدد البرامج اليومية المكتملة (100%) من إجمالي البرامج المفلترة
+                </p>
+            </div>
+            <div class="col-md-4 text-center">
+                <div class="d-flex align-items-center justify-content-center gap-3">
+                    <div>
+                        <span class="badge {{ $badgeClass }} fs-1 px-4 py-3" style="border-radius: 20px;">
+                            <i class="fas {{ $iconClass }} me-2"></i>{{ $completionPercentage }}%
+                        </span>
+                    </div>
+                    <div class="text-start">
+                        <small class="text-muted d-block">برامج مكتملة:</small>
+                        <strong class="text-success fs-5">{{ number_format($completedPrograms ?? 0) }}</strong>
+                        <small class="text-muted"> / {{ number_format($totalPrograms ?? 0) }}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- فلاتر البحث -->
     <div class="filter-card">
         <form method="GET" action="{{ route('admin.work-orders.execution-productivity') }}" id="filterForm">

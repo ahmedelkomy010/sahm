@@ -4100,7 +4100,11 @@ class WorkOrderController extends Controller
         }
         
         // جلب برامج العمل للتاريخ المحدد
-        $programs = \App\Models\DailyWorkProgram::with('workOrder')
+        $programs = \App\Models\DailyWorkProgram::with(['workOrder.surveys' => function($query) {
+                $query->select('id', 'work_order_id', 'start_coordinates', 'end_coordinates')
+                      ->latest()
+                      ->limit(1);
+            }])
             ->whereDate('program_date', $selectedDate)
             ->whereHas('workOrder', function($q) use ($project) {
                 if ($project === 'riyadh') {
@@ -4123,7 +4127,21 @@ class WorkOrderController extends Controller
             ->orderBy('order_number', 'desc')
             ->get();
         
-        return view('admin.work_orders.daily-program', compact('programs', 'availableWorkOrders', 'project', 'selectedDate'));
+        // جلب سجلات التنفيذ اليومية للتاريخ المحدد
+        $city = $project === 'riyadh' ? 'الرياض' : 'المدينة المنورة';
+        
+        $dailyExecutions = DailyWorkExecution::whereDate('work_date', $selectedDate)
+            ->whereHas('workOrder', function($q) use ($city) {
+                $q->where('city', $city);
+            })
+            ->with(['workOrder', 'workOrderItem.workItem', 'createdBy'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+        
+        // Log for debugging
+        \Log::info("Daily Program - Date: {$selectedDate}, City: {$city}, Executions found: " . $dailyExecutions->count());
+        
+        return view('admin.work_orders.daily-program', compact('programs', 'availableWorkOrders', 'project', 'selectedDate', 'dailyExecutions'));
     }
 
     /**
@@ -5647,6 +5665,22 @@ class WorkOrderController extends Controller
         // حساب عدد أوامر العمل الفريدة التي لها تنفيذ يومي
         $uniqueWorkOrdersWithExecution = $dailyExecutions->groupBy('work_order_id')->count();
         
+        // حساب نسبة الإنجاز من البرامج اليومية المكتملة (نفس طريقة صفحة برنامج العمل اليومي)
+        $dailyProgramsQuery = \App\Models\DailyWorkProgram::whereHas('workOrder', function($q) use ($city) {
+            $q->where('city', $city);
+        });
+        
+        // تطبيق نفس فلاتر التاريخ على البرامج
+        if ($request->filled('date_from')) {
+            $dailyProgramsQuery->whereDate('program_date', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $dailyProgramsQuery->whereDate('program_date', '<=', $request->date_to);
+        }
+        
+        $totalPrograms = $dailyProgramsQuery->count();
+        $completedPrograms = $dailyProgramsQuery->where('execution_completed', true)->count();
+        
         // لا نحتاج لقوائم الأنواع والأحياء بعد الآن
         
         // تعيين متغير افتراضي إذا لم يكن موجوداً
@@ -5655,7 +5689,8 @@ class WorkOrderController extends Controller
         return view('admin.work_orders.execution-productivity', compact(
             'dailyExecutions', 'project', 'projectName', 'city',
             'totalWorkOrders', 'totalValue', 'totalDailyExecutions', 'totalExecutedValue',
-            'uniqueWorkOrdersWithExecution', 'usingFallbackData', 'dailyNotes'
+            'uniqueWorkOrdersWithExecution', 'usingFallbackData', 'dailyNotes',
+            'totalPrograms', 'completedPrograms'
         ));
     }
     
@@ -5710,11 +5745,29 @@ class WorkOrderController extends Controller
     /**
      * حذف سجل التنفيذ اليومي
      */
-    public function deleteDailyExecution(DailyWorkExecution $dailyExecution)
+    public function deleteDailyExecution(DailyWorkExecution $dailyExecution, Request $request)
     {
+        // التحقق من الصلاحيات
+        $workOrder = $dailyExecution->workOrderItem->workOrder ?? null;
+        if ($workOrder) {
+            $city = $workOrder->city ?? 'الرياض';
+            $deletePermission = $city == 'الرياض' ? 'riyadh_delete_execution_record' : 'madinah_delete_execution_record';
+            
+            if (!auth()->user()->is_admin && (!is_array(auth()->user()->permissions) || !in_array($deletePermission, auth()->user()->permissions))) {
+                if ($request->expectsJson()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'ليس لديك صلاحية لحذف سجلات التنفيذ'
+                    ], 403);
+                }
+                return redirect()->back()->with('error', 'ليس لديك صلاحية لحذف سجلات التنفيذ');
+            }
+        }
+        
         try {
             $workOrderItem = $dailyExecution->workOrderItem;
             $deletedQuantity = $dailyExecution->executed_quantity;
+            $workOrderId = $workOrder ? $workOrder->id : null;
 
             // حذف سجل التنفيذ اليومي
             $dailyExecution->delete();
@@ -5730,19 +5783,34 @@ class WorkOrderController extends Controller
                 ]);
             }
 
-            return response()->json([
-                'success' => true,
-                'message' => 'تم حذف سجل التنفيذ بنجاح',
-                'deleted_quantity' => $deletedQuantity
-            ]);
+            // إذا كان الطلب من نوع JSON
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'تم حذف سجل التنفيذ بنجاح',
+                    'deleted_quantity' => $deletedQuantity
+                ]);
+            }
+            
+            // إذا كان الطلب عادي، إرجاع redirect
+            if ($workOrderId) {
+                return redirect()->route('admin.work-orders.execution', $workOrderId)
+                    ->with('success', 'تم حذف سجل التنفيذ بنجاح');
+            }
+            
+            return redirect()->back()->with('success', 'تم حذف سجل التنفيذ بنجاح');
 
         } catch (\Exception $e) {
             \Log::error('خطأ في حذف سجل التنفيذ اليومي: ' . $e->getMessage());
             
-            return response()->json([
-                'success' => false,
-                'message' => 'حدث خطأ أثناء حذف سجل التنفيذ'
-            ], 500);
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'حدث خطأ أثناء حذف سجل التنفيذ'
+                ], 500);
+            }
+            
+            return redirect()->back()->with('error', 'حدث خطأ أثناء حذف سجل التنفيذ');
         }
     }
 

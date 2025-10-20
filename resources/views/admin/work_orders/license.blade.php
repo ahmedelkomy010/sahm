@@ -1688,10 +1688,10 @@ $(document).ready(function() {
             return;
         }
 
-        // التحقق من حجم الملف (1 MB)
-        const maxSize = 1 * 1024 * 1024; // 1 MB
+        // التحقق من حجم الملف (1.5 MB)
+        const maxSize = 1.5 * 1024 * 1024; // 1.5 MB
         if (file.size > maxSize) {
-            toastr.error('حجم الملف يجب أن يكون أقل من 1 ميجابايت');
+            toastr.error('حجم الملف يجب أن يكون أقل من 1.5 ميجابايت');
             input.value = '';
             clearViolationFile();
             return;
@@ -4793,7 +4793,7 @@ function deleteExtension(extensionId) {
                                         </div>
                                         <div class="form-text">
                                             <i class="fas fa-info-circle me-1"></i>
-                                            يمكن رفع الملفات التالية: الصور (JPG, PNG)، PDF، مستندات Word - الحد الأقصى: 1 ميجابايت
+                                            يمكن رفع الملفات التالية: الصور (JPG, PNG)، PDF، مستندات Word - الحد الأقصى: 1.5 ميجابايت
                                         </div>
                                         <div id="violation-file-preview" class="mt-2" style="display: none;">
                                             <div class="alert alert-info mb-0">

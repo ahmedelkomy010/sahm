@@ -2465,10 +2465,22 @@ function clearUserSearch() {
                     </div>
                     
                     <div class="mb-3">
-                        <label class="form-label fw-bold">
-                            <i class="fas fa-users me-1"></i>
-                            إرسال إلى المستخدمين <span class="text-danger">*</span>
-                        </label>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <label class="form-label fw-bold mb-0">
+                                <i class="fas fa-users me-1"></i>
+                                إرسال إلى المستخدمين <span class="text-danger">*</span>
+                            </label>
+                            @if(isset($project))
+                            <span class="badge {{ $project == 'riyadh' ? 'bg-primary' : 'bg-success' }}">
+                                <i class="fas fa-{{ $project == 'riyadh' ? 'city' : 'mosque' }} me-1"></i>
+                                {{ $project == 'riyadh' ? 'الرياض' : 'المدينة المنورة' }}
+                            </span>
+                            @endif
+                        </div>
+                        <small class="text-muted d-block mb-2">
+                            <i class="fas fa-info-circle me-1"></i>
+                            يتم عرض المستخدمين حسب صلاحياتهم على المشروع الحالي فقط
+                        </small>
                         
                         <!-- حقل البحث -->
                         <div class="mb-2">
@@ -2500,14 +2512,18 @@ function clearUserSearch() {
                             </div>
                             <div id="usersListItems">
                                 @php
-                                    // جلب المستخدمين الذين لديهم صلاحيات على مشاريع الرياض أو المدينة المنورة فقط
-                                    $projectUsers = \App\Models\User::orderBy('name')->get()->filter(function($user) {
+                                    // تحديد المشروع الحالي
+                                    $currentProject = $project ?? 'riyadh';
+                                    $projectPrefix = $currentProject . '_';
+                                    
+                                    // جلب المستخدمين الذين لديهم صلاحيات على المشروع الحالي فقط
+                                    $projectUsers = \App\Models\User::orderBy('name')->get()->filter(function($user) use ($projectPrefix) {
                                         // المشرفين يظهرون دائماً
                                         if ($user->isAdmin()) {
                                             return true;
                                         }
                                         
-                                        // فحص إذا كان لديه أي صلاحية خاصة بالرياض أو المدينة
+                                        // فحص إذا كان لديه أي صلاحية خاصة بالمشروع الحالي
                                         $permissions = $user->permissions;
                                         if (is_string($permissions)) {
                                             $permissions = json_decode($permissions, true) ?? [];
@@ -2517,7 +2533,7 @@ function clearUserSearch() {
                                         }
                                         
                                         foreach ($permissions as $permission) {
-                                            if (str_starts_with($permission, 'riyadh_') || str_starts_with($permission, 'madinah_')) {
+                                            if (str_starts_with($permission, $projectPrefix)) {
                                                 return true;
                                             }
                                         }
@@ -2529,16 +2545,21 @@ function clearUserSearch() {
                                 @forelse($projectUsers as $user)
                                     <div class="form-check mb-2 user-item" data-user-name="{{ strtolower($user->name) }}" data-user-email="{{ strtolower($user->email) }}">
                                         <input class="form-check-input user-checkbox" type="checkbox" name="user_ids[]" value="{{ $user->id }}" id="user{{ $user->id }}">
-                                        <label class="form-check-label" for="user{{ $user->id }}">
-                                            <i class="fas fa-user me-1 text-secondary"></i>
-                                            <strong>{{ $user->name }}</strong>
-                                            <small class="text-muted">({{ $user->email }})</small>
+                                        <label class="form-check-label d-flex align-items-center justify-content-between" for="user{{ $user->id }}" style="width: 100%;">
+                                            <span>
+                                                <i class="fas fa-user me-1 text-secondary"></i>
+                                                <strong>{{ $user->name }}</strong>
+                                                <small class="text-muted">({{ $user->email }})</small>
+                                            </span>
+                                            @if($user->isAdmin())
+                                                <span class="badge bg-danger badge-sm">مشرف</span>
+                                            @endif
                                         </label>
                                     </div>
                                 @empty
                                     <div class="text-center text-muted py-3">
                                         <i class="fas fa-user-slash me-1"></i>
-                                        لا يوجد مستخدمين لديهم صلاحيات على المشاريع
+                                        لا يوجد مستخدمين لديهم صلاحيات على هذا المشروع
                                     </div>
                                 @endforelse
                             </div>
@@ -2904,10 +2925,16 @@ async function showWorkOrderNotifications(workOrderId, orderNumber) {
             </div>
             <div class="modal-body">
                 <div class="mb-3">
-                    <label for="editNotesTextarea" class="form-label fw-bold">
-                        <i class="fas fa-sticky-note me-2"></i>
-                        الملاحظات
-                    </label>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <label for="editNotesTextarea" class="form-label fw-bold mb-0">
+                            <i class="fas fa-sticky-note me-2"></i>
+                            الملاحظات
+                        </label>
+                        <span id="notesAuthorBadge" class="badge bg-info d-none">
+                            <i class="fas fa-user-edit me-1"></i>
+                            كتبها: <span id="notesAuthorName"></span>
+                        </span>
+                    </div>
                     <textarea class="form-control" 
                               id="editNotesTextarea" 
                               rows="8" 
@@ -2995,13 +3022,19 @@ function openEditNotesModal(workOrderId, orderNumber, event) {
                 document.getElementById('updateUserName').textContent = data.notes_updated_by_name;
                 document.getElementById('updateDateTime').textContent = data.notes_updated_at;
                 document.getElementById('lastUpdateInfo').classList.remove('d-none');
+                
+                // عرض اسم الكاتب في البادج بجانب الحقل
+                document.getElementById('notesAuthorName').textContent = data.notes_updated_by_name;
+                document.getElementById('notesAuthorBadge').classList.remove('d-none');
             } else {
                 document.getElementById('lastUpdateInfo').classList.add('d-none');
+                document.getElementById('notesAuthorBadge').classList.add('d-none');
             }
         })
         .catch(() => {
             document.getElementById('editNotesTextarea').value = currentNotes !== 'اضغط للكتابة...' ? currentNotes : '';
             document.getElementById('lastUpdateInfo').classList.add('d-none');
+            document.getElementById('notesAuthorBadge').classList.add('d-none');
         });
     
     // إخفاء رسائل النجاح/الخطأ
@@ -3077,6 +3110,10 @@ async function saveNotes() {
                 document.getElementById('updateUserName').textContent = data.user_name;
                 document.getElementById('updateDateTime').textContent = data.updated_at || '';
                 document.getElementById('lastUpdateInfo').classList.remove('d-none');
+                
+                // تحديث اسم الكاتب في البادج بجانب الحقل
+                document.getElementById('notesAuthorName').textContent = data.user_name;
+                document.getElementById('notesAuthorBadge').classList.remove('d-none');
             }
             
             // تحديث عرض الملاحظات في الجدول

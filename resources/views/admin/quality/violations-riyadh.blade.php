@@ -210,6 +210,7 @@
                                     <th class="text-center">#</th>
                                     <th>رقم أمر العمل</th>
                                     <th>نوع العمل</th>
+                                    <th class="text-center">رقم المخالفة</th>
                                     <th>نوع المخالفة</th>
                                     <th class="text-center">تاريخ المخالفة</th>
                                     <th class="text-center">قيمة المخالفة</th>
@@ -229,6 +230,11 @@
                                         <span class="badge bg-info">
                                             {{ $violation->workOrder->work_type ?? 'غير محدد' }}
                                         </span>
+                                    </td>
+                                    <td class="text-center">
+                                        <strong class="text-primary">
+                                            {{ $violation->violation_number ?? '-' }}
+                                        </strong>
                                     </td>
                                     <td>
                                         <span class="badge bg-warning text-dark">
@@ -267,7 +273,7 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="9" class="text-center py-5">
+                                    <td colspan="10" class="text-center py-5">
                                         <div class="alert alert-info mb-0">
                                             <i class="fas fa-info-circle fa-2x mb-3"></i>
                                             <p class="mb-0">لا توجد مخالفات مسجلة حالياً</p>

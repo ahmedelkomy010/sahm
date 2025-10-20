@@ -315,12 +315,13 @@
                             <thead class="table-info">
                                 <tr>
                                     <th class="text-center" style="width: 5%">#</th>
-                                    <th class="text-center" style="width: 12%">رقم البند</th>
-                                    <th style="width: 35%">وصف البند</th>
+                                    <th class="text-center" style="width: 10%">رقم البند</th>
+                                    <th style="width: 30%">وصف البند</th>
                                     <th class="text-center" style="width: 10%">الكمية المنفذة</th>
                                     <th class="text-center" style="width: 8%">الوحدة</th>
-                                    <th class="text-center" style="width: 15%">تاريخ التنفيذ</th>
+                                    <th class="text-center" style="width: 12%">تاريخ التنفيذ</th>
                                     <th class="text-center" style="width: 15%">القيمة المنفذة</th>
+                                    <th class="text-center" style="width: 10%">إجراءات</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -390,6 +391,29 @@
                                                 </span>
                                             @endif
                                         </td>
+                                        <td class="text-center">
+                                            @php
+                                                $city = $workOrder->city ?? 'الرياض';
+                                                $deletePermission = $city == 'الرياض' ? 'riyadh_delete_execution_record' : 'madinah_delete_execution_record';
+                                                $canDelete = auth()->user()->is_admin || (is_array(auth()->user()->permissions) && in_array($deletePermission, auth()->user()->permissions));
+                                            @endphp
+                                            @if($canDelete)
+                                            <form action="{{ route('admin.work-orders.daily-executions.delete', $dailyExecution->id) }}" 
+                                                  method="POST" 
+                                                  class="d-inline"
+                                                  onsubmit="return confirm('هل أنت متأكد من حذف هذا السجل؟ لا يمكن التراجع عن هذا الإجراء!');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn btn-sm btn-danger" title="حذف السجل">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                            @else
+                                                <span class="text-muted small">
+                                                    <i class="fas fa-lock"></i>
+                                                </span>
+                                            @endif
+                                        </td>
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -409,12 +433,14 @@
                                         @endphp
                                         {{ number_format($totalDailyExecutionValue, 2) }} ريال
                                     </td>
+                                    <td class="text-center">-</td>
                                 </tr>
                                 <tr class="fw-bold text-info">
                                     <td colspan="3" class="text-end">عدد التنفيذات اليومية:</td>
                                     <td class="text-center">
                                         {{ $allDailyExecutions->where('executed_quantity', '>', 0)->count() }} تنفيذ
                                     </td>
+                                    <td class="text-center">-</td>
                                     <td class="text-center">-</td>
                                     <td class="text-center">-</td>
                                     <td class="text-center">-</td>

@@ -851,7 +851,7 @@
                                         حالة الصرف
                                     </label>
                                     <select class="form-select form-select-sm" id="filter_payment_status" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;">
-                                        
+                                        <option value="">الكل</option>
                                         <option value="مدفوع">مدفوع</option>
                                         <option value="غير مدفوع">غير مدفوع</option>
                                     </select>

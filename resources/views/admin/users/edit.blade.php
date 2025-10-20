@@ -223,6 +223,12 @@
                                         <label for="riyadh_manage_execution" class="text-xs text-blue-700 mr-2">إدارة التنفيذ</label>
                                     </div>
                                     <div class="flex items-center">
+                                        <input type="checkbox" id="riyadh_delete_execution_record" name="permissions[]" value="riyadh_delete_execution_record" 
+                                            {{ (is_array($user->permissions) && in_array('riyadh_delete_execution_record', $user->permissions)) ? 'checked' : '' }}
+                                            class="h-3 w-3 ml-1 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                        <label for="riyadh_delete_execution_record" class="text-xs text-blue-700 mr-2">حذف سجل التنفيذ</label>
+                                    </div>
+                                    <div class="flex items-center">
                                         <input type="checkbox" id="riyadh_manage_post_execution" name="permissions[]" value="riyadh_manage_post_execution" 
                                             {{ (is_array($user->permissions) && in_array('riyadh_manage_post_execution', $user->permissions)) ? 'checked' : '' }}
                                             class="h-3 w-3 ml-1 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
@@ -324,6 +330,12 @@
                                             {{ (is_array($user->permissions) && in_array('madinah_manage_execution', $user->permissions)) ? 'checked' : '' }}
                                             class="h-3 w-3 ml-1 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
                                         <label for="madinah_manage_execution" class="text-xs text-blue-700 mr-2">إدارة التنفيذ</label>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <input type="checkbox" id="madinah_delete_execution_record" name="permissions[]" value="madinah_delete_execution_record" 
+                                            {{ (is_array($user->permissions) && in_array('madinah_delete_execution_record', $user->permissions)) ? 'checked' : '' }}
+                                            class="h-3 w-3 ml-1 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                        <label for="madinah_delete_execution_record" class="text-xs text-blue-700 mr-2">حذف سجل التنفيذ</label>
                                     </div>
                                     <div class="flex items-center">
                                         <input type="checkbox" id="madinah_manage_post_execution" name="permissions[]" value="madinah_manage_post_execution" 
