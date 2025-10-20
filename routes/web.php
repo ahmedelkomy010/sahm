@@ -86,6 +86,8 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::post('/special-projects/{project}/revenues/{revenue}/attachment', [App\Http\Controllers\Admin\SpecialProjectController::class, 'uploadRevenueAttachment'])->name('special-projects.revenues.upload-attachment');
     Route::get('/special-projects/{project}/edit', [App\Http\Controllers\Admin\SpecialProjectController::class, 'edit'])->name('special-projects.edit');
     Route::put('/special-projects/{project}', [App\Http\Controllers\Admin\SpecialProjectController::class, 'update'])->name('special-projects.update');
+    Route::post('/special-projects/{project}/attachments', [App\Http\Controllers\Admin\SpecialProjectController::class, 'uploadAttachment'])->name('special-projects.attachments.upload');
+    Route::delete('/special-projects/{project}/attachments/{index}', [App\Http\Controllers\Admin\SpecialProjectController::class, 'deleteAttachment'])->name('special-projects.attachments.delete');
     Route::delete('/special-projects/{project}', [App\Http\Controllers\Admin\SpecialProjectController::class, 'destroy'])->name('special-projects.destroy');
     
     Route::delete('work-orders/{workOrder}', [App\Http\Controllers\Admin\WorkOrderDeleteController::class, '__invoke'])->name('work-orders.destroy');

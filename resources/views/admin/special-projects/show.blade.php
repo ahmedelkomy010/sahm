@@ -238,13 +238,120 @@
     <div class="info-card mb-8">
         <div class="info-label">
             <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 0 1 -2 -2V5a2 2 0 0 1 2 -2h5.586a1 1 0 0 1 .707 .293l5.414 5.414a1 1 0 0 1 .293 .707V19a2 2 0 0 1 -2 2z"></path>
             </svg>
             وصف المشروع
         </div>
         <div class="info-value text-gray-700 mt-2">{{ $project->description }}</div>
     </div>
     @endif
+
+    <!-- Project Attachments -->
+    <div class="section-card">
+        <div class="section-header">
+            <h2 class="section-title">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path>
+                </svg>
+                المرفقات
+            </h2>
+        </div>
+        <div class="section-body">
+            <!-- Upload Form -->
+            <div class="mb-4">
+                <form action="{{ route('admin.special-projects.attachments.upload', $project) }}" method="POST" enctype="multipart/form-data" id="attachmentForm">
+                    @csrf
+                    <div class="row align-items-end">
+                        <div class="col-md-8">
+                            <label for="attachments" class="form-label fw-bold">
+                                <i class="fas fa-cloud-upload-alt me-2 text-primary"></i>
+                                رفع ملفات جديدة
+                            </label>
+                            <input type="file" 
+                                   class="form-control @error('attachments.*') is-invalid @enderror" 
+                                   name="attachments[]" 
+                                   id="attachments"
+                                   multiple
+                                   accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.gif">
+                            <small class="text-muted">
+                                <i class="fas fa-info-circle me-1"></i>
+                                يمكنك رفع عدة ملفات (PDF, Word, Excel, صور) - الحد الأقصى 20 ميجابايت لكل ملف
+                            </small>
+                            @error('attachments.*')
+                                <span class="invalid-feedback d-block" role="alert">
+                                    <strong>{{ $message }}</strong>
+                                </span>
+                            @enderror
+                        </div>
+                        <div class="col-md-4">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-upload me-2"></i>
+                                رفع الملفات
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <hr class="my-4">
+
+            <!-- Attachments List -->
+            @if(isset($project->attachments) && count($project->attachments) > 0)
+            <div class="row g-3">
+                @foreach($project->attachments as $index => $attachment)
+                    @php
+                        $fileName = basename($attachment);
+                        $extension = pathinfo($attachment, PATHINFO_EXTENSION);
+                        $iconClass = match(strtolower($extension)) {
+                            'pdf' => 'fa-file-pdf text-danger',
+                            'doc', 'docx' => 'fa-file-word text-primary',
+                            'xls', 'xlsx' => 'fa-file-excel text-success',
+                            'jpg', 'jpeg', 'png', 'gif' => 'fa-file-image text-info',
+                            default => 'fa-file text-secondary'
+                        };
+                    @endphp
+                    <div class="col-md-4 col-sm-6">
+                        <div class="card border h-100">
+                            <div class="card-body d-flex flex-column">
+                                <div class="d-flex align-items-center mb-3">
+                                    <i class="fas {{ $iconClass }} fs-2 me-3"></i>
+                                    <div class="flex-grow-1 text-truncate">
+                                        <h6 class="mb-1 text-truncate" title="{{ $fileName }}">{{ $fileName }}</h6>
+                                        <small class="text-muted">{{ strtoupper($extension) }}</small>
+                                    </div>
+                                </div>
+                                <div class="mt-auto d-flex gap-2">
+                                    <a href="{{ Storage::url($attachment) }}" 
+                                       target="_blank" 
+                                       class="btn btn-sm btn-primary flex-grow-1">
+                                        <i class="fas fa-eye me-1"></i>
+                                        عرض
+                                    </a>
+                                    <form action="{{ route('admin.special-projects.attachments.delete', ['project' => $project, 'index' => $index]) }}" 
+                                          method="POST" 
+                                          class="d-inline"
+                                          onsubmit="return confirm('هل أنت متأكد من حذف هذا المرفق؟')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-sm btn-danger">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+            @else
+            <div class="text-center py-5">
+                <i class="fas fa-folder-open fa-4x text-muted mb-3"></i>
+                <p class="text-muted mb-0">لا توجد مرفقات حالياً</p>
+                <small class="text-muted">استخدم النموذج أعلاه لرفع الملفات</small>
+            </div>
+            @endif
+        </div>
+    </div>
 </div>
 @endsection
 

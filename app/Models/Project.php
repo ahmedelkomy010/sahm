@@ -25,6 +25,7 @@ class Project extends Model
         'tcc_date',
         'pac_date',
         'fat_date',
+        'attachments',
     ];
 
     /**
@@ -117,6 +118,7 @@ class Project extends Model
         'tcc_date' => 'date',
         'pac_date' => 'date',
         'fat_date' => 'date',
+        'attachments' => 'array',
     ];
 
     /**

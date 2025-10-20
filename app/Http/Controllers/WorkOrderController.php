@@ -4530,18 +4530,12 @@ class WorkOrderController extends Controller
                 'safety_officer' => 'nullable|string|max:255',
                 'inspection_date' => 'nullable|date',
                 'non_compliance_reasons' => 'required_if:safety_status,غير مطابق|nullable|string',
-                'permits_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:102400',
-                'team_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:102400',
-                'equipment_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:102400',
-                'general_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:102400',
-                'tbt_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:102400',
+                'permits_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240',
+                'team_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240',
+                'equipment_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240',
+                'general_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240',
+                'tbt_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240',
                 'non_compliance_attachments.*' => 'nullable|file|mimes:jpeg,png,jpg,gif,pdf,doc,docx|max:102400',
-                // الملفات الجديدة (PDF + صور)
-                'tbt_files.*' => 'nullable|file|mimes:jpeg,png,jpg,gif,pdf|max:102400',
-                'permits_files.*' => 'nullable|file|mimes:jpeg,png,jpg,gif,pdf|max:102400',
-                'team_files.*' => 'nullable|file|mimes:jpeg,png,jpg,gif,pdf|max:102400',
-                'equipment_files.*' => 'nullable|file|mimes:jpeg,png,jpg,gif,pdf|max:102400',
-                'general_files.*' => 'nullable|file|mimes:jpeg,png,jpg,gif,pdf|max:102400',
             ]);
 
             // حفظ البيانات الحالية في سجل السلامة إذا تم تغيير أي منها
@@ -4655,26 +4649,6 @@ class WorkOrderController extends Controller
                 $this->uploadNonComplianceAttachments($request->file('non_compliance_attachments'), $workOrder);
             }
 
-            // رفع الملفات الجديدة (PDF + صور)
-            if ($request->hasFile('tbt_files')) {
-                $this->uploadSafetyFiles($request->file('tbt_files'), $workOrder, 'tbt_files');
-            }
-
-            if ($request->hasFile('permits_files')) {
-                $this->uploadSafetyFiles($request->file('permits_files'), $workOrder, 'permits_files');
-            }
-
-            if ($request->hasFile('team_files')) {
-                $this->uploadSafetyFiles($request->file('team_files'), $workOrder, 'team_files');
-            }
-
-            if ($request->hasFile('equipment_files')) {
-                $this->uploadSafetyFiles($request->file('equipment_files'), $workOrder, 'equipment_files');
-            }
-
-            if ($request->hasFile('general_files')) {
-                $this->uploadSafetyFiles($request->file('general_files'), $workOrder, 'general_files');
-            }
 
             return redirect()->route('admin.work-orders.safety', $workOrder)
                 ->with('success', 'تم تحديث بيانات السلامة بنجاح');

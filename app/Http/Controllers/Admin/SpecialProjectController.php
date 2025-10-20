@@ -449,4 +449,110 @@ class SpecialProjectController extends Controller
                 ->with('error', 'حدث خطأ أثناء حذف المشروع: ' . $e->getMessage());
         }
     }
+
+    /**
+     * Upload attachments for special project
+     */
+    public function uploadAttachment(Request $request, Project $project)
+    {
+        try {
+            $request->validate([
+                'attachments.*' => 'required|file|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png,gif|max:20480',
+            ]);
+
+            $uploadedFiles = [];
+            $existingAttachments = $project->attachments ?? [];
+
+            if ($request->hasFile('attachments')) {
+                foreach ($request->file('attachments') as $file) {
+                    $originalName = $file->getClientOriginalName();
+                    $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                    $path = 'special_projects/' . $project->id . '/attachments';
+                    
+                    if (!\Storage::disk('public')->exists($path)) {
+                        \Storage::disk('public')->makeDirectory($path);
+                    }
+                    
+                    $filePath = $file->storeAs($path, $filename, 'public');
+                    $uploadedFiles[] = $filePath;
+
+                    Log::info('Special project attachment uploaded', [
+                        'project_id' => $project->id,
+                        'filename' => $filename,
+                        'original_name' => $originalName,
+                        'user_id' => auth()->id()
+                    ]);
+                }
+            }
+
+            // دمج الملفات الجديدة مع الموجودة
+            $allAttachments = array_merge($existingAttachments, $uploadedFiles);
+            
+            $project->update([
+                'attachments' => $allAttachments
+            ]);
+
+            return redirect()->route('admin.special-projects.show', $project)
+                ->with('success', 'تم رفع المرفقات بنجاح');
+
+        } catch (\Exception $e) {
+            Log::error('Error uploading special project attachments', [
+                'error' => $e->getMessage(),
+                'project_id' => $project->id,
+                'user_id' => auth()->id()
+            ]);
+
+            return back()
+                ->with('error', 'حدث خطأ أثناء رفع المرفقات');
+        }
+    }
+
+    /**
+     * Delete attachment from special project
+     */
+    public function deleteAttachment(Project $project, $index)
+    {
+        try {
+            $attachments = $project->attachments ?? [];
+            
+            if (!isset($attachments[$index])) {
+                return back()->with('error', 'المرفق غير موجود');
+            }
+
+            $filePath = $attachments[$index];
+            
+            // حذف الملف من Storage
+            if (\Storage::disk('public')->exists($filePath)) {
+                \Storage::disk('public')->delete($filePath);
+            }
+
+            // إزالة المرفق من المصفوفة
+            unset($attachments[$index]);
+            $attachments = array_values($attachments); // إعادة ترتيب المصفوفة
+
+            $project->update([
+                'attachments' => $attachments
+            ]);
+
+            Log::info('Special project attachment deleted', [
+                'project_id' => $project->id,
+                'file_path' => $filePath,
+                'user_id' => auth()->id()
+            ]);
+
+            return redirect()->route('admin.special-projects.show', $project)
+                ->with('success', 'تم حذف المرفق بنجاح');
+
+        } catch (\Exception $e) {
+            Log::error('Error deleting special project attachment', [
+                'error' => $e->getMessage(),
+                'project_id' => $project->id,
+                'index' => $index,
+                'user_id' => auth()->id()
+            ]);
+
+            return back()
+                ->with('error', 'حدث خطأ أثناء حذف المرفق');
+        }
+    }
 }

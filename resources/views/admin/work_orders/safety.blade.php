@@ -95,27 +95,8 @@
                                    accept="image/*"
                                    multiple>
                         </div>
-                        <div class="form-text text-success mb-2">صور فقط (JPG, PNG, GIF) - الحد الأقصى 100 ميجابايت</div>
-                        
-                        <label for="tbt_files" class="form-label fw-bold mt-2">
-                            <i class="fas fa-file-pdf me-2 text-danger"></i>
-                            ملفات TBT (PDF + صور)
-                        </label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-danger text-white"><i class="fas fa-paperclip"></i></span>
-                            <input type="file" class="form-control @error('tbt_files.*') is-invalid @enderror" 
-                                   name="tbt_files[]" 
-                                   id="tbt_files"
-                                   accept="image/*,.pdf"
-                                   multiple>
-                        </div>
-                        <div class="form-text text-danger">ملفات وصور (JPG, PNG, GIF, PDF) - الحد الأقصى 100 ميجابايت</div>
+                        <div class="form-text text-success mb-2">صور فقط (JPG, PNG, GIF) - الحد الأقصى 10 ميجابايت</div>
                         @error('tbt_images.*')
-                            <span class="invalid-feedback" role="alert">
-                                <strong>{{ $message }}</strong>
-                            </span>
-                        @enderror
-                        @error('tbt_files.*')
                             <span class="invalid-feedback" role="alert">
                                 <strong>{{ $message }}</strong>
                             </span>
@@ -135,27 +116,8 @@
                                    accept="image/*"
                                    multiple>
                         </div>
-                        <div class="form-text text-warning mb-2">صور فقط (JPG, PNG, GIF) - الحد الأقصى 100 ميجابايت</div>
-                        
-                        <label for="permits_files" class="form-label fw-bold mt-2">
-                            <i class="fas fa-file-pdf me-2 text-danger"></i>
-                            ملفات التصاريح (PDF + صور)
-                        </label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-danger text-white"><i class="fas fa-paperclip"></i></span>
-                            <input type="file" class="form-control @error('permits_files.*') is-invalid @enderror" 
-                                   name="permits_files[]" 
-                                   id="permits_files"
-                                   accept="image/*,.pdf"
-                                   multiple>
-                        </div>
-                        <div class="form-text text-danger">ملفات وصور (JPG, PNG, GIF, PDF) - الحد الأقصى 100 ميجابايت</div>
+                        <div class="form-text text-warning mb-2">صور فقط (JPG, PNG, GIF) - الحد الأقصى 10 ميجابايت</div>
                         @error('permits_images.*')
-                            <span class="invalid-feedback" role="alert">
-                                <strong>{{ $message }}</strong>
-                            </span>
-                        @enderror
-                        @error('permits_files.*')
                             <span class="invalid-feedback" role="alert">
                                 <strong>{{ $message }}</strong>
                             </span>
@@ -176,27 +138,8 @@
                                    accept="image/*"
                                    multiple>
                         </div>
-                        <div class="form-text text-info mb-2">صور فقط (JPG, PNG, GIF) - الحد الأقصى 100 ميجابايت</div>
-                        
-                        <label for="team_files" class="form-label fw-bold mt-2">
-                            <i class="fas fa-file-pdf me-2 text-danger"></i>
-                            ملفات فريق العمل (PDF + صور)
-                        </label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-danger text-white"><i class="fas fa-paperclip"></i></span>
-                            <input type="file" class="form-control @error('team_files.*') is-invalid @enderror" 
-                                   name="team_files[]" 
-                                   id="team_files"
-                                   accept="image/*,.pdf"
-                                   multiple>
-                        </div>
-                        <div class="form-text text-danger">ملفات وصور (JPG, PNG, GIF, PDF) - الحد الأقصى 100 ميجابايت</div>
+                        <div class="form-text text-info mb-2">صور فقط (JPG, PNG, GIF) - الحد الأقصى 10 ميجابايت</div>
                         @error('team_images.*')
-                            <span class="invalid-feedback" role="alert">
-                                <strong>{{ $message }}</strong>
-                            </span>
-                        @enderror
-                        @error('team_files.*')
                             <span class="invalid-feedback" role="alert">
                                 <strong>{{ $message }}</strong>
                             </span>
@@ -217,27 +160,8 @@
                                    accept="image/*"
                                    multiple>
                         </div>
-                        <div class="form-text text-primary mb-2">صور فقط (JPG, PNG, GIF) - الحد الأقصى 100 ميجابايت</div>
-                        
-                        <label for="equipment_files" class="form-label fw-bold mt-2">
-                            <i class="fas fa-file-pdf me-2 text-danger"></i>
-                            ملفات المعدات (PDF + صور)
-                        </label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-danger text-white"><i class="fas fa-paperclip"></i></span>
-                            <input type="file" class="form-control @error('equipment_files.*') is-invalid @enderror" 
-                                   name="equipment_files[]" 
-                                   id="equipment_files"
-                                   accept="image/*,.pdf"
-                                   multiple>
-                        </div>
-                        <div class="form-text text-danger">ملفات وصور (JPG, PNG, GIF, PDF) - الحد الأقصى 100 ميجابايت</div>
+                        <div class="form-text text-primary mb-2">صور فقط (JPG, PNG, GIF) - الحد الأقصى 10 ميجابايت</div>
                         @error('equipment_images.*')
-                            <span class="invalid-feedback" role="alert">
-                                <strong>{{ $message }}</strong>
-                            </span>
-                        @enderror
-                        @error('equipment_files.*')
                             <span class="invalid-feedback" role="alert">
                                 <strong>{{ $message }}</strong>
                             </span>
@@ -258,27 +182,8 @@
                                    accept="image/*"
                                    multiple>
                         </div>
-                        <div class="form-text text-secondary mb-2">صور فقط (JPG, PNG, GIF) - الحد الأقصى 100 ميجابايت</div>
-                        
-                        <label for="general_files" class="form-label fw-bold mt-2">
-                            <i class="fas fa-file-pdf me-2 text-danger"></i>
-                            ملفات عامة (PDF + صور)
-                        </label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-danger text-white"><i class="fas fa-paperclip"></i></span>
-                            <input type="file" class="form-control @error('general_files.*') is-invalid @enderror" 
-                                   name="general_files[]" 
-                                   id="general_files"
-                                   accept="image/*,.pdf"
-                                   multiple>
-                        </div>
-                        <div class="form-text text-danger">ملفات وصور (JPG, PNG, GIF, PDF) - الحد الأقصى 100 ميجابايت</div>
+                        <div class="form-text text-secondary mb-2">صور فقط (JPG, PNG, GIF) - الحد الأقصى 10 ميجابايت</div>
                         @error('general_images.*')
-                            <span class="invalid-feedback" role="alert">
-                                <strong>{{ $message }}</strong>
-                            </span>
-                        @enderror
-                        @error('general_files.*')
                             <span class="invalid-feedback" role="alert">
                                 <strong>{{ $message }}</strong>
                             </span>
@@ -652,38 +557,7 @@
 
     <!-- عرض الملفات المرفوعة (PDF + صور) -->
     @php
-        $fileCategories = [
-            'tbt_files' => [
-                'title' => 'ملفات TBT (PDF + صور)',
-                'icon' => 'fa-file-pdf',
-                'color' => 'success',
-                'files' => $workOrder->safety_tbt_files ?? []
-            ],
-            'permits_files' => [
-                'title' => 'ملفات التصاريح (PDF + صور)',
-                'icon' => 'fa-file-contract',
-                'color' => 'warning',
-                'files' => $workOrder->safety_permits_files ?? []
-            ],
-            'team_files' => [
-                'title' => 'ملفات فريق العمل (PDF + صور)',
-                'icon' => 'fa-users',
-                'color' => 'info',
-                'files' => $workOrder->safety_team_files ?? []
-            ],
-            'equipment_files' => [
-                'title' => 'ملفات المعدات (PDF + صور)',
-                'icon' => 'fa-tools',
-                'color' => 'primary',
-                'files' => $workOrder->safety_equipment_files ?? []
-            ],
-            'general_files' => [
-                'title' => 'ملفات عامة (PDF + صور)',
-                'icon' => 'fa-images',
-                'color' => 'secondary',
-                'files' => $workOrder->safety_general_files ?? []
-            ]
-        ];
+        $fileCategories = [];
     @endphp
 
     @foreach($fileCategories as $category => $data)
