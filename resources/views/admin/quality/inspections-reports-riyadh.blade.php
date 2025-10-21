@@ -57,15 +57,6 @@
                         </div>
                     </div>
                 </div>
-            </div>
-
-            <!-- Reports Table -->
-            <div class="card shadow-sm border-0">
-                <div class="card-header bg-light">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">
-                            <i class="fas fa-list me-2 text-primary"></i>
-                            تفاصيل الاختبارات
                         </h5>
                     </div>
                 </div>

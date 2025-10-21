@@ -30,7 +30,7 @@
 
             <!-- Statistics Cards -->
             <div class="row mb-4">
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <div class="card shadow-sm border-0" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
                         <div class="card-body text-white text-center">
                             <i class="fas fa-clipboard-check fa-3x mb-3 opacity-75"></i>
@@ -39,7 +39,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <div class="card shadow-sm border-0" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
                         <div class="card-body text-white text-center">
                             <i class="fas fa-check-circle fa-3x mb-3 opacity-75"></i>
@@ -48,12 +48,21 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <div class="card shadow-sm border-0" style="background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);">
                         <div class="card-body text-white text-center">
                             <i class="fas fa-times-circle fa-3x mb-3 opacity-75"></i>
                             <h2 class="mb-1">{{ $failedTests }}</h2>
                             <p class="mb-0">اختبارات راسبة</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card shadow-sm border-0" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
+                        <div class="card-body text-white text-center">
+                            <i class="fas fa-percentage fa-3x mb-3 opacity-75"></i>
+                            <h2 class="mb-1">{{ $totalTests > 0 ? number_format(($successfulTests / $totalTests) * 100, 1) : 0 }}%</h2>
+                            <p class="mb-0">نسبة النجاح</p>
                         </div>
                     </div>
                 </div>
@@ -67,6 +76,10 @@
                             <i class="fas fa-list me-2 text-primary"></i>
                             تفاصيل الاختبارات
                         </h5>
+                        <a href="{{ route('admin.quality.inspections-reports.export-madinah') }}" class="btn btn-success btn-sm">
+                            <i class="fas fa-file-excel me-2"></i>
+                            تصدير Excel
+                        </a>
                     </div>
                 </div>
                 <div class="card-body">
