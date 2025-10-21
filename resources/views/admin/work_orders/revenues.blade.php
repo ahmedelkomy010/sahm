@@ -711,7 +711,7 @@
 
                             <!-- المبلغ المتبقي عند العميل شامل الضريبة -->
                             <div class="col-md-1-5">
-                                <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);">
+                                <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); cursor: pointer;" data-bs-toggle="modal" data-bs-target="#remainingAmountDetailsModal">
                                     <div class="card-body p-1 text-white">
                                         <div class="d-flex justify-content-between align-items-center">
                                             <div>
@@ -719,26 +719,8 @@
                                                 <h6 class="mb-0 fw-bold" style="font-size: 0.75rem;">{{ number_format($statistics['remainingAmount'], 2) }}</h6>
                                                 <small class="opacity-75" style="font-size: 0.6rem;">ريال سعودي</small>
                                             </div>
-                                            <div class="bg-white bg-opacity-25 p-1 rounded-circle">
-                                                <i class="fas fa-hourglass-half fa-sm"></i>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- المتبقي لدي العميل (ضريبة الدفعة الاولي) -->
-                            <div class="col-md-1-5">
-                                <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #2a5298 0%, #1e3c72 100%);">
-                                    <div class="card-body p-1 text-white">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <div>
-                                                <h6 class="mb-1 opacity-75" style="font-size: 0.6rem;">المتبقي لدي العميل (ضريبة الدفعة الاولي)</h6>
-                                                <h6 class="mb-0 fw-bold" style="font-size: 0.75rem;">{{ number_format($statistics['totalFirstPaymentTax'], 2) }}</h6>
-                                                <small class="opacity-75" style="font-size: 0.6rem;">ريال سعودي</small>
-                                            </div>
-                                            <div class="bg-white bg-opacity-25 p-1 rounded-circle">
-                                                <i class="fas fa-receipt fa-sm"></i>
+                                            <div class="bg-white bg-opacity-25 p-1 rounded-circle" style="cursor: pointer;">
+                                                <i class="fas fa-info-circle fa-sm"></i>
                                             </div>
                                         </div>
                                     </div>
@@ -1135,6 +1117,26 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('Revenues page loaded');
     console.log('Can edit:', canEdit);
     
+    // التأكد من مسح جميع الفلاتر عند تحميل الصفحة
+    document.getElementById('filter_start_date').value = '';
+    document.getElementById('filter_end_date').value = '';
+    document.getElementById('filter_office').value = '';
+    document.getElementById('filter_extract_type').value = '';
+    document.getElementById('filter_payment_status').value = '';
+    document.getElementById('filter_date_order').value = '';
+    document.getElementById('filter_extract_number').value = '';
+    document.getElementById('filter_payment_type').value = '';
+    document.getElementById('filter_tax_percentage').value = '';
+    
+    // التأكد من إظهار جميع الصفوف
+    const table = document.querySelector('.table tbody');
+    if (table) {
+        const rows = table.querySelectorAll('tr');
+        rows.forEach(row => {
+            row.style.display = '';
+        });
+    }
+    
     // إضافة event listeners للصفوف الموجودة
     const existingRows = document.querySelectorAll('tr[data-row-id]');
     existingRows.forEach(row => {
@@ -1147,6 +1149,7 @@ document.addEventListener('DOMContentLoaded', function() {
     updateRowCounter();
     
     console.log('Event listeners attached to existing rows:', existingRows.length);
+    console.log('All filters cleared on page load');
 });
 
 let rowCounter = 0;
@@ -2348,8 +2351,6 @@ function updateStatisticsCards(stats) {
                 valueElement.textContent = formatNumber(stats.totalPaymentValue);
             } else if (headerText.includes('المبلغ المتبقي عند العميل شامل الضريبة')) {
                 valueElement.textContent = formatNumber(stats.remainingAmount);
-            } else if (headerText.includes('المتبقي لدي العميل (ضريبة الدفعة الاولي)')) {
-                valueElement.textContent = formatNumber(stats.totalFirstPaymentTax);
             }
         }
     });
@@ -2408,100 +2409,16 @@ function setQuickDateRange(period) {
 }
 
 function clearFilters() {
-    // مسح قيم الفلاتر
-    document.getElementById('filter_start_date').value = '';
-    document.getElementById('filter_end_date').value = '';
-    document.getElementById('filter_office').value = '';
-    document.getElementById('filter_extract_type').value = '';
-    document.getElementById('filter_payment_status').value = '';
-    document.getElementById('filter_date_order').value = '';
-    document.getElementById('filter_extract_number').value = '';
-    document.getElementById('filter_payment_type').value = '';
-    document.getElementById('filter_tax_percentage').value = '';
+    // إعادة تحميل الصفحة لمسح جميع الفلاتر والرجوع للقيم الأصلية من السيرفر
+    const currentUrl = new URL(window.location.href);
+    const project = currentUrl.searchParams.get('project');
     
-    // إظهار جميع الصفوف
-    const table = document.querySelector('.table tbody');
-    const rows = Array.from(table.querySelectorAll('tr'));
-    rows.forEach(row => {
-        row.style.display = '';
-    });
-    
-    // إعادة عدد السجلات للقيمة الأصلية
-    document.getElementById('recordCount').textContent = rows.length;
-    
-    // إعادة حساب الإحصائيات لجميع الصفوف
-    let totalRevenues = 0;
-    let totalExtractValue = 0;
-    let totalTaxValue = 0;
-    let totalPenalties = 0;
-    let totalFirstPaymentTax = 0;
-    let totalNetExtractValue = 0;
-    let totalPaymentValue = 0;
-    
-    rows.forEach(row => {
-        totalRevenues++;
-        
-        // جمع قيمة المستخلص
-        const extractValueCell = row.querySelector('[data-field="extract_value"]');
-        if (extractValueCell) {
-            const val = parseFloat(extractValueCell.value || extractValueCell.textContent) || 0;
-            totalExtractValue += val;
-        }
-        
-        // جمع قيمة الضريبة
-        const taxValueCell = row.querySelector('[data-field="tax_value"]');
-        if (taxValueCell) {
-            const val = parseFloat(taxValueCell.textContent) || 0;
-            totalTaxValue += val;
-        }
-        
-        // جمع الغرامات
-        const penaltiesCell = row.querySelector('[data-field="penalties"]');
-        if (penaltiesCell) {
-            const val = parseFloat(penaltiesCell.value || penaltiesCell.textContent) || 0;
-            totalPenalties += val;
-        }
-        
-        // جمع صافي قيمة المستخلص
-        const netExtractValueCell = row.querySelector('[data-field="net_extract_value"]');
-        if (netExtractValueCell) {
-            const val = parseFloat(netExtractValueCell.textContent) || 0;
-            totalNetExtractValue += val;
-        }
-        
-        // جمع قيمة الصرف للمستخلصات المدفوعة فقط
-        const statusCell = row.querySelector('[data-field="extract_status"]');
-        const status = statusCell ? (statusCell.value || statusCell.textContent.trim()) : '';
-        
-        if (status === 'مدفوع') {
-            const paymentValueCell = row.querySelector('[data-field="payment_value"]');
-            if (paymentValueCell) {
-                const val = parseFloat(paymentValueCell.value || paymentValueCell.textContent) || 0;
-                totalPaymentValue += val;
-            }
-        }
-        
-        // جمع ضريبة الدفعة الأولى للمستخلصات غير المدفوعة
-        if (status === 'غير مدفوع') {
-            const firstPaymentTaxCell = row.querySelector('[data-field="first_payment_tax"]');
-            if (firstPaymentTaxCell) {
-                const val = parseFloat(firstPaymentTaxCell.value || firstPaymentTaxCell.textContent) || 0;
-                totalFirstPaymentTax += val;
-            }
-        }
-    });
-    
-    // تحديث الإحصائيات
-    updateStatisticsCards({
-        totalRevenues: totalRevenues,
-        totalExtractValue: totalExtractValue,
-        totalTaxValue: totalTaxValue,
-        totalPenalties: totalPenalties,
-        totalFirstPaymentTax: totalFirstPaymentTax,
-        totalNetExtractValue: totalNetExtractValue,
-        totalPaymentValue: totalPaymentValue,
-        remainingAmount: totalNetExtractValue - totalPaymentValue
-    });
+    // الاحتفاظ فقط بمعامل المشروع
+    if (project) {
+        window.location.href = window.location.pathname + '?project=' + project;
+    } else {
+        window.location.href = window.location.pathname;
+    }
 }
 
 // حساب قيمة الضريبة تلقائياً (15%)
@@ -2729,5 +2646,270 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <!-- إضافة مكتبة SheetJS لمعالجة Excel -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<!-- أنماط CSS لتصحيح مشكلة الـ Modal -->
+<style>
+#remainingAmountDetailsModal {
+    z-index: 9999 !important;
+    display: none;
+}
+
+#remainingAmountDetailsModal.show {
+    display: block !important;
+}
+
+#remainingAmountDetailsModal .modal-dialog {
+    z-index: 10000 !important;
+    position: relative;
+    margin: 1.75rem auto;
+}
+
+#remainingAmountDetailsModal .modal-content {
+    background: white !important;
+    z-index: 10001 !important;
+    box-shadow: 0 5px 15px rgba(0,0,0,.5) !important;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    pointer-events: auto;
+}
+
+.modal-backdrop {
+    z-index: 9998 !important;
+    background-color: rgba(0, 0, 0, 0.5) !important;
+}
+
+.modal-backdrop.show {
+    opacity: 0.5 !important;
+}
+
+body.modal-open {
+    overflow: hidden;
+}
+</style>
+
+<!-- Modal تفاصيل المبلغ المتبقي -->
+<div class="modal fade" id="remainingAmountDetailsModal" tabindex="-1" aria-labelledby="remainingAmountDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header" style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white;">
+                <h5 class="modal-title" id="remainingAmountDetailsModalLabel">
+                    <i class="fas fa-chart-pie me-2"></i>
+                    تفاصيل المبلغ المتبقي عند العميل
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" style="background: #f8f9fa; padding: 1.5rem;">
+                <div class="row g-3">
+                    <!-- المبلغ المتبقي عند العميل شامل الضريبة -->
+                    <div class="col-md-12">
+                        <div class="card border-0 shadow-sm" style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);">
+                            <div class="card-body text-white">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1 opacity-75">المبلغ المتبقي عند العميل شامل الضريبة</h6>
+                                        <h4 class="mb-0 fw-bold" id="modal_total_remaining_header">0.00</h4>
+                                        <small class="opacity-75">ريال سعودي</small>
+                                    </div>
+                                    <div class="bg-white bg-opacity-25 p-3 rounded-circle">
+                                        <i class="fas fa-hourglass-half fa-2x"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- المبالغ حسب موقف المستخلص -->
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                            <div class="card-body text-white">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1 opacity-75">عند المقاول</h6>
+                                        <h5 class="mb-0 fw-bold" id="modal_contractor_amount">0.00</h5>
+                                        <small class="opacity-75">ريال سعودي</small>
+                                    </div>
+                                    <div class="bg-white bg-opacity-25 p-2 rounded-circle">
+                                        <i class="fas fa-hard-hat fa-lg"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                            <div class="card-body text-white">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1 opacity-75">عند إدارة الكهرباء</h6>
+                                        <h5 class="mb-0 fw-bold" id="modal_electricity_amount">0.00</h5>
+                                        <small class="opacity-75">ريال سعودي</small>
+                                    </div>
+                                    <div class="bg-white bg-opacity-25 p-2 rounded-circle">
+                                        <i class="fas fa-bolt fa-lg"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                            <div class="card-body text-white">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1 opacity-75">عند المالية</h6>
+                                        <h5 class="mb-0 fw-bold" id="modal_finance_amount">0.00</h5>
+                                        <small class="opacity-75">ريال سعودي</small>
+                                    </div>
+                                    <div class="bg-white bg-opacity-25 p-2 rounded-circle">
+                                        <i class="fas fa-coins fa-lg"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
+                            <div class="card-body text-white">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1 opacity-75">عند الخزينة</h6>
+                                        <h5 class="mb-0 fw-bold" id="modal_treasury_amount">0.00</h5>
+                                        <small class="opacity-75">ريال سعودي</small>
+                                    </div>
+                                    <div class="bg-white bg-opacity-25 p-2 rounded-circle">
+                                        <i class="fas fa-university fa-lg"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- المتبقي لدى العميل (ضريبة الدفعة الأولى) -->
+                    <div class="col-md-12">
+                        <div class="card border-0 shadow-sm" style="background: linear-gradient(135deg, #2a5298 0%, #1e3c72 100%);">
+                            <div class="card-body text-white">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1 opacity-75">المتبقي لدى العميل (ضريبة الدفعة الأولى)</h6>
+                                        <h4 class="mb-0 fw-bold" id="modal_first_payment_tax">0.00</h4>
+                                        <small class="opacity-75">ريال سعودي</small>
+                                    </div>
+                                    <div class="bg-white bg-opacity-25 p-3 rounded-circle">
+                                        <i class="fas fa-percentage fa-2x"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- إجمالي المتبقي -->
+                    <div class="col-md-12">
+                        <div class="alert alert-info mb-0">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-calculator me-2"></i>
+                                        إجمالي المبلغ المتبقي عند العميل
+                                    </h5>
+                                </div>
+                                <div>
+                                    <h3 class="mb-0 fw-bold text-primary" id="modal_total_remaining">0.00</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// تحديث بيانات modal عند فتحه
+document.addEventListener('DOMContentLoaded', function() {
+    const modalElement = document.getElementById('remainingAmountDetailsModal');
+    if (modalElement) {
+        modalElement.addEventListener('show.bs.modal', function () {
+            calculateRemainingAmountDetails();
+        });
+        
+        // إصلاح مشكلة الـ backdrop
+        modalElement.addEventListener('shown.bs.modal', function () {
+            const backdrop = document.querySelector('.modal-backdrop');
+            if (backdrop) {
+                backdrop.style.zIndex = '9998';
+                backdrop.style.opacity = '0.5';
+            }
+            modalElement.style.zIndex = '9999';
+        });
+    }
+});
+
+function calculateRemainingAmountDetails() {
+    const table = document.querySelector('.table tbody');
+    const rows = Array.from(table.querySelectorAll('tr')).filter(row => row.style.display !== 'none');
+    
+    let netExtractValue = 0;
+    let contractorAmount = 0;
+    let electricityAmount = 0;
+    let financeAmount = 0;
+    let treasuryAmount = 0;
+    let firstPaymentTax = 0;
+    
+    rows.forEach(row => {
+        // صافي قيمة المستخلص
+        const netExtractCell = row.querySelector('[data-field="net_extract_value"]');
+        if (netExtractCell) {
+            const val = parseFloat(netExtractCell.textContent) || 0;
+            netExtractValue += val;
+        }
+        
+        // التحقق من حالة الدفع
+        const statusCell = row.querySelector('[data-field="extract_status"]');
+        const status = statusCell ? (statusCell.value || statusCell.textContent.trim()) : '';
+        
+        // إذا كان غير مدفوع، نجمع حسب موقف المستخلص
+        if (status === 'غير مدفوع') {
+            const paymentTypeCell = row.querySelector('[data-field="payment_type"]');
+            const paymentType = paymentTypeCell ? (paymentTypeCell.value || paymentTypeCell.textContent.trim()) : '';
+            
+            const netVal = netExtractCell ? (parseFloat(netExtractCell.textContent) || 0) : 0;
+            
+            if (paymentType === 'المقاول') {
+                contractorAmount += netVal;
+            } else if (paymentType === 'ادارة الكهرباء') {
+                electricityAmount += netVal;
+            } else if (paymentType === 'المالية') {
+                financeAmount += netVal;
+            } else if (paymentType === 'الخزينة') {
+                treasuryAmount += netVal;
+            }
+            
+            // ضريبة الدفعة الأولى
+            const firstPaymentTaxCell = row.querySelector('[data-field="first_payment_tax"]');
+            if (firstPaymentTaxCell) {
+                const taxVal = parseFloat(firstPaymentTaxCell.value || firstPaymentTaxCell.textContent) || 0;
+                firstPaymentTax += taxVal;
+            }
+        }
+    });
+    
+    // حساب الإجمالي المتبقي
+    const totalRemaining = contractorAmount + electricityAmount + financeAmount + treasuryAmount + firstPaymentTax;
+    
+    // تحديث القيم في الـ modal
+    document.getElementById('modal_total_remaining_header').textContent = formatNumber(totalRemaining);
+    document.getElementById('modal_contractor_amount').textContent = formatNumber(contractorAmount);
+    document.getElementById('modal_electricity_amount').textContent = formatNumber(electricityAmount);
+    document.getElementById('modal_finance_amount').textContent = formatNumber(financeAmount);
+    document.getElementById('modal_treasury_amount').textContent = formatNumber(treasuryAmount);
+    document.getElementById('modal_first_payment_tax').textContent = formatNumber(firstPaymentTax);
+    document.getElementById('modal_total_remaining').textContent = formatNumber(totalRemaining);
+}
+</script>
 
 @endsection

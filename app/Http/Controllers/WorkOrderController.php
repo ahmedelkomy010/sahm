@@ -4155,17 +4155,17 @@ class WorkOrderController extends Controller
                 'program_date' => 'nullable|date',
                 'start_time' => 'nullable|date_format:H:i',
                 'end_time' => 'nullable|date_format:H:i',
-                'work_type' => 'nullable|string|max:255',
-                'location' => 'nullable|string|max:255',
-                'google_coordinates' => 'nullable|string|max:500',
-                'consultant_name' => 'nullable|string|max:255',
-                'site_engineer' => 'nullable|string|max:255',
-                'supervisor' => 'nullable|string|max:255',
-                'issuer' => 'nullable|string|max:255',
-                'receiver' => 'nullable|string|max:255',
-                'safety_officer' => 'nullable|string|max:255',
-                'quality_monitor' => 'nullable|string|max:255',
-                'work_description' => 'nullable|string',
+                'work_type' => 'required|string|max:255',
+                'location' => 'required|string|max:255',
+                'google_coordinates' => 'required|string|max:500',
+                'consultant_name' => 'required|string|max:255',
+                'site_engineer' => 'required|string|max:255',
+                'supervisor' => 'required|string|max:255',
+                'issuer' => 'required|string|max:255',
+                'receiver' => 'required|string|max:255',
+                'safety_officer' => 'required|string|max:255',
+                'quality_monitor' => 'required|string|max:255',
+                'work_description' => 'required|string',
                 'notes' => 'nullable|string',
             ]);
 
@@ -4470,6 +4470,52 @@ class WorkOrderController extends Controller
     }
 
     /**
+     * تحديث ملاحظات برنامج العمل اليومي
+     */
+    public function updateDailyProgramNotes(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'program_id' => 'required|integer|exists:daily_work_programs,id',
+                'survey_notes' => 'nullable|string',
+                'materials_notes' => 'nullable|string',
+                'quality_notes' => 'nullable|string',
+                'safety_notes' => 'nullable|string',
+            ]);
+            
+            $program = \App\Models\DailyWorkProgram::findOrFail($validated['program_id']);
+            
+            // تحديث فقط الحقول المرسلة
+            if (isset($validated['survey_notes'])) {
+                $program->survey_notes = $validated['survey_notes'];
+            }
+            if (isset($validated['materials_notes'])) {
+                $program->materials_notes = $validated['materials_notes'];
+            }
+            if (isset($validated['quality_notes'])) {
+                $program->quality_notes = $validated['quality_notes'];
+            }
+            if (isset($validated['safety_notes'])) {
+                $program->safety_notes = $validated['safety_notes'];
+            }
+            
+            $program->save();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'تم حفظ الملاحظات بنجاح'
+            ]);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error updating program notes: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء حفظ الملاحظات'
+            ], 500);
+        }
+    }
+
+    /**
      * تصدير حالة البيانات المدخلة لبرنامج العمل اليومي
      */
     public function exportDailyProgramStatus(Request $request)
@@ -4504,6 +4550,88 @@ class WorkOrderController extends Controller
             return \Excel::download(new \App\Exports\DailyProgramStatusExport($programs), $fileName);
         } catch (\Exception $e) {
             \Log::error('Error exporting daily program status: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'حدث خطأ أثناء تصدير البيانات: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * تصدير أوامر العمل المقررة اليوم
+     */
+    public function exportDailyPrograms(Request $request)
+    {
+        try {
+            $date = $request->get('date', now()->format('Y-m-d'));
+            $project = $request->get('project', 'riyadh');
+            
+            // التحقق من صلاحيات المستخدم
+            $user = auth()->user();
+            $requiredPermission = $project === 'riyadh' ? 'riyadh_daily_work_program' : 'madinah_daily_work_program';
+            
+            if (!$user->is_admin && !$user->hasPermission($requiredPermission)) {
+                abort(403, 'ليس لديك صلاحية لتصدير برنامج العمل اليومي لهذا المشروع');
+            }
+            
+            // جلب برامج العمل للتاريخ المحدد
+            $programs = \App\Models\DailyWorkProgram::with('workOrder')
+                ->whereDate('program_date', $date)
+                ->whereHas('workOrder', function($q) use ($project) {
+                    if ($project === 'riyadh') {
+                        $q->where('city', 'الرياض');
+                    } else {
+                        $q->where('city', 'المدينة المنورة');
+                    }
+                })
+                ->orderBy('start_time')
+                ->get();
+            
+            $projectName = $project === 'riyadh' ? 'الرياض' : 'المدينة المنورة';
+            $fileName = 'أوامر_العمل_المقررة_' . $projectName . '_' . $date . '.xlsx';
+            
+            return \Excel::download(new \App\Exports\DailyWorkProgramsExport($programs, $project), $fileName);
+        } catch (\Exception $e) {
+            \Log::error('Error exporting daily programs: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'حدث خطأ أثناء تصدير البيانات: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * تصدير سجل التنفيذ اليومي
+     */
+    public function exportDailyExecution(Request $request)
+    {
+        try {
+            $date = $request->get('date', now()->format('Y-m-d'));
+            $project = $request->get('project', 'riyadh');
+            
+            // التحقق من صلاحيات المستخدم
+            $user = auth()->user();
+            $requiredPermission = $project === 'riyadh' ? 'riyadh_daily_work_program' : 'madinah_daily_work_program';
+            
+            if (!$user->is_admin && !$user->hasPermission($requiredPermission)) {
+                abort(403, 'ليس لديك صلاحية لتصدير سجل التنفيذ اليومي لهذا المشروع');
+            }
+            
+            // جلب سجلات التنفيذ اليومي للتاريخ المحدد
+            $cityName = $project === 'riyadh' ? 'الرياض' : 'المدينة المنورة';
+            
+            $executions = \App\Models\DailyWorkExecution::with([
+                'workOrder',
+                'workOrderItem.workItem',
+                'createdBy'
+            ])
+            ->whereDate('created_at', $date)
+            ->whereHas('workOrder', function($q) use ($cityName) {
+                $q->where('city', $cityName);
+            })
+            ->orderBy('created_at')
+            ->get();
+            
+            $projectName = $project === 'riyadh' ? 'الرياض' : 'المدينة المنورة';
+            $fileName = 'سجل_التنفيذ_اليومي_' . $projectName . '_' . $date . '.xlsx';
+            
+            return \Excel::download(new \App\Exports\DailyExecutionExport($executions, $project, $date), $fileName);
+        } catch (\Exception $e) {
+            \Log::error('Error exporting daily execution: ' . $e->getMessage());
             return redirect()->back()->with('error', 'حدث خطأ أثناء تصدير البيانات: ' . $e->getMessage());
         }
     }
@@ -5717,16 +5845,28 @@ class WorkOrderController extends Controller
     public function updateDailyExecution(Request $request, DailyWorkExecution $dailyExecution)
     {
         try {
-            $request->validate([
-                'executed_quantity' => 'required|numeric|min:0'
+            $workOrder = $dailyExecution->workOrder;
+            
+            // التحقق من الصلاحيات
+            $city = $workOrder->city ?? 'الرياض';
+            $editPermission = $city == 'الرياض' ? 'riyadh_edit_execution_record' : 'madinah_edit_execution_record';
+            
+            if (!auth()->user()->is_admin && !in_array($editPermission, auth()->user()->permissions ?? [])) {
+                return redirect()->back()->with('error', 'ليس لديك صلاحية لتعديل سجل التنفيذ');
+            }
+            
+            $validated = $request->validate([
+                'executed_quantity' => 'required|numeric|min:0',
+                'work_date' => 'nullable|date'
             ]);
 
             $oldQuantity = $dailyExecution->executed_quantity;
-            $newQuantity = $request->executed_quantity;
+            $newQuantity = $validated['executed_quantity'];
 
             // تحديث سجل التنفيذ اليومي
             $dailyExecution->update([
                 'executed_quantity' => $newQuantity,
+                'work_date' => $validated['work_date'] ?? $dailyExecution->work_date,
                 'updated_by' => auth()->id()
             ]);
 
@@ -5742,20 +5882,30 @@ class WorkOrderController extends Controller
                 ]);
             }
 
-            return response()->json([
-                'success' => true,
-                'message' => 'تم تحديث الكمية المنفذة بنجاح',
-                'old_quantity' => $oldQuantity,
-                'new_quantity' => $newQuantity
-            ]);
+            // للطلبات Ajax
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'تم تحديث سجل التنفيذ بنجاح',
+                    'old_quantity' => $oldQuantity,
+                    'new_quantity' => $newQuantity
+                ]);
+            }
+            
+            // لطلبات Form العادية
+            return redirect()->back()->with('success', 'تم تحديث سجل التنفيذ بنجاح');
 
         } catch (\Exception $e) {
             \Log::error('خطأ في تحديث سجل التنفيذ اليومي: ' . $e->getMessage());
             
-            return response()->json([
-                'success' => false,
-                'message' => 'حدث خطأ أثناء تحديث الكمية المنفذة'
-            ], 500);
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'حدث خطأ أثناء تحديث سجل التنفيذ'
+                ], 500);
+            }
+            
+            return redirect()->back()->with('error', 'حدث خطأ أثناء تحديث سجل التنفيذ');
         }
     }
 

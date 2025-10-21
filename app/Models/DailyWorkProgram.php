@@ -23,6 +23,10 @@ class DailyWorkProgram extends Model
         'quality_monitor',
         'work_description',
         'notes',
+        'survey_notes',
+        'materials_notes',
+        'quality_notes',
+        'safety_notes',
         'execution_completed',
     ];
 

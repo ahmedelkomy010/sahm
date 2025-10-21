@@ -6,6 +6,74 @@
 <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
 
 <style>
+/* تحسين الجدول العام */
+.table {
+    font-size: 0.85rem;
+}
+
+.table thead th {
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 0.5rem 0.3rem;
+    vertical-align: middle;
+}
+
+.table tbody td {
+    font-size: 0.75rem;
+    vertical-align: middle;
+}
+
+/* تنسيق حقول الملاحظات */
+.notes-field {
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    resize: vertical;
+    transition: border-color 0.15s ease-in-out;
+}
+
+.notes-field:focus {
+    border-color: #86b7fe;
+    outline: 0;
+    box-shadow: 0 0 0 0.15rem rgba(13, 110, 253, 0.25);
+}
+
+.notes-field::placeholder {
+    color: #adb5bd;
+    font-size: 0.65rem;
+}
+
+/* تحسين عرض الأيقونات */
+.fa-check-circle, .fa-times-circle {
+    display: inline-block;
+}
+
+/* تحسين عرض الـ Switch */
+.form-check-input {
+    transition: all 0.2s ease-in-out;
+}
+
+/* تحسين الطباعة والتصدير */
+#daily-commitment-table {
+    position: relative;
+}
+
+@media print {
+    body * {
+        visibility: hidden;
+    }
+    
+    #daily-commitment-table,
+    #daily-commitment-table * {
+        visibility: visible;
+    }
+    
+    #daily-commitment-table {
+        position: absolute;
+        left: 0;
+        top: 0;
+    }
+}
+
 /* Responsive Styles for Mobile */
 @media (max-width: 768px) {
     /* Header responsive */
@@ -248,46 +316,55 @@
 
     <!-- الجدول -->
     <div class="card shadow-sm">
-        <div class="card-header bg-primary text-white">
-            <i class="fas fa-table me-2"></i>
-            <strong>أوامر العمل المقررة اليوم ({{ $programs->count() }})</strong>
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <div>
+                <i class="fas fa-table me-2"></i>
+                <strong>أوامر العمل المقررة اليوم ({{ $programs->count() }})</strong>
+            </div>
+            @if($programs->count() > 0)
+            <a href="{{ route('admin.work-orders.daily-program.export-programs', ['date' => $selectedDate ?? now()->format('Y-m-d'), 'project' => $project ?? 'riyadh']) }}" 
+               class="btn btn-light btn-sm">
+                <i class="fas fa-file-excel me-1"></i>
+                تصدير Excel
+            </a>
+            @endif
         </div>
         <div class="card-body p-0">
             @if($programs->count() > 0)
             <div class="table-responsive">
-                <table class="table table-hover table-bordered mb-0">
+                <table class="table table-hover table-bordered mb-0 table-sm" style="font-size: 0.85rem;">
                     <thead class="table-light">
-                        <tr class="text-center">
-                            <th style="min-width: 80px;">#</th>
-                            <th style="min-width: 150px;">رقم أمر العمل</th>
-                            <th style="min-width: 200px;">نوع العمل</th>
-                            <th style="min-width: 200px;">الموقع</th>
-                            <th style="min-width: 200px;">إحداثيات جوجل</th>
-                            <th style="min-width: 150px;">اسم الاستشاري</th>
-                            <th style="min-width: 150px;">مهندس الموقع</th>
-                            <th style="min-width: 150px;">المراقب</th>
-                            <th style="min-width: 150px;">المصدر</th>
-                            <th style="min-width: 150px;">المستلم</th>
-                            <th style="min-width: 150px;">مسئول السلامة</th>
-                            <th style="min-width: 150px;">مراقب الجودة</th>
-                            <th style="min-width: 250px;">وصف العمل</th>
-                            <th style="min-width: 250px;">ملاحظات</th>
-                            <th style="min-width: 150px;">الإجراءات</th>
+                        <tr class="text-center" style="font-size: 0.8rem;">
+                            <th style="width: 50px;">#</th>
+                            <th style="width: 110px;">رقم أمر العمل</th>
+                            <th style="width: 150px;">نوع العمل</th>
+                            <th style="width: 150px;">الموقع</th>
+                            <th style="width: 100px;">الخريطة</th>
+                            <th style="width: 120px;">الاستشاري</th>
+                            <th style="width: 120px;">م. الموقع</th>
+                            <th style="width: 100px;">المراقب</th>
+                            <th style="width: 100px;">المصدر</th>
+                            <th style="width: 100px;">المستلم</th>
+                            <th style="width: 120px;">م. السلامة</th>
+                            <th style="width: 120px;">م. الجودة</th>
+                            <th style="width: 180px;">وصف العمل</th>
+                            <th style="width: 150px;">ملاحظات</th>
+                            <th style="width: 120px;">الإجراءات</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach($programs as $index => $program)
                         <tr data-start-time="{{ $program->start_time ? \Carbon\Carbon::parse($program->start_time)->format('H:i') : '' }}"
                             data-end-time="{{ $program->end_time ? \Carbon\Carbon::parse($program->end_time)->format('H:i') : '' }}">
-                            <td class="text-center">{{ $index + 1 }}</td>
-                            <td class="text-center">
-                                <a href="{{ route('admin.work-orders.show', $program->workOrder) }}" class="btn btn-link text-primary fw-bold">
+                            <td class="text-center" style="padding: 0.3rem;">{{ $index + 1 }}</td>
+                            <td class="text-center" style="padding: 0.3rem;">
+                                <a href="{{ route('admin.work-orders.show', $program->workOrder) }}" class="btn btn-link text-primary fw-bold p-0" style="font-size: 0.85rem;">
                                     {{ $program->workOrder->order_number }}
                                 </a>
                             </td>
-                            <td>{{ $program->work_type ?? $program->workOrder->work_type }}</td>
-                            <td>{{ $program->location }}</td>
-                            <td>
+                            <td style="padding: 0.3rem; font-size: 0.8rem;">{{ $program->work_type ?? $program->workOrder->work_type }}</td>
+                            <td style="padding: 0.3rem; font-size: 0.8rem;">{{ $program->location }}</td>
+                            <td class="text-center" style="padding: 0.3rem;">
                                 @php
                                     // إذا كانت الإحداثيات محفوظة في البرنامج، نستخدمها
                                     $coordinates = $program->google_coordinates;
@@ -300,38 +377,40 @@
                                 @endphp
                                 
                                 @if($coordinates)
-                                    <a href="https://www.google.com/maps?q={{ $coordinates }}" target="_blank" class="btn btn-sm btn-info">
-                                        <i class="fas fa-map-marker-alt"></i> فتح الخريطة
+                                    <a href="https://www.google.com/maps?q={{ $coordinates }}" target="_blank" class="btn btn-sm btn-info" style="font-size: 0.7rem; padding: 0.2rem 0.4rem;">
+                                        <i class="fas fa-map-marker-alt"></i>
                                     </a>
                                 @else
-                                    <span class="text-muted small">لا توجد إحداثيات</span>
+                                    <span class="text-muted" style="font-size: 0.7rem;">-</span>
                                 @endif
                             </td>
-                            <td>{{ $program->consultant_name }}</td>
-                            <td>{{ $program->site_engineer }}</td>
-                            <td>{{ $program->supervisor }}</td>
-                            <td>{{ $program->issuer }}</td>
-                            <td>{{ $program->receiver }}</td>
-                            <td>{{ $program->safety_officer }}</td>
-                            <td>{{ $program->quality_monitor }}</td>
-                            <td>{{ $program->work_description }}</td>
-                            <td>{{ $program->notes }}</td>
-                            <td class="text-center">
-                                <button type="button" class="btn btn-sm btn-primary mb-1" data-bs-toggle="modal" data-bs-target="#editProgramModal{{ $program->id }}">
-                                    <i class="fas fa-edit"></i> تعديل
-                                </button>
-                                <button type="button" class="btn btn-sm btn-info mb-1" data-bs-toggle="modal" data-bs-target="#attachmentsModal{{ $program->id }}">
-                                    <i class="fas fa-paperclip"></i> مرفقات
-                                </button>
-                                @if(auth()->user()->is_admin)
-                                <form action="{{ route('admin.work-orders.daily-program.destroy', $program) }}" method="POST" class="d-inline">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('هل أنت متأكد من حذف هذا السجل؟')">
-                                        <i class="fas fa-trash"></i> حذف
+                            <td style="padding: 0.3rem; font-size: 0.8rem;">{{ $program->consultant_name }}</td>
+                            <td style="padding: 0.3rem; font-size: 0.8rem;">{{ $program->site_engineer }}</td>
+                            <td style="padding: 0.3rem; font-size: 0.8rem;">{{ $program->supervisor }}</td>
+                            <td style="padding: 0.3rem; font-size: 0.8rem;">{{ $program->issuer }}</td>
+                            <td style="padding: 0.3rem; font-size: 0.8rem;">{{ $program->receiver }}</td>
+                            <td style="padding: 0.3rem; font-size: 0.8rem;">{{ $program->safety_officer }}</td>
+                            <td style="padding: 0.3rem; font-size: 0.8rem;">{{ $program->quality_monitor }}</td>
+                            <td style="padding: 0.3rem; font-size: 0.75rem;">{{ $program->work_description }}</td>
+                            <td style="padding: 0.3rem; font-size: 0.75rem;">{{ $program->notes }}</td>
+                            <td class="text-center" style="padding: 0.3rem;">
+                                <div class="d-flex justify-content-center align-items-center gap-1">
+                                    <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#editProgramModal{{ $program->id }}" style="font-size: 0.7rem; padding: 0.25rem 0.4rem;">
+                                        <i class="fas fa-edit"></i>
                                     </button>
-                                </form>
-                                @endif
+                                    <button type="button" class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#attachmentsModal{{ $program->id }}" style="font-size: 0.7rem; padding: 0.25rem 0.4rem;">
+                                        <i class="fas fa-paperclip"></i>
+                                    </button>
+                                    @if(auth()->user()->is_admin)
+                                    <form action="{{ route('admin.work-orders.daily-program.destroy', $program) }}" method="POST" class="d-inline">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('هل أنت متأكد من حذف هذا السجل؟')" style="font-size: 0.7rem; padding: 0.25rem 0.4rem;">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                    @endif
+                                </div>
                             </td>
                         </tr>
 
@@ -759,17 +838,23 @@
 
     <!-- جدول حالة البيانات المدخلة -->
     @if($programs->count() > 0)
-    <div class="card shadow-sm mt-4">
+    <div class="card shadow-sm mt-4" id="daily-commitment-table">
         <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
             <div>
                 <i class="fas fa-check-circle me-2"></i>
                 <strong>نسبة الالتزام اليومي</strong>
             </div>
-            <a href="{{ route('admin.work-orders.daily-program.export-status', ['date' => $selectedDate ?? now()->format('Y-m-d'), 'project' => $project ?? 'riyadh']) }}" 
-               class="btn btn-light btn-sm">
-                <i class="fas fa-file-excel me-1"></i>
-                تصدير Excel
-            </a>
+            <div class="d-flex gap-2">
+                <button onclick="exportTableAsImage()" class="btn btn-light btn-sm">
+                    <i class="fas fa-camera me-1"></i>
+                    تصدير صورة
+                </button>
+                <a href="{{ route('admin.work-orders.daily-program.export-status', ['date' => $selectedDate ?? now()->format('Y-m-d'), 'project' => $project ?? 'riyadh']) }}" 
+                   class="btn btn-light btn-sm">
+                    <i class="fas fa-file-excel me-1"></i>
+                    تصدير Excel
+                </a>
+            </div>
         </div>
         <div class="card-body p-0">
             <!-- Desktop Table -->
@@ -777,16 +862,16 @@
                 <table class="table table-hover table-bordered mb-0">
                     <thead class="table-light">
                         <tr class="text-center">
-                            <th style="min-width: 80px;">#</th>
-                            <th style="min-width: 150px;">رقم أمر العمل</th>
-                            <th style="min-width: 200px;">نوع العمل</th>
-                            <th style="min-width: 120px;">المسح</th>
-                            <th style="min-width: 120px;">المواد</th>
-                            <th style="min-width: 120px;">الجودة</th>
-                            <th style="min-width: 120px;">السلامة</th>
-                            <th style="min-width: 120px;">التنفيذ</th>
-                            <th style="min-width: 150px;">نسبة الالتزام</th>
-                            <th style="min-width: 180px;">إدخال الإنتاجية اليومية</th>
+                            <th style="width: 60px;">#</th>
+                            <th style="width: 120px;">رقم أمر العمل</th>
+                            <th style="width: 150px;">نوع العمل</th>
+                            <th style="width: 160px;">المسح</th>
+                            <th style="width: 160px;">المواد</th>
+                            <th style="width: 160px;">الجودة</th>
+                            <th style="width: 160px;">السلامة</th>
+                            <th style="width: 100px;">التنفيذ</th>
+                            <th style="width: 120px;">نسبة الالتزام</th>
+                            <th style="width: 150px;">إدخال الإنتاجية اليومية</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -823,62 +908,100 @@
                                 </a>
                             </td>
                             <td>{{ $program->work_type ?? $workOrder->work_type }}</td>
-                            <td class="text-center">
-                                @if($hasSurvey)
-                                    <i class="fas fa-check-circle text-success fa-2x" title="تم إدخال بيانات المسح"></i>
-                                @else
-                                    <i class="fas fa-times-circle text-danger fa-2x" title="لم يتم إدخال بيانات المسح"></i>
-                                @endif
+                            <td class="text-center align-middle" style="padding: 0.3rem; vertical-align: middle;">
+                                <div class="d-flex flex-column align-items-center gap-1">
+                                    @if($hasSurvey)
+                                        <i class="fas fa-check-circle text-success fa-lg" title="تم إدخال بيانات المسح"></i>
+                                    @else
+                                        <i class="fas fa-times-circle text-danger fa-lg mb-1" title="لم يتم إدخال بيانات المسح"></i>
+                                        <textarea class="form-control form-control-sm notes-field" 
+                                                  id="survey_notes_{{ $program->id }}"
+                                                  data-program-id="{{ $program->id }}"
+                                                  data-field="survey_notes"
+                                                  rows="2" 
+                                                  placeholder="ملاحظات..."
+                                                  style="font-size: 0.7rem; width: 130px; padding: 0.2rem;">{{ $program->survey_notes }}</textarea>
+                                    @endif
+                                </div>
                             </td>
-                            <td class="text-center">
-                                @if($hasMaterials)
-                                    <i class="fas fa-check-circle text-success fa-2x" title="تم إدخال بيانات المواد"></i>
-                                @else
-                                    <i class="fas fa-times-circle text-danger fa-2x" title="لم يتم إدخال بيانات المواد"></i>
-                                @endif
+                            <td class="text-center align-middle" style="padding: 0.3rem; vertical-align: middle;">
+                                <div class="d-flex flex-column align-items-center gap-1">
+                                    @if($hasMaterials)
+                                        <i class="fas fa-check-circle text-success fa-lg" title="تم إدخال بيانات المواد"></i>
+                                    @else
+                                        <i class="fas fa-times-circle text-danger fa-lg mb-1" title="لم يتم إدخال بيانات المواد"></i>
+                                        <textarea class="form-control form-control-sm notes-field" 
+                                                  id="materials_notes_{{ $program->id }}"
+                                                  data-program-id="{{ $program->id }}"
+                                                  data-field="materials_notes"
+                                                  rows="2" 
+                                                  placeholder="ملاحظات..."
+                                                  style="font-size: 0.7rem; width: 130px; padding: 0.2rem;">{{ $program->materials_notes }}</textarea>
+                                    @endif
+                                </div>
                             </td>
-                            <td class="text-center">
-                                @if($hasQuality)
-                                    <i class="fas fa-check-circle text-success fa-2x" title="تم إدخال بيانات الجودة"></i>
-                                @else
-                                    <i class="fas fa-times-circle text-danger fa-2x" title="لم يتم إدخال بيانات الجودة"></i>
-                                @endif
+                            <td class="text-center align-middle" style="padding: 0.3rem; vertical-align: middle;">
+                                <div class="d-flex flex-column align-items-center gap-1">
+                                    @if($hasQuality)
+                                        <i class="fas fa-check-circle text-success fa-lg" title="تم إدخال بيانات الجودة"></i>
+                                    @else
+                                        <i class="fas fa-times-circle text-danger fa-lg mb-1" title="لم يتم إدخال بيانات الجودة"></i>
+                                        <textarea class="form-control form-control-sm notes-field" 
+                                                  id="quality_notes_{{ $program->id }}"
+                                                  data-program-id="{{ $program->id }}"
+                                                  data-field="quality_notes"
+                                                  rows="2" 
+                                                  placeholder="ملاحظات..."
+                                                  style="font-size: 0.7rem; width: 130px; padding: 0.2rem;">{{ $program->quality_notes }}</textarea>
+                                    @endif
+                                </div>
                             </td>
-                            <td class="text-center">
-                                @if($hasSafety)
-                                    <i class="fas fa-check-circle text-success fa-2x" title="تم إدخال بيانات السلامة"></i>
-                                @else
-                                    <i class="fas fa-times-circle text-danger fa-2x" title="لم يتم إدخال بيانات السلامة"></i>
-                                @endif
+                            <td class="text-center align-middle" style="padding: 0.3rem; vertical-align: middle;">
+                                <div class="d-flex flex-column align-items-center gap-1">
+                                    @if($hasSafety)
+                                        <i class="fas fa-check-circle text-success fa-lg" title="تم إدخال بيانات السلامة"></i>
+                                    @else
+                                        <i class="fas fa-times-circle text-danger fa-lg mb-1" title="لم يتم إدخال بيانات السلامة"></i>
+                                        <textarea class="form-control form-control-sm notes-field" 
+                                                  id="safety_notes_{{ $program->id }}"
+                                                  data-program-id="{{ $program->id }}"
+                                                  data-field="safety_notes"
+                                                  rows="2" 
+                                                  placeholder="ملاحظات..."
+                                                  style="font-size: 0.7rem; width: 130px; padding: 0.2rem;">{{ $program->safety_notes }}</textarea>
+                                    @endif
+                                </div>
                             </td>
-                            <td class="text-center">
+                            <td class="text-center align-middle" style="padding: 0.3rem;">
                                 <div class="form-check form-switch d-flex justify-content-center">
                                     <input class="form-check-input execution-checkbox" 
                                            type="checkbox" 
                                            id="execution_{{ $program->id }}"
                                            data-program-id="{{ $program->id }}"
                                            {{ $program->execution_completed ? 'checked' : '' }}
-                                           style="width: 3rem; height: 1.5rem; cursor: pointer;">
+                                           style="width: 2.5rem; height: 1.3rem; cursor: pointer;">
                                 </div>
                             </td>
-                            <td class="text-center">
-                                <span class="badge bg-{{ $program->execution_completed ? 'success' : 'danger' }} fs-6 execution-percentage" 
-                                      id="percentage_{{ $program->id }}">
+                            <td class="text-center align-middle" style="padding: 0.3rem;">
+                                <span class="badge bg-{{ $program->execution_completed ? 'success' : 'danger' }} execution-percentage" 
+                                      id="percentage_{{ $program->id }}"
+                                      style="font-size: 0.85rem; padding: 0.3rem 0.5rem;">
                                     {{ $program->execution_completed ? '100%' : '0%' }}
-                                        </span>
+                                </span>
                             </td>
-                            <td class="text-center">
+                            <td class="text-center align-middle" style="padding: 0.3rem;">
                                 @if($program->execution_completed)
                                 <a href="{{ route('admin.work-orders.execution', ['workOrder' => $workOrder->id]) }}" 
                                    class="btn btn-primary btn-sm"
+                                   style="font-size: 0.75rem; padding: 0.3rem 0.5rem;"
                                    title="إدخال الإنتاجية اليومية">
-                                    <i class="fas fa-tasks me-1"></i>
+                                    <i class="fas fa-tasks"></i>
                                     التنفيذ
                                 </a>
                                 @else
-                                <span class="text-muted small">
-                                    <i class="fas fa-lock me-1"></i>
-                                    متاح عند اكتمال الالتزام
+                                <span class="text-muted" style="font-size: 0.7rem;">
+                                    <i class="fas fa-lock"></i>
+                                    متاح عند 100%
                                 </span>
                                 @endif
                             </td>
@@ -895,7 +1018,7 @@
                             <td colspan="8" class="text-end bg-light">
                                 <span class="text-primary">
                                     <i class="fas fa-chart-line me-2"></i>
-                                    نسبة الإنجاز الإجمالية:
+                                    نسبة الانجاز لبرنامج العمل اليومي للمواقع :
                                 </span>
                             </td>
                             <td class="text-center bg-light">
@@ -954,11 +1077,17 @@
                                     <span class="mobile-field-label">المسح</span>
                                     @if($hasSurvey)
                                         <i class="fas fa-check-circle text-success fa-3x mt-2"></i>
-                                @else
+                                    @else
                                         <i class="fas fa-times-circle text-danger fa-3x mt-2"></i>
+                                        <textarea class="form-control form-control-sm notes-field mt-2" 
+                                                  id="survey_notes_mobile_{{ $program->id }}"
+                                                  data-program-id="{{ $program->id }}"
+                                                  data-field="survey_notes"
+                                                  rows="2" 
+                                                  placeholder="ملاحظات المسح...">{{ $program->survey_notes }}</textarea>
                                     @endif
-                                    </div>
-                                    </div>
+                                </div>
+                            </div>
                             <div class="col-6">
                                 <div class="mobile-field text-center">
                                     <span class="mobile-field-label">المواد</span>
@@ -966,19 +1095,31 @@
                                         <i class="fas fa-check-circle text-success fa-3x mt-2"></i>
                                     @else
                                         <i class="fas fa-times-circle text-danger fa-3x mt-2"></i>
-                                @endif
-                                    </div>
+                                        <textarea class="form-control form-control-sm notes-field mt-2" 
+                                                  id="materials_notes_mobile_{{ $program->id }}"
+                                                  data-program-id="{{ $program->id }}"
+                                                  data-field="materials_notes"
+                                                  rows="2" 
+                                                  placeholder="ملاحظات المواد...">{{ $program->materials_notes }}</textarea>
+                                    @endif
+                                </div>
                             </div>
                             <div class="col-6 mt-3">
                                 <div class="mobile-field text-center">
                                     <span class="mobile-field-label">الجودة</span>
                                     @if($hasQuality)
                                         <i class="fas fa-check-circle text-success fa-3x mt-2"></i>
-                                @else
+                                    @else
                                         <i class="fas fa-times-circle text-danger fa-3x mt-2"></i>
+                                        <textarea class="form-control form-control-sm notes-field mt-2" 
+                                                  id="quality_notes_mobile_{{ $program->id }}"
+                                                  data-program-id="{{ $program->id }}"
+                                                  data-field="quality_notes"
+                                                  rows="2" 
+                                                  placeholder="ملاحظات الجودة...">{{ $program->quality_notes }}</textarea>
                                     @endif
-                                    </div>
-                                    </div>
+                                </div>
+                            </div>
                             <div class="col-6 mt-3">
                                 <div class="mobile-field text-center">
                                     <span class="mobile-field-label">السلامة</span>
@@ -986,7 +1127,13 @@
                                         <i class="fas fa-check-circle text-success fa-3x mt-2"></i>
                                     @else
                                         <i class="fas fa-times-circle text-danger fa-3x mt-2"></i>
-                                @endif
+                                        <textarea class="form-control form-control-sm notes-field mt-2" 
+                                                  id="safety_notes_mobile_{{ $program->id }}"
+                                                  data-program-id="{{ $program->id }}"
+                                                  data-field="safety_notes"
+                                                  rows="2" 
+                                                  placeholder="ملاحظات السلامة...">{{ $program->safety_notes }}</textarea>
+                                    @endif
                                 </div>
                             </div>
                             <div class="col-6 mt-3">
@@ -1063,12 +1210,21 @@
         <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
             <div>
                 <i class="fas fa-clipboard-list me-2"></i>
-                <strong>سجل التنفيذ اليومي - {{ \Carbon\Carbon::parse($selectedDate)->locale('ar')->translatedFormat('l، j F Y') }}</strong>
+                <strong>الانتاجية اليوميه- {{ \Carbon\Carbon::parse($selectedDate)->locale('ar')->translatedFormat('l، j F Y') }}</strong>
             </div>
-            <span class="badge bg-light text-dark fs-6">
-                <i class="fas fa-list me-1"></i>
-                {{ $dailyExecutions->count() }} سجل
-            </span>
+            <div class="d-flex gap-2 align-items-center">
+                <span class="badge bg-light text-dark fs-6">
+                    <i class="fas fa-list me-1"></i>
+                    {{ $dailyExecutions->count() }} سجل
+                </span>
+                @if($dailyExecutions->count() > 0)
+                <a href="{{ route('admin.work-orders.daily-program.export-execution', ['date' => $selectedDate ?? now()->format('Y-m-d'), 'project' => $project ?? 'riyadh']) }}" 
+                   class="btn btn-light btn-sm">
+                    <i class="fas fa-file-excel me-1"></i>
+                    تصدير Excel
+                </a>
+                @endif
+            </div>
         </div>
         <div class="card-body p-0">
             @if($dailyExecutions->count() > 0)
@@ -1149,10 +1305,8 @@
                     </tbody>
                     <tfoot class="table-light">
                         <tr class="fw-bold">
-                            <td colspan="4" class="text-end">الإجمالي:</td>
-                            <td class="text-center text-success">
-                                {{ number_format($dailyExecutions->sum('executed_quantity'), 2) }}
-                            </td>
+                            <td colspan="4" class="text-end">إجمالي الانتاجية اليوميه غير شامل الضريبة المضافة:</td>
+                           
                             <td></td>
                             <td class="text-center text-primary">
                                 @php
@@ -1220,52 +1374,52 @@
                             </select>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-bold">نوع العمل</label>
-                            <input type="text" class="form-control" id="workTypeInput" name="work_type">
+                            <label class="form-label fw-bold">نوع العمل <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="workTypeInput" name="work_type" required>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-bold">الموقع</label>
-                            <input type="text" class="form-control" id="locationInput" name="location">
+                            <label class="form-label fw-bold">الموقع <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="locationInput" name="location" required>
                         </div>
                         <div class="col-md-12">
-                            <label class="form-label fw-bold">إحداثيات جوجل</label>
-                            <input type="text" class="form-control" id="googleCoordinatesInput" name="google_coordinates" placeholder="25.123456, 45.654321">
+                            <label class="form-label fw-bold">إحداثيات جوجل <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="googleCoordinatesInput" name="google_coordinates" placeholder="25.123456, 45.654321" required>
                             <div class="form-text">يمكنك الحصول على الإحداثيات من خرائط جوجل</div>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-bold">اسم الاستشاري</label>
-                            <input type="text" class="form-control" id="consultantInput" name="consultant_name">
+                            <label class="form-label fw-bold">اسم الاستشاري <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="consultantInput" name="consultant_name" required>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-bold">مهندس الموقع</label>
-                            <input type="text" class="form-control" id="siteEngineerInput" name="site_engineer">
+                            <label class="form-label fw-bold">مهندس الموقع <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="siteEngineerInput" name="site_engineer" required>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-bold">المراقب</label>
-                            <input type="text" class="form-control" id="supervisorInput" name="supervisor">
+                            <label class="form-label fw-bold">المراقب <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="supervisorInput" name="supervisor" required>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-bold">المصدر</label>
-                            <input type="text" class="form-control" id="issuerInput" name="issuer">
+                            <label class="form-label fw-bold">المصدر <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="issuerInput" name="issuer" required>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-bold">المستلم</label>
-                            <input type="text" class="form-control" id="receiverInput" name="receiver">
+                            <label class="form-label fw-bold">المستلم <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="receiverInput" name="receiver" required>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-bold">مسئول السلامة</label>
-                            <input type="text" class="form-control" id="safetyOfficerInput" name="safety_officer">
+                            <label class="form-label fw-bold">مسئول السلامة <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="safetyOfficerInput" name="safety_officer" required>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-bold">مراقب الجودة</label>
-                            <input type="text" class="form-control" id="qualityMonitorInput" name="quality_monitor">
+                            <label class="form-label fw-bold">مراقب الجودة <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="qualityMonitorInput" name="quality_monitor" required>
                         </div>
                         <div class="col-md-12">
-                            <label class="form-label fw-bold">وصف العمل</label>
-                            <textarea class="form-control" name="work_description" rows="3"></textarea>
+                            <label class="form-label fw-bold">وصف العمل <span class="text-danger">*</span></label>
+                            <textarea class="form-control" name="work_description" rows="3" required></textarea>
                         </div>
                         <div class="col-md-12">
-                            <label class="form-label fw-bold">ملاحظات</label>
+                            <label class="form-label fw-bold">ملاحظات <span class="text-muted">(اختياري)</span></label>
                             <textarea class="form-control" name="notes" rows="3"></textarea>
                         </div>
                     </div>
@@ -1916,6 +2070,130 @@ function saveExecutionStatus(programId, isCompleted) {
         updateExecutionPercentage(programId, !isCompleted);
     });
 }
+
+// حفظ الملاحظات تلقائيًا عند الكتابة
+document.addEventListener('DOMContentLoaded', function() {
+    const notesFields = document.querySelectorAll('.notes-field');
+    let typingTimers = {};
+    const typingDelay = 1000; // حفظ بعد ثانية من انتهاء الكتابة
+    
+    notesFields.forEach(field => {
+        field.addEventListener('input', function() {
+            const programId = this.getAttribute('data-program-id');
+            const fieldName = this.getAttribute('data-field');
+            const notes = this.value;
+            const timerId = programId + '_' + fieldName;
+            
+            clearTimeout(typingTimers[timerId]);
+            
+            typingTimers[timerId] = setTimeout(() => {
+                saveNotes(programId, fieldName, notes);
+            }, typingDelay);
+        });
+    });
+});
+
+function saveNotes(programId, fieldName, notes) {
+    const payload = {
+        program_id: programId
+    };
+    payload[fieldName] = notes;
+    
+    fetch('{{ route("admin.work-orders.daily-program.update-notes") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify(payload)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            console.log('✅ تم حفظ الملاحظات بنجاح');
+            // يمكن إضافة إشعار صغير للمستخدم
+        } else {
+            console.error('❌ فشل حفظ الملاحظات');
+        }
+    })
+    .catch(error => {
+        console.error('❌ خطأ في حفظ الملاحظات:', error);
+    });
+}
+
+// تصدير الجدول كصورة
+function exportTableAsImage() {
+    const element = document.getElementById('daily-commitment-table');
+    const date = '{{ $selectedDate ?? now()->format("Y-m-d") }}';
+    const project = '{{ $project ?? "riyadh" }}';
+    const projectName = project === 'riyadh' ? 'الرياض' : 'المدينة المنورة';
+    
+    // التحقق من وجود المكتبة
+    if (typeof html2canvas === 'undefined') {
+        alert('جاري تحميل المكتبة... يرجى المحاولة مرة أخرى');
+        return;
+    }
+    
+    // إظهار رسالة تحميل بسيطة
+    const loadingDiv = document.createElement('div');
+    loadingDiv.id = 'export-loading';
+    loadingDiv.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.8);color:white;padding:20px 40px;border-radius:10px;z-index:9999;font-size:18px;';
+    loadingDiv.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> جاري إنشاء الصورة...';
+    document.body.appendChild(loadingDiv);
+    
+    // استخدام html2canvas لتحويل العنصر إلى صورة
+    html2canvas(element, {
+        scale: 2, // جودة عالية
+        backgroundColor: '#ffffff',
+        logging: false,
+        useCORS: true,
+        allowTaint: true,
+        scrollY: -window.scrollY,
+        scrollX: -window.scrollX,
+        windowWidth: element.scrollWidth,
+        windowHeight: element.scrollHeight
+    }).then(canvas => {
+        // إخفاء رسالة التحميل
+        document.body.removeChild(loadingDiv);
+        
+        // تحويل Canvas إلى صورة وتحميلها
+        canvas.toBlob(function(blob) {
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.download = `نسبة_الالتزام_اليومي_${projectName}_${date}.png`;
+            link.href = url;
+            link.click();
+            
+            // تنظيف الـ URL
+            setTimeout(() => URL.revokeObjectURL(url), 100);
+            
+            // رسالة نجاح
+            if (typeof toastr !== 'undefined') {
+                toastr.success('تم تصدير الصورة بنجاح', 'نجح!');
+            } else {
+                alert('تم تصدير الصورة بنجاح!');
+            }
+        });
+    }).catch(error => {
+        // إخفاء رسالة التحميل
+        if (document.getElementById('export-loading')) {
+            document.body.removeChild(loadingDiv);
+        }
+        
+        console.error('خطأ في تصدير الصورة:', error);
+        
+        // رسالة خطأ
+        if (typeof toastr !== 'undefined') {
+            toastr.error('حدث خطأ أثناء تصدير الصورة', 'خطأ!');
+        } else {
+            alert('حدث خطأ أثناء تصدير الصورة');
+        }
+    });
+}
 </script>
+
+<!-- مكتبة html2canvas لتصدير الصورة -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
 @endsection
 

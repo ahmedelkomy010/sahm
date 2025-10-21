@@ -394,25 +394,42 @@
                                         <td class="text-center">
                                             @php
                                                 $city = $workOrder->city ?? 'الرياض';
+                                                $editPermission = $city == 'الرياض' ? 'riyadh_edit_execution_record' : 'madinah_edit_execution_record';
                                                 $deletePermission = $city == 'الرياض' ? 'riyadh_delete_execution_record' : 'madinah_delete_execution_record';
+                                                $canEdit = auth()->user()->is_admin || (is_array(auth()->user()->permissions) && in_array($editPermission, auth()->user()->permissions));
                                                 $canDelete = auth()->user()->is_admin || (is_array(auth()->user()->permissions) && in_array($deletePermission, auth()->user()->permissions));
                                             @endphp
-                                            @if($canDelete)
-                                            <form action="{{ route('admin.work-orders.daily-executions.delete', $dailyExecution->id) }}" 
-                                                  method="POST" 
-                                                  class="d-inline"
-                                                  onsubmit="return confirm('هل أنت متأكد من حذف هذا السجل؟ لا يمكن التراجع عن هذا الإجراء!');">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn btn-sm btn-danger" title="حذف السجل">
-                                                    <i class="fas fa-trash"></i>
+                                            <div class="d-flex justify-content-center gap-1">
+                                                @if($canEdit)
+                                                <button type="button" 
+                                                        class="btn btn-sm btn-primary" 
+                                                        title="تعديل السجل"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#editExecutionModal"
+                                                        onclick="openEditModal('{{ route('admin.work-orders.daily-executions.update', $dailyExecution->id) }}', {{ $dailyExecution->executed_quantity }}, '{{ $dailyExecution->work_date ? $dailyExecution->work_date->format('Y-m-d') : '' }}', '{{ addslashes($workItem->description ?? '') }}')">
+                                                    <i class="fas fa-edit"></i>
                                                 </button>
-                                            </form>
-                                            @else
-                                                <span class="text-muted small">
-                                                    <i class="fas fa-lock"></i>
-                                                </span>
-                                            @endif
+                                                @endif
+                                                
+                                                @if($canDelete)
+                                                <form action="{{ route('admin.work-orders.daily-executions.delete', $dailyExecution->id) }}" 
+                                                      method="POST" 
+                                                      class="d-inline"
+                                                      onsubmit="return confirm('هل أنت متأكد من حذف هذا السجل؟ لا يمكن التراجع عن هذا الإجراء!');">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn btn-sm btn-danger" title="حذف السجل">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </form>
+                                                @endif
+                                                
+                                                @if(!$canEdit && !$canDelete)
+                                                    <span class="text-muted small">
+                                                        <i class="fas fa-lock"></i>
+                                                    </span>
+                                                @endif
+                                            </div>
                                         </td>
                                     </tr>
                                 @endforeach
@@ -1021,6 +1038,167 @@
         </div>
     </div>
 </div>
+
+<!-- أنماط CSS لتصحيح مشكلة الـ Modal -->
+<style>
+/* إصلاح قوي للـ Modal */
+.modal-backdrop {
+    z-index: 1040 !important;
+    background-color: rgba(0, 0, 0, 0.5) !important;
+}
+
+#editExecutionModal {
+    z-index: 1050 !important;
+    display: none;
+}
+
+#editExecutionModal.show {
+    display: block !important;
+}
+
+#editExecutionModal .modal-dialog {
+    z-index: 1051 !important;
+    position: relative;
+    margin: 1.75rem auto;
+    pointer-events: all;
+}
+
+#editExecutionModal .modal-content {
+    background: #ffffff !important;
+    z-index: 1052 !important;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.5) !important;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    pointer-events: auto;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    border-radius: 0.3rem;
+}
+
+body.modal-open {
+    overflow: hidden !important;
+}
+</style>
+
+<!-- Modal تعديل سجل التنفيذ -->
+<div class="modal fade" id="editExecutionModal" tabindex="-1" aria-labelledby="editExecutionModalLabel" aria-hidden="true" data-bs-backdrop="true" data-bs-keyboard="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="editExecutionModalLabel">
+                    <i class="fas fa-edit me-2"></i>
+                    تعديل سجل التنفيذ
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="editExecutionForm" method="POST">
+                @csrf
+                @method('PUT')
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">وصف البند:</label>
+                        <p id="edit_item_description" class="text-muted"></p>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_executed_quantity" class="form-label">الكمية المنفذة <span class="text-danger">*</span></label>
+                        <input type="number" 
+                               class="form-control" 
+                               id="edit_executed_quantity" 
+                               name="executed_quantity" 
+                               step="0.01" 
+                               required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_work_date" class="form-label">تاريخ التنفيذ <span class="text-danger">*</span></label>
+                        <input type="date" 
+                               class="form-control" 
+                               id="edit_work_date" 
+                               name="work_date" 
+                               required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i>
+                        إلغاء
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-1"></i>
+                        حفظ التعديلات
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function openEditModal(routeUrl, quantity, date, description) {
+    console.log('Opening modal with route:', routeUrl);
+    
+    // تعبئة البيانات
+    document.getElementById('edit_executed_quantity').value = quantity;
+    document.getElementById('edit_work_date').value = date;
+    document.getElementById('edit_item_description').textContent = description;
+    
+    // تحديد الـ action
+    const form = document.getElementById('editExecutionForm');
+    form.action = routeUrl;
+    
+    console.log('Form action set to:', form.action);
+}
+
+// إصلاح شامل للـ Modal
+document.addEventListener('DOMContentLoaded', function() {
+    const modalElement = document.getElementById('editExecutionModal');
+    
+    if (modalElement) {
+        console.log('Edit Modal element found');
+        
+        // عند بداية فتح الـ Modal
+        modalElement.addEventListener('show.bs.modal', function (e) {
+            console.log('Modal is about to show');
+            // إزالة أي backdrop قديم
+            const oldBackdrops = document.querySelectorAll('.modal-backdrop');
+            oldBackdrops.forEach(backdrop => backdrop.remove());
+        });
+        
+        // بعد فتح الـ Modal
+        modalElement.addEventListener('shown.bs.modal', function (e) {
+            console.log('Modal is now shown');
+            
+            // ضبط الـ z-index
+            const backdrop = document.querySelector('.modal-backdrop');
+            if (backdrop) {
+                backdrop.style.zIndex = '1040';
+                backdrop.style.opacity = '0.5';
+                console.log('Backdrop fixed');
+            }
+            
+            modalElement.style.zIndex = '1050';
+            modalElement.style.display = 'block';
+            
+            // التأكد من أن الـ body له الـ class الصحيح
+            document.body.classList.add('modal-open');
+            
+            console.log('Modal z-index:', modalElement.style.zIndex);
+        });
+        
+        // عند إغلاق الـ Modal
+        modalElement.addEventListener('hidden.bs.modal', function (e) {
+            console.log('Modal hidden');
+            // تنظيف
+            const backdrops = document.querySelectorAll('.modal-backdrop');
+            backdrops.forEach(backdrop => backdrop.remove());
+            document.body.classList.remove('modal-open');
+            document.body.style.overflow = '';
+            document.body.style.paddingRight = '';
+        });
+    } else {
+        console.error('Edit Modal element NOT found');
+    }
+});
+</script>
 
 @endsection 
 

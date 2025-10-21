@@ -133,7 +133,10 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::get('work-orders/daily-program/get-users', [App\Http\Controllers\WorkOrderController::class, 'getDailyProgramUsers'])->name('work-orders.daily-program.get-users');
     Route::post('work-orders/daily-program/send-notification', [App\Http\Controllers\WorkOrderController::class, 'sendDailyProgramNotification'])->name('work-orders.daily-program.send-notification');
     Route::post('work-orders/daily-program/update-execution', [App\Http\Controllers\WorkOrderController::class, 'updateDailyProgramExecution'])->name('work-orders.daily-program.update-execution');
+    Route::post('work-orders/daily-program/update-notes', [App\Http\Controllers\WorkOrderController::class, 'updateDailyProgramNotes'])->name('work-orders.daily-program.update-notes');
     Route::get('work-orders/daily-program/export-status', [App\Http\Controllers\WorkOrderController::class, 'exportDailyProgramStatus'])->name('work-orders.daily-program.export-status');
+    Route::get('work-orders/daily-program/export-programs', [App\Http\Controllers\WorkOrderController::class, 'exportDailyPrograms'])->name('work-orders.daily-program.export-programs');
+    Route::get('work-orders/daily-program/export-execution', [App\Http\Controllers\WorkOrderController::class, 'exportDailyExecution'])->name('work-orders.daily-program.export-execution');
     Route::get('work-orders/{workOrder}/notifications', [App\Http\Controllers\WorkOrderController::class, 'getWorkOrderNotifications'])->name('work-orders.notifications');
     Route::post('work-orders/{workOrder}/update-notes', [App\Http\Controllers\WorkOrderController::class, 'updateNotes'])->name('work-orders.update-notes');
     Route::post('work-orders/{workOrder}/update-status-note', [App\Http\Controllers\WorkOrderController::class, 'updateStatusNote'])->name('work-orders.update-status-note');

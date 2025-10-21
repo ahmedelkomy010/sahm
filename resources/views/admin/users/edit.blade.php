@@ -222,12 +222,18 @@
                                             class="h-3 w-3 ml-1 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
                                         <label for="riyadh_manage_execution" class="text-xs text-blue-700 mr-2">إدارة التنفيذ</label>
                                     </div>
-                                    <div class="flex items-center">
-                                        <input type="checkbox" id="riyadh_delete_execution_record" name="permissions[]" value="riyadh_delete_execution_record" 
-                                            {{ (is_array($user->permissions) && in_array('riyadh_delete_execution_record', $user->permissions)) ? 'checked' : '' }}
-                                            class="h-3 w-3 ml-1 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-                                        <label for="riyadh_delete_execution_record" class="text-xs text-blue-700 mr-2">حذف سجل التنفيذ</label>
-                                    </div>
+                                <div class="flex items-center">
+                                    <input type="checkbox" id="riyadh_edit_execution_record" name="permissions[]" value="riyadh_edit_execution_record" 
+                                        {{ (is_array($user->permissions) && in_array('riyadh_edit_execution_record', $user->permissions)) ? 'checked' : '' }}
+                                        class="h-3 w-3 ml-1 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                    <label for="riyadh_edit_execution_record" class="text-xs text-blue-700 mr-2">تعديل سجل التنفيذ</label>
+                                </div>
+                                <div class="flex items-center">
+                                    <input type="checkbox" id="riyadh_delete_execution_record" name="permissions[]" value="riyadh_delete_execution_record" 
+                                        {{ (is_array($user->permissions) && in_array('riyadh_delete_execution_record', $user->permissions)) ? 'checked' : '' }}
+                                        class="h-3 w-3 ml-1 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                    <label for="riyadh_delete_execution_record" class="text-xs text-blue-700 mr-2">حذف سجل التنفيذ</label>
+                                </div>
                                     <div class="flex items-center">
                                         <input type="checkbox" id="riyadh_manage_post_execution" name="permissions[]" value="riyadh_manage_post_execution" 
                                             {{ (is_array($user->permissions) && in_array('riyadh_manage_post_execution', $user->permissions)) ? 'checked' : '' }}
@@ -337,12 +343,18 @@
                                             class="h-3 w-3 ml-1 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
                                         <label for="madinah_manage_execution" class="text-xs text-blue-700 mr-2">إدارة التنفيذ</label>
                                     </div>
-                                    <div class="flex items-center">
-                                        <input type="checkbox" id="madinah_delete_execution_record" name="permissions[]" value="madinah_delete_execution_record" 
-                                            {{ (is_array($user->permissions) && in_array('madinah_delete_execution_record', $user->permissions)) ? 'checked' : '' }}
-                                            class="h-3 w-3 ml-1 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-                                        <label for="madinah_delete_execution_record" class="text-xs text-blue-700 mr-2">حذف سجل التنفيذ</label>
-                                    </div>
+                                <div class="flex items-center">
+                                    <input type="checkbox" id="madinah_edit_execution_record" name="permissions[]" value="madinah_edit_execution_record" 
+                                        {{ (is_array($user->permissions) && in_array('madinah_edit_execution_record', $user->permissions)) ? 'checked' : '' }}
+                                        class="h-3 w-3 ml-1 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                    <label for="madinah_edit_execution_record" class="text-xs text-blue-700 mr-2">تعديل سجل التنفيذ</label>
+                                </div>
+                                <div class="flex items-center">
+                                    <input type="checkbox" id="madinah_delete_execution_record" name="permissions[]" value="madinah_delete_execution_record" 
+                                        {{ (is_array($user->permissions) && in_array('madinah_delete_execution_record', $user->permissions)) ? 'checked' : '' }}
+                                        class="h-3 w-3 ml-1 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                    <label for="madinah_delete_execution_record" class="text-xs text-blue-700 mr-2">حذف سجل التنفيذ</label>
+                                </div>
                                     <div class="flex items-center">
                                         <input type="checkbox" id="madinah_manage_post_execution" name="permissions[]" value="madinah_manage_post_execution" 
                                             {{ (is_array($user->permissions) && in_array('madinah_manage_post_execution', $user->permissions)) ? 'checked' : '' }}
@@ -509,6 +521,16 @@
                         إجمالي إيرادات المشاريع
                     </label>
                     <p class="text-sm text-teal-700 mt-2">الوصول إلى صفحة عرض إجمالي إيرادات جميع المشاريع والتقارير المالية الشاملة</p>
+                    
+                    <!-- صلاحيات فرعية -->
+                    <div class="mt-3 mr-6 space-y-2">
+                        <div class="flex items-center">
+                            <input type="checkbox" id="access_reports" name="permissions[]" value="access_reports" 
+                                {{ (is_array($user->permissions) && in_array('access_reports', $user->permissions)) ? 'checked' : '' }}
+                                class="h-3 w-3 ml-1 text-teal-600 focus:ring-teal-500 border-gray-300 rounded">
+                            <label for="access_reports" class="text-xs text-teal-700 mr-2">الوصول إلى التقارير</label>
+                        </div>
+                    </div>
                     
                     <div class="mt-3 p-3 bg-white rounded-lg border border-teal-200 shadow-sm">
                         <div class="flex items-start">
