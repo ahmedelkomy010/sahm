@@ -183,6 +183,14 @@ class SpecialProjectController extends Controller
      */
     public function storeRevenue(Request $request, Project $project)
     {
+        // التحقق من صلاحية التعديل
+        if (!auth()->user()->is_admin && !in_array('edit_special_projects_revenues', auth()->user()->permissions ?? [])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'ليس لديك صلاحية لإضافة بيانات الإيرادات'
+            ], 403);
+        }
+        
         try {
             $validated = $request->validate([
                 'client_name' => 'nullable|string',
@@ -245,6 +253,14 @@ class SpecialProjectController extends Controller
      */
     public function updateRevenue(Request $request, Project $project, $revenueId)
     {
+        // التحقق من صلاحية التعديل
+        if (!auth()->user()->is_admin && !in_array('edit_special_projects_revenues', auth()->user()->permissions ?? [])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'ليس لديك صلاحية لتعديل بيانات الإيرادات'
+            ], 403);
+        }
+        
         try {
             $revenue = \App\Models\SpecialProjectRevenue::where('project_id', $project->id)
                 ->findOrFail($revenueId);
@@ -309,6 +325,14 @@ class SpecialProjectController extends Controller
      */
     public function destroyRevenue(Project $project, $revenueId)
     {
+        // التحقق من صلاحية التعديل
+        if (!auth()->user()->is_admin && !in_array('edit_special_projects_revenues', auth()->user()->permissions ?? [])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'ليس لديك صلاحية لحذف بيانات الإيرادات'
+            ], 403);
+        }
+        
         try {
             $revenue = \App\Models\SpecialProjectRevenue::where('project_id', $project->id)
                 ->findOrFail($revenueId);

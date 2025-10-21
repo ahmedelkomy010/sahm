@@ -550,6 +550,12 @@
 @endpush
 
 @section('content')
+@php
+    $city = $project ?? 'riyadh';
+    $editPermission = $city == 'riyadh' ? 'riyadh_edit_revenues' : 'madinah_edit_revenues';
+    $canEdit = auth()->user()->is_admin || (is_array(auth()->user()->permissions) && in_array($editPermission, auth()->user()->permissions));
+@endphp
+
 <div class="container-fluid px-4">
     <div class="row justify-content-center">
         <div class="col-12">
@@ -585,6 +591,14 @@
                 </div>
 
                 <div class="card-body p-0">
+                    <!-- تنبيه الصلاحيات -->
+                    @if(!$canEdit)
+                    <div class="alert alert-warning mx-2 mt-2 mb-0" role="alert" style="font-size: 0.85rem; padding: 0.5rem;">
+                        <i class="fas fa-lock me-2"></i>
+                        <strong>تنبيه:</strong> ليس لديك صلاحية تعديل بيانات الإيرادات. يمكنك فقط عرض البيانات.
+                    </div>
+                    @endif
+                    
                     <!-- Statistics Cards Section -->
                     <div class="py-1 px-2 bg-light">
                         <div class="row g-1">
@@ -943,10 +957,12 @@
                             </button>
                             
                             <!-- زر إضافة صف جديد -->
+                            @if($canEdit)
                             <button type="button" class="btn btn-success btn-sm" onclick="addNewRow()">
                                 <i class="fas fa-plus me-1"></i>
                                 إضافة صف جديد
                             </button>
+                            @endif
                             @endif
                             
                             @if(auth()->user()->isAdmin())
@@ -1006,25 +1022,25 @@
                                             <div class="editable-field" contenteditable="false" data-field="contract_number" style="background-color: #e9ecef; cursor: default; font-weight: bold;">{{ $revenue->contract_number ?: (isset($project) && $project == 'madinah' ? '4400019706' : '4400015737') }}</div>
                                         </td>
                                         <td>
-                                            <input type="number" class="form-control" data-field="extract_number" placeholder="رقم المستخلص" value="{{ $revenue->extract_number }}">
+                                            <input type="number" class="form-control" data-field="extract_number" placeholder="رقم المستخلص" value="{{ $revenue->extract_number }}" {{ !$canEdit ? 'readonly disabled style=background-color:#f8f9fa;cursor:not-allowed;' : '' }}>
                                         </td>
                                         <td>
-                                            <div class="editable-field" contenteditable="true" data-field="office" placeholder="المكتب">{{ $revenue->office }}</div>
+                                            <div class="editable-field" contenteditable="{{ $canEdit ? 'true' : 'false' }}" data-field="office" placeholder="المكتب" style="{{ !$canEdit ? 'background-color:#f8f9fa;cursor:not-allowed;' : '' }}">{{ $revenue->office }}</div>
                                         </td>
                                         <td>
-                                            <div class="editable-field" contenteditable="true" data-field="extract_type" placeholder="نوع المستخلص">{{ $revenue->extract_type }}</div>
+                                            <div class="editable-field" contenteditable="{{ $canEdit ? 'true' : 'false' }}" data-field="extract_type" placeholder="نوع المستخلص" style="{{ !$canEdit ? 'background-color:#f8f9fa;cursor:not-allowed;' : '' }}">{{ $revenue->extract_type }}</div>
                                         </td>
                                         <td>
-                                            <div class="editable-field" contenteditable="true" data-field="po_number" placeholder="رقم PO">{{ $revenue->po_number }}</div>
+                                            <div class="editable-field" contenteditable="{{ $canEdit ? 'true' : 'false' }}" data-field="po_number" placeholder="رقم PO" style="{{ !$canEdit ? 'background-color:#f8f9fa;cursor:not-allowed;' : '' }}">{{ $revenue->po_number }}</div>
                                         </td>
                                         <td>
-                                            <div class="editable-field" contenteditable="true" data-field="invoice_number" placeholder="رقم الفاتورة">{{ $revenue->invoice_number }}</div>
+                                            <div class="editable-field" contenteditable="{{ $canEdit ? 'true' : 'false' }}" data-field="invoice_number" placeholder="رقم الفاتورة" style="{{ !$canEdit ? 'background-color:#f8f9fa;cursor:not-allowed;' : '' }}">{{ $revenue->invoice_number }}</div>
                                         </td>
                                         <td>
-                                            <input type="number" step="0.01" class="form-control" data-field="extract_value" placeholder="إجمالي قيمة المستخلصات" value="{{ $revenue->extract_value }}">
+                                            <input type="number" step="0.01" class="form-control" data-field="extract_value" placeholder="إجمالي قيمة المستخلصات" value="{{ $revenue->extract_value }}" {{ !$canEdit ? 'readonly disabled style=background-color:#f8f9fa;cursor:not-allowed;' : '' }}>
                                         </td>
                                         <td>
-                                            <select class="form-control" data-field="tax_percentage">
+                                            <select class="form-control" data-field="tax_percentage" {{ !$canEdit ? 'disabled style=background-color:#f8f9fa;cursor:not-allowed;' : '' }}>
                                                 <option value="UDS" {{ $revenue->tax_percentage === 'UDS' ? 'selected' : '' }}>UDS</option>
                                                 <option value="SAP" {{ $revenue->tax_percentage === 'SAP' ? 'selected' : '' }}>SAP</option>
                                             </select>
@@ -1033,22 +1049,22 @@
                                             <div class="editable-field" contenteditable="false" data-field="tax_value" placeholder="قيمة الضريبة" style="background-color: #fef3c7; font-weight: bold; cursor: not-allowed;" title="محسوب تلقائياً: قيمة المستخلص × 15%">{{ $revenue->tax_value }}</div>
                                         </td>
                                         <td>
-                                            <input type="number" step="0.01" class="form-control" data-field="penalties" placeholder="الغرامات" value="{{ $revenue->penalties }}">
+                                            <input type="number" step="0.01" class="form-control" data-field="penalties" placeholder="الغرامات" value="{{ $revenue->penalties }}" {{ !$canEdit ? 'readonly disabled style=background-color:#f8f9fa;cursor:not-allowed;' : '' }}>
                                         </td>
                                         <td>
-                                            <input type="number" step="0.01" class="form-control" data-field="first_payment_tax" placeholder="ضريبة الدفعة الأولى" value="{{ $revenue->first_payment_tax }}">
+                                            <input type="number" step="0.01" class="form-control" data-field="first_payment_tax" placeholder="ضريبة الدفعة الأولى" value="{{ $revenue->first_payment_tax }}" {{ !$canEdit ? 'readonly disabled style=background-color:#f8f9fa;cursor:not-allowed;' : '' }}>
                                         </td>
                                         <td>
                                             <div class="editable-field" contenteditable="false" data-field="net_extract_value" placeholder="صافي قيمة المستخلص" style="background-color: #fef3c7; font-weight: bold; cursor: not-allowed;" title="محسوب تلقائياً: قيمة المستخلص + الضريبة - الغرامات">{{ $revenue->net_extract_value }}</div>
                                         </td>
                                         <td class="date-col">
-                                            <input type="date" class="date-input" data-field="extract_date" value="{{ $revenue->extract_date ? $revenue->extract_date->format('Y-m-d') : '' }}" placeholder="تاريخ الإعداد">
+                                            <input type="date" class="date-input" data-field="extract_date" value="{{ $revenue->extract_date ? $revenue->extract_date->format('Y-m-d') : '' }}" placeholder="تاريخ الإعداد" {{ !$canEdit ? 'readonly disabled style=background-color:#f8f9fa;cursor:not-allowed;' : '' }}>
                                         </td>
                                         <td>
-                                            <div class="editable-field" contenteditable="true" data-field="year" placeholder="العام">{{ $revenue->year }}</div>
+                                            <div class="editable-field" contenteditable="{{ $canEdit ? 'true' : 'false' }}" data-field="year" placeholder="العام" style="{{ !$canEdit ? 'background-color:#f8f9fa;cursor:not-allowed;' : '' }}">{{ $revenue->year }}</div>
                                         </td>
                                         <td>
-                                            <select class="form-control payment-type-select" data-field="payment_type">
+                                            <select class="form-control payment-type-select" data-field="payment_type" {{ !$canEdit ? 'disabled style=background-color:#f8f9fa;cursor:not-allowed;' : '' }}>
                                                 <option value="المقاول" {{ $revenue->payment_type == 'المقاول' ? 'selected' : '' }}>المقاول</option>
                                                 <option value="ادارة الكهرباء" {{ $revenue->payment_type == 'ادارة الكهرباء' ? 'selected' : '' }}>ادارة الكهرباء</option>
                                                 <option value="المالية" {{ $revenue->payment_type == 'المالية' ? 'selected' : '' }}>المالية</option>
@@ -1057,16 +1073,16 @@
                                             </select>
                                         </td>
                                         <td>
-                                            <input type="number" class="form-control" data-field="reference_number" placeholder="الرقم المرجعي" value="{{ $revenue->reference_number }}">
+                                            <input type="number" class="form-control" data-field="reference_number" placeholder="الرقم المرجعي" value="{{ $revenue->reference_number }}" {{ !$canEdit ? 'readonly disabled style=background-color:#f8f9fa;cursor:not-allowed;' : '' }}>
                                         </td>
                                         <td class="date-col">
-                                            <input type="date" class="date-input" data-field="payment_date" value="{{ $revenue->payment_date ? $revenue->payment_date->format('Y-m-d') : '' }}" placeholder="تاريخ الصرف">
+                                            <input type="date" class="date-input" data-field="payment_date" value="{{ $revenue->payment_date ? $revenue->payment_date->format('Y-m-d') : '' }}" placeholder="تاريخ الصرف" {{ !$canEdit ? 'readonly disabled style=background-color:#f8f9fa;cursor:not-allowed;' : '' }}>
                                         </td>
                                         <td class="payment-value-col">
-                                            <input type="number" step="0.01" class="form-control" data-field="payment_value" placeholder="قيمة الصرف" value="{{ $revenue->payment_value }}">
+                                            <input type="number" step="0.01" class="form-control" data-field="payment_value" placeholder="قيمة الصرف" value="{{ $revenue->payment_value }}" {{ !$canEdit ? 'readonly disabled style=background-color:#f8f9fa;cursor:not-allowed;' : '' }}>
                                         </td>
                                         <td>
-                                            <select class="form-control" data-field="extract_status">
+                                            <select class="form-control" data-field="extract_status" {{ !$canEdit ? 'disabled style=background-color:#f8f9fa;cursor:not-allowed;' : '' }}>
                                                 <option value="مدفوع" {{ $revenue->extract_status == 'مدفوع' ? 'selected' : '' }}>مدفوع</option>
                                                 <option value="غير مدفوع" {{ $revenue->extract_status == 'غير مدفوع' ? 'selected' : '' }}>غير مدفوع</option>
                                             </select>
@@ -1112,8 +1128,12 @@
 </div>
 
 <script>
+// متغير للتحقق من صلاحية التعديل
+const canEdit = {{ $canEdit ? 'true' : 'false' }};
+
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Revenues page loaded');
+    console.log('Can edit:', canEdit);
     
     // إضافة event listeners للصفوف الموجودة
     const existingRows = document.querySelectorAll('tr[data-row-id]');
@@ -1150,6 +1170,12 @@ function updateRowCounter() {
 
 // إضافة صف جديد
 function addNewRow() {
+    // التحقق من صلاحية التعديل
+    if (!canEdit) {
+        alert('ليس لديك صلاحية لإضافة صفوف جديدة');
+        return;
+    }
+    
     const tbody = document.getElementById('revenuesTableBody');
     
     // إخفاء رسالة "لا توجد بيانات" إذا كانت موجودة
@@ -1318,6 +1344,12 @@ function debounce(func, wait) {
 
 // حفظ تلقائي للصف
 function autoSaveRow(row) {
+    // التحقق من صلاحية التعديل
+    if (!canEdit) {
+        console.log('لا يوجد صلاحية للتعديل');
+        return;
+    }
+    
     if (!row || !row.dataset.rowId) return;
     
     // جمع البيانات من الصف

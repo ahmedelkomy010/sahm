@@ -17,6 +17,14 @@ class RevenueController extends Controller
 
     public function store(Request $request, Project $project)
     {
+        // التحقق من صلاحية التعديل
+        if (!auth()->user()->is_admin && !in_array('edit_turnkey_revenues', auth()->user()->permissions ?? [])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'ليس لديك صلاحية لإضافة بيانات الإيرادات'
+            ], 403);
+        }
+        
         try {
             $validated = $request->validate([
                 'client_name' => 'required|string|max:255',
@@ -68,6 +76,14 @@ class RevenueController extends Controller
 
     public function import(Request $request, Project $project)
     {
+        // التحقق من صلاحية التعديل
+        if (!auth()->user()->is_admin && !in_array('edit_turnkey_revenues', auth()->user()->permissions ?? [])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'ليس لديك صلاحية لاستيراد بيانات الإيرادات'
+            ], 403);
+        }
+        
         try {
             Log::info('Revenue import started', [
                 'project_id' => $project->id,
@@ -153,6 +169,14 @@ class RevenueController extends Controller
 
     public function update(Request $request, Project $project, Revenue $revenue)
     {
+        // التحقق من صلاحية التعديل
+        if (!auth()->user()->is_admin && !in_array('edit_turnkey_revenues', auth()->user()->permissions ?? [])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'ليس لديك صلاحية لتعديل بيانات الإيرادات'
+            ], 403);
+        }
+        
         try {
             $validated = $request->validate([
                 'client_name' => 'required|string|max:255',
@@ -201,6 +225,14 @@ class RevenueController extends Controller
 
     public function destroy(Project $project, Revenue $revenue)
     {
+        // التحقق من صلاحية التعديل
+        if (!auth()->user()->is_admin && !in_array('edit_turnkey_revenues', auth()->user()->permissions ?? [])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'ليس لديك صلاحية لحذف بيانات الإيرادات'
+            ], 403);
+        }
+        
         try {
             $revenue->delete();
 

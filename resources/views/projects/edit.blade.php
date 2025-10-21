@@ -363,7 +363,7 @@
                                         <option value="">Select project type</option>
                                         <option value="OH33KV" {{ old('project_type', $project->project_type) == 'OH33KV' ? 'selected' : '' }}>OH 33KV</option>
                                         <option value="UA33LW" {{ old('project_type', $project->project_type) == 'UA33LW' ? 'selected' : '' }}>UA 33LW</option>
-                                        <option value="SLS33KV" {{ old('project_type', $project->project_type) == 'SLS33KV' ? 'selected' : '' }}>SLS 33KV</option>
+                                        <option value="S/S33KV" {{ old('project_type', $project->project_type) == 'S/S33KV' ? 'selected' : '' }}>S/S 33KV</option>
                                         <option value="UG132KV" {{ old('project_type', $project->project_type) == 'UG132KV' ? 'selected' : '' }}>UG 132 KV</option>
                                     </select>
                                     @error('project_type')

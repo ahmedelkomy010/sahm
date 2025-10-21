@@ -5281,6 +5281,17 @@ class WorkOrderController extends Controller
      */
     public function saveRevenue(Request $request)
     {
+        // التحقق من صلاحية التعديل
+        $project = $request->input('project', 'riyadh');
+        $editPermission = $project == 'riyadh' ? 'riyadh_edit_revenues' : 'madinah_edit_revenues';
+        
+        if (!auth()->user()->is_admin && !in_array($editPermission, auth()->user()->permissions ?? [])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'ليس لديك صلاحية لتعديل بيانات الإيرادات'
+            ], 403);
+        }
+        
         try {
             $data = $request->validate([
                 'project' => 'nullable|string|in:riyadh,madinah',
@@ -5367,6 +5378,17 @@ class WorkOrderController extends Controller
                 ], 404);
             }
 
+            // التحقق من صلاحية التعديل
+            $project = $revenue->city == 'المدينة المنورة' ? 'madinah' : 'riyadh';
+            $editPermission = $project == 'riyadh' ? 'riyadh_edit_revenues' : 'madinah_edit_revenues';
+            
+            if (!auth()->user()->is_admin && !in_array($editPermission, auth()->user()->permissions ?? [])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'ليس لديك صلاحية لحذف بيانات الإيرادات'
+                ], 403);
+            }
+
             $revenue->delete();
 
             return response()->json([
@@ -5386,6 +5408,17 @@ class WorkOrderController extends Controller
 
     public function uploadRevenueAttachment(\Illuminate\Http\Request $request)
     {
+        // التحقق من صلاحية التعديل
+        $project = $request->input('project', 'riyadh');
+        $editPermission = $project == 'riyadh' ? 'riyadh_edit_revenues' : 'madinah_edit_revenues';
+        
+        if (!auth()->user()->is_admin && !in_array($editPermission, auth()->user()->permissions ?? [])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'ليس لديك صلاحية لرفع مرفقات الإيرادات'
+            ], 403);
+        }
+        
         try {
             $request->validate([
                 'attachment' => 'required|file|max:10240', // Max 10MB
@@ -5457,6 +5490,16 @@ class WorkOrderController extends Controller
                     'success' => false,
                     'message' => 'المشروع غير صحيح'
                 ], 400);
+            }
+            
+            // التحقق من صلاحية التعديل
+            $editPermission = $project == 'riyadh' ? 'riyadh_edit_revenues' : 'madinah_edit_revenues';
+            
+            if (!auth()->user()->is_admin && !in_array($editPermission, auth()->user()->permissions ?? [])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'ليس لديك صلاحية لاستيراد بيانات الإيرادات'
+                ], 403);
             }
             
             // التحقق من وجود الملف

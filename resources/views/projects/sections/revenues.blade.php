@@ -23,6 +23,10 @@
 @endpush
 
 @section('content')
+@php
+    $canEdit = auth()->user()->is_admin || (is_array(auth()->user()->permissions) && in_array('edit_turnkey_revenues', auth()->user()->permissions));
+@endphp
+
 <div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 py-12">
     <div class="container-fluid mx-auto px-4 sm:px-6 lg:px-8" style="max-width: 95%;">
         
@@ -64,6 +68,19 @@
                     </div>
                 </div>
             </div>
+
+        <!-- تنبيه الصلاحيات -->
+        @if(!$canEdit)
+        <div class="alert alert-warning mb-6 rounded-xl shadow-lg" role="alert" style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 2px solid #f59e0b; padding: 1rem;">
+            <div class="flex items-center">
+                <i class="fas fa-lock text-amber-600 text-2xl me-3"></i>
+                <div>
+                    <strong class="text-amber-800">تنبيه:</strong>
+                    <span class="text-amber-700">ليس لديك صلاحية تعديل بيانات الإيرادات. يمكنك فقط عرض البيانات.</span>
+                </div>
+            </div>
+        </div>
+        @endif
 
         <!-- Statistics Cards -->
         <div class="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-8 gap-3 mb-8">
@@ -221,7 +238,8 @@
                                            value="{{ $revenue->client_name }}" 
                                            data-field="client_name" 
                                            onchange="autoSaveTurnkey(this)"
-                                           placeholder="اسم العميل">
+                                           placeholder="اسم العميل"
+                                           {{ !$canEdit ? 'readonly style=background-color:#f8f9fa;cursor:not-allowed;' : '' }}>
                                 </td>
                                 <!-- المشروع -->
                                 <td class="px-3 py-3 border-r border-gray-200">
@@ -230,7 +248,8 @@
                                            value="{{ $revenue->project }}" 
                                            data-field="project" 
                                            onchange="autoSaveTurnkey(this)"
-                                           placeholder="المشروع">
+                                           placeholder="المشروع"
+                                           {{ !$canEdit ? 'readonly style=background-color:#f8f9fa;cursor:not-allowed;' : '' }}>
                                 </td>
                                 <!-- رقم العقد -->
                                 <td class="px-3 py-3 border-r border-gray-200">
@@ -239,7 +258,8 @@
                                            value="{{ $revenue->contract_number }}" 
                                            data-field="contract_number" 
                                            onchange="autoSaveTurnkey(this)"
-                                           placeholder="رقم العقد">
+                                           placeholder="رقم العقد"
+                                           {{ !$canEdit ? 'readonly style=background-color:#f8f9fa;cursor:not-allowed;' : '' }}>
                                 </td>
                                 <!-- رقم المستخلص -->
                                 <td class="px-3 py-3 border-r border-gray-200">
@@ -248,7 +268,8 @@
                                            value="{{ $revenue->extract_number }}" 
                                            data-field="extract_number" 
                                            onchange="autoSaveTurnkey(this)"
-                                           placeholder="رقم المستخلص">
+                                           placeholder="رقم المستخلص"
+                                           {{ !$canEdit ? 'readonly style=background-color:#f8f9fa;cursor:not-allowed;' : '' }}>
                                 </td>
                                 <!-- نوع المستخلص -->
                                 <td class="px-3 py-3 border-r border-gray-200">
@@ -257,7 +278,8 @@
                                            value="{{ $revenue->extract_type }}" 
                                            data-field="extract_type" 
                                            onchange="autoSaveTurnkey(this)"
-                                           placeholder="نوع المستخلص">
+                                           placeholder="نوع المستخلص"
+                                           {{ !$canEdit ? 'readonly style=background-color:#f8f9fa;cursor:not-allowed;' : '' }}>
                                 </td>
                                 <!-- رقم PO -->
                                 <td class="px-3 py-3 border-r border-gray-200">
@@ -266,7 +288,8 @@
                                            value="{{ $revenue->po_number }}" 
                                            data-field="po_number" 
                                            onchange="autoSaveTurnkey(this)"
-                                           placeholder="رقم PO">
+                                           placeholder="رقم PO"
+                                           {{ !$canEdit ? 'readonly style=background-color:#f8f9fa;cursor:not-allowed;' : '' }}>
                                 </td>
                                 <!-- رقم الفاتورة -->
                                 <td class="px-3 py-3 border-r border-gray-200">
@@ -275,7 +298,8 @@
                                            value="{{ $revenue->invoice_number }}" 
                                            data-field="invoice_number" 
                                            onchange="autoSaveTurnkey(this)"
-                                           placeholder="رقم الفاتورة">
+                                           placeholder="رقم الفاتورة"
+                                           {{ !$canEdit ? 'readonly style=background-color:#f8f9fa;cursor:not-allowed;' : '' }}>
                                 </td>
                                 <!-- الموقع -->
                                 <td class="px-3 py-3 border-r border-gray-200">
@@ -284,7 +308,8 @@
                                            value="{{ $revenue->location }}" 
                                            data-field="location" 
                                            onchange="autoSaveTurnkey(this)"
-                                           placeholder="الموقع">
+                                           placeholder="الموقع"
+                                           {{ !$canEdit ? 'readonly style=background-color:#f8f9fa;cursor:not-allowed;' : '' }}>
                                 </td>
                                 <!-- إجمالي قيمة المستخلصات غير شامله الضريبه -->
                                 <td class="px-3 py-3 border-r border-gray-200">
@@ -658,6 +683,37 @@
 
 @push('scripts')
 <script>
+// متغير للتحقق من صلاحية التعديل
+const canEdit = {{ $canEdit ? 'true' : 'false' }};
+
+// حماية جميع الحقول عند تحميل الصفحة
+document.addEventListener('DOMContentLoaded', function() {
+    if (!canEdit) {
+        // تعطيل جميع inputs في الجدول
+        document.querySelectorAll('#turnkeyRevenuesTableBody input').forEach(input => {
+            input.setAttribute('readonly', 'readonly');
+            input.style.backgroundColor = '#f8f9fa';
+            input.style.cursor = 'not-allowed';
+        });
+        
+        // تعطيل جميع selects في الجدول
+        document.querySelectorAll('#turnkeyRevenuesTableBody select').forEach(select => {
+            select.setAttribute('disabled', 'disabled');
+            select.style.backgroundColor = '#f8f9fa';
+            select.style.cursor = 'not-allowed';
+        });
+        
+        // تعطيل جميع textareas في الجدول
+        document.querySelectorAll('#turnkeyRevenuesTableBody textarea').forEach(textarea => {
+            textarea.setAttribute('readonly', 'readonly');
+            textarea.style.backgroundColor = '#f8f9fa';
+            textarea.style.cursor = 'not-allowed';
+        });
+        
+        console.log('Turnkey Revenues: Fields protected - No edit permission');
+    }
+});
+
 function updateFileList(input) {
     const fileList = document.getElementById('file-list');
     fileList.innerHTML = '';
@@ -799,6 +855,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Turnkey Revenues Auto-Save Functions
 function autoSaveTurnkey(element) {
+    // التحقق من صلاحية التعديل
+    if (!canEdit) {
+        console.log('لا يوجد صلاحية للتعديل');
+        return;
+    }
+    
     const tr = element.closest('tr');
     const id = tr.dataset.id;
     const field = element.dataset.field;

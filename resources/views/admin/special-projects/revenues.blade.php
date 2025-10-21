@@ -220,7 +220,24 @@
 @endpush
 
 @section('content')
+@php
+    $canEdit = auth()->user()->is_admin || (is_array(auth()->user()->permissions) && in_array('edit_special_projects_revenues', auth()->user()->permissions));
+@endphp
+
 <div class="container-fluid px-4 py-4">
+    <!-- تنبيه الصلاحيات -->
+    @if(!$canEdit)
+    <div class="alert alert-warning mb-3 rounded-3 shadow-sm" role="alert" style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 2px solid #f59e0b;">
+        <div class="d-flex align-items-center">
+            <i class="fas fa-lock text-amber-600 fs-4 me-3"></i>
+            <div>
+                <strong class="text-amber-800">تنبيه:</strong>
+                <span class="text-amber-700">ليس لديك صلاحية تعديل بيانات الإيرادات. يمكنك فقط عرض البيانات.</span>
+            </div>
+        </div>
+    </div>
+    @endif
+    
     <!-- Revenue Header -->
     <div class="revenue-header rounded-3 shadow mb-4">
         <div class="p-4 position-relative" style="z-index: 10;">
@@ -251,12 +268,14 @@
                 تصدير Excel
             </a>
             
+            @if($canEdit)
             <button onclick="addNewRevenue()" class="action-btn btn-success">
             <svg style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                 </svg>
                 إضافة إيراد جديد
             </button>
+            @endif
     </div>
 
     <!-- Statistics Cards -->
@@ -393,6 +412,9 @@
 
 @push('scripts')
 <script>
+    // متغير للتحقق من صلاحية التعديل
+    const canEdit = {{ $canEdit ? 'true' : 'false' }};
+    
     let revenues = @json($revenues ?? []);
     let revenueCounter = revenues.length;
     const projectId = {{ $project->id }};
@@ -400,6 +422,12 @@
     
     // Add new revenue
     async function addNewRevenue() {
+        // التحقق من صلاحية التعديل
+        if (!canEdit) {
+            alert('ليس لديك صلاحية لإضافة إيرادات جديدة');
+            return;
+        }
+        
         const currentYear = new Date().getFullYear();
         const newRevenue = {
             client_name: '',
@@ -467,6 +495,12 @@
     
     // Update field value with auto-save
     async function updateField(index, field, value) {
+        // التحقق من صلاحية التعديل
+        if (!canEdit) {
+            console.log('لا يوجد صلاحية للتعديل');
+            return;
+        }
+        
         // تحويل التواريخ الفارغة إلى null
         if ((field === 'preparation_date' || field === 'payment_date') && value === '') {
             value = null;
@@ -654,23 +688,26 @@
             return;
         }
         
+        const readonlyAttr = !canEdit ? 'readonly style="background-color:#f8f9fa;cursor:not-allowed;"' : '';
+        const disabledAttr = !canEdit ? 'disabled style="background-color:#f8f9fa;cursor:not-allowed;"' : '';
+        
         tbody.innerHTML = revenues.map((revenue, index) => `
             <tr>
                 <td>${index + 1}</td>
-                <td><input type="text" value="${revenue.client_name}" onchange="updateField(${index}, 'client_name', this.value)" placeholder="اسم العميل"></td>
-                <td><input type="text" value="${revenue.project}" onchange="updateField(${index}, 'project', this.value)" placeholder="المشروع"></td>
-                <td><input type="text" value="${revenue.contract_number}" onchange="updateField(${index}, 'contract_number', this.value)" placeholder="رقم العقد"></td>
-                <td><input type="text" value="${revenue.extract_number}" onchange="updateField(${index}, 'extract_number', this.value)" placeholder="رقم المستخلص"></td>
-                <td><input type="text" value="${revenue.po_number}" onchange="updateField(${index}, 'po_number', this.value)" placeholder="رقم PO"></td>
-                <td><input type="text" value="${revenue.invoice_number}" onchange="updateField(${index}, 'invoice_number', this.value)" placeholder="رقم الفاتورة"></td>
-                <td><input type="number" value="${revenue.total_value}" onchange="updateField(${index}, 'total_value', this.value)" step="0.01" placeholder="0.00"></td>
-                <td><input type="number" value="${revenue.tax_value}" onchange="updateField(${index}, 'tax_value', this.value)" step="0.01" placeholder="0.00" style="background-color: #f0fdf4;" title="محسوب تلقائياً: إجمالي القيمة × 15%"></td>
-                <td><input type="number" value="${revenue.penalties}" onchange="updateField(${index}, 'penalties', this.value)" step="0.01" placeholder="0.00"></td>
+                <td><input type="text" value="${revenue.client_name}" onchange="updateField(${index}, 'client_name', this.value)" placeholder="اسم العميل" ${readonlyAttr}></td>
+                <td><input type="text" value="${revenue.project}" onchange="updateField(${index}, 'project', this.value)" placeholder="المشروع" ${readonlyAttr}></td>
+                <td><input type="text" value="${revenue.contract_number}" onchange="updateField(${index}, 'contract_number', this.value)" placeholder="رقم العقد" ${readonlyAttr}></td>
+                <td><input type="text" value="${revenue.extract_number}" onchange="updateField(${index}, 'extract_number', this.value)" placeholder="رقم المستخلص" ${readonlyAttr}></td>
+                <td><input type="text" value="${revenue.po_number}" onchange="updateField(${index}, 'po_number', this.value)" placeholder="رقم PO" ${readonlyAttr}></td>
+                <td><input type="text" value="${revenue.invoice_number}" onchange="updateField(${index}, 'invoice_number', this.value)" placeholder="رقم الفاتورة" ${readonlyAttr}></td>
+                <td><input type="number" value="${revenue.total_value}" onchange="updateField(${index}, 'total_value', this.value)" step="0.01" placeholder="0.00" ${readonlyAttr}></td>
+                <td><input type="number" value="${revenue.tax_value}" onchange="updateField(${index}, 'tax_value', this.value)" step="0.01" placeholder="0.00" style="background-color: #f0fdf4;" title="محسوب تلقائياً: إجمالي القيمة × 15%" ${readonlyAttr}></td>
+                <td><input type="number" value="${revenue.penalties}" onchange="updateField(${index}, 'penalties', this.value)" step="0.01" placeholder="0.00" ${readonlyAttr}></td>
                 <td style="background-color: #fef3c7;"><strong>${parseFloat(revenue.net_value).toFixed(2)}</strong></td>
-                <td><input type="date" value="${formatDate(revenue.preparation_date)}" onchange="updateField(${index}, 'preparation_date', this.value)"></td>
-                <td><input type="number" value="${revenue.year}" onchange="updateField(${index}, 'year', this.value)" placeholder="${new Date().getFullYear()}"></td>
+                <td><input type="date" value="${formatDate(revenue.preparation_date)}" onchange="updateField(${index}, 'preparation_date', this.value)" ${readonlyAttr}></td>
+                <td><input type="number" value="${revenue.year}" onchange="updateField(${index}, 'year', this.value)" placeholder="${new Date().getFullYear()}" ${readonlyAttr}></td>
                 <td>
-                    <select onchange="updateField(${index}, 'extract_status', this.value)">
+                    <select onchange="updateField(${index}, 'extract_status', this.value)" ${disabledAttr}>
                         <option value="المقاول" ${revenue.extract_status === 'المقاول' ? 'selected' : ''}>المقاول</option>
                         <option value="ادارة الكهرباء" ${revenue.extract_status === 'ادارة الكهرباء' ? 'selected' : ''}>ادارة الكهرباء</option>
                         <option value="المالية" ${revenue.extract_status === 'المالية' ? 'selected' : ''}>المالية</option>
@@ -678,11 +715,11 @@
                         <option value="تم الصرف" ${revenue.extract_status === 'تم الصرف' ? 'selected' : ''}>تم الصرف</option>
                     </select>
                 </td>
-                <td><input type="text" value="${revenue.reference_number}" onchange="updateField(${index}, 'reference_number', this.value)" placeholder="الرقم المرجعي"></td>
-                <td><input type="date" value="${formatDate(revenue.payment_date)}" onchange="updateField(${index}, 'payment_date', this.value)"></td>
-                <td><input type="number" value="${revenue.payment_amount}" onchange="updateField(${index}, 'payment_amount', this.value)" step="0.01" placeholder="0.00"></td>
+                <td><input type="text" value="${revenue.reference_number}" onchange="updateField(${index}, 'reference_number', this.value)" placeholder="الرقم المرجعي" ${readonlyAttr}></td>
+                <td><input type="date" value="${formatDate(revenue.payment_date)}" onchange="updateField(${index}, 'payment_date', this.value)" ${readonlyAttr}></td>
+                <td><input type="number" value="${revenue.payment_amount}" onchange="updateField(${index}, 'payment_amount', this.value)" step="0.01" placeholder="0.00" ${readonlyAttr}></td>
                 <td>
-                    <select onchange="updateField(${index}, 'payment_status', this.value)">
+                    <select onchange="updateField(${index}, 'payment_status', this.value)" ${disabledAttr}>
                         <option value="unpaid" ${revenue.payment_status === 'unpaid' || revenue.payment_status === 'pending' ? 'selected' : ''}>غير مدفوع</option>
                         <option value="paid" ${revenue.payment_status === 'paid' ? 'selected' : ''}>مدفوع</option>
                     </select>
@@ -703,11 +740,13 @@
                             </svg>
                         </a>
                         ` : ''}
+                        ${canEdit ? `
                         <button onclick="deleteRevenue(${index})" class="action-btn btn-danger" style="padding: 0.35rem 0.75rem;" title="حذف">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                             </svg>
                         </button>
+                        ` : '<span class="text-muted small"><i class="fas fa-lock"></i></span>'}
                     </div>
                 </td>
             </tr>

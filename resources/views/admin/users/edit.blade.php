@@ -265,6 +265,12 @@
                                         <label for="riyadh_manage_revenues" class="text-xs text-blue-700 mr-2">إدارة الإيرادات</label>
                                     </div>
                                     <div class="flex items-center">
+                                        <input type="checkbox" id="riyadh_edit_revenues" name="permissions[]" value="riyadh_edit_revenues" 
+                                            {{ (is_array($user->permissions) && in_array('riyadh_edit_revenues', $user->permissions)) ? 'checked' : '' }}
+                                            class="h-3 w-3 ml-1 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                        <label for="riyadh_edit_revenues" class="text-xs text-blue-700 mr-2">تعديل بيانات الإيرادات</label>
+                                    </div>
+                                    <div class="flex items-center">
                                         <input type="checkbox" id="riyadh_daily_work_program" name="permissions[]" value="riyadh_daily_work_program" 
                                             {{ (is_array($user->permissions) && in_array('riyadh_daily_work_program', $user->permissions)) ? 'checked' : '' }}
                                             class="h-3 w-3 ml-1 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
@@ -374,6 +380,12 @@
                                         <label for="madinah_manage_revenues" class="text-xs text-blue-700 mr-2">إدارة الإيرادات</label>
                                     </div>
                                     <div class="flex items-center">
+                                        <input type="checkbox" id="madinah_edit_revenues" name="permissions[]" value="madinah_edit_revenues" 
+                                            {{ (is_array($user->permissions) && in_array('madinah_edit_revenues', $user->permissions)) ? 'checked' : '' }}
+                                            class="h-3 w-3 ml-1 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                        <label for="madinah_edit_revenues" class="text-xs text-blue-700 mr-2">تعديل بيانات الإيرادات</label>
+                                    </div>
+                                    <div class="flex items-center">
                                         <input type="checkbox" id="madinah_daily_work_program" name="permissions[]" value="madinah_daily_work_program" 
                                             {{ (is_array($user->permissions) && in_array('madinah_daily_work_program', $user->permissions)) ? 'checked' : '' }}
                                             class="h-3 w-3 ml-1 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
@@ -423,6 +435,16 @@
                                 تسليم مفتاح
                             </label>
                             <p class="text-xs text-green-600 mt-1">إدارة مشاريع تسليم المفتاح الجاهزة</p>
+                            
+                            <!-- صلاحيات فرعية لتسليم مفتاح -->
+                            <div class="mt-2 mr-6 space-y-1">
+                                <div class="flex items-center">
+                                    <input type="checkbox" id="edit_turnkey_revenues" name="permissions[]" value="edit_turnkey_revenues" 
+                                        {{ (is_array($user->permissions) && in_array('edit_turnkey_revenues', $user->permissions)) ? 'checked' : '' }}
+                                        class="h-3 w-3 ml-1 text-green-600 focus:ring-green-500 border-gray-300 rounded">
+                                    <label for="edit_turnkey_revenues" class="text-xs text-green-700 mr-2">تعديل بيانات الإيرادات</label>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -440,6 +462,16 @@
                                 مشاريع خاصة
                             </label>
                             <p class="text-xs text-purple-600 mt-1">تنفيذ المشاريع الخاصة والمخصصة</p>
+                            
+                            <!-- صلاحيات فرعية للمشاريع الخاصة -->
+                            <div class="mt-2 mr-6 space-y-1">
+                                <div class="flex items-center">
+                                    <input type="checkbox" id="edit_special_projects_revenues" name="permissions[]" value="edit_special_projects_revenues" 
+                                        {{ (is_array($user->permissions) && in_array('edit_special_projects_revenues', $user->permissions)) ? 'checked' : '' }}
+                                        class="h-3 w-3 ml-1 text-purple-600 focus:ring-purple-500 border-gray-300 rounded">
+                                    <label for="edit_special_projects_revenues" class="text-xs text-purple-700 mr-2">تعديل بيانات الإيرادات</label>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
