@@ -4827,14 +4827,15 @@ class WorkOrderController extends Controller
                 'hasEquipmentImages' => $request->hasFile('equipment_images'),
                 'hasGeneralImages' => $request->hasFile('general_images'),
                 'hasTbtImages' => $request->hasFile('tbt_images'),
-                'allFiles' => array_keys($request->allFiles())
+                'allFiles' => array_keys($request->allFiles()),
+                'allInputs' => array_keys($request->all()),
+                'contentType' => $request->header('Content-Type'),
+                'method' => $request->method()
             ]);
             
             $validated = $request->validate([
                 'safety_notes' => 'nullable|string',
                 'safety_status' => 'nullable|string',
-                'safety_officer' => 'nullable|string|max:255',
-                'inspection_date' => 'nullable|date',
                 'non_compliance_reasons' => 'required_if:safety_status,غير مطابق|nullable|string',
                 'permits_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240',
                 'team_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240',
@@ -4848,82 +4849,40 @@ class WorkOrderController extends Controller
             $shouldSaveHistory = false;
             $historyData = [];
 
-            if ($validated['safety_officer'] !== $workOrder->safety_officer) {
-                $shouldSaveHistory = true;
-                $historyData['safety_officer'] = $validated['safety_officer'];
-            }
-
-            if ($validated['safety_status'] !== $workOrder->safety_status) {
+            if (isset($validated['safety_status']) && $validated['safety_status'] !== $workOrder->safety_status) {
                 $shouldSaveHistory = true;
                 $historyData['safety_status'] = $validated['safety_status'];
             }
 
-            if ($validated['safety_notes'] !== $workOrder->safety_notes) {
+            if (isset($validated['safety_notes']) && $validated['safety_notes'] !== $workOrder->safety_notes) {
                 $shouldSaveHistory = true;
                 $historyData['safety_notes'] = $validated['safety_notes'];
             }
 
-            if ($validated['non_compliance_reasons'] !== $workOrder->non_compliance_reasons) {
+            if (isset($validated['non_compliance_reasons']) && $validated['non_compliance_reasons'] !== $workOrder->non_compliance_reasons) {
                 $shouldSaveHistory = true;
                 $historyData['non_compliance_reasons'] = $validated['non_compliance_reasons'];
-            }
-
-            // دائماً احفظ تاريخ التفتيش في السجل إذا تم إدخاله
-            if (!empty($validated['inspection_date'])) {
-                $shouldSaveHistory = true;
-                $historyData['inspection_date'] = $validated['inspection_date'];
             }
 
             // حفظ السجل التاريخي إذا كان هناك تغيير
             if ($shouldSaveHistory) {
                 \DB::table('work_order_safety_history')->insert([
                     'work_order_id' => $workOrder->id,
-                    'safety_officer' => $validated['safety_officer'],
-                    'safety_status' => $validated['safety_status'],
-                    'safety_notes' => $validated['safety_notes'],
-                    'non_compliance_reasons' => $validated['non_compliance_reasons'],
-                    'inspection_date' => $validated['inspection_date'],
+                    'safety_status' => $validated['safety_status'] ?? null,
+                    'safety_notes' => $validated['safety_notes'] ?? null,
+                    'non_compliance_reasons' => $validated['non_compliance_reasons'] ?? null,
                     'updated_by' => auth()->user()->name ?? 'غير محدد',
                     'created_at' => now(),
                     'updated_at' => now()
                 ]);
             }
 
-            // تحديث البيانات الأساسية (بدون تاريخ التفتيش)
+            // تحديث البيانات الأساسية
             $workOrder->update([
-                'safety_notes' => $validated['safety_notes'],
-                'safety_status' => $validated['safety_status'],
-                'safety_officer' => $validated['safety_officer'],
-                // إزالة تحديث inspection_date لمنع الكتابة فوق القديم
-                'non_compliance_reasons' => $validated['non_compliance_reasons'],
+                'safety_notes' => $validated['safety_notes'] ?? null,
+                'safety_status' => $validated['safety_status'] ?? null,
+                'non_compliance_reasons' => $validated['non_compliance_reasons'] ?? null,
             ]);
-
-            // حفظ تاريخ التفتيش الجديد في الجدول المخصص إذا تم إدخال تاريخ
-            if (!empty($validated['inspection_date'])) {
-                \Log::info('Saving inspection date', [
-                    'work_order_id' => $workOrder->id,
-                    'inspection_date' => $validated['inspection_date'],
-                    'inspector_name' => $validated['safety_officer'] ?? 'غير محدد'
-                ]);
-                
-                // حفظ التاريخ دائماً (حتى لو كان مكرراً) لحفظ سجل كامل
-                try {
-                    \DB::table('work_order_inspection_dates')->insert([
-                        'work_order_id' => $workOrder->id,
-                        'inspection_date' => $validated['inspection_date'],
-                        'inspector_name' => $validated['safety_officer'] ?? 'غير محدد',
-                        'notes' => $validated['safety_notes'],
-                        'status' => 'completed',
-                        'created_at' => now(),
-                        'updated_at' => now()
-                    ]);
-                    \Log::info('Inspection date saved successfully');
-                } catch (\Exception $e) {
-                    \Log::error('Failed to save inspection date: ' . $e->getMessage());
-                }
-            } else {
-                \Log::info('No inspection date provided in request');
-            }
 
             // رفع صور التصاريح
             if ($request->hasFile('permits_images')) {
