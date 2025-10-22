@@ -30,6 +30,19 @@
                                 </div>
 
                                 <div class="form-group mb-3">
+                                    <label for="system_type" class="form-label fw-bold">النظام</label>
+                                    <select id="system_type" class="form-select @error('system_type') is-invalid @enderror" name="system_type">
+                                        <option value="UDS" {{ old('system_type', $workOrder->system_type ?? 'UDS') == 'UDS' ? 'selected' : '' }}>UDS</option>
+                                        <option value="SAP" {{ old('system_type', $workOrder->system_type) == 'SAP' ? 'selected' : '' }}>SAP</option>
+                                    </select>
+                                    @error('system_type')
+                                        <span class="invalid-feedback" role="alert">
+                                            <strong>{{ $message }}</strong>
+                                        </span>
+                                    @enderror
+                                </div>
+
+                                <div class="form-group mb-3">
                                     <label for="work_type" class="form-label fw-bold">نوع العمل</label>
                                     <div class="row">
                                         <div class="col-md-4">

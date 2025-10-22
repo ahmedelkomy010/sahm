@@ -230,7 +230,9 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     
     // Work Items Management Routes
     Route::post('work-orders/add-work-item', [WorkOrderController::class, 'addWorkItem'])->name('work-orders.add-work-item');
+    Route::post('work-orders/add-daily-execution', [WorkOrderController::class, 'addDailyExecution'])->name('work-orders.add-daily-execution');
     Route::post('work-orders/update-work-item/{workOrderItem}', [WorkOrderController::class, 'updateWorkItem'])->name('work-orders.update-work-item');
+    Route::post('work-orders/update-planned-quantity/{workOrderItem}', [WorkOrderController::class, 'updatePlannedQuantity'])->name('work-orders.update-planned-quantity');
     Route::delete('work-orders/delete-work-item/{workOrderItem}', [WorkOrderController::class, 'deleteWorkItem'])->name('work-orders.delete-work-item');
     
     Route::get('work-orders/{workOrder}/license', [WorkOrderController::class, 'license'])->name('work-orders.license');

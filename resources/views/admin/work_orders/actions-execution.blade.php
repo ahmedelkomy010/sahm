@@ -35,9 +35,10 @@
             <i class="fas fa-tasks me-2" style="color:#007bff;"></i>
             إجراءات ما بعد التنفيذ
         </h2>
-        <a href="{{ route('admin.work-orders.show', $workOrder) }}" class="btn btn-primary">
-                            <i class="fas fa-arrow-right"></i> عودة الي تفاصيل أمر العمل  
-                        </a>    </div>
+        <a href="{{ route('admin.work-orders.show', $workOrder->id) }}" class="btn btn-primary">
+            <i class="fas fa-arrow-right"></i> عودة الي تفاصيل امر العمل
+        </a>
+    </div>
 
     <!-- معلومات أمر العمل -->
     <div class="row mb-4">
@@ -138,11 +139,15 @@
     {{-- جدول سجل التنفيذ اليومي وتواريخ تنفيذ بنود العمل --}}
     @if($dailyExecutions->count() > 0 || $dailyNotes->count() > 0)
     <div class="card mb-4 shadow-sm">
-        <div class="card-header bg-info text-white">
+        <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
             <h5 class="mb-0">
                 <i class="fas fa-calendar-check me-2"></i>
                 سجل التنفيذ اليومي وتواريخ تنفيذ بنود العمل
             </h5>
+            <button type="button" class="btn btn-light btn-sm" onclick="openModal()">
+                <i class="fas fa-plus-circle me-1"></i>
+                إضافة بند عمل جديد
+            </button>
         </div>
         <div class="card-body">
             <!-- التبويبات -->
@@ -162,6 +167,33 @@
                         ملاحظات التنفيذ اليومي
                         @if($dailyNotes->count() > 0)
                             <span class="badge bg-success ms-1">{{ $dailyNotes->count() }}</span>
+                        @endif
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="execution-images-tab" data-bs-toggle="tab" data-bs-target="#execution-images" type="button" role="tab">
+                        <i class="fas fa-images me-1"></i>
+                        صور التنفيذ
+                        @if($executionImages->count() > 0)
+                            <span class="badge bg-info ms-1">{{ $executionImages->count() }}</span>
+                        @endif
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="materials-tab" data-bs-toggle="tab" data-bs-target="#materials" type="button" role="tab">
+                        <i class="fas fa-boxes me-1"></i>
+                        المواد المرتبطة
+                        @if($workOrder->materials->count() > 0)
+                            <span class="badge bg-warning ms-1">{{ $workOrder->materials->count() }}</span>
+                        @endif
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="permits-tab" data-bs-toggle="tab" data-bs-target="#permits" type="button" role="tab">
+                        <i class="fas fa-file-contract me-1"></i>
+                        صور التصاريح PERMITS
+                        @if($workOrder->safety_permits_images && count($workOrder->safety_permits_images) > 0)
+                            <span class="badge bg-danger ms-1">{{ count($workOrder->safety_permits_images) }}</span>
                         @endif
                     </button>
                 </li>
@@ -341,6 +373,156 @@
                         </div>
                     @endif
                 </div>
+
+                <!-- تبويب صور التنفيذ -->
+                <div class="tab-pane fade" id="execution-images" role="tabpanel">
+                    @if($executionImages->count() > 0)
+                        <div class="row">
+                            @foreach($executionImages as $image)
+                            <div class="col-6 col-md-3 mb-3">
+                                <div class="card shadow-sm h-100">
+                                    <img src="{{ Storage::url($image->file_path) }}" 
+                                         class="card-img-top" 
+                                         style="height: 200px; object-fit: cover; cursor: pointer;"
+                                         alt="صورة التنفيذ"
+                                         onclick="window.open('{{ Storage::url($image->file_path) }}', '_blank')">
+                                    <div class="card-body p-2">
+                                        <small class="text-muted d-block">
+                                            <i class="fas fa-calendar me-1"></i>
+                                            {{ $image->created_at->format('Y-m-d') }}
+                                        </small>
+                                        <small class="text-muted d-block">
+                                            <i class="fas fa-user me-1"></i>
+                                            {{ $image->uploaded_by ?? 'غير محدد' }}
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <div class="text-center py-4">
+                            <i class="fas fa-images text-muted fa-3x mb-3"></i>
+                            <h5 class="text-muted">لا توجد صور تنفيذ</h5>
+                            <p class="text-muted">لم يتم رفع أي صور تنفيذ بعد.</p>
+                        </div>
+                    @endif
+                </div>
+
+                <!-- تبويب المواد المرتبطة -->
+                <div class="tab-pane fade" id="materials" role="tabpanel">
+                    @if($workOrder->materials->count() > 0)
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead class="table-info">
+                                    <tr>
+                                        <th>#</th>
+                                        <th>اسم المادة</th>
+                                        <th>رقم المادة</th>
+                                        <th>الكمية المطلوبة</th>
+                                        <th>الكمية المستلمة</th>
+                                        <th>الوحدة</th>
+                                        <th>الحالة</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($workOrder->materials as $material)
+                                    <tr>
+                                        <td>{{ $loop->iteration }}</td>
+                                        <td>{{ $material->material_name }}</td>
+                                        <td><span class="badge bg-secondary">{{ $material->material_number ?? '-' }}</span></td>
+                                        <td><strong class="text-primary">{{ $material->pivot->required_quantity ?? 0 }}</strong></td>
+                                        <td><strong class="text-success">{{ $material->pivot->received_quantity ?? 0 }}</strong></td>
+                                        <td><span class="badge bg-info">{{ $material->unit ?? '-' }}</span></td>
+                                        <td>
+                                            @php
+                                                $required = $material->pivot->required_quantity ?? 0;
+                                                $received = $material->pivot->received_quantity ?? 0;
+                                            @endphp
+                                            @if($received >= $required)
+                                                <span class="badge bg-success">مكتمل</span>
+                                            @elseif($received > 0)
+                                                <span class="badge bg-warning">جزئي</span>
+                                            @else
+                                                <span class="badge bg-danger">غير مستلم</span>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    @else
+                        <div class="text-center py-4">
+                            <i class="fas fa-boxes text-muted fa-3x mb-3"></i>
+                            <h5 class="text-muted">لا توجد مواد مرتبطة</h5>
+                            <p class="text-muted">لم يتم ربط أي مواد بهذا الأمر بعد.</p>
+                        </div>
+                    @endif
+                </div>
+
+                <!-- تبويب صور التصاريح PERMITS -->
+                <div class="tab-pane fade" id="permits" role="tabpanel">
+                    @if($workOrder->safety_permits_images && count($workOrder->safety_permits_images) > 0)
+                        <div class="row">
+                            @foreach($workOrder->safety_permits_images as $index => $imageData)
+                                @php
+                                    // دعم الصيغة القديمة (string) والجديدة (array)
+                                    if (is_array($imageData)) {
+                                        $image = $imageData['path'] ?? '';
+                                        $uploadedAt = $imageData['uploaded_at'] ?? null;
+                                        $uploadedBy = $imageData['uploaded_by'] ?? null;
+                                    } else {
+                                        $image = $imageData;
+                                        $uploadedAt = null;
+                                        $uploadedBy = null;
+                                    }
+                                    $imagePath = Storage::url($image);
+                                    $isPdf = strtolower(pathinfo($image, PATHINFO_EXTENSION)) === 'pdf';
+                                @endphp
+                                <div class="col-6 col-md-3 mb-3">
+                                    <div class="card shadow-sm h-100">
+                                        @if($isPdf)
+                                            <div class="card-img-top d-flex align-items-center justify-content-center bg-light" style="height: 200px; cursor: pointer;" onclick="window.open('{{ $imagePath }}', '_blank')">
+                                                <i class="fas fa-file-pdf fa-3x text-danger"></i>
+                                            </div>
+                                        @else
+                                            <img src="{{ $imagePath }}" 
+                                                 class="card-img-top" 
+                                                 style="height: 200px; object-fit: cover; cursor: pointer;"
+                                                 alt="صورة التصريح"
+                                                 onclick="window.open('{{ $imagePath }}', '_blank')">
+                                        @endif
+                                        <div class="card-body p-2">
+                                            <small class="text-muted d-block">
+                                                <i class="fas fa-file-contract me-1"></i>
+                                                تصريح {{ $index + 1 }}
+                                            </small>
+                                            @if($uploadedAt)
+                                                <small class="text-muted d-block">
+                                                    <i class="fas fa-calendar me-1"></i>
+                                                    {{ \Carbon\Carbon::parse($uploadedAt)->format('Y-m-d') }}
+                                                </small>
+                                            @endif
+                                            @if($uploadedBy)
+                                                <small class="text-muted d-block">
+                                                    <i class="fas fa-user me-1"></i>
+                                                    {{ $uploadedBy }}
+                                                </small>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <div class="text-center py-4">
+                            <i class="fas fa-file-contract text-muted fa-3x mb-3"></i>
+                            <h5 class="text-muted">لا توجد صور تصاريح</h5>
+                            <p class="text-muted">لم يتم رفع أي صور تصاريح PERMITS بعد.</p>
+                        </div>
+                    @endif
+                </div>
             </div>
         </div>
     </div>
@@ -359,141 +541,6 @@
                
             </div>
         </div>
-    @endif
-
-
-    {{-- جدول المواد المرتبطة --}}
-    @if($workOrder->materials->count() > 0)
-    <div class="card mb-4 shadow-sm">
-        <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
-            <span><i class="fas fa-boxes me-2"></i>المواد المرتبطة</span>
-            <span class="badge bg-light text-dark">{{ $workOrder->materials->count() }} مادة</span>
-        </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-bordered table-striped align-middle mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th class="text-center" style="width: 5%;">#</th>
-                            <th class="text-center" style="width: 10%;">كود المادة</th>
-                            <th style="width: 30%;">اسم المادة</th>
-                            <th class="text-center" style="width: 10%;">الوحدة</th>
-                            <th class="text-center" style="width: 12%;">الكمية المخططة</th>
-                            <th class="text-center" style="width: 12%;">الكمية المنفذة</th>
-                            <th class="text-center" style="width: 12%;">الكمية المصروفة</th>
-                            <th class="text-center" style="width: 9%;">الفرق</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($workOrder->materials as $index => $material)
-                            <tr>
-                                <td class="text-center fw-bold">{{ $index + 1 }}</td>
-                                <td class="text-center">
-                                    <span class="badge bg-secondary">{{ $material->code ?? 'N/A' }}</span>
-                                </td>
-                                <td>
-                                    <div class="fw-bold text-primary">{{ $material->name ?? 'غير محدد' }}</div>
-                                    @if($material->description)
-                                        <small class="text-muted d-block">{{ $material->description }}</small>
-                                    @endif
-                                </td>
-                                <td class="text-center">{{ $material->unit ?? '-' }}</td>
-                                <td class="text-center">
-                                    <span class="badge bg-primary">{{ number_format($material->planned_quantity, 2) }}</span>
-                                </td>
-                                <td class="text-center">
-                                    <div class="executed-quantity-container" data-material-id="{{ $material->id }}">
-                                        <span class="executed-quantity-display">
-                                            @if($material->executed_quantity)
-                                                <span class="badge bg-success" style="cursor: pointer;" title="انقر للتعديل">
-                                                    {{ number_format($material->executed_quantity, 2) }}
-                                                    <i class="fas fa-edit ms-1" style="font-size: 0.8em;"></i>
-                                                </span>
-                                            @else
-                                                <span class="badge bg-secondary" style="cursor: pointer;" title="انقر للتعديل">
-                                                    لم يتم التنفيذ
-                                                    <i class="fas fa-edit ms-1" style="font-size: 0.8em;"></i>
-                                                </span>
-                                            @endif
-                                        </span>
-                                        <div class="executed-quantity-edit d-none">
-                                            <div class="input-group input-group-sm">
-                                                <input type="number" 
-                                                       class="form-control form-control-sm" 
-                                                       step="0.01" 
-                                                       min="0"
-                                                       value="{{ $material->executed_quantity ?? 0 }}"
-                                                       id="material_executed_quantity_{{ $material->id }}">
-                                                <button class="btn btn-success btn-sm" 
-                                                        onclick="saveMaterialExecutedQuantity({{ $material->id }})"
-                                                        title="حفظ">
-                                                    <i class="fas fa-check"></i>
-                                                </button>
-                                                <button class="btn btn-secondary btn-sm" 
-                                                        onclick="cancelEditMaterialExecutedQuantity({{ $material->id }})"
-                                                        title="إلغاء">
-                                                    <i class="fas fa-times"></i>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="text-center">
-                                    <div class="spent-quantity-container" data-material-id="{{ $material->id }}">
-                                        <span class="spent-quantity-display">
-                                            @if($material->spent_quantity)
-                                                <span class="badge bg-warning text-dark" style="cursor: pointer;" title="انقر للتعديل">
-                                                    {{ number_format($material->spent_quantity, 2) }}
-                                                    <i class="fas fa-edit ms-1" style="font-size: 0.8em;"></i>
-                                                </span>
-                                            @else
-                                                <span class="badge bg-secondary" style="cursor: pointer;" title="انقر للتعديل">
-                                                    لم يتم الصرف
-                                                    <i class="fas fa-edit ms-1" style="font-size: 0.8em;"></i>
-                                                </span>
-                                            @endif
-                                        </span>
-                                        <div class="spent-quantity-edit d-none">
-                                            <div class="input-group input-group-sm">
-                                                <input type="number" 
-                                                       class="form-control form-control-sm" 
-                                                       step="0.01" 
-                                                       min="0"
-                                                       value="{{ $material->spent_quantity ?? 0 }}"
-                                                       id="material_spent_quantity_{{ $material->id }}">
-                                                <button class="btn btn-success btn-sm" 
-                                                        onclick="saveMaterialSpentQuantity({{ $material->id }})"
-                                                        title="حفظ">
-                                                    <i class="fas fa-check"></i>
-                                                </button>
-                                                <button class="btn btn-secondary btn-sm" 
-                                                        onclick="cancelEditMaterialSpentQuantity({{ $material->id }})"
-                                                        title="إلغاء">
-                                                    <i class="fas fa-times"></i>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="text-center">
-                                    @php
-                                        $difference = $material->quantity_difference;
-                                    @endphp
-                                    @if($difference > 0)
-                                        <span class="badge bg-info">+{{ number_format($difference, 2) }}</span>
-                                    @elseif($difference < 0)
-                                        <span class="badge bg-danger">{{ number_format($difference, 2) }}</span>
-                                    @else
-                                        <span class="badge bg-success">متطابق</span>
-                                    @endif
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
     @endif
 
     {{-- كارد الحقول النصية --}}
@@ -798,232 +845,6 @@
         </div>
     </div>
 
-    {{-- صور التنفيذ --}}
-    @if(isset($executionImages) && $executionImages->count())
-    <div class="card mb-4 shadow-sm">
-        <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
-            <span>ملفات التنفيذ (الأعمال المدنية، التركيبات، الكهرباء)</span>
-            <button type="button" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#viewAllImagesModal">
-                <i class="fas fa-folder-open"></i> عرض جميع الملفات
-            </button>
-        </div>
-        <div class="card-body">
-            <div class="row">
-                @foreach($executionImages as $img)
-                    <div class="col-6 col-md-3 col-lg-2 mb-3">
-                        <div class="card h-100">
-                            @php
-                                // تحديد مسار الصورة بناءً على نوع الملف
-                                $imagePath = isset($img->file_category) && $img->file_category === 'installations_json' 
-                                    ? asset('storage/' . $img->file_path) 
-                                    : Storage::url($img->file_path);
-                                $isPdf = strtolower(pathinfo($img->file_path, PATHINFO_EXTENSION)) === 'pdf';
-                            @endphp
-                            
-                            @if($isPdf)
-                                <div class="card-img-top d-flex align-items-center justify-content-center bg-light" style="height: 120px;">
-                                    <i class="fas fa-file-pdf fa-3x text-danger"></i>
-                                </div>
-                            @else
-                                <img src="{{ $imagePath }}" 
-                                     class="card-img-top" 
-                                     style="height: 120px; object-fit: cover;"
-                                     alt="صورة التنفيذ"
-                                     data-bs-toggle="modal" 
-                                     data-bs-target="#viewImageModal"
-                                     data-image-url="{{ $imagePath }}"
-                                     data-image-name="{{ $img->original_filename }}"
-                                     data-image-date="{{ $img->created_at->format('Y-m-d H:i') }}"
-                                     style="cursor: pointer;">
-                            @endif
-                            
-                            <div class="card-body p-2">
-                                <small class="text-muted d-block text-truncate">{{ $img->original_filename }}</small>
-                                <small class="text-muted d-block">{{ $img->created_at->format('Y-m-d H:i') }}</small>
-                                @if($isPdf)
-                                    <a href="{{ $imagePath }}" target="_blank" class="btn btn-sm btn-primary w-100 mt-1">
-                                        <i class="fas fa-eye me-1"></i> عرض
-                                    </a>
-                                @endif
-                            </div>
-                        </div>
-                    </div>
-                @endforeach
-            </div>
-        </div>
-    </div>
-    @endif
-
-    {{-- Modal لعرض صورة واحدة --}}
-    <div class="modal fade" id="viewImageModal" tabindex="-1">
-        <div class="modal-dialog modal-lg modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">عرض الصورة</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body text-center">
-                    <img src="" id="modalImage" class="img-fluid" alt="صورة التنفيذ">
-                    <div class="mt-2">
-                        <small class="text-muted" id="modalImageName"></small><br>
-                        <small class="text-muted" id="modalImageDate"></small>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    {{-- Modal لعرض جميع الصور --}}
-    <div class="modal fade" id="viewAllImagesModal" tabindex="-1">
-        <div class="modal-dialog modal-xl modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">جميع ملفات التنفيذ</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="row">
-                        @foreach($executionImages as $img)
-                            <div class="col-6 col-md-4 col-lg-3 mb-3">
-                                <div class="card h-100">
-                                    @php
-                                        // تحديد مسار الصورة بناءً على نوع الملف
-                                        $imagePath = isset($img->file_category) && $img->file_category === 'installations_json' 
-                                            ? asset('storage/' . $img->file_path) 
-                                            : Storage::url($img->file_path);
-                                        $isPdf = strtolower(pathinfo($img->file_path, PATHINFO_EXTENSION)) === 'pdf';
-                                    @endphp
-                                    
-                                    @if($isPdf)
-                                        <div class="card-img-top d-flex align-items-center justify-content-center bg-light" style="height: 150px;">
-                                            <i class="fas fa-file-pdf fa-4x text-danger"></i>
-                                        </div>
-                                    @else
-                                        <img src="{{ $imagePath }}" 
-                                             class="card-img-top" 
-                                             style="height: 150px; object-fit: cover; cursor: pointer;"
-                                             onclick="openImageModal(this)"
-                                             data-image-url="{{ $imagePath }}"
-                                             data-image-name="{{ $img->original_filename }}"
-                                             data-image-date="{{ $img->created_at->format('Y-m-d H:i') }}"
-                                             alt="صورة التنفيذ">
-                                    @endif
-                                    
-                                    <div class="card-body p-2">
-                                        <small class="text-muted d-block text-truncate">{{ $img->original_filename }}</small>
-                                        <small class="text-muted d-block">{{ $img->created_at->format('Y-m-d H:i') }}</small>
-                                        @if($isPdf)
-                                            <a href="{{ $imagePath }}" target="_blank" class="btn btn-sm btn-primary w-100 mt-1">
-                                                <i class="fas fa-eye me-1"></i> عرض PDF
-                                            </a>
-                                        @endif
-                                    </div>
-                                </div>
-                            </div>
-                        @endforeach
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    {{-- صور التصاريح PERMITS --}}
-    <div class="card mb-4 shadow-sm">
-        <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
-            <div class="d-flex align-items-center">
-                <i class="fas fa-file-contract me-2"></i>
-                <span>صور التصاريح PERMITS</span>
-            </div>
-            @if($workOrder->safety_permits_images && count($workOrder->safety_permits_images) > 0)
-                <span class="badge bg-white text-warning fs-6">{{ count($workOrder->safety_permits_images) }} صورة</span>
-            @else
-                <span class="badge bg-white text-muted fs-6">لا توجد صور</span>
-            @endif
-        </div>
-        <div class="card-body">
-            @if($workOrder->safety_permits_images && count($workOrder->safety_permits_images) > 0)
-                <div class="row">
-                @foreach($workOrder->safety_permits_images as $index => $image)
-                    <div class="col-6 col-md-4 col-lg-3 mb-3">
-                        <div class="card h-100 shadow-sm">
-                            @php
-                                $imagePath = Storage::url($image);
-                                $isPdf = strtolower(pathinfo($image, PATHINFO_EXTENSION)) === 'pdf';
-                            @endphp
-                            
-                            @if($isPdf)
-                                <div class="card-img-top d-flex align-items-center justify-content-center bg-light" style="height: 150px;">
-                                    <i class="fas fa-file-pdf fa-3x text-danger"></i>
-                                </div>
-                            @else
-                                <img src="{{ $imagePath }}" 
-                                     class="card-img-top" 
-                                     style="height: 150px; object-fit: cover; cursor: pointer; transition: transform 0.2s;"
-                                     alt="صورة التصريح"
-                                     data-bs-toggle="modal" 
-                                     data-bs-target="#viewPermitImageModal"
-                                     data-image-url="{{ $imagePath }}"
-                                     data-image-name="صورة التصريح {{ $index + 1 }}"
-                                     data-image-index="{{ $index + 1 }}"
-                                     onmouseover="this.style.transform='scale(1.05)'"
-                                     onmouseout="this.style.transform='scale(1)'">
-                            @endif
-                            
-                            <div class="card-body p-2">
-                                <h6 class="card-title mb-1 text-truncate">
-                                    <i class="fas fa-certificate me-1 text-warning"></i>
-                                    تصريح رقم {{ $index + 1 }}
-                                </h6>
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <small class="text-muted">{{ $isPdf ? 'ملف PDF' : 'صورة' }}</small>
-                                    <div class="btn-group">
-                                        <a href="{{ $imagePath }}" 
-                                           target="_blank" 
-                                           class="btn btn-sm btn-outline-warning"
-                                           title="عرض">
-                                            <i class="fas fa-external-link-alt"> عرض </i>
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                @endforeach
-                </div>
-                
-                <!-- معلومات إضافية وروابط الإدارة -->
-                <div class="alert alert-info mt-3">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div class="d-flex align-items-center">
-                            <i class="fas fa-info-circle me-2"></i>
-                            <div>
-                                <strong>معلومات:</strong> هذه صور التصاريح المرفوعة من صفحة السلامة. 
-                                يمكنك مراجعة صفحة السلامة لإضافة أو تعديل التصاريح.
-                            </div>
-                        </div>
-                        <a href="{{ route('admin.work-orders.safety', $workOrder) }}" 
-                           class="btn btn-outline-info btn-sm">
-                            <i class="fas fa-shield-alt me-1"></i>
-                            إدارة التصاريح
-                        </a>
-                    </div>
-                </div>
-            @else
-                <!-- حالة عدم وجود صور تصاريح -->
-                <div class="text-center py-4">
-                    <div class="mb-3">
-                        <i class="fas fa-file-contract fa-4x text-muted mb-3"></i>
-                    </div>
-                    <h5 class="text-muted mb-2">لا توجد صور تصاريح</h5>
-                    <p class="text-muted mb-3">
-                        لم يتم رفع أي صور للتصاريح بعد. يمكنك إضافة صور التصاريح من صفحة السلامة.
-                    </p>
-                   
-                </div>
-            @endif
-        </div>
-    </div>
-
     {{-- مرفقات الفاتورة --}}
     <div class="card mb-4 shadow-sm">
         <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
@@ -1133,45 +954,6 @@
 
     @push('scripts')
     <script>
-        // تحديث بيانات الصورة في المودال عند النقر على صورة
-        document.querySelectorAll('[data-bs-target="#viewImageModal"]').forEach(img => {
-            img.addEventListener('click', function() {
-                const modal = document.getElementById('viewImageModal');
-                modal.querySelector('#modalImage').src = this.dataset.imageUrl;
-                modal.querySelector('#modalImageName').textContent = this.dataset.imageName;
-                modal.querySelector('#modalImageDate').textContent = this.dataset.imageDate;
-            });
-        });
-
-        // تحديث بيانات صور التصاريح في المودال عند النقر على صورة
-        document.querySelectorAll('[data-bs-target="#viewPermitImageModal"]').forEach(img => {
-            img.addEventListener('click', function() {
-                const modal = document.getElementById('viewPermitImageModal');
-                const imageUrl = this.dataset.imageUrl;
-                const imageName = this.dataset.imageName;
-                const imageIndex = this.dataset.imageIndex;
-                
-                modal.querySelector('#permitModalImage').src = imageUrl;
-                modal.querySelector('#permitModalImageName').textContent = imageName;
-                modal.querySelector('#permitModalImageIndex').textContent = `الصورة ${imageIndex}`;
-                modal.querySelector('#permitModalDownloadLink').href = imageUrl;
-                modal.querySelector('#permitModalTitle').textContent = imageName;
-            });
-        });
-
-
-
-        // دالة لفتح مودال الصورة من عرض جميع الصور
-        function openImageModal(img) {
-            const modal = document.getElementById('viewImageModal');
-            modal.querySelector('#modalImage').src = img.dataset.imageUrl;
-            modal.querySelector('#modalImageName').textContent = img.dataset.imageName;
-            modal.querySelector('#modalImageDate').textContent = img.dataset.imageDate;
-            new bootstrap.Modal(modal).show();
-        }
-
-
-
         // دالة التحقق من حجم ملفات المرفقات
         function validatePostExecutionFiles(input) {
             const files = input.files;
@@ -1941,7 +1723,316 @@ document.addEventListener('DOMContentLoaded', function() {
         executionStatusSelect.addEventListener('change', updateDateRequirement);
     }
 });
+
+// وظائف Modal إضافة بند عمل
+function openModal() {
+    document.getElementById('addWorkItemModal').style.display = 'block';
+    document.getElementById('modalWorkDate').value = '{{ now()->format("Y-m-d") }}';
+}
+
+function closeModal() {
+    document.getElementById('addWorkItemModal').style.display = 'none';
+    document.getElementById('addWorkItemForm').reset();
+    document.getElementById('unit').value = '';
+    document.getElementById('unit_price').value = '';
+    document.getElementById('quantity').value = '';
+    
+    const workItemSearch = document.getElementById('work_item_search');
+    const workItemSelect = document.getElementById('work_item_id');
+    
+    if (workItemSearch) {
+        workItemSearch.value = '';
+    }
+    
+    if (workItemSelect) {
+        for (let i = 1; i < workItemSelect.options.length; i++) {
+            workItemSelect.options[i].style.display = 'block';
+        }
+        workItemSelect.value = '';
+    }
+}
+
+// إغلاق المودال عند الضغط خارجه
+window.onclick = function(event) {
+    const modal = document.getElementById('addWorkItemModal');
+    if (event.target === modal) {
+        closeModal();
+    }
+}
+
+// تهيئة البحث والفورم
+document.addEventListener('DOMContentLoaded', function() {
+    const workItemIdSelect = document.getElementById('work_item_id');
+    const addWorkItemForm = document.getElementById('addWorkItemForm');
+    const workItemSearch = document.getElementById('work_item_search');
+
+    // وظيفة البحث
+    if (workItemSearch) {
+        workItemSearch.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const options = workItemIdSelect.options;
+            
+            for (let i = 1; i < options.length; i++) {
+                const option = options[i];
+                const code = option.dataset.code ? option.dataset.code.toLowerCase() : '';
+                const description = option.dataset.description ? option.dataset.description.toLowerCase() : '';
+                
+                if (code.includes(searchTerm) || description.includes(searchTerm)) {
+                    option.style.display = 'block';
+                } else {
+                    option.style.display = 'none';
+                }
+            }
+            
+            const visibleOptions = Array.from(options).filter(option => 
+                option.style.display !== 'none' && option.value !== ''
+            );
+            
+            if (visibleOptions.length === 1) {
+                workItemIdSelect.value = visibleOptions[0].value;
+                workItemIdSelect.dispatchEvent(new Event('change'));
+            }
+        });
+    }
+
+    // عند اختيار بند عمل
+    if (workItemIdSelect) {
+        workItemIdSelect.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            document.getElementById('unit_price').value = selectedOption.dataset.unitPrice || '';
+            document.getElementById('unit').value = selectedOption.dataset.unit || '';
+            
+            // إبقاء حقل الكمية فارغاً للمستخدم ليدخلها يدوياً
+            document.getElementById('quantity').value = '';
+            
+            // Focus على حقل الكمية
+            if (selectedOption.value) {
+                document.getElementById('quantity').focus();
+            }
+        });
+    }
+
+    // معالجة إرسال الفورم
+    if (addWorkItemForm) {
+        addWorkItemForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            if (!document.getElementById('work_item_id').value) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'تنبيه!',
+                    text: 'يرجى اختيار بند العمل أولاً'
+                });
+                return;
+            }
+            
+            // التحقق من إدخال الكمية
+            const quantity = document.getElementById('quantity').value;
+            if (!quantity || parseFloat(quantity) <= 0) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'تنبيه!',
+                    text: 'يرجى إدخال الكمية المنفذة'
+                });
+                return;
+            }
+            
+            const formData = new FormData(this);
+            
+            fetch('{{ route("admin.work-orders.add-daily-execution") }}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    closeModal();
+                    
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'تم بنجاح!',
+                        text: 'تم إضافة سجل التنفيذ اليومي بنجاح',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                    
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 2000);
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'خطأ!',
+                        text: data.message || 'حدث خطأ أثناء إضافة سجل التنفيذ'
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'خطأ!',
+                    text: 'حدث خطأ في الاتصال'
+                });
+            });
+        });
+    }
+});
 </script>
 @endpush
+
+<!-- Custom Modal HTML -->
+<style>
+.custom-modal {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.5);
+}
+
+.custom-modal-content {
+    background-color: #fefefe;
+    margin: 5% auto;
+    padding: 0;
+    border: 1px solid #888;
+    width: 60%;
+    max-width: 800px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.custom-modal-header {
+    padding: 15px 20px;
+    background-color: #007bff;
+    color: white;
+    border-radius: 8px 8px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.custom-modal-header h5 {
+    margin: 0;
+    font-size: 1.25rem;
+}
+
+.custom-modal-close {
+    color: white;
+    font-size: 28px;
+    font-weight: bold;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    line-height: 1;
+}
+
+.custom-modal-close:hover,
+.custom-modal-close:focus {
+    opacity: 0.8;
+}
+
+.custom-modal-body {
+    padding: 20px;
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.custom-modal-footer {
+    padding: 15px 20px;
+    background-color: #f8f9fa;
+    border-top: 1px solid #dee2e6;
+    border-radius: 0 0 8px 8px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.custom-modal-footer button {
+    margin-left: 10px;
+}
+</style>
+
+<div id="addWorkItemModal" class="custom-modal">
+    <div class="custom-modal-content">
+        <div class="custom-modal-header">
+            <h5>إضافة بند عمل جديد</h5>
+            <button class="custom-modal-close" onclick="closeModal()">&times;</button>
+        </div>
+        <div class="custom-modal-body">
+            <form id="addWorkItemForm">
+                @csrf
+                <input type="hidden" name="work_order_id" value="{{ $workOrder->id }}">
+                <input type="hidden" name="work_date" id="modalWorkDate">
+                
+                <div class="mb-3">
+                    <label for="work_item_search" class="form-label">البحث عن بند العمل</label>
+                    <div class="alert alert-info small mb-2">
+                        <i class="fas fa-info-circle me-1"></i>
+                        عرض بنود العمل لمشروع: {{ $project === 'riyadh' ? 'الرياض' : 'المدينة المنورة' }}
+                    </div>
+                    <input type="text" id="work_item_search" class="form-control" placeholder="اكتب رقم البند أو الوصف للبحث...">
+                </div>
+                
+                <div class="mb-3">
+                    <label for="work_item_id" class="form-label">اختر بند العمل</label>
+                    <select name="work_item_id" id="work_item_id" class="form-select" required>
+                        <option value="">-- اختر بند العمل --</option>
+                        @foreach($workItems as $workItem)
+                            <option value="{{ $workItem->id }}" 
+                                    data-unit-price="{{ $workItem->unit_price }}" 
+                                    data-unit="{{ $workItem->unit }}"
+                                    data-code="{{ $workItem->code }}"
+                                    data-description="{{ $workItem->description }}">
+                                {{ $workItem->code }} - {{ $workItem->description }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label for="quantity" class="form-label">الكمية المنفذة <span class="text-danger">*</span></label>
+                            <input type="number" step="0.01" class="form-control" id="quantity" name="quantity" min="0.01" required>
+                            <small class="text-muted">الكمية المنفذة في هذا التاريخ</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label for="unit" class="form-label">الوحدة</label>
+                            <input type="text" class="form-control" id="unit" readonly>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label for="unit_price" class="form-label">سعر الوحدة</label>
+                            <input type="number" step="0.01" class="form-control" id="unit_price" readonly>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="notes" class="form-label">ملاحظات</label>
+                    <textarea class="form-control" id="notes" name="notes" rows="2"></textarea>
+                </div>
+            </form>
+        </div>
+        <div class="custom-modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeModal()">إلغاء</button>
+            <button type="submit" form="addWorkItemForm" class="btn btn-primary">إضافة البند</button>
+        </div>
+    </div>
+</div>
 
 @endsection 

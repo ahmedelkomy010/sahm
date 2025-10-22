@@ -13,8 +13,8 @@
                         </div>
                         <div class="d-flex align-items-center gap-3">
                            
-                            <a href="{{ route('admin.work-orders.show', $workOrder) }}" class="btn btn-success">
-                                <i class="fas fa-arrow-left"></i> عودة الي تفاصيل أمر العمل  
+                            <a href="{{ route('admin.work-orders.daily-program') }}" class="btn btn-success">
+                                <i class="fas fa-arrow-left"></i> عودة الي برنامج العمل اليومي  
                             </a>
                         </div>
                     </div>
@@ -121,7 +121,8 @@
                                 <label for="workDate" class="text-white me-2">التاريخ:</label>
                                 <input type="date" id="workDate" class="form-control form-control-sm" 
                                        value="{{ request('date', now()->format('Y-m-d')) }}"
-                                       onchange="updateWorkDate(this.value)">
+                                       style="background-color: #e9ecef; cursor: not-allowed;"
+                                       readonly>
                             </div>
                             <button type="button" class="btn btn-light btn-sm" onclick="refreshWorkItems()">
                                 <i class="fas fa-sync-alt me-1"></i>
@@ -134,13 +135,7 @@
                     <!-- معلومات حول بنود العمل -->
                     <div class="p-4 border-bottom bg-light">
                         <div class="row align-items-center">
-                            <div class="col-md-8">
-                                <button type="button" class="btn btn-primary" onclick="openModal()">
-                                    <i class="fas fa-plus-circle me-1"></i>
-                                    إضافة بند عمل جديد
-                                </button>
-                            </div>
-                            <div class="col-md-4 text-end">
+                            <div class="col-md-12 text-end">
                                 <div class="d-flex align-items-center justify-content-end gap-3">
                                     <div class="text-center">
                                         <div class="fw-bold text-primary fs-4">{{ $workOrder->workOrderItems->count() }}</div>
@@ -210,18 +205,33 @@
                                                 <span class="text-success fw-bold">{{ number_format($unitPrice, 2) }} ريال</span>
                                             </td>
                                             <td class="text-center">
+                                                @php
+                                                    $city = $workOrder->city ?? 'الرياض';
+                                                    $editPlannedPermission = $city == 'الرياض' ? 'riyadh_edit_planned_quantity' : 'madinah_edit_planned_quantity';
+                                                    $canEditPlanned = auth()->user()->is_admin || (is_array(auth()->user()->permissions) && in_array($editPlannedPermission, auth()->user()->permissions));
+                                                @endphp
                                                 <input type="number" step="0.01" value="{{ $plannedQuantity }}" 
                                                        class="form-control form-control-sm text-center planned-quantity" 
-                                                       data-id="{{ $workOrderItem->id }}" style="width: 80px; background-color: #f8f9fa;" readonly>
+                                                       data-id="{{ $workOrderItem->id }}" 
+                                                       style="width: 80px; {{ $canEditPlanned ? '' : 'background-color: #f8f9fa;' }}" 
+                                                       {{ $canEditPlanned ? 'onchange="updatePlannedQuantity(this)"' : 'readonly' }}
+                                                       min="0.01">
                                             </td>
                                             <td class="text-center">
                                                 <span class="text-primary fw-bold planned-amount">{{ number_format($plannedAmount, 2) }} ريال</span>
                                             </td>
                                             <td class="text-center">
+                                                @php
+                                                    $city = $workOrder->city ?? 'الرياض';
+                                                    $editExecutedPermission = $city == 'الرياض' ? 'riyadh_edit_executed_quantity' : 'madinah_edit_executed_quantity';
+                                                    $canEditExecuted = auth()->user()->is_admin || (is_array(auth()->user()->permissions) && in_array($editExecutedPermission, auth()->user()->permissions));
+                                                @endphp
                                                 <input type="number" step="0.01" value="{{ $currentDateQuantity }}" 
-                                                       class="form-control form-control-sm text-center actual-quantity" 
-                                                       data-id="{{ $workOrderItem->id }}" style="width: 80px;"
-                                                       onchange="updateExecutedQuantity(this)"
+                                                       class="form-control text-center actual-quantity" 
+                                                       data-id="{{ $workOrderItem->id }}" 
+                                                       style="width: 120px; font-size: 1.1rem; font-weight: 600; {{ $canEditExecuted ? '' : 'background-color: #f8f9fa; cursor: not-allowed;' }}"
+                                                       min="0.01"
+                                                       {{ $canEditExecuted ? 'onchange="updateExecutedQuantity(this)"' : 'readonly' }}
                                                        placeholder="0.00">
                                             </td>
                                             <td class="text-center">
@@ -406,7 +416,7 @@
                                                         title="تعديل السجل"
                                                         data-bs-toggle="modal"
                                                         data-bs-target="#editExecutionModal"
-                                                        onclick="openEditModal('{{ route('admin.work-orders.daily-executions.update', $dailyExecution->id) }}', {{ $dailyExecution->executed_quantity }}, '{{ $dailyExecution->work_date ? $dailyExecution->work_date->format('Y-m-d') : '' }}', '{{ addslashes($workItem->description ?? '') }}')">
+                                                        onclick="openEditModal('{{ route('admin.work-orders.daily-executions.update', $dailyExecution->id) }}', {{ $dailyExecution->executed_quantity }}, '{{ $dailyExecution->work_date ? $dailyExecution->work_date->format('Y-m-d') : '' }}', '{{ addslashes($workItem->description ?? '') }}', '{{ $workOrderItem->unit ?? ($workItem ? ($workItem->unit ?? 'عدد') : 'عدد') }}')">
                                                     <i class="fas fa-edit"></i>
                                                 </button>
                                                 @endif
@@ -1099,14 +1109,27 @@ body.modal-open {
                         <label class="form-label fw-bold">وصف البند:</label>
                         <p id="edit_item_description" class="text-muted"></p>
                     </div>
-                    <div class="mb-3">
-                        <label for="edit_executed_quantity" class="form-label">الكمية المنفذة <span class="text-danger">*</span></label>
-                        <input type="number" 
-                               class="form-control" 
-                               id="edit_executed_quantity" 
-                               name="executed_quantity" 
-                               step="0.01" 
-                               required>
+                    <div class="row">
+                        <div class="col-md-8 mb-3">
+                            <label for="edit_executed_quantity" class="form-label">الكمية المنفذة <span class="text-danger">*</span></label>
+                            <input type="number" 
+                                   class="form-control" 
+                                   id="edit_executed_quantity" 
+                                   name="executed_quantity" 
+                                   step="0.01" 
+                                   min="0.01"
+                                   required>
+                            <small class="form-text text-muted">يجب أن تكون الكمية أكبر من صفر</small>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="edit_unit" class="form-label">الوحدة <span class="text-danger">*</span></label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="edit_unit" 
+                                   name="unit" 
+                                   placeholder="مثال: متر، عدد"
+                                   required>
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label for="edit_work_date" class="form-label">تاريخ التنفيذ <span class="text-danger">*</span></label>
@@ -1133,19 +1156,21 @@ body.modal-open {
 </div>
 
 <script>
-function openEditModal(routeUrl, quantity, date, description) {
+function openEditModal(routeUrl, quantity, date, description, unit) {
     console.log('Opening modal with route:', routeUrl);
     
     // تعبئة البيانات
     document.getElementById('edit_executed_quantity').value = quantity;
     document.getElementById('edit_work_date').value = date;
     document.getElementById('edit_item_description').textContent = description;
+    document.getElementById('edit_unit').value = unit || 'عدد';
     
     // تحديد الـ action
     const form = document.getElementById('editExecutionForm');
     form.action = routeUrl;
     
     console.log('Form action set to:', form.action);
+    console.log('Unit:', unit);
 }
 
 // إصلاح شامل للـ Modal
@@ -1623,9 +1648,88 @@ function refreshWorkItems() {
     toastr.success('تم تحديث البيانات. يمكنك الآن إدخال الكميات المنفذة للتاريخ المحدد.');
 }
 
+function updatePlannedQuantity(input) {
+    const workOrderItemId = input.dataset.id;
+    const plannedQuantity = parseFloat(input.value) || 0;
+    
+    // التحقق من أن الكمية أكبر من صفر
+    if (plannedQuantity <= 0) {
+        toastr.error('لا يمكن تسجيل كمية مخططة تساوي صفر أو أقل');
+        input.value = input.defaultValue; // إعادة القيمة السابقة
+        return;
+    }
+    
+    // تأكيد التعديل
+    if (!confirm('هل أنت متأكد من تعديل الكمية المخططة؟\nهذا سيؤثر على حسابات المشروع.')) {
+        input.value = input.defaultValue;
+        return;
+    }
+    
+    // إرسال طلب Ajax لتحديث الكمية المخططة
+    fetch(`{{ url('admin/work-orders/update-planned-quantity') }}/${workOrderItemId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({
+            planned_quantity: plannedQuantity
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // تحديث القيمة الافتراضية للـ input عشان تكون هي المرجع الجديد
+            input.defaultValue = plannedQuantity;
+            
+            // تحديث واجهة المستخدم
+            const row = input.closest('tr');
+            const unitPrice = parseFloat(row.querySelector('.text-success.fw-bold').textContent.replace(/[^\d.-]/g, ''));
+            const plannedAmount = plannedQuantity * unitPrice;
+            
+            // تحديث القيمة المخططة
+            row.querySelector('.planned-amount').textContent = `${plannedAmount.toFixed(2)} ريال`;
+            
+            // تحديث الفرق
+            const executedQuantity = parseFloat(row.querySelector('.actual-quantity').value) || 0;
+            const quantityDiff = plannedQuantity - executedQuantity;
+            const diffElement = row.querySelector('.quantity-diff');
+            
+            if (quantityDiff > 0) {
+                diffElement.innerHTML = `<span class="badge bg-danger">-${quantityDiff.toFixed(2)}</span>`;
+            } else if (quantityDiff < 0) {
+                diffElement.innerHTML = `<span class="badge bg-success">+${Math.abs(quantityDiff).toFixed(2)}</span>`;
+            } else {
+                diffElement.innerHTML = `<span class="badge bg-secondary">0.00</span>`;
+            }
+            
+            // عرض رسالة نجاح
+            toastr.success('تم تحديث الكمية المخططة بنجاح');
+            
+            // تحديث الإجماليات
+            updateTotals();
+        } else {
+            toastr.error(data.message || 'حدث خطأ أثناء تحديث الكمية المخططة');
+            input.value = input.defaultValue;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        toastr.error('حدث خطأ أثناء تحديث الكمية المخططة');
+        input.value = input.defaultValue;
+    });
+}
+
 function updateExecutedQuantity(input) {
     const workOrderItemId = input.dataset.id;
-    const executedQuantity = input.value;
+    const executedQuantity = parseFloat(input.value) || 0;
+    
+    // التحقق من أن الكمية أكبر من صفر
+    if (executedQuantity <= 0) {
+        toastr.error('لا يمكن تسجيل بند بكمية منفذة تساوي صفر أو أقل');
+        input.value = ''; // مسح القيمة
+        return;
+    }
     
     // Send AJAX request to update the executed quantity
     fetch(`{{ url('admin/work-orders/update-work-item') }}/${workOrderItemId}`, {

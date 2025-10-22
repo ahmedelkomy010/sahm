@@ -10,6 +10,7 @@ use Maatwebsite\Excel\Concerns\WithColumnWidths;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use Illuminate\Support\Facades\DB;
 
 class DailyProgramStatusExport implements FromCollection, WithHeadings, WithMapping, WithStyles, WithColumnWidths
 {
@@ -46,6 +47,7 @@ class DailyProgramStatusExport implements FromCollection, WithHeadings, WithMapp
         $index++;
 
         $workOrder = $program->workOrder;
+        $programDate = $program->program_date->format('Y-m-d');
 
         // التحقق من وجود بيانات المسح
         $hasSurvey = $workOrder->surveys()->exists();
@@ -61,15 +63,48 @@ class DailyProgramStatusExport implements FromCollection, WithHeadings, WithMapp
             })
             ->exists();
         
-        // التحقق من وجود بيانات السلامة
-        $hasSafety = !empty($workOrder->safety_permits_images) || 
-                    !empty($workOrder->safety_permits_files) ||
-                    !empty($workOrder->safety_team_images) ||
-                    !empty($workOrder->safety_equipment_images) ||
-                    !empty($workOrder->safety_general_images) ||
-                    !empty($workOrder->safety_tbt_images) ||
-                    $workOrder->safetyViolations()->exists() ||
-                    $workOrder->safetyHistory()->exists();
+        // التحقق من وجود بيانات السلامة في نفس يوم البرنامج
+        $hasSafety = false;
+        
+        // دالة مساعدة للتحقق من الصور المرفوعة في نفس اليوم
+        $checkDailyImages = function($images, $date) {
+            if (!is_array($images) || empty($images)) {
+                return false;
+            }
+            foreach ($images as $img) {
+                if (is_array($img) && isset($img['uploaded_at'])) {
+                    $imgDate = date('Y-m-d', strtotime($img['uploaded_at']));
+                    if ($imgDate === $date) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        };
+        
+        // فحص كل أنواع صور السلامة
+        if ($checkDailyImages($workOrder->safety_permits_images ?? [], $programDate) ||
+            $checkDailyImages($workOrder->safety_team_images ?? [], $programDate) ||
+            $checkDailyImages($workOrder->safety_equipment_images ?? [], $programDate) ||
+            $checkDailyImages($workOrder->safety_general_images ?? [], $programDate) ||
+            $checkDailyImages($workOrder->safety_tbt_images ?? [], $programDate)) {
+            $hasSafety = true;
+        }
+        
+        // فحص المخالفات في نفس اليوم
+        if (!$hasSafety) {
+            $hasSafety = $workOrder->safetyViolations()
+                ->whereDate('violation_date', $programDate)
+                ->exists();
+        }
+        
+        // فحص تاريخ التفتيش في نفس اليوم
+        if (!$hasSafety) {
+            $hasSafety = \DB::table('work_order_inspection_dates')
+                ->where('work_order_id', $workOrder->id)
+                ->whereDate('inspection_date', $programDate)
+                ->exists();
+        }
 
         return [
             $index,

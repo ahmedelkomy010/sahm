@@ -44,6 +44,20 @@ class WorkOrderController extends Controller
         
         $query = WorkOrder::where('city', $city);
         
+        // فلتر نوع النظام (UDS/SAP)
+        if ($request->filled('system_type')) {
+            if ($request->system_type === 'ALL') {
+                // عرض الكل (UDS و SAP)
+                // لا نضيف أي فلتر
+            } else {
+                // عرض النظام المحدد فقط
+                $query->where('system_type', $request->system_type);
+            }
+        } else {
+            // الافتراضي: عرض UDS فقط
+            $query->where('system_type', 'UDS');
+        }
+        
         // فلتر رقم أمر العمل
         if ($request->filled('order_number')) {
             $query->where('order_number', 'like', '%' . $request->order_number . '%');
@@ -967,6 +981,7 @@ class WorkOrderController extends Controller
         
         $validated = $request->validate([
             'order_number' => 'required|string|max:255',
+            'system_type' => 'required|in:UDS,SAP',
             'work_type' => 'required|string|max:999',
             'work_description' => 'required|string',
             'approval_date' => 'required|date',
@@ -1227,6 +1242,20 @@ class WorkOrderController extends Controller
         // تحديث البيانات من قاعدة البيانات
         $workOrder = $workOrder->fresh();
         
+        // تحديد المشروع بناءً على مدينة أمر العمل
+        $project = 'riyadh'; // افتراضي
+        if ($workOrder->city === 'المدينة المنورة') {
+            $project = 'madinah';
+        } elseif (empty($workOrder->city)) {
+            $project = 'riyadh';
+        }
+        
+        // جلب بنود العمل المُفلترة حسب المشروع
+        $workItems = \App\Models\WorkItem::byProject($project)
+                                          ->where('is_active', true)
+                                          ->orderBy('code')
+                                          ->get();
+        
         $workOrder->load([
             'files', 
             'basicAttachments', 
@@ -1271,7 +1300,9 @@ class WorkOrderController extends Controller
             'grandTotal',
             'executionImages',
             'dailyExecutions',
-            'dailyNotes'
+            'dailyNotes',
+            'workItems',
+            'project'
         ));
     }
 
@@ -1334,11 +1365,150 @@ class WorkOrderController extends Controller
     }
 
     /**
+     * إضافة سجل تنفيذ يومي مباشرة (لصفحة إجراءات ما بعد التنفيذ)
+     */
+    public function addDailyExecution(Request $request)
+    {
+        try {
+            $request->validate([
+                'work_order_id' => 'required|exists:work_orders,id',
+                'work_item_id' => 'required|exists:work_items,id',
+                'quantity' => 'required|numeric|min:0.01',
+                'notes' => 'nullable|string',
+                'work_date' => 'required|date'
+            ]);
+
+            // الحصول على بيانات بند العمل
+            $workItem = \App\Models\WorkItem::findOrFail($request->work_item_id);
+
+            // البحث عن work_order_item أو إنشاءه
+            $workOrderItem = \App\Models\WorkOrderItem::firstOrCreate(
+                [
+                    'work_order_id' => $request->work_order_id,
+                    'work_item_id' => $workItem->id
+                ],
+                [
+                    'quantity' => 0, // كمية مخططة = 0 حتى لا يظهر في صفحة التنفيذ
+                    'unit_price' => $workItem->unit_price ?? 0,
+                    'unit' => $workItem->unit ?? 'EA',
+                    'executed_quantity' => 0,
+                    'notes' => $request->notes,
+                    'work_date' => $request->work_date
+                ]
+            );
+
+            // التحقق من عدم وجود سجل تنفيذ في نفس التاريخ
+            $existingExecution = \App\Models\DailyWorkExecution::where('work_order_item_id', $workOrderItem->id)
+                ->where('work_date', $request->work_date)
+                ->first();
+
+            if ($existingExecution) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'يوجد سجل تنفيذ لهذا البند في نفس التاريخ'
+                ]);
+            }
+
+            // إنشاء سجل التنفيذ اليومي
+            $dailyExecution = \App\Models\DailyWorkExecution::create([
+                'work_order_id' => $request->work_order_id,
+                'work_order_item_id' => $workOrderItem->id,
+                'work_date' => $request->work_date,
+                'executed_quantity' => $request->quantity,
+                'created_by' => auth()->id()
+            ]);
+
+            // تحديث إجمالي الكمية المنفذة
+            $totalExecuted = \App\Models\DailyWorkExecution::where('work_order_item_id', $workOrderItem->id)
+                ->sum('executed_quantity');
+            
+            $workOrderItem->update([
+                'executed_quantity' => $totalExecuted
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'تم إضافة سجل التنفيذ اليومي بنجاح'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء إضافة سجل التنفيذ: ' . $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
+     * تحديث الكمية المخططة
+     */
+    public function updatePlannedQuantity(Request $request, \App\Models\WorkOrderItem $workOrderItem)
+    {
+        try {
+            // التحقق من الصلاحيات
+            $workOrder = $workOrderItem->workOrder;
+            $city = $workOrder->city ?? 'الرياض';
+            $editPermission = $city == 'الرياض' ? 'riyadh_edit_planned_quantity' : 'madinah_edit_planned_quantity';
+            
+            if (!auth()->user()->is_admin && !in_array($editPermission, auth()->user()->permissions ?? [])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'ليس لديك صلاحية لتعديل الكمية المخططة'
+                ], 403);
+            }
+            
+            $request->validate([
+                'planned_quantity' => 'required|numeric|min:0.01'
+            ]);
+
+            $plannedQuantity = $request->planned_quantity;
+
+            // التحقق من أن الكمية أكبر من صفر
+            if ($plannedQuantity <= 0) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'لا يمكن تسجيل كمية مخططة تساوي صفر أو أقل'
+                ], 422);
+            }
+
+            // تحديث الكمية المخططة
+            $workOrderItem->update([
+                'quantity' => $plannedQuantity
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'تم تحديث الكمية المخططة بنجاح',
+                'planned_quantity' => $plannedQuantity
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error updating planned quantity: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء تحديث الكمية المخططة: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * تحديث بند عمل - حفظ الكمية اليومية
      */
     public function updateWorkItem(Request $request, \App\Models\WorkOrderItem $workOrderItem)
     {
         try {
+            // التحقق من الصلاحيات
+            $workOrder = $workOrderItem->workOrder;
+            $city = $workOrder->city ?? 'الرياض';
+            $editPermission = $city == 'الرياض' ? 'riyadh_edit_executed_quantity' : 'madinah_edit_executed_quantity';
+            
+            if (!auth()->user()->is_admin && !in_array($editPermission, auth()->user()->permissions ?? [])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'ليس لديك صلاحية لتعديل الكمية المنفذة'
+                ], 403);
+            }
+            
             $request->validate([
                 'executed_quantity' => 'required|numeric|min:0',
                 'work_date' => 'required|date'
@@ -3890,6 +4060,7 @@ class WorkOrderController extends Controller
         // تعيين عناوين الأعمدة
         $headers = [
             'رقم أمر العمل',
+            'النظام',
             'نوع العمل',
             'وصف العمل',
             'تاريخ الاعتماد',
@@ -3902,7 +4073,8 @@ class WorkOrderController extends Controller
             'قيمة أمر العمل (شامل)',
             'قيمة أمر العمل (بدون)',
             'حالة التنفيذ',
-            'المدينة'
+            'المدينة',
+            'ملاحظات'
         ];
 
         // كتابة العناوين
@@ -3970,22 +4142,24 @@ class WorkOrderController extends Controller
         $row = 2;
         foreach ($workOrders as $workOrder) {
             $sheet->setCellValue('A' . $row, $workOrder->order_number);
-            $sheet->setCellValue('B' . $row, $workOrder->work_type);
-            $sheet->setCellValue('C' . $row, $workOrder->work_description);
-            $sheet->setCellValue('D' . $row, $workOrder->approval_date ? $workOrder->approval_date->format('Y-m-d') : '');
-            $sheet->setCellValue('E' . $row, $workOrder->subscriber_name);
-            $sheet->setCellValue('F' . $row, $workOrder->district);
-            $sheet->setCellValue('G' . $row, $workOrder->municipality);
-            $sheet->setCellValue('H' . $row, $workOrder->office);
-            $sheet->setCellValue('I' . $row, $workOrder->station_number);
-            $sheet->setCellValue('J' . $row, $workOrder->consultant_name);
-            $sheet->setCellValue('K' . $row, $workOrder->order_value_with_consultant);
-            $sheet->setCellValue('L' . $row, $workOrder->order_value_without_consultant);
-            $sheet->setCellValue('M' . $row, $this->getExecutionStatusText($workOrder->execution_status));
-            $sheet->setCellValue('N' . $row, $workOrder->city);
+            $sheet->setCellValue('B' . $row, $workOrder->system_type ?? 'UDS');
+            $sheet->setCellValue('C' . $row, $workOrder->work_type);
+            $sheet->setCellValue('D' . $row, $workOrder->work_description);
+            $sheet->setCellValue('E' . $row, $workOrder->approval_date ? $workOrder->approval_date->format('Y-m-d') : '');
+            $sheet->setCellValue('F' . $row, $workOrder->subscriber_name);
+            $sheet->setCellValue('G' . $row, $workOrder->district);
+            $sheet->setCellValue('H' . $row, $workOrder->municipality);
+            $sheet->setCellValue('I' . $row, $workOrder->office);
+            $sheet->setCellValue('J' . $row, $workOrder->station_number);
+            $sheet->setCellValue('K' . $row, $workOrder->consultant_name);
+            $sheet->setCellValue('L' . $row, $workOrder->order_value_with_consultant);
+            $sheet->setCellValue('M' . $row, $workOrder->order_value_without_consultant);
+            $sheet->setCellValue('N' . $row, $this->getExecutionStatusText($workOrder->execution_status));
+            $sheet->setCellValue('O' . $row, $workOrder->city);
+            $sheet->setCellValue('P' . $row, $workOrder->notes ?? '');
 
             // تنسيق خلايا البيانات
-            $sheet->getStyle('A' . $row . ':N' . $row)->applyFromArray([
+            $sheet->getStyle('A' . $row . ':P' . $row)->applyFromArray([
                 'alignment' => [
                     'horizontal' => Alignment::HORIZONTAL_CENTER,
                 ],
@@ -4481,6 +4655,7 @@ class WorkOrderController extends Controller
                 'materials_notes' => 'nullable|string',
                 'quality_notes' => 'nullable|string',
                 'safety_notes' => 'nullable|string',
+                'execution_notes' => 'nullable|string',
             ]);
             
             $program = \App\Models\DailyWorkProgram::findOrFail($validated['program_id']);
@@ -4497,6 +4672,9 @@ class WorkOrderController extends Controller
             }
             if (isset($validated['safety_notes'])) {
                 $program->safety_notes = $validated['safety_notes'];
+            }
+            if (isset($validated['execution_notes'])) {
+                $program->execution_notes = $validated['execution_notes'];
             }
             
             $program->save();
@@ -4785,7 +4963,7 @@ class WorkOrderController extends Controller
             \Log::error('Error updating safety data: ' . $e->getMessage());
             return redirect()->back()
                 ->withInput()
-                ->with('error', 'حدث خطأ أثناء تحديث بيانات السلامة');
+                ->with('error', $e->getMessage());
         }
     }
 
@@ -4798,16 +4976,60 @@ class WorkOrderController extends Controller
             $uploadedImages = [];
             $fieldName = 'safety_' . $category . '_images';
             
+            // تحديد الحد الأقصى لكل فئة
+            $dailyLimits = [
+                'tbt' => 2,        // صور اجتماع ما قبل بدء العمل
+                'permits' => 4,    // صور التصاريح
+                'team' => 4,       // صور فريق العمل والتأهيل
+                'equipment' => 4,  // صور المعدات والتأهيل
+                'general' => 5     // صور عامة للموقع
+            ];
+            
+            $dailyLimit = $dailyLimits[$category] ?? 10;
+            
             \Log::info('Starting uploadSafetyImages', [
                 'category' => $category,
                 'fieldName' => $fieldName,
                 'workOrderId' => $workOrder->id,
-                'filesCount' => count($files)
+                'filesCount' => count($files),
+                'dailyLimit' => $dailyLimit
             ]);
             
             // الحصول على الصور الموجودة
             $existingImages = $workOrder->$fieldName ?? [];
             \Log::info('Existing images', ['count' => count($existingImages)]);
+
+            // معلومات المستخدم الحالي
+            $uploaderName = auth()->user()->name ?? 'غير محدد';
+            $uploadDate = now()->format('Y-m-d H:i:s');
+            $today = now()->format('Y-m-d');
+
+            // حساب عدد الصور المرفوعة اليوم
+            $todayImagesCount = 0;
+            foreach ($existingImages as $img) {
+                if (is_array($img) && isset($img['uploaded_at'])) {
+                    $imgDate = date('Y-m-d', strtotime($img['uploaded_at']));
+                    if ($imgDate === $today) {
+                        $todayImagesCount++;
+                    }
+                }
+            }
+            
+            \Log::info('Daily upload check', [
+                'todayImagesCount' => $todayImagesCount,
+                'dailyLimit' => $dailyLimit,
+                'newFilesCount' => count($files)
+            ]);
+
+            // التحقق من الحد الأقصى اليومي
+            $remainingSlots = $dailyLimit - $todayImagesCount;
+            if ($remainingSlots <= 0) {
+                throw new \Exception("تم الوصول للحد الأقصى اليومي ($dailyLimit صور). يمكنك رفع المزيد غداً.");
+            }
+            
+            if (count($files) > $remainingSlots) {
+                throw new \Exception("يمكنك رفع $remainingSlots صورة فقط اليوم. تم رفع $todayImagesCount من $dailyLimit صورة.");
+            }
 
             foreach ($files as $index => $file) {
                 \Log::info('Processing file', [
@@ -4824,11 +5046,19 @@ class WorkOrderController extends Controller
                 }
                 
                 $filePath = $file->storeAs($path, $filename, 'public');
-                $uploadedImages[] = $filePath;
+                
+                // حفظ الصورة مع الـ metadata
+                $uploadedImages[] = [
+                    'path' => $filePath,
+                    'uploaded_at' => $uploadDate,
+                    'uploaded_by' => $uploaderName,
+                ];
                 
                 \Log::info('File uploaded successfully', [
                     'filename' => $filename,
-                    'filePath' => $filePath
+                    'filePath' => $filePath,
+                    'uploaded_by' => $uploaderName,
+                    'uploaded_at' => $uploadDate
                 ]);
             }
 

@@ -439,6 +439,15 @@
                                                 <td>{{ $workOrder->task_number ?? 'غير متوفر' }}</td>
                                             </tr>
                                             <tr>
+                                                <th>النظام</th>
+                                                <td>
+                                                    <span class="badge {{ $workOrder->system_type == 'SAP' ? 'bg-warning text-dark' : 'bg-success' }} fs-6">
+                                                        <i class="fas fa-server me-1"></i>
+                                                        {{ $workOrder->system_type ?? 'UDS' }}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                            <tr>
                                                 <th>رقم المحطة</th>
                                                 <td>{{ $workOrder->station_number ?? 'غير متوفر' }}</td>
                                             </tr>

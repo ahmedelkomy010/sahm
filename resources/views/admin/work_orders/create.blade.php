@@ -85,6 +85,19 @@
                                 </div>
 
                                 <div class="form-group mb-3">
+                                    <label for="system_type" class="form-label fw-bold">النظام</label>
+                                    <select id="system_type" class="form-select @error('system_type') is-invalid @enderror" name="system_type">
+                                        <option value="UDS" {{ old('system_type', 'UDS') == 'UDS' ? 'selected' : '' }}>UDS</option>
+                                        <option value="SAP" {{ old('system_type') == 'SAP' ? 'selected' : '' }}>SAP</option>
+                                    </select>
+                                    @error('system_type')
+                                        <span class="invalid-feedback" role="alert">
+                                            <strong>{{ $message }}</strong>
+                                        </span>
+                                    @enderror
+                                </div>
+
+                                <div class="form-group mb-3">
                                     <label for="work_type" class="form-label fw-bold">نوع العمل</label>
                                     <div class="row">
                                         <div class="col-md-4">
@@ -161,9 +174,6 @@
                                         </button>
                                         <button type="button" class="btn btn-sm btn-success" onclick="setDateQuick(0)">
                                             <i class="fas fa-calendar-day me-1"></i>اليوم
-                                        </button>
-                                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="setDateQuick(1)">
-                                            بكرة<i class="fas fa-arrow-right ms-1"></i>
                                         </button>
                                     </div>
                                     
@@ -1922,16 +1932,9 @@ function showToast(type, message) {
 
 // حذف صف مادة
 function removeMaterialRow(button) {
-    const tbody = document.getElementById('materialsBody');
-    
     const row = button.closest('tr');
     if (row) {
         row.remove();
-        
-        // إضافة صف جديد إذا كان الجدول فارغاً
-        if (tbody && tbody.children.length === 0) {
-            addMaterial();
-        }
     }
 }
 

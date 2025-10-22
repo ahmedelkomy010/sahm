@@ -234,6 +234,18 @@
                                         class="h-3 w-3 ml-1 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
                                     <label for="riyadh_delete_execution_record" class="text-xs text-blue-700 mr-2">حذف سجل التنفيذ</label>
                                 </div>
+                                <div class="flex items-center">
+                                    <input type="checkbox" id="riyadh_edit_planned_quantity" name="permissions[]" value="riyadh_edit_planned_quantity" 
+                                        {{ (is_array($user->permissions) && in_array('riyadh_edit_planned_quantity', $user->permissions)) ? 'checked' : '' }}
+                                        class="h-3 w-3 ml-1 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                    <label for="riyadh_edit_planned_quantity" class="text-xs text-blue-700 mr-2">تعديل الكمية المخططة</label>
+                                </div>
+                                <div class="flex items-center">
+                                    <input type="checkbox" id="riyadh_edit_executed_quantity" name="permissions[]" value="riyadh_edit_executed_quantity" 
+                                        {{ (is_array($user->permissions) && in_array('riyadh_edit_executed_quantity', $user->permissions)) ? 'checked' : '' }}
+                                        class="h-3 w-3 ml-1 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                    <label for="riyadh_edit_executed_quantity" class="text-xs text-blue-700 mr-2">تعديل الكمية المنفذة</label>
+                                </div>
                                     <div class="flex items-center">
                                         <input type="checkbox" id="riyadh_manage_post_execution" name="permissions[]" value="riyadh_manage_post_execution" 
                                             {{ (is_array($user->permissions) && in_array('riyadh_manage_post_execution', $user->permissions)) ? 'checked' : '' }}
@@ -354,6 +366,18 @@
                                         {{ (is_array($user->permissions) && in_array('madinah_delete_execution_record', $user->permissions)) ? 'checked' : '' }}
                                         class="h-3 w-3 ml-1 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
                                     <label for="madinah_delete_execution_record" class="text-xs text-blue-700 mr-2">حذف سجل التنفيذ</label>
+                                </div>
+                                <div class="flex items-center">
+                                    <input type="checkbox" id="madinah_edit_planned_quantity" name="permissions[]" value="madinah_edit_planned_quantity" 
+                                        {{ (is_array($user->permissions) && in_array('madinah_edit_planned_quantity', $user->permissions)) ? 'checked' : '' }}
+                                        class="h-3 w-3 ml-1 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                    <label for="madinah_edit_planned_quantity" class="text-xs text-blue-700 mr-2">تعديل الكمية المخططة</label>
+                                </div>
+                                <div class="flex items-center">
+                                    <input type="checkbox" id="madinah_edit_executed_quantity" name="permissions[]" value="madinah_edit_executed_quantity" 
+                                        {{ (is_array($user->permissions) && in_array('madinah_edit_executed_quantity', $user->permissions)) ? 'checked' : '' }}
+                                        class="h-3 w-3 ml-1 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                    <label for="madinah_edit_executed_quantity" class="text-xs text-blue-700 mr-2">تعديل الكمية المنفذة</label>
                                 </div>
                                     <div class="flex items-center">
                                         <input type="checkbox" id="madinah_manage_post_execution" name="permissions[]" value="madinah_manage_post_execution" 

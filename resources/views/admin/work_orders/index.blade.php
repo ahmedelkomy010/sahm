@@ -22,7 +22,9 @@
     text-align: center;
     vertical-align: middle;
     padding: 1rem 0.5rem;
-    position: relative;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 100 !important;
     font-size: 0.9rem;
     line-height: 1.3;
 }
@@ -41,7 +43,6 @@
 
 .table-dark th:hover {
     background: linear-gradient(135deg,rgb(19, 90, 153) 0%,rgb(16, 93, 169) 100%) !important;
-    transform: translateY(-2px);
     transition: all 0.3s ease;
     box-shadow: 0 4px 8px rgba(0,0,0,0.2);
 }
@@ -58,6 +59,19 @@
     border-color: #dee2e6 !important;
     padding: 0.75rem 0.5rem;
     vertical-align: middle;
+}
+
+/* Sticky Header for Thead */
+.table thead {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 99 !important;
+}
+
+/* Table Container */
+.table-responsive {
+    position: relative;
+    overflow-x: auto;
 }
 
 /* Responsive Header Text */
@@ -1083,9 +1097,22 @@ function resetCountdown(workOrderId) {
 
                    عدد النتائج وعناصر التحكم 
                     <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
-                        <div class="text-muted mb-2 mb-md-0">
-                            <i class="fas fa-list me-1"></i>
-                            عدد النتائج: {{ $workOrders->total() }} | عرض {{ $workOrders->firstItem() ?? 0 }} - {{ $workOrders->lastItem() ?? 0 }} من {{ $workOrders->total() }}
+                        <div class="d-flex align-items-center gap-2 mb-2 mb-md-0">
+                            <div class="text-muted">
+                                <i class="fas fa-list me-1"></i>
+                                عدد النتائج: {{ $workOrders->total() }} | عرض {{ $workOrders->firstItem() ?? 0 }} - {{ $workOrders->lastItem() ?? 0 }} من {{ $workOrders->total() }}
+                            </div>
+                            <div class="btn-group btn-group-sm" role="group">
+                                <button type="button" class="btn {{ (!request('system_type') || request('system_type') == 'UDS') && request('system_type') != 'ALL' ? 'btn-success' : 'btn-outline-success' }}" onclick="filterBySystemType('UDS')">
+                                    UDS
+                                </button>
+                                <button type="button" class="btn {{ request('system_type') == 'SAP' ? 'btn-warning text-dark' : 'btn-outline-warning' }}" onclick="filterBySystemType('SAP')">
+                                    SAP
+                                </button>
+                                <button type="button" class="btn {{ request('system_type') == 'ALL' ? 'btn-primary' : 'btn-outline-primary' }}" onclick="filterBySystemType('ALL')">
+                                    الكل
+                                </button>
+                            </div>
                         </div>
                         
                         <div class="d-flex align-items-center gap-3 flex-wrap">
@@ -1412,11 +1439,15 @@ function resetCountdown(workOrderId) {
                                             </div>
                                         </td>
                                         <td>
-                                            <div class="btn-group" role="group">
-                                                <a href="{{ route('admin.work-orders.show', $workOrder) }}" class="btn btn-sm btn-info">عرض</a>
-                                                @if(auth()->user()->hasPermission($project . '_edit_work_order') || auth()->user()->isAdmin())
-                                                <a href="{{ route('admin.work-orders.edit', $workOrder) }}" class="btn btn-sm btn-primary">تعديل</a>
-                                                @endif
+                                            <div class="d-flex align-items-center gap-2 justify-content-center">
+                                                <span class="badge {{ $workOrder->system_type == 'SAP' ? 'bg-warning text-dark' : 'bg-success' }}" style="font-size: 0.75rem;">
+                                                    {{ $workOrder->system_type ?? 'UDS' }}
+                                                </span>
+                                                <div class="btn-group" role="group">
+                                                    <a href="{{ route('admin.work-orders.show', $workOrder) }}" class="btn btn-sm btn-info">عرض</a>
+                                                    @if(auth()->user()->hasPermission($project . '_edit_work_order') || auth()->user()->isAdmin())
+                                                    <a href="{{ route('admin.work-orders.edit', $workOrder) }}" class="btn btn-sm btn-primary">تعديل</a>
+                                                    @endif
                                                 
                                                 <button type="button" 
                                                         class="btn btn-sm btn-success" 
@@ -1439,12 +1470,13 @@ function resetCountdown(workOrderId) {
                                                         <button type="submit" class="btn btn-sm btn-danger">حذف</button>
                                                     </form>
                                                 @endif
+                                                </div>
                                             </div>
                                         </td>
                                     </tr>
                                 @empty
                                     <tr id="noResultsRow">
-                                        <td colspan="14" class="text-center">لا توجد أوامر عمل لهذا المشروع</td>
+                                        <td colspan="13" class="text-center">لا توجد أوامر عمل لهذا المشروع</td>
                                     </tr>
                                 @endforelse
                             </tbody>
@@ -1934,6 +1966,14 @@ function clearFilter(filterName) {
 function changePerPage(perPage) {
     const url = new URL(window.location);
     url.searchParams.set('per_page', perPage);
+    url.searchParams.delete('page'); // إعادة تعيين رقم الصفحة
+    window.location.href = url.toString();
+}
+
+// فلترة حسب نوع النظام
+function filterBySystemType(systemType) {
+    const url = new URL(window.location);
+    url.searchParams.set('system_type', systemType);
     url.searchParams.delete('page'); // إعادة تعيين رقم الصفحة
     window.location.href = url.toString();
 }

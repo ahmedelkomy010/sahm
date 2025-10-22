@@ -23,6 +23,20 @@
     vertical-align: middle;
 }
 
+/* تبادل ألوان الصفوف بلون خفيف */
+.table-striped > tbody > tr:nth-of-type(odd) > * {
+    background-color: rgba(0, 123, 255, 0.03) !important;
+}
+
+.table-striped > tbody > tr:nth-of-type(even) > * {
+    background-color: rgba(255, 255, 255, 0.95) !important;
+}
+
+/* تأثير hover مع الحفاظ على اللون */
+.table-hover > tbody > tr:hover > * {
+    background-color: rgba(0, 123, 255, 0.08) !important;
+}
+
 /* تنسيق حقول الملاحظات */
 .notes-field {
     border: 1px solid #dee2e6;
@@ -332,7 +346,7 @@
         <div class="card-body p-0">
             @if($programs->count() > 0)
             <div class="table-responsive">
-                <table class="table table-hover table-bordered mb-0 table-sm" style="font-size: 0.85rem;">
+                <table class="table table-hover table-striped table-bordered mb-0 table-sm" style="font-size: 0.85rem;">
                     <thead class="table-light">
                         <tr class="text-center" style="font-size: 0.8rem;">
                             <th style="width: 50px;">#</th>
@@ -878,6 +892,8 @@
                         @foreach($programs as $index => $program)
                         @php
                             $workOrder = $program->workOrder;
+                            $programDate = $program->program_date->format('Y-m-d');
+                            
                             // التحقق من وجود بيانات المسح
                             $hasSurvey = $workOrder->surveys()->exists();
                             // التحقق من وجود المواد مع كمية مصروفة (نشوف الجدولين)
@@ -890,15 +906,49 @@
                                           ->orWhereNotNull('coordination_certificate_number');
                                 })
                                 ->exists();
-                            // التحقق من وجود بيانات السلامة
-                            $hasSafety = !empty($workOrder->safety_permits_images) || 
-                                        !empty($workOrder->safety_permits_files) ||
-                                        !empty($workOrder->safety_team_images) ||
-                                        !empty($workOrder->safety_equipment_images) ||
-                                        !empty($workOrder->safety_general_images) ||
-                                        !empty($workOrder->safety_tbt_images) ||
-                                        $workOrder->safetyViolations()->exists() ||
-                                        $workOrder->safetyHistory()->exists();
+                            
+                            // التحقق من وجود بيانات السلامة في نفس يوم البرنامج
+                            $hasSafety = false;
+                            
+                            // دالة مساعدة للتحقق من الصور المرفوعة في نفس اليوم
+                            $checkDailyImages = function($images, $date) {
+                                if (!is_array($images) || empty($images)) {
+                                    return false;
+                                }
+                                foreach ($images as $img) {
+                                    if (is_array($img) && isset($img['uploaded_at'])) {
+                                        $imgDate = date('Y-m-d', strtotime($img['uploaded_at']));
+                                        if ($imgDate === $date) {
+                                            return true;
+                                        }
+                                    }
+                                }
+                                return false;
+                            };
+                            
+                            // فحص كل أنواع صور السلامة
+                            if ($checkDailyImages($workOrder->safety_permits_images ?? [], $programDate) ||
+                                $checkDailyImages($workOrder->safety_team_images ?? [], $programDate) ||
+                                $checkDailyImages($workOrder->safety_equipment_images ?? [], $programDate) ||
+                                $checkDailyImages($workOrder->safety_general_images ?? [], $programDate) ||
+                                $checkDailyImages($workOrder->safety_tbt_images ?? [], $programDate)) {
+                                $hasSafety = true;
+                            }
+                            
+                            // فحص المخالفات في نفس اليوم
+                            if (!$hasSafety) {
+                                $hasSafety = $workOrder->safetyViolations()
+                                    ->whereDate('violation_date', $programDate)
+                                    ->exists();
+                            }
+                            
+                            // فحص تاريخ التفتيش في نفس اليوم
+                            if (!$hasSafety) {
+                                $hasSafety = \DB::table('work_order_inspection_dates')
+                                    ->where('work_order_id', $workOrder->id)
+                                    ->whereDate('inspection_date', $programDate)
+                                    ->exists();
+                            }
                         @endphp
                         <tr>
                             <td class="text-center">{{ $index + 1 }}</td>
@@ -990,20 +1040,29 @@
                                 </span>
                             </td>
                             <td class="text-center align-middle" style="padding: 0.3rem;">
-                                @if($program->execution_completed)
-                                <a href="{{ route('admin.work-orders.execution', ['workOrder' => $workOrder->id]) }}" 
-                                   class="btn btn-primary btn-sm"
-                                   style="font-size: 0.75rem; padding: 0.3rem 0.5rem;"
-                                   title="إدخال الإنتاجية اليومية">
-                                    <i class="fas fa-tasks"></i>
-                                    التنفيذ
-                                </a>
-                                @else
-                                <span class="text-muted" style="font-size: 0.7rem;">
-                                    <i class="fas fa-lock"></i>
-                                    متاح عند 100%
-                                </span>
-                                @endif
+                                <div class="d-flex flex-column align-items-center gap-1">
+                                    @if($program->execution_completed)
+                                    <a href="{{ route('admin.work-orders.execution', ['workOrder' => $workOrder->id]) }}" 
+                                       class="btn btn-primary btn-sm"
+                                       style="font-size: 0.75rem; padding: 0.3rem 0.5rem;"
+                                       title="إدخال الإنتاجية اليومية">
+                                        <i class="fas fa-tasks"></i>
+                                        التنفيذ
+                                    </a>
+                                    @else
+                                    <span class="text-muted" style="font-size: 0.7rem;">
+                                        <i class="fas fa-lock"></i>
+                                        متاح عند 100%
+                                    </span>
+                                    @endif
+                                    <textarea class="form-control form-control-sm notes-field" 
+                                              id="execution_notes_{{ $program->id }}"
+                                              data-program-id="{{ $program->id }}"
+                                              data-field="execution_notes"
+                                              rows="2" 
+                                              placeholder="ملاحظات التنفيذ..."
+                                              style="font-size: 0.7rem; width: 130px; padding: 0.2rem; margin-top: 0.3rem;">{{ $program->execution_notes }}</textarea>
+                                </div>
                             </td>
                         </tr>
                         @endforeach
@@ -1041,6 +1100,8 @@
                 @foreach($programs as $index => $program)
                 @php
                     $workOrder = $program->workOrder;
+                    $programDate = $program->program_date->format('Y-m-d');
+                    
                     $hasSurvey = $workOrder->surveys()->exists();
                     $hasMaterials = $workOrder->materials()->where('spent_quantity', '>', 0)->exists() || 
                                   $workOrder->workOrderMaterials()->where('used_quantity', '>', 0)->exists();
@@ -1050,14 +1111,49 @@
                                   ->orWhereNotNull('coordination_certificate_number');
                         })
                         ->exists();
-                    $hasSafety = !empty($workOrder->safety_permits_images) || 
-                                !empty($workOrder->safety_permits_files) ||
-                                !empty($workOrder->safety_team_images) ||
-                                !empty($workOrder->safety_equipment_images) ||
-                                !empty($workOrder->safety_general_images) ||
-                                !empty($workOrder->safety_tbt_images) ||
-                                $workOrder->safetyViolations()->exists() ||
-                                $workOrder->safetyHistory()->exists();
+                    
+                    // التحقق من وجود بيانات السلامة في نفس يوم البرنامج
+                    $hasSafety = false;
+                    
+                    // دالة مساعدة للتحقق من الصور المرفوعة في نفس اليوم
+                    $checkDailyImages = function($images, $date) {
+                        if (!is_array($images) || empty($images)) {
+                            return false;
+                        }
+                        foreach ($images as $img) {
+                            if (is_array($img) && isset($img['uploaded_at'])) {
+                                $imgDate = date('Y-m-d', strtotime($img['uploaded_at']));
+                                if ($imgDate === $date) {
+                                    return true;
+                                }
+                            }
+                        }
+                        return false;
+                    };
+                    
+                    // فحص كل أنواع صور السلامة
+                    if ($checkDailyImages($workOrder->safety_permits_images ?? [], $programDate) ||
+                        $checkDailyImages($workOrder->safety_team_images ?? [], $programDate) ||
+                        $checkDailyImages($workOrder->safety_equipment_images ?? [], $programDate) ||
+                        $checkDailyImages($workOrder->safety_general_images ?? [], $programDate) ||
+                        $checkDailyImages($workOrder->safety_tbt_images ?? [], $programDate)) {
+                        $hasSafety = true;
+                    }
+                    
+                    // فحص المخالفات في نفس اليوم
+                    if (!$hasSafety) {
+                        $hasSafety = $workOrder->safetyViolations()
+                            ->whereDate('violation_date', $programDate)
+                            ->exists();
+                    }
+                    
+                    // فحص تاريخ التفتيش في نفس اليوم
+                    if (!$hasSafety) {
+                        $hasSafety = \DB::table('work_order_inspection_dates')
+                            ->where('work_order_id', $workOrder->id)
+                            ->whereDate('inspection_date', $programDate)
+                            ->exists();
+                    }
                 @endphp
                 <div class="mobile-card">
                     <div class="mobile-card-header">

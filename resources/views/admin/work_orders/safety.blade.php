@@ -79,6 +79,43 @@
             <form method="POST" action="{{ route('admin.work-orders.update-safety', $workOrder) }}" enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
+                
+                @php
+                    // تعريف الحدود اليومية
+                    $dailyLimits = [
+                        'tbt' => 2,
+                        'permits' => 4,
+                        'team' => 4,
+                        'equipment' => 4,
+                        'general' => 5
+                    ];
+                    
+                    $today = now()->format('Y-m-d');
+                    
+                    // دالة لحساب الصور المرفوعة اليوم
+                    function getTodayImagesCount($images, $today) {
+                        $count = 0;
+                        if (is_array($images)) {
+                            foreach ($images as $img) {
+                                if (is_array($img) && isset($img['uploaded_at'])) {
+                                    $imgDate = date('Y-m-d', strtotime($img['uploaded_at']));
+                                    if ($imgDate === $today) {
+                                        $count++;
+                                    }
+                                }
+                            }
+                        }
+                        return $count;
+                    }
+                    
+                    // حساب الصور اليومية لكل فئة
+                    $tbtTodayCount = getTodayImagesCount($workOrder->safety_tbt_images ?? [], $today);
+                    $permitsTodayCount = getTodayImagesCount($workOrder->safety_permits_images ?? [], $today);
+                    $teamTodayCount = getTodayImagesCount($workOrder->safety_team_images ?? [], $today);
+                    $equipmentTodayCount = getTodayImagesCount($workOrder->safety_equipment_images ?? [], $today);
+                    $generalTodayCount = getTodayImagesCount($workOrder->safety_general_images ?? [], $today);
+                @endphp
+                
                 <!-- حقول الصور -->
                 <div class="row">
                     <!-- صور اجتماع ما قبل بدء العمل TBT -->
@@ -95,7 +132,18 @@
                                    accept="image/*"
                                    multiple>
                         </div>
-                        <div class="form-text text-success mb-2">صور فقط (JPG, PNG, GIF) - الحد الأقصى 10 ميجابايت</div>
+                        <div class="form-text text-success mb-2">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span>صور فقط (JPG, PNG, GIF) - الحد الأقصى 10 ميجابايت</span>
+                                <span class="badge {{ $tbtTodayCount >= $dailyLimits['tbt'] ? 'bg-danger' : 'bg-info' }} fs-6">
+                                    <i class="fas fa-images me-1"></i>
+                                    اليوم: {{ $tbtTodayCount }}/{{ $dailyLimits['tbt'] }}
+                                    @if($tbtTodayCount >= $dailyLimits['tbt'])
+                                        <i class="fas fa-exclamation-triangle ms-1"></i>
+                                    @endif
+                                </span>
+                            </div>
+                        </div>
                         @error('tbt_images.*')
                             <span class="invalid-feedback" role="alert">
                                 <strong>{{ $message }}</strong>
@@ -116,7 +164,18 @@
                                    accept="image/*"
                                    multiple>
                         </div>
-                        <div class="form-text text-warning mb-2">صور فقط (JPG, PNG, GIF) - الحد الأقصى 10 ميجابايت</div>
+                        <div class="form-text text-warning mb-2">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span>صور فقط (JPG, PNG, GIF) - الحد الأقصى 10 ميجابايت</span>
+                                <span class="badge {{ $permitsTodayCount >= $dailyLimits['permits'] ? 'bg-danger' : 'bg-info' }} fs-6">
+                                    <i class="fas fa-images me-1"></i>
+                                    اليوم: {{ $permitsTodayCount }}/{{ $dailyLimits['permits'] }}
+                                    @if($permitsTodayCount >= $dailyLimits['permits'])
+                                        <i class="fas fa-exclamation-triangle ms-1"></i>
+                                    @endif
+                                </span>
+                            </div>
+                        </div>
                         @error('permits_images.*')
                             <span class="invalid-feedback" role="alert">
                                 <strong>{{ $message }}</strong>
@@ -138,7 +197,18 @@
                                    accept="image/*"
                                    multiple>
                         </div>
-                        <div class="form-text text-info mb-2">صور فقط (JPG, PNG, GIF) - الحد الأقصى 10 ميجابايت</div>
+                        <div class="form-text text-info mb-2">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span>صور فقط (JPG, PNG, GIF) - الحد الأقصى 10 ميجابايت</span>
+                                <span class="badge {{ $teamTodayCount >= $dailyLimits['team'] ? 'bg-danger' : 'bg-info' }} fs-6">
+                                    <i class="fas fa-images me-1"></i>
+                                    اليوم: {{ $teamTodayCount }}/{{ $dailyLimits['team'] }}
+                                    @if($teamTodayCount >= $dailyLimits['team'])
+                                        <i class="fas fa-exclamation-triangle ms-1"></i>
+                                    @endif
+                                </span>
+                            </div>
+                        </div>
                         @error('team_images.*')
                             <span class="invalid-feedback" role="alert">
                                 <strong>{{ $message }}</strong>
@@ -160,7 +230,18 @@
                                    accept="image/*"
                                    multiple>
                         </div>
-                        <div class="form-text text-primary mb-2">صور فقط (JPG, PNG, GIF) - الحد الأقصى 10 ميجابايت</div>
+                        <div class="form-text text-primary mb-2">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span>صور فقط (JPG, PNG, GIF) - الحد الأقصى 10 ميجابايت</span>
+                                <span class="badge {{ $equipmentTodayCount >= $dailyLimits['equipment'] ? 'bg-danger' : 'bg-info' }} fs-6">
+                                    <i class="fas fa-images me-1"></i>
+                                    اليوم: {{ $equipmentTodayCount }}/{{ $dailyLimits['equipment'] }}
+                                    @if($equipmentTodayCount >= $dailyLimits['equipment'])
+                                        <i class="fas fa-exclamation-triangle ms-1"></i>
+                                    @endif
+                                </span>
+                            </div>
+                        </div>
                         @error('equipment_images.*')
                             <span class="invalid-feedback" role="alert">
                                 <strong>{{ $message }}</strong>
@@ -182,7 +263,18 @@
                                    accept="image/*"
                                    multiple>
                         </div>
-                        <div class="form-text text-secondary mb-2">صور فقط (JPG, PNG, GIF) - الحد الأقصى 10 ميجابايت</div>
+                        <div class="form-text text-secondary mb-2">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span>صور فقط (JPG, PNG, GIF) - الحد الأقصى 10 ميجابايت</span>
+                                <span class="badge {{ $generalTodayCount >= $dailyLimits['general'] ? 'bg-danger' : 'bg-info' }} fs-6">
+                                    <i class="fas fa-images me-1"></i>
+                                    اليوم: {{ $generalTodayCount }}/{{ $dailyLimits['general'] }}
+                                    @if($generalTodayCount >= $dailyLimits['general'])
+                                        <i class="fas fa-exclamation-triangle ms-1"></i>
+                                    @endif
+                                </span>
+                            </div>
+                        </div>
                         @error('general_images.*')
                             <span class="invalid-feedback" role="alert">
                                 <strong>{{ $message }}</strong>
@@ -204,7 +296,7 @@
                     <div class="card-body">
                         <div class="row">
                             <!-- مسؤول السلامة -->
-                            <div class="col-md-4 mb-3">
+                            <!-- <div class="col-md-4 mb-3">
                                 <label for="safety_officer" class="form-label fw-bold">
                                     <i class="fas fa-user-tie me-2 text-primary"></i>
                                     مسؤول السلامة
@@ -218,12 +310,12 @@
                                 @error('safety_officer')
                                     <span class="invalid-feedback" role="alert">
                                         <strong>{{ $message }}</strong>
-                                    </span>
+                                    </span> -->
                                 @enderror
 
                                 <!-- عرض سجل مسؤولي السلامة -->
                                 @if(isset($safetyHistory) && $safetyHistory->where('safety_officer', '!=', null)->count() > 0)
-                                <div class="safety-officer-history mt-2">
+                                <!-- <div class="safety-officer-history mt-2">
                                     <div class="d-flex align-items-center justify-content-between mb-2">
                                         <small class="text-primary fw-bold">
                                             <i class="fas fa-history me-1"></i>
@@ -254,9 +346,10 @@
                                     </div>
                                 </div>
                                 @endif
-                            </div>
+                            </div> -->
 
                             <!-- حالة السلامة -->
+                             
                             <div class="col-md-4 mb-3">
                                 <label for="safety_status" class="form-label fw-bold">
                                     <i class="fas fa-check-circle me-2 text-success"></i>
@@ -317,7 +410,7 @@
                             </div>
 
                             <!-- تاريخ التفتيش -->
-                            <div class="col-md-4 mb-3">
+                            <!-- <div class="col-md-4 mb-3">
                                 <label for="inspection_date" class="form-label fw-bold">
                                     <i class="fas fa-calendar me-2 text-warning"></i>
                                     تاريخ التفتيش
@@ -332,14 +425,14 @@
                                 @error('inspection_date')
                                     <span class="invalid-feedback" role="alert">
                                         <strong>{{ $message }}</strong>
-                                    </span>
+                                    </span> -->
                                 @enderror
                                 
                                 
                                 
                                 <!-- عرض جميع التواريخ المحفوظة -->
                                 @if(isset($inspectionDates) && $inspectionDates->count() > 0)
-                                <div class="saved-dates-history mt-2">
+                                <!-- <div class="saved-dates-history mt-2">
                                     <div class="d-flex align-items-center justify-content-between mb-2">
                                         <small class="text-success fw-bold">
                                             <i class="fas fa-history me-1"></i>
@@ -374,8 +467,8 @@
                                             @endif
                                         </div>
                                         @endforeach
-                                    </div>
-                                </div>
+                                    </div> -->
+                                <!-- </div> -->
                                 @elseif($workOrder->inspection_date)
                                 <!-- عرض التاريخ القديم للتوافق مع النظام السابق -->
                                 <div class="saved-date-display mt-2 p-2 bg-success bg-opacity-10 border border-success border-opacity-25 rounded">
@@ -513,7 +606,19 @@
             </div>
             <div class="card-body">
                 <div class="row g-3">
-                    @foreach($data['images'] as $index => $imagePath)
+                    @foreach($data['images'] as $index => $imageData)
+                        @php
+                            // التعامل مع الصور القديمة (string) والجديدة (array with metadata)
+                            if (is_array($imageData)) {
+                                $imagePath = $imageData['path'] ?? '';
+                                $uploadedAt = $imageData['uploaded_at'] ?? null;
+                                $uploadedBy = $imageData['uploaded_by'] ?? null;
+                            } else {
+                                $imagePath = $imageData;
+                                $uploadedAt = null;
+                                $uploadedBy = null;
+                            }
+                        @endphp
                         <div class="col-md-3 col-sm-4 col-6">
                             <div class="card border safety-image-card" data-category="{{ $category }}" data-index="{{ $index }}">
                                 <div class="position-relative">
@@ -521,14 +626,14 @@
                                          class="card-img-top safety-image" 
                                          alt="صورة {{ $data['title'] }}"
                                          style="height: 200px; object-fit: cover; cursor: pointer;"
-                                         onclick="showImageModal('{{ Storage::url($imagePath) }}', '{{ $data['title'] }}')">
+                                         onclick="showImageModal('{{ Storage::url($imagePath) }}', '{{ $data['title'] }}', '{{ $category }}', {{ $index }})">
                                     
                                     <!-- أزرار العمليات -->
                                     <div class="position-absolute top-0 end-0 m-2">
                                         <!-- زر العرض -->
                                         <button type="button" 
                                                 class="btn btn-primary btn-sm me-1"
-                                                onclick="showImageModal('{{ Storage::url($imagePath) }}', '{{ $data['title'] }}')"
+                                                onclick="showImageModal('{{ Storage::url($imagePath) }}', '{{ $data['title'] }}', '{{ $category }}', {{ $index }})"
                                                 title="عرض الصورة">
                                             <i class="fas fa-eye"></i>
                                         </button>
@@ -543,8 +648,22 @@
                                         </button>
                                     </div>
                                 </div>
-                                <div class="card-body p-2 text-center">
-                                    <small class="text-muted">صورة {{ $index + 1 }}</small>
+                                <div class="card-body p-2">
+                                    <div class="text-center">
+                                        <small class="text-muted fw-bold d-block">صورة {{ $index + 1 }}</small>
+                                        @if($uploadedAt)
+                                            <small class="text-primary d-block mt-1">
+                                                <i class="fas fa-calendar me-1"></i>
+                                                {{ \Carbon\Carbon::parse($uploadedAt)->format('Y-m-d') }}
+                                            </small>
+                                        @endif
+                                        @if($uploadedBy)
+                                            <small class="text-success d-block">
+                                                <i class="fas fa-user me-1"></i>
+                                                {{ $uploadedBy }}
+                                            </small>
+                                        @endif
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -896,14 +1015,40 @@
 
 <!-- Modal لعرض الصورة بالحجم الكامل -->
 <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="imageModalLabel">عرض الصورة</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body text-center">
-                <img id="modalImage" src="" class="img-fluid" alt="صورة">
+            <div class="modal-body text-center position-relative" style="min-height: 400px;">
+                <!-- سهم السابق (اليسار) -->
+                <button type="button" 
+                        class="btn btn-dark btn-lg position-absolute top-50 start-0 translate-middle-y ms-3" 
+                        id="prevImageBtn"
+                        style="z-index: 1000; opacity: 0.7; border-radius: 50%; width: 50px; height: 50px;"
+                        onclick="navigateImage(-1)"
+                        title="الصورة السابقة">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+                
+                <!-- الصورة -->
+                <img id="modalImage" src="" class="img-fluid" alt="صورة" style="max-height: 70vh;">
+                
+                <!-- معلومات الصورة -->
+                <div id="imageInfo" class="mt-3 text-muted">
+                    <small id="imageCounter"></small>
+                </div>
+                
+                <!-- سهم التالي (اليمين) -->
+                <button type="button" 
+                        class="btn btn-dark btn-lg position-absolute top-50 end-0 translate-middle-y me-3" 
+                        id="nextImageBtn"
+                        style="z-index: 1000; opacity: 0.7; border-radius: 50%; width: 50px; height: 50px;"
+                        onclick="navigateImage(1)"
+                        title="الصورة التالية">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
             </div>
             <div class="modal-footer">
                 <a id="downloadImage" href="" download class="btn btn-primary">
@@ -929,6 +1074,35 @@
 .safety-image-card .position-absolute .btn {
     box-shadow: 0 2px 4px rgba(0,0,0,0.3);
     backdrop-filter: blur(2px);
+}
+
+/* تنسيق أزرار التنقل في الـ Modal */
+#prevImageBtn, #nextImageBtn {
+    transition: all 0.3s ease;
+}
+
+#prevImageBtn:hover, #nextImageBtn:hover {
+    opacity: 1 !important;
+    transform: scale(1.1);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+}
+
+#prevImageBtn:active, #nextImageBtn:active {
+    transform: scale(0.95);
+}
+
+/* تحسين عرض الصورة في الـ Modal */
+#modalImage {
+    transition: opacity 0.3s ease;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+/* عداد الصور */
+#imageCounter {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #6c757d;
 }
 
 .non-compliance-attachment-card:hover .position-absolute {
@@ -1517,11 +1691,25 @@ function updateTotalViolations() {
     }
 }
 
+// متغيرات لتتبع الصور في الـ gallery
+let currentImageGallery = [];
+let currentImageIndex = 0;
+let currentImageCategory = '';
+
 // دالة عرض الصورة في Modal
-function showImageModal(imageSrc, title) {
-    document.getElementById('modalImage').src = imageSrc;
-    document.getElementById('downloadImage').href = imageSrc;
-    document.getElementById('imageModalLabel').textContent = title;
+function showImageModal(imageSrc, title, category = null, index = null) {
+    // إذا تم تمرير category وindex، نبني الـ gallery
+    if (category !== null && index !== null) {
+        buildImageGallery(category);
+        currentImageIndex = index;
+        currentImageCategory = category;
+    }
+    
+    // عرض الصورة الحالية
+    displayImageInModal(imageSrc, title);
+    
+    // تحديث أزرار التنقل
+    updateNavigationButtons();
     
     // إزالة أي backdrop موجود قبل فتح الـ modal
     const existingBackdrops = document.querySelectorAll('.modal-backdrop');
@@ -1529,7 +1717,7 @@ function showImageModal(imageSrc, title) {
     
     const modalElement = document.getElementById('imageModal');
     const modal = new bootstrap.Modal(modalElement, {
-        backdrop: false, // تعطيل الـ backdrop تماماً
+        backdrop: false,
         keyboard: true
     });
     
@@ -1544,6 +1732,89 @@ function showImageModal(imageSrc, title) {
         });
     }, 100);
 }
+
+// دالة بناء مصفوفة الصور للـ gallery
+function buildImageGallery(category) {
+    currentImageGallery = [];
+    const imageCards = document.querySelectorAll(`.safety-image-card[data-category="${category}"]`);
+    
+    imageCards.forEach((card) => {
+        const img = card.querySelector('.safety-image');
+        if (img) {
+            currentImageGallery.push({
+                src: img.src,
+                title: img.alt
+            });
+        }
+    });
+}
+
+// دالة عرض الصورة في الـ Modal
+function displayImageInModal(imageSrc, title) {
+    document.getElementById('modalImage').src = imageSrc;
+    document.getElementById('downloadImage').href = imageSrc;
+    document.getElementById('imageModalLabel').textContent = title;
+    
+    // تحديث عداد الصور
+    if (currentImageGallery.length > 0) {
+        document.getElementById('imageCounter').textContent = 
+            `صورة ${currentImageIndex + 1} من ${currentImageGallery.length}`;
+    } else {
+        document.getElementById('imageCounter').textContent = '';
+    }
+}
+
+// دالة التنقل بين الصور
+function navigateImage(direction) {
+    if (currentImageGallery.length === 0) return;
+    
+    currentImageIndex += direction;
+    
+    // التأكد من عدم تجاوز الحدود
+    if (currentImageIndex < 0) {
+        currentImageIndex = 0;
+        return;
+    }
+    if (currentImageIndex >= currentImageGallery.length) {
+        currentImageIndex = currentImageGallery.length - 1;
+        return;
+    }
+    
+    // عرض الصورة الجديدة
+    const imageData = currentImageGallery[currentImageIndex];
+    displayImageInModal(imageData.src, imageData.title);
+    
+    // تحديث أزرار التنقل
+    updateNavigationButtons();
+}
+
+// تحديث حالة أزرار التنقل
+function updateNavigationButtons() {
+    const prevBtn = document.getElementById('prevImageBtn');
+    const nextBtn = document.getElementById('nextImageBtn');
+    
+    if (currentImageGallery.length <= 1) {
+        prevBtn.style.display = 'none';
+        nextBtn.style.display = 'none';
+        return;
+    }
+    
+    // إظهار/إخفاء الأزرار بناءً على الموضع
+    prevBtn.style.display = currentImageIndex > 0 ? 'block' : 'none';
+    nextBtn.style.display = currentImageIndex < currentImageGallery.length - 1 ? 'block' : 'none';
+}
+
+// إضافة دعم لوحة المفاتيح (الأسهم)
+document.addEventListener('keydown', function(e) {
+    const modal = document.getElementById('imageModal');
+    if (modal.classList.contains('show')) {
+        if (e.key === 'ArrowRight') {
+            navigateImage(-1); // السهم الأيمن = الصورة السابقة (RTL)
+        } else if (e.key === 'ArrowLeft') {
+            navigateImage(1); // السهم الأيسر = الصورة التالية (RTL)
+        }
+    }
+});
 
 // مراقبة وإزالة أي backdrop يتم إضافته ديناميكياً
 const backdropObserver = new MutationObserver((mutations) => {

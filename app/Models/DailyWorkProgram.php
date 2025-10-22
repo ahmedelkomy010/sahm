@@ -27,6 +27,7 @@ class DailyWorkProgram extends Model
         'materials_notes',
         'quality_notes',
         'safety_notes',
+        'execution_notes',
         'execution_completed',
     ];
 

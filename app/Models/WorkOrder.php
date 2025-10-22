@@ -11,6 +11,7 @@ class WorkOrder extends Model
 
     public static $rules = [
         'order_number' => 'required|string|max:255',
+        'system_type' => 'nullable|in:UDS,SAP',
         'work_type' => 'required|string|max:999',
         'work_description' => 'required|string',
         'approval_date' => 'required|date',
@@ -38,6 +39,7 @@ class WorkOrder extends Model
         'is_received',
         'received_at',
         'order_number',
+        'system_type',
         'work_type',
         'work_description',
         'approval_date',
