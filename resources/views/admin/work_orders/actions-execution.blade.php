@@ -1973,7 +1973,6 @@ document.addEventListener('DOMContentLoaded', function() {
             <form id="addWorkItemForm">
                 @csrf
                 <input type="hidden" name="work_order_id" value="{{ $workOrder->id }}">
-                <input type="hidden" name="work_date" id="modalWorkDate">
                 
                 <div class="mb-3">
                     <label for="work_item_search" class="form-label">البحث عن بند العمل</label>
@@ -1998,6 +1997,23 @@ document.addEventListener('DOMContentLoaded', function() {
                             </option>
                         @endforeach
                     </select>
+                </div>
+
+                <div class="mb-3">
+                    <label for="modalWorkDate" class="form-label">
+                        <i class="fas fa-calendar-alt me-1"></i>
+                        تاريخ التنفيذ <span class="text-danger">*</span>
+                    </label>
+                    <input type="date" 
+                           class="form-control" 
+                           id="modalWorkDate" 
+                           name="work_date" 
+                           value="{{ now()->format('Y-m-d') }}"
+                           required>
+                    <small class="text-muted">
+                        <i class="fas fa-info-circle me-1"></i>
+                        حدد التاريخ الذي تم فيه تنفيذ هذا البند
+                    </small>
                 </div>
 
                 <div class="row">

@@ -1497,25 +1497,37 @@ class WorkOrderController extends Controller
     public function updateWorkItem(Request $request, \App\Models\WorkOrderItem $workOrderItem)
     {
         try {
+            \Log::info('updateWorkItem called', [
+                'work_order_item_id' => $workOrderItem->id,
+                'request_data' => $request->all()
+            ]);
+            
             // التحقق من الصلاحيات
             $workOrder = $workOrderItem->workOrder;
             $city = $workOrder->city ?? 'الرياض';
             $editPermission = $city == 'الرياض' ? 'riyadh_edit_executed_quantity' : 'madinah_edit_executed_quantity';
             
             if (!auth()->user()->is_admin && !in_array($editPermission, auth()->user()->permissions ?? [])) {
+                \Log::warning('Permission denied for updateWorkItem');
                 return response()->json([
                     'success' => false,
                     'message' => 'ليس لديك صلاحية لتعديل الكمية المنفذة'
                 ], 403);
             }
             
-            $request->validate([
-                'executed_quantity' => 'required|numeric|min:0',
+            $validated = $request->validate([
+                'executed_quantity' => 'required|numeric|min:0.01',
                 'work_date' => 'required|date'
             ]);
 
-            $workDate = $request->work_date;
-            $executedQuantity = $request->executed_quantity;
+            $workDate = $validated['work_date'];
+            $executedQuantity = $validated['executed_quantity'];
+            
+            \Log::info('Creating/Updating daily execution', [
+                'work_order_item_id' => $workOrderItem->id,
+                'work_date' => $workDate,
+                'executed_quantity' => $executedQuantity
+            ]);
 
             // البحث عن التنفيذ اليومي الموجود أو إنشاء جديد
             $dailyExecution = \App\Models\DailyWorkExecution::updateOrCreate(
@@ -1529,12 +1541,20 @@ class WorkOrderController extends Controller
                     'created_by' => auth()->id()
                 ]
             );
+            
+            \Log::info('Daily execution created/updated', [
+                'daily_execution_id' => $dailyExecution->id
+            ]);
 
             // تحديث إجمالي الكمية المنفذة في work_order_item
             $totalExecutedQuantity = $workOrderItem->dailyExecutions()->sum('executed_quantity');
             $workOrderItem->update([
                 'executed_quantity' => $totalExecutedQuantity,
-                'work_date' => $workDate // تحديث آخر تاريخ عمل
+                'work_date' => $workDate
+            ]);
+            
+            \Log::info('Work order item updated', [
+                'total_executed_quantity' => $totalExecutedQuantity
             ]);
 
             return response()->json([
@@ -1544,7 +1564,20 @@ class WorkOrderController extends Controller
                 'total_executed_quantity' => $totalExecutedQuantity
             ]);
 
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            \Log::error('Validation error in updateWorkItem', [
+                'errors' => $e->errors()
+            ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'خطأ في البيانات المدخلة',
+                'errors' => $e->errors()
+            ], 422);
         } catch (\Exception $e) {
+            \Log::error('Error in updateWorkItem', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
             return response()->json([
                 'success' => false,
                 'message' => 'حدث خطأ أثناء حفظ البيانات: ' . $e->getMessage()
@@ -6052,7 +6085,8 @@ class WorkOrderController extends Controller
             
             $validated = $request->validate([
                 'executed_quantity' => 'required|numeric|min:0',
-                'work_date' => 'nullable|date'
+                'work_date' => 'nullable|date',
+                'unit' => 'nullable|string|max:50'
             ]);
 
             $oldQuantity = $dailyExecution->executed_quantity;
@@ -6072,9 +6106,15 @@ class WorkOrderController extends Controller
                 $totalExecuted = DailyWorkExecution::where('work_order_item_id', $workOrderItem->id)
                     ->sum('executed_quantity');
                 
-                $workOrderItem->update([
-                    'executed_quantity' => $totalExecuted
-                ]);
+                // تحديث الكمية المنفذة والوحدة
+                $updateData = ['executed_quantity' => $totalExecuted];
+                
+                // تحديث الوحدة إذا تم إرسالها
+                if (isset($validated['unit']) && !empty($validated['unit'])) {
+                    $updateData['unit'] = $validated['unit'];
+                }
+                
+                $workOrderItem->update($updateData);
             }
 
             // للطلبات Ajax

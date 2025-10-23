@@ -124,6 +124,10 @@
                                        style="background-color: #e9ecef; cursor: not-allowed;"
                                        readonly>
                             </div>
+                            <button type="button" class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#addWorkItemModal">
+                                <i class="fas fa-plus me-1"></i>
+                                إضافة بند عمل
+                            </button>
                             <button type="button" class="btn btn-light btn-sm" onclick="refreshWorkItems()">
                                 <i class="fas fa-sync-alt me-1"></i>
                                 تحديث
@@ -231,7 +235,7 @@
                                                        data-id="{{ $workOrderItem->id }}" 
                                                        style="width: 120px; font-size: 1.1rem; font-weight: 600; {{ $canEditExecuted ? '' : 'background-color: #f8f9fa; cursor: not-allowed;' }}"
                                                        min="0.01"
-                                                       {{ $canEditExecuted ? 'onchange="updateExecutedQuantity(this)"' : 'readonly' }}
+                                                       @if($canEditExecuted) onchange="updateExecutedQuantity(this)" @else readonly @endif
                                                        placeholder="0.00">
                                             </td>
                                             <td class="text-center">
@@ -1575,16 +1579,29 @@ function updateTotals() {
 </script>
 
 <script>
-let currentWorkDate = '{{ request('date', now()->format('Y-m-d')) }}';
+// الحصول على التاريخ من input field
+function getCurrentWorkDate() {
+    const workDateInput = document.getElementById('workDate');
+    return workDateInput ? workDateInput.value : '{{ now()->format('Y-m-d') }}';
+}
+
+let currentWorkDate = getCurrentWorkDate();
+console.log('Initial currentWorkDate:', currentWorkDate);
 
 function updateWorkDate(date) {
     currentWorkDate = date;
+    const workDateInput = document.getElementById('workDate');
+    if (workDateInput) {
+        workDateInput.value = date;
+    }
     
     // تفريغ جميع حقول الكمية المنفذة عند تغيير التاريخ
     clearExecutedQuantities();
     
     // تحديث التاريخ في modal
-    document.getElementById('modalWorkDate').value = currentWorkDate;
+    if (document.getElementById('modalWorkDate')) {
+        document.getElementById('modalWorkDate').value = currentWorkDate;
+    }
     
     // تحديث تاريخ الملاحظات
     updateNotesDate(date);
@@ -1724,6 +1741,15 @@ function updateExecutedQuantity(input) {
     const workOrderItemId = input.dataset.id;
     const executedQuantity = parseFloat(input.value) || 0;
     
+    // التأكد من تحديث قيمة التاريخ الحالي
+    currentWorkDate = getCurrentWorkDate();
+    
+    console.log('updateExecutedQuantity called', {
+        workOrderItemId: workOrderItemId,
+        executedQuantity: executedQuantity,
+        currentWorkDate: currentWorkDate
+    });
+    
     // التحقق من أن الكمية أكبر من صفر
     if (executedQuantity <= 0) {
         toastr.error('لا يمكن تسجيل بند بكمية منفذة تساوي صفر أو أقل');
@@ -1731,20 +1757,36 @@ function updateExecutedQuantity(input) {
         return;
     }
     
+    const url = `{{ route('admin.work-orders.update-work-item', ['workOrderItem' => ':id']) }}`.replace(':id', workOrderItemId);
+    console.log('Request URL:', url);
+    
+    const requestBody = {
+        executed_quantity: executedQuantity,
+        work_date: currentWorkDate
+    };
+    console.log('Request body:', requestBody);
+    
     // Send AJAX request to update the executed quantity
-    fetch(`{{ url('admin/work-orders/update-work-item') }}/${workOrderItemId}`, {
+    fetch(url, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
+            'Accept': 'application/json',
             'X-CSRF-TOKEN': '{{ csrf_token() }}'
         },
-        body: JSON.stringify({
-            executed_quantity: executedQuantity,
-            work_date: currentWorkDate
-        })
+        body: JSON.stringify(requestBody)
     })
-    .then(response => response.json())
+    .then(response => {
+        console.log('Response status:', response.status);
+        if (!response.ok) {
+            return response.json().then(err => {
+                throw new Error(err.message || 'Network response was not ok');
+            });
+        }
+        return response.json();
+    })
     .then(data => {
+        console.log('Response data:', data);
         if (data.success) {
             // Update the UI
             const row = input.closest('tr');
@@ -1767,26 +1809,20 @@ function updateExecutedQuantity(input) {
             }
             
             // Show success message
-            toastr.success('تم تحديث الكمية المنفذة بنجاح');
+            toastr.success('تم تحديث الكمية المنفذة وتسجيلها في سجل التنفيذ اليومي');
             
-            // Refresh the execution history table if it exists
-            if (document.getElementById('executionHistoryTable')) {
-                setTimeout(() => {
-                    location.reload();
-                }, 1000);
-            }
+            // إعادة تحميل الصفحة بعد 1.5 ثانية لتحديث جدول سجل التنفيذ
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
         } else {
-            // Show error message
-            toastr.error(data.message || 'حدث خطأ أثناء تحديث الكمية المنفذة');
-            // Reset the input to its previous value
-            input.value = input.defaultValue;
+            console.error('Error in response:', data);
+            toastr.error(data.message || 'حدث خطأ أثناء حفظ البيانات');
         }
     })
     .catch(error => {
-        console.error('Error:', error);
-        toastr.error('حدث خطأ أثناء تحديث الكمية المنفذة');
-        // Reset the input to its previous value
-        input.value = input.defaultValue;
+        console.error('Fetch error:', error);
+        toastr.error('حدث خطأ أثناء حفظ البيانات: ' + error.message);
     });
 }
 </script>
@@ -2218,5 +2254,122 @@ document.addEventListener('DOMContentLoaded', function() {
     setupNotesAutoSave();
     loadDailyExecutionNotes(currentWorkDate);
 });
+
+/**
+ * إضافة بند عمل جديد
+ */
+async function addNewWorkItem() {
+    const itemName = document.getElementById('newItemName').value;
+    const itemUnit = document.getElementById('newItemUnit').value;
+    const plannedQuantity = document.getElementById('newPlannedQuantity').value;
+    const unitPrice = document.getElementById('newUnitPrice').value;
+    
+    if (!itemName || !itemUnit || !plannedQuantity) {
+        toastr.error('الرجاء ملء جميع الحقول المطلوبة');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`{{ route('admin.work-orders.add-daily-execution', $workOrder->id) }}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({
+                item_name: itemName,
+                unit: itemUnit,
+                planned_quantity: plannedQuantity,
+                unit_price: unitPrice || 0,
+                work_date: currentWorkDate
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            toastr.success('تم إضافة البند بنجاح');
+            // إغلاق الـ modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('addWorkItemModal'));
+            modal.hide();
+            // إعادة تحميل الصفحة لعرض البند الجديد
+            refreshWorkItems();
+            // مسح الحقول
+            document.getElementById('addWorkItemForm').reset();
+        } else {
+            toastr.error(result.message || 'حدث خطأ أثناء إضافة البند');
+        }
+    } catch (error) {
+        console.error('Error adding work item:', error);
+        toastr.error('حدث خطأ أثناء إضافة البند');
+    }
+}
 </script>
+
+<!-- Modal: إضافة بند عمل جديد -->
+<div class="modal fade" id="addWorkItemModal" tabindex="-1" aria-labelledby="addWorkItemModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="addWorkItemModalLabel">
+                    <i class="fas fa-plus-circle me-2"></i>
+                    إضافة بند عمل جديد
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addWorkItemForm">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="newItemName" class="form-label">اسم البند <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="newItemName" placeholder="أدخل اسم البند" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="newItemUnit" class="form-label">الوحدة <span class="text-danger">*</span></label>
+                            <select class="form-select" id="newItemUnit" required>
+                                <option value="">اختر الوحدة</option>
+                                <option value="متر">متر</option>
+                                <option value="متر مربع">متر مربع</option>
+                                <option value="متر مكعب">متر مكعب</option>
+                                <option value="قطعة">قطعة</option>
+                                <option value="طن">طن</option>
+                                <option value="كيلو">كيلو</option>
+                                <option value="لتر">لتر</option>
+                                <option value="ساعة">ساعة</option>
+                                <option value="يوم">يوم</option>
+                                <option value="مجمل">مجمل</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="newPlannedQuantity" class="form-label">الكمية المخططة <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="newPlannedQuantity" step="0.01" min="0" placeholder="0.00" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="newUnitPrice" class="form-label">سعر الوحدة</label>
+                            <input type="number" class="form-control" id="newUnitPrice" step="0.01" min="0" placeholder="0.00">
+                        </div>
+                        <div class="col-12">
+                            <div class="alert alert-info mb-0">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <small>سيتم إضافة البند إلى سجل التنفيذ اليومي للتاريخ المحدد</small>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>
+                    إلغاء
+                </button>
+                <button type="button" class="btn btn-success" onclick="addNewWorkItem()">
+                    <i class="fas fa-plus me-1"></i>
+                    إضافة البند
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @endpush 

@@ -734,21 +734,25 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/projects/{project}/bid-package/folder/{folderName}', [ProjectController::class, 'viewBidPackageFolder'])->name('projects.bid-package.folder');
     Route::post('/projects/{project}/bid-package/create-folder', [ProjectController::class, 'createBidPackageFolder'])->name('projects.bid-package.create-folder');
     Route::post('/projects/{project}/bid-package/upload-files', [ProjectController::class, 'uploadBidPackageFiles'])->name('projects.bid-package.upload-files');
+    Route::post('/projects/{project}/bid-package/rename-folder', [ProjectController::class, 'renameBidPackageFolder'])->name('projects.bid-package.rename-folder');
     
     // Bid Package Sub-sections Routes
     Route::get('/projects/{project}/bid-package/vol1', [ProjectController::class, 'bidPackageVol1'])->name('projects.bid-package.vol1');
     Route::post('/projects/{project}/bid-package/vol1/create-folder', [ProjectController::class, 'createBidPackageVol1Folder'])->name('projects.bid-package.vol1.create-folder');
     Route::post('/projects/{project}/bid-package/vol1/upload-files', [ProjectController::class, 'uploadBidPackageVol1Files'])->name('projects.bid-package.vol1.upload-files');
+    Route::post('/projects/{project}/bid-package/vol1/rename-folder', [ProjectController::class, 'renameBidPackageVol1Folder'])->name('projects.bid-package.vol1.rename-folder');
     Route::get('/projects/{project}/bid-package/vol1/folder/{folderName}', [ProjectController::class, 'viewBidPackageVol1Folder'])->name('projects.bid-package.vol1.folder');
     
     Route::get('/projects/{project}/bid-package/vol2', [ProjectController::class, 'bidPackageVol2'])->name('projects.bid-package.vol2');
     Route::post('/projects/{project}/bid-package/vol2/create-folder', [ProjectController::class, 'createBidPackageVol2Folder'])->name('projects.bid-package.vol2.create-folder');
     Route::post('/projects/{project}/bid-package/vol2/upload-files', [ProjectController::class, 'uploadBidPackageVol2Files'])->name('projects.bid-package.vol2.upload-files');
+    Route::post('/projects/{project}/bid-package/vol2/rename-folder', [ProjectController::class, 'renameBidPackageVol2Folder'])->name('projects.bid-package.vol2.rename-folder');
     Route::get('/projects/{project}/bid-package/vol2/folder/{folderName}', [ProjectController::class, 'viewBidPackageVol2Folder'])->name('projects.bid-package.vol2.folder');
     
     Route::get('/projects/{project}/bid-package/documents', [ProjectController::class, 'bidPackageDocuments'])->name('projects.bid-package.documents');
     Route::post('/projects/{project}/bid-package/documents/create-folder', [ProjectController::class, 'createBidPackageDocumentsFolder'])->name('projects.bid-package.documents.create-folder');
     Route::post('/projects/{project}/bid-package/documents/upload-files', [ProjectController::class, 'uploadBidPackageDocumentsFiles'])->name('projects.bid-package.documents.upload-files');
+    Route::post('/projects/{project}/bid-package/documents/rename-folder', [ProjectController::class, 'renameBidPackageDocumentsFolder'])->name('projects.bid-package.documents.rename-folder');
     Route::get('/projects/{project}/bid-package/documents/folder/{folderName}', [ProjectController::class, 'viewBidPackageDocumentsFolder'])->name('projects.bid-package.documents.folder');
     
     // Study Routes

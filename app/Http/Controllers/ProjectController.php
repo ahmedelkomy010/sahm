@@ -974,6 +974,47 @@ class ProjectController extends Controller
         }
     }
 
+    public function renameBidPackageFolder(Request $request, Project $project)
+    {
+        $validated = $request->validate([
+            'old_name' => 'required|string',
+            'new_name' => 'required|string|max:255',
+        ]);
+
+        try {
+            $newName = preg_replace('/[^\p{Arabic}\p{L}\p{N}\s\-\_]/u', '', $validated['new_name']);
+            $newName = trim($newName);
+
+            $basePath = storage_path('app/public/projects/' . $project->id . '/bid-package');
+            $oldPath = $basePath . '/' . $validated['old_name'];
+            $newPath = $basePath . '/' . $newName;
+            
+            if (!file_exists($oldPath)) {
+                return redirect()
+                    ->back()
+                    ->with('error', 'Folder not found');
+            }
+
+            if (file_exists($newPath) && $oldPath !== $newPath) {
+                return redirect()
+                    ->back()
+                    ->with('error', 'A folder with this name already exists');
+            }
+            
+            rename($oldPath, $newPath);
+            
+            return redirect()
+                ->back()
+                ->with('success', 'Folder renamed successfully');
+
+        } catch (\Exception $e) {
+            \Log::error('Error renaming bid-package folder: ' . $e->getMessage());
+            return redirect()
+                ->back()
+                ->with('error', 'Error renaming folder');
+        }
+    }
+
     /**
      * رفع ملفات متعددة في bid package
      */
@@ -2362,6 +2403,47 @@ class ProjectController extends Controller
         }
     }
 
+    public function renameBidPackageVol1Folder(Request $request, Project $project)
+    {
+        $validated = $request->validate([
+            'old_name' => 'required|string',
+            'new_name' => 'required|string|max:255',
+        ]);
+
+        try {
+            $newName = preg_replace('/[^\p{Arabic}\p{L}\p{N}\s\-\_]/u', '', $validated['new_name']);
+            $newName = trim($newName);
+
+            $basePath = storage_path('app/public/projects/' . $project->id . '/bid-package/vol1');
+            $oldPath = $basePath . '/' . $validated['old_name'];
+            $newPath = $basePath . '/' . $newName;
+            
+            if (!file_exists($oldPath)) {
+                return redirect()
+                    ->back()
+                    ->with('error', 'Folder not found');
+            }
+
+            if (file_exists($newPath) && $oldPath !== $newPath) {
+                return redirect()
+                    ->back()
+                    ->with('error', 'A folder with this name already exists');
+            }
+            
+            rename($oldPath, $newPath);
+            
+            return redirect()
+                ->back()
+                ->with('success', 'Folder renamed successfully');
+
+        } catch (\Exception $e) {
+            \Log::error('Error renaming vol1 folder: ' . $e->getMessage());
+            return redirect()
+                ->back()
+                ->with('error', 'Error renaming folder');
+        }
+    }
+
     public function viewBidPackageVol1Folder(Project $project, $folderName)
     {
         $folderPath = storage_path('app/public/projects/' . $project->id . '/bid-package/vol1/' . $folderName);
@@ -2420,6 +2502,164 @@ class ProjectController extends Controller
         return view('projects.sections.bid-package-vol2', compact('project', 'folders', 'files'));
     }
 
+    public function createBidPackageVol2Folder(Request $request, Project $project)
+    {
+        $validated = $request->validate([
+            'folder_name' => 'required|string|max:255',
+            'folder_description' => 'nullable|string|max:500',
+        ]);
+
+        try {
+            $folderName = preg_replace('/[^\p{Arabic}\p{L}\p{N}\s\-\_]/u', '', $validated['folder_name']);
+            $folderName = trim($folderName);
+
+            $basePath = storage_path('app/public/projects/' . $project->id . '/bid-package/vol2');
+            
+            if (!file_exists($basePath)) {
+                mkdir($basePath, 0777, true);
+                chmod($basePath, 0777);
+            }
+            
+            $folderPath = $basePath . '/' . $folderName;
+            
+            if (file_exists($folderPath)) {
+                return redirect()
+                    ->back()
+                    ->with('error', 'Folder already exists');
+            }
+            
+            mkdir($folderPath, 0777, true);
+            chmod($folderPath, 0777);
+            
+            if ($request->folder_description) {
+                file_put_contents($folderPath . '/description.txt', $validated['folder_description']);
+            }
+            
+            return redirect()
+                ->back()
+                ->with('success', 'Folder created successfully');
+
+        } catch (\Exception $e) {
+            \Log::error('Error creating vol2 folder: ' . $e->getMessage());
+            return redirect()
+                ->back()
+                ->with('error', 'Error creating folder');
+        }
+    }
+
+    public function uploadBidPackageVol2Files(Request $request, Project $project)
+    {
+        $validated = $request->validate([
+            'files' => 'required|array|min:1',
+            'files.*' => 'required|file|max:51200',
+            'folder_id' => 'nullable|string',
+        ]);
+
+        try {
+            $uploadedFiles = [];
+            $folderName = $request->folder_id ?: 'main';
+            
+            $storagePath = 'public/projects/' . $project->id . '/bid-package/vol2/' . $folderName;
+            
+            foreach ($request->file('files') as $file) {
+                $originalName = $file->getClientOriginalName();
+                $fileName = time() . '_' . $originalName;
+                
+                $path = $file->storeAs($storagePath, $fileName);
+                
+                $uploadedFiles[] = [
+                    'name' => $originalName,
+                    'path' => $path,
+                    'size' => $file->getSize(),
+                ];
+            }
+
+            return redirect()
+                ->back()
+                ->with('success', count($uploadedFiles) . ' files uploaded successfully');
+
+        } catch (\Exception $e) {
+            \Log::error('Error uploading vol2 files: ' . $e->getMessage());
+            return redirect()
+                ->back()
+                ->with('error', 'Error uploading files');
+        }
+    }
+
+    public function renameBidPackageVol2Folder(Request $request, Project $project)
+    {
+        $validated = $request->validate([
+            'old_name' => 'required|string',
+            'new_name' => 'required|string|max:255',
+        ]);
+
+        try {
+            $newName = preg_replace('/[^\p{Arabic}\p{L}\p{N}\s\-\_]/u', '', $validated['new_name']);
+            $newName = trim($newName);
+
+            $basePath = storage_path('app/public/projects/' . $project->id . '/bid-package/vol2');
+            $oldPath = $basePath . '/' . $validated['old_name'];
+            $newPath = $basePath . '/' . $newName;
+            
+            if (!file_exists($oldPath)) {
+                return redirect()
+                    ->back()
+                    ->with('error', 'Folder not found');
+            }
+
+            if (file_exists($newPath) && $oldPath !== $newPath) {
+                return redirect()
+                    ->back()
+                    ->with('error', 'A folder with this name already exists');
+            }
+            
+            rename($oldPath, $newPath);
+            
+            return redirect()
+                ->back()
+                ->with('success', 'Folder renamed successfully');
+
+        } catch (\Exception $e) {
+            \Log::error('Error renaming vol2 folder: ' . $e->getMessage());
+            return redirect()
+                ->back()
+                ->with('error', 'Error renaming folder');
+        }
+    }
+
+    public function viewBidPackageVol2Folder(Project $project, $folderName)
+    {
+        $folderPath = storage_path('app/public/projects/' . $project->id . '/bid-package/vol2/' . $folderName);
+        
+        if (!file_exists($folderPath)) {
+            abort(404);
+        }
+        
+        $description = '';
+        $descFile = $folderPath . '/description.txt';
+        if (file_exists($descFile)) {
+            $description = file_get_contents($descFile);
+        }
+        
+        $files = [];
+        $items = array_diff(scandir($folderPath), ['.', '..', 'description.txt']);
+        
+        foreach ($items as $item) {
+            $itemPath = $folderPath . '/' . $item;
+            if (is_file($itemPath)) {
+                $files[] = [
+                    'name' => $item,
+                    'size' => filesize($itemPath),
+                    'extension' => pathinfo($item, PATHINFO_EXTENSION),
+                    'created_at' => date('Y-m-d H:i', filectime($itemPath)),
+                    'url' => asset('storage/projects/' . $project->id . '/bid-package/vol2/' . $folderName . '/' . $item)
+                ];
+            }
+        }
+        
+        return view('projects.sections.bid-package-vol2-folder', compact('project', 'folderName', 'description', 'files'));
+    }
+
     public function bidPackageDocuments(Project $project)
     {
         $basePath = storage_path('app/public/projects/' . $project->id . '/bid-package/documents');
@@ -2443,8 +2683,163 @@ class ProjectController extends Controller
         return view('projects.sections.bid-package-documents', compact('project', 'folders', 'files'));
     }
 
-    // Note: Remaining CRUD methods for Vol2 and Documents follow the same pattern as Vol1
-    // They should be added following the same structure for create, upload, and view folder
+    public function createBidPackageDocumentsFolder(Request $request, Project $project)
+    {
+        $validated = $request->validate([
+            'folder_name' => 'required|string|max:255',
+            'folder_description' => 'nullable|string|max:500',
+        ]);
+
+        try {
+            $folderName = preg_replace('/[^\p{Arabic}\p{L}\p{N}\s\-\_]/u', '', $validated['folder_name']);
+            $folderName = trim($folderName);
+
+            $basePath = storage_path('app/public/projects/' . $project->id . '/bid-package/documents');
+            
+            if (!file_exists($basePath)) {
+                mkdir($basePath, 0777, true);
+                chmod($basePath, 0777);
+            }
+            
+            $folderPath = $basePath . '/' . $folderName;
+            
+            if (file_exists($folderPath)) {
+                return redirect()
+                    ->back()
+                    ->with('error', 'Folder already exists');
+            }
+            
+            mkdir($folderPath, 0777, true);
+            chmod($folderPath, 0777);
+            
+            if ($request->folder_description) {
+                file_put_contents($folderPath . '/description.txt', $validated['folder_description']);
+            }
+            
+            return redirect()
+                ->back()
+                ->with('success', 'Folder created successfully');
+
+        } catch (\Exception $e) {
+            \Log::error('Error creating documents folder: ' . $e->getMessage());
+            return redirect()
+                ->back()
+                ->with('error', 'Error creating folder');
+        }
+    }
+
+    public function uploadBidPackageDocumentsFiles(Request $request, Project $project)
+    {
+        $validated = $request->validate([
+            'files' => 'required|array|min:1',
+            'files.*' => 'required|file|max:51200',
+            'folder_id' => 'nullable|string',
+        ]);
+
+        try {
+            $uploadedFiles = [];
+            $folderName = $request->folder_id ?: 'main';
+            
+            $storagePath = 'public/projects/' . $project->id . '/bid-package/documents/' . $folderName;
+            
+            foreach ($request->file('files') as $file) {
+                $originalName = $file->getClientOriginalName();
+                $fileName = time() . '_' . $originalName;
+                
+                $path = $file->storeAs($storagePath, $fileName);
+                
+                $uploadedFiles[] = [
+                    'name' => $originalName,
+                    'path' => $path,
+                    'size' => $file->getSize(),
+                ];
+            }
+
+            return redirect()
+                ->back()
+                ->with('success', count($uploadedFiles) . ' files uploaded successfully');
+
+        } catch (\Exception $e) {
+            \Log::error('Error uploading documents files: ' . $e->getMessage());
+            return redirect()
+                ->back()
+                ->with('error', 'Error uploading files');
+        }
+    }
+
+    public function renameBidPackageDocumentsFolder(Request $request, Project $project)
+    {
+        $validated = $request->validate([
+            'old_name' => 'required|string',
+            'new_name' => 'required|string|max:255',
+        ]);
+
+        try {
+            $newName = preg_replace('/[^\p{Arabic}\p{L}\p{N}\s\-\_]/u', '', $validated['new_name']);
+            $newName = trim($newName);
+
+            $basePath = storage_path('app/public/projects/' . $project->id . '/bid-package/documents');
+            $oldPath = $basePath . '/' . $validated['old_name'];
+            $newPath = $basePath . '/' . $newName;
+            
+            if (!file_exists($oldPath)) {
+                return redirect()
+                    ->back()
+                    ->with('error', 'Folder not found');
+            }
+
+            if (file_exists($newPath) && $oldPath !== $newPath) {
+                return redirect()
+                    ->back()
+                    ->with('error', 'A folder with this name already exists');
+            }
+            
+            rename($oldPath, $newPath);
+            
+            return redirect()
+                ->back()
+                ->with('success', 'Folder renamed successfully');
+
+        } catch (\Exception $e) {
+            \Log::error('Error renaming documents folder: ' . $e->getMessage());
+            return redirect()
+                ->back()
+                ->with('error', 'Error renaming folder');
+        }
+    }
+
+    public function viewBidPackageDocumentsFolder(Project $project, $folderName)
+    {
+        $folderPath = storage_path('app/public/projects/' . $project->id . '/bid-package/documents/' . $folderName);
+        
+        if (!file_exists($folderPath)) {
+            abort(404);
+        }
+        
+        $description = '';
+        $descFile = $folderPath . '/description.txt';
+        if (file_exists($descFile)) {
+            $description = file_get_contents($descFile);
+        }
+        
+        $files = [];
+        $items = array_diff(scandir($folderPath), ['.', '..', 'description.txt']);
+        
+        foreach ($items as $item) {
+            $itemPath = $folderPath . '/' . $item;
+            if (is_file($itemPath)) {
+                $files[] = [
+                    'name' => $item,
+                    'size' => filesize($itemPath),
+                    'extension' => pathinfo($item, PATHINFO_EXTENSION),
+                    'created_at' => date('Y-m-d H:i', filectime($itemPath)),
+                    'url' => asset('storage/projects/' . $project->id . '/bid-package/documents/' . $folderName . '/' . $item)
+                ];
+            }
+        }
+        
+        return view('projects.sections.bid-package-documents-folder', compact('project', 'folderName', 'description', 'files'));
+    }
 
     // ============================================
     // Supplying Sub-sections Methods
