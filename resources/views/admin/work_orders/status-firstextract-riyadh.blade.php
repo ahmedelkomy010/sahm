@@ -41,11 +41,11 @@
                     </div>
                 </div>
                 <div class="col-md-4">
-                    <div class="card shadow-sm border-0 bg-danger">
+                    <div class="card shadow-sm border-0 bg-success">
                         <div class="card-body text-white text-center">
-                            <i class="fas fa-money-bill-wave fa-3x mb-3 opacity-75"></i>
-                            <h2 class="mb-1">{{ number_format($totalValue, 0) }}</h2>
-                            <p class="mb-0">إجمالي القيمة المبدئية</p>
+                            <i class="fas fa-chart-line fa-3x mb-3 opacity-75"></i>
+                            <h2 class="mb-1">{{ number_format($totalActualValue ?? 0, 0) }}</h2>
+                            <p class="mb-0">قيمة التنفيذ الفعلي (غير شامل الاستشاري)</p>
                         </div>
                     </div>
                 </div>

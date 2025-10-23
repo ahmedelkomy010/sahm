@@ -6643,4 +6643,13 @@ class WorkOrderController extends Controller
         }
     }
 
+    /**
+     * تصدير لوحة التحكم التحليلية إلى Excel
+     */
+    public function exportProductivityDashboard($project = 'riyadh')
+    {
+        $export = new \App\Exports\ProductivityDashboardExport($project);
+        return $export->export();
+    }
+
 } 

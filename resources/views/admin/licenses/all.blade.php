@@ -76,6 +76,15 @@
         padding: 0.4rem 0.75rem;
         font-weight: 500;
     }
+    
+    .table tbody tr {
+        transition: all 0.2s ease;
+    }
+    
+    .table tbody tr:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
 </style>
 @endpush
 
@@ -106,13 +115,19 @@
 
     <!-- Statistics Cards -->
     <div class="row mb-4">
-        <div class="col-md-6">
+        <div class="col-md-4">
             <div class="stats-card">
                 <h5><i class="fas fa-list me-2"></i>إجمالي عدد الرخص</h5>
                 <h3>{{ number_format($stats['total_licenses']) }}</h3>
             </div>
         </div>
-        <div class="col-md-6">
+        <div class="col-md-4">
+            <div class="stats-card">
+                <h5><i class="fas fa-file-alt me-2"></i>عدد أوامر العمل</h5>
+                <h3>{{ number_format($stats['total_work_orders']) }}</h3>
+            </div>
+        </div>
+        <div class="col-md-4">
             <div class="stats-card">
                 <h5><i class="fas fa-money-bill-wave me-2"></i>إجمالي قيمة الرخص</h5>
                 <h3>{{ number_format($stats['total_value'], 2) }} ر.س</h3>
@@ -215,6 +230,7 @@
                             <th>رقم الرخصة</th>
                             <th>رقم أمر العمل</th>
                             <th>نوع العمل</th>
+                            <th>تاريخ الرخصة</th>
                             <th>قيمة الرخصة</th>
                             <th style="width: 120px;">الإجراءات</th>
                         </tr>
@@ -228,34 +244,69 @@
                                 </span>
                             </td>
                             <td>
-                                <strong style="color: #5a67d8; font-size: 1rem;">
-                                    {{ $license->license_number ?? 'غير محدد' }}
-                                </strong>
+                                <div class="d-flex align-items-center justify-content-center">
+                                    <i class="fas fa-certificate me-2" style="color: #5a67d8;"></i>
+                                    <strong style="color: #5a67d8; font-size: 1.05rem;">
+                                        {{ $license->license_number ?? 'غير محدد' }}
+                                    </strong>
+                                </div>
                             </td>
                             <td>
                                 @if($license->workOrder)
-                                    <a href="{{ route('admin.work-orders.show', ['project' => $project, 'workOrder' => $license->workOrder->id]) }}" 
-                                       class="text-decoration-none" target="_blank"
-                                       style="color: #4a5568; font-weight: 600;">
-                                        {{ $license->workOrder->order_entry_number }}
-                                    </a>
+                                    <div class="d-flex align-items-center justify-content-center">
+                                        <i class="fas fa-file-alt me-2" style="color: #6c757d;"></i>
+                                        <span style="color: #4a5568; font-weight: 600; font-size: 1.05rem;">
+                                            {{ $license->workOrder->order_number }}
+                                        </span>
+                                    </div>
                                 @else
                                     <span class="text-muted">-</span>
                                 @endif
                             </td>
                             <td>
                                 @if($license->workOrder)
-                                    <span class="badge badge-license" style="background: #e8f5e9; color: #2e7d32;">
-                                        {{ $license->workOrder->work_type ?? 'غير محدد' }}
+                                    @php
+                                        $workType = $license->workOrder->work_type ?? '';
+                                        $bgColor = '#e8f5e9';
+                                        $textColor = '#2e7d32';
+                                        
+                                        // تلوين حسب نوع العمل
+                                        if(str_contains($workType, 'كهرباء') || str_contains($workType, 'كهربائ')) {
+                                            $bgColor = '#fff3e0';
+                                            $textColor = '#e65100';
+                                        } elseif(str_contains($workType, 'مياه') || str_contains($workType, 'صرف')) {
+                                            $bgColor = '#e1f5fe';
+                                            $textColor = '#01579b';
+                                        } elseif(str_contains($workType, 'اتصالات')) {
+                                            $bgColor = '#f3e5f5';
+                                            $textColor = '#6a1b9a';
+                                        }
+                                    @endphp
+                                    <span class="badge badge-license" style="background: {{ $bgColor }}; color: {{ $textColor }};">
+                                        <i class="fas fa-tag me-1"></i>
+                                        {{ $workType ?: 'غير محدد' }}
                                     </span>
                                 @else
                                     <span class="text-muted">-</span>
                                 @endif
                             </td>
                             <td>
-                                <strong style="color: #10b981; font-size: 1.05rem;">
-                                    {{ number_format($license->license_value ?? 0, 2) }} ر.س
-                                </strong>
+                                @if($license->license_start_date)
+                                    <span style="color: #6c757d; font-size: 0.95rem;">
+                                        <i class="fas fa-calendar-alt me-1" style="color: #4a5568;"></i>
+                                        {{ \Carbon\Carbon::parse($license->license_start_date)->format('Y-m-d') }}
+                                    </span>
+                                @else
+                                    <span class="text-muted">-</span>
+                                @endif
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center justify-content-center">
+                                    <i class="fas fa-money-bill-wave me-2" style="color: #10b981;"></i>
+                                    <strong style="color: #10b981; font-size: 1.05rem;">
+                                        {{ number_format($license->license_value ?? 0, 2) }} ر.س
+                                    </strong>
+                                </div>
                             </td>
                             <td>
                                 @if($license->workOrder)
@@ -270,7 +321,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="6" class="text-center py-5">
+                            <td colspan="7" class="text-center py-5">
                                 <div class="text-muted">
                                     <i class="fas fa-inbox fa-3x mb-3 d-block" style="color: #cbd5e0;"></i>
                                     <h5 style="color: #6c757d;">لا توجد رخص</h5>

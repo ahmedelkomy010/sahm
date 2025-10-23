@@ -45,6 +45,13 @@
                             <i class="fas fa-check-circle fa-3x mb-3 opacity-75"></i>
                             <h2 class="mb-1">{{ $successfulTests }}</h2>
                             <p class="mb-0">اختبارات ناجحة</p>
+                            @php
+                                $successRate = $totalTests > 0 ? ($successfulTests / $totalTests) * 100 : 0;
+                            @endphp
+                            <div class="mt-2">
+                                <h4 class="mb-0">{{ number_format($successRate, 1) }}%</h4>
+                                <small class="opacity-75">النسبة</small>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -54,12 +61,62 @@
                             <i class="fas fa-times-circle fa-3x mb-3 opacity-75"></i>
                             <h2 class="mb-1">{{ $failedTests }}</h2>
                             <p class="mb-0">اختبارات راسبة</p>
+                            @php
+                                $failureRate = $totalTests > 0 ? ($failedTests / $totalTests) * 100 : 0;
+                            @endphp
+                            <div class="mt-2">
+                                <h4 class="mb-0">{{ number_format($failureRate, 1) }}%</h4>
+                                <small class="opacity-75">النسبة</small>
+                            </div>
                         </div>
                     </div>
                 </div>
+
+            <!-- Filters Section -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-filter me-2"></i>
+                        فلاتر البحث
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="GET" action="{{ route('admin.quality.inspections-reports.riyadh') }}" class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">تاريخ البداية</label>
+                            <input type="date" name="start_date" class="form-control" value="{{ request('start_date') }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">تاريخ النهاية</label>
+                            <input type="date" name="end_date" class="form-control" value="{{ request('end_date') }}">
+                        </div>
+                        <div class="col-md-6 d-flex align-items-end gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-filter me-1"></i>
+                                تطبيق الفلتر
+                            </button>
+                            <a href="{{ route('admin.quality.inspections-reports.riyadh') }}" class="btn btn-secondary">
+                                <i class="fas fa-redo me-1"></i>
+                                إعادة تعيين
+                            </a>
+                            <a href="{{ route('admin.quality.inspections-reports.export', ['project' => 'riyadh']) }}?{{ http_build_query(request()->except(['page'])) }}" 
+                               class="btn btn-success">
+                                <i class="fas fa-file-excel me-1"></i>
+                                تصدير Excel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light">
+                        <h5 class="mb-0">
+                            <i class="fas fa-list me-2 text-primary"></i>
+                            قائمة التقارير
                         </h5>
                     </div>
-                </div>
                 <div class="card-body">
                     <div class="table-responsive">
                         <table class="table table-hover align-middle">

@@ -49,8 +49,24 @@
                             </div>
                         </div>
                     </div>
-                   
-                    
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <div class="card shadow-sm border-0 h-100" style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);">
+                            <div class="card-body text-white text-center py-3">
+                                <i class="fas fa-exclamation-triangle fa-2x mb-2 opacity-75"></i>
+                                <h3 class="mb-1">{{ $obstaclesCount }}</h3>
+                                <p class="mb-0 small">أوامر عليها معوقات</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <div class="card shadow-sm border-0 h-100" style="background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);">
+                            <div class="card-body text-white text-center py-3">
+                                <i class="fas fa-clock fa-2x mb-2 opacity-75"></i>
+                                <h3 class="mb-1">{{ $overdueCount }}</h3>
+                                <p class="mb-0 small">أوامر متأخرة</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Filters Section -->

@@ -50,6 +50,41 @@
                     </div>
                 </div>
 
+                <!-- Filter Section -->
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">
+                            <i class="fas fa-filter me-2"></i>
+                            فلترة حسب عدد الأيام
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="GET" action="{{ route('admin.time-management.overdue.riyadh') }}" class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label">عدد الأيام (أكثر من)</label>
+                                <select name="days" class="form-select">
+                                    <option value="0" {{ ($days ?? 0) == 0 ? 'selected' : '' }}>جميع الأوامر</option>
+                                    <option value="7" {{ ($days ?? 0) == 7 ? 'selected' : '' }}>أكثر من 7 أيام</option>
+                                    <option value="15" {{ ($days ?? 0) == 15 ? 'selected' : '' }}>أكثر من 15 يوم</option>
+                                    <option value="30" {{ ($days ?? 0) == 30 ? 'selected' : '' }}>أكثر من 30 يوم</option>
+                                    <option value="60" {{ ($days ?? 0) == 60 ? 'selected' : '' }}>أكثر من 60 يوم</option>
+                                    <option value="90" {{ ($days ?? 0) == 90 ? 'selected' : '' }}>أكثر من 90 يوم</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 d-flex align-items-end">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-filter me-1"></i>
+                                    تطبيق الفلتر
+                                </button>
+                                <a href="{{ route('admin.time-management.overdue.riyadh') }}" class="btn btn-secondary ms-2">
+                                    <i class="fas fa-redo me-1"></i>
+                                    إعادة تعيين
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
                 <!-- Work Orders Table -->
                 <div class="card shadow-sm border-0">
                     <div class="card-header bg-light">
@@ -57,8 +92,11 @@
                             <h5 class="mb-0">
                                 <i class="fas fa-list me-2 text-danger"></i>
                                 قائمة الأوامر المتأخرة
+                                @if(($days ?? 0) > 0)
+                                    <span class="badge bg-danger">أكثر من {{ $days }} يوم</span>
+                                @endif
                             </h5>
-                            <a href="{{ route('admin.time-management.export-overdue', ['project' => 'riyadh']) }}" 
+                            <a href="{{ route('admin.time-management.export-overdue', ['project' => 'riyadh']) }}?days={{ $days ?? 0 }}" 
                                class="btn btn-success btn-sm">
                                 <i class="fas fa-file-excel me-2"></i>
                                 تصدير Excel

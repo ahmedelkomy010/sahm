@@ -401,6 +401,7 @@ Route::get('quality/extensions/{city}/export', [App\Http\Controllers\Admin\WorkO
     Route::get('quality/inspections/{city}/export', [App\Http\Controllers\Admin\WorkOrderController::class, 'exportInspections'])->name('quality.inspections.export');
     Route::get('quality/inspections-reports/riyadh', [App\Http\Controllers\Admin\WorkOrderController::class, 'inspectionsReportsRiyadh'])->name('quality.inspections-reports.riyadh');
     Route::get('quality/inspections-reports/madinah', [App\Http\Controllers\Admin\WorkOrderController::class, 'inspectionsReportsMadinah'])->name('quality.inspections-reports.madinah');
+    Route::get('quality/inspections-reports/{project}/export', [App\Http\Controllers\Admin\WorkOrderController::class, 'exportInspectionsReports'])->name('quality.inspections-reports.export');
     Route::get('quality/evacuations/riyadh', [App\Http\Controllers\Admin\WorkOrderController::class, 'evacuationsRiyadh'])->name('quality.evacuations.riyadh');
     Route::get('quality/evacuations/madinah', [App\Http\Controllers\Admin\WorkOrderController::class, 'evacuationsMadinah'])->name('quality.evacuations.madinah');
     Route::get('quality/evacuations/{city}/export', [App\Http\Controllers\Admin\WorkOrderController::class, 'exportEvacuations'])->name('quality.evacuations.export');
@@ -446,6 +447,7 @@ Route::get('quality/extensions/{city}/export', [App\Http\Controllers\Admin\WorkO
     // تقارير الإنتاجية حسب المدينة
     Route::get('work-orders/productivity/riyadh', [App\Http\Controllers\Admin\WorkOrderController::class, 'riyadhProductivity'])->name('work-orders.productivity.riyadh');
     Route::get('work-orders/productivity/madinah', [App\Http\Controllers\Admin\WorkOrderController::class, 'madinahProductivity'])->name('work-orders.productivity.madinah');
+    Route::get('work-orders/productivity/{project}/export', [WorkOrderController::class, 'exportProductivityDashboard'])->name('work-orders.productivity.export');
     
     // صور التنفيذ
     Route::post('work-orders/{workOrder}/execution/images', [App\Http\Controllers\Admin\WorkOrderController::class, 'uploadExecutionImages'])->name('work-orders.execution.upload-images');

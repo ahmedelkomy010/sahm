@@ -34,6 +34,12 @@
                                     {{ now()->format('Y/m/d') }}
                                 </div>
                                 
+                                <!-- Export Button -->
+                                <a href="{{ route('admin.work-orders.productivity.export', ['project' => $project ?? 'riyadh']) }}" 
+                                   class="btn btn-sm btn-success">
+                                    <i class="fas fa-file-excel me-2"></i>تصدير Excel
+                                </a>
+                                
                                 <!-- Project Switcher -->
                                 <div class="btn-group" role="group">
                                     <a href="{{ url('/admin/work-orders/productivity/riyadh') }}" 
@@ -156,6 +162,10 @@
                                             <h6 class="mb-1" id="quickInProgressCount">0</h6>
                                             <small class="text-muted" style="font-size: 0.65rem;">جاري العمل</small>
                                             <div class="mt-1">
+                                                <small class="text-info fw-bold d-block" style="font-size: 0.55rem;" id="quickInProgressValue">0</small>
+                                                <small class="text-muted" style="font-size: 0.5rem;">القيمة المبدئية</small>
+                                            </div>
+                                            <div class="mt-1">
                                                 <small class="text-info" style="font-size: 0.6rem;">
                                                     <i class="fas fa-external-link-alt"></i>
                                                 </small>
@@ -180,6 +190,10 @@
                                             </div>
                                             <h6 class="mb-1" id="quickExecutedCount">0</h6>
                                             <small class="text-muted" style="font-size: 0.65rem;">تم التنفيذ</small>
+                                            <div class="mt-1">
+                                                <small class="fw-bold d-block" style="color: #704402; font-size: 0.55rem;" id="quickExecutedValue">0</small>
+                                                <small class="text-muted" style="font-size: 0.5rem;">القيمة المبدئية</small>
+                                            </div>
                                             <div class="mt-1">
                                                 <small style="color: #704402; font-size: 0.6rem;">
                                                     <i class="fas fa-external-link-alt"></i>
@@ -206,6 +220,10 @@
                                             <h6 class="mb-1" id="quickDelivery155Count">0</h6>
                                             <small class="text-muted" style="font-size: 0.65rem;">تسليم 155</small>
                                             <div class="mt-1">
+                                                <small class="fw-bold d-block" style="color: #6f42c1; font-size: 0.55rem;" id="quickDelivery155Value">0</small>
+                                                <small class="text-muted" style="font-size: 0.5rem;">القيمة المبدئية</small>
+                                            </div>
+                                            <div class="mt-1">
                                                 <small style="color: #6f42c1; font-size: 0.6rem;">
                                                     <i class="fas fa-external-link-alt"></i>
                                                 </small>
@@ -230,6 +248,10 @@
                                         </div>
                                             <h6 class="mb-1" id="quickFirstExtractCount">0</h6>
                                             <small class="text-muted" style="font-size: 0.65rem;">إعداد مستخلص</small>
+                                            <div class="mt-1">
+                                                <small class="fw-bold d-block" style="color: #e91e63; font-size: 0.55rem;" id="quickFirstExtractValue">0</small>
+                                                <small class="text-muted" style="font-size: 0.5rem;">قيمة التنفيذ الفعلي</small>
+                                            </div>
                                             <div class="mt-1">
                                                 <small style="color: #e91e63; font-size: 0.6rem;">
                                                     <i class="fas fa-external-link-alt"></i>
@@ -256,6 +278,10 @@
                                             <h6 class="mb-1" id="quickPaidFirstCount">0</h6>
                                             <small class="text-muted" style="font-size: 0.65rem;">تم صرف أولى</small>
                                             <div class="mt-1">
+                                                <small class="fw-bold d-block" style="color: #ff9800; font-size: 0.55rem;" id="quickPaidFirstValue">0</small>
+                                                <small class="text-muted" style="font-size: 0.5rem;">قيمة التنفيذ الفعلي</small>
+                                            </div>
+                                            <div class="mt-1">
                                                 <small style="color: #ff9800; font-size: 0.6rem;">
                                                     <i class="fas fa-external-link-alt"></i>
                                                 </small>
@@ -280,6 +306,10 @@
                                             </div>
                                             <h6 class="mb-1" id="quickSecondExtractCount">0</h6>
                                             <small class="text-muted" style="font-size: 0.65rem;">مستخلص ثانية</small>
+                                            <div class="mt-1">
+                                                <small class="fw-bold d-block" style="color: #9c27b0; font-size: 0.55rem;" id="quickSecondExtractValue">0</small>
+                                                <small class="text-muted" style="font-size: 0.5rem;">قيمة التنفيذ الفعلي</small>
+                                            </div>
                                             <div class="mt-1">
                                                 <small style="color: #9c27b0; font-size: 0.6rem;">
                                                     <i class="fas fa-external-link-alt"></i>
@@ -306,6 +336,10 @@
                                             <h6 class="mb-1" id="quickCertificateCount">0</h6>
                                             <small class="text-muted" style="font-size: 0.65rem;">شهادة إنجاز</small>
                                             <div class="mt-1">
+                                                <small class="fw-bold d-block" style="color: #4caf50; font-size: 0.55rem;" id="quickCertificateValue">0</small>
+                                                <small class="text-muted" style="font-size: 0.5rem;">قيمة التنفيذ الفعلي</small>
+                                            </div>
+                                            <div class="mt-1">
                                                 <small style="color: #4caf50; font-size: 0.6rem;">
                                                     <i class="fas fa-external-link-alt"></i>
                                                 </small>
@@ -330,6 +364,10 @@
                                             </div>
                                             <h6 class="mb-1" id="quickTotalExtractCount">0</h6>
                                             <small class="text-muted" style="font-size: 0.65rem;">مستخلص كلي</small>
+                                            <div class="mt-1">
+                                                <small class="fw-bold d-block" style="color: #00bcd4; font-size: 0.55rem;" id="quickTotalExtractValue">0</small>
+                                                <small class="text-muted" style="font-size: 0.5rem;">قيمة التنفيذ الفعلي</small>
+                                            </div>
                                             <div class="mt-1">
                                                 <small style="color: #00bcd4; font-size: 0.6rem;">
                                                     <i class="fas fa-external-link-alt"></i>
@@ -356,6 +394,10 @@
                                             <h6 class="mb-1" id="quickCompletedCount">0</h6>
                                             <small class="text-muted" style="font-size: 0.65rem;">منتهي صرف</small>
                                             <div class="mt-1">
+                                                <small class="fw-bold d-block text-secondary" style="font-size: 0.55rem;" id="quickCompletedValue">0</small>
+                                                <small class="text-muted" style="font-size: 0.5rem;">قيمة التنفيذ الفعلي</small>
+                                            </div>
+                                            <div class="mt-1">
                                                 <small class="text-secondary" style="font-size: 0.6rem;">
                                                     <i class="fas fa-external-link-alt"></i>
                                                 </small>
@@ -380,6 +422,10 @@
                                     </div>
                                     <h6 class="mb-1" id="quickDroopCount">0</h6>
                                     <small class="text-muted" style="font-size: 0.65rem;">دروب</small>
+                                    <div class="mt-1">
+                                        <small class="fw-bold d-block" style="color: #dc3545; font-size: 0.55rem;" id="quickDroopValue">0</small>
+                                        <small class="text-muted" style="font-size: 0.5rem;">القيمة المبدئية</small>
+                                    </div>
                                     <div class="mt-1">
                                         <small style="color: #dc3545; font-size: 0.6rem;">
                                             <i class="fas fa-external-link-alt"></i>
@@ -420,9 +466,24 @@
                                 $surveyRoute = ($project ?? 'riyadh') === 'madinah' 
                                     ? route('admin.work-orders.survey.madinah')
                                     : route('admin.work-orders.survey.riyadh');
+                                
+                                // حساب عدد أوامر العمل التي تحتاج للمسح
+                                $city = ($project ?? 'riyadh') === 'madinah' ? 'المدينة المنورة' : 'الرياض';
+                                $surveyNeedsCount = \App\Models\WorkOrder::where('city', $city)
+                                    ->where(function($query) {
+                                        $query->whereDoesntHave('surveys')
+                                              ->orWhereHas('surveys', function($q) {
+                                                  $q->whereDoesntHave('files');
+                                              });
+                                    })
+                                    ->count();
                             @endphp
                                             <div class="mb-3">
                                                 <i class="fas fa-map-marked-alt fa-3x" style="color: #667eea;"></i>
+                                            </div>
+                                            <div class="mb-3">
+                                                <h2 class="mb-1" style="color: #667eea;">{{ number_format($surveyNeedsCount) }}</h2>
+                                                <p class="text-muted mb-0" style="font-size: 0.9rem;">عدد الأوامر</p>
                                             </div>
                             <a href="{{ $surveyRoute }}" 
                                class="btn btn-lg shadow-sm"
@@ -451,9 +512,20 @@
                                 $completionRoute = ($project ?? 'riyadh') === 'madinah' 
                                     ? route('admin.work-orders.completion.madinah')
                                     : route('admin.work-orders.completion.riyadh');
+                                
+                                // حساب عدد أوامر العمل التي تحتاج لرفع ملفات
+                                $completionFilesCount = \App\Models\WorkOrder::where('city', $city)
+                                    ->whereDoesntHave('files', function($q) {
+                                        $q->where('file_category', 'completion_files');
+                                    })
+                                    ->count();
                             @endphp
                                             <div class="mb-3">
                                                 <i class="fas fa-cloud-upload-alt fa-3x" style="color: #f093fb;"></i>
+                                            </div>
+                                            <div class="mb-3">
+                                                <h2 class="mb-1" style="color: #f093fb;">{{ number_format($completionFilesCount) }}</h2>
+                                                <p class="text-muted mb-0" style="font-size: 0.9rem;">عدد الأوامر</p>
                                             </div>
                             <a href="{{ $completionRoute }}" 
                                class="btn btn-lg shadow-sm"
@@ -497,9 +569,36 @@
                                             $licensesRoute = ($project ?? 'riyadh') === 'madinah' 
                                                 ? route('admin.licenses.all.madinah')
                                                 : route('admin.licenses.all.riyadh');
+                                            
+                                            // حساب عدد الرخص وقيمة الرخص
+                                            $licensesCount = \App\Models\License::where(function($q) use ($city) {
+                                                $q->whereHas('workOrder', function ($subQ) use ($city) {
+                                                    $subQ->where('city', $city);
+                                                })->orWhere('city', $city);
+                                            })->count();
+                                            
+                                            $licensesValue = \App\Models\License::where(function($q) use ($city) {
+                                                $q->whereHas('workOrder', function ($subQ) use ($city) {
+                                                    $subQ->where('city', $city);
+                                                })->orWhere('city', $city);
+                                            })->sum('license_value');
                                         @endphp
                                         <div class="mb-3">
                                             <i class="fas fa-file-contract fa-3x" style="color: #6a11cb;"></i>
+                                        </div>
+                                        <div class="mb-3">
+                                            <h4 class="mb-1" style="color: #6a11cb;">{{ number_format($licensesCount) }}</h4>
+                                            <p class="text-muted mb-0" style="font-size: 0.8rem;">عدد الرخص</p>
+                                            <h5 class="mb-0 mt-2" style="color: #2575fc; font-size: 0.95rem;">
+                                                @if($licensesValue >= 1000000)
+                                                    {{ number_format($licensesValue / 1000000, 1) }}M
+                                                @elseif($licensesValue >= 1000)
+                                                    {{ number_format($licensesValue / 1000, 1) }}K
+                                                @else
+                                                    {{ number_format($licensesValue) }}
+                                                @endif
+                                            </h5>
+                                            <p class="text-muted mb-0" style="font-size: 0.75rem;">قيمة الرخص</p>
                                         </div>
                                         <a href="{{ $licensesRoute }}" 
                                            class="btn btn-sm shadow-sm"
@@ -528,9 +627,85 @@
                                             $violationsRoute = ($project ?? 'riyadh') === 'madinah' 
                                                 ? route('admin.quality.violations.madinah')
                                                 : route('admin.quality.violations.riyadh');
+                                            
+                                            // حساب مخالفات الجودة
+                                            try {
+                                                $qualityViolationsCount = \App\Models\LicenseViolation::whereHas('workOrder', function($q) use ($city) {
+                                                    $q->where('city', $city);
+                                                })->count();
+                                                
+                                                $qualityViolationsValue = \App\Models\LicenseViolation::whereHas('workOrder', function($q) use ($city) {
+                                                    $q->where('city', $city);
+                                                })->sum('violation_amount') ?? 0;
+                                            } catch (\Exception $e) {
+                                                $qualityViolationsCount = 0;
+                                                $qualityViolationsValue = 0;
+                                            }
+                                            
+                                            // حساب مخالفات السلامة
+                                            try {
+                                                $safetyViolationsCount = \App\Models\SafetyViolation::whereHas('workOrder', function($q) use ($city) {
+                                                    $q->where('city', $city);
+                                                })->count();
+                                                
+                                                $safetyViolationsValue = \App\Models\SafetyViolation::whereHas('workOrder', function($q) use ($city) {
+                                                    $q->where('city', $city);
+                                                })->sum('violation_amount') ?? 0;
+                                            } catch (\Exception $e) {
+                                                $safetyViolationsCount = 0;
+                                                $safetyViolationsValue = 0;
+                                            }
+                                            
+                                            // إجمالي المخالفات
+                                            $totalViolationsCount = $qualityViolationsCount + $safetyViolationsCount;
+                                            $totalViolationsValue = $qualityViolationsValue + $safetyViolationsValue;
                                         @endphp
                                         <div class="mb-3">
                                             <i class="fas fa-ban fa-3x" style="color: #eb3349;"></i>
+                                        </div>
+                                        <div class="mb-3">
+                                            <h4 class="mb-1" style="color: #eb3349;">{{ number_format($totalViolationsCount) }}</h4>
+                                            <p class="text-muted mb-0" style="font-size: 0.8rem;">إجمالي عدد المخالفات</p>
+                                            
+                                            <div class="mt-3">
+                                                <div class="mb-2">
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <small class="text-muted" style="font-size: 0.75rem;">
+                                                            <i class="fas fa-clipboard-check me-1"></i>مخالفات الجودة:
+                                                        </small>
+                                                        <span class="badge bg-warning text-dark">{{ number_format($qualityViolationsCount) }}</span>
+                                                    </div>
+                                                    <h6 class="mb-0 mt-1" style="color: #f39c12; font-size: 0.85rem;">
+                                                        @if($qualityViolationsValue >= 1000000)
+                                                            {{ number_format($qualityViolationsValue / 1000000, 1) }}M
+                                                        @elseif($qualityViolationsValue >= 1000)
+                                                            {{ number_format($qualityViolationsValue / 1000, 1) }}K
+                                                        @else
+                                                            {{ number_format($qualityViolationsValue) }}
+                                                        @endif
+                                                    </h6>
+                                                    <small class="text-muted" style="font-size: 0.7rem;">القيمة</small>
+                                                </div>
+                                                
+                                                <div>
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <small class="text-muted" style="font-size: 0.75rem;">
+                                                            <i class="fas fa-hard-hat me-1"></i>مخالفات السلامة:
+                                                        </small>
+                                                        <span class="badge bg-danger">{{ number_format($safetyViolationsCount) }}</span>
+                                                    </div>
+                                                    <h6 class="mb-0 mt-1" style="color: #eb3349; font-size: 0.85rem;">
+                                                        @if($safetyViolationsValue >= 1000000)
+                                                            {{ number_format($safetyViolationsValue / 1000000, 1) }}M
+                                                        @elseif($safetyViolationsValue >= 1000)
+                                                            {{ number_format($safetyViolationsValue / 1000, 1) }}K
+                                                        @else
+                                                            {{ number_format($safetyViolationsValue) }}
+                                                        @endif
+                                                    </h6>
+                                                    <small class="text-muted" style="font-size: 0.7rem;">القيمة</small>
+                                                </div>
+                                            </div>
                                         </div>
                                         <a href="{{ $violationsRoute }}" 
                                            class="btn btn-sm shadow-sm"
@@ -559,9 +734,32 @@
                                             $extensionsRoute = ($project ?? 'riyadh') === 'madinah' 
                                                 ? route('admin.quality.extensions.madinah')
                                                 : route('admin.quality.extensions.riyadh');
+                                            
+                                            // حساب عدد التمديدات وقيمة التمديدات
+                                            $extensionsCount = \App\Models\LicenseExtension::whereHas('license.workOrder', function($q) use ($city) {
+                                                $q->where('city', $city);
+                                            })->count();
+                                            
+                                            $extensionsValue = \App\Models\LicenseExtension::whereHas('license.workOrder', function($q) use ($city) {
+                                                $q->where('city', $city);
+                                            })->sum('extension_value');
                                         @endphp
                                         <div class="mb-3">
                                             <i class="fas fa-clock fa-3x" style="color: #f2994a;"></i>
+                                        </div>
+                                        <div class="mb-3">
+                                            <h4 class="mb-1" style="color: #f2994a;">{{ number_format($extensionsCount) }}</h4>
+                                            <p class="text-muted mb-0" style="font-size: 0.8rem;">عدد التمديدات</p>
+                                            <h5 class="mb-0 mt-2" style="color: #f2c94c; font-size: 0.95rem;">
+                                                @if($extensionsValue >= 1000000)
+                                                    {{ number_format($extensionsValue / 1000000, 1) }}M
+                                                @elseif($extensionsValue >= 1000)
+                                                    {{ number_format($extensionsValue / 1000, 1) }}K
+                                                @else
+                                                    {{ number_format($extensionsValue) }}
+                                                @endif
+                                            </h5>
+                                            <p class="text-muted mb-0" style="font-size: 0.75rem;">قيمة التمديدات</p>
                                         </div>
                                         <a href="{{ $extensionsRoute }}" 
                                            class="btn btn-sm shadow-sm"
@@ -590,9 +788,84 @@
                                             $inspectionsRoute = ($project ?? 'riyadh') === 'madinah' 
                                                 ? route('admin.quality.inspections.madinah')
                                                 : route('admin.quality.inspections.riyadh');
+                                            
+                                            // حساب إجمالي عدد الاختبارات والناجحة والراسبة
+                                            $inspectionsLicenses = \App\Models\License::whereHas('workOrder', function($q) use ($city) {
+                                                $q->where('city', $city);
+                                            })->where(function($q) {
+                                                $q->where('total_tests_count', '>', 0)
+                                                  ->orWhereNotNull('lab_tests_data');
+                                            })->get();
+                                            
+                                            // إجمالي عدد الاختبارات
+                                            $totalTestsCount = $inspectionsLicenses->sum('total_tests_count');
+                                            
+                                            // عدد الاختبارات الناجحة
+                                            $successfulTestsCount = $inspectionsLicenses->sum('successful_tests_count');
+                                            
+                                            // عدد الاختبارات الراسبة
+                                            $failedTestsCount = $inspectionsLicenses->sum('failed_tests_count');
+                                            
+                                            // حساب قيمة الرخص التي لديها اختبارات ناجحة
+                                            $successfulTestsValue = $inspectionsLicenses->filter(function($license) {
+                                                return ($license->successful_tests_count ?? 0) > 0;
+                                            })->sum('license_value');
+                                            
+                                            // حساب قيمة الرخص التي لديها اختبارات راسبة
+                                            $failedTestsValue = $inspectionsLicenses->filter(function($license) {
+                                                return ($license->failed_tests_count ?? 0) > 0;
+                                            })->sum('license_value');
                                         @endphp
                                         <div class="mb-3">
                                             <i class="fas fa-tasks fa-3x" style="color: #4facfe;"></i>
+                                        </div>
+                                        <div class="mb-3">
+                                            <h4 class="mb-1" style="color: #4facfe;">{{ number_format($totalTestsCount) }}</h4>
+                                            <p class="text-muted mb-0" style="font-size: 0.8rem;">إجمالي عدد الاختبارات</p>
+                                            
+                                            <div class="mt-2 d-flex justify-content-around">
+                                                <div class="text-center">
+                                                    <h5 class="mb-0" style="color: #11998e; font-size: 0.95rem;">
+                                                        <i class="fas fa-check-circle me-1"></i>
+                                                        {{ number_format($successfulTestsCount) }}
+                                                    </h5>
+                                                    <p class="text-muted mb-0" style="font-size: 0.7rem;">ناجحة</p>
+                                                </div>
+                                                <div class="text-center">
+                                                    <h5 class="mb-0" style="color: #eb3349; font-size: 0.95rem;">
+                                                        <i class="fas fa-times-circle me-1"></i>
+                                                        {{ number_format($failedTestsCount) }}
+                                                    </h5>
+                                                    <p class="text-muted mb-0" style="font-size: 0.7rem;">راسبة</p>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="mt-3">
+                                                <div class="mb-2">
+                                                    <small class="text-muted d-block" style="font-size: 0.7rem;">قيمة الناجحة:</small>
+                                                    <h6 class="mb-0" style="color: #11998e; font-size: 0.85rem;">
+                                                        @if($successfulTestsValue >= 1000000)
+                                                            {{ number_format($successfulTestsValue / 1000000, 1) }}M
+                                                        @elseif($successfulTestsValue >= 1000)
+                                                            {{ number_format($successfulTestsValue / 1000, 1) }}K
+                                                        @else
+                                                            {{ number_format($successfulTestsValue) }}
+                                                        @endif
+                                                    </h6>
+                                                </div>
+                                                <div>
+                                                    <small class="text-muted d-block" style="font-size: 0.7rem;">قيمة الراسبة:</small>
+                                                    <h6 class="mb-0" style="color: #eb3349; font-size: 0.85rem;">
+                                                        @if($failedTestsValue >= 1000000)
+                                                            {{ number_format($failedTestsValue / 1000000, 1) }}M
+                                                        @elseif($failedTestsValue >= 1000)
+                                                            {{ number_format($failedTestsValue / 1000, 1) }}K
+                                                        @else
+                                                            {{ number_format($failedTestsValue) }}
+                                                        @endif
+                                                    </h6>
+                                                </div>
+                                            </div>
                                         </div>
                                         <a href="{{ $inspectionsRoute }}" 
                                            class="btn btn-sm shadow-sm"
@@ -621,9 +894,42 @@
                                             $evacuationsRoute = ($project ?? 'riyadh') === 'madinah' 
                                                 ? route('admin.quality.evacuations.madinah')
                                                 : route('admin.quality.evacuations.riyadh');
+                                            
+                                            // حساب عدد الرخص الغير نشطة وقيمة رخص الإخلاءات
+                                            $evacuationsCount = \App\Models\License::whereHas('workOrder', function($q) use ($city) {
+                                                $q->where('city', $city);
+                                            })
+                                            ->where(function($q) {
+                                                $q->whereNull('evacuation_date')
+                                                  ->orWhere('evacuation_date', '');
+                                            })
+                                            ->count();
+                                            
+                                            $evacuationsValue = \App\Models\License::whereHas('workOrder', function($q) use ($city) {
+                                                $q->where('city', $city);
+                                            })
+                                            ->where(function($q) {
+                                                $q->whereNull('evacuation_date')
+                                                  ->orWhere('evacuation_date', '');
+                                            })
+                                            ->sum('license_value');
                                         @endphp
                                         <div class="mb-3">
                                             <i class="fas fa-ban fa-3x" style="color: #8e44ad;"></i>
+                                        </div>
+                                        <div class="mb-3">
+                                            <h4 class="mb-1" style="color: #8e44ad;">{{ number_format($evacuationsCount) }}</h4>
+                                            <p class="text-muted mb-0" style="font-size: 0.8rem;">عدد الرخص الغير نشطة</p>
+                                            <h5 class="mb-0 mt-2" style="color: #c0392b; font-size: 0.95rem;">
+                                                @if($evacuationsValue >= 1000000)
+                                                    {{ number_format($evacuationsValue / 1000000, 1) }}M
+                                                @elseif($evacuationsValue >= 1000)
+                                                    {{ number_format($evacuationsValue / 1000, 1) }}K
+                                                @else
+                                                    {{ number_format($evacuationsValue) }}
+                                                @endif
+                                            </h5>
+                                            <p class="text-muted mb-0" style="font-size: 0.75rem;">قيمة الرخص الغير نشطة</p>
                                         </div>
                                         <a href="{{ $evacuationsRoute }}" 
                                            class="btn btn-sm shadow-sm"
@@ -667,9 +973,21 @@
                                             $overdueRoute = ($project ?? 'riyadh') === 'madinah' 
                                                 ? route('admin.time-management.overdue.madinah')
                                                 : route('admin.time-management.overdue.riyadh');
+                                            
+                                            // حساب عدد الأوامر المتأخرة (كل الأوامر غير المنتهية)
+                                            $overdueCount = \App\Models\WorkOrder::where('city', $city)
+                                                ->where('execution_status', '!=', 7) // ليست منتهية
+                                                ->where('execution_status', '!=', 8) // ليست مستخلص كلي
+                                                ->where('execution_status', '!=', 10) // ليست منتهي صرف
+                                                ->whereNotNull('approval_date')
+                                                ->count();
                                         @endphp
                                         <div class="mb-3">
                                             <i class="fas fa-exclamation-circle fa-3x" style="color: #fc4a1a;"></i>
+                                        </div>
+                                        <div class="mb-3">
+                                            <h2 class="mb-1" style="color: #fc4a1a;">{{ number_format($overdueCount) }}</h2>
+                                            <p class="text-muted mb-0" style="font-size: 0.9rem;">عدد الأوامر</p>
                                         </div>
                                         <a href="{{ $overdueRoute }}" 
                                            class="btn btn-sm shadow-sm"
@@ -698,9 +1016,18 @@
                                             $unexecutedRoute = ($project ?? 'riyadh') === 'madinah' 
                                                 ? route('admin.time-management.unexecuted.madinah')
                                                 : route('admin.time-management.unexecuted.riyadh');
+                                            
+                                            // حساب عدد الأوامر الغير منفذة (execution_status = 1)
+                                            $unexecutedCount = \App\Models\WorkOrder::where('city', $city)
+                                                ->where('execution_status', 1)
+                                                ->count();
                                         @endphp
                                         <div class="mb-3">
                                             <i class="fas fa-ban fa-3x" style="color: #e74c3c;"></i>
+                                        </div>
+                                        <div class="mb-3">
+                                            <h2 class="mb-1" style="color: #e74c3c;">{{ number_format($unexecutedCount) }}</h2>
+                                            <p class="text-muted mb-0" style="font-size: 0.9rem;">عدد الأوامر</p>
                                         </div>
                                         <a href="{{ $unexecutedRoute }}" 
                                            class="btn btn-sm shadow-sm"
@@ -721,7 +1048,7 @@
                                     <div class="card-header text-white" style="background: linear-gradient(135deg, #fd79a8 0%, #a29bfe 100%);">
                                         <h6 class="mb-0 text-center">
                                             <i class="fas fa-chart-bar me-2"></i>
-                                            تقرير مفصل
+                                            اوامر  عليها معوقات تنفيذ
                                         </h6>
                                     </div>
                                     <div class="card-body text-center">
@@ -729,9 +1056,20 @@
                                             $detailedReportRoute = ($project ?? 'riyadh') === 'madinah' 
                                                 ? route('admin.time-management.detailed-report.madinah')
                                                 : route('admin.time-management.detailed-report.riyadh');
+                                            
+                                            // حساب عدد الأوامر التي عليها معوقات
+                                            $obstaclesCount = \App\Models\WorkOrder::where('city', $city)
+                                                ->whereHas('survey', function($q) {
+                                                    $q->where('has_obstacles', true);
+                                                })
+                                                ->count();
                                         @endphp
                                         <div class="mb-3">
                                             <i class="fas fa-file-alt fa-3x" style="color: #fd79a8;"></i>
+                                        </div>
+                                        <div class="mb-3">
+                                            <h2 class="mb-1" style="color: #fd79a8;">{{ number_format($obstaclesCount) }}</h2>
+                                            <p class="text-muted mb-0" style="font-size: 0.9rem;">أوامر عليها معوقات</p>
                                         </div>
                                         <a href="{{ $detailedReportRoute }}" 
                                            class="btn btn-sm shadow-sm"
@@ -1179,6 +1517,7 @@ function updateQuickStats() {
     updateTotalExtractCount();
     updateCertificateCount();
     updateCompletedCount();
+    updateDroopCount();
 }
 
 // Update executed count from API
@@ -1201,12 +1540,29 @@ function updateExecutedCount() {
     })
     .then(response => response.json())
     .then(data => {
-        if (data.success && data.status_counts) {
+        if (data.success && data.summary) {
             // Get count for status 2 (تم التنفيذ بالموقع)
-            const executedCount = data.status_counts.status_2 || 0;
+            const executedCount = data.summary.status_counts?.status_2 || 0;
+            const executedValue = data.summary.status_values?.status_2_value || 0;
+            
             const quickExecutedElement = document.getElementById('quickExecutedCount');
+            const quickExecutedValueElement = document.getElementById('quickExecutedValue');
+            
             if (quickExecutedElement) {
                 quickExecutedElement.textContent = executedCount.toLocaleString('en-US');
+            }
+            
+            if (quickExecutedValueElement) {
+                if (executedValue >= 1000000) {
+                    quickExecutedValueElement.textContent = (executedValue / 1000000).toFixed(1) + 'M';
+                } else if (executedValue >= 1000) {
+                    quickExecutedValueElement.textContent = (executedValue / 1000).toFixed(1) + 'K';
+                } else {
+                    quickExecutedValueElement.textContent = executedValue.toLocaleString('en-US', {
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: 0
+                    });
+                }
             }
         }
     })
@@ -1235,12 +1591,29 @@ function updateDelivery155Count() {
     })
     .then(response => response.json())
     .then(data => {
-        if (data.success && data.status_counts) {
+        if (data.success && data.summary) {
             // Get count for status 3 (تم تسليم 155 - جاري إصدار شهادة الإنجاز)
-            const delivery155Count = data.status_counts.status_3 || 0;
+            const delivery155Count = data.summary.status_counts?.status_3 || 0;
+            const delivery155Value = data.summary.status_values?.status_3_value || 0;
+            
             const quickDelivery155Element = document.getElementById('quickDelivery155Count');
+            const quickDelivery155ValueElement = document.getElementById('quickDelivery155Value');
+            
             if (quickDelivery155Element) {
                 quickDelivery155Element.textContent = delivery155Count.toLocaleString('en-US');
+            }
+            
+            if (quickDelivery155ValueElement) {
+                if (delivery155Value >= 1000000) {
+                    quickDelivery155ValueElement.textContent = (delivery155Value / 1000000).toFixed(1) + 'M';
+                } else if (delivery155Value >= 1000) {
+                    quickDelivery155ValueElement.textContent = (delivery155Value / 1000).toFixed(1) + 'K';
+                } else {
+                    quickDelivery155ValueElement.textContent = delivery155Value.toLocaleString('en-US', {
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: 0
+                    });
+                }
             }
         }
     })
@@ -1269,12 +1642,29 @@ function updateFirstExtractCount() {
     })
     .then(response => response.json())
     .then(data => {
-        if (data.success && data.status_counts) {
+        if (data.success && data.summary) {
             // Get count for status 4 (إعداد مستخلص الدفعة الجزئية الأولى وجاري الصرف)
-            const firstExtractCount = data.status_counts.status_4 || 0;
+            const firstExtractCount = data.summary.status_counts?.status_4 || 0;
+            const firstExtractValue = data.summary.status_values?.status_4_value || 0;
+            
             const quickFirstExtractElement = document.getElementById('quickFirstExtractCount');
+            const quickFirstExtractValueElement = document.getElementById('quickFirstExtractValue');
+            
             if (quickFirstExtractElement) {
                 quickFirstExtractElement.textContent = firstExtractCount.toLocaleString('en-US');
+            }
+            
+            if (quickFirstExtractValueElement) {
+                if (firstExtractValue >= 1000000) {
+                    quickFirstExtractValueElement.textContent = (firstExtractValue / 1000000).toFixed(1) + 'M';
+                } else if (firstExtractValue >= 1000) {
+                    quickFirstExtractValueElement.textContent = (firstExtractValue / 1000).toFixed(1) + 'K';
+                } else {
+                    quickFirstExtractValueElement.textContent = firstExtractValue.toLocaleString('en-US', {
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: 0
+                    });
+                }
             }
         }
     })
@@ -1303,12 +1693,29 @@ function updatePaidFirstCount() {
     })
     .then(response => response.json())
     .then(data => {
-        if (data.success && data.status_counts) {
+        if (data.success && data.summary) {
             // Get count for status 5 (تم صرف مستخلص الدفعة الجزئية الأولى)
-            const paidFirstCount = data.status_counts.status_5 || 0;
+            const paidFirstCount = data.summary.status_counts?.status_5 || 0;
+            const paidFirstValue = data.summary.status_values?.status_5_value || 0;
+            
             const quickPaidFirstElement = document.getElementById('quickPaidFirstCount');
+            const quickPaidFirstValueElement = document.getElementById('quickPaidFirstValue');
+            
             if (quickPaidFirstElement) {
                 quickPaidFirstElement.textContent = paidFirstCount.toLocaleString('en-US');
+            }
+            
+            if (quickPaidFirstValueElement) {
+                if (paidFirstValue >= 1000000) {
+                    quickPaidFirstValueElement.textContent = (paidFirstValue / 1000000).toFixed(1) + 'M';
+                } else if (paidFirstValue >= 1000) {
+                    quickPaidFirstValueElement.textContent = (paidFirstValue / 1000).toFixed(1) + 'K';
+                } else {
+                    quickPaidFirstValueElement.textContent = paidFirstValue.toLocaleString('en-US', {
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: 0
+                    });
+                }
             }
         }
     })
@@ -1337,12 +1744,29 @@ function updateSecondExtractCount() {
     })
     .then(response => response.json())
     .then(data => {
-        if (data.success && data.status_counts) {
+        if (data.success && data.summary) {
             // Get count for status 6 (إعداد مستخلص الدفعة الجزئية الثانية وجاري الصرف)
-            const secondExtractCount = data.status_counts.status_6 || 0;
+            const secondExtractCount = data.summary.status_counts?.status_6 || 0;
+            const secondExtractValue = data.summary.status_values?.status_6_value || 0;
+            
             const quickSecondExtractElement = document.getElementById('quickSecondExtractCount');
+            const quickSecondExtractValueElement = document.getElementById('quickSecondExtractValue');
+            
             if (quickSecondExtractElement) {
                 quickSecondExtractElement.textContent = secondExtractCount.toLocaleString('en-US');
+            }
+            
+            if (quickSecondExtractValueElement) {
+                if (secondExtractValue >= 1000000) {
+                    quickSecondExtractValueElement.textContent = (secondExtractValue / 1000000).toFixed(1) + 'M';
+                } else if (secondExtractValue >= 1000) {
+                    quickSecondExtractValueElement.textContent = (secondExtractValue / 1000).toFixed(1) + 'K';
+                } else {
+                    quickSecondExtractValueElement.textContent = secondExtractValue.toLocaleString('en-US', {
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: 0
+                    });
+                }
             }
         }
     })
@@ -1371,12 +1795,29 @@ function updateCertificateCount() {
     })
     .then(response => response.json())
     .then(data => {
-        if (data.success && data.status_counts) {
+        if (data.success && data.summary) {
             // Get count for status 8 (تم إصدار شهادة الإنجاز)
-            const certificateCount = data.status_counts.status_8 || 0;
+            const certificateCount = data.summary.status_counts?.status_8 || 0;
+            const certificateValue = data.summary.status_values?.status_8_value || 0;
+            
             const quickCertificateElement = document.getElementById('quickCertificateCount');
+            const quickCertificateValueElement = document.getElementById('quickCertificateValue');
+            
             if (quickCertificateElement) {
                 quickCertificateElement.textContent = certificateCount.toLocaleString('en-US');
+            }
+            
+            if (quickCertificateValueElement) {
+                if (certificateValue >= 1000000) {
+                    quickCertificateValueElement.textContent = (certificateValue / 1000000).toFixed(1) + 'M';
+                } else if (certificateValue >= 1000) {
+                    quickCertificateValueElement.textContent = (certificateValue / 1000).toFixed(1) + 'K';
+                } else {
+                    quickCertificateValueElement.textContent = certificateValue.toLocaleString('en-US', {
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: 0
+                    });
+                }
             }
         }
     })
@@ -1405,12 +1846,29 @@ function updateTotalExtractCount() {
     })
     .then(response => response.json())
     .then(data => {
-        if (data.success && data.status_counts) {
+        if (data.success && data.summary) {
             // Get count for status 10 (تم إعداد المستخلص الكلي وجاري الصرف)
-            const totalExtractCount = data.status_counts.status_10 || 0;
+            const totalExtractCount = data.summary.status_counts?.status_10 || 0;
+            const totalExtractValue = data.summary.status_values?.status_10_value || 0;
+            
             const quickTotalExtractElement = document.getElementById('quickTotalExtractCount');
+            const quickTotalExtractValueElement = document.getElementById('quickTotalExtractValue');
+            
             if (quickTotalExtractElement) {
                 quickTotalExtractElement.textContent = totalExtractCount.toLocaleString('en-US');
+            }
+            
+            if (quickTotalExtractValueElement) {
+                if (totalExtractValue >= 1000000) {
+                    quickTotalExtractValueElement.textContent = (totalExtractValue / 1000000).toFixed(1) + 'M';
+                } else if (totalExtractValue >= 1000) {
+                    quickTotalExtractValueElement.textContent = (totalExtractValue / 1000).toFixed(1) + 'K';
+                } else {
+                    quickTotalExtractValueElement.textContent = totalExtractValue.toLocaleString('en-US', {
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: 0
+                    });
+                }
             }
         }
     })
@@ -1439,17 +1897,85 @@ function updateCompletedCount() {
     })
     .then(response => response.json())
     .then(data => {
-        if (data.success && data.status_counts) {
+        if (data.success && data.summary) {
             // Get count for status 7 (منتهي تم الصرف)
-            const completedCount = data.status_counts.status_7 || 0;
+            const completedCount = data.summary.status_counts?.status_7 || 0;
+            const completedValue = data.summary.status_values?.status_7_value || 0;
+            
             const quickCompletedElement = document.getElementById('quickCompletedCount');
+            const quickCompletedValueElement = document.getElementById('quickCompletedValue');
+            
             if (quickCompletedElement) {
                 quickCompletedElement.textContent = completedCount.toLocaleString('en-US');
+            }
+            
+            if (quickCompletedValueElement) {
+                if (completedValue >= 1000000) {
+                    quickCompletedValueElement.textContent = (completedValue / 1000000).toFixed(1) + 'M';
+                } else if (completedValue >= 1000) {
+                    quickCompletedValueElement.textContent = (completedValue / 1000).toFixed(1) + 'K';
+                } else {
+                    quickCompletedValueElement.textContent = completedValue.toLocaleString('en-US', {
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: 0
+                    });
+                }
             }
         }
     })
     .catch(error => {
         console.error('Error fetching completed count:', error);
+    });
+}
+
+// Update droop count from API
+function updateDroopCount() {
+    const project = window.location.pathname.includes('madinah') ? 'madinah' : 'riyadh';
+    const city = project === 'madinah' ? 'المدينة المنورة' : 'الرياض';
+    const startDate = document.getElementById('filter_start_date')?.value || '';
+    const endDate = document.getElementById('filter_end_date')?.value || '';
+    
+    let url = `/api/work-orders/execution?project=${project}`;
+    if (startDate) url += `&start_date=${startDate}`;
+    if (endDate) url += `&end_date=${endDate}`;
+    
+    fetch(url, {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success && data.summary) {
+            // Get count for status 9 (دروب)
+            const droopCount = data.summary.status_counts?.status_9 || 0;
+            const droopValue = data.summary.status_values?.status_9_value || 0;
+            
+            const quickDroopElement = document.getElementById('quickDroopCount');
+            const quickDroopValueElement = document.getElementById('quickDroopValue');
+            
+            if (quickDroopElement) {
+                quickDroopElement.textContent = droopCount.toLocaleString('en-US');
+            }
+            
+            if (quickDroopValueElement) {
+                if (droopValue >= 1000000) {
+                    quickDroopValueElement.textContent = (droopValue / 1000000).toFixed(1) + 'M';
+                } else if (droopValue >= 1000) {
+                    quickDroopValueElement.textContent = (droopValue / 1000).toFixed(1) + 'K';
+                } else {
+                    quickDroopValueElement.textContent = droopValue.toLocaleString('en-US', {
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: 0
+                    });
+                }
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error fetching droop count:', error);
     });
 }
 
@@ -2128,8 +2654,17 @@ function updateInProgressStats() {
         const progressBar = document.getElementById('inProgressProgressBar');
         const progressText = document.getElementById('inProgressProgressText');
         
+        // Quick Stats Elements
+        const quickCountElement = document.getElementById('quickInProgressCount');
+        const quickValueElement = document.getElementById('quickInProgressValue');
+        
         if (countElement) {
             countElement.textContent = stats.inProgressCount.toLocaleString('en-US');
+        }
+        
+        // Update quick stats count
+        if (quickCountElement) {
+            quickCountElement.textContent = stats.inProgressCount.toLocaleString('en-US');
         }
         
         if (valueElement) {
@@ -2139,6 +2674,20 @@ function updateInProgressStats() {
                 valueElement.textContent = (stats.inProgressTotalValue / 1000).toFixed(1) + 'K';
             } else {
                 valueElement.textContent = stats.inProgressTotalValue.toLocaleString('en-US', {
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0
+                });
+            }
+        }
+        
+        // Update quick stats value
+        if (quickValueElement) {
+            if (stats.inProgressTotalValue >= 1000000) {
+                quickValueElement.textContent = (stats.inProgressTotalValue / 1000000).toFixed(1) + 'M';
+            } else if (stats.inProgressTotalValue >= 1000) {
+                quickValueElement.textContent = (stats.inProgressTotalValue / 1000).toFixed(1) + 'K';
+            } else {
+                quickValueElement.textContent = stats.inProgressTotalValue.toLocaleString('en-US', {
                     minimumFractionDigits: 0,
                     maximumFractionDigits: 0
                 });

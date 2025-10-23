@@ -3339,10 +3339,15 @@ class LicenseController extends Controller
             $city = $project === 'madinah' ? 'المدينة المنورة' : 'الرياض';
             $projectName = $project === 'madinah' ? 'مشروع المدينة المنورة' : 'مشروع الرياض';
 
-            // بناء الاستعلام
+            // بناء الاستعلام - جلب جميع الرخص حسب المدينة
             $query = License::with(['workOrder'])
-                ->whereHas('workOrder', function ($q) use ($city) {
-                    $q->where('city', $city);
+                ->where(function($q) use ($city) {
+                    // جلب الرخص التي لها work order في المدينة المحددة
+                    $q->whereHas('workOrder', function ($subQ) use ($city) {
+                        $subQ->where('city', $city);
+                    })
+                    // أو الرخص التي لها city مباشرة في جدول licenses
+                    ->orWhere('city', $city);
                 });
 
             // تطبيق الفلاتر
@@ -3370,8 +3375,13 @@ class LicenseController extends Controller
 
             // حساب الإحصائيات من جميع البيانات (بدون pagination)
             $allQuery = License::with(['workOrder'])
-                ->whereHas('workOrder', function ($q) use ($city) {
-                    $q->where('city', $city);
+                ->where(function($q) use ($city) {
+                    // جلب الرخص التي لها work order في المدينة المحددة
+                    $q->whereHas('workOrder', function ($subQ) use ($city) {
+                        $subQ->where('city', $city);
+                    })
+                    // أو الرخص التي لها city مباشرة في جدول licenses
+                    ->orWhere('city', $city);
                 });
 
             // تطبيق نفس الفلاتر للإحصائيات
@@ -3393,9 +3403,13 @@ class LicenseController extends Controller
                 $allQuery->whereDate('license_start_date', '<=', $request->end_date);
             }
 
+            // حساب عدد أوامر العمل الفريدة
+            $uniqueWorkOrdersCount = $allQuery->distinct('work_order_id')->count('work_order_id');
+
             $stats = [
                 'total_licenses' => $allQuery->count(),
                 'total_value' => $allQuery->sum('license_value') ?? 0,
+                'total_work_orders' => $uniqueWorkOrdersCount,
             ];
 
             return view('admin.licenses.all', compact('licenses', 'project', 'projectName', 'city', 'stats'));

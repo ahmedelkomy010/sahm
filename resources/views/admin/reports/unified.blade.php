@@ -14,39 +14,23 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    <div class="row">
-                        <!-- تقرير إنتاجية الرياض -->
+                    <div class="row justify-content-center">
+                        <!-- تقارير العقد الموحد -->
                         <div class="col-md-6 mb-4">
-                            <div class="card h-100">
-                                <div class="card-body">
-                                    <h5 class="card-title">
-                                        <i class="fas fa-chart-line me-2"></i>
-                                        تقرير الإنتاجية - الرياض
-                                    </h5>
-                                    <p class="card-text text-muted">
-                                        عرض تقرير مفصل عن إنتاجية أوامر العمل في مدينة الرياض
+                            <div class="card h-100 shadow-lg border-0">
+                                <div class="card-body text-center p-5">
+                                    <div class="mb-4">
+                                        <i class="fas fa-file-contract text-primary" style="font-size: 5rem;"></i>
+                                    </div>
+                                    <h3 class="card-title mb-3">
+                                        <i class="fas fa-chart-bar me-2"></i>
+                                        تقارير العقد الموحد
+                                    </h3>
+                                    <p class="card-text text-muted mb-4" style="font-size: 1.1rem;">
+                                        عرض تقرير شامل ومفصل لإنتاجية وأداء أوامر العمل للعقد الموحد
                                     </p>
-                                    <a href="{{ route('admin.work-orders.productivity.riyadh') }}" class="btn btn-primary">
-                                        <i class="fas fa-eye me-1"></i>
-                                        عرض التقرير
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- تقرير إنتاجية المدينة -->
-                        <div class="col-md-6 mb-4">
-                            <div class="card h-100">
-                                <div class="card-body">
-                                    <h5 class="card-title">
-                                        <i class="fas fa-chart-line me-2"></i>
-                                        تقرير الإنتاجية العام - مشروع المدينة المنورة
-                                    </h5>
-                                    <p class="card-text text-muted">
-                                        عرض تقرير الإنتاجية العام لمشروع المدينة المنورة
-                                    </p>
-                                    <a href="{{ route('admin.work-orders.productivity.madinah') }}" class="btn btn-primary">
-                                        <i class="fas fa-eye me-1"></i>
+                                    <a href="{{ route('admin.work-orders.productivity.riyadh') }}" class="btn btn-primary btn-lg px-5">
+                                        <i class="fas fa-eye me-2"></i>
                                         عرض التقرير
                                     </a>
                                 </div>

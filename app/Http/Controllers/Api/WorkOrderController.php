@@ -240,8 +240,24 @@ class WorkOrderController extends Controller
                 'status_4' => (clone $baseQuery)->where('execution_status', '4')->count(), // اعداد مستخلص الدفعة الجزئية الاولي
                 'status_5' => (clone $baseQuery)->where('execution_status', '5')->count(), // تم صرف مستخلص الدفعة الجزئية الاولي
                 'status_6' => (clone $baseQuery)->where('execution_status', '6')->count(), // اعداد المستخلص الدفعة الجزئية الثانية وجاري الصرف
+                'status_7' => (clone $baseQuery)->where('execution_status', '7')->count(), // منتهي تم الصرف
                 'status_8' => (clone $baseQuery)->where('execution_status', '8')->count(), // تم اصدار شهادة الانجاز
+                'status_9' => (clone $baseQuery)->where('execution_status', '9')->count(), // دروب
                 'status_10' => (clone $baseQuery)->where('execution_status', '10')->count(), // تم اعداد المستخلص الكلي وجاري الصرف
+            ];
+            
+            // حساب القيمة المبدئية لكل حالة
+            // للحالات المتقدمة نستخدم قيمة التنفيذ الفعلي بدل القيمة المبدئية
+            $statusValues = [
+                'status_2_value' => (clone $baseQuery)->where('execution_status', '2')->sum('order_value_without_consultant'),
+                'status_3_value' => (clone $baseQuery)->where('execution_status', '3')->sum('order_value_without_consultant'),
+                'status_4_value' => (clone $baseQuery)->where('execution_status', '4')->sum('actual_execution_value_without_consultant'),
+                'status_5_value' => (clone $baseQuery)->where('execution_status', '5')->sum('actual_execution_value_without_consultant'),
+                'status_6_value' => (clone $baseQuery)->where('execution_status', '6')->sum('actual_execution_value_without_consultant'),
+                'status_7_value' => (clone $baseQuery)->where('execution_status', '7')->sum('actual_execution_value_without_consultant'),
+                'status_8_value' => (clone $baseQuery)->where('execution_status', '8')->sum('actual_execution_value_without_consultant'),
+                'status_9_value' => (clone $baseQuery)->where('execution_status', '9')->sum('order_value_without_consultant'),
+                'status_10_value' => (clone $baseQuery)->where('execution_status', '10')->sum('actual_execution_value_without_consultant'),
             ];
             
             \Log::info('Execution stats', [
@@ -309,6 +325,7 @@ class WorkOrderController extends Controller
                     'execution_percentage' => $executionPercentage,
                     'average_executed_value' => $averageExecutedValue,
                     'status_counts' => $statusCounts,
+                    'status_values' => $statusValues,
                 ],
                 'pagination' => [
                     'current_page' => $workOrders->currentPage(),
