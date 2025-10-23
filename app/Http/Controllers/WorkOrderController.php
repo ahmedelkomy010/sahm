@@ -5278,11 +5278,17 @@ class WorkOrderController extends Controller
                 ], 404);
             }
 
-            $imagePath = $images[$index];
+            $imageData = $images[$index];
+            
+            // استخراج المسار من البيانات (يدعم الصيغة القديمة والجديدة)
+            $imagePath = is_array($imageData) ? $imageData['path'] : $imageData;
 
             // حذف الصورة من التخزين
             if (Storage::disk('public')->exists($imagePath)) {
                 Storage::disk('public')->delete($imagePath);
+                \Log::info('Image deleted from storage', ['imagePath' => $imagePath]);
+            } else {
+                \Log::warning('Image not found in storage', ['imagePath' => $imagePath]);
             }
 
             // إزالة الصورة من المصفوفة

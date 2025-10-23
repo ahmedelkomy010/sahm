@@ -750,7 +750,11 @@
                                                 </h6>
                                                 <div class="list-group mb-4">
                                                     {{-- صور التصاريح --}}
-                                                    @foreach($safetyPermitsImages as $index => $imagePath)
+                                                    @foreach($safetyPermitsImages as $index => $imageData)
+                                                        @php
+                                                            // دعم الصيغة القديمة (string) والجديدة (array)
+                                                            $imagePath = is_array($imageData) ? $imageData['path'] : $imageData;
+                                                        @endphp
                                                         @if($imagePath && Storage::disk('public')->exists($imagePath))
                                                             <div class="list-group-item d-flex justify-content-between align-items-start">
                                                                 <div class="d-flex align-items-center flex-grow-1">
@@ -761,6 +765,11 @@
                                                                             <span class="badge bg-danger">تصريح سلامة</span>
                                                                             <span class="mx-2">|</span>
                                                                             <span class="badge bg-info">صورة</span>
+                                                                            @if(is_array($imageData) && isset($imageData['uploaded_at']))
+                                                                                <span class="mx-2">|</span>
+                                                                                <i class="fas fa-clock me-1"></i>
+                                                                                {{ \Carbon\Carbon::parse($imageData['uploaded_at'])->format('Y-m-d') }}
+                                                                            @endif
                                                                         </small>
                                                                     </div>
                                                                 </div>
