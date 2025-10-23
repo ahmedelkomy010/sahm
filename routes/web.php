@@ -725,6 +725,27 @@ Route::middleware(['auth'])->group(function () {
     
     // Project Management Routes
     Route::get('/projects/{project}/design', [ProjectController::class, 'design'])->name('projects.design');
+    Route::post('/projects/{project}/design/create-folder', [ProjectController::class, 'createDesignFolder'])->name('projects.design.create-folder');
+    Route::post('/projects/{project}/design/upload-files', [ProjectController::class, 'uploadDesignFiles'])->name('projects.design.upload-files');
+    Route::post('/projects/{project}/design/rename-folder', [ProjectController::class, 'renameDesignFolder'])->name('projects.design.rename-folder');
+    Route::get('/projects/{project}/design/folder/{folderName}', [ProjectController::class, 'viewDesignFolder'])->name('projects.design.folder');
+    Route::post('/projects/{project}/design/submittal', [ProjectController::class, 'storeDesignSubmittal'])->name('projects.design.submittal.store');
+    Route::put('/projects/{project}/design/submittal/{submittal}', [ProjectController::class, 'updateDesignSubmittal'])->name('projects.design.submittal.update');
+    Route::delete('/projects/{project}/design/submittal/{submittal}', [ProjectController::class, 'deleteDesignSubmittal'])->name('projects.design.submittal.delete');
+    
+    // Design Sub-sections Routes
+    Route::get('/projects/{project}/design/detail', [ProjectController::class, 'designDetail'])->name('projects.design.detail');
+    Route::post('/projects/{project}/design/detail/create-folder', [ProjectController::class, 'createDesignDetailFolder'])->name('projects.design.detail.create-folder');
+    Route::post('/projects/{project}/design/detail/upload-files', [ProjectController::class, 'uploadDesignDetailFiles'])->name('projects.design.detail.upload-files');
+    Route::post('/projects/{project}/design/detail/rename-folder', [ProjectController::class, 'renameDesignDetailFolder'])->name('projects.design.detail.rename-folder');
+    Route::get('/projects/{project}/design/detail/folder/{folderName}', [ProjectController::class, 'viewDesignDetailFolder'])->name('projects.design.detail.folder');
+    
+    Route::get('/projects/{project}/design/base', [ProjectController::class, 'designBase'])->name('projects.design.base');
+    Route::post('/projects/{project}/design/base/create-folder', [ProjectController::class, 'createDesignBaseFolder'])->name('projects.design.base.create-folder');
+    Route::post('/projects/{project}/design/base/upload-files', [ProjectController::class, 'uploadDesignBaseFiles'])->name('projects.design.base.upload-files');
+    Route::post('/projects/{project}/design/base/rename-folder', [ProjectController::class, 'renameDesignBaseFolder'])->name('projects.design.base.rename-folder');
+    Route::get('/projects/{project}/design/base/folder/{folderName}', [ProjectController::class, 'viewDesignBaseFolder'])->name('projects.design.base.folder');
+    
     Route::get('/projects/{project}/supplying', [ProjectController::class, 'supplying'])->name('projects.supplying');
     Route::get('/projects/{project}/installation', [ProjectController::class, 'installation'])->name('projects.installation');
     Route::get('/projects/{project}/testing', [ProjectController::class, 'testing'])->name('projects.testing');

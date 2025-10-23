@@ -193,7 +193,731 @@ class ProjectController extends Controller
      */
     public function design(Project $project)
     {
-        return view('projects.sections.design', compact('project'));
+        // Get main design folders and files
+        $folderPath = storage_path('app/public/projects/' . $project->id . '/design');
+        
+        if (!file_exists($folderPath)) {
+            mkdir($folderPath, 0777, true);
+            chmod($folderPath, 0777);
+        }
+        
+        $folders = [];
+        $files = [];
+        
+        $items = array_diff(scandir($folderPath), ['.', '..', 'detail', 'base']);
+        
+        foreach ($items as $item) {
+            $itemPath = $folderPath . '/' . $item;
+            
+            if (is_dir($itemPath)) {
+                $description = '';
+                $descFile = $itemPath . '/description.txt';
+                if (file_exists($descFile)) {
+                    $description = file_get_contents($descFile);
+                }
+                
+                $fileCount = count(array_diff(scandir($itemPath), ['.', '..', 'description.txt']));
+                
+                $folders[] = [
+                    'name' => $item,
+                    'description' => $description,
+                    'file_count' => $fileCount,
+                    'created_at' => date('Y-m-d H:i', filectime($itemPath))
+                ];
+            } else {
+                $files[] = [
+                    'name' => $item,
+                    'size' => filesize($itemPath),
+                    'extension' => pathinfo($item, PATHINFO_EXTENSION),
+                    'created_at' => date('Y-m-d H:i', filectime($itemPath))
+                ];
+            }
+        }
+        
+        // Count folders and files for Detail Design
+        $detailPath = storage_path('app/public/projects/' . $project->id . '/design/detail');
+        $detailFoldersCount = 0;
+        $detailFilesCount = 0;
+        
+        if (file_exists($detailPath)) {
+            $items = array_diff(scandir($detailPath), ['.', '..']);
+            foreach ($items as $item) {
+                $itemPath = $detailPath . '/' . $item;
+                if (is_dir($itemPath)) {
+                    $detailFoldersCount++;
+                } else {
+                    $detailFilesCount++;
+                }
+            }
+        }
+        
+        // Count folders and files for Base Design
+        $basePath = storage_path('app/public/projects/' . $project->id . '/design/base');
+        $baseFoldersCount = 0;
+        $baseFilesCount = 0;
+        
+        if (file_exists($basePath)) {
+            $items = array_diff(scandir($basePath), ['.', '..']);
+            foreach ($items as $item) {
+                $itemPath = $basePath . '/' . $item;
+                if (is_dir($itemPath)) {
+                    $baseFoldersCount++;
+                } else {
+                    $baseFilesCount++;
+                }
+            }
+        }
+        
+        // Get design submittals
+        $submittals = \App\Models\DesignSubmittal::where('project_id', $project->id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+        
+        return view('projects.sections.design', compact('project', 'folders', 'files', 'detailFoldersCount', 'detailFilesCount', 'baseFoldersCount', 'baseFilesCount', 'submittals'));
+    }
+    
+    public function storeDesignSubmittal(Request $request, Project $project)
+    {
+        $validated = $request->validate([
+            'family' => 'nullable|string|max:255',
+            'description_code' => 'nullable|string|max:255',
+            'rev' => 'nullable|string|max:255',
+            'description' => 'nullable|string',
+            'last_status' => 'nullable|string|max:255',
+            'submitting_date' => 'nullable|date',
+            'reply_date' => 'nullable|date',
+            'reply_status' => 'nullable|in:Total Submittals,Approved,Approved With Note,Comments,Under Review,Cancelled',
+            'notes' => 'nullable|string',
+        ]);
+
+        try {
+            \App\Models\DesignSubmittal::create([
+                'project_id' => $project->id,
+                ...$validated
+            ]);
+            
+            return redirect()
+                ->back()
+                ->with('success', 'Submittal added successfully');
+
+        } catch (\Exception $e) {
+            \Log::error('Error creating design submittal: ' . $e->getMessage());
+            return redirect()
+                ->back()
+                ->with('error', 'Error adding submittal');
+        }
+    }
+
+    public function updateDesignSubmittal(Request $request, Project $project, \App\Models\DesignSubmittal $submittal)
+    {
+        $validated = $request->validate([
+            'family' => 'nullable|string|max:255',
+            'description_code' => 'nullable|string|max:255',
+            'rev' => 'nullable|string|max:255',
+            'description' => 'nullable|string',
+            'last_status' => 'nullable|string|max:255',
+            'submitting_date' => 'nullable|date',
+            'reply_date' => 'nullable|date',
+            'reply_status' => 'nullable|in:Total Submittals,Approved,Approved With Note,Comments,Under Review,Cancelled',
+            'notes' => 'nullable|string',
+        ]);
+
+        try {
+            $submittal->update($validated);
+            
+            return redirect()
+                ->back()
+                ->with('success', 'Submittal updated successfully');
+
+        } catch (\Exception $e) {
+            \Log::error('Error updating design submittal: ' . $e->getMessage());
+            return redirect()
+                ->back()
+                ->with('error', 'Error updating submittal');
+        }
+    }
+
+    public function deleteDesignSubmittal(Project $project, \App\Models\DesignSubmittal $submittal)
+    {
+        try {
+            $submittal->delete();
+            
+            return redirect()
+                ->back()
+                ->with('success', 'Submittal deleted successfully');
+
+        } catch (\Exception $e) {
+            \Log::error('Error deleting design submittal: ' . $e->getMessage());
+            return redirect()
+                ->back()
+                ->with('error', 'Error deleting submittal');
+        }
+    }
+    
+    public function createDesignFolder(Request $request, Project $project)
+    {
+        $validated = $request->validate([
+            'folder_name' => 'required|string|max:255',
+            'folder_description' => 'nullable|string|max:500',
+        ]);
+
+        try {
+            $folderName = preg_replace('/[^\p{Arabic}\p{L}\p{N}\s\-\_]/u', '', $validated['folder_name']);
+            $folderName = trim($folderName);
+
+            $basePath = storage_path('app/public/projects/' . $project->id . '/design');
+            
+            if (!file_exists($basePath)) {
+                mkdir($basePath, 0777, true);
+                chmod($basePath, 0777);
+            }
+            
+            $folderPath = $basePath . '/' . $folderName;
+            
+            if (file_exists($folderPath)) {
+                return redirect()
+                    ->back()
+                    ->with('error', 'Folder already exists');
+            }
+            
+            mkdir($folderPath, 0777, true);
+            chmod($folderPath, 0777);
+            
+            if ($request->folder_description) {
+                file_put_contents($folderPath . '/description.txt', $validated['folder_description']);
+            }
+            
+            return redirect()
+                ->back()
+                ->with('success', 'Folder created successfully');
+
+        } catch (\Exception $e) {
+            \Log::error('Error creating design folder: ' . $e->getMessage());
+            return redirect()
+                ->back()
+                ->with('error', 'Error creating folder');
+        }
+    }
+
+    public function uploadDesignFiles(Request $request, Project $project)
+    {
+        $validated = $request->validate([
+            'files' => 'required|array|min:1',
+            'files.*' => 'required|file|max:51200',
+            'folder_id' => 'nullable|string',
+        ]);
+
+        try {
+            $uploadedFiles = [];
+            $folderName = $request->folder_id ?: 'main';
+            
+            $storagePath = 'public/projects/' . $project->id . '/design/' . $folderName;
+            
+            foreach ($request->file('files') as $file) {
+                $originalName = $file->getClientOriginalName();
+                $fileName = time() . '_' . $originalName;
+                
+                $path = $file->storeAs($storagePath, $fileName);
+                
+                $uploadedFiles[] = [
+                    'name' => $originalName,
+                    'path' => $path,
+                    'size' => $file->getSize(),
+                ];
+            }
+
+            return redirect()
+                ->back()
+                ->with('success', count($uploadedFiles) . ' files uploaded successfully');
+
+        } catch (\Exception $e) {
+            \Log::error('Error uploading design files: ' . $e->getMessage());
+            return redirect()
+                ->back()
+                ->with('error', 'Error uploading files');
+        }
+    }
+
+    public function renameDesignFolder(Request $request, Project $project)
+    {
+        $validated = $request->validate([
+            'old_name' => 'required|string',
+            'new_name' => 'required|string|max:255',
+        ]);
+
+        try {
+            $newName = preg_replace('/[^\p{Arabic}\p{L}\p{N}\s\-\_]/u', '', $validated['new_name']);
+            $newName = trim($newName);
+
+            $basePath = storage_path('app/public/projects/' . $project->id . '/design');
+            $oldPath = $basePath . '/' . $validated['old_name'];
+            $newPath = $basePath . '/' . $newName;
+            
+            if (!file_exists($oldPath)) {
+                return redirect()
+                    ->back()
+                    ->with('error', 'Folder not found');
+            }
+
+            if (file_exists($newPath) && $oldPath !== $newPath) {
+                return redirect()
+                    ->back()
+                    ->with('error', 'A folder with this name already exists');
+            }
+            
+            rename($oldPath, $newPath);
+            
+            return redirect()
+                ->back()
+                ->with('success', 'Folder renamed successfully');
+
+        } catch (\Exception $e) {
+            \Log::error('Error renaming design folder: ' . $e->getMessage());
+            return redirect()
+                ->back()
+                ->with('error', 'Error renaming folder');
+        }
+    }
+
+    public function viewDesignFolder(Project $project, $folderName)
+    {
+        $folderPath = storage_path('app/public/projects/' . $project->id . '/design/' . $folderName);
+        
+        if (!file_exists($folderPath)) {
+            abort(404);
+        }
+        
+        $description = '';
+        $descFile = $folderPath . '/description.txt';
+        if (file_exists($descFile)) {
+            $description = file_get_contents($descFile);
+        }
+        
+        $files = [];
+        $items = array_diff(scandir($folderPath), ['.', '..', 'description.txt']);
+        
+        foreach ($items as $item) {
+            $itemPath = $folderPath . '/' . $item;
+            if (is_file($itemPath)) {
+                $files[] = [
+                    'name' => $item,
+                    'size' => filesize($itemPath),
+                    'extension' => pathinfo($item, PATHINFO_EXTENSION),
+                    'created_at' => date('Y-m-d H:i', filectime($itemPath)),
+                    'url' => asset('storage/projects/' . $project->id . '/design/' . $folderName . '/' . $item)
+                ];
+            }
+        }
+        
+        return view('projects.sections.design-folder', compact('project', 'folderName', 'description', 'files'));
+    }
+    
+    // Design Detail Design Sub-section Methods
+    public function designDetail(Project $project)
+    {
+        $folderPath = storage_path('app/public/projects/' . $project->id . '/design/detail');
+        
+        if (!file_exists($folderPath)) {
+            mkdir($folderPath, 0777, true);
+            chmod($folderPath, 0777);
+        }
+        
+        $folders = [];
+        $files = [];
+        
+        $items = array_diff(scandir($folderPath), ['.', '..']);
+        
+        foreach ($items as $item) {
+            $itemPath = $folderPath . '/' . $item;
+            
+            if (is_dir($itemPath)) {
+                $description = '';
+                $descFile = $itemPath . '/description.txt';
+                if (file_exists($descFile)) {
+                    $description = file_get_contents($descFile);
+                }
+                
+                $fileCount = count(array_diff(scandir($itemPath), ['.', '..', 'description.txt']));
+                
+                $folders[] = [
+                    'name' => $item,
+                    'description' => $description,
+                    'file_count' => $fileCount,
+                    'created_at' => date('Y-m-d H:i', filectime($itemPath))
+                ];
+            } else {
+                $files[] = [
+                    'name' => $item,
+                    'size' => filesize($itemPath),
+                    'extension' => pathinfo($item, PATHINFO_EXTENSION),
+                    'created_at' => date('Y-m-d H:i', filectime($itemPath))
+                ];
+            }
+        }
+        
+        return view('projects.sections.design-detail', compact('project', 'folders', 'files'));
+    }
+    
+    public function createDesignDetailFolder(Request $request, Project $project)
+    {
+        $validated = $request->validate([
+            'folder_name' => 'required|string|max:255',
+            'folder_description' => 'nullable|string|max:500',
+        ]);
+
+        try {
+            $folderName = preg_replace('/[^\p{Arabic}\p{L}\p{N}\s\-\_]/u', '', $validated['folder_name']);
+            $folderName = trim($folderName);
+
+            $basePath = storage_path('app/public/projects/' . $project->id . '/design/detail');
+            
+            if (!file_exists($basePath)) {
+                mkdir($basePath, 0777, true);
+                chmod($basePath, 0777);
+            }
+            
+            $folderPath = $basePath . '/' . $folderName;
+            
+            if (file_exists($folderPath)) {
+                return redirect()
+                    ->back()
+                    ->with('error', 'المجلد موجود بالفعل');
+            }
+            
+            mkdir($folderPath, 0777, true);
+            chmod($folderPath, 0777);
+            
+            if ($request->folder_description) {
+                file_put_contents($folderPath . '/description.txt', $validated['folder_description']);
+            }
+            
+            return redirect()
+                ->back()
+                ->with('success', 'تم إنشاء المجلد بنجاح');
+
+        } catch (\Exception $e) {
+            \Log::error('Error creating design detail folder: ' . $e->getMessage());
+            return redirect()
+                ->back()
+                ->with('error', 'حدث خطأ أثناء إنشاء المجلد');
+        }
+    }
+
+    public function uploadDesignDetailFiles(Request $request, Project $project)
+    {
+        $validated = $request->validate([
+            'files' => 'required|array|min:1',
+            'files.*' => 'required|file|max:51200',
+            'folder_id' => 'nullable|string',
+        ]);
+
+        try {
+            $uploadedFiles = [];
+            $folderName = $request->folder_id ?: 'main';
+            
+            $storagePath = 'public/projects/' . $project->id . '/design/detail/' . $folderName;
+            
+            foreach ($request->file('files') as $file) {
+                $originalName = $file->getClientOriginalName();
+                $fileName = time() . '_' . $originalName;
+                
+                $path = $file->storeAs($storagePath, $fileName);
+                
+                $uploadedFiles[] = [
+                    'name' => $originalName,
+                    'path' => $path,
+                    'size' => $file->getSize(),
+                ];
+            }
+
+            return redirect()
+                ->back()
+                ->with('success', 'تم رفع ' . count($uploadedFiles) . ' ملف بنجاح');
+
+        } catch (\Exception $e) {
+            \Log::error('Error uploading design detail files: ' . $e->getMessage());
+            return redirect()
+                ->back()
+                ->with('error', 'حدث خطأ أثناء رفع الملفات');
+        }
+    }
+
+    public function renameDesignDetailFolder(Request $request, Project $project)
+    {
+        $validated = $request->validate([
+            'old_name' => 'required|string',
+            'new_name' => 'required|string|max:255',
+        ]);
+
+        try {
+            $newName = preg_replace('/[^\p{Arabic}\p{L}\p{N}\s\-\_]/u', '', $validated['new_name']);
+            $newName = trim($newName);
+
+            $basePath = storage_path('app/public/projects/' . $project->id . '/design/detail');
+            $oldPath = $basePath . '/' . $validated['old_name'];
+            $newPath = $basePath . '/' . $newName;
+            
+            if (!file_exists($oldPath)) {
+                return redirect()
+                    ->back()
+                    ->with('error', 'المجلد غير موجود');
+            }
+
+            if (file_exists($newPath) && $oldPath !== $newPath) {
+                return redirect()
+                    ->back()
+                    ->with('error', 'يوجد مجلد بهذا الاسم بالفعل');
+            }
+            
+            rename($oldPath, $newPath);
+            
+            return redirect()
+                ->back()
+                ->with('success', 'تم إعادة تسمية المجلد بنجاح');
+
+        } catch (\Exception $e) {
+            \Log::error('Error renaming design detail folder: ' . $e->getMessage());
+            return redirect()
+                ->back()
+                ->with('error', 'حدث خطأ أثناء إعادة تسمية المجلد');
+        }
+    }
+
+    public function viewDesignDetailFolder(Project $project, $folderName)
+    {
+        $folderPath = storage_path('app/public/projects/' . $project->id . '/design/detail/' . $folderName);
+        
+        if (!file_exists($folderPath)) {
+            abort(404);
+        }
+        
+        $description = '';
+        $descFile = $folderPath . '/description.txt';
+        if (file_exists($descFile)) {
+            $description = file_get_contents($descFile);
+        }
+        
+        $files = [];
+        $items = array_diff(scandir($folderPath), ['.', '..', 'description.txt']);
+        
+        foreach ($items as $item) {
+            $itemPath = $folderPath . '/' . $item;
+            if (is_file($itemPath)) {
+                $files[] = [
+                    'name' => $item,
+                    'size' => filesize($itemPath),
+                    'extension' => pathinfo($item, PATHINFO_EXTENSION),
+                    'created_at' => date('Y-m-d H:i', filectime($itemPath)),
+                    'url' => asset('storage/projects/' . $project->id . '/design/detail/' . $folderName . '/' . $item)
+                ];
+            }
+        }
+        
+        return view('projects.sections.design-detail-folder', compact('project', 'folderName', 'description', 'files'));
+    }
+
+    // Design Base Design Sub-section Methods
+    public function designBase(Project $project)
+    {
+        $folderPath = storage_path('app/public/projects/' . $project->id . '/design/base');
+        
+        if (!file_exists($folderPath)) {
+            mkdir($folderPath, 0777, true);
+            chmod($folderPath, 0777);
+        }
+        
+        $folders = [];
+        $files = [];
+        
+        $items = array_diff(scandir($folderPath), ['.', '..']);
+        
+        foreach ($items as $item) {
+            $itemPath = $folderPath . '/' . $item;
+            
+            if (is_dir($itemPath)) {
+                $description = '';
+                $descFile = $itemPath . '/description.txt';
+                if (file_exists($descFile)) {
+                    $description = file_get_contents($descFile);
+                }
+                
+                $fileCount = count(array_diff(scandir($itemPath), ['.', '..', 'description.txt']));
+                
+                $folders[] = [
+                    'name' => $item,
+                    'description' => $description,
+                    'file_count' => $fileCount,
+                    'created_at' => date('Y-m-d H:i', filectime($itemPath))
+                ];
+            } else {
+                $files[] = [
+                    'name' => $item,
+                    'size' => filesize($itemPath),
+                    'extension' => pathinfo($item, PATHINFO_EXTENSION),
+                    'created_at' => date('Y-m-d H:i', filectime($itemPath))
+                ];
+            }
+        }
+        
+        return view('projects.sections.design-base', compact('project', 'folders', 'files'));
+    }
+    
+    public function createDesignBaseFolder(Request $request, Project $project)
+    {
+        $validated = $request->validate([
+            'folder_name' => 'required|string|max:255',
+            'folder_description' => 'nullable|string|max:500',
+        ]);
+
+        try {
+            $folderName = preg_replace('/[^\p{Arabic}\p{L}\p{N}\s\-\_]/u', '', $validated['folder_name']);
+            $folderName = trim($folderName);
+
+            $basePath = storage_path('app/public/projects/' . $project->id . '/design/base');
+            
+            if (!file_exists($basePath)) {
+                mkdir($basePath, 0777, true);
+                chmod($basePath, 0777);
+            }
+            
+            $folderPath = $basePath . '/' . $folderName;
+            
+            if (file_exists($folderPath)) {
+                return redirect()
+                    ->back()
+                    ->with('error', 'المجلد موجود بالفعل');
+            }
+            
+            mkdir($folderPath, 0777, true);
+            chmod($folderPath, 0777);
+            
+            if ($request->folder_description) {
+                file_put_contents($folderPath . '/description.txt', $validated['folder_description']);
+            }
+            
+            return redirect()
+                ->back()
+                ->with('success', 'تم إنشاء المجلد بنجاح');
+
+        } catch (\Exception $e) {
+            \Log::error('Error creating design base folder: ' . $e->getMessage());
+            return redirect()
+                ->back()
+                ->with('error', 'حدث خطأ أثناء إنشاء المجلد');
+        }
+    }
+
+    public function uploadDesignBaseFiles(Request $request, Project $project)
+    {
+        $validated = $request->validate([
+            'files' => 'required|array|min:1',
+            'files.*' => 'required|file|max:51200',
+            'folder_id' => 'nullable|string',
+        ]);
+
+        try {
+            $uploadedFiles = [];
+            $folderName = $request->folder_id ?: 'main';
+            
+            $storagePath = 'public/projects/' . $project->id . '/design/base/' . $folderName;
+            
+            foreach ($request->file('files') as $file) {
+                $originalName = $file->getClientOriginalName();
+                $fileName = time() . '_' . $originalName;
+                
+                $path = $file->storeAs($storagePath, $fileName);
+                
+                $uploadedFiles[] = [
+                    'name' => $originalName,
+                    'path' => $path,
+                    'size' => $file->getSize(),
+                ];
+            }
+
+            return redirect()
+                ->back()
+                ->with('success', 'تم رفع ' . count($uploadedFiles) . ' ملف بنجاح');
+
+        } catch (\Exception $e) {
+            \Log::error('Error uploading design base files: ' . $e->getMessage());
+            return redirect()
+                ->back()
+                ->with('error', 'حدث خطأ أثناء رفع الملفات');
+        }
+    }
+
+    public function renameDesignBaseFolder(Request $request, Project $project)
+    {
+        $validated = $request->validate([
+            'old_name' => 'required|string',
+            'new_name' => 'required|string|max:255',
+        ]);
+
+        try {
+            $newName = preg_replace('/[^\p{Arabic}\p{L}\p{N}\s\-\_]/u', '', $validated['new_name']);
+            $newName = trim($newName);
+
+            $basePath = storage_path('app/public/projects/' . $project->id . '/design/base');
+            $oldPath = $basePath . '/' . $validated['old_name'];
+            $newPath = $basePath . '/' . $newName;
+            
+            if (!file_exists($oldPath)) {
+                return redirect()
+                    ->back()
+                    ->with('error', 'المجلد غير موجود');
+            }
+
+            if (file_exists($newPath) && $oldPath !== $newPath) {
+                return redirect()
+                    ->back()
+                    ->with('error', 'يوجد مجلد بهذا الاسم بالفعل');
+            }
+            
+            rename($oldPath, $newPath);
+            
+            return redirect()
+                ->back()
+                ->with('success', 'تم إعادة تسمية المجلد بنجاح');
+
+        } catch (\Exception $e) {
+            \Log::error('Error renaming design base folder: ' . $e->getMessage());
+            return redirect()
+                ->back()
+                ->with('error', 'حدث خطأ أثناء إعادة تسمية المجلد');
+        }
+    }
+
+    public function viewDesignBaseFolder(Project $project, $folderName)
+    {
+        $folderPath = storage_path('app/public/projects/' . $project->id . '/design/base/' . $folderName);
+        
+        if (!file_exists($folderPath)) {
+            abort(404);
+        }
+        
+        $description = '';
+        $descFile = $folderPath . '/description.txt';
+        if (file_exists($descFile)) {
+            $description = file_get_contents($descFile);
+        }
+        
+        $files = [];
+        $items = array_diff(scandir($folderPath), ['.', '..', 'description.txt']);
+        
+        foreach ($items as $item) {
+            $itemPath = $folderPath . '/' . $item;
+            if (is_file($itemPath)) {
+                $files[] = [
+                    'name' => $item,
+                    'size' => filesize($itemPath),
+                    'extension' => pathinfo($item, PATHINFO_EXTENSION),
+                    'created_at' => date('Y-m-d H:i', filectime($itemPath)),
+                    'url' => asset('storage/projects/' . $project->id . '/design/base/' . $folderName . '/' . $item)
+                ];
+            }
+        }
+        
+        return view('projects.sections.design-base-folder', compact('project', 'folderName', 'description', 'files'));
     }
 
     /**
