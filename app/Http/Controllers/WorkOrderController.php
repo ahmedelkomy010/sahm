@@ -16,9 +16,9 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Schema;
 use App\Models\License;
 use App\Models\Material;
+use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Maatwebsite\Excel\Facades\Excel;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
@@ -5587,6 +5587,11 @@ class WorkOrderController extends Controller
             $totalPaymentValue = $revenues->where('extract_status', 'مدفوع')->sum('payment_value') ?: 0;
             $totalFirstPaymentTaxUnpaid = $revenues->where('extract_status', 'غير مدفوع')->sum('first_payment_tax') ?: 0;
             
+            // حساب المبلغ الإجمالي قبل طرح ضريبة الدفعة الأولى
+            // net_extract_value = extract_value + tax_value - penalties - first_payment_tax
+            // عشان نحصل على المبلغ بدون طرح first_payment_tax، نضيفها تاني
+            $totalNetExtractValueWithoutFirstPaymentTax = $totalNetExtractValue + $totalFirstPaymentTaxUnpaid;
+            
             // إحصائيات سريعة شاملة
             $statistics = [
                 'totalRevenues' => $revenues->count(),
@@ -5599,6 +5604,10 @@ class WorkOrderController extends Controller
                 'totalPaymentValue' => $totalPaymentValue,
                 // المبلغ المتبقي عند العميل شامل الضريبة = إجمالي صافي قيمة المستخلصات - إجمالي المدفوعات
                 'remainingAmount' => $totalNetExtractValue - $totalPaymentValue,
+                // المبلغ المتبقي عند (المقاول + الكهرباء + المالية + الخزينة) - بدون ضريبة الدفعة الأولى (للكارت الخارجي)
+                'remainingAmountWithoutFirstPaymentTax' => $totalNetExtractValueWithoutFirstPaymentTax - $totalPaymentValue,
+                // المبلغ المتبقي مع ضريبة الدفعة الأولى (للنافذة - الإجمالي) - نفس الحساب السابق
+                'remainingAmountWithFirstPaymentTax' => $totalNetExtractValueWithoutFirstPaymentTax - $totalPaymentValue,
             ];
             
             \Log::info('Revenues page loaded', [
@@ -6324,6 +6333,66 @@ class WorkOrderController extends Controller
             $madinahUnpaid = $madinahRevenues->where('extract_status', 'غير مدفوع');
             $madinahPaid = $madinahRevenues->where('extract_status', 'مدفوع');
             
+            // حساب المبالغ المتبقية حسب موقف المستخلص لمشروع الرياض
+            $riyadhRemainingByStatus = [
+                'contractor' => 0,
+                'electricity' => 0,
+                'finance' => 0,
+                'treasury' => 0,
+            ];
+            
+            foreach ($riyadhRevenues as $revenue) {
+                // فقط المستخلصات الغير مدفوعة
+                if ($revenue->extract_status === 'غير مدفوع') {
+                    $netValue = $revenue->net_extract_value ?? 0;
+                    
+                    switch ($revenue->payment_type) {
+                        case 'المقاول':
+                            $riyadhRemainingByStatus['contractor'] += $netValue;
+                            break;
+                        case 'ادارة الكهرباء':
+                            $riyadhRemainingByStatus['electricity'] += $netValue;
+                            break;
+                        case 'المالية':
+                            $riyadhRemainingByStatus['finance'] += $netValue;
+                            break;
+                        case 'الخزينة':
+                            $riyadhRemainingByStatus['treasury'] += $netValue;
+                            break;
+                    }
+                }
+            }
+            
+            // حساب المبالغ المتبقية حسب موقف المستخلص لمشروع المدينة
+            $madinahRemainingByStatus = [
+                'contractor' => 0,
+                'electricity' => 0,
+                'finance' => 0,
+                'treasury' => 0,
+            ];
+            
+            foreach ($madinahRevenues as $revenue) {
+                // فقط المستخلصات الغير مدفوعة
+                if ($revenue->extract_status === 'غير مدفوع') {
+                    $netValue = $revenue->net_extract_value ?? 0;
+                    
+                    switch ($revenue->payment_type) {
+                        case 'المقاول':
+                            $madinahRemainingByStatus['contractor'] += $netValue;
+                            break;
+                        case 'ادارة الكهرباء':
+                            $madinahRemainingByStatus['electricity'] += $netValue;
+                            break;
+                        case 'المالية':
+                            $madinahRemainingByStatus['finance'] += $netValue;
+                            break;
+                        case 'الخزينة':
+                            $madinahRemainingByStatus['treasury'] += $netValue;
+                            break;
+                    }
+                }
+            }
+            
             $workOrdersStats = [
                 'riyadh' => [
                     'count' => $riyadhRevenues->count(),
@@ -6334,6 +6403,7 @@ class WorkOrderController extends Controller
                     'total_payments' => $riyadhPaid->sum('payment_value'),
                     'first_payment_tax' => $riyadhUnpaid->sum('first_payment_tax'),
                     'unpaid_amount' => $riyadhRevenues->sum('net_extract_value') - $riyadhPaid->sum('payment_value'),
+                    'remaining_by_status' => $riyadhRemainingByStatus,
                 ],
                 'madinah' => [
                     'count' => $madinahRevenues->count(),
@@ -6344,6 +6414,7 @@ class WorkOrderController extends Controller
                     'total_payments' => $madinahPaid->sum('payment_value'),
                     'first_payment_tax' => $madinahUnpaid->sum('first_payment_tax'),
                     'unpaid_amount' => $madinahRevenues->sum('net_extract_value') - $madinahPaid->sum('payment_value'),
+                    'remaining_by_status' => $madinahRemainingByStatus,
                 ]
             ];
             
@@ -6376,6 +6447,36 @@ class WorkOrderController extends Controller
             $turnkeyUnpaid = $turnkeyRevenues->where('payment_status', 'غير مدفوع');
             $turnkeyPaid = $turnkeyRevenues->where('payment_status', 'مدفوع');
             
+            // حساب المبالغ المتبقية حسب موقف المستخلص لمشاريع تسليم المفتاح
+            $turnkeyRemainingByStatus = [
+                'contractor' => 0,
+                'electricity' => 0,
+                'finance' => 0,
+                'treasury' => 0,
+            ];
+            
+            foreach ($turnkeyRevenues as $revenue) {
+                // فقط المستخلصات الغير مدفوعة
+                if ($revenue->payment_status === 'غير مدفوع') {
+                    $netValue = $revenue->net_extract_value ?? 0;
+                    
+                    switch ($revenue->extract_status) {
+                        case 'المقاول':
+                            $turnkeyRemainingByStatus['contractor'] += $netValue;
+                            break;
+                        case 'ادارة الكهرباء':
+                            $turnkeyRemainingByStatus['electricity'] += $netValue;
+                            break;
+                        case 'المالية':
+                            $turnkeyRemainingByStatus['finance'] += $netValue;
+                            break;
+                        case 'الخزينة':
+                            $turnkeyRemainingByStatus['treasury'] += $netValue;
+                            break;
+                    }
+                }
+            }
+            
             $turnkeyStats = [
                 'count' => $turnkeyRevenues->count(),
                 'total_value' => $turnkeyRevenues->sum('extract_value'),
@@ -6385,6 +6486,7 @@ class WorkOrderController extends Controller
                 'total_payments' => $turnkeyPaid->sum('payment_value'),
                 'first_payment_tax' => $turnkeyUnpaid->sum('first_payment_tax'),
                 'unpaid_amount' => $turnkeyRevenues->sum('net_extract_value') - $turnkeyPaid->sum('payment_value'),
+                'remaining_by_status' => $turnkeyRemainingByStatus,
             ];
             
             // جمع المشاريع للإحصائيات التفصيلية
@@ -6399,6 +6501,35 @@ class WorkOrderController extends Controller
                 $projectUnpaid = $projectRevenues->where('payment_status', 'غير مدفوع');
                 $projectPaid = $projectRevenues->where('payment_status', 'مدفوع');
                 
+                // حساب المبالغ المتبقية حسب موقف المستخلص لهذا المشروع
+                $projectRemainingByStatus = [
+                    'contractor' => 0,
+                    'electricity' => 0,
+                    'finance' => 0,
+                    'treasury' => 0,
+                ];
+                
+                foreach ($projectRevenues as $revenue) {
+                    if ($revenue->payment_status === 'غير مدفوع') {
+                        $netValue = $revenue->net_extract_value ?? 0;
+                        
+                        switch ($revenue->extract_status) {
+                            case 'المقاول':
+                                $projectRemainingByStatus['contractor'] += $netValue;
+                                break;
+                            case 'ادارة الكهرباء':
+                                $projectRemainingByStatus['electricity'] += $netValue;
+                                break;
+                            case 'المالية':
+                                $projectRemainingByStatus['finance'] += $netValue;
+                                break;
+                            case 'الخزينة':
+                                $projectRemainingByStatus['treasury'] += $netValue;
+                                break;
+                        }
+                    }
+                }
+                
                 $turnkeyProjectsStats[] = [
                     'project_id' => $project->id,
                     'project_name' => $project->name,
@@ -6412,6 +6543,7 @@ class WorkOrderController extends Controller
                     'total_payments' => $projectPaid->sum('payment_value'),
                     'first_payment_tax' => $projectUnpaid->sum('first_payment_tax'),
                     'unpaid_amount' => $projectRevenues->sum('net_extract_value') - $projectPaid->sum('payment_value'),
+                    'remaining_by_status' => $projectRemainingByStatus,
                 ];
             }
             
@@ -6498,6 +6630,26 @@ class WorkOrderController extends Controller
             // المبلغ المتبقي = إجمالي صافي المستخلصات - إجمالي المدفوعات
             $totalUnpaidAmount = $totalNetExtractValue - $totalPayments;
             
+            // حساب المبالغ المتبقية حسب موقف المستخلص للإجمالي العام
+            $grandTotalRemainingByStatus = [
+                'contractor' => ($workOrdersStats['riyadh']['remaining_by_status']['contractor'] ?? 0) + 
+                               ($workOrdersStats['madinah']['remaining_by_status']['contractor'] ?? 0) + 
+                               ($turnkeyStats['remaining_by_status']['contractor'] ?? 0),
+                'electricity' => ($workOrdersStats['riyadh']['remaining_by_status']['electricity'] ?? 0) + 
+                                ($workOrdersStats['madinah']['remaining_by_status']['electricity'] ?? 0) + 
+                                ($turnkeyStats['remaining_by_status']['electricity'] ?? 0),
+                'finance' => ($workOrdersStats['riyadh']['remaining_by_status']['finance'] ?? 0) + 
+                            ($workOrdersStats['madinah']['remaining_by_status']['finance'] ?? 0) + 
+                            ($turnkeyStats['remaining_by_status']['finance'] ?? 0),
+                'treasury' => ($workOrdersStats['riyadh']['remaining_by_status']['treasury'] ?? 0) + 
+                             ($workOrdersStats['madinah']['remaining_by_status']['treasury'] ?? 0) + 
+                             ($turnkeyStats['remaining_by_status']['treasury'] ?? 0),
+            ];
+            
+            // ضريبة الدفعة الأولى فقط من الرياض والمدينة (تسليم المفتاح والمشاريع الخاصة مفيش فيهم)
+            $grandTotalFirstPaymentTax = ($workOrdersStats['riyadh']['first_payment_tax'] ?? 0) + 
+                                        ($workOrdersStats['madinah']['first_payment_tax'] ?? 0);
+            
             $grandTotal = [
                 'count' => $totalCount,
                 'total_value' => $totalValue,
@@ -6507,6 +6659,8 @@ class WorkOrderController extends Controller
                 'total_payments' => $totalPayments,
                 'first_payment_tax' => $totalFirstPaymentTax,
                 'unpaid_amount' => $totalUnpaidAmount,
+                'remaining_by_status' => $grandTotalRemainingByStatus,
+                'grand_first_payment_tax' => $grandTotalFirstPaymentTax,
             ];
             
             return view('admin.work_orders.all-projects-revenues', compact(
@@ -6532,6 +6686,10 @@ class WorkOrderController extends Controller
     public function exportAllProjectsRevenues(Request $request)
     {
         try {
+            // زيادة حدود الذاكرة والوقت للتصدير
+            ini_set('memory_limit', '512M');
+            ini_set('max_execution_time', '300');
+            
             // التحقق من صلاحيات الوصول (مشرف النظام أو صلاحية access_total_project_revenues)
             if (!auth()->user()->is_admin && !(is_array(auth()->user()->permissions) && in_array('access_total_project_revenues', auth()->user()->permissions))) {
                 abort(403, 'غير مصرح لك بالوصول إلى هذه الصفحة');
@@ -6700,16 +6858,37 @@ class WorkOrderController extends Controller
             }
             
             // تصدير البيانات
-            $fileName = 'اجمالي_ايرادات_المشاريع_' . date('Y-m-d_H-i-s') . '.xlsx';
+            $fileName = 'all_projects_revenues_' . date('Y-m-d_H-i-s') . '.xlsx';
             
-            return \Excel::download(
-                new \App\Exports\AllProjectsRevenuesExport($exportData),
-                $fileName
-            );
+            \Log::info('Preparing export data', [
+                'dataCount' => count($exportData),
+                'fileName' => $fileName
+            ]);
+            
+            // التأكد من أن البيانات موجودة
+            if (empty($exportData)) {
+                return redirect()->route('admin.all-projects-revenues')
+                    ->with('error', 'لا توجد بيانات للتصدير');
+            }
+            
+            try {
+                return Excel::download(
+                    new \App\Exports\AllProjectsRevenuesExport($exportData),
+                    $fileName
+                );
+            } catch (\Throwable $exportError) {
+                \Log::error('Excel download failed: ' . $exportError->getMessage());
+                \Log::error('Error file: ' . $exportError->getFile() . ' | Line: ' . $exportError->getLine());
+                throw $exportError;
+            }
             
         } catch (\Exception $e) {
             \Log::error('Error exporting all projects revenues: ' . $e->getMessage());
-            return back()->with('error', 'حدث خطأ أثناء تصدير البيانات: ' . $e->getMessage());
+            \Log::error('File: ' . $e->getFile() . ' | Line: ' . $e->getLine());
+            \Log::error('Stack Trace: ' . $e->getTraceAsString());
+            
+            return redirect()->route('admin.all-projects-revenues')
+                ->with('error', 'حدث خطأ أثناء تصدير البيانات. الرجاء المحاولة مرة أخرى.');
         }
     }
 

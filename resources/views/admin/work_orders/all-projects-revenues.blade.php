@@ -431,13 +431,16 @@
                 </div>
                 
                 <div class="stat-card-small p-2">
-                    <div class="stat-card">
+                    <div class="stat-card" onclick="showGrandTotalRemainingDetailsModal()" style="cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
                         <div class="stat-icon">
                             <i class="fas fa-wallet"></i>
                         </div>
                         <div class="stat-title">المبلغ المتبقي عند العميل<br>شامل الضريبة</div>
                         <div class="stat-value">{{ number_format($grandTotal['unpaid_amount'], 2) }}</div>
                         <div class="stat-currency">ريال سعودي</div>
+                        <small class="text-muted" style="font-size: 0.7rem; display: block; margin-top: 5px;">
+                            <i class="fas fa-info-circle"></i> اضغط للتفاصيل
+                        </small>
                     </div>
                 </div>
                 
@@ -535,13 +538,20 @@
                 </div>
                 
                 <div class="stat-card-small p-2">
-                    <div class="stat-card">
+                    <div class="stat-card" onclick="showRiyadhRemainingDetailsModal()" style="cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
                         <div class="stat-icon">
                             <i class="fas fa-wallet"></i>
                         </div>
                         <div class="stat-title">المبلغ المتبقي عند العميل<br>شامل الضريبة</div>
-                        <div class="stat-value">{{ number_format($workOrdersStats['riyadh']['unpaid_amount'], 2) }}</div>
+                        <div class="stat-value">{{ number_format(
+                            $workOrdersStats['riyadh']['remaining_by_status']['contractor'] +
+                            $workOrdersStats['riyadh']['remaining_by_status']['electricity'] +
+                            $workOrdersStats['riyadh']['remaining_by_status']['finance'] +
+                            $workOrdersStats['riyadh']['remaining_by_status']['treasury'], 2) }}</div>
                         <div class="stat-currency">ريال سعودي</div>
+                        <small class="text-muted" style="font-size: 0.7rem; display: block; margin-top: 5px;">
+                            <i class="fas fa-info-circle"></i> اضغط للتفاصيل
+                        </small>
                     </div>
                 </div>
                 
@@ -650,13 +660,20 @@
                 </div>
                 
                 <div class="stat-card-small p-2">
-                    <div class="stat-card">
+                    <div class="stat-card" onclick="showMadinahRemainingDetailsModal()" style="cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
                         <div class="stat-icon">
                             <i class="fas fa-wallet"></i>
                         </div>
                         <div class="stat-title">المبلغ المتبقي عند العميل<br>شامل الضريبة</div>
-                        <div class="stat-value">{{ number_format($workOrdersStats['madinah']['unpaid_amount'], 2) }}</div>
+                        <div class="stat-value">{{ number_format(
+                            $workOrdersStats['madinah']['remaining_by_status']['contractor'] +
+                            $workOrdersStats['madinah']['remaining_by_status']['electricity'] +
+                            $workOrdersStats['madinah']['remaining_by_status']['finance'] +
+                            $workOrdersStats['madinah']['remaining_by_status']['treasury'], 2) }}</div>
                         <div class="stat-currency">ريال سعودي</div>
+                        <small class="text-muted" style="font-size: 0.7rem; display: block; margin-top: 5px;">
+                            <i class="fas fa-info-circle"></i> اضغط للتفاصيل
+                        </small>
                     </div>
                 </div>
                 
@@ -759,13 +776,20 @@
                 </div>
                 
                 <div class="stat-card-small p-2">
-                    <div class="stat-card">
+                    <div class="stat-card" onclick="showTurnkeyRemainingDetailsModal()" style="cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
                         <div class="stat-icon">
                             <i class="fas fa-clock"></i>
                         </div>
                         <div class="stat-title">المبلغ المتبقي عند العميل<br>شامل الضريبة</div>
-                        <div class="stat-value">{{ number_format($turnkeyStats['unpaid_amount'], 2) }}</div>
+                        <div class="stat-value">{{ number_format(
+                            $turnkeyStats['remaining_by_status']['contractor'] +
+                            $turnkeyStats['remaining_by_status']['electricity'] +
+                            $turnkeyStats['remaining_by_status']['finance'] +
+                            $turnkeyStats['remaining_by_status']['treasury'], 2) }}</div>
                         <div class="stat-currency">ريال سعودي</div>
+                        <small class="text-muted" style="font-size: 0.7rem; display: block; margin-top: 5px;">
+                            <i class="fas fa-info-circle"></i> اضغط للتفاصيل
+                        </small>
                     </div>
                 </div>
             </div>
@@ -858,13 +882,20 @@
                 </div>
                 
                 <div class="stat-card-small p-2">
-                    <div class="stat-card">
+                    <div class="stat-card" onclick="showTurnkeyProjectRemainingDetailsModal({{ $loop->index }})" style="cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
                         <div class="stat-icon">
                             <i class="fas fa-wallet"></i>
                         </div>
                         <div class="stat-title">المبلغ المتبقي عند العميل<br>شامل الضريبة</div>
-                        <div class="stat-value">{{ number_format($projectStat['unpaid_amount'], 2) }}</div>
+                        <div class="stat-value">{{ number_format(
+                            $projectStat['remaining_by_status']['contractor'] +
+                            $projectStat['remaining_by_status']['electricity'] +
+                            $projectStat['remaining_by_status']['finance'] +
+                            $projectStat['remaining_by_status']['treasury'], 2) }}</div>
                         <div class="stat-currency">ريال سعودي</div>
+                        <small class="text-muted" style="font-size: 0.7rem; display: block; margin-top: 5px;">
+                            <i class="fas fa-info-circle"></i> اضغط للتفاصيل
+                        </small>
                     </div>
                 </div>
             </div>
@@ -1105,7 +1136,776 @@ function setQuickDateRange(range) {
     // Auto submit form
     document.getElementById('filterForm').submit();
 }
+
+// وظيفة إظهار نافذة تفاصيل المبلغ المتبقي للإجمالي العام
+function showGrandTotalRemainingDetailsModal() {
+    const modal = new bootstrap.Modal(document.getElementById('grandTotalRemainingDetailsModal'));
+    modal.show();
+}
+
+// وظيفة إظهار نافذة تفاصيل المبلغ المتبقي لمشروع الرياض
+function showRiyadhRemainingDetailsModal() {
+    const modal = new bootstrap.Modal(document.getElementById('riyadhRemainingDetailsModal'));
+    modal.show();
+}
+
+// وظيفة إظهار نافذة تفاصيل المبلغ المتبقي لمشروع المدينة
+function showMadinahRemainingDetailsModal() {
+    const modal = new bootstrap.Modal(document.getElementById('madinahRemainingDetailsModal'));
+    modal.show();
+}
+
+// وظيفة إظهار نافذة تفاصيل المبلغ المتبقي لمشاريع تسليم المفتاح (الإجمالي)
+function showTurnkeyRemainingDetailsModal() {
+    const modal = new bootstrap.Modal(document.getElementById('turnkeyRemainingDetailsModal'));
+    modal.show();
+}
+
+// وظيفة إظهار نافذة تفاصيل المبلغ المتبقي لمشروع فردي في تسليم المفتاح
+function showTurnkeyProjectRemainingDetailsModal(index) {
+    const modal = new bootstrap.Modal(document.getElementById('turnkeyProjectRemainingDetailsModal' + index));
+    modal.show();
+}
+
+// وظيفة تنسيق الأرقام
+function formatNumber(num) {
+    return new Intl.NumberFormat('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    }).format(num);
+}
 </script>
+
+<!-- Modal: تفاصيل المبلغ المتبقي للإجمالي العام لجميع المشاريع -->
+<div class="modal fade" id="grandTotalRemainingDetailsModal" tabindex="-1" aria-labelledby="grandTotalRemainingDetailsModalLabel" aria-hidden="true" data-bs-backdrop="false">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content" style="position: relative; z-index: 1056;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                <h5 class="modal-title" id="grandTotalRemainingDetailsModalLabel">
+                    <i class="fas fa-chart-pie me-2"></i>
+                    تفاصيل المبلغ المتبقي عند العميل - الإجمالي العام لجميع المشاريع
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" style="background: #f8f9fa; padding: 1.5rem;">
+                <div class="row g-3">
+                    <!-- المبلغ المتبقي عند العميل شامل الضريبة (بدون المشاريع الخاصة) -->
+                    <div class="col-md-12">
+                        <div class="card border-0 shadow-sm" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                            <div class="card-body text-white">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1 opacity-75">المبلغ المتبقي عند العميل شامل الضريبة</h6>
+                                        <h4 class="mb-0 fw-bold">{{ number_format(
+                                            $grandTotal['remaining_by_status']['contractor'] +
+                                            $grandTotal['remaining_by_status']['electricity'] +
+                                            $grandTotal['remaining_by_status']['finance'] +
+                                            $grandTotal['remaining_by_status']['treasury'] +
+                                            $grandTotal['grand_first_payment_tax'], 2) }}</h4>
+                                        <small class="opacity-75">ريال سعودي</small>
+                                    </div>
+                                    <div class="bg-white bg-opacity-25 p-3 rounded-circle">
+                                        <i class="fas fa-hourglass-half fa-2x"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- المبالغ حسب موقف المستخلص -->
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                            <div class="card-body text-white">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1 opacity-75">عند المقاول</h6>
+                                        <h5 class="mb-0 fw-bold">{{ number_format($grandTotal['remaining_by_status']['contractor'], 2) }}</h5>
+                                        <small class="opacity-75">ريال سعودي</small>
+                                    </div>
+                                    <div class="bg-white bg-opacity-25 p-2 rounded-circle">
+                                        <i class="fas fa-hard-hat fa-lg"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                            <div class="card-body text-white">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1 opacity-75">عند إدارة الكهرباء</h6>
+                                        <h5 class="mb-0 fw-bold">{{ number_format($grandTotal['remaining_by_status']['electricity'], 2) }}</h5>
+                                        <small class="opacity-75">ريال سعودي</small>
+                                    </div>
+                                    <div class="bg-white bg-opacity-25 p-2 rounded-circle">
+                                        <i class="fas fa-bolt fa-lg"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                            <div class="card-body text-white">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1 opacity-75">عند المالية</h6>
+                                        <h5 class="mb-0 fw-bold">{{ number_format($grandTotal['remaining_by_status']['finance'], 2) }}</h5>
+                                        <small class="opacity-75">ريال سعودي</small>
+                                    </div>
+                                    <div class="bg-white bg-opacity-25 p-2 rounded-circle">
+                                        <i class="fas fa-coins fa-lg"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
+                            <div class="card-body text-white">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1 opacity-75">عند الخزينة</h6>
+                                        <h5 class="mb-0 fw-bold">{{ number_format($grandTotal['remaining_by_status']['treasury'], 2) }}</h5>
+                                        <small class="opacity-75">ريال سعودي</small>
+                                    </div>
+                                    <div class="bg-white bg-opacity-25 p-2 rounded-circle">
+                                        <i class="fas fa-university fa-lg"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- المتبقي لدى العميل (ضريبة الدفعة الأولى) -->
+                    <div class="col-md-12">
+                        <div class="card border-0 shadow-sm" style="background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);">
+                            <div class="card-body text-white">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1 opacity-75">المتبقي لدى العميل (ضريبة الدفعة الأولى)</h6>
+                                        <h4 class="mb-0 fw-bold">{{ number_format($grandTotal['grand_first_payment_tax'], 2) }}</h4>
+                                        <small class="opacity-75">ريال سعودي</small>
+                                    </div>
+                                    <div class="bg-white bg-opacity-25 p-3 rounded-circle">
+                                        <i class="fas fa-percentage fa-2x"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- إجمالي أعمال خاصة -->
+                    <div class="col-md-12">
+                        <div class="card border-0 shadow-sm" style="background: linear-gradient(135deg, #fc6076 0%, #ff9a44 100%);">
+                            <div class="card-body text-white">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1 opacity-75">إجمالي أعمال خاصة</h6>
+                                        <h4 class="mb-0 fw-bold">{{ number_format($specialStats['unpaid_amount'], 2) }}</h4>
+                                        <small class="opacity-75">ريال سعودي</small>
+                                    </div>
+                                    <div class="bg-white bg-opacity-25 p-3 rounded-circle">
+                                        <i class="fas fa-star fa-2x"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- إجمالي المتبقي (شامل ضريبة الدفعة الأولى - بدون المشاريع الخاصة) -->
+                    <div class="col-md-12">
+                        <div class="alert alert-info mb-0">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-calculator me-2"></i>
+                                        إجمالي المبلغ المتبقي عند العميل (شامل ضريبة الدفعة الأولى)
+                                    </h5>
+                                </div>
+                                <div>
+                                    <h3 class="mb-0 fw-bold text-primary">{{ number_format(
+                                        $grandTotal['remaining_by_status']['contractor'] +
+                                        $grandTotal['remaining_by_status']['electricity'] +
+                                        $grandTotal['remaining_by_status']['finance'] +
+                                        $grandTotal['remaining_by_status']['treasury'] +
+                                        $grandTotal['grand_first_payment_tax'], 2) }}</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: تفاصيل المبلغ المتبقي لمشروع الرياض -->
+<div class="modal fade" id="riyadhRemainingDetailsModal" tabindex="-1" aria-labelledby="riyadhRemainingDetailsModalLabel" aria-hidden="true" data-bs-backdrop="false">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content" style="position: relative; z-index: 1056;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white;">
+                <h5 class="modal-title" id="riyadhRemainingDetailsModalLabel">
+                    <i class="fas fa-chart-pie me-2"></i>
+                    تفاصيل المبلغ المتبقي عند العميل - مشروع الرياض
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" style="background: #f8f9fa; padding: 1.5rem;">
+                <div class="row g-3">
+                    <!-- المبلغ المتبقي عند العميل شامل الضريبة (مع ضريبة الدفعة الأولى) -->
+                    <div class="col-md-12">
+                        <div class="card border-0 shadow-sm" style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);">
+                            <div class="card-body text-white">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1 opacity-75">المبلغ المتبقي عند العميل شامل الضريبة</h6>
+                                        <h4 class="mb-0 fw-bold">{{ number_format(
+                                            $workOrdersStats['riyadh']['remaining_by_status']['contractor'] +
+                                            $workOrdersStats['riyadh']['remaining_by_status']['electricity'] +
+                                            $workOrdersStats['riyadh']['remaining_by_status']['finance'] +
+                                            $workOrdersStats['riyadh']['remaining_by_status']['treasury'] +
+                                            $workOrdersStats['riyadh']['first_payment_tax'], 2) }}</h4>
+                                        <small class="opacity-75">ريال سعودي</small>
+                                    </div>
+                                    <div class="bg-white bg-opacity-25 p-3 rounded-circle">
+                                        <i class="fas fa-hourglass-half fa-2x"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- المبالغ حسب موقف المستخلص -->
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                            <div class="card-body text-white">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1 opacity-75">عند المقاول</h6>
+                                        <h5 class="mb-0 fw-bold">{{ number_format($workOrdersStats['riyadh']['remaining_by_status']['contractor'], 2) }}</h5>
+                                        <small class="opacity-75">ريال سعودي</small>
+                                    </div>
+                                    <div class="bg-white bg-opacity-25 p-2 rounded-circle">
+                                        <i class="fas fa-hard-hat fa-lg"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                            <div class="card-body text-white">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1 opacity-75">عند إدارة الكهرباء</h6>
+                                        <h5 class="mb-0 fw-bold">{{ number_format($workOrdersStats['riyadh']['remaining_by_status']['electricity'], 2) }}</h5>
+                                        <small class="opacity-75">ريال سعودي</small>
+                                    </div>
+                                    <div class="bg-white bg-opacity-25 p-2 rounded-circle">
+                                        <i class="fas fa-bolt fa-lg"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                            <div class="card-body text-white">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1 opacity-75">عند المالية</h6>
+                                        <h5 class="mb-0 fw-bold">{{ number_format($workOrdersStats['riyadh']['remaining_by_status']['finance'], 2) }}</h5>
+                                        <small class="opacity-75">ريال سعودي</small>
+                                    </div>
+                                    <div class="bg-white bg-opacity-25 p-2 rounded-circle">
+                                        <i class="fas fa-coins fa-lg"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
+                            <div class="card-body text-white">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1 opacity-75">عند الخزينة</h6>
+                                        <h5 class="mb-0 fw-bold">{{ number_format($workOrdersStats['riyadh']['remaining_by_status']['treasury'], 2) }}</h5>
+                                        <small class="opacity-75">ريال سعودي</small>
+                                    </div>
+                                    <div class="bg-white bg-opacity-25 p-2 rounded-circle">
+                                        <i class="fas fa-university fa-lg"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- المتبقي لدى العميل (ضريبة الدفعة الأولى) -->
+                    <div class="col-md-12">
+                        <div class="card border-0 shadow-sm" style="background: linear-gradient(135deg, #2a5298 0%, #1e3c72 100%);">
+                            <div class="card-body text-white">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1 opacity-75">المتبقي لدى العميل (ضريبة الدفعة الأولى)</h6>
+                                        <h4 class="mb-0 fw-bold">{{ number_format($workOrdersStats['riyadh']['first_payment_tax'], 2) }}</h4>
+                                        <small class="opacity-75">ريال سعودي</small>
+                                    </div>
+                                    <div class="bg-white bg-opacity-25 p-3 rounded-circle">
+                                        <i class="fas fa-percentage fa-2x"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- إجمالي المتبقي (شامل ضريبة الدفعة الأولى) -->
+                    <div class="col-md-12">
+                        <div class="alert alert-info mb-0">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-calculator me-2"></i>
+                                        إجمالي المبلغ المتبقي عند العميل
+                                    </h5>
+                                </div>
+                                <div>
+                                    <h3 class="mb-0 fw-bold text-primary">{{ number_format(
+                                        $workOrdersStats['riyadh']['remaining_by_status']['contractor'] +
+                                        $workOrdersStats['riyadh']['remaining_by_status']['electricity'] +
+                                        $workOrdersStats['riyadh']['remaining_by_status']['finance'] +
+                                        $workOrdersStats['riyadh']['remaining_by_status']['treasury'] +
+                                        $workOrdersStats['riyadh']['first_payment_tax'], 2) }}</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: تفاصيل المبلغ المتبقي لمشروع المدينة المنورة -->
+<div class="modal fade" id="madinahRemainingDetailsModal" tabindex="-1" aria-labelledby="madinahRemainingDetailsModalLabel" aria-hidden="true" data-bs-backdrop="false">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content" style="position: relative; z-index: 1056;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white;">
+                <h5 class="modal-title" id="madinahRemainingDetailsModalLabel">
+                    <i class="fas fa-chart-pie me-2"></i>
+                    تفاصيل المبلغ المتبقي عند العميل - مشروع المدينة المنورة
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" style="background: #f8f9fa; padding: 1.5rem;">
+                <div class="row g-3">
+                    <!-- المبلغ المتبقي عند العميل شامل الضريبة (مع ضريبة الدفعة الأولى) -->
+                    <div class="col-md-12">
+                        <div class="card border-0 shadow-sm" style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);">
+                            <div class="card-body text-white">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1 opacity-75">المبلغ المتبقي عند العميل شامل الضريبة</h6>
+                                        <h4 class="mb-0 fw-bold">{{ number_format(
+                                            $workOrdersStats['madinah']['remaining_by_status']['contractor'] +
+                                            $workOrdersStats['madinah']['remaining_by_status']['electricity'] +
+                                            $workOrdersStats['madinah']['remaining_by_status']['finance'] +
+                                            $workOrdersStats['madinah']['remaining_by_status']['treasury'] +
+                                            $workOrdersStats['madinah']['first_payment_tax'], 2) }}</h4>
+                                        <small class="opacity-75">ريال سعودي</small>
+                                    </div>
+                                    <div class="bg-white bg-opacity-25 p-3 rounded-circle">
+                                        <i class="fas fa-hourglass-half fa-2x"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- المبالغ حسب موقف المستخلص -->
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                            <div class="card-body text-white">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1 opacity-75">عند المقاول</h6>
+                                        <h5 class="mb-0 fw-bold">{{ number_format($workOrdersStats['madinah']['remaining_by_status']['contractor'], 2) }}</h5>
+                                        <small class="opacity-75">ريال سعودي</small>
+                                    </div>
+                                    <div class="bg-white bg-opacity-25 p-2 rounded-circle">
+                                        <i class="fas fa-hard-hat fa-lg"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                            <div class="card-body text-white">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1 opacity-75">عند إدارة الكهرباء</h6>
+                                        <h5 class="mb-0 fw-bold">{{ number_format($workOrdersStats['madinah']['remaining_by_status']['electricity'], 2) }}</h5>
+                                        <small class="opacity-75">ريال سعودي</small>
+                                    </div>
+                                    <div class="bg-white bg-opacity-25 p-2 rounded-circle">
+                                        <i class="fas fa-bolt fa-lg"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                            <div class="card-body text-white">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1 opacity-75">عند المالية</h6>
+                                        <h5 class="mb-0 fw-bold">{{ number_format($workOrdersStats['madinah']['remaining_by_status']['finance'], 2) }}</h5>
+                                        <small class="opacity-75">ريال سعودي</small>
+                                    </div>
+                                    <div class="bg-white bg-opacity-25 p-2 rounded-circle">
+                                        <i class="fas fa-coins fa-lg"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
+                            <div class="card-body text-white">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1 opacity-75">عند الخزينة</h6>
+                                        <h5 class="mb-0 fw-bold">{{ number_format($workOrdersStats['madinah']['remaining_by_status']['treasury'], 2) }}</h5>
+                                        <small class="opacity-75">ريال سعودي</small>
+                                    </div>
+                                    <div class="bg-white bg-opacity-25 p-2 rounded-circle">
+                                        <i class="fas fa-university fa-lg"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- المتبقي لدى العميل (ضريبة الدفعة الأولى) -->
+                    <div class="col-md-12">
+                        <div class="card border-0 shadow-sm" style="background: linear-gradient(135deg, #2a5298 0%, #1e3c72 100%);">
+                            <div class="card-body text-white">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1 opacity-75">المتبقي لدى العميل (ضريبة الدفعة الأولى)</h6>
+                                        <h4 class="mb-0 fw-bold">{{ number_format($workOrdersStats['madinah']['first_payment_tax'], 2) }}</h4>
+                                        <small class="opacity-75">ريال سعودي</small>
+                                    </div>
+                                    <div class="bg-white bg-opacity-25 p-3 rounded-circle">
+                                        <i class="fas fa-percentage fa-2x"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- إجمالي المتبقي (شامل ضريبة الدفعة الأولى) -->
+                    <div class="col-md-12">
+                        <div class="alert alert-info mb-0">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-calculator me-2"></i>
+                                        إجمالي المبلغ المتبقي عند العميل
+                                    </h5>
+                                </div>
+                                <div>
+                                    <h3 class="mb-0 fw-bold text-primary">{{ number_format(
+                                        $workOrdersStats['madinah']['remaining_by_status']['contractor'] +
+                                        $workOrdersStats['madinah']['remaining_by_status']['electricity'] +
+                                        $workOrdersStats['madinah']['remaining_by_status']['finance'] +
+                                        $workOrdersStats['madinah']['remaining_by_status']['treasury'] +
+                                        $workOrdersStats['madinah']['first_payment_tax'], 2) }}</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: تفاصيل المبلغ المتبقي لمشاريع تسليم المفتاح -->
+<div class="modal fade" id="turnkeyRemainingDetailsModal" tabindex="-1" aria-labelledby="turnkeyRemainingDetailsModalLabel" aria-hidden="true" data-bs-backdrop="false">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content" style="position: relative; z-index: 1056;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white;">
+                <h5 class="modal-title" id="turnkeyRemainingDetailsModalLabel">
+                    <i class="fas fa-chart-pie me-2"></i>
+                    تفاصيل المبلغ المتبقي عند العميل - مشاريع تسليم المفتاح
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" style="background: #f8f9fa; padding: 1.5rem;">
+                <div class="row g-3">
+                    <!-- المبلغ المتبقي عند العميل شامل الضريبة -->
+                    <div class="col-md-12">
+                        <div class="card border-0 shadow-sm" style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);">
+                            <div class="card-body text-white">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1 opacity-75">المبلغ المتبقي عند العميل شامل الضريبة</h6>
+                                        <h4 class="mb-0 fw-bold">{{ number_format(
+                                            $turnkeyStats['remaining_by_status']['contractor'] +
+                                            $turnkeyStats['remaining_by_status']['electricity'] +
+                                            $turnkeyStats['remaining_by_status']['finance'] +
+                                            $turnkeyStats['remaining_by_status']['treasury'], 2) }}</h4>
+                                        <small class="opacity-75">ريال سعودي</small>
+                                    </div>
+                                    <div class="bg-white bg-opacity-25 p-3 rounded-circle">
+                                        <i class="fas fa-hourglass-half fa-2x"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- المبالغ حسب موقف المستخلص -->
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                            <div class="card-body text-white">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1 opacity-75">عند المقاول</h6>
+                                        <h5 class="mb-0 fw-bold">{{ number_format($turnkeyStats['remaining_by_status']['contractor'], 2) }}</h5>
+                                        <small class="opacity-75">ريال سعودي</small>
+                                    </div>
+                                    <div class="bg-white bg-opacity-25 p-2 rounded-circle">
+                                        <i class="fas fa-hard-hat fa-lg"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                            <div class="card-body text-white">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1 opacity-75">عند إدارة الكهرباء</h6>
+                                        <h5 class="mb-0 fw-bold">{{ number_format($turnkeyStats['remaining_by_status']['electricity'], 2) }}</h5>
+                                        <small class="opacity-75">ريال سعودي</small>
+                                    </div>
+                                    <div class="bg-white bg-opacity-25 p-2 rounded-circle">
+                                        <i class="fas fa-bolt fa-lg"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                            <div class="card-body text-white">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1 opacity-75">عند المالية</h6>
+                                        <h5 class="mb-0 fw-bold">{{ number_format($turnkeyStats['remaining_by_status']['finance'], 2) }}</h5>
+                                        <small class="opacity-75">ريال سعودي</small>
+                                    </div>
+                                    <div class="bg-white bg-opacity-25 p-2 rounded-circle">
+                                        <i class="fas fa-coins fa-lg"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
+                            <div class="card-body text-white">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1 opacity-75">عند الخزينة</h6>
+                                        <h5 class="mb-0 fw-bold">{{ number_format($turnkeyStats['remaining_by_status']['treasury'], 2) }}</h5>
+                                        <small class="opacity-75">ريال سعودي</small>
+                                    </div>
+                                    <div class="bg-white bg-opacity-25 p-2 rounded-circle">
+                                        <i class="fas fa-university fa-lg"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- إجمالي المتبقي -->
+                    <div class="col-md-12">
+                        <div class="alert alert-info mb-0">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-calculator me-2"></i>
+                                        إجمالي المبلغ المتبقي عند العميل
+                                    </h5>
+                                </div>
+                                <div>
+                                    <h3 class="mb-0 fw-bold text-primary">{{ number_format(
+                                        $turnkeyStats['remaining_by_status']['contractor'] +
+                                        $turnkeyStats['remaining_by_status']['electricity'] +
+                                        $turnkeyStats['remaining_by_status']['finance'] +
+                                        $turnkeyStats['remaining_by_status']['treasury'], 2) }}</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modals: تفاصيل المبلغ المتبقي لكل مشروع فردي في تسليم المفتاح -->
+@foreach($turnkeyProjectsStats as $index => $projectStat)
+<div class="modal fade" id="turnkeyProjectRemainingDetailsModal{{ $index }}" tabindex="-1" aria-labelledby="turnkeyProjectRemainingDetailsModalLabel{{ $index }}" aria-hidden="true" data-bs-backdrop="false">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content" style="position: relative; z-index: 1056;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white;">
+                <h5 class="modal-title" id="turnkeyProjectRemainingDetailsModalLabel{{ $index }}">
+                    <i class="fas fa-chart-pie me-2"></i>
+                    تفاصيل المبلغ المتبقي عند العميل - {{ $projectStat['project_name'] }}
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" style="background: #f8f9fa; padding: 1.5rem;">
+                <div class="row g-3">
+                    <!-- المبلغ المتبقي عند العميل شامل الضريبة -->
+                    <div class="col-md-12">
+                        <div class="card border-0 shadow-sm" style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);">
+                            <div class="card-body text-white">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1 opacity-75">المبلغ المتبقي عند العميل شامل الضريبة</h6>
+                                        <h4 class="mb-0 fw-bold">{{ number_format(
+                                            $projectStat['remaining_by_status']['contractor'] +
+                                            $projectStat['remaining_by_status']['electricity'] +
+                                            $projectStat['remaining_by_status']['finance'] +
+                                            $projectStat['remaining_by_status']['treasury'], 2) }}</h4>
+                                        <small class="opacity-75">ريال سعودي</small>
+                                    </div>
+                                    <div class="bg-white bg-opacity-25 p-3 rounded-circle">
+                                        <i class="fas fa-hourglass-half fa-2x"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- المبالغ حسب موقف المستخلص -->
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                            <div class="card-body text-white">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1 opacity-75">عند المقاول</h6>
+                                        <h5 class="mb-0 fw-bold">{{ number_format($projectStat['remaining_by_status']['contractor'], 2) }}</h5>
+                                        <small class="opacity-75">ريال سعودي</small>
+                                    </div>
+                                    <div class="bg-white bg-opacity-25 p-2 rounded-circle">
+                                        <i class="fas fa-hard-hat fa-lg"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                            <div class="card-body text-white">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1 opacity-75">عند إدارة الكهرباء</h6>
+                                        <h5 class="mb-0 fw-bold">{{ number_format($projectStat['remaining_by_status']['electricity'], 2) }}</h5>
+                                        <small class="opacity-75">ريال سعودي</small>
+                                    </div>
+                                    <div class="bg-white bg-opacity-25 p-2 rounded-circle">
+                                        <i class="fas fa-bolt fa-lg"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                            <div class="card-body text-white">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1 opacity-75">عند المالية</h6>
+                                        <h5 class="mb-0 fw-bold">{{ number_format($projectStat['remaining_by_status']['finance'], 2) }}</h5>
+                                        <small class="opacity-75">ريال سعودي</small>
+                                    </div>
+                                    <div class="bg-white bg-opacity-25 p-2 rounded-circle">
+                                        <i class="fas fa-coins fa-lg"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
+                            <div class="card-body text-white">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1 opacity-75">عند الخزينة</h6>
+                                        <h5 class="mb-0 fw-bold">{{ number_format($projectStat['remaining_by_status']['treasury'], 2) }}</h5>
+                                        <small class="opacity-75">ريال سعودي</small>
+                                    </div>
+                                    <div class="bg-white bg-opacity-25 p-2 rounded-circle">
+                                        <i class="fas fa-university fa-lg"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- إجمالي المتبقي -->
+                    <div class="col-md-12">
+                        <div class="alert alert-info mb-0">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-calculator me-2"></i>
+                                        إجمالي المبلغ المتبقي عند العميل
+                                    </h5>
+                                </div>
+                                <div>
+                                    <h3 class="mb-0 fw-bold text-primary">{{ number_format(
+                                        $projectStat['remaining_by_status']['contractor'] +
+                                        $projectStat['remaining_by_status']['electricity'] +
+                                        $projectStat['remaining_by_status']['finance'] +
+                                        $projectStat['remaining_by_status']['treasury'], 2) }}</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@endforeach
+
 @endpush
 
 @endsection

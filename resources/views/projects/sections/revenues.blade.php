@@ -1309,7 +1309,7 @@ function showRemainingDetailsModal() {
             const paymentStatus = row.querySelector('[data-field="payment_status"]')?.value || '';
             
             // إذا كان غير مدفوع، احسب المبلغ المتبقي حسب الموقف
-            if (paymentStatus === 'unpaid' || paymentStatus === 'pending' || paymentStatus === '') {
+            if (paymentStatus === 'غير مدفوع' || paymentStatus === 'unpaid' || paymentStatus === 'pending' || paymentStatus === '') {
                 const extractStatus = row.querySelector('[data-field="extract_status"]')?.value || '';
                 
                 if (extractStatus === 'المقاول') {

@@ -709,14 +709,14 @@
                                 </div>
                             </div>
 
-                            <!-- المبلغ المتبقي عند العميل شامل الضريبة -->
+                            <!-- المبلغ المتبقي عند العميل شامل الضريبة (بدون ضريبة الدفعة الأولى) -->
                             <div class="col-md-1-5">
                                 <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); cursor: pointer;" data-bs-toggle="modal" data-bs-target="#remainingAmountDetailsModal">
                                     <div class="card-body p-1 text-white">
                                         <div class="d-flex justify-content-between align-items-center">
                                             <div>
                                                 <h6 class="mb-1 opacity-75" style="font-size: 0.6rem;">المبلغ المتبقي عند العميل شامل الضريبة</h6>
-                                                <h6 class="mb-0 fw-bold" style="font-size: 0.75rem;">{{ number_format($statistics['remainingAmount'], 2) }}</h6>
+                                                <h6 class="mb-0 fw-bold" style="font-size: 0.75rem;">{{ number_format($statistics['remainingAmountWithoutFirstPaymentTax'], 2) }}</h6>
                                                 <small class="opacity-75" style="font-size: 0.6rem;">ريال سعودي</small>
                                             </div>
                                             <div class="bg-white bg-opacity-25 p-1 rounded-circle" style="cursor: pointer;">
@@ -2809,14 +2809,14 @@ body.modal-open {
                         </div>
                     </div>
 
-                    <!-- إجمالي المتبقي -->
+                    <!-- إجمالي المتبقي (شامل ضريبة الدفعة الأولى) -->
                     <div class="col-md-12">
                         <div class="alert alert-info mb-0">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
                                     <h5 class="mb-0">
                                         <i class="fas fa-calculator me-2"></i>
-                                        إجمالي المبلغ المتبقي عند العميل
+                                        إجمالي المبلغ المتبقي عند العميل (شامل ضريبة الدفعة الأولى)
                                     </h5>
                                 </div>
                                 <div>
@@ -2880,38 +2880,44 @@ function calculateRemainingAmountDetails() {
             const paymentTypeCell = row.querySelector('[data-field="payment_type"]');
             const paymentType = paymentTypeCell ? (paymentTypeCell.value || paymentTypeCell.textContent.trim()) : '';
             
+            // حساب القيمة بدون طرح ضريبة الدفعة الأولى
+            // net_extract_value متطروح منه first_payment_tax، فنضيفها تاني
             const netVal = netExtractCell ? (parseFloat(netExtractCell.textContent) || 0) : 0;
+            const firstPaymentTaxCell = row.querySelector('[data-field="first_payment_tax"]');
+            const taxVal = firstPaymentTaxCell ? (parseFloat(firstPaymentTaxCell.value || firstPaymentTaxCell.textContent) || 0) : 0;
+            
+            // القيمة الصافية بدون طرح ضريبة الدفعة الأولى
+            const netValWithoutFirstPaymentTax = netVal + taxVal;
             
             if (paymentType === 'المقاول') {
-                contractorAmount += netVal;
+                contractorAmount += netValWithoutFirstPaymentTax;
             } else if (paymentType === 'ادارة الكهرباء') {
-                electricityAmount += netVal;
+                electricityAmount += netValWithoutFirstPaymentTax;
             } else if (paymentType === 'المالية') {
-                financeAmount += netVal;
+                financeAmount += netValWithoutFirstPaymentTax;
             } else if (paymentType === 'الخزينة') {
-                treasuryAmount += netVal;
+                treasuryAmount += netValWithoutFirstPaymentTax;
             }
             
-            // ضريبة الدفعة الأولى
-            const firstPaymentTaxCell = row.querySelector('[data-field="first_payment_tax"]');
-            if (firstPaymentTaxCell) {
-                const taxVal = parseFloat(firstPaymentTaxCell.value || firstPaymentTaxCell.textContent) || 0;
+            // جمع ضريبة الدفعة الأولى بشكل منفصل
                 firstPaymentTax += taxVal;
-            }
         }
     });
     
-    // حساب الإجمالي المتبقي
-    const totalRemaining = contractorAmount + electricityAmount + financeAmount + treasuryAmount + firstPaymentTax;
+    // حساب الإجمالي المتبقي (بدون ضريبة الدفعة الأولى للكارت العلوي)
+    const totalRemainingWithoutTax = contractorAmount + electricityAmount + financeAmount + treasuryAmount;
+    
+    // حساب الإجمالي المتبقي (مع ضريبة الدفعة الأولى للكارت السفلي)
+    const totalRemainingWithTax = totalRemainingWithoutTax + firstPaymentTax;
     
     // تحديث القيم في الـ modal
-    document.getElementById('modal_total_remaining_header').textContent = formatNumber(totalRemaining);
+    document.getElementById('modal_total_remaining_header').textContent = formatNumber(totalRemainingWithoutTax);
     document.getElementById('modal_contractor_amount').textContent = formatNumber(contractorAmount);
     document.getElementById('modal_electricity_amount').textContent = formatNumber(electricityAmount);
     document.getElementById('modal_finance_amount').textContent = formatNumber(financeAmount);
     document.getElementById('modal_treasury_amount').textContent = formatNumber(treasuryAmount);
     document.getElementById('modal_first_payment_tax').textContent = formatNumber(firstPaymentTax);
-    document.getElementById('modal_total_remaining').textContent = formatNumber(totalRemaining);
+    document.getElementById('modal_total_remaining').textContent = formatNumber(totalRemainingWithTax);
 }
 
 // وظيفة عرض الإشعارات
