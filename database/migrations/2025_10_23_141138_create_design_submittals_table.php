@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('project_id')->constrained('projects')->onDelete('cascade');
             $table->string('family')->nullable();
             $table->string('description_code')->nullable();
+            $table->string('rev')->nullable();
             $table->text('description')->nullable();
             $table->string('last_status')->nullable();
             $table->date('submitting_date')->nullable();
@@ -23,7 +24,6 @@ return new class extends Migration
             $table->enum('reply_status', ['Total Submittals', 'Approved', 'Approved With Note', 'Comments', 'Under Review', 'Cancelled'])->nullable();
             $table->text('notes')->nullable();
             $table->timestamps();
-            $table->string('rev')->nullable()->after('description_code');
         });
     }
 
@@ -33,6 +33,5 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('design_submittals');
-        $table->dropColumn('rev');
     }
 };
