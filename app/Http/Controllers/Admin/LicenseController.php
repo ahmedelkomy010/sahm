@@ -2776,9 +2776,9 @@ class LicenseController extends Controller
             $request->validate([
                 'license_id' => 'required|exists:licenses,id',
                 'test_field' => 'required|string',
-                'file' => 'required|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:200' // 200 KB max
+                'file' => 'required|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:350' // 350 KB max
             ], [
-                'file.max' => 'حجم ملف المختبر يجب أن لا يتجاوز 200 كيلوبايت'
+                'file.max' => 'حجم ملف المختبر يجب أن لا يتجاوز 350 كيلوبايت'
             ]);
 
             $license = License::findOrFail($request->license_id);

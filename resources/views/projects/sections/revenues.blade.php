@@ -151,7 +151,7 @@
             </div>
 
             <!-- المبلغ المتبقي عند العميل -->
-            <div class="bg-white rounded-xl shadow-lg p-4 border-t-4 border-orange-500 hover:shadow-xl transition-all duration-300">
+            <div class="bg-white rounded-xl shadow-lg p-4 border-t-4 border-orange-500 hover:shadow-xl transition-all duration-300 cursor-pointer" onclick="showRemainingDetailsModal()" style="transition: all 0.3s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
                 <div class="flex items-center justify-between mb-2">
                     <svg class="w-8 h-8 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
@@ -159,6 +159,9 @@
                 </div>
                 <p class="text-gray-600 text-xs mb-1"> المبلغ المتبقي <br>عند العميل شامل الضريبة</p>
                 <p class="text-2xl font-bold text-gray-800" id="stat_remaining_amount">0.00</p>
+                <p class="text-gray-500 text-xs mt-2">
+                    <i class="fas fa-info-circle"></i> اضغط للتفاصيل
+                </p>
             </div>
         </div>
 
@@ -681,6 +684,100 @@
             </div>
         </div>
 
+<!-- Modal: تفاصيل المبلغ المتبقي -->
+<div class="modal fade" id="remainingDetailsModal" tabindex="-1" aria-labelledby="remainingDetailsModalLabel" aria-hidden="true" data-bs-backdrop="false">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 700px;">
+        <div class="modal-content" style="border-radius: 16px; border: none; box-shadow: 0 10px 40px rgba(0,0,0,0.2); position: relative; z-index: 9999;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%); color: white; border-radius: 16px 16px 0 0;">
+                <h5 class="modal-title" id="remainingDetailsModalLabel">
+                    <i class="fas fa-chart-pie me-2"></i>
+                    تفاصيل المبلغ المتبقي عند العميل
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" style="padding: 1.5rem;">
+                <div class="row g-2">
+                    <!-- عند المقاول -->
+                    <div class="col-md-6">
+                        <div class="card" style="border: 2px solid #f59e0b; border-radius: 10px; background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);">
+                            <div class="card-body text-center py-2 px-2">
+                                <div style="font-size: 1.5rem; margin-bottom: 0.25rem;">
+                                    <i class="fas fa-user-tie" style="color: #f59e0b;"></i>
+                                </div>
+                                <h6 class="fw-bold mb-1" style="color: #78350f; font-size: 0.9rem;">عند المقاول</h6>
+                                <div class="fs-4 fw-bold" style="color: #b45309;" id="contractorAmount">0.00</div>
+                                <small class="text-muted" style="font-size: 0.75rem;">ريال</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- عند إدارة الكهرباء -->
+                    <div class="col-md-6">
+                        <div class="card" style="border: 2px solid #3b82f6; border-radius: 10px; background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);">
+                            <div class="card-body text-center py-2 px-2">
+                                <div style="font-size: 1.5rem; margin-bottom: 0.25rem;">
+                                    <i class="fas fa-bolt" style="color: #3b82f6;"></i>
+                                </div>
+                                <h6 class="fw-bold mb-1" style="color: #1e3a8a; font-size: 0.9rem;">عند إدارة الكهرباء</h6>
+                                <div class="fs-4 fw-bold" style="color: #1d4ed8;" id="electricityAmount">0.00</div>
+                                <small class="text-muted" style="font-size: 0.75rem;">ريال</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- عند المالية -->
+                    <div class="col-md-6">
+                        <div class="card" style="border: 2px solid #10b981; border-radius: 10px; background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);">
+                            <div class="card-body text-center py-2 px-2">
+                                <div style="font-size: 1.5rem; margin-bottom: 0.25rem;">
+                                    <i class="fas fa-coins" style="color: #10b981;"></i>
+                                </div>
+                                <h6 class="fw-bold mb-1" style="color: #064e3b; font-size: 0.9rem;">عند المالية</h6>
+                                <div class="fs-4 fw-bold" style="color: #047857;" id="financeAmount">0.00</div>
+                                <small class="text-muted" style="font-size: 0.75rem;">ريال</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- عند الخزينة -->
+                    <div class="col-md-6">
+                        <div class="card" style="border: 2px solid #8b5cf6; border-radius: 10px; background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%);">
+                            <div class="card-body text-center py-2 px-2">
+                                <div style="font-size: 1.5rem; margin-bottom: 0.25rem;">
+                                    <i class="fas fa-university" style="color: #8b5cf6;"></i>
+                                </div>
+                                <h6 class="fw-bold mb-1" style="color: #4c1d95; font-size: 0.9rem;">عند الخزينة</h6>
+                                <div class="fs-4 fw-bold" style="color: #6d28d9;" id="treasuryAmount">0.00</div>
+                                <small class="text-muted" style="font-size: 0.75rem;">ريال</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- المجموع الكلي -->
+                <div class="mt-3">
+                    <div class="card" style="border: 2px solid #ea580c; border-radius: 10px; background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);">
+                        <div class="card-body text-center py-2">
+                            <h6 class="fw-bold mb-1" style="color: #9a3412; font-size: 0.95rem;">
+                                <i class="fas fa-calculator me-1"></i>
+                                المجموع الإجمالي المتبقي
+                            </h6>
+                            <div class="fs-3 fw-bold" style="color: #ea580c;" id="totalRemainingModal">0.00</div>
+                            <small class="text-muted" style="font-size: 0.75rem;">ريال سعودي (شامل الضريبة)</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer" style="border-top: 2px solid #f3f4f6;">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>
+                    إغلاق
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @push('scripts')
 <script>
 // متغير للتحقق من صلاحية التعديل
@@ -1186,6 +1283,61 @@ function updateTurnkeyStatistics() {
     document.getElementById('stat_net_value').textContent = formatter.format(stats.totalNetValue);
     document.getElementById('stat_total_payments').textContent = formatter.format(stats.totalPayments);
     document.getElementById('stat_remaining_amount').textContent = formatter.format(remainingAmount);
+}
+
+// وظيفة إظهار نافذة تفاصيل المبلغ المتبقي
+function showRemainingDetailsModal() {
+    // حساب المبالغ المتبقية حسب موقف المستخلص
+    let contractorAmount = 0;
+    let electricityAmount = 0;
+    let financeAmount = 0;
+    let treasuryAmount = 0;
+    
+    const tbody = document.getElementById('turnkeyRevenuesTableBody');
+    const rows = tbody.querySelectorAll('tr[data-id]');
+    
+    rows.forEach(row => {
+        const id = row.dataset.id;
+        if (id && id !== 'new') {
+            // حساب صافي القيمة
+            const extractValue = parseFloat(row.querySelector('[data-field="extract_value"]')?.value) || 0;
+            const taxValue = parseFloat(row.querySelector('[data-field="tax_value"]')?.value) || 0;
+            const penalties = parseFloat(row.querySelector('[data-field="penalties"]')?.value) || 0;
+            const netValue = extractValue + taxValue - penalties;
+            
+            // جلب حالة الدفع
+            const paymentStatus = row.querySelector('[data-field="payment_status"]')?.value || '';
+            
+            // إذا كان غير مدفوع، احسب المبلغ المتبقي حسب الموقف
+            if (paymentStatus === 'unpaid' || paymentStatus === 'pending' || paymentStatus === '') {
+                const extractStatus = row.querySelector('[data-field="extract_status"]')?.value || '';
+                
+                if (extractStatus === 'المقاول') {
+                    contractorAmount += netValue;
+                } else if (extractStatus === 'ادارة الكهرباء') {
+                    electricityAmount += netValue;
+                } else if (extractStatus === 'المالية') {
+                    financeAmount += netValue;
+                } else if (extractStatus === 'الخزينة') {
+                    treasuryAmount += netValue;
+                }
+            }
+        }
+    });
+    
+    // المجموع الكلي
+    const totalRemaining = contractorAmount + electricityAmount + financeAmount + treasuryAmount;
+    
+    // تحديث قيم المودال
+    document.getElementById('contractorAmount').textContent = contractorAmount.toFixed(2);
+    document.getElementById('electricityAmount').textContent = electricityAmount.toFixed(2);
+    document.getElementById('financeAmount').textContent = financeAmount.toFixed(2);
+    document.getElementById('treasuryAmount').textContent = treasuryAmount.toFixed(2);
+    document.getElementById('totalRemainingModal').textContent = totalRemaining.toFixed(2);
+    
+    // إظهار المودال
+    const modal = new bootstrap.Modal(document.getElementById('remainingDetailsModal'));
+    modal.show();
 }
 </script>
 @endpush

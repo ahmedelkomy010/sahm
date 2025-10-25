@@ -355,7 +355,7 @@
         </div>
 
         <div class="col-md-3 col-lg-2">
-        <div class="stats-card">
+        <div class="stats-card" onclick="showRemainingDetailsModal()" style="cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
             <div class="stats-label">
                     <svg style="width: 20px; height: 20px; display: inline-block; color: #ea580c; margin-bottom: 4px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -363,6 +363,9 @@
                     <div style="font-size: 0.85rem;">المبلغ المتبقي عند العميل<br>شامل الضريبة</div>
                 </div>
                 <div class="stats-value" style="font-size: 1.5rem; color: #ea580c;" id="remainingAmount">0.00 ريال</div>
+                <div style="font-size: 0.7rem; color: #6b7280; margin-top: 5px;">
+                    <i class="fas fa-info-circle"></i> اضغط للتفاصيل
+                </div>
             </div>
         </div>
 
@@ -407,6 +410,8 @@
             </tbody>
         </table>
     </div>
+
+    
 </div>
 @endsection
 
@@ -789,6 +794,51 @@
         document.getElementById('paidAmount').textContent = paidAmount.toFixed(2) + ' ريال';
         document.getElementById('remainingAmount').textContent = remainingAmount.toFixed(2) + ' ريال';
     }
+    
+    // وظيفة إظهار نافذة تفاصيل المبلغ المتبقي
+    // function showRemainingDetailsModal() {
+    //     // حساب المبالغ المتبقية حسب حالة المستخلص
+    //     let contractorAmount = 0;
+    //     let electricityAmount = 0;
+    //     let financeAmount = 0;
+    //     let treasuryAmount = 0;
+        
+    //     revenues.forEach(revenue => {
+    //         // حساب المبلغ المتبقي لكل مستخلص (صافي القيمة - المدفوع)
+    //         const netValue = parseFloat(revenue.net_value) || 0;
+    //         const paidAmount = revenue.payment_status === 'paid' ? (parseFloat(revenue.payment_amount) || 0) : 0;
+    //         const remainingForThisRevenue = netValue - paidAmount;
+            
+    //         // إذا كان المبلغ المتبقي موجب، أضفه للفئة المناسبة
+    //         if (remainingForThisRevenue > 0) {
+    //             const status = revenue.extract_status || '';
+                
+    //             if (status === 'المقاول') {
+    //                 contractorAmount += remainingForThisRevenue;
+    //             } else if (status === 'ادارة الكهرباء') {
+    //                 electricityAmount += remainingForThisRevenue;
+    //             } else if (status === 'المالية') {
+    //                 financeAmount += remainingForThisRevenue;
+    //             } else if (status === 'الخزينة') {
+    //                 treasuryAmount += remainingForThisRevenue;
+    //             }
+    //         }
+    //     });
+        
+    //     // المجموع الكلي
+    //     const totalRemaining = contractorAmount + electricityAmount + financeAmount + treasuryAmount;
+        
+    //     // تحديث قيم المودال
+    //     document.getElementById('contractorAmount').textContent = contractorAmount.toFixed(2);
+    //     document.getElementById('electricityAmount').textContent = electricityAmount.toFixed(2);
+    //     document.getElementById('financeAmount').textContent = financeAmount.toFixed(2);
+    //     document.getElementById('treasuryAmount').textContent = treasuryAmount.toFixed(2);
+    //     document.getElementById('totalRemainingModal').textContent = totalRemaining.toFixed(2);
+        
+    //     // إظهار المودال
+    //     const modal = new bootstrap.Modal(document.getElementById('remainingDetailsModal'));
+    //     modal.show();
+    // }
     
     // Initialize
     document.addEventListener('DOMContentLoaded', function() {

@@ -5720,6 +5720,75 @@ class WorkOrderController extends Controller
     }
 
     /**
+     * تحديث بيانات الإيراد
+     */
+    public function updateRevenue(Request $request, $id)
+    {
+        try {
+            $revenue = \App\Models\Revenue::find($id);
+            
+            if (!$revenue) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'السجل غير موجود'
+                ], 404);
+            }
+
+            // التحقق من صلاحية التعديل
+            $project = $revenue->city == 'المدينة المنورة' ? 'madinah' : 'riyadh';
+            $editPermission = $project == 'riyadh' ? 'riyadh_edit_revenues' : 'madinah_edit_revenues';
+            
+            if (!auth()->user()->is_admin && !in_array($editPermission, auth()->user()->permissions ?? [])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'ليس لديك صلاحية لتعديل بيانات الإيرادات'
+                ], 403);
+            }
+
+            $data = $request->validate([
+                'extract_number' => 'nullable|string|max:255',
+                'office' => 'nullable|string|max:255',
+                'extract_type' => 'nullable|string|max:255',
+                'po_number' => 'nullable|string|max:255',
+                'invoice_number' => 'nullable|string|max:255',
+                'extract_value' => 'nullable|numeric',
+                'tax_percentage' => 'nullable|string|max:255',
+                'penalties' => 'nullable|numeric',
+                'first_payment_tax' => 'nullable|numeric',
+                'extract_date' => 'nullable|date',
+                'year' => 'nullable|string|max:255',
+                'payment_type' => 'nullable|string|max:255',
+                'reference_number' => 'nullable|string|max:255',
+                'payment_date' => 'nullable|date',
+                'payment_value' => 'nullable|numeric',
+                'extract_status' => 'nullable|string|max:255',
+            ]);
+
+            // حساب القيم المشتقة
+            $extractValue = floatval($data['extract_value'] ?? $revenue->extract_value ?? 0);
+            $data['tax_value'] = $extractValue * 0.15;
+            $data['net_extract_value'] = $extractValue + $data['tax_value'] - floatval($data['penalties'] ?? 0) - floatval($data['first_payment_tax'] ?? 0);
+
+            // تحديث البيانات
+            $revenue->update($data);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'تم تحديث البيانات بنجاح',
+                'data' => $revenue->fresh()
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('خطأ في تحديث الإيراد: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ في تحديث البيانات: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * حذف بيانات الإيرادات
      */
     public function deleteRevenue($id)

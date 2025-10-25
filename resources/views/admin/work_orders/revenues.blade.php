@@ -1004,25 +1004,25 @@
                                             <div class="editable-field" contenteditable="false" data-field="contract_number" style="background-color: #e9ecef; cursor: default; font-weight: bold;">{{ $revenue->contract_number ?: (isset($project) && $project == 'madinah' ? '4400019706' : '4400015737') }}</div>
                                         </td>
                                         <td>
-                                            <input type="number" class="form-control" data-field="extract_number" placeholder="رقم المستخلص" value="{{ $revenue->extract_number }}" {{ !$canEdit ? 'readonly disabled style=background-color:#f8f9fa;cursor:not-allowed;' : '' }}>
+                                            <input type="number" class="form-control editable-input" data-field="extract_number" placeholder="رقم المستخلص" value="{{ $revenue->extract_number }}" style="min-width: 150px; background-color:#f8f9fa;cursor:not-allowed;" readonly disabled>
                                         </td>
                                         <td>
-                                            <div class="editable-field" contenteditable="{{ $canEdit ? 'true' : 'false' }}" data-field="office" placeholder="المكتب" style="{{ !$canEdit ? 'background-color:#f8f9fa;cursor:not-allowed;' : '' }}">{{ $revenue->office }}</div>
+                                            <div class="editable-field editable-cell" contenteditable="false" data-field="office" placeholder="المكتب" style="background-color:#f8f9fa;cursor:not-allowed;">{{ $revenue->office }}</div>
                                         </td>
                                         <td>
-                                            <div class="editable-field" contenteditable="{{ $canEdit ? 'true' : 'false' }}" data-field="extract_type" placeholder="نوع المستخلص" style="{{ !$canEdit ? 'background-color:#f8f9fa;cursor:not-allowed;' : '' }}">{{ $revenue->extract_type }}</div>
+                                            <div class="editable-field editable-cell" contenteditable="false" data-field="extract_type" placeholder="نوع المستخلص" style="background-color:#f8f9fa;cursor:not-allowed;">{{ $revenue->extract_type }}</div>
                                         </td>
                                         <td>
-                                            <div class="editable-field" contenteditable="{{ $canEdit ? 'true' : 'false' }}" data-field="po_number" placeholder="رقم PO" style="{{ !$canEdit ? 'background-color:#f8f9fa;cursor:not-allowed;' : '' }}">{{ $revenue->po_number }}</div>
+                                            <div class="editable-field editable-cell" contenteditable="false" data-field="po_number" placeholder="رقم PO" style="background-color:#f8f9fa;cursor:not-allowed;">{{ $revenue->po_number }}</div>
                                         </td>
                                         <td>
-                                            <div class="editable-field" contenteditable="{{ $canEdit ? 'true' : 'false' }}" data-field="invoice_number" placeholder="رقم الفاتورة" style="{{ !$canEdit ? 'background-color:#f8f9fa;cursor:not-allowed;' : '' }}">{{ $revenue->invoice_number }}</div>
+                                            <div class="editable-field editable-cell" contenteditable="false" data-field="invoice_number" placeholder="رقم الفاتورة" style="background-color:#f8f9fa;cursor:not-allowed;">{{ $revenue->invoice_number }}</div>
                                         </td>
                                         <td>
-                                            <input type="number" step="0.01" class="form-control" data-field="extract_value" placeholder="إجمالي قيمة المستخلصات" value="{{ $revenue->extract_value }}" {{ !$canEdit ? 'readonly disabled style=background-color:#f8f9fa;cursor:not-allowed;' : '' }}>
+                                            <input type="number" step="0.01" class="form-control editable-input" data-field="extract_value" placeholder="إجمالي قيمة المستخلصات" value="{{ $revenue->extract_value }}" readonly disabled style="background-color:#f8f9fa;cursor:not-allowed;">
                                         </td>
                                         <td>
-                                            <select class="form-control" data-field="tax_percentage" {{ !$canEdit ? 'disabled style=background-color:#f8f9fa;cursor:not-allowed;' : '' }}>
+                                            <select class="form-control editable-select" data-field="tax_percentage" disabled style="background-color:#f8f9fa;cursor:not-allowed;">
                                                 <option value="UDS" {{ $revenue->tax_percentage === 'UDS' ? 'selected' : '' }}>UDS</option>
                                                 <option value="SAP" {{ $revenue->tax_percentage === 'SAP' ? 'selected' : '' }}>SAP</option>
                                             </select>
@@ -1031,22 +1031,22 @@
                                             <div class="editable-field" contenteditable="false" data-field="tax_value" placeholder="قيمة الضريبة" style="background-color: #fef3c7; font-weight: bold; cursor: not-allowed;" title="محسوب تلقائياً: قيمة المستخلص × 15%">{{ $revenue->tax_value }}</div>
                                         </td>
                                         <td>
-                                            <input type="number" step="0.01" class="form-control" data-field="penalties" placeholder="الغرامات" value="{{ $revenue->penalties }}" {{ !$canEdit ? 'readonly disabled style=background-color:#f8f9fa;cursor:not-allowed;' : '' }}>
+                                            <input type="number" step="0.01" class="form-control editable-input" data-field="penalties" placeholder="الغرامات" value="{{ $revenue->penalties }}" readonly disabled style="background-color:#f8f9fa;cursor:not-allowed;">
                                         </td>
                                         <td>
-                                            <input type="number" step="0.01" class="form-control" data-field="first_payment_tax" placeholder="ضريبة الدفعة الأولى" value="{{ $revenue->first_payment_tax }}" {{ !$canEdit ? 'readonly disabled style=background-color:#f8f9fa;cursor:not-allowed;' : '' }}>
+                                            <input type="number" step="0.01" class="form-control editable-input" data-field="first_payment_tax" placeholder="ضريبة الدفعة الأولى" value="{{ $revenue->first_payment_tax }}" readonly disabled style="background-color:#f8f9fa;cursor:not-allowed;">
                                         </td>
                                         <td>
                                             <div class="editable-field" contenteditable="false" data-field="net_extract_value" placeholder="صافي قيمة المستخلص" style="background-color: #fef3c7; font-weight: bold; cursor: not-allowed;" title="محسوب تلقائياً: قيمة المستخلص + الضريبة - الغرامات">{{ $revenue->net_extract_value }}</div>
                                         </td>
                                         <td class="date-col">
-                                            <input type="date" class="date-input" data-field="extract_date" value="{{ $revenue->extract_date ? $revenue->extract_date->format('Y-m-d') : '' }}" placeholder="تاريخ الإعداد" {{ !$canEdit ? 'readonly disabled style=background-color:#f8f9fa;cursor:not-allowed;' : '' }}>
+                                            <input type="date" class="date-input editable-input" data-field="extract_date" value="{{ $revenue->extract_date ? $revenue->extract_date->format('Y-m-d') : '' }}" placeholder="تاريخ الإعداد" readonly disabled style="background-color:#f8f9fa;cursor:not-allowed;">
                                         </td>
                                         <td>
-                                            <div class="editable-field" contenteditable="{{ $canEdit ? 'true' : 'false' }}" data-field="year" placeholder="العام" style="{{ !$canEdit ? 'background-color:#f8f9fa;cursor:not-allowed;' : '' }}">{{ $revenue->year }}</div>
+                                            <div class="editable-field editable-cell" contenteditable="false" data-field="year" placeholder="العام" style="background-color:#f8f9fa;cursor:not-allowed;">{{ $revenue->year }}</div>
                                         </td>
                                         <td>
-                                            <select class="form-control payment-type-select" data-field="payment_type" {{ !$canEdit ? 'disabled style=background-color:#f8f9fa;cursor:not-allowed;' : '' }}>
+                                            <select class="form-control payment-type-select editable-select" data-field="payment_type" disabled style="background-color:#f8f9fa;cursor:not-allowed;">
                                                 <option value="المقاول" {{ $revenue->payment_type == 'المقاول' ? 'selected' : '' }}>المقاول</option>
                                                 <option value="ادارة الكهرباء" {{ $revenue->payment_type == 'ادارة الكهرباء' ? 'selected' : '' }}>ادارة الكهرباء</option>
                                                 <option value="المالية" {{ $revenue->payment_type == 'المالية' ? 'selected' : '' }}>المالية</option>
@@ -1055,22 +1055,25 @@
                                             </select>
                                         </td>
                                         <td>
-                                            <input type="number" class="form-control" data-field="reference_number" placeholder="الرقم المرجعي" value="{{ $revenue->reference_number }}" {{ !$canEdit ? 'readonly disabled style=background-color:#f8f9fa;cursor:not-allowed;' : '' }}>
+                                            <input type="number" class="form-control editable-input" data-field="reference_number" placeholder="الرقم المرجعي" value="{{ $revenue->reference_number }}" readonly disabled style="background-color:#f8f9fa;cursor:not-allowed;">
                                         </td>
                                         <td class="date-col">
-                                            <input type="date" class="date-input" data-field="payment_date" value="{{ $revenue->payment_date ? $revenue->payment_date->format('Y-m-d') : '' }}" placeholder="تاريخ الصرف" {{ !$canEdit ? 'readonly disabled style=background-color:#f8f9fa;cursor:not-allowed;' : '' }}>
+                                            <input type="date" class="date-input editable-input" data-field="payment_date" value="{{ $revenue->payment_date ? $revenue->payment_date->format('Y-m-d') : '' }}" placeholder="تاريخ الصرف" readonly disabled style="background-color:#f8f9fa;cursor:not-allowed;">
                                         </td>
                                         <td class="payment-value-col">
-                                            <input type="number" step="0.01" class="form-control" data-field="payment_value" placeholder="قيمة الصرف" value="{{ $revenue->payment_value }}" {{ !$canEdit ? 'readonly disabled style=background-color:#f8f9fa;cursor:not-allowed;' : '' }}>
+                                            <input type="number" step="0.01" class="form-control editable-input" data-field="payment_value" placeholder="قيمة الصرف" value="{{ $revenue->payment_value }}" readonly disabled style="background-color:#f8f9fa;cursor:not-allowed;">
                                         </td>
                                         <td>
-                                            <select class="form-control" data-field="extract_status" {{ !$canEdit ? 'disabled style=background-color:#f8f9fa;cursor:not-allowed;' : '' }}>
+                                            <select class="form-control editable-select" data-field="extract_status" disabled style="background-color:#f8f9fa;cursor:not-allowed;">
                                                 <option value="مدفوع" {{ $revenue->extract_status == 'مدفوع' ? 'selected' : '' }}>مدفوع</option>
                                                 <option value="غير مدفوع" {{ $revenue->extract_status == 'غير مدفوع' ? 'selected' : '' }}>غير مدفوع</option>
                                             </select>
                                         </td>
                                         <td>
-                                            <div class="action-buttons d-flex gap-1">
+                                            <div class="action-buttons d-flex gap-1 flex-wrap">
+                                                <button type="button" class="btn btn-warning btn-sm edit-row-btn" onclick="toggleEditRow({{ $loop->iteration }}, {{ $revenue->id }})" title="تعديل" style="padding: 0.25rem 0.4rem;">
+                                                    <i class="fas fa-edit" style="font-size: 0.8rem;"></i>
+                                                </button>
                                                 @if($revenue->attachment_path)
                                                 <a href="{{ asset('storage/' . $revenue->attachment_path) }}" target="_blank" class="btn btn-info btn-sm" title="عرض المرفق" style="padding: 0.25rem 0.4rem;">
                                                     <i class="fas fa-eye" style="font-size: 0.8rem;"></i>
@@ -1201,7 +1204,7 @@ function addNewRow() {
         <td><div class="editable-field" contenteditable="false" data-field="client_name" style="background-color: #e9ecef; cursor: default;">الشركة السعودية للكهرباء</div></td>
         <td><div class="editable-field" contenteditable="false" data-field="project_area" style="background-color: #e9ecef; cursor: default;">@if(isset($project) && $project == 'madinah')العقد الموحد - المدينة المنورة @else العقد الموحد - الرياض @endif</div></td>
         <td><div class="editable-field" contenteditable="false" data-field="contract_number" style="background-color: #e9ecef; cursor: default; font-weight: bold;">@if(isset($project) && $project == 'madinah')4400019706 @else 4400015737 @endif</div></td>
-        <td><input type="number" class="form-control" data-field="extract_number" placeholder="رقم المستخلص"></td>
+        <td><input type="number" class="form-control" data-field="extract_number" placeholder="رقم المستخلص" style="min-width: 150px;"></td>
         <td><div class="editable-field" contenteditable="true" data-field="office" placeholder="المكتب"></div></td>
         <td><div class="editable-field" contenteditable="true" data-field="extract_type" placeholder="نوع المستخلص"></div></td>
         <td><div class="editable-field" contenteditable="true" data-field="po_number" placeholder="رقم PO"></div></td>
@@ -2909,6 +2912,186 @@ function calculateRemainingAmountDetails() {
     document.getElementById('modal_treasury_amount').textContent = formatNumber(treasuryAmount);
     document.getElementById('modal_first_payment_tax').textContent = formatNumber(firstPaymentTax);
     document.getElementById('modal_total_remaining').textContent = formatNumber(totalRemaining);
+}
+
+// وظيفة عرض الإشعارات
+function showNotification(message, type = 'success') {
+    // إنشاء عنصر الإشعار
+    const notification = document.createElement('div');
+    notification.className = `alert alert-${type === 'success' ? 'success' : 'danger'} alert-dismissible fade show`;
+    notification.style.position = 'fixed';
+    notification.style.top = '20px';
+    notification.style.right = '20px';
+    notification.style.zIndex = '9999';
+    notification.style.minWidth = '300px';
+    notification.style.boxShadow = '0 4px 6px rgba(0,0,0,0.1)';
+    
+    notification.innerHTML = `
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        <strong>${type === 'success' ? '✓' : '✗'}</strong> ${message}
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // إزالة الإشعار بعد 3 ثواني
+    setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
+
+// وظيفة تفعيل التعديل للصف
+let editingRows = {};
+
+function toggleEditRow(rowId, revenueId) {
+    const row = document.querySelector(`tr[data-row-id="${rowId}"]`);
+    if (!row) return;
+    
+    const editBtn = row.querySelector('.edit-row-btn');
+    if (!editBtn) return;
+    
+    // التحقق من حالة التعديل
+    const isEditing = editingRows[rowId];
+    
+    if (!isEditing) {
+        // تفعيل وضع التعديل
+        enableRowEditing(row, rowId, revenueId, editBtn);
+    } else {
+        // حفظ التعديلات وإنهاء التعديل
+        saveAndDisableRowEditing(row, rowId, revenueId, editBtn);
+    }
+}
+
+function enableRowEditing(row, rowId, revenueId, editBtn) {
+    // تفعيل الحقول النصية القابلة للتعديل
+    const editableCells = row.querySelectorAll('.editable-cell');
+    editableCells.forEach(cell => {
+        cell.setAttribute('contenteditable', 'true');
+        cell.style.backgroundColor = '#ffffff';
+        cell.style.cursor = 'text';
+    });
+    
+    // تفعيل حقول الإدخال
+    const inputs = row.querySelectorAll('.editable-input:not([data-field="tax_value"]):not([data-field="net_extract_value"])');
+    inputs.forEach(input => {
+        input.removeAttribute('readonly');
+        input.removeAttribute('disabled');
+        input.style.backgroundColor = '#ffffff';
+        input.style.cursor = 'text';
+    });
+    
+    // تفعيل القوائم المنسدلة
+    const selects = row.querySelectorAll('.editable-select');
+    selects.forEach(select => {
+        select.removeAttribute('disabled');
+        select.style.backgroundColor = '#ffffff';
+        select.style.cursor = 'pointer';
+    });
+    
+    // تغيير شكل الزر
+    editBtn.innerHTML = '<i class="fas fa-save" style="font-size: 0.8rem;"></i>';
+    editBtn.classList.remove('btn-warning');
+    editBtn.classList.add('btn-primary');
+    editBtn.title = 'حفظ';
+    
+    editingRows[rowId] = true;
+}
+
+function saveAndDisableRowEditing(row, rowId, revenueId, editBtn) {
+    // تغيير شكل الزر للتحميل
+    editBtn.innerHTML = '<i class="fas fa-spinner fa-spin" style="font-size: 0.8rem;"></i>';
+    editBtn.disabled = true;
+    
+    // جمع البيانات
+    const data = {};
+    
+    // جمع الحقول القابلة للتعديل
+    const fields = ['extract_number', 'office', 'extract_type', 'po_number', 'invoice_number', 
+                   'extract_value', 'tax_percentage', 'penalties', 'first_payment_tax',
+                   'extract_date', 'year', 'payment_type', 'reference_number', 'payment_date', 
+                   'payment_value', 'extract_status'];
+    
+    fields.forEach(fieldName => {
+        const field = row.querySelector(`[data-field="${fieldName}"]`);
+        if (field) {
+            if (field.tagName === 'INPUT' || field.tagName === 'SELECT') {
+                data[fieldName] = field.value;
+            } else {
+                data[fieldName] = field.textContent.trim();
+            }
+        }
+    });
+    
+    // إرسال البيانات للسيرفر
+    fetch(`/admin/work-orders/revenues/${revenueId}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            // عرض رسالة نجاح وإعادة تحميل الصفحة
+            showNotification('تم حفظ التعديلات بنجاح، جاري تحديث الصفحة...', 'success');
+            
+            // إعادة تحميل الصفحة بعد ثانية
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        } else {
+            // في حالة الخطأ، إعادة تحميل الصفحة مباشرة
+            showNotification(result.message || 'حدث خطأ، جاري تحديث الصفحة...', 'error');
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        // في حالة حدوث خطأ في الشبكة، إعادة تحميل الصفحة
+        showNotification('جاري حفظ البيانات وتحديث الصفحة...', 'error');
+        setTimeout(() => {
+            window.location.reload();
+        }, 1500);
+    });
+}
+
+function disableRowEditing(row, rowId, editBtn) {
+    // تعطيل الحقول النصية
+    const editableCells = row.querySelectorAll('.editable-cell');
+    editableCells.forEach(cell => {
+        cell.setAttribute('contenteditable', 'false');
+        cell.style.backgroundColor = '#f8f9fa';
+        cell.style.cursor = 'not-allowed';
+    });
+    
+    // تعطيل حقول الإدخال
+    const inputs = row.querySelectorAll('.editable-input');
+    inputs.forEach(input => {
+        input.setAttribute('readonly', 'true');
+        input.setAttribute('disabled', 'true');
+        input.style.backgroundColor = '#f8f9fa';
+        input.style.cursor = 'not-allowed';
+    });
+    
+    // تعطيل القوائم المنسدلة
+    const selects = row.querySelectorAll('.editable-select');
+    selects.forEach(select => {
+        select.setAttribute('disabled', 'true');
+        select.style.backgroundColor = '#f8f9fa';
+        select.style.cursor = 'not-allowed';
+    });
+    
+    // إعادة شكل الزر
+    editBtn.innerHTML = '<i class="fas fa-edit" style="font-size: 0.8rem;"></i>';
+    editBtn.classList.remove('btn-primary');
+    editBtn.classList.add('btn-warning');
+    editBtn.title = 'تعديل';
+    
+    delete editingRows[rowId];
 }
 </script>
 

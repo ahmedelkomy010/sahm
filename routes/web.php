@@ -122,6 +122,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     
     Route::get('work-orders/revenues', [App\Http\Controllers\WorkOrderController::class, 'revenues'])->name('work-orders.revenues');
     Route::post('work-orders/revenues/save', [App\Http\Controllers\WorkOrderController::class, 'saveRevenue'])->name('work-orders.revenues.save');
+    Route::put('work-orders/revenues/{id}', [App\Http\Controllers\WorkOrderController::class, 'updateRevenue'])->name('work-orders.revenues.update');
     Route::post('work-orders/revenues/import', [App\Http\Controllers\WorkOrderController::class, 'importRevenues'])->name('work-orders.revenues.import');
     Route::post('work-orders/revenues/upload-attachment', [App\Http\Controllers\WorkOrderController::class, 'uploadRevenueAttachment'])->name('work-orders.revenues.upload-attachment');
     
