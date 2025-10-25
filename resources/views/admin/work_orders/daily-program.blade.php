@@ -1050,20 +1050,20 @@
                             </td>
                             <td class="text-center align-middle" style="padding: 0.3rem;">
                                 <div class="d-flex flex-column align-items-center gap-1">
-                                    @if($program->execution_completed)
-                                    <a href="{{ route('admin.work-orders.execution', ['workOrder' => $workOrder->id]) }}" 
-                                       class="btn btn-primary btn-sm"
-                                       style="font-size: 0.75rem; padding: 0.3rem 0.5rem;"
-                                       title="إدخال الإنتاجية اليومية">
-                                        <i class="fas fa-tasks"></i>
-                                        التنفيذ
-                                    </a>
-                                    @else
-                                    <span class="text-muted" style="font-size: 0.7rem;">
-                                        <i class="fas fa-lock"></i>
-                                        متاح عند 100%
-                                    </span>
-                                    @endif
+                                @if($program->execution_completed)
+                                    <a href="{{ route('admin.work-orders.execution', ['workOrder' => $workOrder->id, 'date' => $selectedDate]) }}" 
+                                   class="btn btn-primary btn-sm"
+                                   style="font-size: 0.75rem; padding: 0.3rem 0.5rem;"
+                                   title="إدخال الإنتاجية اليومية">
+                                    <i class="fas fa-tasks"></i>
+                                    التنفيذ
+                                </a>
+                                @else
+                                <span class="text-muted" style="font-size: 0.7rem;">
+                                    <i class="fas fa-lock"></i>
+                                    متاح عند 100%
+                                </span>
+                                @endif
                                     <textarea class="form-control form-control-sm notes-field" 
                                               id="execution_notes_{{ $program->id }}"
                                               data-program-id="{{ $program->id }}"
@@ -1267,7 +1267,7 @@
                     </div>
                     <div class="mobile-actions">
                         @if($program->execution_completed)
-                        <a href="{{ route('admin.work-orders.execution', ['workOrder' => $workOrder->id]) }}" 
+                        <a href="{{ route('admin.work-orders.execution', ['workOrder' => $workOrder->id, 'date' => $selectedDate]) }}" 
                            class="btn btn-primary">
                             <i class="fas fa-tasks me-1"></i>
                             إدخال الإنتاجية اليومية

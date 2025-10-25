@@ -4129,7 +4129,7 @@ function deleteExtension(extensionId) {
                                             <div class="col-md-1">
                                                 <label class="form-label fw-bold">المرفق</label>
                                                 <input type="file" class="form-control" id="test_file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" onchange="validateLabTestFile(this)">
-                                                <small class="text-muted">حد أقصى: 200 KB</small>
+                                                <small class="text-muted">حد أقصى: 350 KB</small>
                                             </div>
                                         </div>
                                         <div class="row mt-3">
@@ -5693,9 +5693,9 @@ function calculateTotal() {
 function validateLabTestFile(input) {
     const file = input.files[0];
     if (file) {
-        const maxSize = 200 * 1024; // 200 KB
+        const maxSize = 350 * 1024; // 350 KB
         if (file.size > maxSize) {
-            toastr.error('حجم الملف يتجاوز الحد الأقصى المسموح به (200 كيلوبايت)');
+            toastr.error('حجم الملف يتجاوز الحد الأقصى المسموح به (350 كيلوبايت)');
             input.value = ''; // مسح الملف المختار
             return false;
         }
@@ -9785,6 +9785,7 @@ const DigLicenseApp = createApp({
                 <tr>
                   <th>#</th>
                   <th>رقم شهادة التنسيق</th>
+                  <th>تم الإضافة بواسطة</th>
                   <th>رقم الرخصة</th>
                   <th>نوع الرخصة</th>
                   <th>تاريخ الإصدار</th>
@@ -9801,6 +9802,13 @@ const DigLicenseApp = createApp({
                   <td v-text="index + 1"></td>
                   <td>
                     <span class="badge bg-info" v-text="license.coordination_certificate_number || '-'"></span>
+                  </td>
+                  <td>
+                    <div v-if="license.creator" class="d-flex align-items-center justify-content-center">
+                      <i class="fas fa-user-circle text-primary me-1"></i>
+                      <span class="badge bg-light text-dark" v-text="license.creator.name"></span>
+                    </div>
+                    <span v-else class="text-muted">-</span>
                   </td>
                   <td>
                     <span class="badge bg-primary" v-text="license.license_number"></span>

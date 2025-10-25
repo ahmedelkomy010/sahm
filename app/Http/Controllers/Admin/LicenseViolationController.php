@@ -71,9 +71,22 @@ class LicenseViolationController extends Controller
         try {
             $licenses = License::where('work_order_id', $workOrderId)
                               ->whereNotNull('license_number')
-                              ->select('id', 'license_number', 'license_type', 'issue_date as license_date')
+                              ->with('workOrder:id,execution_status')
+                              ->select('id', 'license_number', 'license_type', 'issue_date as license_date', 'license_end_date', 'extension_end_date', 'license_value', 'work_order_id')
                               ->orderBy('issue_date', 'desc')
-                              ->get();
+                              ->get()
+                              ->map(function($license) {
+                                  return [
+                                      'id' => $license->id,
+                                      'license_number' => $license->license_number,
+                                      'license_type' => $license->license_type ?: 'عادي',
+                                      'license_date' => $license->license_date,
+                                      'license_end_date' => $license->license_end_date,
+                                      'extension_end_date' => $license->extension_end_date,
+                                      'license_value' => $license->license_value,
+                                      'work_order_execution_status' => $license->workOrder ? $license->workOrder->execution_status : null,
+                                  ];
+                              });
             
             return response()->json([
                 'success' => true,

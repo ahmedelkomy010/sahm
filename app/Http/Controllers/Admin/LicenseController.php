@@ -737,7 +737,7 @@ class LicenseController extends Controller
         try {
             // جلب جميع الرخص بدون فلترة للعرض في الجدول مرتبة حسب row_position
             $licenses = License::where('work_order_id', $workOrderId)
-                ->with(['workOrder', 'extensions']) // إضافة العلاقات المطلوبة
+                ->with(['workOrder', 'extensions', 'creator']) // إضافة العلاقات المطلوبة
                 ->orderBy('row_position', 'asc')
                 ->orderBy('created_at', 'desc') // ترتيب ثانوي للرخص التي ليس لها row_position
                 ->get();

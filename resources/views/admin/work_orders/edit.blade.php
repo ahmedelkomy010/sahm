@@ -249,12 +249,20 @@
                                 </div>
 
                                 <div class="form-group mb-3">
-                                    <label for="execution_status" class="form-label fw-bold">حالة تنفيذ أمر العمل</label>
-                                    <select id="execution_status" class="form-select @error('execution_status') is-invalid @enderror" name="execution_status">
-                                        <option value="1" {{ old('execution_status', $workOrder->execution_status) == '1' ? 'selected' : '' }}>جاري العمل بالموقع</option>
-                                        <option value="9" {{ old('execution_status', $workOrder->execution_status) == '9' ? 'selected' : '' }}>تم الالغاء او تحويل امر العمل</option>
-                                        
-                                    </select>
+                                    <label for="execution_status" class="form-label fw-bold">
+                                        حالة تنفيذ أمر العمل
+                                        <small class="text-muted">(للتغيير، قم بتفعيل الحقل أولاً)</small>
+                                    </label>
+                                    <div class="input-group">
+                                        <select id="execution_status_display" class="form-select @error('execution_status') is-invalid @enderror" disabled style="pointer-events: none; background-color: #e9ecef;">
+                                            <option value="1" {{ old('execution_status', $workOrder->execution_status) == '1' ? 'selected' : '' }}>جاري العمل بالموقع</option>
+                                            <option value="9" {{ old('execution_status', $workOrder->execution_status) == '9' ? 'selected' : '' }}>تم الالغاء او تحويل امر العمل</option>
+                                        </select>
+                                        <input type="hidden" id="execution_status" name="execution_status" value="{{ old('execution_status', $workOrder->execution_status) }}">
+                                        <button type="button" class="btn btn-outline-primary" id="toggleExecutionStatus" onclick="toggleExecutionStatusField()">
+                                            <i class="fas fa-lock" id="lockIcon"></i> تفعيل التعديل
+                                        </button>
+                                    </div>
                                     @error('execution_status')
                                         <span class="invalid-feedback" role="alert">
                                             <strong>{{ $message }}</strong>
@@ -743,6 +751,46 @@ function updateManualDays(days) {
 // تحديث العداد عند تحميل الصفحة وكل دقيقة
 document.addEventListener('DOMContentLoaded', updateCountdown);
 setInterval(updateCountdown, 60000);
+
+// Toggle execution status field
+function toggleExecutionStatusField() {
+    const displaySelect = document.getElementById('execution_status_display');
+    const hiddenInput = document.getElementById('execution_status');
+    const toggleButton = document.getElementById('toggleExecutionStatus');
+    const lockIcon = document.getElementById('lockIcon');
+    
+    if (displaySelect.disabled) {
+        // تفعيل الحقل
+        displaySelect.disabled = false;
+        displaySelect.style.pointerEvents = 'auto';
+        displaySelect.style.backgroundColor = '#fff';
+        displaySelect.classList.add('border-warning');
+        toggleButton.classList.remove('btn-outline-primary');
+        toggleButton.classList.add('btn-outline-warning');
+        lockIcon.classList.remove('fa-lock');
+        lockIcon.classList.add('fa-unlock');
+        toggleButton.innerHTML = '<i class="fas fa-unlock"></i> إلغاء التعديل';
+        
+        // عند التفعيل، ربط التغيير بالـ hidden input
+        displaySelect.addEventListener('change', function() {
+            hiddenInput.value = displaySelect.value;
+        });
+    } else {
+        // إلغاء تفعيل الحقل
+        displaySelect.disabled = true;
+        displaySelect.style.pointerEvents = 'none';
+        displaySelect.style.backgroundColor = '#e9ecef';
+        displaySelect.classList.remove('border-warning');
+        toggleButton.classList.remove('btn-outline-warning');
+        toggleButton.classList.add('btn-outline-primary');
+        lockIcon.classList.remove('fa-unlock');
+        lockIcon.classList.add('fa-lock');
+        toggleButton.innerHTML = '<i class="fas fa-lock"></i> تفعيل التعديل';
+        
+        // إعادة القيمة الأصلية عند الإلغاء
+        displaySelect.value = hiddenInput.value;
+    }
+}
 </script>
 
 @endsection 
